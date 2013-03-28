@@ -1,3 +1,3 @@
 """
-Unit tests for the veracity package.
+Unit tests for the doorstop package.
 """
