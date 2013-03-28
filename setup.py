@@ -25,14 +25,16 @@ class TestCommand(Command):  # pylint: disable=R0904
 setup(
     name='Doorstop',
     version='0.0.x',
+
+    description="Text-based requirements management.",
+    url='http://pypi.python.org/pypi/Doorstop/',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
+
     packages=['doorstop', 'doorstop.test'],
     scripts=[],
-    url='http://pypi.python.org/pypi/Doorstop/',
-    license='LICENSE.txt',
-    description="Text-based requirements management.",
-    long_description=open('README.rst').read(),
-    install_requires=[],
+
     cmdclass={'test': TestCommand},
+    long_description=open('README.rst').read(),
+    license='LICENSE.txt',
 )
