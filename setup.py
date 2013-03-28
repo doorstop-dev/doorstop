@@ -20,8 +20,7 @@ class TestCommand(Command):  # pylint: disable=R0904
     def run(self):
         import sys
         import subprocess
-        raise SystemExit(subprocess.call([sys.executable, '-m',
-                                          'unittest', 'discover']))
+        raise SystemExit(subprocess.call([sys.executable, '-m', 'unittest', 'discover']))
 
 setup(
     name='Doorstop',
