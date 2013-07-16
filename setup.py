@@ -4,11 +4,14 @@
 Setup script for Doorstop.
 """
 
-from distutils.core import setup, Command
+import os
+from setuptools import setup, Command
+
+from doorstop import __project__
 
 
 class TestCommand(Command):  # pylint: disable=R0904
-    """Runs the unit tests."""
+    """Runs the unit and integration tests."""
     user_options = []
 
     def initialize_options(self):
@@ -23,16 +26,15 @@ class TestCommand(Command):  # pylint: disable=R0904
         raise SystemExit(subprocess.call([sys.executable, '-m', 'unittest', 'discover']))
 
 setup(
-    name='Doorstop',
-    version='0.0.x',
+    name=__project__,
+    version='0.0.0',
 
-    description="Text-based requirements management.",
-    url='http://pypi.python.org/pypi/Doorstop/',
+    description="Manage your requirements as text using version control.",
+    url='http://pypi.python.org/pypi/Doorstop',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
 
     packages=['doorstop', 'doorstop.test'],
-    scripts=[],
 
     cmdclass={'test': TestCommand},
     long_description=open('README.rst').read(),

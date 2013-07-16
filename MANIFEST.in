@@ -1,2 +1,6 @@
 include *.rst *.txt
-recursive-include docs *.rst *.txt
+recursive-include docs *.rst *.txt 
+global-include *.cfg
+graft */bin_files
+graft */vscript_files
+graft */test/workspace

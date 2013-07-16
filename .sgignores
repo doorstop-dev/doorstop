@@ -1,0 +1,7 @@
+*.pyc
+__pycache__
+*.egg*
+.coverage
+@/build
+@/dist
+@/workspace_tools/vscript_files/build

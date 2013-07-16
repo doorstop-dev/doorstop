@@ -1,8 +1,7 @@
 Introduction
 ============
 
-Doorstop is a set of tools that allow you to manage requirements as text and
-version them in your existing version control system.
+TBD
 
 
 
@@ -12,43 +11,54 @@ Getting Started
 Requirements
 ------------
 
-* Python 2.7
+* Python 2.6 or 2.7
+* Veracity 2.x (to update)
+* Make (to build on Ubuntu)
+* dos2unix (to build on Ubuntu)
+* ia32-libs (to build on 64-bit Ubuntu)
 
 
 Installation
 ------------
 
-Doorstop can be installed with ``pip`` or ``easy_install``::
+WorkspaceTools can be installed with ``jcipip``::
 
-    pip install Doorstop
+    jcipip install WorkspaceTools
     
-or directly from source::
+After installation, WorkspaceTools is available on the command-line::
 
-    python setup.py install
+   ws --help
     
-After installation, the command-line is used to access basic functionality::
-
-   doorstop --help
-   
-For scripting, the package is available under the name ``doorstop``::
+And the package is available under the name ``workspace_tools``::
 
     python
-    >>> import doorstop
+    >>> import workspace_tools
+    >>> workspace_tools.__version__
     
 
-Basic Usage
-===========
 
-A sample script might look like this::
+Sample Commands
+===============
 
-    ???
+Update Use Cases
+----------------
+
+Update an existing component's dependencies::
+
+    cd src/cpp/procio
+    ws update
     
-    
-Testing
-=======
+Update a componet and dependnecies to the latest version::
 
-The ``doorstop`` package contains unit tests which can be run from source::
-
-    python setup.py test
+    cd src
+    ws update cpp_procio
 
 
+Build Use Cases
+---------------
+
+Build a component and its dependencies::
+
+   cd src/cpp/procio
+   ws build
+   
