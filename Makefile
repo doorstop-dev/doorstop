@@ -1,67 +1,135 @@
-PACKAGE=doorstop
+PROJECT := Doorstop
+PACKAGE := doorstop
 
-develop: depends
-	python setup.py develop
+EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
+ifeq ($(OS),Windows_NT)
+BIN := Scripts
+INCLUDE := Include
+LIB := Lib
+MAN := man
+EXE := .exe
+else
+BIN := bin
+INCLUDE := include
+LIB := lib
+MAN := man
+endif
 
-install: depends
-	python setup.py install
+WD := $(shell pwd)
+CACHE := $(WD)/.cache
+PYTHON := $(WD)/$(BIN)/python$(EXE)
+PIP := $(WD)/$(BIN)/pip$(EXE)
+RST2HTML := $(WD)/$(BIN)/rst2html.py
+EPYDOC := $(WD)/$(BIN)/epydoc$(EXE)
+PEP8 := $(WD)/$(BIN)/pep8$(EXE)
+PYLINT := $(WD)/$(BIN)/pylint$(EXE)
+NOSE := $(WD)/$(BIN)/nosetests$(EXE)
 
-depends: coverage
-	pip install  --download-cache=/tmp/pip virtualenv epydoc nose pep8 pylint python-veracity
-	
+# Installation ###############################################################
 
-##############################################################################
+.PHONY: all
+all: depends develop
+
+.PHONY: develop
+develop: .env $(EGG_INFO)
+$(EGG_INFO):
+	$(PYTHON) setup.py develop
+
+.PHONY: .env
+.env: $(PYTHON)
+$(PYTHON):
+	virtualenv .
+
+.PHONY: depends
+depends: .env .depends
+.depends:
+	$(PIP) install docutils epydoc nose pep8 pylint --download-cache=$(CACHE)
+	$(MAKE) .coverage
+	touch .depends  # flag to indicate dependencies are installed
+
 # issue: coverage results are incorrect in Linux
 # tracker: https://bitbucket.org/ned/coveragepy/issue/164
 # workaround: install the latest code from bitbucket.org until "coverage>3.6"
+.PHONY: .coverage
 ifeq ($(shell uname),Linux)
-
-coverage: /tmp/coveragepy
-	cd /tmp/coveragepy; pip install --download-cache=/tmp/pip --requirement requirements.txt; python setup.py install
-	
-/tmp/coveragepy:
-	cd /tmp; hg clone https://bitbucket.org/ned/coveragepy
-
+.coverage: .env $(CACHE)/coveragepy
+	cd $(CACHE)/coveragepy; \
+	$(PIP) install --requirement requirements.txt --download-cache=$(CACHE); \
+	$(PYTHON) setup.py install
+$(CACHE)/coveragepy:
+	cd $(CACHE); hg clone https://bitbucket.org/ned/coveragepy
 else
-
-coverage:
-	pip install --download-cache=/tmp/pip coverage
-
+.coverage: .env
+	$(PIP) install coverage --download-cache=$(CACHE)
 endif
-##############################################################################
-	
-publish: clean
-	python setup.py register sdist upload
 
-##############################################################################
+# Documentation ##############################################################
+
+.PHONY: doc
 # issue: epydoc does not install a working CLI on Windows
 # tracker: http://sourceforge.net/p/epydoc/bugs/345
-# workaround: call the globally installed epydoc.py file directly
+# workaround: skip epydoc on Windows
 ifeq ($(OS),Windows_NT)
-
 doc: depends
-	export python C:\\Python27\\Scripts\\epydoc.py --config setup.cfg
-
+	$(BIN)/rst2html.py README.rst docs/README.html
+	@echo WARNING: epydoc cannot be run on Windows
 else
-
 doc: depends
-	export epydoc --config setup.cfg
-
+	$(RST2HTML) README.rst docs/README.html
+	$(EPYDOC) --config setup.cfg
 endif
-##############################################################################
 
-test: develop
-	nosetests
+.PHONY: doc-open
+doc-open: doc
+	open $(WD)/docs/README.html
+	open $(WD)/apidocs/index.html
+
+# Static Analysis ############################################################
+
+.PHONY: pep8
+pep8: depends
+	$(PEP8) $(PACKAGE)
+
+.PHONY: pylint
+pylint: depends
+	$(PYLINT) $(PACKAGE) --reports no \
+	                     --disable I0011,W0511,W0142 --max-line-length=99
+
+.PHONY: check
+check: depends
+	$(MAKE) doc
+	$(PEP8) --ignore=E501 $(PACKAGE)
+	$(PYLINT) $(PACKAGE) --reports no --disable W0142,W0511,I0011,R,C
+
+# Testing ####################################################################
+
+.PHONY: nose
+nose: all
+	$(NOSE)
+
+.PHONY: test
+test: nose
+
+# Cleanup ####################################################################
+
+.PHONY: .clean-env
+.clean-env:
+	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) .depends
+
+.PHONY: .clean-dist
+.clean-dist:
+	rm -rf dist build *.egg-info 
+
+.PHONY: clean
+clean: .clean-env .clean-dist
+	rm -rf */*.pyc */*/*.pyc apidocs docs/README.html .coverage
 	
-check: doc
-	pep8 --ignore=E501 $(PACKAGE)
-	pylint $(PACKAGE) --include-ids yes --reports no --disable W0142,W0511,I0011,R,C
+# Release ####################################################################
 
-poller: depends
-	vv-poller --daemon
+.PHONY: dist
+dist: .clean-dist
+	$(PYTHON) setup.py sdist
 
-builder: depends
-	vv-builder --daemon --env $(VV_ENV)
-
-clean:
-	rm -rf *.egg-info dist build .coverage */*.pyc */*/*.pyc apidocs env coveragepy
+.PHONY: upload
+upload: .clean-dist
+	$(PYTHON) setup.py register sdist upload

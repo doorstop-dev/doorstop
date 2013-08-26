@@ -4,7 +4,6 @@
 Setup script for Doorstop.
 """
 
-import os
 from setuptools import setup, Command
 
 from doorstop import __project__
@@ -23,7 +22,8 @@ class TestCommand(Command):  # pylint: disable=R0904
     def run(self):
         import sys
         import subprocess
-        raise SystemExit(subprocess.call([sys.executable, '-m', 'unittest', 'discover']))
+        raise SystemExit(subprocess.call([sys.executable, '-m',
+                                          'unittest', 'discover']))
 
 setup(
     name=__project__,
