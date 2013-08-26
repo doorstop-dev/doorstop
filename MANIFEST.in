@@ -1,2 +1,4 @@
 include *.rst *.txt
 recursive-include docs *.rst *.txt
+graft */files
+graft */*/files

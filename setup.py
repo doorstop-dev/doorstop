@@ -4,7 +4,7 @@
 Setup script for Doorstop.
 """
 
-from distutils.core import setup, Command
+from setuptools import setup, Command
 
 
 class TestCommand(Command):  # pylint: disable=R0904
@@ -20,11 +20,12 @@ class TestCommand(Command):  # pylint: disable=R0904
     def run(self):
         import sys
         import subprocess
-        raise SystemExit(subprocess.call([sys.executable, '-m', 'unittest', 'discover']))
+        raise SystemExit(subprocess.call([sys.executable, '-m',
+                                          'unittest', 'discover']))
 
 setup(
     name='Doorstop',
-    version='0.0.x',
+    version='0.0.0',
 
     description="Text-based requirements management.",
     url='http://pypi.python.org/pypi/Doorstop/',
