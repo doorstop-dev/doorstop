@@ -112,6 +112,10 @@ nose: all depends
 .PHONY: test
 test: nose
 
+.PHONY: tests
+tests: TEST_INTEGRATION=1
+tests: nose
+
 # Cleanup ####################################################################
 
 .PHONY: .clean-env
