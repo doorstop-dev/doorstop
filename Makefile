@@ -17,6 +17,7 @@ endif
 
 WD := $(shell pwd)
 CACHE := $(WD)/.cache
+DEPENDS := $(WD)/.depends
 PYTHON := $(WD)/$(BIN)/python$(EXE)
 PIP := $(WD)/$(BIN)/pip$(EXE)
 RST2HTML := $(WD)/$(BIN)/rst2html.py
@@ -28,7 +29,7 @@ NOSE := $(WD)/$(BIN)/nosetests$(EXE)
 # Installation ###############################################################
 
 .PHONY: all
-all: depends develop
+all: develop
 
 .PHONY: develop
 develop: .env $(EGG_INFO)
@@ -41,11 +42,11 @@ $(PYTHON):
 	virtualenv .
 
 .PHONY: depends
-depends: .env .depends
-.depends:
+depends: .env $(DEPENDS)
+$(DEPENDS):
 	$(PIP) install docutils epydoc nose pep8 pylint --download-cache=$(CACHE)
 	$(MAKE) .coverage
-	touch .depends  # flag to indicate dependencies are installed
+	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
 # issue: coverage results are incorrect in Linux
 # tracker: https://bitbucket.org/ned/coveragepy/issue/164
@@ -53,11 +54,12 @@ depends: .env .depends
 .PHONY: .coverage
 ifeq ($(shell uname),Linux)
 .coverage: .env $(CACHE)/coveragepy
-	cd $(CACHE)/coveragepy; \
-	$(PIP) install --requirement requirements.txt --download-cache=$(CACHE); \
+	cd $(CACHE)/coveragepy ;\
+	$(PIP) install --requirement requirements.txt --download-cache=$(CACHE) ;\
 	$(PYTHON) setup.py install
 $(CACHE)/coveragepy:
-	cd $(CACHE); hg clone https://bitbucket.org/ned/coveragepy
+	cd $(CACHE) ;\
+	hg clone https://bitbucket.org/ned/coveragepy
 else
 .coverage: .env
 	$(PIP) install coverage --download-cache=$(CACHE)
@@ -104,7 +106,7 @@ check: depends
 # Testing ####################################################################
 
 .PHONY: nose
-nose: all
+nose: all depends
 	$(NOSE)
 
 .PHONY: test
@@ -114,7 +116,7 @@ test: nose
 
 .PHONY: .clean-env
 .clean-env:
-	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) .depends
+	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) $(DEPENDS) $(CACHE)
 
 .PHONY: .clean-dist
 .clean-dist:
