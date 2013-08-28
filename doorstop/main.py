@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
-TODO: add something here
+Main entry point for Doorstop functionality.
 """
