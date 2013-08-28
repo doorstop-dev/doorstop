@@ -2,6 +2,9 @@ PROJECT := Doorstop
 PACKAGE := doorstop
 
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
+CACHE := .cache
+DEPENDS := .depends
+
 ifeq ($(OS),Windows_NT)
 BIN := Scripts
 INCLUDE := Include
@@ -16,8 +19,6 @@ MAN := man
 endif
 
 WD := $(shell pwd)
-CACHE := $(WD)/.cache
-DEPENDS := $(WD)/.depends
 PYTHON := $(WD)/$(BIN)/python$(EXE)
 PIP := $(WD)/$(BIN)/pip$(EXE)
 RST2HTML := $(WD)/$(BIN)/rst2html.py
