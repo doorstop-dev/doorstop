@@ -1,6 +1,6 @@
 PROJECT := Doorstop
 PACKAGE := doorstop
-VERSION := 3.3
+VERSION := python3.3
 
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 CACHE := .cache
@@ -41,7 +41,7 @@ $(EGG_INFO):
 .PHONY: .env
 .env: $(PYTHON)
 $(PYTHON):
-	virtualenv --python=python$(VERSION) .
+	virtualenv --python=$(VERSION) .
 
 .PHONY: depends
 depends: .env $(DEPENDS)
