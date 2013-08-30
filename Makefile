@@ -1,18 +1,19 @@
 PROJECT := Doorstop
 PACKAGE := doorstop
-VERSION := python3.3
 
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 CACHE := .cache
 DEPENDS := .depends
 
 ifeq ($(OS),Windows_NT)
+VERSION := C:\\Python27\\python.exe
 BIN := Scripts
 INCLUDE := Include
 LIB := Lib
 MAN := man
 EXE := .exe
 else
+VERSION := python3.3
 BIN := bin
 INCLUDE := include
 LIB := lib
@@ -41,7 +42,7 @@ $(EGG_INFO):
 .PHONY: .env
 .env: $(PYTHON)
 $(PYTHON):
-	virtualenv --python=$(VERSION) .
+	virtualenv --python $(VERSION) .
 
 .PHONY: depends
 depends: .env $(DEPENDS)
@@ -130,8 +131,9 @@ tests: nose
 
 .PHONY: clean
 clean: .clean-env .clean-dist
-	rm -rf */*.pyc */*/*.pyc apidocs docs/README.html .coverage
-	
+	rm -rf */*.pyc */*/*.pyc */__pycache__ */*/__pycache__
+	rm -rf apidocs docs/README.html .coverage
+
 # Release ####################################################################
 
 .PHONY: dist
