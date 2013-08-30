@@ -12,7 +12,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     def test_tbd(self):
         """Verify TBD."""
-        assert True
+        self.assertTrue(True)
 
 
 if __name__ == '__main__':

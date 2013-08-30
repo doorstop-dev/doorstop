@@ -93,18 +93,20 @@ doc-open: doc
 
 .PHONY: pep8
 pep8: depends
-	$(PEP8) $(PACKAGE)
+	$(PEP8) $(PACKAGE) --ignore=E501 
 
 .PHONY: pylint
 pylint: depends
 	$(PYLINT) $(PACKAGE) --reports no \
-	                     --disable I0011,W0511,W0142 --max-line-length=99
+	                     --msg-template="{msg_id}: {msg}: {obj} line:{line}" \
+	                     --max-line-length=99 \
+	                     --disable=I0011,W0142,W0511,R0801
 
 .PHONY: check
 check: depends
 	$(MAKE) doc
-	$(PEP8) --ignore=E501 $(PACKAGE)
-	$(PYLINT) $(PACKAGE) --reports no --disable W0142,W0511,I0011,R,C
+	$(MAKE) pep8
+	$(MAKE) pylint
 
 # Testing ####################################################################
 
