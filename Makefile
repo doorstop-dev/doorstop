@@ -10,21 +10,21 @@ VERSION := C:\\Python27\\python.exe
 BIN := Scripts
 INCLUDE := Include
 LIB := Lib
-MAN := man
 EXE := .exe
 else
 VERSION := python3.3
 BIN := bin
 INCLUDE := include
 LIB := lib
-MAN := man
 endif
+MAN := man
+SHARE := share
 
 WD := $(shell pwd)
 PYTHON := $(WD)/$(BIN)/python$(EXE)
 PIP := $(WD)/$(BIN)/pip$(EXE)
 RST2HTML := $(WD)/$(BIN)/rst2html.py
-EPYDOC := $(WD)/$(BIN)/epydoc$(EXE)
+PDOC := $(WD)/$(BIN)/pdoc$(EXE)
 PEP8 := $(WD)/$(BIN)/pep8$(EXE)
 PYLINT := $(WD)/$(BIN)/pylint$(EXE)
 NOSE := $(WD)/$(BIN)/nosetests$(EXE)
@@ -32,7 +32,7 @@ NOSE := $(WD)/$(BIN)/nosetests$(EXE)
 # Installation ###############################################################
 
 .PHONY: all
-all: develop
+all: develop check test
 
 .PHONY: develop
 develop: .env $(EGG_INFO)
@@ -47,7 +47,8 @@ $(PYTHON):
 .PHONY: depends
 depends: .env $(DEPENDS)
 $(DEPENDS):
-	$(PIP) install docutils epydoc nose pep8 pylint --download-cache=$(CACHE)
+	$(PIP) install docutils pdoc Pygments \
+	       nose pep8 pylint --download-cache=$(CACHE)
 	$(MAKE) .coverage
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
@@ -70,24 +71,16 @@ endif
 
 # Documentation ##############################################################
 
-.PHONY: doc
-# issue: epydoc does not install a working CLI on Windows
-# tracker: http://sourceforge.net/p/epydoc/bugs/345
-# workaround: skip epydoc on Windows
-ifeq ($(OS),Windows_NT)
-doc: depends
-	$(BIN)/rst2html.py README.rst docs/README.html
-	@echo WARNING: epydoc cannot be run on Windows
-else
+
 doc: depends
 	$(RST2HTML) README.rst docs/README.html
-	$(EPYDOC) --config setup.cfg
-endif
+	# hiding the return code: https://github.com/BurntSushi/pdoc/issues/1
+	- $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: doc-open
 doc-open: doc
 	open $(WD)/docs/README.html
-	open $(WD)/apidocs/index.html
+	open $(WD)/apidocs/doorstop/index.html
 
 # Static Analysis ############################################################
 
@@ -111,7 +104,7 @@ check: depends
 # Testing ####################################################################
 
 .PHONY: nose
-nose: all depends
+nose: develop depends
 	$(NOSE)
 
 .PHONY: test
@@ -125,7 +118,7 @@ tests: nose
 
 .PHONY: .clean-env
 .clean-env:
-	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) $(DEPENDS) $(CACHE)
+	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) $(SHARE) $(DEPENDS)
 
 .PHONY: .clean-dist
 .clean-dist:
@@ -133,8 +126,12 @@ tests: nose
 
 .PHONY: clean
 clean: .clean-env .clean-dist
-	rm -rf */*.pyc */*/*.pyc */__pycache__ */*/__pycache__
+	rm -rf */*.pyc */*/*.pyc */__pycache__ */*/__pycache__ */*/*/__pycache__
 	rm -rf apidocs docs/README.html .coverage
+
+.PHONY: clean-all
+clean-all: clean
+	rm -rf $(CACHE)
 
 # Release ####################################################################
 
