@@ -6,7 +6,7 @@ Setup script for Doorstop.
 
 from setuptools import setup, Command
 
-from doorstop import __project__
+from doorstop import __project__, CLI
 
 
 class TestCommand(Command):  # pylint: disable=R0904
@@ -35,6 +35,8 @@ setup(
     author_email='jacebrowning@gmail.com',
 
     packages=['doorstop', 'doorstop.test'],
+
+    entry_points={'console_scripts': [CLI + ' = doorstop.cli:main']},
 
     cmdclass={'test': TestCommand},
     long_description=open('README.rst').read(),

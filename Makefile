@@ -103,16 +103,13 @@ check: depends
 
 # Testing ####################################################################
 
-.PHONY: nose
-nose: develop depends
+.PHONY: test
+test: develop depends
 	$(NOSE)
 
-.PHONY: test
-test: nose
-
 .PHONY: tests
-tests: TEST_INTEGRATION=1
-tests: nose
+tests: develop depends
+	TEST_INTEGRATION=1 $(NOSE)
 
 # Cleanup ####################################################################
 
