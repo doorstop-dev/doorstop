@@ -39,4 +39,6 @@ setup(
     cmdclass={'test': TestCommand},
     long_description=open('README.rst').read(),
     license='LICENSE.txt',
+
+    install_requires=["scripttest >= 1.2"],
 )

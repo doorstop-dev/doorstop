@@ -19,6 +19,7 @@ LIB := lib
 endif
 MAN := man
 SHARE := share
+SOURCES := Makefile setup.py
 
 WD := $(shell pwd)
 PYTHON := $(WD)/$(BIN)/python$(EXE)
@@ -32,12 +33,13 @@ NOSE := $(WD)/$(BIN)/nosetests$(EXE)
 # Installation ###############################################################
 
 .PHONY: all
-all: develop check test
+all: develop
 
 .PHONY: develop
 develop: .env $(EGG_INFO)
-$(EGG_INFO):
+$(EGG_INFO): $(SOURCES)
 	$(PYTHON) setup.py develop
+	touch $(EGG_INFO)
 
 .PHONY: .env
 .env: $(PYTHON)
@@ -71,11 +73,9 @@ endif
 
 # Documentation ##############################################################
 
-
 doc: depends
 	$(RST2HTML) README.rst docs/README.html
-	# hiding the return code: https://github.com/BurntSushi/pdoc/issues/1
-	- $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: doc-open
 doc-open: doc
