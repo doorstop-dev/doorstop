@@ -1,5 +1,6 @@
 PROJECT := Doorstop
 PACKAGE := doorstop
+SOURCES := Makefile setup.py
 
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 CACHE := .cache
@@ -11,24 +12,24 @@ BIN := Scripts
 INCLUDE := Include
 LIB := Lib
 EXE := .exe
+OPEN := cmd /c start
 else
 VERSION := python3.3
 BIN := bin
 INCLUDE := include
 LIB := lib
+OPEN := open
 endif
 MAN := man
 SHARE := share
-SOURCES := Makefile setup.py
 
-WD := $(shell pwd)
-PYTHON := $(WD)/$(BIN)/python$(EXE)
-PIP := $(WD)/$(BIN)/pip$(EXE)
-RST2HTML := $(WD)/$(BIN)/rst2html.py
-PDOC := $(WD)/$(BIN)/pdoc$(EXE)
-PEP8 := $(WD)/$(BIN)/pep8$(EXE)
-PYLINT := $(WD)/$(BIN)/pylint$(EXE)
-NOSE := $(WD)/$(BIN)/nosetests$(EXE)
+PYTHON := $(BIN)/python$(EXE)
+PIP := $(BIN)/pip$(EXE)
+RST2HTML := $(BIN)/rst2html.py
+PDOC := $(BIN)/pdoc
+PEP8 := $(BIN)/pep8$(EXE)
+PYLINT := $(BIN)/pylint$(EXE)
+NOSE := $(BIN)/nosetests$(EXE)
 
 # Installation ###############################################################
 
@@ -74,13 +75,13 @@ endif
 # Documentation ##############################################################
 
 doc: depends
-	$(RST2HTML) README.rst docs/README.html
-	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+	$(PYTHON) $(RST2HTML) README.rst docs/README.html
+	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: doc-open
 doc-open: doc
-	open $(WD)/docs/README.html
-	open $(WD)/apidocs/doorstop/index.html
+	$(OPEN) docs/README.html
+	$(OPEN) apidocs/doorstop/index.html
 
 # Static Analysis ############################################################
 
