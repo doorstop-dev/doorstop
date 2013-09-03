@@ -47,7 +47,7 @@ $(PYTHON):
 	virtualenv --python $(VERSION) .
 
 .PHONY: depends
-depends: .env $(DEPENDS)
+depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
 	$(PIP) install docutils pdoc Pygments \
 	       nose pep8 pylint --download-cache=$(CACHE)
