@@ -8,4 +8,4 @@ Compiles the Doorstop document hierarchy.
 def run():
     """Main entry point for the program.
     """
-    pass
+    raise NotImplementedError()
