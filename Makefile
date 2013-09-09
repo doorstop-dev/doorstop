@@ -110,7 +110,7 @@ test: develop depends
 
 .PHONY: tests
 tests: develop depends
-	TEST_INTEGRATION=1 $(NOSE)
+	TEST_INTEGRATION=1 $(NOSE) --cover-package=doorstop.cli
 
 # Cleanup ####################################################################
 

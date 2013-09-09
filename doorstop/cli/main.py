@@ -10,21 +10,24 @@ import argparse
 import logging
 
 from doorstop import CLI, VERSION
-from doorstop import settings
+from doorstop.cli import settings
 
 
-def main():  # pragma: no cover, integration test
+def main():
     """Process command-line arguments and run the program.
     """
     # Main parser
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__)
+    parser.add_argument('-g', '--gui', action='store_true', help="launch the GUI")
     parser.add_argument('-V', '--version', action='version', version=VERSION)
     parser.add_argument('-v', '--verbose', action='count', help="enable verbose logging")
     subparsers = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
     # Init subparser
-    init_parser = subparsers.add_parser('init', help="initialize a new Doorstop project")
-    init_parser.add_argument('-d', '--directory', help="root directory for requirements")
+    init_parser = subparsers.add_parser('init', help="initialize a new document")
+    init_parser.add_argument('-r', '--root', help="root directory for document items")
+    init_parser.add_argument('-p', '--prefix', help="prefix for item IDs")
+    init_parser.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
     add_parser = subparsers.add_parser('add', help="add a new requirement or link")
@@ -68,7 +71,7 @@ def main():  # pragma: no cover, integration test
         sys.exit(1)
 
 
-def _configure_logging(verbosity=0):  # pragma: no cover, integration test
+def _configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
 
     class WarningFormatter(logging.Formatter, object):
@@ -168,5 +171,5 @@ def _run_report(args, cwd, error):
     return True
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover, manual test
     main()

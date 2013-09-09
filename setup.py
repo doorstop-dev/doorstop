@@ -4,12 +4,12 @@
 Setup script for Doorstop.
 """
 
-from setuptools import setup, Command
+import setuptools
 
-from doorstop import __project__, CLI
+from doorstop import __project__, CLI, GUI
 
 
-class TestCommand(Command):  # pylint: disable=R0904
+class TestCommand(setuptools.Command):  # pylint: disable=R0904
     """Runs the unit and integration tests."""
     user_options = []
 
@@ -25,7 +25,7 @@ class TestCommand(Command):  # pylint: disable=R0904
         raise SystemExit(subprocess.call([sys.executable, '-m',
                                           'unittest', 'discover']))
 
-setup(
+setuptools.setup(
     name=__project__,
     version='0.0.0',
 
@@ -34,9 +34,10 @@ setup(
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
 
-    packages=['doorstop', 'doorstop.test'],
+    packages=setuptools.find_packages(),
 
-    entry_points={'console_scripts': [CLI + ' = doorstop.cli:main']},
+    entry_points={'console_scripts': [CLI + ' = doorstop.cli:main',
+                                      GUI + ' = doorstop.gui:main']},
 
     cmdclass={'test': TestCommand},
     long_description=open('README.rst').read(),

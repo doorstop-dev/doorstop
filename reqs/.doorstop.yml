@@ -1,0 +1,5 @@
+settings:
+  prefix: RQ
+  digits: 3
+enumerations:
+  kind: Specified, Derived, N/A

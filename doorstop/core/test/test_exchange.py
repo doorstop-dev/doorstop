@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 """
-Unit tests for the doorstop.processor module.
+Unit tests for the doorstop.core.exchange module.
 """
 
 import unittest
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
-    """Tests for the doorstop.processor module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.exchange module."""  # pylint: disable=C0103
 
     def test_tbd(self):
         """Verify TBD."""
