@@ -16,7 +16,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1378755165154</id>
+			<id>1378776045418</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -59,6 +59,15 @@
 						<arguments>1.0-projectRelativePath-matches-false-false-dist</arguments>
 					</matcher>
 				</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1378776045421</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-__pycache__</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>
