@@ -27,7 +27,7 @@ class TestCommand(setuptools.Command):  # pylint: disable=R0904
 
 setuptools.setup(
     name=__project__,
-    version='0.0.0',
+    version='0.0.1-rc.1',
 
     description="Manage your requirements as text using version control.",
     url='http://pypi.python.org/pypi/Doorstop',

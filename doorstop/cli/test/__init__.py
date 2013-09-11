@@ -90,5 +90,3 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop export' can be called."""
         result = self.cli('import', expect_error=True)
         self.assertNotEqual(0, result.returncode)
-
-
