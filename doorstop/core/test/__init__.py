@@ -18,3 +18,4 @@ REASON = "'{0}' variable not set".format(ENV)
 class TestAPI(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Doorstop API."""
 
+    pass

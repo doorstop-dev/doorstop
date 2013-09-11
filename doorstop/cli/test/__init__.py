@@ -8,9 +8,11 @@ import unittest
 
 import os
 import tempfile
-from distutils import dir_util
+from distutils import dir_util  # TODO: pylint: disable=E0611
 
 from scripttest import TestFileEnvironment
+
+from doorstop.cli.main import main
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
@@ -21,6 +23,23 @@ REASON = "'{0}' variable not set".format(ENV)
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestCLI(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Doorstop CLI."""
+
+    def test_main(self):
+        """Verify the main CLI logic can be called."""
+        self.assertRaises(NotImplementedError, main, [])
+
+    def test_main_help(self):
+        """Verify the main CLI help text can be requested."""
+        self.assertRaises(SystemExit, main, ['--help'])
+
+    def test_main_init(self):
+        """Verify the init command can be called."""
+        self.assertRaises(NotImplementedError, main, ['init'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
+    """Integration tests for the Doorstop CLI executable."""
 
     @classmethod
     def setUpClass(cls):
@@ -42,7 +61,34 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         """Call the CLI with arguments."""
         return self.ENV.run(self.BIN, *args, **kwargs)
 
-    def test_main(self):
-        """Verify the main CLI can be called."""
+    def test_doorstop(self):
+        """Verify 'doorstop' can be called."""
         result = self.cli(expect_error=True)
-        self.assertNotEqual(0, result.returncode)  # TODO: fix the CLI
+        self.assertNotEqual(0, result.returncode)
+
+    def test_doorstop_init(self):
+        """Verify 'doorstop init' can be called."""
+        result = self.cli('init', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+
+    def test_doorstop_add(self):
+        """Verify 'doorstop add' can be called."""
+        result = self.cli('add', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+
+    def test_doorstop_remove(self):
+        """Verify 'doorstop remove' can be called."""
+        result = self.cli('remove', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+
+    def test_doorstop_import(self):
+        """Verify 'doorstop import' can be called."""
+        result = self.cli('import', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+
+    def test_doorstop_export(self):
+        """Verify 'doorstop export' can be called."""
+        result = self.cli('import', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+
+
