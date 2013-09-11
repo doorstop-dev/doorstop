@@ -124,7 +124,8 @@ tests: develop depends
 
 .PHONY: clean
 clean: .clean-env .clean-dist
-	rm -rf */*.pyc */*/*.pyc */__pycache__ */*/__pycache__ */*/*/__pycache__
+	rm -rf */*.pyc */*/*.pyc */*/*/*.pyc */*/*/*/*.pyc
+	rm -rf */__pycache__ */*/__pycache__ */*/*/__pycache__ */*/*/*/__pycache__
 	rm -rf apidocs docs/README.html .coverage
 
 .PHONY: clean-all
