@@ -73,7 +73,7 @@ def main(args=None):
 
     # Import subparser
     sub = subs.add_parser('import', formatter_class=_HelpFormatter,
-                          help="import requirements from anther format")
+                          help="import requirements from another format")
     sub.add_argument('input', help="file to import")
 
     # Export subparser
