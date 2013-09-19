@@ -43,5 +43,5 @@ setuptools.setup(
     long_description=open('README.rst').read(),
     license='LICENSE.txt',
 
-    install_requires=["scripttest >= 1.2"],
+    install_requires=["PyYAML >= 3.10", "scripttest >= 1.2"],
 )

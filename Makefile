@@ -7,7 +7,7 @@ CACHE := .cache
 DEPENDS := .depends
 
 ifeq ($(OS),Windows_NT)
-VERSION := C:\\Python27\\python.exe
+VERSION := C:\\Python33\\python.exe
 BIN := Scripts
 INCLUDE := Include
 LIB := Lib
@@ -50,10 +50,22 @@ $(PYTHON):
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
-	$(PIP) install docutils pdoc Pygments \
-	       nose pep8 pylint --download-cache=$(CACHE)
+	$(PIP) install docutils pdoc Pygments nose pep8 --download-cache=$(CACHE)
+	$(MAKE) .pylint
 	$(MAKE) .coverage
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
+
+# issue: pylint is not currently installing on Windows
+# tracker: https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
+# workaround: skip pylint on windows
+.PHONY: .pylint
+ifeq ($(shell uname),Linux)
+.coverage: .env
+	$(PIP) install pylint --download-cache=$(CACHE) ;\
+else
+.coverage: .env
+	@echo pytlint cannot be installed on Windows
+endif
 
 # issue: coverage results are incorrect in Linux
 # tracker: https://bitbucket.org/ned/coveragepy/issue/164
