@@ -4,6 +4,8 @@
 Representation of items in a Doorstop document.
 """
 
+import logging
+
 import yaml
 
 
@@ -15,6 +17,7 @@ class Item(object):
     def __init__(self, path):
         self.path = path
         self._text = ""
+        self._links = set()
 
     def load(self):
         """Load the item's properties from a file."""
@@ -45,9 +48,15 @@ class Item(object):
     @property
     def links(self):
         """Get the items this item links to."""
+        return sorted(self._links)
 
     def add_link(self, item):
         """Add a new link to another item."""
+        self._links.add(item)
 
-    def remove_link(self):
+    def remove_link(self, item):
         """Remove an existing link."""
+        try:
+            self._links.remove(item)
+        except ValueError:
+            logging.warning("link to {0} does not exist".format(item))

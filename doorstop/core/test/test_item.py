@@ -35,6 +35,25 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.text = "test text"
         self.assertEqual("test text", self.item.text)
 
+    def test_link_add(self):
+        """Verify links can be added to an item."""
+        self.item.add_link('abc')
+        self.item.add_link('123')
+        self.assertEqual(['123', 'abc'], self.item.links)
+
+    def test_link_add_duplicate(self):
+        """Verify duplicate links are ignored."""
+        self.item.add_link('abc')
+        self.item.add_link('abc')
+        self.assertEqual(['abc'], self.item.links)
+
+    def test_link_remove_duplicate(self):
+        """Verify removing a link twice is not an error."""
+        self.item._links = ['123', 'abc']
+        self.item.remove_link('abc')
+        self.item.remove_link('abc')
+        self.assertEqual(['123'], self.item.links)
+
 
 class TestItemIntegration(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Item class."""  # pylint: disable=C0103
