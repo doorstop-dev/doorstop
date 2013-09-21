@@ -4,15 +4,36 @@
 Representation of items in a Doorstop document.
 """
 
+import functools
 import logging
 
 import yaml
 
 
+def _auto_load(func):
+    """Decorator for methods that should automatically load from file."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to call self.load() before execution."""
+        self.load()
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+def _auto_save(func):
+    """Decorator for methods that should automatically save to file."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to call self.save() after execution."""
+        result = func(self, *args, **kwargs)
+        self.save()
+        return result
+
+    return wrapped
+
+
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
-
-    # TODO: add auto load/save
 
     def __init__(self, path):
         self.path = path
@@ -30,7 +51,7 @@ class Item(object):
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
         with open(self.path, 'rb') as infile:
-            return infile.read()
+            return infile.read().decode('UTF-8')
 
     def save(self):
         """Save the item's properties to a file."""
@@ -42,30 +63,43 @@ class Item(object):
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
         with open(self.path, 'wb') as outfile:
-            outfile.write(text)
+            outfile.write(bytes(text, 'UTF-8'))
 
     @property
+    @_auto_load
     def text(self):
         """Get the item's text."""
         return self._text
 
     @text.setter
+    @_auto_save
     def text(self, text):
         """Set the item's text."""
         self._text = text
 
     @property
+    @_auto_load
     def links(self):
         """Get the items this item links to."""
         return sorted(self._links)
 
+    @links.setter
+    @_auto_save
+    def links(self, links):
+        """Set the items this item links to."""
+        self._links = set(links)
+
+    @_auto_load
+    @_auto_save
     def add_link(self, item):
         """Add a new link to another item."""
         self._links.add(item)
 
+    @_auto_load
+    @_auto_save
     def remove_link(self, item):
         """Remove an existing link."""
         try:
             self._links.remove(item)
-        except ValueError:
+        except KeyError:
             logging.warning("link to {0} does not exist".format(item))

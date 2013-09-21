@@ -1,4 +1,2 @@
-text:
-kind: specified
-author: jacebrowning@gmail.com
-links: []
+links: [SYS001, SYS002]
+text: Hello, world!

@@ -17,11 +17,19 @@ FILES = os.path.join(os.path.dirname(__file__), 'files')
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
 
+    def _mock_read(self):
+        """Mock read function."""
+        return self._out
+
+    def _mock_write(self, out):
+        """Mock write function"""
+        self._out = out
+
     def setUp(self):
         self.item = Item('path')
-        text = "links: []\ntext: ''\n"
-        self.item._read = Mock(return_value=text)
-        self.item._write = Mock()
+        self._out = "links: []\ntext: ''\n"
+        self.item._read = Mock(side_effect=self._mock_read)
+        self.item._write = Mock(side_effect=self._mock_write)
 
     def test_load_empty(self):
         """Verify loading calls read."""
@@ -55,7 +63,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_link_remove_duplicate(self):
         """Verify removing a link twice is not an error."""
-        self.item._links = ['123', 'abc']
+        self.item.links = ['123', 'abc']
         self.item.remove_link('abc')
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
@@ -64,13 +72,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 class TestItemIntegration(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Item class."""  # pylint: disable=C0103
 
-    def test_load(self):
-        """Verify an item can be loaded from a file."""
-        pass
-
-    def test_save(self):
-        """Verify an item can be saved to a file."""
-        pass
+    def test_save_load(self):
+        """Verify an item can be saved and loaded from a file."""
+        item = Item(os.path.join(FILES, 'REQ001.yml'))
+        item.text = "Hello, world!"
+        item.links = ['SYS001', 'SYS002']
+        item2 = Item(os.path.join(FILES, 'REQ001.yml'))
+        self.assertEqual("Hello, world!", item2.text)
+        self.assertEqual(['SYS001', 'SYS002'], item2.links)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
