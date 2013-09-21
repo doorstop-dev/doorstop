@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.item module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock
 
 import os
 
@@ -15,20 +15,26 @@ FILES = os.path.join(os.path.dirname(__file__), 'files')
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the Item class."""  # pylint: disable=C0103
+    """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
         self.item = Item('path')
-        self.item._read = Mock(return_value="")
+        text = "links: []\ntext: ''\n"
+        self.item._read = Mock(return_value=text)
         self.item._write = Mock()
 
-    def test_load(self):
+    def test_load_empty(self):
+        """Verify loading calls read."""
         self.item.load()
-        self.item._read.assert_called_once()
+        self.item._read.assert_called_once_with()
+        self.assertEqual('', self.item._text)
+        self.assertEqual(set(), self.item._links)
 
-    def test_save(self):
+    def test_save_empty(self):
+        """Verify saving calls write."""
         self.item.save()
-        self.item._write.assert_called_once()
+        text = "links: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
 
     def test_text(self):
         """Verify an item's text can be set and read."""

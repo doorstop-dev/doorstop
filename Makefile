@@ -59,12 +59,15 @@ $(DEPENDS):
 # tracker: https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
 # workaround: skip pylint on windows
 .PHONY: .pylint
-ifeq ($(shell uname),Linux)
-.coverage: .env
-	$(PIP) install pylint --download-cache=$(CACHE) ;\
+ifeq ($(shell uname),Windows)
+.pylint: .env
+	@echo pylint cannot be installed on Windows
+else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
+.pylint: .env
+	@echo pylint cannot be installed on Cygwin
 else
-.coverage: .env
-	@echo pytlint cannot be installed on Windows
+.pylint: .env
+	$(PIP) install pylint --download-cache=$(CACHE)
 endif
 
 # issue: coverage results are incorrect in Linux
@@ -101,12 +104,23 @@ doc-open: doc
 pep8: depends
 	$(PEP8) $(PACKAGE) --ignore=E501 
 
+# issue: pylint is not currently installing on Windows
+# tracker: https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
+# workaround: skip pylint on windows
 .PHONY: pylint
+ifeq ($(shell uname),Windows)
+pylint: depends
+	@echo pylint cannot be run on Windows
+else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
+pylint: depends
+	@echo pylint cannot be run on Cygwin
+else
 pylint: depends
 	$(PYLINT) $(PACKAGE) --reports no \
 	                     --msg-template="{msg_id}: {msg}: {obj} line:{line}" \
 	                     --max-line-length=99 \
 	                     --disable=I0011,W0142,W0511,R0801
+endif
 
 .PHONY: check
 check: depends

@@ -22,16 +22,25 @@ class Item(object):
     def load(self):
         """Load the item's properties from a file."""
         text = self._read()
-        yaml.load(text)
+        data = yaml.load(text)
+        if data:
+            self._text = data.get('text', self._text)
+            self._links = set(data.get('links', self._links))
 
     def _read(self):  # pragma: no cover, integration test
+        """Read text from the file."""
         with open(self.path, 'rb') as infile:
             return infile.read()
 
     def save(self):
         """Save the item's properties to a file."""
+        data = {'text': self._text,
+                'links': sorted(self._links)}
+        text = yaml.dump(data)
+        self._write(text)
 
     def _write(self, text):  # pragma: no cover, integration test
+        """Write text to the file."""
         with open(self.path, 'wb') as outfile:
             outfile.write(text)
 
