@@ -10,6 +10,8 @@ from scripttest import TestFileEnvironment
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
+FILES = os.path.join(os.path.dirname(__file__), 'files')
+
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 

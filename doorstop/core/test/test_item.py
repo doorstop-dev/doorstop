@@ -11,7 +11,7 @@ import os
 
 from doorstop.core.item import Item
 
-FILES = os.path.join(os.path.dirname(__file__), 'files')
+from doorstop.core.test import ENV, REASON, FILES
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
@@ -19,11 +19,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def _mock_read(self):
         """Mock read function."""
-        return self._out
+        text = self._out
+        logging.debug("mock read: {0}".format(repr(text)))
+        return text
 
-    def _mock_write(self, out):
+    def _mock_write(self, text):
         """Mock write function"""
-        self._out = out
+        logging.debug("mock write: {0}".format(repr(text)))
+        self._out = text
 
     def setUp(self):
         self.item = Item('path')
@@ -69,6 +72,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(['123'], self.item.links)
 
 
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestItemIntegration(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Item class."""  # pylint: disable=C0103
 

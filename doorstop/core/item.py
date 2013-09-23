@@ -35,6 +35,10 @@ def _auto_save(func):
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
 
+    # TODO: add __str__ and __repr__
+    # TODO: add support for item levels
+    # TODO: only load if an attribute is blank?
+
     def __init__(self, path):
         self.path = path
         self._text = ""
