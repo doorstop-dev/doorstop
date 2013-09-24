@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import Mock
 
 import os
+import logging
 
 from doorstop.core.item import Item
 
@@ -70,20 +71,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.remove_link('abc')
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestItemIntegration(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the Item class."""  # pylint: disable=C0103
-
-    def test_save_load(self):
-        """Verify an item can be saved and loaded from a file."""
-        item = Item(os.path.join(FILES, 'REQ001.yml'))
-        item.text = "Hello, world!"
-        item.links = ['SYS001', 'SYS002']
-        item2 = Item(os.path.join(FILES, 'REQ001.yml'))
-        self.assertEqual("Hello, world!", item2.text)
-        self.assertEqual(['SYS001', 'SYS002'], item2.links)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

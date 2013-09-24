@@ -15,7 +15,7 @@ class Document(object):
 
     CONFIG = '.doorstop.yml'
     DEFAULT_PREFIX = 'REQ'
-    DEFAULT_DIGIST = 3
+    DEFAULT_DIGITS = 3
 
     def __init__(self, path, prefix=None, digits=None):
         self.path = path

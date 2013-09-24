@@ -36,19 +36,26 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self._out = text
 
     def setUp(self):
-        self._out = "settings:\n  prefix: RQ\n  digits: 3"
         with patch.object(Document, '_read', self._mock_read):
             with patch.object(Document, '_write', self._mock_write):
-                self.document = Document(FILES)
+                self.document = Document(FILES, 'RQ', 3)
 
     def test_init(self):
-        """Verify a document can be loaded from file."""
+        """Verify document attributes are created."""
         self.assertEqual('RQ', self.document.prefix)
+        self.assertEqual(3, self.document.digits)
 
+    def test_load(self):
+        """Verify the document config can be loaded from file."""
+        text = "settings:\n  prefix: SYS\n  digits: 4"
+        with patch.object(self.document, '_read', Mock(return_value=text)):
+            self.document.load()
+        self.assertEqual('SYS', self.document.prefix)
+        self.assertEqual(4, self.document.digits)
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestDocumentIntegration(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the Document class."""  # pylint: disable=C0103
+    def test_items(self):
+        """Verify the items in a document can be accessed."""
+        self.assertRaises(NotImplementedError, getattr, self.document, 'items')
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
