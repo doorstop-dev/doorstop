@@ -49,16 +49,16 @@ def main(args=None):
                         help="enable verbose logging")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
-    # Init subparser
-    sub = subs.add_parser('init', formatter_class=_HelpFormatter,
-                          help="initialize a new document")
+    # New subparser
+    sub = subs.add_parser('new', formatter_class=_HelpFormatter,
+                          help="create a new document directory")
     sub.add_argument('-r', '--root', help="root directory for document items")
     sub.add_argument('-p', '--prefix', help="prefix for item IDs")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
     sub = subs.add_parser('add', formatter_class=_HelpFormatter,
-                          help="add a new requirement or link")
+                          help="add a new item or link to a document")
     sub.add_argument('-i', '--item', action='store_true',
                      help="add a new item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
@@ -66,24 +66,24 @@ def main(args=None):
 
     # Remove subparser
     sub = subs.add_parser('remove', formatter_class=_HelpFormatter,
-                          help="remove an existing requirement or link")
-    sub.add_argument('-i', '--item', help="remove an existing requirement")
+                          help="remove an item or link from a document")
+    sub.add_argument('-i', '--item', help="remove an existing item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
-                     help="remove an existing link")
+                     help="remove an existing link between items")
 
     # Import subparser
     sub = subs.add_parser('import', formatter_class=_HelpFormatter,
-                          help="import requirements from another format")
+                          help="import document items from another format")
     sub.add_argument('input', help="file to import")
 
     # Export subparser
     sub = subs.add_parser('export', formatter_class=_HelpFormatter,
-                          help="export requirements to another format")
+                          help="export document items to another format")
     sub.add_argument('output', help="file to export")
 
     # Report subparser
     sub = subs.add_parser('report', formatter_class=_HelpFormatter,
-                          help="publish the requirements to a report")
+                          help="publish document items to a report")
     sub.add_argument('report', help="report to create")
 
     # Parse arguments
@@ -138,8 +138,8 @@ def _run(args, cwd, error):
     raise NotImplementedError((args, cwd, error))
 
 
-def _run_init(args, cwd, error):
-    """Process arguments and run the `doorstop init` subcommand.
+def _run_new(args, cwd, error):
+    """Process arguments and run the `doorstop new` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param error: function to call for CLI errors

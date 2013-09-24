@@ -32,9 +32,9 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         """Verify the main CLI help text can be requested."""
         self.assertRaises(SystemExit, main, ['--help'])
 
-    def test_main_init(self):
-        """Verify the init command can be called."""
-        self.assertRaises(NotImplementedError, main, ['init'])
+    def test_main_new(self):
+        """Verify the new command can be called."""
+        self.assertRaises(NotImplementedError, main, ['new'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -66,9 +66,9 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
         result = self.cli(expect_error=True)
         self.assertNotEqual(0, result.returncode)
 
-    def test_doorstop_init(self):
-        """Verify 'doorstop init' can be called."""
-        result = self.cli('init', expect_error=True)
+    def test_doorstop_new(self):
+        """Verify 'doorstop new' can be called."""
+        result = self.cli('new', expect_error=True)
         self.assertNotEqual(0, result.returncode)
 
     def test_doorstop_add(self):
