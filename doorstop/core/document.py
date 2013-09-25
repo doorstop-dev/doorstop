@@ -19,10 +19,10 @@ class Document(object):
 
     def __init__(self, path, prefix=None, digits=None):
         self.path = path
-        self.prefix = prefix
-        self.digits = digits
-        self.save()
         self.load()
+        self.prefix = prefix or self.prefix
+        self.digits = digits or self.digits
+        self.save()
 
     def __str__(self):
         return self.path
@@ -38,8 +38,8 @@ class Document(object):
         if data:
             settings = data.get('settings', {})
             if settings:
-                self.prefix = settings.get('prefix', Document.DEFAULT_PREFIX) or Document.DEFAULT_PREFIX
-                self.digits = settings.get('digits', Document.DEFAULT_DIGITS) or Document.DEFAULT_DIGITS
+                self.prefix = settings.get('prefix', Document.DEFAULT_PREFIX)
+                self.digits = settings.get('digits', Document.DEFAULT_DIGITS)
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""

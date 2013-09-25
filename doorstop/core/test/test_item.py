@@ -7,12 +7,9 @@ Unit tests for the doorstop.core.item module.
 import unittest
 from unittest.mock import Mock
 
-import os
 import logging
 
 from doorstop.core.item import Item
-
-from doorstop.core.test import ENV, REASON, FILES
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904

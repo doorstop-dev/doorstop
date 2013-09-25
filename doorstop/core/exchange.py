@@ -4,6 +4,9 @@
 Doorstop import/export functionality.
 """
 
+# TODO: implemented import/export functions
+# pylint: disable=W0613
+
 
 def import_csv(path, document):
     """Add items from a CSV file to an existing document."""

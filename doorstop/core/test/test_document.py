@@ -7,22 +7,24 @@ Unit tests for the doorstop.core.document module.
 import unittest
 from unittest.mock import patch, Mock
 
-import os
 import logging
 
 from doorstop.core.item import Item
 from doorstop.core.document import Document
 
-from doorstop.core.test import ENV, REASON, FILES
+from doorstop.core.test import FILES
 
 
 class MockItem(Item, Mock):
+    """Mock Item class for Document unit tests."""
     pass
 
 
-@patch('doorstop.core.item.Item', MockItem)
+@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
+
+    _out = ""
 
     def _mock_read(self):
         """Mock read function."""

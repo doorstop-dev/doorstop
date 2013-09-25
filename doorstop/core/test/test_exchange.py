@@ -6,7 +6,7 @@ Unit tests for the doorstop.core.exchange module.
 
 import unittest
 
-from doorstop.core import  exchange
+from doorstop.core import exchange
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
