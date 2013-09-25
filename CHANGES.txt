@@ -1,1 +1,5 @@
+v0.0.2 - 2013/09/25:    Changed 'doorstop init' to 'doorstop new'.
+                        Added the initial Item class.
+                        Added stubs for the Document class.
+
 v0.0.1 - 2013/09/11:    Initial release of Doorstop.
