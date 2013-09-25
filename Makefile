@@ -96,7 +96,7 @@ doc: depends
 .PHONY: doc-open
 doc-open: doc
 	$(OPEN) docs/README.html
-	$(OPEN) apidocs/doorstop/index.html
+	$(OPEN) apidocs/$(PACKAGE)/index.html
 
 # Static Analysis ############################################################
 
