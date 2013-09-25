@@ -5,6 +5,7 @@ Integration tests for the doorstop.cli package.
 """
 
 import unittest
+from unittest.mock import patch, Mock
 
 import os
 import tempfile
@@ -33,8 +34,38 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['--help'])
 
     def test_main_new(self):
-        """Verify the new command can be called."""
+        """Verify the 'new' command can be called."""
         self.assertRaises(NotImplementedError, main, ['new'])
+
+    def test_main_add(self):
+        """Verify the 'add' command can be called."""
+        self.assertRaises(NotImplementedError, main, ['add'])
+
+    def test_main_remove(self):
+        """Verify the 'remove' command can be called."""
+        self.assertRaises(NotImplementedError, main, ['remove'])
+
+    def test_main_import(self):
+        """Verify the 'import' command can be called."""
+        self.assertRaises(NotImplementedError, main, ['import', 'PATH'])
+
+    def test_main_export(self):
+        """Verify the 'export' command can be called."""
+        self.assertRaises(NotImplementedError, main, ['export', 'PATH'])
+
+    def test_main_report(self):
+        """Verify the 'report' command can be called."""
+        self.assertRaises(NotImplementedError, main, ['report', 'PATH'])
+
+    @patch('doorstop.cli.main._run', Mock(return_value=False))
+    def test_exit(self):
+        """Verify an error code is returned on errors."""
+        self.assertRaises(SystemExit, main, [])
+
+    @patch('doorstop.cli.main._run', Mock(side_effect=KeyboardInterrupt))
+    def test_interrupt(self):
+        """Verify an error code is returned on interrupts."""
+        self.assertRaises(SystemExit, main, [])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -45,7 +76,6 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
     def setUpClass(cls):
         if os.getenv(ENV):
             cls.TEMP = tempfile.mkdtemp()
-            dir_util.copy_tree(ROOT, cls.TEMP)
             cls.ENV = TestFileEnvironment(os.path.join(cls.TEMP, '.scripttest'))
             if os.name == 'nt':
                 cls.BIN = os.path.join(ROOT, 'Scripts', 'doorstop.exe')
@@ -65,28 +95,57 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' can be called."""
         result = self.cli(expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop", result.stderr)
 
     def test_doorstop_new(self):
         """Verify 'doorstop new' can be called."""
         result = self.cli('new', expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop new", result.stderr)
 
     def test_doorstop_add(self):
-        """Verify 'doorstop add' can be called."""
-        result = self.cli('add', expect_error=True)
+        """Verify 'doorstop add --item' can be called."""
+        result = self.cli('add', '--item', expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop add", result.stderr)
 
     def test_doorstop_remove(self):
-        """Verify 'doorstop remove' can be called."""
-        result = self.cli('remove', expect_error=True)
+        """Verify 'doorstop remove --item <?>' can be called."""
+        result = self.cli('remove', '--item', 'R1', expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop remove", result.stderr)
 
     def test_doorstop_import(self):
-        """Verify 'doorstop import' can be called."""
-        result = self.cli('import', expect_error=True)
+        """Verify 'doorstop import <?>' can be called."""
+        result = self.cli('import', 'PATH', expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop import", result.stderr)
 
     def test_doorstop_export(self):
-        """Verify 'doorstop export' can be called."""
-        result = self.cli('import', expect_error=True)
+        """Verify 'doorstop export <?>' can be called."""
+        result = self.cli('export', 'PATH', expect_error=True)
         self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop export", result.stderr)
+
+    def test_doorstop_report(self):
+        """Verify 'doorstop report <?>' can be called."""
+        result = self.cli('report', 'PATH', expect_error=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("doorstop report", result.stderr)
+
+
+@patch('doorstop.cli.main._run', Mock(return_value=True))
+class TestLogging(unittest.TestCase):  # pylint: disable=R0904
+    """Integration tests for the Doorstop CLI logging."""
+
+    def test_verbose_1(self):
+        """Verify verbose level 1 can be set."""
+        self.assertIs(None, main(['-v']))
+
+    def test_verbose_2(self):
+        """Verify verbose level 2 can be set."""
+        self.assertIs(None, main(['-v', '-v']))
+
+    def test_verbose_3(self):
+        """Verify verbose level 1 can be set."""
+        self.assertIs(None, main(['-v', '-v', '-v']))

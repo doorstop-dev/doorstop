@@ -67,7 +67,7 @@ def main(args=None):
     # Remove subparser
     sub = subs.add_parser('remove', formatter_class=_HelpFormatter,
                           help="remove an item or link from a document")
-    sub.add_argument('-i', '--item', help="remove an existing item")
+    sub.add_argument('-i', '--item', metavar='ID', help="remove an existing item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
                      help="remove an existing link between items")
 
@@ -99,7 +99,7 @@ def main(args=None):
         function = _run
     try:
         success = function(args, os.getcwd(), parser.error)
-    except KeyboardInterrupt:  # pragma: no cover, manual test
+    except KeyboardInterrupt:
         logging.debug("cancelled manually")
         success = False
     if not success:
@@ -135,7 +135,8 @@ def _run(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop' not implemented")
 
 
 def _run_new(args, cwd, error):
@@ -144,7 +145,8 @@ def _run_new(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop new' not implemented")
 
 
 def _run_add(args, cwd, error):
@@ -153,7 +155,8 @@ def _run_add(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop add' not implemented")
 
 
 def _run_remove(args, cwd, error):
@@ -162,7 +165,8 @@ def _run_remove(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop remove' not implemented")
 
 
 def _run_import(args, cwd, error):
@@ -171,7 +175,8 @@ def _run_import(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop import' not implemented")
 
 
 def _run_export(args, cwd, error):
@@ -180,7 +185,8 @@ def _run_export(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop export' not implemented")
 
 
 def _run_report(args, cwd, error):
@@ -189,7 +195,8 @@ def _run_report(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    raise NotImplementedError((args, cwd, error))
+    logging.warning((args, cwd, error))
+    raise NotImplementedError("'doorstop report' not implemented")
 
 
 if __name__ == '__main__':  # pragma: no cover, manual test
