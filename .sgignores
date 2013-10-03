@@ -3,18 +3,7 @@
 __pycache__
 
 @/.cache
-@/.depends
-
-@/.Python
-@/bin
-@/include
-@/lib
-@/man
-@/share
-
-@/Include
-@/Lib
-@/Scripts
+@/env
 
 @/apidocs
 @/docs/README.html
@@ -23,5 +12,3 @@ __pycache__
 
 @/build
 @/dist
-
-*.gdoc

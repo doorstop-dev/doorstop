@@ -2,22 +2,19 @@ PROJECT := Doorstop
 PACKAGE := doorstop
 SOURCES := Makefile setup.py
 
-EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 CACHE := .cache
-DEPENDS := .depends
+VIRTUALENV := env
+DEPENDS := $(VIRTUALENV)/.depends
+EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
 ifeq ($(OS),Windows_NT)
 VERSION := C:\\Python33\\python.exe
-BIN := Scripts
-INCLUDE := Include
-LIB := Lib
+BIN := $(VIRTUALENV)/Scripts
 EXE := .exe
 OPEN := cmd /c start
 else
 VERSION := python3.3
-BIN := bin
-INCLUDE := include
-LIB := lib
+BIN := $(VIRTUALENV)/bin
 OPEN := open
 endif
 MAN := man
@@ -40,12 +37,12 @@ all: develop
 develop: .env $(EGG_INFO)
 $(EGG_INFO): $(SOURCES)
 	$(PYTHON) setup.py develop
-	touch $(EGG_INFO)
+	touch $(EGG_INFO)  # flag to indicate package is installed
 
 .PHONY: .env
 .env: $(PYTHON)
 $(PYTHON):
-	virtualenv --python $(VERSION) .
+	virtualenv --python $(VERSION) $(VIRTUALENV)
 
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
@@ -142,7 +139,7 @@ tests: develop depends
 
 .PHONY: .clean-env
 .clean-env:
-	rm -rf .Python $(BIN) $(INCLUDE) $(LIB) $(MAN) $(SHARE) $(DEPENDS)
+	rm -rf $(VIRTUALENV)
 
 .PHONY: .clean-dist
 .clean-dist:

@@ -78,9 +78,9 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
             cls.TEMP = tempfile.mkdtemp()
             cls.ENV = TestFileEnvironment(os.path.join(cls.TEMP, '.scripttest'))
             if os.name == 'nt':
-                cls.BIN = os.path.join(ROOT, 'Scripts', 'doorstop.exe')
+                cls.BIN = os.path.join(ROOT, 'env', 'Scripts', 'doorstop.exe')
             else:
-                cls.BIN = os.path.join(ROOT, 'bin', 'doorstop')
+                cls.BIN = os.path.join(ROOT, 'env', 'bin', 'doorstop')
 
     @classmethod
     def tearDownClass(cls):
