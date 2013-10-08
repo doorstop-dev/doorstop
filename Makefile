@@ -47,9 +47,8 @@ $(PYTHON):
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
-	$(PIP) install docutils pdoc Pygments nose pep8 --download-cache=$(CACHE)
+	$(PIP) install docutils pdoc pep8 nose coverage --download-cache=$(CACHE)
 	$(MAKE) .pylint
-	$(MAKE) .coverage
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
 # issue: pylint is not currently installing on Windows
@@ -65,23 +64,6 @@ else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
 else
 .pylint: .env
 	$(PIP) install pylint --download-cache=$(CACHE)
-endif
-
-# issue: coverage results are incorrect in Linux
-# tracker: https://bitbucket.org/ned/coveragepy/issue/164
-# workaround: install the latest code from bitbucket.org until "coverage>3.6"
-.PHONY: .coverage
-ifeq ($(shell uname),Linux)
-.coverage: .env $(CACHE)/coveragepy
-	cd $(CACHE)/coveragepy ;\
-	$(PIP) install --requirement requirements.txt --download-cache=$(CACHE) ;\
-	$(PYTHON) setup.py install
-$(CACHE)/coveragepy:
-	cd $(CACHE) ;\
-	hg clone https://bitbucket.org/ned/coveragepy
-else
-.coverage: .env
-	$(PIP) install coverage --download-cache=$(CACHE)
 endif
 
 # Documentation ##############################################################
