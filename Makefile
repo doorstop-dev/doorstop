@@ -68,6 +68,7 @@ endif
 
 # Documentation ##############################################################
 
+.PHONY: doc
 doc: depends
 	$(PYTHON) $(RST2HTML) README.rst docs/README.html
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
