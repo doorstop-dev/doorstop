@@ -27,7 +27,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self._out = text
 
     def setUp(self):
-        self.item = Item('path')
+        self.item = Item('path/to/RQ001.yml')
         self._out = "links: []\ntext: ''\n"
         self.item._read = Mock(side_effect=self._mock_read)
         self.item._write = Mock(side_effect=self._mock_write)
@@ -44,6 +44,33 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.save()
         text = "links: []\ntext: ''\n"
         self.item._write.assert_called_once_with(text)
+
+    def test_repr(self):
+        """Verify an item can be represented."""
+        self.assertEqual(self.item, eval(repr(self.item)))
+
+    def test_str(self):
+        """Verify an item can be printed."""
+        self.assertEqual('RQ001', str(self.item))
+
+    def test_ne(self):
+        """Verify item non-equality is correct."""
+        self.assertNotEqual(self.item, None)
+
+    def test_id(self):
+        """Verify an item's ID can be read but not set."""
+        self.assertEqual('RQ001', self.item.id)
+        self.assertRaises(AttributeError, setattr, self.item, 'id', 'RQ002')
+
+    def test_prefix(self):
+        """Verify an item's prefix can be read but not set."""
+        self.assertEqual('RQ', self.item.prefix)
+        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
+
+    def test_number(self):
+        """Verify an item's number can be read but not set."""
+        self.assertEqual(1, self.item.number)
+        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
 
     def test_text(self):
         """Verify an item's text can be set and read."""

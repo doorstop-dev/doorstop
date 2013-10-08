@@ -4,6 +4,8 @@
 Representation of items in a Doorstop document.
 """
 
+import os
+import re
 import functools
 import logging
 
@@ -35,7 +37,6 @@ def _auto_save(func):
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
 
-    # TODO: add __str__ and __repr__
     # TODO: add support for item levels
     # TODO: only load if an attribute is blank?
 
@@ -43,6 +44,18 @@ class Item(object):
         self.path = path
         self._text = ""
         self._links = set()
+
+    def __repr__(self):
+        return "Item({})".format(repr(self.path))
+
+    def __str__(self):
+        return self.id
+
+    def __eq__(self, other):
+        return isinstance(other, Item) and self.path == other.path
+
+    def __ne__(self, other):
+        return not (self == other)
 
     def load(self):
         """Load the item's properties from a file."""
@@ -68,6 +81,25 @@ class Item(object):
         """Write text to the file."""
         with open(self.path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
+
+    @property
+    def id(self):
+        """Get the item's ID."""
+        return os.path.splitext(os.path.basename(self.path))[0]
+
+    @property
+    def _split_id(self):
+        """Split an item's ID into prefix and number."""
+        match = re.match("(\w*[^\d])(\d+)", self.id)
+        return match.group(1), int(match.group(2))
+
+    @property
+    def prefix(self):
+        return self._split_id[0]
+
+    @property
+    def number(self):
+        return self._split_id[1]
 
     @property
     @_auto_load
