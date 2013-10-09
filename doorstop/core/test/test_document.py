@@ -20,27 +20,33 @@ class MockItem(Item, Mock):
     pass
 
 
-@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
+class MockDocument(Document):
+    """Document class with mock read/write methods."""
 
-    _out = ""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._file = ""  # file system mock
+        self._read = Mock(side_effect=self._mock_read)
+        self._write = Mock(side_effect=self._mock_write)
 
     def _mock_read(self):
         """Mock read function."""
-        text = self._out
+        text = self._file
         logging.debug("mock read: {0}".format(repr(text)))
         return text
 
     def _mock_write(self, text):
         """Mock write function"""
         logging.debug("mock write: {0}".format(repr(text)))
-        self._out = text
+        self._file = text
+
+
+@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
+class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+    """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
-        with patch.object(Document, '_read', self._mock_read):
-            with patch.object(Document, '_write', self._mock_write):
-                self.document = Document(FILES, 'RQ', 3)
+        self.document = MockDocument(FILES, 'RQ', 3)
 
     def test_init(self):
         """Verify document attributes are created."""
@@ -49,9 +55,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_load(self):
         """Verify the document config can be loaded from file."""
-        text = "settings:\n  prefix: SYS\n  digits: 4"
-        with patch.object(self.document, '_read', Mock(return_value=text)):
-            self.document.load()
+        self.document._file = "settings:\n  prefix: SYS\n  digits: 4"
+        self.document.load()
         self.assertEqual('SYS', self.document.prefix)
         self.assertEqual(4, self.document.digits)
 

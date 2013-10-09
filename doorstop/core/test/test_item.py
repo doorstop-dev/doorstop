@@ -13,23 +13,24 @@ from doorstop.core.item import Item
 
 
 class MockItem(Item):
+    """Item class with mock read/write methods."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._out = ""  # file system mock
+        self._file = ""  # file system mock
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
     def _mock_read(self):
         """Mock read method."""
-        text = self._out
+        text = self._file
         logging.debug("mock read: {0}".format(repr(text)))
         return text
 
     def _mock_write(self, text):
         """Mock write method"""
         logging.debug("mock write: {0}".format(repr(text)))
-        self._out = text
+        self._file = text
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
@@ -37,7 +38,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.item = MockItem('path/to/RQ001.yml')
-        self.item._out = "links: []\ntext: ''\nlevel: 1.1.1"
+        self.item._file = "links: []\ntext: ''\nlevel: 1.1.1"
 
     def test_load_empty(self):
         """Verify loading calls read."""
