@@ -1,0 +1,1 @@
+This file should not be considered a requirement because it is not *.yml.

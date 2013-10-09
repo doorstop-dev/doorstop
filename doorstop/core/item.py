@@ -39,7 +39,20 @@ class Item(object):
 
     # TODO: only load if an attribute is blank?
 
+    EXTENSIONS = '.yml', '.yaml'
+
     def __init__(self, path, level=None, text=None, links=None):
+        filename = os.path.basename(path)
+        name, ext = os.path.splitext(filename)
+        # Check file name
+        try:
+            self._split_id(name)
+        except ValueError:
+            raise
+        # Check file extension
+        if ext.lower() not in self.EXTENSIONS:
+            msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
+            raise ValueError(msg)
         self.path = path
         self._level = level or (1,)
         self._text = text or ""
@@ -76,9 +89,16 @@ class Item(object):
 
     def save(self):
         """Save the item's properties to a file."""
-        data = {'level': '.'.join(str(n) for n in self._level),
-                'text': self._text,
-                'links': sorted(self._links)}
+        level = '.'.join(str(n) for n in self._level)
+        if len(self._level) == 2:
+            level = float(level)
+        elif len(self._level) == 1:
+            level = int(level)
+        text = self._text
+        links = sorted(self._links)
+        data = {'level': level,
+                'text': text,
+                'links': links}
         text = yaml.dump(data)
         self._write(text)
 
@@ -100,7 +120,9 @@ class Item(object):
         ('ABC', 123)
 
         """
-        match = re.match("(\w*[^\d])(\d+)", text)
+        match = re.match("([a-zA-Z]+)(\d+)", text)
+        if not match:
+            raise ValueError("invalid ID: {}".format(text))
         return match.group(1), int(match.group(2))
 
     @property
@@ -135,7 +157,14 @@ class Item(object):
         >>> Item._convert_level(['4', '5'])
         (4, 5)
 
+        >>> Item._convert_level(4.2)
+        (4, 2)
+
         """
+        # Correct for integers (42) and floats (4.2) in YAML
+        if isinstance(text, int) or isinstance(text, float):
+            text = str(text)
+        # Split strings by periods
         if isinstance(text, str):
             nums = text.split('.')
         else:

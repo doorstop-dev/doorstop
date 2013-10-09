@@ -9,6 +9,8 @@ import logging
 
 import yaml
 
+from doorstop.core import Item
+
 
 class Document(object):
     """Represents a document containing an outline of items."""
@@ -28,7 +30,12 @@ class Document(object):
         return self.path
 
     def __iter__(self):
-        raise NotImplementedError()
+        for filename in os.listdir(self.path):
+            path = os.path.join(self.path, filename)
+            try:
+                yield Item(path)
+            except ValueError as error:
+                logging.debug(error)
 
     def load(self):
         """Load the document's properties from a file."""
@@ -63,5 +70,5 @@ class Document(object):
 
     @property
     def items(self):
-        """Get a list of items in the document."""
-        return [item for item in self]
+        """Get an ordered list of items in the document."""
+        return sorted(item for item in self)

@@ -19,3 +19,9 @@ except DistributionNotFound:  # pragma: no cover, manual test
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
+
+
+try:
+    from doorstop.core import Item, Document
+except ImportError:
+    pass

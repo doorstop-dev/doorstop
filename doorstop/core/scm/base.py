@@ -3,5 +3,3 @@
 """
 Abstract interface to SCM systems.
 """
-
-# TODO: import abs

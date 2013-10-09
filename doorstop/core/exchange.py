@@ -4,7 +4,7 @@
 Doorstop import/export functionality.
 """
 
-# TODO: implemented import/export functions
+# TODO: implement import/export functions
 # pylint: disable=W0613
 
 

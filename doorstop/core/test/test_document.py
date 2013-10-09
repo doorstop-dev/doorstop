@@ -62,7 +62,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_items(self):
         """Verify the items in a document can be accessed."""
-        self.assertRaises(NotImplementedError, getattr, self.document, 'items')
+        items = self.document.items
+        logging.debug("items: {}".format(items))
+        self.assertEqual(3, len(items))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

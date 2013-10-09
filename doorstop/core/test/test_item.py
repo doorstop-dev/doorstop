@@ -51,7 +51,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = "level: '1'\nlinks: []\ntext: ''\n"
+        text = "level: 1\nlinks: []\ntext: ''\n"
         self.item._write.assert_called_once_with(text)
 
     def test_repr(self):
@@ -94,11 +94,29 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
         self.assertEqual((1, 2, 3), self.item.level)
+        text = "level: 1.2.3\nlinks: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
 
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2"
         self.assertEqual((4, 2), self.item.level)
+        text = "level: 4.2\nlinks: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
+
+    def test_level_from_float(self):
+        """Verify an item's level can be set from a float and read."""
+        self.item.level = 4.2
+        self.assertEqual((4, 2), self.item.level)
+        text = "level: 4.2\nlinks: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
+
+    def test_level_from_int(self):
+        """Verify an item's level can be set from a int and read."""
+        self.item.level = 42
+        self.assertEqual((42,), self.item.level)
+        text = "level: 42\nlinks: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
 
     def test_text(self):
         """Verify an item's text can be set and read."""
@@ -123,6 +141,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.remove_link('abc')
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
+
+    def test_invalid_file_name(self):
+        """Verify an invalid file name cannot be a requirement."""
+        self.assertRaises(ValueError, MockItem, "path/to/REQ.yaml")
+        self.assertRaises(ValueError, MockItem, "path/to/001.yaml")
+
+    def test_invalid_file_ext(self):
+        """Verify an invalid file extension cannot be a requirement."""
+        self.assertRaises(ValueError, MockItem, "path/to/REQ001")
+        self.assertRaises(ValueError, MockItem, "path/to/REQ001.txt")
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
