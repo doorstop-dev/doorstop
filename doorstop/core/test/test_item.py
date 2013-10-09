@@ -12,25 +12,32 @@ import logging
 from doorstop.core.item import Item
 
 
-class TestItem(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
+class MockItem(Item):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._out = ""  # file system mock
+        self._read = Mock(side_effect=self._mock_read)
+        self._write = Mock(side_effect=self._mock_write)
 
     def _mock_read(self):
-        """Mock read function."""
+        """Mock read method."""
         text = self._out
         logging.debug("mock read: {0}".format(repr(text)))
         return text
 
     def _mock_write(self, text):
-        """Mock write function"""
+        """Mock write method"""
         logging.debug("mock write: {0}".format(repr(text)))
         self._out = text
 
+
+class TestItem(unittest.TestCase):  # pylint: disable=R0904
+    """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
+
     def setUp(self):
-        self.item = Item('path/to/RQ001.yml')
-        self._out = "links: []\ntext: ''\nlevel: 1.1.1"
-        self.item._read = Mock(side_effect=self._mock_read)
-        self.item._write = Mock(side_effect=self._mock_write)
+        self.item = MockItem('path/to/RQ001.yml')
+        self.item._out = "links: []\ntext: ''\nlevel: 1.1.1"
 
     def test_load_empty(self):
         """Verify loading calls read."""
@@ -57,6 +64,15 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_ne(self):
         """Verify item non-equality is correct."""
         self.assertNotEqual(self.item, None)
+
+    def test_lt(self):
+        """Verify items can be compared."""
+        item0 = MockItem('path/to/RQ002.yml', level=(1, 1))
+        item1 = self.item
+        item2 = MockItem('path/to/RQ003.yml', level=(1, 1, 2))
+        self.assertLess(item0, item1)
+        self.assertLess(item1, item2)
+        self.assertGreater(item2, item0)
 
     def test_id(self):
         """Verify an item's ID can be read but not set."""

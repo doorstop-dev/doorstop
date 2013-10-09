@@ -39,11 +39,11 @@ class Item(object):
 
     # TODO: only load if an attribute is blank?
 
-    def __init__(self, path):
+    def __init__(self, path, level=None, text=None, links=None):
         self.path = path
-        self._level = 1,
-        self._text = ""
-        self._links = set()
+        self._level = level or (1,)
+        self._text = text or ""
+        self._links = links or set()
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))
@@ -56,6 +56,9 @@ class Item(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+    def __lt__(self, other):
+        return self.level < other.level
 
     def load(self):
         """Load the item's properties from a file."""
