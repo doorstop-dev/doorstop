@@ -28,7 +28,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.item = Item('path/to/RQ001.yml')
-        self._out = "links: []\ntext: ''\n"
+        self._out = "links: []\ntext: ''\nlevel: 1.1.1"
         self.item._read = Mock(side_effect=self._mock_read)
         self.item._write = Mock(side_effect=self._mock_write)
 
@@ -38,11 +38,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item._read.assert_called_once_with()
         self.assertEqual('', self.item._text)
         self.assertEqual(set(), self.item._links)
+        self.assertEqual((1, 1, 1), self.item._level)
 
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = "links: []\ntext: ''\n"
+        text = "level: '1'\nlinks: []\ntext: ''\n"
         self.item._write.assert_called_once_with(text)
 
     def test_repr(self):
@@ -71,6 +72,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's number can be read but not set."""
         self.assertEqual(1, self.item.number)
         self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
+
+    def test_level(self):
+        """Verify an item's level can be set and read."""
+        self.item.level = (1, 2, 3)
+        self.assertEqual((1, 2, 3), self.item.level)
+
+    def test_level_from_text(self):
+        """Verify an item's level can be set from text and read."""
+        self.item.level = "4.2"
+        self.assertEqual((4, 2), self.item.level)
 
     def test_text(self):
         """Verify an item's text can be set and read."""

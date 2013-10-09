@@ -26,9 +26,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_load(self):
         """Verify an item can be saved and loaded from a file."""
         item = Item(os.path.join(FILES, 'REQ001.yml'))
+        item.level = '1.2.3'
         item.text = "Hello, world!"
         item.links = ['SYS001', 'SYS002']
         item2 = Item(os.path.join(FILES, 'REQ001.yml'))
+        self.assertEqual((1, 2, 3), item2.level)
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
 

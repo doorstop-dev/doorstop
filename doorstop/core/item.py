@@ -37,11 +37,11 @@ def _auto_save(func):
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
 
-    # TODO: add support for item levels
     # TODO: only load if an attribute is blank?
 
     def __init__(self, path):
         self.path = path
+        self._level = 1,
         self._text = ""
         self._links = set()
 
@@ -62,6 +62,7 @@ class Item(object):
         text = self._read()
         data = yaml.load(text)
         if data:
+            self._level = self._convert_level(data.get('level', self._level))
             self._text = data.get('text', self._text)
             self._links = set(data.get('links', self._links))
 
@@ -72,7 +73,8 @@ class Item(object):
 
     def save(self):
         """Save the item's properties to a file."""
-        data = {'text': self._text,
+        data = {'level': '.'.join(str(n) for n in self._level),
+                'text': self._text,
                 'links': sorted(self._links)}
         text = yaml.dump(data)
         self._write(text)
@@ -87,19 +89,55 @@ class Item(object):
         """Get the item's ID."""
         return os.path.splitext(os.path.basename(self.path))[0]
 
-    @property
-    def _split_id(self):
-        """Split an item's ID into prefix and number."""
-        match = re.match("(\w*[^\d])(\d+)", self.id)
+    @staticmethod
+    def _split_id(text):
+        """Split an item's ID into prefix and number.
+
+        >>> Item._split_id("ABC00123")
+        ('ABC', 123)
+
+        """
+        match = re.match("(\w*[^\d])(\d+)", text)
         return match.group(1), int(match.group(2))
 
     @property
     def prefix(self):
-        return self._split_id[0]
+        """Get the item ID's prefix."""
+        return self._split_id(self.id)[0]
 
     @property
     def number(self):
-        return self._split_id[1]
+        """Get the item ID's number."""
+        return self._split_id(self.id)[1]
+
+    @property
+    @_auto_load
+    def level(self):
+        """Get the item level."""
+        return self._level
+
+    @level.setter
+    @_auto_save
+    def level(self, level):
+        """Set the item's level."""
+        self._level = self._convert_level(level)
+
+    @staticmethod
+    def _convert_level(text):
+        """Convert a level string to a tuple.
+
+        >>> Item._convert_level("1.2.3")
+        (1, 2, 3)
+
+        >>> Item._convert_level(['4', '5'])
+        (4, 5)
+
+        """
+        if isinstance(text, str):
+            nums = text.split('.')
+        else:
+            nums = text
+        return tuple(int(n) for n in nums)
 
     @property
     @_auto_load
