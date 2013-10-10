@@ -41,6 +41,10 @@ class Item(object):
 
     EXTENSIONS = '.yml', '.yaml'
 
+    DEFAULT_LEVEL = (1,)
+    DEFAULT_TEXT = ""
+    DEFAULT_LINKS = set()
+
     def __init__(self, path, level=None, text=None, links=None):
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
@@ -54,9 +58,9 @@ class Item(object):
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
             raise ValueError(msg)
         self.path = path
-        self._level = level or (1,)
-        self._text = text or ""
-        self._links = links or set()
+        self._level = level or Item.DEFAULT_LEVEL
+        self._text = text or Item.DEFAULT_TEXT
+        self._links = links or Item.DEFAULT_LINKS
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))

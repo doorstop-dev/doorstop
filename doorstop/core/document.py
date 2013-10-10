@@ -22,8 +22,8 @@ class Document(object):
     def __init__(self, path, prefix=None, digits=None):
         self.path = path
         self.load()
-        self.prefix = prefix or self.prefix
-        self.digits = digits or self.digits
+        self.prefix = prefix or Document.DEFAULT_PREFIX
+        self.digits = digits or Document.DEFAULT_DIGITS
         self.save()
 
     def __str__(self):
@@ -51,15 +51,18 @@ class Document(object):
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
         path = os.path.join(self.path, Document.CONFIG)
+        if not os.path.exists(path):
+            logging.debug("document does not exist yet: {}".format(path))
+            return ""
         with open(path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 
     def save(self):
         """Save the document's properties to a file."""
         logging.debug("saving document '{0}'...".format(self))
-        data = {'prefix': self.prefix,
-                'digits': self.digits}
-        text = yaml.dump(data)
+        data = {'settings': {'prefix': self.prefix,
+                             'digits': self.digits}}
+        text = yaml.dump(data, default_flow_style=False)
         self._write(text)
 
     def _write(self, text):  # pragma: no cover, integration test

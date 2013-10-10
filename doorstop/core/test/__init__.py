@@ -39,6 +39,28 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Document class."""  # pylint: disable=C0103
 
+    EMPTY = os.path.join(FILES, 'empty')
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        for filename in os.listdir(TestDocument.EMPTY):
+            path = os.path.join(TestDocument.EMPTY, filename)
+            os.remove(path)
+
+    def test_load(self):
+        """Verify a document can be loaded from a directory."""
+        doc = Document(FILES)
+        self.assertEqual('REQ', doc.prefix)
+        self.assertEqual(3, doc.digits)
+        self.assertEqual(3, len(doc.items))
+
+    def test_new(self):
+        """Verify a new document can be created."""
+        doc = Document(TestDocument.EMPTY, prefix='SYS', digits=4)
+        self.assertEqual('SYS', doc.prefix)
+        self.assertEqual(4, doc.digits)
+        self.assertEqual(0, len(doc.items))
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAPI(unittest.TestCase):  # pylint: disable=R0904

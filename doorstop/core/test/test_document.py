@@ -46,12 +46,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
-        self.document = MockDocument(FILES, 'RQ', 3)
-
-    def test_init(self):
-        """Verify document attributes are created."""
-        self.assertEqual('RQ', self.document.prefix)
-        self.assertEqual(3, self.document.digits)
+        self.document = MockDocument(FILES)
 
     def test_load(self):
         """Verify the document config can be loaded from file."""
@@ -60,11 +55,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('SYS', self.document.prefix)
         self.assertEqual(4, self.document.digits)
 
+    def test_save(self):
+        """Verify the document config can be saved."""
+        self.document.prefix = 'SRD'
+        self.document.digits = 5
+        self.document.save()
+        text = "settings:\n  digits: 5\n  prefix: SRD\n"
+        self.assertEqual(text, self.document._file)
+
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
         logging.debug("items: {}".format(items))
         self.assertEqual(3, len(items))
+
+    def test_init(self):
+        """Verify a new document can be created with defaults."""
+        doc = MockDocument(FILES, prefix='RQ', digits=2)
+        self.assertEqual('RQ', doc.prefix)
+        self.assertEqual(2, doc.digits)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
