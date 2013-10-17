@@ -34,6 +34,13 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
 
+    def test_find_ref(self):
+        """Verify an item's external reference can be found."""
+        item = Item(os.path.join(FILES, 'REQ003.yml'))
+        path, line = item.find_ref()
+        self.assertEqual(os.path.join(FILES, 'external', 'text.txt'), path)
+        self.assertEqual(3, line)
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904

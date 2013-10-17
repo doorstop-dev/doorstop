@@ -43,9 +43,10 @@ class Item(object):
 
     DEFAULT_LEVEL = (1,)
     DEFAULT_TEXT = ""
+    DEFAULT_REF = None
     DEFAULT_LINKS = set()
 
-    def __init__(self, path, level=None, text=None, links=None):
+    def __init__(self, path, level=None, text=None, ref=None, links=None):
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         # Check file name
@@ -60,6 +61,7 @@ class Item(object):
         self.path = path
         self._level = level or Item.DEFAULT_LEVEL
         self._text = text or Item.DEFAULT_TEXT
+        self._ref = ref or Item.DEFAULT_REF
         self._links = links or Item.DEFAULT_LINKS
 
     def __repr__(self):
@@ -84,6 +86,7 @@ class Item(object):
         if data:
             self._level = self._convert_level(data.get('level', self._level))
             self._text = data.get('text', self._text)
+            self._ref = data.get('ref', self._ref)
             self._links = set(data.get('links', self._links))
 
     def _read(self):  # pragma: no cover, integration test
@@ -99,10 +102,13 @@ class Item(object):
         elif len(self._level) == 1:
             level = int(level)
         text = self._text
+        ref = self._ref
         links = sorted(self._links)
         data = {'level': level,
                 'text': text,
                 'links': links}
+        if ref:
+            data['ref'] = ref
         text = yaml.dump(data)
         self._write(text)
 
@@ -124,7 +130,7 @@ class Item(object):
         ('ABC', 123)
 
         """
-        match = re.match("([a-zA-Z]+)(\d+)", text)
+        match = re.match(r"([a-zA-Z]+)(\d+)", text)
         if not match:
             raise ValueError("invalid ID: {}".format(text))
         return match.group(1), int(match.group(2))
@@ -186,6 +192,36 @@ class Item(object):
     def text(self, text):
         """Set the item's text."""
         self._text = text
+
+    @property
+    @_auto_load
+    def ref(self):
+        """Get the item's external file reference."""
+        return self._ref
+
+    @ref.setter
+    @_auto_save
+    def ref(self, ref):
+        """Set the item's external file reference."""
+        self._ref = ref
+
+    @_auto_load
+    def find_ref(self):
+        """Find the external file reference and line number."""
+        if not self.ref:
+            logging.debug("no external reference to search for")
+            return None, None
+        regex = re.compile(r"\b{}\b".format(self.ref))
+        for root, _, filenames in os.walk(os.path.dirname(self.path)):
+            for filename in filenames:  # pragma: no cover, integration test
+                path = os.path.join(root, filename)
+                if path == self.path:
+                    continue
+                with open(path) as external:
+                    for index, line in enumerate(external):
+                        if regex.search(line):
+                            return path, index + 1
+        raise ValueError("external reference not found: {}".format(self.ref))
 
     @property
     @_auto_load

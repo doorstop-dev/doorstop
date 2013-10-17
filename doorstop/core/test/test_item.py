@@ -123,6 +123,29 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.text = "test text"
         self.assertEqual("test text", self.item.text)
 
+    def test_ref(self):
+        """Verify an item's reference can be set and read."""
+        self.item.ref = "abc123"
+        self.assertEqual("abc123", self.item.ref)
+        text = "level: 1\nlinks: []\nref: abc123\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
+
+    def test_ref_none(self):
+        """Verify item refs are only saved if they exist."""
+        self.item.ref = None
+        self.assertEqual(None, self.item.ref)
+        text = "level: 1\nlinks: []\ntext: ''\n"
+        self.item._write.assert_called_once_with(text)
+
+    def test_find_ref_error(self):
+        """Verify an error is raised when no external reference is found."""
+        self.item.ref = "notfound"
+        self.assertRaises(ValueError, self.item.find_ref)
+
+    def test_find_ref_none(self):
+        """Verify nothing returned when no external reference is specified."""
+        self.assertEqual((None, None), self.item.find_ref())
+
     def test_link_add(self):
         """Verify links can be added to an item."""
         self.item.add_link('abc')
