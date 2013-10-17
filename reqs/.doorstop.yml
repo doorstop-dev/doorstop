@@ -3,3 +3,6 @@ settings:
   digits: 3
 enumerations:
   kind: Specified, Derived, N/A
+macros:
+  project: Doorstop
+  package: doorstop
