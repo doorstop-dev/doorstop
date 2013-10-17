@@ -1,0 +1,23 @@
+markdown: | **Creating a new document and adding an item.**
+
+  Create a new document:
+
+      mkdir /tmp/doorstop
+      cd /tmp/doorstop
+      
+      doorstop new --root . --prefix REQ --digits 3
+
+  Add an item:
+
+      doorstop add --item  # displays the new item's ID
+
+  Edit the new item in the default text editor:
+
+      doorstop edit REQ999
+
+  Commit all changes to version control:
+
+      doorstop save
+
+author: jacebrowning@gmail.com
+level:  '1.1'

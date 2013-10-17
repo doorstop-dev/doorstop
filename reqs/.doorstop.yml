@@ -1,5 +1,5 @@
 settings:
-  prefix: RQ
+  prefix: REQ
   digits: 3
 enumerations:
   kind: Specified, Derived, N/A

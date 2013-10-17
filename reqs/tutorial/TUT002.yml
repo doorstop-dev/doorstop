@@ -1,0 +1,26 @@
+markdown: | **Creating a document with links to another document.**
+
+  Create a new document:
+
+      cd /tmp/doorstop
+      
+      doorstop new --root test --prefix TST
+
+  Add an item:
+
+      doorstop add --item  # displays the new item's ID
+
+  Edit the new item in the default text editor:
+
+      doorstop edit TST999
+
+  Add a link to another item:
+
+      doorstop add --link TST999 REQ999
+
+  Commit all changes to version control:
+
+      doorstop save
+
+author: jacebrowning@gmail.com
+level:  '1.2'
