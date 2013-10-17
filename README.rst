@@ -6,6 +6,9 @@ source code in version control. It takes care checking document items and
 links for consistency and compleness. Doorstop supports multiple
 import/export and reporting formats.
 
+.. NOTE::
+   0.0.x releases are experimental and non-functional.
+
 
 
 Getting Started
