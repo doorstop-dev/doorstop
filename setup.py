@@ -8,26 +8,9 @@ import setuptools
 
 from doorstop import __project__, CLI, GUI
 
-
-class TestCommand(setuptools.Command):  # pylint: disable=R0904
-    """Runs the unit and integration tests."""
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import sys
-        import subprocess
-        raise SystemExit(subprocess.call([sys.executable, '-m',
-                                          'unittest', 'discover']))
-
 setuptools.setup(
     name=__project__,
-    version='0.0.2',
+    version='0.0.3-rc.1',
 
     description="Manage your requirements as text using version control.",
     url='http://pypi.python.org/pypi/Doorstop',
@@ -39,9 +22,8 @@ setuptools.setup(
     entry_points={'console_scripts': [CLI + ' = doorstop.cli:main',
                                       GUI + ' = doorstop.gui:main']},
 
-    cmdclass={'test': TestCommand},
     long_description=open('README.rst').read(),
-    license='LICENSE.txt',
+    license='LGPL',
 
     install_requires=["PyYAML >= 3.10", "scripttest >= 1.2"],
 )

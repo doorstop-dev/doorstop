@@ -1,3 +1,7 @@
+v0.0.3 - 2013/10/17:    Added the initial Document class.
+                        Items can now be ordered by 'level' in a Document.
+                        Initial tutorial created.
+
 v0.0.2 - 2013/09/25:    Changed 'doorstop init' to 'doorstop new'.
                         Added the initial Item class.
                         Added stubs for the Document class.
