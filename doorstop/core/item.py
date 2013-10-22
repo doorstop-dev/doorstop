@@ -81,6 +81,7 @@ class Item(object):
 
     def load(self):
         """Load the item's properties from a file."""
+        logging.debug("loading item '{}'...".format(self))
         text = self._read()
         data = yaml.load(text)
         if data:
@@ -96,6 +97,7 @@ class Item(object):
 
     def save(self):
         """Save the item's properties to a file."""
+        logging.debug("saving item '{}'...".format(self))
         level = '.'.join(str(n) for n in self._level)
         if len(self._level) == 2:
             level = float(level)

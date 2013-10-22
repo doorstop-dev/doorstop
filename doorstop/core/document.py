@@ -17,12 +17,14 @@ class Document(object):
 
     CONFIG = '.doorstop.yml'
     DEFAULT_PREFIX = 'REQ'
+    DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, prefix=None, digits=None):
+    def __init__(self, path, prefix=None, parent=None, digits=None):
         self.path = path
         self.load()
         self.prefix = prefix or Document.DEFAULT_PREFIX
+        self.parent = parent or Document.DEFAULT_PARENT
         self.digits = digits or Document.DEFAULT_DIGITS
         self.save()
 
@@ -39,13 +41,14 @@ class Document(object):
 
     def load(self):
         """Load the document's properties from a file."""
-        logging.debug("loading document '{0}'...".format(self))
+        logging.debug("loading document '{}'...".format(self))
         text = self._read()
         data = yaml.load(text)
         if data:
             settings = data.get('settings', {})
             if settings:
                 self.prefix = settings.get('prefix', Document.DEFAULT_PREFIX)
+                self.parent = settings.get('parent', Document.DEFAULT_PARENT)
                 self.digits = settings.get('digits', Document.DEFAULT_DIGITS)
 
     def _read(self):  # pragma: no cover, integration test
@@ -59,9 +62,12 @@ class Document(object):
 
     def save(self):
         """Save the document's properties to a file."""
-        logging.debug("saving document '{0}'...".format(self))
-        data = {'settings': {'prefix': self.prefix,
-                             'digits': self.digits}}
+        logging.debug("saving document '{}'...".format(self))
+        settings = {'prefix': self.prefix,
+                    'digits': self.digits}
+        if self.parent:
+            settings['parent'] = self.parent
+        data = {'settings': settings}
         text = yaml.dump(data, default_flow_style=False)
         self._write(text)
 

@@ -55,13 +55,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('SYS', self.document.prefix)
         self.assertEqual(4, self.document.digits)
 
+    def test_load_parent(self):
+        """Verify the document config can be loaded from file with a parent."""
+        self.document._file = "settings:\n  prefix: DC\n  parent: SYS"
+        self.document.load()
+        self.assertEqual('SYS', self.document.parent)
+
     def test_save(self):
-        """Verify the document config can be saved."""
+        """Verify a document config can be saved."""
         self.document.prefix = 'SRD'
         self.document.digits = 5
         self.document.save()
         text = "settings:\n  digits: 5\n  prefix: SRD\n"
         self.assertEqual(text, self.document._file)
+
+    def test_save_parent(self):
+        """Verify a document can be saved with a parent."""
+        self.document.parent = 'SYS'
+        self.document.save()
+        self.assertIn("parent: SYS", self.document._file)
 
     def test_items(self):
         """Verify the items in a document can be accessed."""

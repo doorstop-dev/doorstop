@@ -11,6 +11,7 @@ import logging
 
 from doorstop import CLI, VERSION
 from doorstop.cli import settings
+from doorstop.core import processor
 
 
 class _HelpFormatter(argparse.HelpFormatter):
@@ -135,8 +136,7 @@ def _run(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
-    raise NotImplementedError("'doorstop' not implemented")
+    processor.run(cwd)
 
 
 def _run_new(args, cwd, error):

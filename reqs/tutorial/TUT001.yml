@@ -4,6 +4,7 @@ markdown: | **Creating a new document and adding an item.**
 
       mkdir /tmp/doorstop
       cd /tmp/doorstop
+      # initialize version control
       
       doorstop new --root . --prefix REQ --digits 3
 

@@ -78,6 +78,10 @@ doc-open: doc
 	$(OPEN) docs/README.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 
+.PHONY: reqs
+reqs:
+	$(BIN)/doorstop
+
 # Static Analysis ############################################################
 
 .PHONY: pep8

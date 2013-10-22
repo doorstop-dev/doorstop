@@ -8,6 +8,8 @@ markdown: | **Creating a document with links to another document.**
 
   Add an item:
 
+      cd /tmp/doorstop/test
+      
       doorstop add --item  # displays the new item's ID
 
   Edit the new item in the default text editor:

@@ -15,7 +15,8 @@ from scripttest import TestFileEnvironment
 
 from doorstop.cli.main import main
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                    '..', '..', '..'))
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
@@ -134,7 +135,7 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn("doorstop report", result.stderr)
 
 
-@patch('doorstop.cli.main._run', Mock(return_value=True))
+@patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Doorstop CLI logging."""
 
