@@ -16,20 +16,30 @@ class Document(object):
     """Represents a document containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
+    SKIP = '.doorstop.skip'  # indicates this document should be skipped
     DEFAULT_PREFIX = 'REQ'
     DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, prefix=None, parent=None, digits=None):
+        # Check directory contents
+        if not os.path.isfile(os.path.join(path, Document.CONFIG)):
+            raise ValueError("no {} in {}".format(Document.CONFIG, path))
+        # Initialize Document
         self.path = path
-        self.load()
         self.prefix = prefix or Document.DEFAULT_PREFIX
         self.parent = parent or Document.DEFAULT_PARENT
         self.digits = digits or Document.DEFAULT_DIGITS
+        self.load()
         self.save()
+        # Mark if skippable
+        self.skip = os.path.isfile(os.path.join(self.path, Document.SKIP))
+
+    def __repr__(self):
+        return "Document({})".format(repr(self.path))
 
     def __str__(self):
-        return self.path
+        return self.prefix
 
     def __iter__(self):
         for filename in os.listdir(self.path):
@@ -39,17 +49,23 @@ class Document(object):
             except ValueError as error:
                 logging.debug(error)
 
+    def __eq__(self, other):
+        return isinstance(other, Document) and self.path == other.path
+
+    def __ne__(self, other):
+        return not self == other
+
     def load(self):
         """Load the document's properties from a file."""
-        logging.debug("loading document '{}'...".format(self))
+        logging.info("loading {}...".format(repr(self)))
         text = self._read()
         data = yaml.load(text)
         if data:
             settings = data.get('settings', {})
             if settings:
-                self.prefix = settings.get('prefix', Document.DEFAULT_PREFIX)
-                self.parent = settings.get('parent', Document.DEFAULT_PARENT)
-                self.digits = settings.get('digits', Document.DEFAULT_DIGITS)
+                self.prefix = settings.get('prefix', self.prefix)
+                self.parent = settings.get('parent', self.parent)
+                self.digits = settings.get('digits', self.digits)
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
@@ -62,7 +78,7 @@ class Document(object):
 
     def save(self):
         """Save the document's properties to a file."""
-        logging.debug("saving document '{}'...".format(self))
+        logging.info("saving {}...".format(repr(self)))
         settings = {'prefix': self.prefix,
                     'digits': self.digits}
         if self.parent:

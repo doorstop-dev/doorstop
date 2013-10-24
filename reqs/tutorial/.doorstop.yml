@@ -1,3 +1,4 @@
 settings:
-  prefix: TUT
   digits: 3
+  parent: REQ
+  prefix: TUT

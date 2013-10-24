@@ -7,6 +7,7 @@ Unit tests for the doorstop.core.document module.
 import unittest
 from unittest.mock import patch, Mock
 
+import os
 import logging
 
 from doorstop.core.item import Item
@@ -75,17 +76,30 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("parent: SYS", self.document._file)
 
+    def test_str(self):
+        """Verify documents can be converted to strings."""
+        self.assertEqual('RQ', str(self.document))
+
+    def test_ne(self):
+        """Verify document non-equality is correct."""
+        self.assertNotEqual(self.document, None)
+
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
         logging.debug("items: {}".format(items))
         self.assertEqual(3, len(items))
 
-    def test_init(self):
+    def test_init(self):  # TODO: this doesn't actually update the file?
         """Verify a new document can be created with defaults."""
         doc = MockDocument(FILES, prefix='RQ', digits=2)
         self.assertEqual('RQ', doc.prefix)
         self.assertEqual(2, doc.digits)
+
+    def test_invalid(self):
+        """Verify an exception is raised on an invalid document."""
+        path = os.path.join(FILES, 'empty')
+        self.assertRaises(ValueError, Document, path)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

@@ -19,8 +19,8 @@ setuptools.setup(
 
     packages=setuptools.find_packages(),
 
-    entry_points={'console_scripts': [CLI + ' = doorstop.cli:main',
-                                      GUI + ' = doorstop.gui:main']},
+    entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
+                                      GUI + ' = doorstop.gui.main:main']},
 
     long_description=open('README.rst').read(),
     license='LGPL',

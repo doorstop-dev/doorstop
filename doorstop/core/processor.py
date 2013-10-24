@@ -23,58 +23,98 @@ class Node(object):
         self.parent = parent
         self.children = []
 
-    def add(self, document):
+    def __len__(self):
+        return 1 + sum(len(child) for child in self.children)
+
+    def __iter__(self):
+        for child in self.children:
+            return iter(child)
+        yield self.document
+
+    @staticmethod
+    def from_list(docs):  # TODO: make this a Tree class?
+        """Get a new tree from the list of Documents.
+
+        @param documents: list of Documents
+        @return: tree built from Nodes
+        @raise ValueError: when the tree cannot be built
+        """
+        unplaced = list(docs)
+        for doc in list(unplaced):
+            if doc.parent is None:
+                logging.debug("root document: {}".format(doc))
+                tree = Node(doc)
+                logging.info("started tree at: {}".format(doc))
+                unplaced.remove(doc)
+                break
+        else:
+            raise ValueError("no root document")
+
+        while unplaced:
+            count = len(unplaced)
+            for doc in list(unplaced):
+                try:
+                    tree.add(doc)
+                except ValueError as error:
+                    logging.debug(error)
+                else:
+                    logging.info("added to tree: {}".format(doc))
+                    unplaced.remove(doc)
+
+            if len(unplaced) == count:  # no more documents could be placed
+                for doc in unplaced:
+                    logging.error("unplaced document: {}".format(doc))
+                raise ValueError("unplaced document: {}".format(unplaced[0]))
+
+        return tree
+
+    def add(self, doc):
         """Attempt to add the Document to the current tree.
 
-        @param document: Document to add
+        @param doc: Document to add
         @raise TypeError: if the Document cannot yet be placed
         """
-        if document.parent == self.document.prefix:
-            node = Node(document, self)
+        logging.debug("trying to add '{}'...".format(doc))
+        if doc.parent == self.document.prefix:
+            node = Node(doc, self)
             self.children.append(node)
         else:
             for child in self.children:
                 try:
-                    child.add(document)
+                    child.add(doc)
                 except TypeError:
                     pass
                 else:
                     break
             else:
-                raise TypeError("no parent for {}".format(document))
+                msg = "no parent ({}) for: {}".format(doc.parent, doc)
+                raise ValueError(msg)
 
-    @staticmethod
-    def from_list(documents):
-        """Get a new tree from the list of Documents.
+    def valid(self):
+        raise NotImplementedError()
 
-        @param documents: list of Documents
-        @return: tree built from Nodes
-        """
-        for document in documents:
-            if document.parent is None:
-                tree = Node(document)
-                break
-        else:
-            raise ValueError("no root document")
 
-        while documents:
-            count = len(tree)
-            for document in documents:
-                try:
-                    tree.add(document)
-                except ValueError as error:
-                    logging.debug(error)
-            if not len(tree) > count:
-                unplaced = [doc for doc in documents if doc not in tree]
-                raise ValueError("unplaced documents: {}".format(unplaced))
+def run(cwd):
+    """Build a document hiearchy and validate it.
 
-        return tree
+    @param cwd: current working directory
+    @return: indicates documents are valid
+    """
+    try:
+        tree = build(cwd)
+    except ValueError as error:
+        logging.error(error)
+        return False
+    else:
+        return tree.valid()
 
 
 def build(cwd):
     """Build a document heirachy from the current root directory.
 
     @param cwd: current working directory
+    @return: tree built from Nodes
+    @raise ValueError: when the tree cannot be built
     """
     documents = []
 
@@ -87,15 +127,11 @@ def build(cwd):
             except ValueError as error:
                 logging.debug(error)
             else:
-                documents.append(document)
+                if document.skip:
+                    logging.info("skipping document: {}".format(document))
+                else:
+                    logging.info("found document: {}".format(document))
+                    documents.append(document)
 
     tree = Node.from_list(documents)
     return tree
-
-
-def run(cwd):
-    """Main entry point for the program.
-
-    @param cwd: current working directory
-    """
-    raise NotImplementedError()

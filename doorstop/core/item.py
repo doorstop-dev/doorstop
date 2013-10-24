@@ -58,6 +58,7 @@ class Item(object):
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
             raise ValueError(msg)
+        # Initialize Item
         self.path = path
         self._level = level or Item.DEFAULT_LEVEL
         self._text = text or Item.DEFAULT_TEXT
@@ -81,7 +82,7 @@ class Item(object):
 
     def load(self):
         """Load the item's properties from a file."""
-        logging.debug("loading item '{}'...".format(self))
+        logging.debug("loading {}...".format(repr(self)))
         text = self._read()
         data = yaml.load(text)
         if data:
@@ -97,7 +98,7 @@ class Item(object):
 
     def save(self):
         """Save the item's properties to a file."""
-        logging.debug("saving item '{}'...".format(self))
+        logging.debug("saving {}...".format(repr(self)))
         level = '.'.join(str(n) for n in self._level)
         if len(self._level) == 2:
             level = float(level)

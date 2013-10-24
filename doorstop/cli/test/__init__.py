@@ -28,7 +28,7 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
 
     def test_main(self):
         """Verify the main CLI logic can be called."""
-        self.assertRaises(NotImplementedError, main, [])
+        self.assertIs(None, main())
 
     def test_main_help(self):
         """Verify the main CLI help text can be requested."""

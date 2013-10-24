@@ -32,9 +32,9 @@ class _WarningFormatter(logging.Formatter, object):
     def format(self, record):
         """Python 3 hack to change the formatting style dynamically."""
         if record.levelno > logging.INFO:
-            self._style._fmt = self.verbose_format
+            self._style._fmt = self.verbose_format  # pylint: disable=W0212
         else:
-            self._style._fmt = self.default_format
+            self._style._fmt = self.default_format  # pylint: disable=W0212
         return super().format(record)
 
 
@@ -69,7 +69,8 @@ def main(args=None):
     # Remove subparser
     sub = subs.add_parser('remove', formatter_class=_HelpFormatter,
                           help="remove an item or link from a document")
-    sub.add_argument('-i', '--item', metavar='ID', help="remove an existing item")
+    sub.add_argument('-i', '--item', metavar='ID',
+                     help="remove an existing item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
                      help="remove an existing link between items")
 
@@ -137,7 +138,7 @@ def _run(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    processor.run(cwd)
+    return processor.run(cwd)
 
 
 def _run_new(args, cwd, error):
