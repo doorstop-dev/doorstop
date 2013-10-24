@@ -9,6 +9,7 @@ import logging
 
 from doorstop.core import Document
 
+
 class Node(object):
     """
     A bidirectional tree structure to store the document heirarchy.

@@ -14,7 +14,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     def test_run(self):
         """Verify run can be called with default arguments."""
-        self.assertRaises(NotImplementedError, processor.run)
+        self.assertRaises(NotImplementedError, processor.run, None)
 
 
 if __name__ == '__main__':

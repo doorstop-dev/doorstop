@@ -30,10 +30,11 @@ class _WarningFormatter(logging.Formatter, object):
         self.verbose_format = verbose_format
 
     def format(self, record):
+        """Python 3 hack to change the formatting style dynamically."""
         if record.levelno > logging.INFO:
-            self._fmt = self.verbose_format
+            self._style._fmt = self.verbose_format
         else:
-            self._fmt = self.default_format
+            self._style._fmt = self.default_format
         return super().format(record)
 
 
