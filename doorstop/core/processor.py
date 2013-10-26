@@ -6,6 +6,7 @@ Compiles the Doorstop document hierarchy.
 
 import os
 import logging
+from itertools import chain
 
 from doorstop.core import Document
 from doorstop.core import vcs
@@ -24,13 +25,23 @@ class Node(object):
         self.parent = parent
         self.children = []
 
+    def __repr__(self):
+        return "<Node {}>".format(self)
+
+    def __str__(self):
+        children = ", ".join(str(c) for c in self.children)
+        if children:
+            return "{} <- [ {} ]".format(self.document, children)
+        else:
+            return "{}".format(self.document)
+
     def __len__(self):
         return 1 + sum(len(child) for child in self.children)
 
     def __iter__(self):
-        for child in self.children:
-            return iter(child)
         yield self.document
+        for document in chain(*map(iter, self.children)):
+            yield document
 
     @staticmethod
     def from_list(docs):  # TODO: make this a Tree class?
@@ -140,4 +151,5 @@ def build(cwd):
                     documents.append(document)
 
     tree = Node.from_list(documents)
+    logging.info("final tree: {}".format(tree))
     return tree

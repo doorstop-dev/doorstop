@@ -49,7 +49,7 @@ class Document(object):
 
     def __str__(self):
         relpath = os.path.relpath(self.path, self.root)
-        return "{} (@/{})".format(self.prefix, relpath)
+        return "{}(@/{})".format(self.prefix, relpath)
 
     def __iter__(self):
         for filename in os.listdir(self.path):
