@@ -77,8 +77,7 @@ class Node(object):
                     unplaced.remove(doc)
 
             if len(unplaced) == count:  # no more documents could be placed
-                for doc in unplaced:
-                    logging.error("unplaced document: {}".format(doc))
+                logging.debug("unplaced documents: {}".format(unplaced))
                 raise ValueError("unplaced document: {}".format(unplaced[0]))
 
         return tree
