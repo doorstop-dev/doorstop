@@ -8,7 +8,7 @@ import os
 import logging
 
 from doorstop.core import Document
-from doorstop.core import scm
+from doorstop.core import vcs
 
 
 class Node(object):
@@ -121,7 +121,7 @@ def build(cwd):
     documents = []
 
     # Find the root of the working copy
-    root = scm.find_root(cwd)
+    root = vcs.find_root(cwd)
 
     # Find all documents in the working copy
     logging.debug("looking for documents in {}...".format(root))

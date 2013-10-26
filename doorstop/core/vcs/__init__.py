@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Interfaces to SCM systems.
+Interfaces to version control systems.
 """
 
 # TODO: rename package to vcs
@@ -9,7 +9,7 @@ Interfaces to SCM systems.
 import os
 import logging
 
-SCM_DIRECTORIES = [
+VCS_DIRECTORIES = [
 '.git',
 '.sgdrawer',
 ]  # TODO: build dymacially from the modules in this package
@@ -27,7 +27,7 @@ def find_root(cwd):
     path = cwd
 
     logging.debug("looking for working copy from {}...".format(path))
-    while not any(d in SCM_DIRECTORIES for d in os.listdir(path)):
+    while not any(d in VCS_DIRECTORIES for d in os.listdir(path)):
         parent = os.path.dirname(path)
         if path == parent:
             msg = "no working copy found from: {}".format(cwd)
@@ -37,9 +37,3 @@ def find_root(cwd):
 
     logging.debug("found working copy: {}".format(path))
     return path
-
-
-
-
-
-
