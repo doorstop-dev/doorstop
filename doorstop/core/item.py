@@ -46,7 +46,8 @@ class Item(object):
     DEFAULT_REF = None
     DEFAULT_LINKS = set()
 
-    def __init__(self, path, root=os.getcwd(), level=None, text=None, ref=None, links=None):
+    def __init__(self, path, root=os.getcwd(),
+                 level=None, text=None, ref=None, links=None):
         """Create a new Item.
 
         @param path: path to Item file
@@ -128,7 +129,7 @@ class Item(object):
             outfile.write(bytes(text, 'UTF-8'))
 
     @property
-    def id(self):
+    def id(self):  # pylint: disable=C0103
         """Get the item's ID."""
         return os.path.splitext(os.path.basename(self.path))[0]
 

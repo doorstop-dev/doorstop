@@ -16,7 +16,7 @@ VCS_DIRECTORIES = [
 
 
 class VersionControlError(EnvironmentError):
-    pass
+    """Exception for Version Control errors."""
 
 
 def find_root(cwd):

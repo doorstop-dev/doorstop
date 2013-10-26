@@ -5,13 +5,38 @@ Unit tests for the doorstop.core.processor module.
 """
 
 import unittest
+from unittest.mock import Mock
 
 import os
+import operator
+import logging
 
 from doorstop.core import processor
 from doorstop.core.processor import Node
+from doorstop.core.document import Document
 
 from doorstop.core.test import FILES
+
+
+class MockDocument(Document):
+    """Mock Document class that does not touch the file system."""
+
+    def __init__(self, *args, **kwargs):
+        self._file = ""  # file system mock
+        self._read = Mock(side_effect=self._mock_read)
+        self._write = Mock(side_effect=self._mock_write)
+        super().__init__(*args, **kwargs)
+
+    def _mock_read(self):
+        """Mock read function."""
+        text = self._file
+        logging.debug("mock read: {0}".format(repr(text)))
+        return text
+
+    def _mock_write(self, text):
+        """Mock write function"""
+        logging.debug("mock write: {0}".format(repr(text)))
+        self._file = text
 
 
 class TestNode(unittest.TestCase):  # pylint: disable=R0904
@@ -42,6 +67,10 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify a tree lengths are correct."""
         self.assertEqual(5, len(self.tree))
 
+    def test_getitem(self):
+        """Verify item access is not allowed on trees."""
+        self.assertRaises(IndexError, operator.getitem, self.tree, 0)
+
     def test_iter(self):
         """Verify a tree can be iterated over."""
         items = [d for d in self.tree]
@@ -51,6 +80,15 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify a tree can be checked for contents."""
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
+
+    def test_from_list(self):
+        """Verify a tree can be created from a list."""
+        path = os.path.join(FILES, 'empty')
+        a = MockDocument(path, prefix='P')
+        b = MockDocument(path, prefix='C', parent='P')
+        docs = [a, b]
+        tree = Node.from_list(docs)
+        self.assertEqual(2, len(tree))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

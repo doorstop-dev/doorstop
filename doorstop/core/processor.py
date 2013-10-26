@@ -38,9 +38,12 @@ class Node(object):
     def __len__(self):
         return 1 + sum(len(child) for child in self.children)
 
+    def __getitem__(self, key):
+        raise IndexError("{} cannot be indexed by key".format(self.__class__))
+
     def __iter__(self):
         yield self.document
-        for document in chain(*map(iter, self.children)):
+        for document in chain(*(iter(c) for c in self.children)):
             yield document
 
     @staticmethod
@@ -103,6 +106,10 @@ class Node(object):
                 raise ValueError(msg)
 
     def validate(self):
+        """Confirm the document hiearchy is valid.
+
+        @raise ValueError: on issue
+        """
         pass  # TODO: implement method
 
 

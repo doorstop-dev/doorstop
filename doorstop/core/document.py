@@ -21,7 +21,8 @@ class Document(object):
     DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, root=os.getcwd(), prefix=None, parent=None, digits=None):
+    def __init__(self, path, root=os.getcwd(),
+                 prefix=None, parent=None, digits=None):
         """Create a new Document.
 
         @param path: path to Document directory
@@ -49,7 +50,7 @@ class Document(object):
 
     def __str__(self):
         relpath = os.path.relpath(self.path, self.root)
-        return "{}(@/{})".format(self.prefix, relpath)
+        return "{} (@/{})".format(self.prefix, relpath)
 
     def __iter__(self):
         for filename in os.listdir(self.path):

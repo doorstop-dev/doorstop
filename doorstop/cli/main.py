@@ -138,7 +138,7 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, error):
+def _run(args, cwd, error):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
