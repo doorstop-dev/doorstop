@@ -15,8 +15,7 @@ from scripttest import TestFileEnvironment
 
 from doorstop.cli.main import main
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                    '..', '..', '..'))
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
@@ -28,7 +27,7 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
 
     def test_main(self):
         """Verify the main CLI logic can be called."""
-        self.assertIs(None, main())
+        self.assertIs(None, main([]))
 
     def test_main_help(self):
         """Verify the main CLI help text can be requested."""

@@ -46,7 +46,12 @@ class Item(object):
     DEFAULT_REF = None
     DEFAULT_LINKS = set()
 
-    def __init__(self, path, level=None, text=None, ref=None, links=None):
+    def __init__(self, path, root=os.getcwd(), level=None, text=None, ref=None, links=None):
+        """Create a new Item.
+
+        @param path: path to Item file
+        @param root: path to root of project
+        """
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         # Check file name
@@ -60,6 +65,7 @@ class Item(object):
             raise ValueError(msg)
         # Initialize Item
         self.path = path
+        self.root = root
         self._level = level or Item.DEFAULT_LEVEL
         self._text = text or Item.DEFAULT_TEXT
         self._ref = ref or Item.DEFAULT_REF
@@ -69,7 +75,8 @@ class Item(object):
         return "Item({})".format(repr(self.path))
 
     def __str__(self):
-        return self.id
+        relpath = os.path.relpath(self.path, self.root)
+        return "{} (@/{})".format(self.id, relpath)
 
     def __eq__(self, other):
         return isinstance(other, Item) and self.path == other.path

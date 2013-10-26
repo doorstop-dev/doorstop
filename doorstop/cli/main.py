@@ -97,15 +97,20 @@ def main(args=None):
 
     # Run the program
     if args.command:
+        logging.debug("launching command '{}'...".format(args.command))
         function = globals()['_run_' + args.command]
     else:
+        logging.debug("launching main command...")
         function = _run
     try:
         success = function(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
-        logging.debug("cancelled manually")
+        logging.debug("command cancelled")
         success = False
-    if not success:
+    if success:
+        logging.debug("command succedded")
+    else:
+        logging.debug("command failed")
         sys.exit(1)
 
 
@@ -113,18 +118,19 @@ def _configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
 
     # Configure the logging level and format
-    if verbosity >= 1:
-        level = settings.VERBOSE_LOGGING_LEVEL
-        if verbosity >= 3:
-            default_format = verbose_format = settings.VERBOSE3_LOGGING_FORMAT
-        elif verbosity >= 2:
-            default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
-        else:
-            default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    else:
+    if verbosity == 0:
         level = settings.DEFAULT_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    elif verbosity == 1:
+        level = settings.VERBOSE_LOGGING_LEVEL
+        default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    elif verbosity == 2:
+        level = settings.VERBOSE2_LOGGING_LEVEL
+        default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    else:
+        level = settings.VERBOSE2_LOGGING_LEVEL
+        default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
     logging.basicConfig(level=level)

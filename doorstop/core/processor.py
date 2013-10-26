@@ -8,6 +8,7 @@ import os
 import logging
 
 from doorstop.core import Document
+from doorstop.core import scm
 
 
 class Node(object):
@@ -90,8 +91,8 @@ class Node(object):
                 msg = "no parent ({}) for: {}".format(doc.parent, doc)
                 raise ValueError(msg)
 
-    def valid(self):
-        raise NotImplementedError()
+    def validate(self):
+        pass  # TODO: implement method
 
 
 def run(cwd):
@@ -106,7 +107,8 @@ def run(cwd):
         logging.error(error)
         return False
     else:
-        return tree.valid()
+        tree.validate()  # TODO: surround with try...except
+        return True
 
 
 def build(cwd):
@@ -118,14 +120,18 @@ def build(cwd):
     """
     documents = []
 
+    # Find the root of the working copy
+    root = scm.find_root(cwd)
+
+    # Find all documents in the working copy
+    logging.debug("looking for documents in {}...".format(root))
     for dirpath, dirnames, _ in os.walk(cwd):
-        logging.debug("looking for documents in {}...".format(dirpath))
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
             try:
-                document = Document(path)
-            except ValueError as error:
-                logging.debug(error)
+                document = Document(path, root)
+            except ValueError:
+                pass  # no document in directory
             else:
                 if document.skip:
                     logging.info("skipping document: {}".format(document))

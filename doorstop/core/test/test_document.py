@@ -13,7 +13,7 @@ import logging
 from doorstop.core.item import Item
 from doorstop.core.document import Document
 
-from doorstop.core.test import FILES
+from doorstop.core.test import ROOT, FILES
 
 
 class MockItem(Item, Mock):
@@ -47,7 +47,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
-        self.document = MockDocument(FILES)
+        self.document = MockDocument(FILES, root=ROOT)
 
     def test_load(self):
         """Verify the document config can be loaded from file."""
@@ -78,7 +78,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify documents can be converted to strings."""
-        self.assertEqual('RQ', str(self.document))
+        self.assertEqual("RQ (@/doorstop/core/test/files)", str(self.document))
 
     def test_ne(self):
         """Verify document non-equality is correct."""

@@ -11,7 +11,7 @@ from scripttest import TestFileEnvironment
 from doorstop.core import Item
 from doorstop.core import Document
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
 
@@ -57,8 +57,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a document can be loaded from a directory."""
         doc = Document(FILES)
-        self.assertEqual('REQ', doc.prefix)
-        self.assertEqual(3, doc.digits)
+        self.assertEqual('RQ', doc.prefix)
+        self.assertEqual(2, doc.digits)
         self.assertEqual(3, len(doc.items))
 
     def test_new(self):

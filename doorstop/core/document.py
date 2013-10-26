@@ -21,12 +21,21 @@ class Document(object):
     DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, prefix=None, parent=None, digits=None):
+    def __init__(self, path, root=os.getcwd(), prefix=None, parent=None, digits=None):
+        """Create a new Document.
+
+        @param path: path to Document directory
+        @param root: path to root of project
+        """
         # Check directory contents
-        if not os.path.isfile(os.path.join(path, Document.CONFIG)):
-            raise ValueError("no {} in {}".format(Document.CONFIG, path))
+        if not prefix:  # not creating a new document
+            if not os.path.isfile(os.path.join(path, Document.CONFIG)):
+                relpath = os.path.relpath(path, root)
+                msg = "no {} in {}".format(Document.CONFIG, relpath)
+                raise ValueError(msg)
         # Initialize Document
         self.path = path
+        self.root = root
         self.prefix = prefix or Document.DEFAULT_PREFIX
         self.parent = parent or Document.DEFAULT_PARENT
         self.digits = digits or Document.DEFAULT_DIGITS
@@ -39,7 +48,8 @@ class Document(object):
         return "Document({})".format(repr(self.path))
 
     def __str__(self):
-        return self.prefix
+        relpath = os.path.relpath(self.path, self.root)
+        return "{} (@/{})".format(self.prefix, relpath)
 
     def __iter__(self):
         for filename in os.listdir(self.path):
@@ -57,7 +67,7 @@ class Document(object):
 
     def load(self):
         """Load the document's properties from a file."""
-        logging.info("loading {}...".format(repr(self)))
+        logging.debug("loading {}...".format(repr(self)))
         text = self._read()
         data = yaml.load(text)
         if data:
@@ -78,7 +88,7 @@ class Document(object):
 
     def save(self):
         """Save the document's properties to a file."""
-        logging.info("saving {}...".format(repr(self)))
+        logging.debug("saving {}...".format(repr(self)))
         settings = {'prefix': self.prefix,
                     'digits': self.digits}
         if self.parent:

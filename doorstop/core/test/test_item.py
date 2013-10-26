@@ -60,7 +60,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify an item can be printed."""
-        self.assertEqual('RQ001', str(self.item))
+        self.assertEqual("RQ001 (@/path/to/RQ001.yml)", str(self.item))
 
     def test_ne(self):
         """Verify item non-equality is correct."""
