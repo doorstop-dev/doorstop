@@ -9,10 +9,8 @@ Interfaces to version control systems.
 import os
 import logging
 
-VCS_DIRECTORIES = [
-'.git',
-'.sgdrawer',
-]  # TODO: build dymacially from the modules in this package
+# TODO: build dymacially from the modules in this package
+VCS_DIRECTORIES = ['.git', '.sgdrawer', ]
 
 
 class VersionControlError(EnvironmentError):

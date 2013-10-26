@@ -87,7 +87,7 @@ class Node(object):
         """Attempt to add the Document to the current tree.
 
         @param doc: Document to add
-        @raise TypeError: if the Document cannot yet be placed
+        @raise ValueError: if the Document cannot yet be placed
         """
         logging.debug("trying to add '{}'...".format(doc))
         if doc.parent == self.document.prefix:
@@ -97,7 +97,7 @@ class Node(object):
             for child in self.children:
                 try:
                     child.add(doc)
-                except TypeError:
+                except ValueError:
                     pass
                 else:
                     break
@@ -109,8 +109,9 @@ class Node(object):
         """Confirm the document hiearchy is valid.
 
         @raise ValueError: on issue
+        @return True: if hiearchy is valid
         """
-        pass  # TODO: implement method
+        return True  # TODO: implement method
 
 
 def run(cwd):
@@ -143,20 +144,31 @@ def build(cwd):
 
     # Find all documents in the working copy
     logging.debug("looking for documents in {}...".format(root))
-    for dirpath, dirnames, _ in os.walk(cwd):
+    _add_document_from_path(root, root, documents)
+    for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
-            try:
-                document = Document(path, root)
-            except ValueError:
-                pass  # no document in directory
-            else:
-                if document.skip:
-                    logging.info("skipping document: {}".format(document))
-                else:
-                    logging.info("found document: {}".format(document))
-                    documents.append(document)
+            _add_document_from_path(path, root, documents)
 
     tree = Node.from_list(documents)
     logging.info("final tree: {}".format(tree))
     return tree
+
+
+def _add_document_from_path(path, root, documents):
+    """Attempt to create and append a document from the specified path.
+
+    @param path: path to a potential document
+    @param root: path to root of working copy
+    @param documents: list of documents to append results
+    """
+    try:
+        document = Document(path, root)
+    except ValueError:
+        pass  # no document in directory
+    else:
+        if document.skip:
+            logging.info("skipping document: {}".format(document))
+        else:
+            logging.info("found document: {}".format(document))
+            documents.append(document)
