@@ -33,27 +33,34 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         """Verify the main CLI help text can be requested."""
         self.assertRaises(SystemExit, main, ['--help'])
 
-    def test_main_new(self):
+    def test_new(self):
         """Verify the 'new' command can be called."""
         self.assertRaises(NotImplementedError, main, ['new'])
 
-    def test_main_add(self):
+    def test_add(self):
         """Verify the 'add' command can be called."""
         self.assertRaises(NotImplementedError, main, ['add'])
 
-    def test_main_remove(self):
+    def test_remove(self):
         """Verify the 'remove' command can be called."""
         self.assertRaises(NotImplementedError, main, ['remove'])
 
-    def test_main_import(self):
+    @patch('doorstop.core.processor._open')
+    def test_edit(self, mock_open):
+        """Verify the 'edit' command can be called."""
+        self.assertIs(None, main(['edit', 'tut2']))
+        path = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT002.yml')
+        mock_open.assert_called_once_with(os.path.normpath(path))
+
+    def test_import(self):
         """Verify the 'import' command can be called."""
         self.assertRaises(NotImplementedError, main, ['import', 'PATH'])
 
-    def test_main_export(self):
+    def test_export(self):
         """Verify the 'export' command can be called."""
         self.assertRaises(NotImplementedError, main, ['export', 'PATH'])
 
-    def test_main_report(self):
+    def test_report(self):
         """Verify the 'report' command can be called."""
         self.assertRaises(NotImplementedError, main, ['report', 'PATH'])
 

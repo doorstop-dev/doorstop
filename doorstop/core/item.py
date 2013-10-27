@@ -60,7 +60,7 @@ class Item(object):
         name, ext = os.path.splitext(filename)
         # Check file name
         try:
-            self._split_id(name)
+            self.split_id(name)
         except ValueError:
             raise
         # Check file extension
@@ -141,10 +141,10 @@ class Item(object):
         return os.path.splitext(os.path.basename(self.path))[0]
 
     @staticmethod
-    def _split_id(text):
+    def split_id(text):
         """Split an item's ID into prefix and number.
 
-        >>> Item._split_id("ABC00123")
+        >>> Item.split_id("ABC00123")
         ('ABC', 123)
 
         """
@@ -156,12 +156,12 @@ class Item(object):
     @property
     def prefix(self):
         """Get the item ID's prefix."""
-        return self._split_id(self.id)[0]
+        return self.split_id(self.id)[0]
 
     @property
     def number(self):
         """Get the item ID's number."""
-        return self._split_id(self.id)[1]
+        return self.split_id(self.id)[1]
 
     @property
     @_auto_load

@@ -5,11 +5,14 @@ Compiles the Doorstop document hierarchy.
 """
 
 import os
+import sys
+import subprocess
 import logging
 from itertools import chain
 
 from doorstop.common import DoorstopError
-from doorstop.core import Document
+from doorstop.core.document import Document
+from doorstop.core.item import Item
 from doorstop.core import vcs
 
 
@@ -136,6 +139,50 @@ def run(cwd):
             return False
 
     return True
+
+
+def edit(cwd, id, launch=False):
+    """Open an item for editing.
+
+    @param cwd: current working directory
+    @param id: ID of item to edit
+    @param launch: open the default text editor
+    @return: indicates item was found for editing
+    """
+    tree = build(cwd)
+
+    logging.debug("looking for {}...".format(id))
+    prefix, number = Item.split_id(id)
+
+    for document in tree:
+        if document.prefix.lower() == prefix.lower():
+            for item in document:
+                if item.number == number:
+                    if launch:
+                        _open(item.path)
+                    return True
+            logging.info("no matching number: {}".format(number))
+            break
+    else:
+        logging.info("no matching prefix: {}".format(prefix))
+
+    logging.error("no matching ID: {}".format(id))
+    return False
+
+
+def _open(path):  # pragma: no cover, integration test
+    """Open the text file using the default editor."""
+    if sys.platform.startswith('darwin'):
+        args = ['open', path]
+        logging.debug("$ {}".format(' '.join(args)))
+        subprocess.call(args)
+    elif os.name == 'nt':
+        logging.debug("$ (start) {}".format(path))
+        os.startfile(path)  # pylint: disable=E1101
+    elif os.name == 'posix':
+        args = ['xdg-open', path]
+        logging.debug("$ {}".format(' '.join(args)))
+        subprocess.call(args)
 
 
 def build(cwd):

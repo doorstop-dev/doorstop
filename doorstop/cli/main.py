@@ -41,52 +41,67 @@ class _WarningFormatter(logging.Formatter, object):
 def main(args=None):
     """Process command-line arguments and run the program.
     """
+    # Shared options
+    debug = argparse.ArgumentParser(add_help=False)
+    debug.add_argument('-V', '--version', action='version', version=VERSION)
+    debug.add_argument('-v', '--verbose', action='count', default=0,
+                        help="enable verbose logging")
+    shared = {'formatter_class': _HelpFormatter, 'parents': [debug]}
+
     # Main parser
-    parser = argparse.ArgumentParser(prog=CLI, description=__doc__,
-                                     formatter_class=_HelpFormatter)
+    parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the GUI")
-    parser.add_argument('-V', '--version', action='version', version=VERSION)
-    parser.add_argument('-v', '--verbose', action='count', default=0,
-                        help="enable verbose logging")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
     # New subparser
-    sub = subs.add_parser('new', formatter_class=_HelpFormatter,
-                          help="create a new document directory")
+    sub = subs.add_parser('new',
+                          help="create a new document directory",
+                          **shared)
     sub.add_argument('-r', '--root', help="root directory for document items")
     sub.add_argument('-p', '--prefix', help="prefix for item IDs")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
-    sub = subs.add_parser('add', formatter_class=_HelpFormatter,
-                          help="add a new item or link to a document")
+    sub = subs.add_parser('add',
+                          help="add a new item or link to a document",
+                          **shared)
     sub.add_argument('-i', '--item', action='store_true',
                      help="add a new item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
                      help="add a new link between items")
 
     # Remove subparser
-    sub = subs.add_parser('remove', formatter_class=_HelpFormatter,
-                          help="remove an item or link from a document")
+    sub = subs.add_parser('remove',
+                          help="remove an item or link from a document",
+                          **shared)
     sub.add_argument('-i', '--item', metavar='ID',
                      help="remove an existing item")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
                      help="remove an existing link between items")
 
+    # Edit subparser
+    sub = subs.add_parser('edit',
+                          help="edit an existing item",
+                          **shared)
+    sub.add_argument('id', metavar='ID', help="item to edit")
+
     # Import subparser
-    sub = subs.add_parser('import', formatter_class=_HelpFormatter,
-                          help="import document items from another format")
+    sub = subs.add_parser('import',
+                          help="import document items from another format",
+                          **shared)
     sub.add_argument('input', help="file to import")
 
     # Export subparser
-    sub = subs.add_parser('export', formatter_class=_HelpFormatter,
-                          help="export document items to another format")
+    sub = subs.add_parser('export',
+                          help="export document items to another format",
+                          **shared)
     sub.add_argument('output', help="file to export")
 
     # Report subparser
-    sub = subs.add_parser('report', formatter_class=_HelpFormatter,
-                          help="publish document items to a report")
+    sub = subs.add_parser('report',
+                          help="publish document items to a report",
+                          **shared)
     sub.add_argument('report', help="report to create")
 
     # Parse arguments
@@ -175,6 +190,15 @@ def _run_remove(args, cwd, error):
     """
     logging.warning((args, cwd, error))
     raise NotImplementedError("'doorstop remove' not implemented")
+
+
+def _run_edit(args, cwd, error):
+    """Process arguments and run the `doorstop edit` subcommand.
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param error: function to call for CLI errors
+    """
+    return processor.edit(cwd, args.id, launch=True)
 
 
 def _run_import(args, cwd, error):
