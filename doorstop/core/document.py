@@ -9,7 +9,7 @@ import logging
 
 import yaml
 
-from doorstop.core import Item
+from doorstop.core.item import Item
 
 
 class Document(object):
@@ -108,3 +108,19 @@ class Document(object):
     def items(self):
         """Get an ordered list of items in the document."""
         return sorted(item for item in self)
+
+    def check(self):
+        """Confirm the document is valid.
+
+        @return: indication that document is valid
+        """
+        logging.info("checking document {}...".format(self))
+        items = list(self)
+        # Check for items
+        if not items:
+            logging.warning("no items: {}".format(self))
+        # Check each item
+        for item in items:
+            item.check()
+        # Document is valid
+        return True

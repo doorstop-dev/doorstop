@@ -57,7 +57,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a document can be loaded from a directory."""
         doc = Document(FILES)
-        self.assertEqual('RQ', doc.prefix)
+        self.assertEqual('_RQ', doc.prefix)
         self.assertEqual(2, doc.digits)
         self.assertEqual(3, len(doc.items))
 

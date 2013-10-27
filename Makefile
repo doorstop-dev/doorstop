@@ -68,8 +68,12 @@ endif
 
 # Documentation ##############################################################
 
+.PHONY: req
+req:
+	$(BIN)/doorstop
+
 .PHONY: doc
-doc: depends
+doc: depends req
 	$(PYTHON) $(RST2HTML) README.rst docs/README.html
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
@@ -77,10 +81,6 @@ doc: depends
 doc-open: doc
 	$(OPEN) docs/README.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
-
-.PHONY: reqs
-reqs:
-	$(BIN)/doorstop
 
 # Static Analysis ############################################################
 

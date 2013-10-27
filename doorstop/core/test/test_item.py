@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 import logging
 
+from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
 
@@ -47,6 +48,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('', self.item._text)
         self.assertEqual(set(), self.item._links)
         self.assertEqual((1, 1, 1), self.item._level)
+        self.item.check()
+
+    def test_load_error(self):
+        """Verify an exception is raised with invalid YAML."""
+        self.item._file = "markdown: **Document and Item Creation**"
+        self.assertRaises(DoorstopError, self.item.load)
 
     def test_save_empty(self):
         """Verify saving calls write."""

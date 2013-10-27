@@ -11,6 +11,7 @@ import os
 import operator
 import logging
 
+from doorstop.common import DoorstopError
 from doorstop.core import processor
 from doorstop.core.processor import Node
 from doorstop.core.document import Document
@@ -87,10 +88,6 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
 
-    def test_validate(self):
-        """Verify a tree can be validated."""
-        self.assertTrue(self.tree.validate())
-
     def test_from_list(self):
         """Verify a tree can be created from a list."""
         path = os.path.join(FILES, 'empty')
@@ -100,6 +97,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         docs = [a, b, c]
         tree = Node.from_list(docs)
         self.assertEqual(3, len(tree))
+        tree.check()
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
@@ -133,6 +131,12 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_run(self):
         """Verify a valid tree passes the processor."""
         self.assertTrue(processor.run(FILES))
+
+    @patch('doorstop.core.processor.build',
+           Mock(return_value=Mock(check=Mock(side_effect=DoorstopError))))
+    def test_run_error(self):
+        """Verify a tree is invalid when an exception is raised."""
+        self.assertFalse(processor.run(FILES))
 
     @patch('doorstop.core.document.Document', MockDocumentNoSkip)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))

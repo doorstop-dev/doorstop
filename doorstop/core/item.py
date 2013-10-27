@@ -12,6 +12,9 @@ import logging
 import yaml
 
 
+from doorstop.common import DoorstopError
+
+
 def _auto_load(func):
     """Decorator for methods that should automatically load from file."""
     @functools.wraps(func)
@@ -92,7 +95,11 @@ class Item(object):
         """Load the item's properties from a file."""
         logging.debug("loading {}...".format(repr(self)))
         text = self._read()
-        data = yaml.load(text)
+        try:
+            data = yaml.load(text)
+        except yaml.scanner.ScannerError as error:
+            msg = "invalid contents: {}:\n{}".format(self, error)
+            raise DoorstopError(msg)
         if data:
             self._level = self._convert_level(data.get('level', self._level))
             self._text = data.get('text', self._text)
@@ -260,3 +267,15 @@ class Item(object):
             self._links.remove(item)
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
+
+    def check(self):
+        """Confirm the item is valid.
+
+        @return: indication that the item is valid
+        """
+        logging.info("checking item {}...".format(self))
+        # Check text
+        if not self.text:
+            logging.warning("no text: {}".format(self))
+        # Item is valid
+        return True

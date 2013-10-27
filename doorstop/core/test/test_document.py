@@ -78,7 +78,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify documents can be converted to strings."""
-        self.assertEqual("RQ (@/doorstop/core/test/files)", str(self.document))
+        self.assertEqual("_RQ (@/doorstop/core/test/files)", str(self.document))
 
     def test_ne(self):
         """Verify document non-equality is correct."""
@@ -93,13 +93,17 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_init(self):  # TODO: this doesn't actually update the file?
         """Verify a new document can be created with defaults."""
         doc = MockDocument(FILES, prefix='RQ', digits=2)
-        self.assertEqual('RQ', doc.prefix)
+        self.assertEqual('_RQ', doc.prefix)
         self.assertEqual(2, doc.digits)
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
         path = os.path.join(FILES, 'empty')
         self.assertRaises(ValueError, Document, path)
+
+    def test_check(self):
+        """Verify a document can be validated."""
+        self.document.check()
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

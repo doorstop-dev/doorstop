@@ -8,6 +8,7 @@ import os
 import logging
 from itertools import chain
 
+from doorstop.common import DoorstopError
 from doorstop.core import Document
 from doorstop.core import vcs
 
@@ -57,9 +58,9 @@ class Node(object):
         unplaced = list(docs)
         for doc in list(unplaced):
             if doc.parent is None:
-                logging.debug("root document: {}".format(doc))
+                logging.debug("added root of tree: {}".format(doc))
                 tree = Node(doc)
-                logging.info("started tree at: {}".format(doc))
+                logging.info("root of tree: {}".format(doc))
                 unplaced.remove(doc)
                 break
         else:
@@ -104,13 +105,16 @@ class Node(object):
                 msg = "no parent ({}) for: {}".format(doc.parent, doc)
                 raise ValueError(msg)
 
-    def validate(self):
+    def check(self):
         """Confirm the document hiearchy is valid.
 
         @raise ValueError: on issue
-        @return True: if hiearchy is valid
+        @return: indication that hiearchy is valid
         """
-        return True  # TODO: implement method
+        logging.info("checking tree...")
+        for document in self:
+            document.check()
+        return True
 
 
 def run(cwd):
@@ -125,8 +129,13 @@ def run(cwd):
         logging.error(error)
         return False
     else:
-        tree.validate()  # TODO: surround with try...except
-        return True
+        try:
+            tree.check()
+        except DoorstopError as error:
+            logging.error(error)
+            return False
+
+    return True
 
 
 def build(cwd):
@@ -142,13 +151,14 @@ def build(cwd):
     root = vcs.find_root(cwd)
 
     # Find all documents in the working copy
-    logging.debug("looking for documents in {}...".format(root))
+    logging.info("looking for documents in {}...".format(root))
     _add_document_from_path(root, root, documents)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
             _add_document_from_path(path, root, documents)
 
+    logging.info("building document tree...")
     tree = Node.from_list(documents)
     logging.info("final tree: {}".format(tree))
     return tree
@@ -167,7 +177,7 @@ def _add_document_from_path(path, root, documents):
         pass  # no document in directory
     else:
         if document.skip:
-            logging.info("skipping document: {}".format(document))
+            logging.debug("skipping document: {}".format(document))
         else:
             logging.info("found document: {}".format(document))
             documents.append(document)
