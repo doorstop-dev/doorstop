@@ -7,6 +7,7 @@ Unit tests for the doorstop.core.item module.
 import unittest
 from unittest.mock import Mock
 
+import os
 import logging
 
 from doorstop.common import DoorstopError
@@ -38,7 +39,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
-        self.item = MockItem('path/to/RQ001.yml')
+        self.path = os.path.join('path', 'to', 'RQ001.yml')
+        self.item = MockItem(self.path)
         self.item._file = "links: []\ntext: ''\nlevel: 1.1.1"
 
     def test_load_empty(self):
@@ -67,7 +69,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify an item can be printed."""
-        self.assertEqual("RQ001 (@/path/to/RQ001.yml)", str(self.item))
+        self.assertEqual("RQ001 (@/{})".format(self.path), str(self.item))
 
     def test_ne(self):
         """Verify item non-equality is correct."""

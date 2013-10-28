@@ -58,7 +58,7 @@ $(DEPENDS):
 ifeq ($(shell uname),Windows)
 .pylint: .env
 	@echo pylint cannot be installed on Windows
-else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
+else ifeq ($(shell uname),CYGWIN_NT-6.1)
 .pylint: .env
 	@echo pylint cannot be installed on Cygwin
 else

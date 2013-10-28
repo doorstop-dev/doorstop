@@ -78,7 +78,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify documents can be converted to strings."""
-        self.assertEqual("_RQ (@/doorstop/core/test/files)", str(self.document))
+        path = os.path.join('doorstop', 'core', 'test', 'files')
+        self.assertEqual("_RQ (@/{})".format(path), str(self.document))
 
     def test_ne(self):
         """Verify document non-equality is correct."""
