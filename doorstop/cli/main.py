@@ -12,6 +12,7 @@ import logging
 from doorstop import CLI, VERSION
 from doorstop.cli import settings
 from doorstop.core import processor
+from doorstop.common import DoorstopError
 
 
 class _HelpFormatter(argparse.HelpFormatter):
@@ -58,8 +59,9 @@ def main(args=None):
     sub = subs.add_parser('new',
                           help="create a new document directory",
                           **shared)
-    sub.add_argument('-r', '--root', help="root directory for document items")
-    sub.add_argument('-p', '--prefix', help="prefix for item IDs")
+    sub.add_argument('prefix', help="prefix for item IDs")
+    sub.add_argument('root', help="path to directory for document items")
+    sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
@@ -159,7 +161,14 @@ def _run(args, cwd, error):  # pylint: disable=W0613
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    return processor.run(cwd)
+    try:
+        tree = processor.build(cwd)
+        tree.check()
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        return True
 
 
 def _run_new(args, cwd, error):
@@ -168,8 +177,15 @@ def _run_new(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
-    raise NotImplementedError("'doorstop new' not implemented")
+    try:
+        tree = processor.build(cwd)
+        tree.new(args.root, args.prefix,
+                 parent=args.parent, digits=args.digits)
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        return True
 
 
 def _run_add(args, cwd, error):
@@ -198,7 +214,14 @@ def _run_edit(args, cwd, error):
     @param cwd: current working directory
     @param error: function to call for CLI errors
     """
-    return processor.edit(cwd, args.id, launch=True)
+    try:
+        tree = processor.build(cwd)
+        tree.edit(args.id, launch=True)
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        return True
 
 
 def _run_import(args, cwd, error):

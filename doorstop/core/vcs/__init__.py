@@ -9,11 +9,13 @@ Interfaces to version control systems.
 import os
 import logging
 
+from doorstop.common import DoorstopError
+
 # TODO: build dymacially from the modules in this package
 VCS_DIRECTORIES = ['.git', '.sgdrawer', ]
 
 
-class VersionControlError(EnvironmentError):
+class VersionControlError(DoorstopError):
     """Exception for Version Control errors."""
 
 

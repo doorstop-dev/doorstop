@@ -61,12 +61,12 @@ class Item(object):
         # Check file name
         try:
             self.split_id(name)
-        except ValueError:
+        except DoorstopError:
             raise
         # Check file extension
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
-            raise ValueError(msg)
+            raise DoorstopError(msg)
         # Initialize Item
         self.path = path
         self.root = root
@@ -80,7 +80,7 @@ class Item(object):
 
     def __str__(self):
         relpath = os.path.relpath(self.path, self.root)
-        return "{} (@/{})".format(self.id, relpath)
+        return "{} (@{}{})".format(self.id, os.sep, relpath)
 
     def __eq__(self, other):
         return isinstance(other, Item) and self.path == other.path
@@ -150,7 +150,7 @@ class Item(object):
         """
         match = re.match(r"([a-zA-Z]+)(\d+)", text)
         if not match:
-            raise ValueError("invalid ID: {}".format(text))
+            raise DoorstopError("invalid ID: {}".format(text))
         return match.group(1), int(match.group(2))
 
     @property
@@ -239,7 +239,7 @@ class Item(object):
                     for index, line in enumerate(external):
                         if regex.search(line):
                             return path, index + 1
-        raise ValueError("external reference not found: {}".format(self.ref))
+        raise DoorstopError("external reference not found: {}".format(self.ref))
 
     @property
     @_auto_load

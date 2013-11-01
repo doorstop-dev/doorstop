@@ -12,6 +12,7 @@ import logging
 
 from doorstop.core.item import Item
 from doorstop.core.document import Document
+from doorstop.common import DoorstopError
 
 from doorstop.core.test import ROOT, FILES
 
@@ -24,6 +25,7 @@ class MockItem(Item, Mock):
 class MockDocument(Document):
     """Document class with mock read/write methods after initialization."""
 
+    @patch('os.path.isfile', Mock(return_value=True))
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._file = ""  # file system mock
@@ -40,6 +42,8 @@ class MockDocument(Document):
         """Mock write function"""
         logging.debug("mock write: {0}".format(repr(text)))
         self._file = text
+
+    _new = Mock()
 
 
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
@@ -79,7 +83,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_str(self):
         """Verify documents can be converted to strings."""
         path = os.path.join('doorstop', 'core', 'test', 'files')
-        self.assertEqual("_RQ (@/{})".format(path), str(self.document))
+        text = "_RQ (@{}{})".format(os.sep, path)
+        self.assertEqual(text, str(self.document))
 
     def test_ne(self):
         """Verify document non-equality is correct."""
@@ -91,16 +96,27 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("items: {}".format(items))
         self.assertEqual(3, len(items))
 
-    def test_init(self):  # TODO: this doesn't actually update the file?
+    @patch('doorstop.core.document.Document', MockDocument)
+    @patch('doorstop.core.processor.Document', MockDocument)
+    def test_new(self):  # TODO: this doesn't actually update the file?
         """Verify a new document can be created with defaults."""
-        doc = MockDocument(FILES, prefix='RQ', digits=2)
-        self.assertEqual('_RQ', doc.prefix)
+        empty = os.path.join(FILES, 'empty')
+        try:
+            doc = MockDocument.new(empty, root=FILES, prefix='NEW', digits=2)
+        finally:
+            os.remove(os.path.join(empty, '.doorstop.yml'))
+        self.assertEqual('NEW', doc.prefix)
         self.assertEqual(2, doc.digits)
+        MockDocument._new.assert_called_once_with(empty)
+
+    def test_new_existing(self):
+        """Verify an exception is raised if the document already exists."""
+        self.assertRaises(DoorstopError, Document.new, FILES, FILES, '_TEST')
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
         path = os.path.join(FILES, 'empty')
-        self.assertRaises(ValueError, Document, path)
+        self.assertRaises(DoorstopError, Document, path)
 
     def test_check(self):
         """Verify a document can be validated."""

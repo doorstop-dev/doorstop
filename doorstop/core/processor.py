@@ -54,9 +54,10 @@ class Node(object):
     def from_list(docs):  # TODO: make this a Tree class?
         """Get a new tree from the list of Documents.
 
+        @param root: path to root of the project
         @param documents: list of Documents
         @return: tree built from Nodes
-        @raise ValueError: when the tree cannot be built
+        @raise DoorstopError: when the tree cannot be built
         """
         unplaced = list(docs)
         for doc in list(unplaced):
@@ -67,14 +68,14 @@ class Node(object):
                 unplaced.remove(doc)
                 break
         else:
-            raise ValueError("no root document")
+            raise DoorstopError("no root document")
 
         while unplaced:
             count = len(unplaced)
             for doc in list(unplaced):
                 try:
-                    tree.add(doc)
-                except ValueError as error:
+                    tree.place(doc)
+                except DoorstopError as error:
                     logging.debug(error)
                 else:
                     logging.info("added to tree: {}".format(doc))
@@ -82,15 +83,15 @@ class Node(object):
 
             if len(unplaced) == count:  # no more documents could be placed
                 logging.debug("unplaced documents: {}".format(unplaced))
-                raise ValueError("unplaced document: {}".format(unplaced[0]))
+                raise DoorstopError("unplaced document: {}".format(unplaced[0]))
 
         return tree
 
-    def add(self, doc):
-        """Attempt to add the Document to the current tree.
+    def place(self, doc):
+        """Attempt to place the Document in the current tree.
 
         @param doc: Document to add
-        @raise ValueError: if the Document cannot yet be placed
+        @raise DoorstopError: if the Document cannot yet be placed
         """
         logging.debug("trying to add '{}'...".format(doc))
         if doc.parent == self.document.prefix:
@@ -99,19 +100,19 @@ class Node(object):
         else:
             for child in self.children:
                 try:
-                    child.add(doc)
-                except ValueError:
-                    pass
+                    child.place(doc)
+                except DoorstopError:
+                    pass  # the error is raised later
                 else:
                     break
             else:
-                msg = "no parent ({}) for: {}".format(doc.parent, doc)
-                raise ValueError(msg)
+                msg = "no parent for: {}".format(doc)
+                raise DoorstopError(msg)
 
     def check(self):
         """Confirm the document hiearchy is valid.
 
-        @raise ValueError: on issue
+        @raise DoorstopError: on issue
         @return: indication that hiearchy is valid
         """
         logging.info("checking tree...")
@@ -119,55 +120,37 @@ class Node(object):
             document.check()
         return True
 
+    def new(self, path, prefix, parent=None, digits=None):
+        """Create a new document and add it to the tree.
+        TODO: add docstring
+        """
+        document = Document.new(path, self.document.root, prefix,
+                                parent=parent, digits=digits)
+        self.place(document)
 
-def run(cwd):
-    """Build a document hiearchy and validate it.
+    def edit(self, id, launch=False):
+        """Open an item for editing.
 
-    @param cwd: current working directory
-    @return: indicates documents are valid
-    """
-    try:
-        tree = build(cwd)
-    except ValueError as error:
-        logging.error(error)
-        return False
-    else:
-        try:
-            tree.check()
-        except DoorstopError as error:
-            logging.error(error)
-            return False
+        @param id: ID of item to edit
+        @param launch: open the default text editor
+        @raise DoorstopError: when the item cannot be found
+        """
+        logging.debug("looking for {}...".format(id))
+        prefix, number = Item.split_id(id)
 
-    return True
+        for document in self:
+            if document.prefix.lower() == prefix.lower():
+                for item in document:
+                    if item.number == number:
+                        if launch:
+                            _open(item.path)
+                        return
+                logging.warning("no matching number: {}".format(number))
+                break
+        else:
+            logging.warning("no matching prefix: {}".format(prefix))
 
-
-def edit(cwd, id, launch=False):
-    """Open an item for editing.
-
-    @param cwd: current working directory
-    @param id: ID of item to edit
-    @param launch: open the default text editor
-    @return: indicates item was found for editing
-    """
-    tree = build(cwd)
-
-    logging.debug("looking for {}...".format(id))
-    prefix, number = Item.split_id(id)
-
-    for document in tree:
-        if document.prefix.lower() == prefix.lower():
-            for item in document:
-                if item.number == number:
-                    if launch:
-                        _open(item.path)
-                    return True
-            logging.info("no matching number: {}".format(number))
-            break
-    else:
-        logging.info("no matching prefix: {}".format(prefix))
-
-    logging.error("no matching ID: {}".format(id))
-    return False
+        raise DoorstopError("no matching ID: {}".format(id))
 
 
 def _open(path):  # pragma: no cover, integration test
@@ -190,7 +173,7 @@ def build(cwd):
 
     @param cwd: current working directory
     @return: tree built from Nodes
-    @raise ValueError: when the tree cannot be built
+    @raise DoorstopError: when the tree cannot be built
     """
     documents = []
 
@@ -220,7 +203,7 @@ def _add_document_from_path(path, root, documents):
     """
     try:
         document = Document(path, root)
-    except ValueError:
+    except DoorstopError:
         pass  # no document in directory
     else:
         if document.skip:

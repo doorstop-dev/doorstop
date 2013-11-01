@@ -10,6 +10,7 @@ import logging
 import yaml
 
 from doorstop.core.item import Item
+from doorstop.common import DoorstopError
 
 
 class Document(object):
@@ -22,24 +23,26 @@ class Document(object):
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, root=os.getcwd(),
-                 prefix=None, parent=None, digits=None):
-        """Create a new Document.
+                 _prefix=None, _parent=None, _digits=None):
+        """Load a Document from an exiting directory.
+
+        Internally, this constructor is also used to initialize new
+        documents by providing default properites.
 
         @param path: path to Document directory
         @param root: path to root of project
         """
         # Check directory contents
-        if not prefix:  # not creating a new document
-            if not os.path.isfile(os.path.join(path, Document.CONFIG)):
-                relpath = os.path.relpath(path, root)
-                msg = "no {} in {}".format(Document.CONFIG, relpath)
-                raise ValueError(msg)
+        if not os.path.isfile(os.path.join(path, Document.CONFIG)):
+            relpath = os.path.relpath(path, root)
+            msg = "no {} in {}".format(Document.CONFIG, relpath)
+            raise DoorstopError(msg)
         # Initialize Document
         self.path = path
         self.root = root
-        self.prefix = prefix or Document.DEFAULT_PREFIX
-        self.parent = parent or Document.DEFAULT_PARENT
-        self.digits = digits or Document.DEFAULT_DIGITS
+        self.prefix = _prefix or Document.DEFAULT_PREFIX
+        self.parent = _parent or Document.DEFAULT_PARENT
+        self.digits = _digits or Document.DEFAULT_DIGITS
         self.load()
         self.save()
         # Mark if skippable
@@ -50,14 +53,14 @@ class Document(object):
 
     def __str__(self):
         relpath = os.path.relpath(self.path, self.root)
-        return "{} (@/{})".format(self.prefix, relpath)
+        return "{} (@{}{})".format(self.prefix, os.sep, relpath)
 
     def __iter__(self):
         for filename in os.listdir(self.path):
             path = os.path.join(self.path, filename)
             try:
                 yield Item(path)
-            except ValueError as error:
+            except DoorstopError as error:
                 logging.debug(error)
 
     def __eq__(self, other):
@@ -65,6 +68,38 @@ class Document(object):
 
     def __ne__(self, other):
         return not self == other
+
+    @staticmethod
+    def new(path, root, prefix, parent=None, digits=None):
+        """Create a new Document.
+
+        @param path: path to directory for the new document
+        @param root: path to root of the project
+        @param prefix: prefix for the new document
+        @param parent: parent ID for the new document
+        @param digits: number of digits for the new document
+        @raise DoorstopError: if the document already exists
+        """
+        config = os.path.join(path, Document.CONFIG)
+        # Check for an existing document
+        if os.path.exists(config):
+            raise DoorstopError("document already exists: {}".format(path))
+        # Create the document directory
+        Document._new(path)
+        # Return the new document
+        return Document(path, root=root,
+                        _prefix=prefix, _parent=parent, _digits=digits)
+
+    @staticmethod
+    def _new(path):  # pragma: no cover, integration test
+        """Create a new document directory.
+
+        @param config: path to new document directory
+        """
+        if not os.path.exists(path):
+            os.makedirs(path)
+        with open(os.path.join(path, Document.CONFIG), 'w') as _:
+            pass  # just touch the file
 
     def load(self):
         """Load the document's properties from a file."""

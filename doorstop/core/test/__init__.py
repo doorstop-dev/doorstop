@@ -14,6 +14,7 @@ from doorstop.core import Document
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
+EMPTY = os.path.join(FILES, 'empty')
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
@@ -46,12 +47,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Document class."""  # pylint: disable=C0103
 
-    EMPTY = os.path.join(FILES, 'empty')
-
     def tearDown(self):
         """Clean up temporary files."""
-        for filename in os.listdir(TestDocument.EMPTY):
-            path = os.path.join(TestDocument.EMPTY, filename)
+        for filename in os.listdir(EMPTY):
+            path = os.path.join(EMPTY, filename)
             os.remove(path)
 
     def test_load(self):
@@ -63,7 +62,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new(self):
         """Verify a new document can be created."""
-        doc = Document(TestDocument.EMPTY, prefix='SYS', digits=4)
+        doc = Document.new(EMPTY, FILES, prefix='SYS', digits=4)
         self.assertEqual('SYS', doc.prefix)
         self.assertEqual(4, doc.digits)
         self.assertEqual(0, len(doc.items))

@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 import os
+import shutil
 import tempfile
 from distutils import dir_util  # TODO: pylint: disable=E0611
 
@@ -21,6 +22,7 @@ ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
 
+# TODO: should each command have its own class?
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestCLI(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Doorstop CLI."""
@@ -33,15 +35,39 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         """Verify the main CLI help text can be requested."""
         self.assertRaises(SystemExit, main, ['--help'])
 
+    def test_main_error(self):
+        """Verify the main CLI logic returns an error in an empty directory."""
+        cwd = os.getcwd()
+        temp = tempfile.mkdtemp()
+        os.chdir(temp)
+        try:
+            self.assertRaises(SystemExit, main, [])
+        finally:
+            os.chdir(cwd)
+            shutil.rmtree(temp)
+
     def test_new(self):
         """Verify the 'new' command can be called."""
-        self.assertRaises(NotImplementedError, main, ['new'])
+        temp = tempfile.mkdtemp()
+        try:
+            self.assertIs(None, main(['new', '_TEMP', temp, '-p', 'REQ']))
+        finally:
+            shutil.rmtree(temp)
 
-    def test_add(self):
+    def test_new_error(self):
+        """Verify the 'new' command returns an error with an unknown parent."""
+        temp = tempfile.mkdtemp()
+        try:
+            self.assertRaises(SystemExit, main,
+                              ['new', '_TEMP', temp, '-p', 'UNKNOWN'])
+        finally:
+            shutil.rmtree(temp)
+
+    def test_add(self):  # TODO: implement test
         """Verify the 'add' command can be called."""
         self.assertRaises(NotImplementedError, main, ['add'])
 
-    def test_remove(self):
+    def test_remove(self):  # TODO: implement test
         """Verify the 'remove' command can be called."""
         self.assertRaises(NotImplementedError, main, ['remove'])
 
@@ -52,15 +78,19 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT002.yml')
         mock_open.assert_called_once_with(os.path.normpath(path))
 
-    def test_import(self):
+    def test_edit_error(self):
+        """Verify the 'edit' command returns an error with an unknown ID."""
+        self.assertRaises(SystemExit, main, ['edit', 'req9999'])
+
+    def test_import(self):  # TODO: implement test
         """Verify the 'import' command can be called."""
         self.assertRaises(NotImplementedError, main, ['import', 'PATH'])
 
-    def test_export(self):
+    def test_export(self):  # TODO: implement test
         """Verify the 'export' command can be called."""
         self.assertRaises(NotImplementedError, main, ['export', 'PATH'])
 
-    def test_report(self):
+    def test_report(self):  # TODO: implement test
         """Verify the 'report' command can be called."""
         self.assertRaises(NotImplementedError, main, ['report', 'PATH'])
 
@@ -75,6 +105,7 @@ class TestCLI(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, [])
 
 
+# TODO: is this class needed?
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the Doorstop CLI executable."""
@@ -83,7 +114,9 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
     def setUpClass(cls):
         if os.getenv(ENV):
             cls.TEMP = tempfile.mkdtemp()
-            cls.ENV = TestFileEnvironment(os.path.join(cls.TEMP, '.scripttest'))
+            path = os.path.join(cls.TEMP, '.scripttest')
+            cls.ENV = TestFileEnvironment(path)
+            os.makedirs(os.path.join(path, '.sgdrawer'))
             if os.name == 'nt':
                 cls.BIN = os.path.join(ROOT, 'env', 'Scripts', 'doorstop.exe')
             else:
@@ -102,7 +135,6 @@ class TestExecutable(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' can be called."""
         result = self.cli(expect_error=True)
         self.assertNotEqual(0, result.returncode)
-        self.assertIn("doorstop", result.stderr)
 
     def test_doorstop_new(self):
         """Verify 'doorstop new' can be called."""

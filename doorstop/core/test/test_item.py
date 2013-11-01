@@ -69,7 +69,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify an item can be printed."""
-        self.assertEqual("RQ001 (@/{})".format(self.path), str(self.item))
+        text = "RQ001 (@{}{})".format(os.sep, self.path)
+        self.assertEqual(text, str(self.item))
 
     def test_ne(self):
         """Verify item non-equality is correct."""
@@ -149,7 +150,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_find_ref_error(self):
         """Verify an error is raised when no external reference is found."""
         self.item.ref = "notfound"
-        self.assertRaises(ValueError, self.item.find_ref)
+        self.assertRaises(DoorstopError, self.item.find_ref)
 
     def test_find_ref_none(self):
         """Verify nothing returned when no external reference is specified."""
@@ -176,13 +177,13 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
-        self.assertRaises(ValueError, MockItem, "path/to/REQ.yaml")
-        self.assertRaises(ValueError, MockItem, "path/to/001.yaml")
+        self.assertRaises(DoorstopError, MockItem, "path/to/REQ.yaml")
+        self.assertRaises(DoorstopError, MockItem, "path/to/001.yaml")
 
     def test_invalid_file_ext(self):
         """Verify an invalid file extension cannot be a requirement."""
-        self.assertRaises(ValueError, MockItem, "path/to/REQ001")
-        self.assertRaises(ValueError, MockItem, "path/to/REQ001.txt")
+        self.assertRaises(DoorstopError, MockItem, "path/to/REQ001")
+        self.assertRaises(DoorstopError, MockItem, "path/to/REQ001.txt")
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
