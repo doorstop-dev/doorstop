@@ -188,6 +188,9 @@ def build(cwd):
             path = os.path.join(dirpath, dirname)
             _add_document_from_path(path, root, documents)
 
+    # Build the document tree
+    if not documents:
+        logging.warning("no documents found")
     logging.info("building document tree...")
     tree = Node.from_list(documents)
     logging.info("final tree: {}".format(tree))
