@@ -14,7 +14,7 @@ from doorstop.core.item import Item
 from doorstop.core.document import Document
 from doorstop.common import DoorstopError
 
-from doorstop.core.test import ROOT, FILES
+from doorstop.core.test import ROOT, FILES, NEW
 
 
 class MockItem(Item, Mock):  # pylint: disable=R0904
@@ -83,7 +83,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_str(self):
         """Verify documents can be converted to strings."""
         path = os.path.join('doorstop', 'core', 'test', 'files')
-        text = "_RQ (@{}{})".format(os.sep, path)
+        text = "_REQ (@{}{})".format(os.sep, path)
         self.assertEqual(text, str(self.document))
 
     def test_ne(self):
@@ -101,13 +101,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_new(self):
         """Verify a new document can be created with defaults."""
         empty = os.path.join(FILES, 'empty')
+        path = os.path.join(empty, '.doorstop.yml')
         try:
             doc = MockDocument.new(empty, root=FILES, prefix='NEW', digits=2)
         finally:
-            os.remove(os.path.join(empty, '.doorstop.yml'))
+            os.remove(path)
         self.assertEqual('NEW', doc.prefix)
         self.assertEqual(2, doc.digits)
-        MockDocument._new.assert_called_once_with(empty)
+        MockDocument._new.assert_called_once_with(empty, path)
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
@@ -117,6 +118,19 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised on an invalid document."""
         path = os.path.join(FILES, 'empty')
         self.assertRaises(DoorstopError, Document, path)
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add(self, mock_new):
+        """Verify an item can be added to a document."""
+        self.document.add()
+        mock_new.assert_called_once_with(FILES, ROOT, '_REQ', 2, 4, (2, 2))
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_empty(self, mock_new):
+        """Verify an item can be added to an new document."""
+        document = MockDocument(NEW, ROOT)
+        self.assertIsNot(None, document.add())
+        mock_new.assert_called_once_with(NEW, ROOT, '_NEW', 5, 1, None)
 
     def test_check(self):
         """Verify a document can be validated."""

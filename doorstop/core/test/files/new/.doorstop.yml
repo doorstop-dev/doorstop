@@ -1,0 +1,4 @@
+settings:
+  digits: 5
+  parent: _REQ
+  prefix: _NEW

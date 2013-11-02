@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.item module.
 """
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import patch, Mock
 
 import os
 import logging
@@ -13,10 +13,13 @@ import logging
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
+from doorstop.core.test import FILES, EMPTY
+
 
 class MockItem(Item):
     """Item class with mock read/write methods."""
 
+    @patch('os.path.isfile', Mock(return_value=True))
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._file = ""  # file system mock
@@ -33,6 +36,8 @@ class MockItem(Item):
         """Mock write method"""
         logging.debug("mock write: {0}".format(repr(text)))
         self._file = text
+
+    _new = Mock()
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
@@ -63,10 +68,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = "level: 1\nlinks: []\ntext: ''\n"
         self.item._write.assert_called_once_with(text)
 
-    def test_repr(self):
-        """Verify an item can be represented."""
-        self.assertEqual(self.item, eval(repr(self.item)))
-
     def test_str(self):
         """Verify an item can be printed."""
         text = "RQ001 (@{}{})".format(os.sep, self.path)
@@ -76,11 +77,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify item non-equality is correct."""
         self.assertNotEqual(self.item, None)
 
+    # TODO: use MockItem.new()
     def test_lt(self):
         """Verify items can be compared."""
-        item0 = MockItem('path/to/RQ002.yml', level=(1, 1))
+        item0 = MockItem('path/to/RQ002.yml', _level=(1, 1))
         item1 = self.item
-        item2 = MockItem('path/to/RQ003.yml', level=(1, 1, 2))
+        item2 = MockItem('path/to/RQ003.yml', _level=(1, 1, 2))
         self.assertLess(item0, item1)
         self.assertLess(item1, item2)
         self.assertGreater(item2, item0)
@@ -184,6 +186,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an invalid file extension cannot be a requirement."""
         self.assertRaises(DoorstopError, MockItem, "path/to/REQ001")
         self.assertRaises(DoorstopError, MockItem, "path/to/REQ001.txt")
+
+    @patch('doorstop.core.item.Item', MockItem)
+    def test_new(self):
+        """Verify items can be created."""
+        item = MockItem.new(EMPTY, FILES, 'TEST', 5, 42, (1, 2, 3))
+        path = os.path.join(EMPTY, 'TEST00042.yml')
+        self.assertEqual(path, item.path)
+        self.assertEqual((1, 2, 3), item.level)
+        MockItem._new.assert_called_once_with(path)
+
+    def test_new_existing(self):
+        """Verify an exception is raised if the item already exists."""
+        self.assertRaises(DoorstopError,
+                          Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

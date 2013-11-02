@@ -6,15 +6,15 @@ import unittest
 
 import os
 
-from scripttest import TestFileEnvironment
-
 from doorstop.core import Item
 from doorstop.core import Document
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
-EMPTY = os.path.join(FILES, 'empty')
+EMPTY = os.path.join(FILES, 'empty')  # an empty directory
+EXTERNAL = os.path.join(FILES, 'external')  # external files to reference
+NEW = os.path.join(FILES, 'new')  # new document with no items
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
@@ -56,7 +56,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a document can be loaded from a directory."""
         doc = Document(FILES)
-        self.assertEqual('_RQ', doc.prefix)
+        self.assertEqual('_REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
         self.assertEqual(3, len(doc.items))
 

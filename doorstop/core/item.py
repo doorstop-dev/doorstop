@@ -49,15 +49,23 @@ class Item(object):
     DEFAULT_LINKS = set()
 
     def __init__(self, path, root=os.getcwd(),
-                 level=None, text=None, ref=None, links=None):
-        """Create a new Item.
+                 _level=None,
+                 # TODO: are these arguments needed here?
+                 _text=None, _ref=None, _links=None):
+        """Load an item from an existing file.
+
+        Internally, this constructor is also used to initialize new
+        items by providing default properites.
 
         @param path: path to Item file
         @param root: path to root of project
         """
+        # Check item's path
+        if not os.path.isfile(path):
+            raise DoorstopError("item does not exist: {}".format(path))
+        # Check file name
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
-        # Check file name
         try:
             self.split_id(name)
         except DoorstopError:
@@ -69,10 +77,10 @@ class Item(object):
         # Initialize Item
         self.path = path
         self.root = root
-        self._level = level or Item.DEFAULT_LEVEL
-        self._text = text or Item.DEFAULT_TEXT
-        self._ref = ref or Item.DEFAULT_REF
-        self._links = links or Item.DEFAULT_LINKS
+        self._level = _level or Item.DEFAULT_LEVEL
+        self._text = _text or Item.DEFAULT_TEXT
+        self._ref = _ref or Item.DEFAULT_REF
+        self._links = _links or Item.DEFAULT_LINKS
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))
@@ -89,6 +97,41 @@ class Item(object):
 
     def __lt__(self, other):
         return self.level < other.level
+
+    @staticmethod
+    def new(path, root, prefix, digits, number, level):  # pylint: disable=R0913
+        """Create a new item.
+
+        @param path: path to directory for the new item
+        @param root: path to root of the project
+        @param prefix: prefix for the new item
+        @param digits: number of digits for the new document
+        @param number: number for the new item
+        @param level: level for the new item (None for default)
+
+        @raise DoorstopError: if the item already exists
+        """
+        identifier = Item.join_id(prefix, digits, number)
+        filename = identifier + Item.EXTENSIONS[0]
+        path2 = os.path.join(path, filename)
+        # Check for an existing item
+        if os.path.exists(path2):
+            raise DoorstopError("item already exists: {}".format(path2))
+        # Create the item file
+        Item._new(path2)
+        # Return the new item
+        item = Item(path2, root=root, _level=level)
+        item.save()
+        return item
+
+    @staticmethod
+    def _new(path):  # pragma: no cover, integration test
+        """Create a new item file.
+
+        @param config: path to new item file
+        """
+        with open(path, 'w'):
+            pass  # just touch the file
 
     def load(self):
         """Load the item's properties from a file."""
@@ -140,10 +183,19 @@ class Item(object):
         return os.path.splitext(os.path.basename(self.path))[0]
 
     @staticmethod
-    def split_id(text):
-        """Split an item's ID into prefix and number.
+    def join_id(prefix, digits, number):
+        """Join the parts of an item's ID into an ID.
 
-        >>> Item.split_id("ABC00123")
+        >>> Item.join_id('ABC', 5, 123)
+        'ABC00123'
+        """
+        return "{}{}".format(prefix, str(number).zfill(digits))
+
+    @staticmethod
+    def split_id(text):
+        """Split an item's ID into a prefix and number.
+
+        >>> Item.split_id('ABC00123')
         ('ABC', 123)
 
         """

@@ -6,6 +6,7 @@ Compiles the Doorstop document hierarchy.
 
 import os
 import sys
+import shutil
 import subprocess
 import logging
 from itertools import chain
@@ -133,11 +134,36 @@ class Node(object):
         @param parent: parent document's prefix
         @param digits: number of digits for the document's numbers
 
+        @return: newly created and placed Document
+
         @raise DoorstopError: if the document cannot be created
         """
         document = Document.new(path, self.document.root, prefix,
                                 parent=parent, digits=digits)
-        self.place(document)
+        try:
+            self.place(document)
+        except DoorstopError:
+            msg = "deleting unplaced directory {}...".format(document.path)
+            logging.debug(msg)
+            if os.path.exists(document.path):
+                shutil.rmtree(document.path)
+            raise
+        return document
+
+    def add(self, prefix):
+        """Add a new item to an existing document.
+
+        @param prefix: document's prefix
+
+        @return: newly created Item
+
+        @raise DoorstopError: if the item cannot be created
+        """
+        for document in self:
+            if document.prefix.lower() == prefix.lower():
+                return document.add()
+
+        raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def edit(self, identifier, launch=False):
         """Open an item for editing.

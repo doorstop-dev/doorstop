@@ -68,10 +68,10 @@ def main(args=None):
     sub = subs.add_parser('add',
                           help="add a new item or link to a document",
                           **shared)
-    sub.add_argument('-i', '--item', action='store_true',
-                     help="add a new item")
+    sub.add_argument('-i', '--item', metavar='PREFIX',
+                     help="add a new item to a document")
     sub.add_argument('-l', '--link', nargs=2, metavar='ID',
-                     help="add a new link between items")
+                     help="add a new link between document items")
 
     # Remove subparser
     sub = subs.add_parser('remove',
@@ -84,7 +84,7 @@ def main(args=None):
 
     # Edit subparser
     sub = subs.add_parser('edit',
-                          help="edit an existing item",
+                          help="edit an existing document item",
                           **shared)
     sub.add_argument('id', metavar='ID', help="item to edit")
 
@@ -155,11 +155,11 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, error):  # pylint: disable=W0613
+def _run(args, cwd, err):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
     try:
         tree = processor.build(cwd)
@@ -171,16 +171,17 @@ def _run(args, cwd, error):  # pylint: disable=W0613
         return True
 
 
-def _run_new(args, cwd, error):
+def _run_new(args, cwd, err):
     """Process arguments and run the `doorstop new` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
     try:
         tree = processor.build(cwd)
-        tree.new(args.root, args.prefix,
-                 parent=args.parent, digits=args.digits)
+        document = tree.new(args.root, args.prefix,
+                            parent=args.parent, digits=args.digits)
+        print(document)
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -188,31 +189,43 @@ def _run_new(args, cwd, error):
         return True
 
 
-def _run_add(args, cwd, error):
+def _run_add(args, cwd, err):
     """Process arguments and run the `doorstop add` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
-    raise NotImplementedError("'doorstop add' not implemented")
+    try:
+        tree = processor.build(cwd)
+        if args.item:
+            item = tree.add(args.item)
+            print(item)
+        elif args.link:  # pragma: no cover, TODO: add --link
+            raise NotImplementedError()
+        else:
+            err("specify whether to add and item or link")
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        return True
 
 
-def _run_remove(args, cwd, error):
+def _run_remove(args, cwd, err):
     """Process arguments and run the `doorstop remove` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
+    logging.warning((args, cwd, err))
     raise NotImplementedError("'doorstop remove' not implemented")
 
 
-def _run_edit(args, cwd, error):
+def _run_edit(args, cwd, err):
     """Process arguments and run the `doorstop edit` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
     try:
         tree = processor.build(cwd)
@@ -224,33 +237,33 @@ def _run_edit(args, cwd, error):
         return True
 
 
-def _run_import(args, cwd, error):
+def _run_import(args, cwd, err):
     """Process arguments and run the `doorstop import` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
+    logging.warning((args, cwd, err))
     raise NotImplementedError("'doorstop import' not implemented")
 
 
-def _run_export(args, cwd, error):
+def _run_export(args, cwd, err):
     """Process arguments and run the `doorstop export` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
+    logging.warning((args, cwd, err))
     raise NotImplementedError("'doorstop export' not implemented")
 
 
-def _run_report(args, cwd, error):
+def _run_report(args, cwd, err):
     """Process arguments and run the `doorstop report` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
-    @param error: function to call for CLI errors
+    @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, error))
+    logging.warning((args, cwd, err))
     raise NotImplementedError("'doorstop report' not implemented")
 
 

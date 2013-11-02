@@ -65,7 +65,8 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
 
     def tearDown(self):
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        if os.path.exists(self.temp):
+            shutil.rmtree(self.temp)
 
     def test_new(self):
         """Verify 'doorstop new' can be called."""
@@ -81,9 +82,29 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop add' command."""
 
-    def test_add(self):  # TODO: implement test
+    @classmethod
+    def setUpClass(cls):
+        last = sorted(os.listdir(os.path.join(ROOT, 'reqs', 'tutorial')))[-1]
+        number = int(last.replace('TUT', '').replace('.yml', '')) + 1
+        filename = "TUT{}.yml".format(str(number).zfill(3))
+        cls.path = os.path.join(ROOT, 'reqs', 'tutorial', filename)
+
+    def tearDown(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
+    def test_add(self):
         """Verify 'doorstop add' can be called."""
-        self.assertRaises(NotImplementedError, main, ['add'])
+        self.assertIs(None, main(['add', '--item', 'TUT']))
+        self.assertTrue(os.path.isfile(self.path))
+
+    def test_add_error(self):
+        """Verify 'doorstop add' returns an error with an unknown prefix."""
+        self.assertRaises(SystemExit, main, ['add', '--item', 'UNKNOWN'])
+
+    def test_add_no_type(self):
+        """Verify 'doorstop add' requires an item or link."""
+        self.assertRaises(SystemExit, main, ['add'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

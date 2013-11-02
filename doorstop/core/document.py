@@ -32,7 +32,7 @@ class Document(object):
         @param path: path to Document directory
         @param root: path to root of project
         """
-        # Check directory contents
+        # Check document's directory
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
             msg = "no {} in {}".format(Document.CONFIG, relpath)
@@ -86,20 +86,21 @@ class Document(object):
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
         # Create the document directory
-        Document._new(path)
+        Document._new(path, config)
         # Return the new document
         return Document(path, root=root,
                         _prefix=prefix, _parent=parent, _digits=digits)
 
     @staticmethod
-    def _new(path):  # pragma: no cover, integration test
+    def _new(path, config):  # pragma: no cover, integration test
         """Create a new document directory.
 
-        @param config: path to new document directory
+        @param path: path to new document directory
+        @param config: path to new document config file
         """
         if not os.path.exists(path):
             os.makedirs(path)
-        with open(os.path.join(path, Document.CONFIG), 'w') as _:
+        with open(config, 'w'):
             pass  # just touch the file
 
     def load(self):
@@ -144,6 +145,28 @@ class Document(object):
     def items(self):
         """Get an ordered list of items in the document."""
         return sorted(item for item in self)
+
+    def add(self):
+        """Create a new item for the document and return it."""
+        number = self.maximum + 1
+        logging.debug("next number: {}".format(number))
+        try:
+            last = self.items[-1]
+        except IndexError:
+            level = None
+        else:
+            level = last.level[:-1] + (last.level[-1] + 1,)
+        logging.debug("next level: {}".format(level))
+        return Item.new(self.path, self.root, self.prefix, self.digits,
+                        number, level)
+
+    @property
+    def maximum(self):
+        """Return the highest item number in the document."""
+        try:
+            return max(item.number for item in self)
+        except ValueError:
+            return 0
 
     def check(self):
         """Confirm the document is valid.

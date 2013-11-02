@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 import os
+import tempfile
 import operator
 import logging
 
@@ -138,6 +139,23 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify a new document can be created on a tree."""
         self.tree.new(EMPTY, '_TEST', parent='REQ')
 
+    def test_new_unknown_parent(self):
+        """Verify an exception is raised for an unknown parent."""
+        temp = tempfile.mkdtemp()
+        self.assertRaises(DoorstopError, self.tree.new,
+                          temp, '_TEST', parent='UNKNOWN')
+        self.assertFalse(os.path.exists(temp))
+
+    @patch('doorstop.core.document.Document.add')
+    def test_add(self, mock_add):
+        """Verify an item can be added to a document."""
+        self.tree.add('REQ')
+        mock_add.assert_called_once_with()
+
+    def test_add_unknown_prefix(self):
+        """Verify an exception is raised for an unknown prefix (item)."""
+        self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
+
     @patch('doorstop.core.processor._open')
     def test_edit(self, mock_open):
         """Verify an item can be edited in a tree."""
@@ -145,7 +163,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         mock_open.assert_called_once_with(os.path.join(FILES, 'REQ002.yml'))
 
     def test_edit_unknown_prefix(self):
-        """Verify an exception is rasied for an unknown prefix."""
+        """Verify an exception is rasied for an unknown prefix (document)."""
         self.assertRaises(DoorstopError, self.tree.edit, 'unknown1')
 
     def test_edit_unknown_number(self):
@@ -174,7 +192,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_build(self):
         """Verify a tree can be built."""
         tree = processor.build(FILES)
-        self.assertEqual(1, len(tree))
+        self.assertEqual(2, len(tree))
 
     @patch('doorstop.core.document.Document', MockDocument)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
