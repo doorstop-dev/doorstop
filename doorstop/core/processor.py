@@ -165,6 +165,55 @@ class Node(object):
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
+    # TODO: refactor
+    def link(self, cid, pid):
+        """Add a new item to an existing document.
+
+        @param cid: child item's ID
+        @param pid: parent item's ID
+
+        @return: (child, parent) item pair
+
+        @raise DoorstopError: if the link cannot be created
+        """
+        # Find child item
+        child = None
+        prefix, number = Item.split_id(cid)
+        for document in self:
+            if document.prefix.lower() == prefix.lower():
+                for item in document:
+                    if item.number == number:
+                        child = item
+                        break
+                if child is None:
+                    logging.warning("no matching child number: {}".format(number))
+                else:
+                    break
+        if child is None:
+            logging.warning("no matching child prefix: {}".format(prefix))
+            raise DoorstopError("no matching child ID: {}".format(cid))
+
+        # Find parent item
+        parent = None
+        prefix, number = Item.split_id(pid)
+        for document in self:
+            if document.prefix.lower() == prefix.lower():
+                for item in document:
+                    if item.number == number:
+                        parent = item
+                        break
+                if parent is None:
+                    logging.warning("no matching parent number: {}".format(number))
+                else:
+                    break
+        if parent is None:
+            logging.warning("no matching parent prefix: {}".format(prefix))
+            raise DoorstopError("no matching parent ID: {}".format(cid))
+
+        # Add link
+        child.add_link(parent.id)
+        return child, parent
+
     def edit(self, identifier, launch=False):
         """Open an item for editing.
 
