@@ -159,7 +159,7 @@ class Item(object):
         # Store parsed data
         if data:
             self._level = self._convert_level(data.get('level', self._level))
-            self._text = data.get('text', self._text)
+            self._text = data.get('text', self._text).strip()
             self._ref = data.get('ref', self._ref)
             self._links = set(data.get('links', self._links))
 
@@ -177,19 +177,19 @@ class Item(object):
             level = float(level)
         elif len(self._level) == 1:
             level = int(level)
-        text = self._text
+        text = _literal(self._text)
         ref = self._ref
         links = sorted(self._links)
         # Build the data structure
         data = {'level': level,
-                'text': _literal(text),
+                'text': text,
                 'links': links}
         if ref:
             data['ref'] = ref
         # Dump the data to YAML
-        text = yaml.dump(data, default_flow_style=False)
+        dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
-        self._write(text)
+        self._write(dump)
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
@@ -279,7 +279,7 @@ class Item(object):
     @_auto_save
     def text(self, text):
         """Set the item's text."""
-        self._text = text
+        self._text = text.strip()
 
     @property
     @_auto_load
@@ -345,8 +345,12 @@ class Item(object):
         @return: indication that the item is valid
         """
         logging.info("checking item {}...".format(self))
+        # Verify the file can be parsed
+        self.load()
         # Check text
         if not self.text:
             logging.warning("no text: {}".format(self))
+        # Reformat the file
+        self.save()
         # Item is valid
         return True

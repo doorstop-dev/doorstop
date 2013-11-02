@@ -1,8 +1,4 @@
-text: |
-
-  Doorstop shall support non-text requirements assets (images, files, etc.) as links in the Markdown text.
-
-kind: specified
-author: jacebrowning@gmail.com
+level: 1.2
 links: []
-level:  '1.2'
+text: |-
+  Doorstop shall support non-text requirements assets (images, files, etc.) as links in the Markdown text.

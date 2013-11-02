@@ -1,17 +1,18 @@
-text: |
-
+level: 1.2
+links: []
+text: |-
   **Creating a document with links to another document.**
 
   Create a new document:
 
       cd /tmp/doorstop
-      
+
       doorstop new --root test --prefix TST
 
   Add an item:
 
       cd /tmp/doorstop/test
-      
+
       doorstop add --item  # displays the new item's ID
 
   Edit the new item in the default text editor:
@@ -25,6 +26,3 @@ text: |
   Commit all changes to version control:
 
       doorstop save
-
-author: jacebrowning@gmail.com
-level:  '1.2'
