@@ -165,7 +165,6 @@ class Node(object):
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
-    # TODO: refactor
     def link(self, cid, pid):
         """Add a new item to an existing document.
 
@@ -178,39 +177,9 @@ class Node(object):
         """
         logging.info("linking {} to {}...".format(cid, pid))
         # Find child item
-        child = None
-        prefix, number = Item.split_id(cid)
-        for document in self:
-            if document.prefix.lower() == prefix.lower():
-                for item in document:
-                    if item.number == number:
-                        child = item
-                        break
-                else:
-                    logging.warning("no matching child number: {}".format(number))
-                break
-        else:
-            logging.warning("no matching child prefix: {}".format(prefix))
-        if child is None:
-            raise DoorstopError("no matching child ID: {}".format(cid))
-
+        child = self._find_item(cid, 'child')
         # Find parent item
-        parent = None
-        prefix, number = Item.split_id(pid)
-        for document in self:
-            if document.prefix.lower() == prefix.lower():
-                for item in document:
-                    if item.number == number:
-                        parent = item
-                        break
-                else:
-                    logging.warning("no matching parent number: {}".format(number))
-                break
-        else:
-            logging.warning("no matching parent prefix: {}".format(prefix))
-        if parent is None:
-            raise DoorstopError("no matching parent ID: {}".format(pid))
-
+        parent = self._find_item(pid, 'parent')
         # Add link
         child.add_link(parent.id)
         return child, parent
@@ -224,21 +193,36 @@ class Node(object):
         @raise DoorstopError: if the item cannot be found
         """
         logging.debug("looking for {}...".format(identifier))
-        prefix, number = Item.split_id(identifier)
+        # Find item
+        item = self._find_item(identifier)
+        # Open item
+        if launch:
+            _open(item.path)
 
+    def _find_item(self, identifier, kind=''):
+        """Return an the item from its ID.
+
+        @param identifier: item ID
+        @param kind: type of item for logging messages
+
+        @return: matching Item
+
+        @raise DoorstopError: if the item cannot be found
+        """
+        _kind = (' ' + kind) if kind else kind
+        prefix, number = Item.split_id(identifier)
         for document in self:
             if document.prefix.lower() == prefix.lower():
                 for item in document:
                     if item.number == number:
-                        if launch:
-                            _open(item.path)
-                        return
-                logging.warning("no matching number: {}".format(number))
+                        return item
+                msg = "no matching{} number: {}".format(_kind, number)
+                logging.info(msg)
                 break
         else:
-            logging.warning("no matching prefix: {}".format(prefix))
+            logging.info("no matching{} prefix: {}".format(_kind, prefix))
 
-        raise DoorstopError("no matching ID: {}".format(identifier))
+        raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
 
 def _open(path):  # pragma: no cover, integration test

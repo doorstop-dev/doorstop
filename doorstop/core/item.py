@@ -15,7 +15,7 @@ import yaml
 from doorstop.common import DoorstopError
 
 
-class _literal(str):
+class _literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
     pass
 

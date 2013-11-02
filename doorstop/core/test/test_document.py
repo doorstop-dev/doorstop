@@ -97,7 +97,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(3, len(items))
 
     @patch('doorstop.core.document.Document', MockDocument)
-    @patch('doorstop.core.processor.Document', MockDocument)
     def test_new(self):
         """Verify a new document can be created with defaults."""
         path = os.path.join(EMPTY, '.doorstop.yml')
