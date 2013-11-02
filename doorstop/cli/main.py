@@ -66,21 +66,35 @@ def main(args=None):
 
     # Add subparser
     sub = subs.add_parser('add',
-                          help="add a new item or link to a document",
+                          help="add a new item to a document",
                           **shared)
-    sub.add_argument('-i', '--item', metavar='PREFIX',
-                     help="add a new item to a document")
-    sub.add_argument('-l', '--link', nargs=2, metavar='ID',
-                     help="add a new link between document items")
+    sub.add_argument('prefix',
+                     help="prefix of document for the new item")
 
     # Remove subparser
     sub = subs.add_parser('remove',
-                          help="remove an item or link from a document",
+                          help="remove an item from a document",
                           **shared)
-    sub.add_argument('-i', '--item', metavar='ID',
-                     help="remove an existing item")
-    sub.add_argument('-l', '--link', nargs=2, metavar='ID',
-                     help="remove an existing link between items")
+    sub.add_argument('id', metavar='ID',
+                     help="item ID to remove from a document")
+
+    # Link subparser
+    sub = subs.add_parser('link',
+                          help="add a new link between two document items",
+                          **shared)
+    sub.add_argument('child',
+                     help="child item ID to link to the parent")
+    sub.add_argument('parent',
+                     help="parent item ID to link from the child")
+
+    # Unlink subparser
+    sub = subs.add_parser('unlink',
+                          help="remove a link between two document items",
+                          **shared)
+    sub.add_argument('child',
+                     help="child item ID to unlink from parent")
+    sub.add_argument('parent',
+                     help="parent item ID child is linked to")
 
     # Edit subparser
     sub = subs.add_parser('edit',
@@ -189,7 +203,7 @@ def _run_new(args, cwd, _):
         return True
 
 
-def _run_add(args, cwd, err):
+def _run_add(args, cwd, _):
     """Process arguments and run the `doorstop add` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
@@ -197,17 +211,12 @@ def _run_add(args, cwd, err):
     """
     try:
         tree = processor.build(cwd)
-        if args.item:
-            item = tree.add(args.item)
-            print(item)
-        elif args.link:  # pragma: no cover, TODO: add --link
-            raise NotImplementedError()
-        else:
-            err("specify whether to add and item or link")
+        item = tree.add(args.prefix)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
+        print(item)
         return True
 
 

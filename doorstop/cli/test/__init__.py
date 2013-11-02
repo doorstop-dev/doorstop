@@ -95,16 +95,12 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     def test_add(self):
         """Verify 'doorstop add' can be called."""
-        self.assertIs(None, main(['add', '--item', 'TUT']))
+        self.assertIs(None, main(['add', 'TUT']))
         self.assertTrue(os.path.isfile(self.path))
 
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
-        self.assertRaises(SystemExit, main, ['add', '--item', 'UNKNOWN'])
-
-    def test_add_no_type(self):
-        """Verify 'doorstop add' requires an item or link."""
-        self.assertRaises(SystemExit, main, ['add'])
+        self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -113,7 +109,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
 
     def test_remove(self):  # TODO: implement test
         """Verify 'doorstop remove' can be called."""
-        self.assertRaises(NotImplementedError, main, ['remove'])
+        self.assertRaises(NotImplementedError, main, ['remove', 'NONE'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
