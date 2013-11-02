@@ -166,7 +166,7 @@ class Node(object):
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def link(self, cid, pid):
-        """Add a new item to an existing document.
+        """Add a new link between two items.
 
         @param cid: child item's ID
         @param pid: parent item's ID
@@ -182,6 +182,25 @@ class Node(object):
         parent = self._find_item(pid, 'parent')
         # Add link
         child.add_link(parent.id)
+        return child, parent
+
+    def unlink(self, cid, pid):
+        """Remove a link between two items.
+
+        @param cid: child item's ID
+        @param pid: parent item's ID
+
+        @return: (child, parent) item pair
+
+        @raise DoorstopError: if the link cannot be removed
+        """
+        logging.info("unlinking {} from {}...".format(cid, pid))
+        # Find child item
+        child = self._find_item(cid, 'child')
+        # Find parent item
+        parent = self._find_item(pid, 'parent')
+        # Remove link
+        child.remove_link(parent.id)
         return child, parent
 
     def edit(self, identifier, launch=False):

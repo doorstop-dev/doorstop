@@ -175,6 +175,28 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised with an unknown parent prefix."""
         self.assertRaises(DoorstopError, self.tree.link, 'req1', 'req9999')
 
+    @patch('doorstop.core.item.Item.remove_link')
+    def test_unlink(self, mock_add_link):
+        """Verify two items can be unlinked."""
+        self.tree.unlink('req3', 'req1')
+        mock_add_link.assert_called_once_with('REQ001')
+
+    def test_unlink_unknown_child_prefix(self):
+        """Verify an exception is raised with an unknown child prefix."""
+        self.assertRaises(DoorstopError, self.tree.unlink, 'unknown1', 'req1')
+
+    def test_unlink_unknown_child_number(self):
+        """Verify an exception is raised with an unknown child number."""
+        self.assertRaises(DoorstopError, self.tree.unlink, 'req9999', 'req1')
+
+    def test_unlink_unknown_parent_prefix(self):
+        """Verify an exception is raised with an unknown parent prefix."""
+        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'unknown1')
+
+    def test_unlink_unknown_parent_number(self):
+        """Verify an exception is raised with an unknown parent prefix."""
+        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'req9999')
+
     @patch('doorstop.core.processor._open')
     def test_edit(self, mock_open):
         """Verify an item can be edited in a tree."""

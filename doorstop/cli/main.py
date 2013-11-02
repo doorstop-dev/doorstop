@@ -247,6 +247,23 @@ def _run_link(args, cwd, _):
         return True
 
 
+def _run_unlink(args, cwd, _):
+    """Process arguments and run the `doorstop unlink` subcommand.
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+    """
+    try:
+        tree = processor.build(cwd)
+        child, parent = tree.unlink(args.child, args.parent)
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        print("{} -X {}".format(child, parent))
+        return True
+
+
 def _run_edit(args, cwd, _):
     """Process arguments and run the `doorstop edit` subcommand.
     @param args: Namespace of CLI arguments

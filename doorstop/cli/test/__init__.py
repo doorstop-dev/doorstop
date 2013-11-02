@@ -142,6 +142,36 @@ class TestLink(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
+    """Integration tests for the 'doorstop unlink' command."""
+
+    ITEM = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT003.yml')
+
+    def setUp(self):
+        with open(self.ITEM, 'rb') as item:
+            self.backup = item.read()
+        main(['link', 'tut3', 'req2'])  # create a temporary link
+
+    def tearDown(self):
+        with open(self.ITEM, 'wb') as item:
+            item.write(self.backup)
+
+    def test_unlink(self):
+        """Verify 'doorstop unlink' can be called."""
+        self.assertIs(None, main(['unlink', 'tut3', 'req2']))
+
+    def test_unlink_unknown_child(self):
+        """Verify 'doorstop unlink' returns an error with an unknown child."""
+        self.assertRaises(SystemExit, main, ['unlink', 'unknown3', 'req2'])
+        self.assertRaises(SystemExit, main, ['link', 'tut9999', 'req2'])
+
+    def test_unlink_unknown_parent(self):
+        """Verify 'doorstop unlink' returns an error with an unknown parent."""
+        self.assertRaises(SystemExit, main, ['unlink', 'tut3', 'unknown2'])
+        self.assertRaises(SystemExit, main, ['unlink', 'tut3', 'req9999'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestEdit(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop edit' command."""
 
