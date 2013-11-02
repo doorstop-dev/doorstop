@@ -65,7 +65,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = "level: 1\nlinks: []\ntext: ''\n"
+        text = 'level: 1\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_str(self):
@@ -106,28 +106,28 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
         self.assertEqual((1, 2, 3), self.item.level)
-        text = "level: 1.2.3\nlinks: []\ntext: ''\n"
+        text = 'level: 1.2.3\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2"
         self.assertEqual((4, 2), self.item.level)
-        text = "level: 4.2\nlinks: []\ntext: ''\n"
+        text = 'level: 4.2\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""
         self.item.level = 4.2
         self.assertEqual((4, 2), self.item.level)
-        text = "level: 4.2\nlinks: []\ntext: ''\n"
+        text = 'level: 4.2\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_level_from_int(self):
         """Verify an item's level can be set from a int and read."""
         self.item.level = 42
         self.assertEqual((42,), self.item.level)
-        text = "level: 42\nlinks: []\ntext: ''\n"
+        text = 'level: 42\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_text(self):
@@ -139,14 +139,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertEqual("abc123", self.item.ref)
-        text = "level: 1\nlinks: []\nref: abc123\ntext: ''\n"
+        text = 'level: 1\nlinks: []\nref: abc123\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_ref_none(self):
         """Verify item refs are only saved if they exist."""
         self.item.ref = None
         self.assertEqual(None, self.item.ref)
-        text = "level: 1\nlinks: []\ntext: ''\n"
+        text = 'level: 1\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
     def test_find_ref_error(self):
@@ -200,6 +200,29 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised if the item already exists."""
         self.assertRaises(DoorstopError,
                           Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
+
+
+class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
+    """Unit tests for text formatting in Items."""  # pylint: disable=C0103
+
+    ITEM = os.path.join(FILES, 'REQ001.yml')
+
+    def setUp(self):
+        with open(self.ITEM, 'rb') as infile:
+            self.backup = infile.read()
+
+    def tearDown(self):
+        with open(self.ITEM, 'wb') as outfile:
+            outfile.write(self.backup)
+
+    def test_load_save(self):
+        """Verify text formatting is preserved."""
+        item = Item(self.ITEM)
+        item.load()
+        item.save()
+        with open(self.ITEM, 'rb') as infile:
+            text = infile.read()
+        self.assertEqual(self.backup, text)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

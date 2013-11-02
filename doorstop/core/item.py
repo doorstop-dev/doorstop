@@ -15,6 +15,18 @@ import yaml
 from doorstop.common import DoorstopError
 
 
+class _literal(str):
+    """Custom type for text which should be dumped in the literal style."""
+    pass
+
+
+def _literal_representer(dumper, data):
+    """Return a custom dumper that formats str in the literal style."""
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+
+yaml.add_representer(_literal, _literal_representer)
+
+
 def _auto_load(func):
     """Decorator for methods that should automatically load from file."""
     @functools.wraps(func)
@@ -136,12 +148,15 @@ class Item(object):
     def load(self):
         """Load the item's properties from a file."""
         logging.debug("loading {}...".format(repr(self)))
+        # Read the YAML from file
         text = self._read()
+        # Parse the YAML data
         try:
             data = yaml.load(text)
         except yaml.scanner.ScannerError as error:
             msg = "invalid contents: {}:\n{}".format(self, error)
             raise DoorstopError(msg)
+        # Store parsed data
         if data:
             self._level = self._convert_level(data.get('level', self._level))
             self._text = data.get('text', self._text)
@@ -156,6 +171,7 @@ class Item(object):
     def save(self):
         """Save the item's properties to a file."""
         logging.debug("saving {}...".format(repr(self)))
+        # Collect the data items
         level = '.'.join(str(n) for n in self._level)
         if len(self._level) == 2:
             level = float(level)
@@ -164,12 +180,15 @@ class Item(object):
         text = self._text
         ref = self._ref
         links = sorted(self._links)
+        # Build the data structure
         data = {'level': level,
-                'text': text,
+                'text': _literal(text),
                 'links': links}
         if ref:
             data['ref'] = ref
-        text = yaml.dump(data)
+        # Dump the data to YAML
+        text = yaml.dump(data, default_flow_style=False)
+        # Save the YAML to file
         self._write(text)
 
     def _write(self, text):  # pragma: no cover, integration test
