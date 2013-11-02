@@ -37,10 +37,9 @@ def _auto_save(func):
     return wrapped
 
 
+# TODO: only load if an attribute is blank?
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
-
-    # TODO: only load if an attribute is blank?
 
     EXTENSIONS = '.yml', '.yaml'
 
@@ -239,7 +238,8 @@ class Item(object):
                     for index, line in enumerate(external):
                         if regex.search(line):
                             return path, index + 1
-        raise DoorstopError("external reference not found: {}".format(self.ref))
+        msg = "external reference not found: {}".format(self.ref)
+        raise DoorstopError(msg)
 
     @property
     @_auto_load

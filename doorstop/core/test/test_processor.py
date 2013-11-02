@@ -50,7 +50,7 @@ class MockDocumentNoSkip(MockDocument):
     SKIP = '__disabled__'  # never skip mock Documents
 
 
-@patch('doorstop.core.document.Document', MockDocument)
+@patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
 class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Node class using strings."""  # pylint: disable=C0103
 
@@ -122,8 +122,8 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, Node.from_list, docs)
 
 
-@patch('doorstop.core.document.Document', MockDocument)
-@patch('doorstop.core.processor.Document', MockDocument)
+@patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
+@patch('doorstop.core.processor.Document', MockDocument)  # pylint: disable=R0904
 class TestNode(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Node class."""  # pylint: disable=C0103
 

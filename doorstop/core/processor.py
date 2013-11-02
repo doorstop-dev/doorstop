@@ -51,12 +51,14 @@ class Node(object):
             yield document
 
     @staticmethod
-    def from_list(docs):  # TODO: make this a Tree class?
+    def from_list(docs):
         """Get a new tree from the list of Documents.
 
         @param root: path to root of the project
         @param documents: list of Documents
+
         @return: tree built from Nodes
+
         @raise DoorstopError: when the tree cannot be built
         """
         unplaced = list(docs)
@@ -83,7 +85,8 @@ class Node(object):
 
             if len(unplaced) == count:  # no more documents could be placed
                 logging.debug("unplaced documents: {}".format(unplaced))
-                raise DoorstopError("unplaced document: {}".format(unplaced[0]))
+                msg = "unplaced document: {}".format(unplaced[0])
+                raise DoorstopError(msg)
 
         return tree
 
@@ -91,6 +94,7 @@ class Node(object):
         """Attempt to place the Document in the current tree.
 
         @param doc: Document to add
+
         @raise DoorstopError: if the Document cannot yet be placed
         """
         logging.debug("trying to add '{}'...".format(doc))
@@ -112,8 +116,9 @@ class Node(object):
     def check(self):
         """Confirm the document hiearchy is valid.
 
-        @raise DoorstopError: on issue
         @return: indication that hiearchy is valid
+
+        @raise DoorstopError: on issue
         """
         logging.info("checking tree...")
         for document in self:
@@ -122,21 +127,28 @@ class Node(object):
 
     def new(self, path, prefix, parent=None, digits=None):
         """Create a new document and add it to the tree.
-        TODO: add docstring
+
+        @param path: directory path for the new document
+        @param prefix: document's prefix
+        @param parent: parent document's prefix
+        @param digits: number of digits for the document's numbers
+
+        @raise DoorstopError: if the document cannot be created
         """
         document = Document.new(path, self.document.root, prefix,
                                 parent=parent, digits=digits)
         self.place(document)
 
-    def edit(self, id, launch=False):
+    def edit(self, identifier, launch=False):
         """Open an item for editing.
 
-        @param id: ID of item to edit
+        @param identifier: ID of item to edit
         @param launch: open the default text editor
-        @raise DoorstopError: when the item cannot be found
+
+        @raise DoorstopError: if the item cannot be found
         """
-        logging.debug("looking for {}...".format(id))
-        prefix, number = Item.split_id(id)
+        logging.debug("looking for {}...".format(identifier))
+        prefix, number = Item.split_id(identifier)
 
         for document in self:
             if document.prefix.lower() == prefix.lower():
@@ -150,7 +162,7 @@ class Node(object):
         else:
             logging.warning("no matching prefix: {}".format(prefix))
 
-        raise DoorstopError("no matching ID: {}".format(id))
+        raise DoorstopError("no matching ID: {}".format(identifier))
 
 
 def _open(path):  # pragma: no cover, integration test
@@ -172,7 +184,9 @@ def build(cwd):
     """Build a document heirachy from the current root directory.
 
     @param cwd: current working directory
+
     @return: tree built from Nodes
+
     @raise DoorstopError: when the tree cannot be built
     """
     documents = []

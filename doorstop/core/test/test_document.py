@@ -17,7 +17,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.test import ROOT, FILES
 
 
-class MockItem(Item, Mock):
+class MockItem(Item, Mock):  # pylint: disable=R0904
     """Mock Item class for Document unit tests."""
     pass
 
@@ -98,7 +98,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.document.Document', MockDocument)
     @patch('doorstop.core.processor.Document', MockDocument)
-    def test_new(self):  # TODO: this doesn't actually update the file?
+    def test_new(self):
         """Verify a new document can be created with defaults."""
         empty = os.path.join(FILES, 'empty')
         try:

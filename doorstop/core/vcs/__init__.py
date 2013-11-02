@@ -4,8 +4,6 @@
 Interfaces to version control systems.
 """
 
-# TODO: rename package to vcs
-
 import os
 import logging
 

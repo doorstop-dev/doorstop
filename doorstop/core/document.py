@@ -78,6 +78,7 @@ class Document(object):
         @param prefix: prefix for the new document
         @param parent: parent ID for the new document
         @param digits: number of digits for the new document
+
         @raise DoorstopError: if the document already exists
         """
         config = os.path.join(path, Document.CONFIG)
