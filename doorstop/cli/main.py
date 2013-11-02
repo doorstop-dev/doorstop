@@ -46,7 +46,7 @@ def main(args=None):
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     debug.add_argument('-v', '--verbose', action='count', default=0,
-                        help="enable verbose logging")
+                       help="enable verbose logging")
     shared = {'formatter_class': _HelpFormatter, 'parents': [debug]}
 
     # Main parser
@@ -171,7 +171,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         return True
 
 
-def _run_new(args, cwd, err):
+def _run_new(args, cwd, _):
     """Process arguments and run the `doorstop new` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
@@ -221,7 +221,7 @@ def _run_remove(args, cwd, err):
     raise NotImplementedError("'doorstop remove' not implemented")
 
 
-def _run_edit(args, cwd, err):
+def _run_edit(args, cwd, _):
     """Process arguments and run the `doorstop edit` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory

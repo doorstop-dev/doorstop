@@ -14,7 +14,7 @@ from doorstop.core.item import Item
 from doorstop.core.document import Document
 from doorstop.common import DoorstopError
 
-from doorstop.core.test import ROOT, FILES, NEW
+from doorstop.core.test import ROOT, FILES, EMPTY, NEW
 
 
 class MockItem(Item, Mock):  # pylint: disable=R0904
@@ -100,15 +100,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.processor.Document', MockDocument)
     def test_new(self):
         """Verify a new document can be created with defaults."""
-        empty = os.path.join(FILES, 'empty')
-        path = os.path.join(empty, '.doorstop.yml')
+        path = os.path.join(EMPTY, '.doorstop.yml')
         try:
-            doc = MockDocument.new(empty, root=FILES, prefix='NEW', digits=2)
+            doc = MockDocument.new(EMPTY, root=FILES, prefix='NEW', digits=2)
         finally:
             os.remove(path)
         self.assertEqual('NEW', doc.prefix)
         self.assertEqual(2, doc.digits)
-        MockDocument._new.assert_called_once_with(empty, path)
+        MockDocument._new.assert_called_once_with(EMPTY, path)
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
@@ -116,8 +115,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
-        path = os.path.join(FILES, 'empty')
-        self.assertRaises(DoorstopError, Document, path)
+        self.assertRaises(DoorstopError, Document, EMPTY)
 
     @patch('doorstop.core.item.Item.new')
     def test_add(self, mock_new):

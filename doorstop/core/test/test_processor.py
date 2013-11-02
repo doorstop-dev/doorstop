@@ -17,8 +17,7 @@ from doorstop.core import processor
 from doorstop.core.processor import Node
 from doorstop.core.document import Document
 
-from doorstop.core.test import FILES
-EMPTY = os.path.join(FILES, 'empty')
+from doorstop.core.test import FILES, EMPTY
 
 
 class MockDocument(Document):
@@ -96,10 +95,9 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list(self):
         """Verify a tree can be created from a list."""
-        path = os.path.join(FILES, 'empty')
-        a = MockDocument(path, _prefix='A')
-        b = MockDocument(path, _prefix='B', _parent='A')
-        c = MockDocument(path, _prefix='C', _parent='B')
+        a = MockDocument(EMPTY, _prefix='A')
+        b = MockDocument(EMPTY, _prefix='B', _parent='A')
+        c = MockDocument(EMPTY, _prefix='C', _parent='B')
         docs = [a, b, c]
         tree = Node.from_list(docs)
         self.assertEqual(3, len(tree))
@@ -107,18 +105,17 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
-        path = os.path.join(FILES, 'empty')
-        a = MockDocument(path, _prefix='A', _parent='B')
-        b = MockDocument(path, _prefix='B', _parent='A')
+        a = MockDocument(EMPTY, _prefix='A', _parent='B')
+        b = MockDocument(EMPTY, _prefix='B', _parent='A')
         docs = [a, b]
         self.assertRaises(DoorstopError, Node.from_list, docs)
 
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
-        path = os.path.join(FILES, 'empty')
-        a = MockDocument(path, _prefix='A')
-        b = MockDocument(path, _prefix='B', _parent='A')
-        c = MockDocument(path, _prefix='C', _parent='?')
+
+        a = MockDocument(EMPTY, _prefix='A')
+        b = MockDocument(EMPTY, _prefix='B', _parent='A')
+        c = MockDocument(EMPTY, _prefix='C', _parent='?')
         docs = [a, b, c]
         self.assertRaises(DoorstopError, Node.from_list, docs)
 
@@ -174,12 +171,10 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the doorstop.core.processor module."""  # pylint: disable=C0103
 
-    EMPTY = os.path.join(FILES, 'empty')
-
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_run_empty(self):
         """Verify an empty directory is an invalid hiearchy."""
-        self.assertRaises(DoorstopError, processor.build, self.EMPTY)
+        self.assertRaises(DoorstopError, processor.build, EMPTY)
 
     @patch('doorstop.core.processor.build', Mock())
     def test_run(self):
