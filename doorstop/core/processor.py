@@ -176,6 +176,7 @@ class Node(object):
 
         @raise DoorstopError: if the link cannot be created
         """
+        logging.info("linking {} to {}...".format(cid, pid))
         # Find child item
         child = None
         prefix, number = Item.split_id(cid)
@@ -185,12 +186,12 @@ class Node(object):
                     if item.number == number:
                         child = item
                         break
-                if child is None:
-                    logging.warning("no matching child number: {}".format(number))
                 else:
-                    break
-        if child is None:
+                    logging.warning("no matching child number: {}".format(number))
+                break
+        else:
             logging.warning("no matching child prefix: {}".format(prefix))
+        if child is None:
             raise DoorstopError("no matching child ID: {}".format(cid))
 
         # Find parent item
@@ -202,13 +203,13 @@ class Node(object):
                     if item.number == number:
                         parent = item
                         break
-                if parent is None:
-                    logging.warning("no matching parent number: {}".format(number))
                 else:
-                    break
-        if parent is None:
+                    logging.warning("no matching parent number: {}".format(number))
+                break
+        else:
             logging.warning("no matching parent prefix: {}".format(prefix))
-            raise DoorstopError("no matching parent ID: {}".format(cid))
+        if parent is None:
+            raise DoorstopError("no matching parent ID: {}".format(pid))
 
         # Add link
         child.add_link(parent.id)
