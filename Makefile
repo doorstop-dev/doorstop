@@ -13,7 +13,7 @@ BIN := $(VIRTUALENV)/Scripts
 EXE := .exe
 OPEN := cmd /c start
 else
-VERSION := python3.3
+VERSION := python3
 BIN := $(VIRTUALENV)/bin
 OPEN := open
 endif
@@ -61,6 +61,9 @@ ifeq ($(shell uname),Windows)
 else ifeq ($(shell uname),CYGWIN_NT-6.1)
 .pylint: .env
 	@echo pylint cannot be installed on Cygwin
+else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
+.pylint: .env
+	@echo pylint cannot be installed on Cygwin
 else
 .pylint: .env
 	$(PIP) install pylint --download-cache=$(CACHE)
@@ -69,7 +72,7 @@ endif
 # Documentation ##############################################################
 
 .PHONY: req
-req:
+req: develop
 	$(BIN)/doorstop
 
 .PHONY: doc
@@ -95,6 +98,9 @@ pep8: depends
 ifeq ($(shell uname),Windows)
 pylint: depends
 	@echo pylint cannot be run on Windows
+else ifeq ($(shell uname),CYGWIN_NT-6.1)
+pylint: depends
+	@echo pylint cannot be run on Cygwin
 else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
 pylint: depends
 	@echo pylint cannot be run on Cygwin
