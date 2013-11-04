@@ -165,6 +165,20 @@ class Node(object):
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
+    def remove(self, identifier):
+        """Remove an new item from a document.
+
+        @param identifier: item's ID
+
+        @return: removed item
+
+        @raise DoorstopError: if the item cannot be removed
+        """
+        item = self._find_item(identifier)
+        item.delete()
+
+        return item
+
     def link(self, cid, pid):
         """Add a new link between two items.
 
@@ -217,6 +231,7 @@ class Node(object):
         # Open item
         if launch:
             _open(item.path)
+        return item
 
     def _find_item(self, identifier, kind=''):
         """Return an the item from its ID.

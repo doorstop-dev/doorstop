@@ -201,6 +201,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
 
+    @patch('os.remove')
+    def test_remove(self, mock_remove):
+        self.item.delete()
+        mock_remove.assert_called_once_with(self.item.path)
+
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for text formatting in Items."""  # pylint: disable=C0103

@@ -153,6 +153,16 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised for an unknown prefix (item)."""
         self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
 
+    @patch('doorstop.core.item.Item.delete')
+    def test_remove(self, mock_delete):
+        """Verify an item can be removed from a document."""
+        self.tree.remove('req1')
+        mock_delete.assert_called_once_with()
+
+    def test_remove_unknown_item(self):
+        """Verify an exception is raised removing an unknown item."""
+        self.assertRaises(DoorstopError, self.tree.remove, 'req9999')
+
     @patch('doorstop.core.item.Item.add_link')
     def test_link(self, mock_add_link):
         """Verify two items can be linked."""

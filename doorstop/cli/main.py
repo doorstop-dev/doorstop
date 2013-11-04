@@ -195,7 +195,7 @@ def _run_new(args, cwd, _):
         tree = processor.build(cwd)
         document = tree.new(args.root, args.prefix,
                             parent=args.parent, digits=args.digits)
-        print(document)
+        print("created: {}".format(document))
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -216,7 +216,7 @@ def _run_add(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print(item)
+        print("added: {}".format(item))
         return True
 
 
@@ -233,7 +233,7 @@ def _run_remove(args, cwd, err):
         logging.error(error)
         return False
     else:
-        print(item)
+        print("removed: {}".format(item))
         return True
 
 
@@ -250,7 +250,7 @@ def _run_link(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("{} -> {}".format(child, parent))
+        print("linked: {} -> {}".format(child, parent))
         return True
 
 
@@ -267,7 +267,7 @@ def _run_unlink(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("{} -X {}".format(child, parent))
+        print("unlinked: {} -> {}".format(child, parent))
         return True
 
 
@@ -279,11 +279,12 @@ def _run_edit(args, cwd, _):
     """
     try:
         tree = processor.build(cwd)
-        tree.edit(args.id, launch=True)
+        item = tree.edit(args.id, launch=True)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
+        print("opened: {}".format(item))
         return True
 
 

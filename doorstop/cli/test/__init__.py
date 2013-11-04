@@ -107,20 +107,24 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop remove' command."""
 
-    DOCUMENT = os.path.join(ROOT, 'reqs', 'tutorial')
-    BACKUP = os.path.join(ROOT, 'reqs', 'tutorial.bak')
+    ITEM = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT003.yml')
 
     def setUp(self):
-        shutil.copytree(self.DOCUMENT, self.BACKUP)
+        with open(self.ITEM, 'rb') as item:
+            self.backup = item.read()
 
     def tearDown(self):
-        if not os.path.isdir(self.DOCUMENT):
-            shutil.copy(self.BACKUP, self.DOCUMENT)
-        shutil.rmtree(self.BACKUP)
+        with open(self.ITEM, 'wb') as item:
+            item.write(self.backup)
 
-    def test_remove(self):  # TODO: implement test
+    def test_remove(self):
         """Verify 'doorstop remove' can be called."""
-        self.assertIs(None, main(['remove', 'tut']))
+        self.assertIs(None, main(['remove', 'tut3']))
+        self.assertFalse(os.path.exists(self.ITEM))
+
+    def test_remove_error(self):
+        """Verify 'doorstop remove' returns an error on unknown items."""
+        self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

@@ -89,6 +89,7 @@ class Item(object):
         # Initialize Item
         self.path = path
         self.root = root
+        self._exists = True
         self._level = _level or Item.DEFAULT_LEVEL
         self._text = _text or Item.DEFAULT_TEXT
         self._ref = _ref or Item.DEFAULT_REF
@@ -165,6 +166,8 @@ class Item(object):
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
+        if not self._exists:
+            raise DoorstopError("cannot load from deleted: {}".format(self))
         with open(self.path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 
@@ -193,6 +196,8 @@ class Item(object):
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
+        if not self._exists:
+            raise DoorstopError("cannot save to deleted: {}".format(self))
         with open(self.path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
 
@@ -354,3 +359,9 @@ class Item(object):
         self.save()
         # Item is valid
         return True
+
+    def delete(self):
+        """Delete the item from the file system."""
+        logging.info("deleting {}...".format(self.path))
+        os.remove(self.path)
+        self._exists = False  # prevent furthur access
