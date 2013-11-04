@@ -226,8 +226,15 @@ def _run_remove(args, cwd, err):
     @param cwd: current working directory
     @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, err))
-    raise NotImplementedError("'doorstop remove' not implemented")
+    try:
+        tree = processor.build(cwd)
+        item = tree.remove(args.id)
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        print(item)
+        return True
 
 
 def _run_link(args, cwd, _):

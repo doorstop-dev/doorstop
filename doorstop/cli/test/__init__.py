@@ -107,9 +107,20 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop remove' command."""
 
+    DOCUMENT = os.path.join(ROOT, 'reqs', 'tutorial')
+    BACKUP = os.path.join(ROOT, 'reqs', 'tutorial.bak')
+
+    def setUp(self):
+        shutil.copytree(self.DOCUMENT, self.BACKUP)
+
+    def tearDown(self):
+        if not os.path.isdir(self.DOCUMENT):
+            shutil.copy(self.BACKUP, self.DOCUMENT)
+        shutil.rmtree(self.BACKUP)
+
     def test_remove(self):  # TODO: implement test
         """Verify 'doorstop remove' can be called."""
-        self.assertRaises(NotImplementedError, main, ['remove', 'NONE'])
+        self.assertIs(None, main(['remove', 'tut']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
