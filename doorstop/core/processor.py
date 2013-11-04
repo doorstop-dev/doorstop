@@ -34,11 +34,15 @@ class Node(object):
         return "<Node {}>".format(self)
 
     def __str__(self):
+        # Build parent prefix string (getattr to support testing)
+        prefix = getattr(self.document, 'prefix', self.document)
+        # Build children prefix strings
         children = ", ".join(str(c) for c in self.children)
+        # Format the tree
         if children:
-            return "{} <- [ {} ]".format(self.document, children)
+            return "{} <- [ {} ]".format(prefix, children)
         else:
-            return "{}".format(self.document)
+            return "{}".format(prefix)
 
     def __len__(self):
         return 1 + sum(len(child) for child in self.children)
