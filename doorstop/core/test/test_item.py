@@ -203,6 +203,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('os.remove')
     def test_remove(self, mock_remove):
+        """Verify an item can be deleted."""
         self.item.delete()
         mock_remove.assert_called_once_with(self.item.path)
 

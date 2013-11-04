@@ -220,7 +220,7 @@ def _run_add(args, cwd, _):
         return True
 
 
-def _run_remove(args, cwd, err):
+def _run_remove(args, cwd, _):
     """Process arguments and run the `doorstop remove` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
