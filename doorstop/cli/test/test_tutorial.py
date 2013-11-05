@@ -55,7 +55,7 @@ class TestBase(unittest.TestCase):  # pylint: disable=R0904
 class TestSection1(TestBase):  # pylint: disable=R0904
     """Integration tests for section 1.0 of the tutorial."""
 
-    def test_tutorial_secion_1(self):
+    def test_tutorial_section_1(self):
         """Verify tutorial section 1.0 is working."""
 
         # 1.1

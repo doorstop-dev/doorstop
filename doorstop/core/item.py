@@ -304,16 +304,21 @@ class Item(object):
         if not self.ref:
             logging.debug("no external reference to search for")
             return None, None
+        logging.info("seraching for ref '{}'...".format(self.ref))
         regex = re.compile(r"\b{}\b".format(self.ref))
-        for root, _, filenames in os.walk(os.path.dirname(self.path)):
+        for root, _, filenames in os.walk(self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
-                if path == self.path:
+                if path == self.path or 'env' in path or (os.path.sep + '.') in path:
                     continue
-                with open(path) as external:
-                    for index, line in enumerate(external):
-                        if regex.search(line):
-                            return path, index + 1
+                try:
+                    with open(path, 'r') as external:
+                        logging.debug("reading {}...".format(path))
+                        for index, line in enumerate(external):
+                            if regex.search(line):
+                                return path, index + 1
+                except UnicodeDecodeError:
+                    pass
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
@@ -355,6 +360,8 @@ class Item(object):
         # Check text
         if not self.text:
             logging.warning("no text: {}".format(self))
+        # Check external references
+        self.find_ref()
         # Reformat the file
         self.save()
         # Item is valid
