@@ -10,7 +10,7 @@ from doorstop import __project__, CLI, GUI
 
 setuptools.setup(
     name=__project__,
-    version='0.0.3',
+    version='0.0.4-rc.1',
 
     description="Manage your requirements as text using version control.",
     url='http://pypi.python.org/pypi/Doorstop',
