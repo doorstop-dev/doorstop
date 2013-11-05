@@ -25,8 +25,9 @@ class Node(object):
     document processing and validation.
     """
 
-    def __init__(self, document, parent=None):
+    def __init__(self, document, parent=None, root=None):
         self.document = document
+        self.root = root or document.root  # allows non-documents to be used in tests
         self.parent = parent
         self.children = []
 
@@ -45,7 +46,10 @@ class Node(object):
             return "{}".format(prefix)
 
     def __len__(self):
-        return 1 + sum(len(child) for child in self.children)
+        if self.document:
+            return 1 + sum(len(child) for child in self.children)
+        else:
+            return 0
 
     def __getitem__(self, key):
         raise IndexError("{} cannot be indexed by key".format(self.__class__))
@@ -56,7 +60,7 @@ class Node(object):
             yield document
 
     @staticmethod
-    def from_list(docs):
+    def from_list(docs, root=None):
         """Get a new tree from the list of Documents.
 
         @param root: path to root of the project
@@ -66,6 +70,8 @@ class Node(object):
 
         @raise DoorstopError: when the tree cannot be built
         """
+        if not docs:
+            return Node(document=None, root=root)
         unplaced = list(docs)
         for doc in list(unplaced):
             if doc.parent is None:
@@ -103,10 +109,23 @@ class Node(object):
         @raise DoorstopError: if the Document cannot yet be placed
         """
         logging.debug("trying to add '{}'...".format(doc))
-        if doc.parent == self.document.prefix:
+        if not self.document:
+
+            # Tree is empty
+            if doc.parent:
+                msg = "no parent for: {}".format(doc)
+                raise DoorstopError(msg)
+            self.document = doc
+
+        elif doc.parent == self.document.prefix:
+
+            # Current document is the parent
             node = Node(doc, self)
             self.children.append(node)
+
         else:
+
+            # Search for the parent
             for child in self.children:
                 try:
                     child.place(doc)
@@ -142,7 +161,7 @@ class Node(object):
 
         @raise DoorstopError: if the document cannot be created
         """
-        document = Document.new(path, self.document.root, prefix,
+        document = Document.new(path, self.root, prefix,
                                 parent=parent, digits=digits)
         try:
             self.place(document)
@@ -221,10 +240,11 @@ class Node(object):
         child.remove_link(parent.id)
         return child, parent
 
-    def edit(self, identifier, launch=False):
+    def edit(self, identifier, tool=None, launch=False):
         """Open an item for editing.
 
         @param identifier: ID of item to edit
+        @param tool: alternative text editor to open the item
         @param launch: open the default text editor
 
         @raise DoorstopError: if the item cannot be found
@@ -234,7 +254,7 @@ class Node(object):
         item = self._find_item(identifier)
         # Open item
         if launch:
-            _open(item.path)
+            _open(item.path, tool=tool)
         return item
 
     def _find_item(self, identifier, kind=''):
@@ -263,9 +283,13 @@ class Node(object):
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
 
-def _open(path):  # pragma: no cover, integration test
+def _open(path, tool=None):  # pragma: no cover, integration test
     """Open the text file using the default editor."""
-    if sys.platform.startswith('darwin'):
+    if tool:
+        args = [tool, path]
+        logging.debug("$ {}".format(' '.join(args)))
+        subprocess.call(args)
+    elif sys.platform.startswith('darwin'):
         args = ['open', path]
         logging.debug("$ {}".format(' '.join(args)))
         subprocess.call(args)
@@ -304,7 +328,7 @@ def build(cwd):
     if not documents:
         logging.warning("no documents found")
     logging.info("building document tree...")
-    tree = Node.from_list(documents)
+    tree = Node.from_list(documents, root=root)
     logging.info("final tree: {}".format(tree))
     return tree
 

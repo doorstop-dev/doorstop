@@ -1,0 +1,13 @@
+level: 1.4
+links:
+- HLT001
+text: |-
+  "**Validating the document tree.**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Build and validate the document tree:
+
+      doorstop

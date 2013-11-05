@@ -1,0 +1,4 @@
+settings:
+  digits: 3
+  parent: REQ
+  prefix: LLT

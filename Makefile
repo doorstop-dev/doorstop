@@ -73,12 +73,13 @@ endif
 
 .PHONY: req
 req: develop
-	$(BIN)/doorstop
+	$(BIN)/doorstop  # TODO: 'doorstop report' when implemented
 
 .PHONY: doc
-doc: depends req
+doc: depends
 	$(PYTHON) $(RST2HTML) README.rst docs/README.html
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+	$(MAKE) req
 
 .PHONY: doc-open
 doc-open: doc

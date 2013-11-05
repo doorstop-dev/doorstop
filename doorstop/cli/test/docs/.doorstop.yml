@@ -1,4 +1,4 @@
 settings:
   digits: 3
-  parent: REQ
-  prefix: TST
+  parent: TUT
+  prefix: HLT

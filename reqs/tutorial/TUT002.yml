@@ -1,28 +1,30 @@
 level: 1.2
-links: []
+links:
+- HLT001
 text: |-
-  **Creating a document with links to another document.**
+  **Creating a child document with links to the parent document.**
 
-  Create a new document:
+  Enter VCS working copy:
 
       cd /tmp/doorstop
 
-      doorstop new --root test --prefix TST
+  Create a new child document:
 
-  Add an item:
+      doorstop new TST ./reqs/tests --parent REQ
 
-      cd /tmp/doorstop/test
+  Add new items:
 
-      doorstop add --item  # displays the new item's ID
+      doorstop add TST
+      doorstop add TST
 
-  Edit the new item in the default text editor:
+  Edit the new items in the default text editor:
 
-      doorstop edit TST999
+      doorstop edit TST1
+      doorstop edit TST2
 
-  Add a link to another item:
+  Add links to item's in the parent document:
 
-      doorstop add --link TST999 REQ999
-
-  Commit all changes to version control:
-
-      doorstop save
+      doorstop link TST1 REQ1
+      doorstop link TST1 REQ3
+      doorstop link TST2 REQ1
+      doorstop link TST2 REQ2

@@ -56,11 +56,11 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        a = Node('a')
-        b1 = Node('b1', parent=a)
-        b2 = Node('b2', parent=a)
-        c1 = Node('c1', parent=b2)
-        c2 = Node('c2', parent=b2)
+        a = Node('a', root='.')
+        b1 = Node('b1', parent=a, root='.')
+        b2 = Node('b2', parent=a, root='.')
+        c1 = Node('c1', parent=b2, root='.')
+        c2 = Node('c2', parent=b2, root='.')
         a.children = [b1, b2]
         b2.children = [c1, c2]
         cls.tree = a
@@ -127,6 +127,22 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.tree = Node(MockDocument(FILES))
+
+    @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
+    def test_palce_empty(self):
+        """Verify a document can be placed in an empty tree."""
+        tree = processor.build(EMPTY)
+        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        tree.place(doc)
+        self.assertEqual(1, len(tree))
+
+    @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
+    def test_palce_empty_no_parent(self):
+        """Verify a document with parent cannot be placed in an empty tree."""
+        tree = processor.build(EMPTY)
+        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
+                               parent='REQ')
+        self.assertRaises(DoorstopError, tree.place, doc)
 
     def test_check(self):
         """Verify document trees can be checked."""
@@ -211,7 +227,8 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
     def test_edit(self, mock_open):
         """Verify an item can be edited in a tree."""
         self.tree.edit('req2', launch=True)
-        mock_open.assert_called_once_with(os.path.join(FILES, 'REQ002.yml'))
+        mock_open.assert_called_once_with(os.path.join(FILES, 'REQ002.yml'),
+                                          tool=None)
 
     def test_edit_unknown_prefix(self):
         """Verify an exception is rasied for an unknown prefix (document)."""
@@ -227,8 +244,9 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_run_empty(self):
-        """Verify an empty directory is an invalid hiearchy."""
-        self.assertRaises(DoorstopError, processor.build, EMPTY)
+        """Verify an empty directory is an empty hiearchy."""
+        tree = processor.build(EMPTY)
+        self.assertEqual(0, len(tree))
 
     @patch('doorstop.core.processor.build', Mock())
     def test_run(self):
@@ -247,7 +265,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
     def test_build_with_skips(self):
         """Verify documents can be skipped while building a tree."""
-        self.assertRaises(DoorstopError, processor.build, FILES)
+        tree = processor.build(FILES)
+        self.assertEqual(0, len(tree))
 
 
 if __name__ == '__main__':

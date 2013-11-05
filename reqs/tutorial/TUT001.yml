@@ -1,24 +1,24 @@
 level: 1.1
-links: []
+links:
+- HLT001
 text: |-
-  **Creating a new document and adding an item.**
+  **Creating a new document and adding items.**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
 
   Create a new document:
 
-      mkdir /tmp/doorstop
-      cd /tmp/doorstop
-      # initialize version control
+      doorstop new REQ ./reqs
 
-      doorstop new --root . --prefix REQ --digits 3
+  Add items:
 
-  Add an item:
+      doorstop add REQ
+      doorstop add REQ
+      doorstop add REQ
 
-      doorstop add --item  # displays the new item's ID
+  Edit the new items in the default text editor:
 
-  Edit the new item in the default text editor:
-
-      doorstop edit REQ999
-
-  Commit all changes to version control:
-
-      doorstop save
+      doorstop edit REQ1
+      doorstop edit REQ2

@@ -10,7 +10,7 @@ import logging
 from doorstop.common import DoorstopError
 
 # TODO: build dymacially from the modules in this package
-VCS_DIRECTORIES = ['.git', '.sgdrawer', ]
+VCS_DIRECTORIES = ['.git', '.sgdrawer', '.mockvcs']
 
 
 class VersionControlError(DoorstopError):

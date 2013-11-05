@@ -195,7 +195,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' can be called."""
         self.assertIs(None, main(['edit', 'tut2']))
         path = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT002.yml')
-        mock_open.assert_called_once_with(os.path.normpath(path))
+        mock_open.assert_called_once_with(os.path.normpath(path), tool=None)
 
     def test_edit_error(self):
         """Verify 'doorstop edit' returns an error with an unknown ID."""

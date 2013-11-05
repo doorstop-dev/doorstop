@@ -101,6 +101,8 @@ def main(args=None):
                           help="edit an existing document item",
                           **shared)
     sub.add_argument('id', metavar='ID', help="item to edit")
+    sub.add_argument('-t', '--tool', metavar='PROGRAM',
+                     help="text editor to open the document item")
 
     # Import subparser
     sub = subs.add_parser('import',
@@ -182,6 +184,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         logging.error(error)
         return False
     else:
+        print("tree: {}".format(tree))
         return True
 
 
@@ -279,7 +282,7 @@ def _run_edit(args, cwd, _):
     """
     try:
         tree = processor.build(cwd)
-        item = tree.edit(args.id, launch=True)
+        item = tree.edit(args.id, tool=args.tool, launch=True)
     except DoorstopError as error:
         logging.error(error)
         return False
