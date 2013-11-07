@@ -14,6 +14,8 @@ import tempfile
 from doorstop.cli.main import main
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+REQS = os.path.join(ROOT, 'docs', 'reqs')
+TUTORIAL = os.path.join(REQS, 'tutorial')
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
@@ -84,10 +86,10 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        last = sorted(os.listdir(os.path.join(ROOT, 'reqs', 'tutorial')))[-1]
+        last = sorted(os.listdir(TUTORIAL))[-1]
         number = int(last.replace('TUT', '').replace('.yml', '')) + 1
         filename = "TUT{}.yml".format(str(number).zfill(3))
-        cls.path = os.path.join(ROOT, 'reqs', 'tutorial', filename)
+        cls.path = os.path.join(TUTORIAL, filename)
 
     def tearDown(self):
         if os.path.exists(self.path):
@@ -107,7 +109,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop remove' command."""
 
-    ITEM = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT003.yml')
+    ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
         with open(self.ITEM, 'rb') as item:
@@ -131,7 +133,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
 class TestLink(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop link' command."""
 
-    ITEM = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT003.yml')
+    ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
         with open(self.ITEM, 'rb') as item:
@@ -160,7 +162,7 @@ class TestLink(unittest.TestCase):  # pylint: disable=R0904
 class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop unlink' command."""
 
-    ITEM = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT003.yml')
+    ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
         with open(self.ITEM, 'rb') as item:
@@ -194,7 +196,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
     def test_edit(self, mock_open):
         """Verify 'doorstop edit' can be called."""
         self.assertIs(None, main(['edit', 'tut2']))
-        path = os.path.join(ROOT, 'reqs', 'tutorial', 'TUT002.yml')
+        path = os.path.join(TUTORIAL, 'TUT002.yml')
         mock_open.assert_called_once_with(os.path.normpath(path), tool=None)
 
     def test_edit_error(self):

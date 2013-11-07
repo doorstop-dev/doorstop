@@ -1,6 +1,5 @@
 level: 1.2
-links:
-- HLT001
+links: []
 text: |-
   **Creating a child document with links to the parent document.**
 
