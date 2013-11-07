@@ -302,10 +302,11 @@ def _open(path, tool=None):  # pragma: no cover, integration test
         subprocess.call(args)
 
 
-def build(cwd):
+def build(cwd, root=None):
     """Build a document heirachy from the current root directory.
 
     @param cwd: current working directory
+    @param root: path to root of the working copy
 
     @return: tree built from Nodes
 
@@ -314,7 +315,7 @@ def build(cwd):
     documents = []
 
     # Find the root of the working copy
-    root = vcs.find_root(cwd)
+    root = root or vcs.find_root(cwd)
 
     # Find all documents in the working copy
     logging.info("looking for documents in {}...".format(root))

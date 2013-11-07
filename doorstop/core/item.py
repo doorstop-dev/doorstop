@@ -362,7 +362,7 @@ class Item(object):
 
             for identifier in self.links:
                 prefix = self.split_id(identifier)[0]
-                if prefix != document.parent:
+                if prefix.lower() != document.parent.lower():
                     msg = "link to non-parent '{}' in {}".format(identifier,
                                                                  self)
                     logging.warning(msg)
