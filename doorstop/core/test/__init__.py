@@ -12,6 +12,7 @@ from doorstop.core import Document
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
+SYS = os.path.join(FILES, 'sys')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory
 EXTERNAL = os.path.join(FILES, 'external')  # external files to reference
 NEW = os.path.join(FILES, 'new')  # new document with no items
@@ -56,7 +57,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a document can be loaded from a directory."""
         doc = Document(FILES)
-        self.assertEqual('_REQ', doc.prefix)
+        self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
         self.assertEqual(3, len(doc.items))
 

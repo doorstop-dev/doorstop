@@ -168,7 +168,7 @@ class Document(object):
         except ValueError:
             return 0
 
-    def check(self):
+    def check(self, tree=None):
         """Confirm the document is valid.
 
         @return: indication that document is valid
@@ -180,6 +180,6 @@ class Document(object):
             logging.warning("no items: {}".format(self))
         # Check each item
         for item in items:
-            item.check()
+            item.check(document=self, tree=tree)
         # Document is valid
         return True

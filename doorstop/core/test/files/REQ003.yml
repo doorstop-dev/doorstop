@@ -1,8 +1,6 @@
 level: 1.2
 links:
 - REQ001
-- SYS001
-- SYS002
 ref: REF123
 text: |-
   Hello, world!

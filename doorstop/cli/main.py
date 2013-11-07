@@ -184,7 +184,6 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         logging.error(error)
         return False
     else:
-        print("tree: {}".format(tree))
         return True
 
 

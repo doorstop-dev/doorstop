@@ -344,7 +344,7 @@ class Item(object):
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def check(self):
+    def check(self, document=None, tree=None):
         """Confirm the item is valid.
 
         @return: indication that the item is valid
@@ -353,8 +353,25 @@ class Item(object):
         # Verify the file can be parsed
         self.load()
         # Check text
-        if not self.text:
+        if not self.text and not self.ref:
             logging.warning("no text: {}".format(self))
+        # Check links against the document
+        if document:
+            if document.parent and not self.links:
+                logging.warning("no links: {}".format(self))
+
+            for identifier in self.links:
+                prefix = self.split_id(identifier)[0]
+                if prefix != document.parent:
+                    msg = "link to non-parent '{}' in {}".format(identifier,
+                                                                 self)
+                    logging.warning(msg)
+        # Check links against the tree
+        if tree:
+            for identifier in self.links:
+                item = tree.find_item(identifier)
+                logging.debug("found linked item: {}".format(item))
+
         # Reformat the file
         self.save()
         # Item is valid

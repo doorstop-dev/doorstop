@@ -1,3 +1,4 @@
 settings:
   digits: 2
-  prefix: _REQ
+  parent: SYS
+  prefix: REQ
