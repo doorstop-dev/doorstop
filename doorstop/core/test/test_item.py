@@ -151,7 +151,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_ref_error(self):
         """Verify an error is raised when no external reference is found."""
-        self.item.ref = "notfound"
+        self.item.ref = "not found".replace(' ', '')  # avoids self match
         self.assertRaises(DoorstopError, self.item.find_ref)
 
     def test_find_ref_none(self):

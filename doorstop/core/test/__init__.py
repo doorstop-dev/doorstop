@@ -3,21 +3,31 @@ Integration tests for the doorstop.core package.
 """
 
 import unittest
+from unittest.mock import patch
 
 import os
 
 from doorstop.core import Item
 from doorstop.core import Document
+from doorstop.core import processor
+from doorstop.common import DoorstopError
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
+SYS = os.path.join(FILES, 'sys')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory
 EXTERNAL = os.path.join(FILES, 'external')  # external files to reference
 NEW = os.path.join(FILES, 'new')  # new document with no items
 
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
+
+
+class DocumentNoSkip(Document):
+    """Document class that is never skipped."""
+
+    SKIP = '__disabled__'  # never skip test Documents
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -56,7 +66,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a document can be loaded from a directory."""
         doc = Document(FILES)
-        self.assertEqual('_REQ', doc.prefix)
+        self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
         self.assertEqual(3, len(doc.items))
 
@@ -69,7 +79,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestAPI(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the Doorstop API."""
+class TestTree(unittest.TestCase):  # pylint: disable=R0904
+    """Integration tests for the Node class."""
 
-    pass
+    ITEM = os.path.join(FILES, 'REQ001.yml')
+
+    def setUp(self):
+        with open(self.ITEM, 'rb') as item:
+            self.backup = item.read()
+
+    def tearDown(self):
+        with open(self.ITEM, 'wb') as item:
+            item.write(self.backup)
+
+    @patch('doorstop.core.document.Document', DocumentNoSkip)
+    def test_check_invalid_link(self):
+        """Verify a tree is invalid with a bad link."""
+        item = Item(self.ITEM)
+        item.add_link('SYS003')
+        tree = processor.build(FILES, root=FILES)
+        self.assertRaises(DoorstopError, tree.check)

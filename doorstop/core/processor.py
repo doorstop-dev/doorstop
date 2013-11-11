@@ -146,7 +146,7 @@ class Node(object):
         """
         logging.info("checking tree...")
         for document in self:
-            document.check()
+            document.check(tree=self)
         return True
 
     def new(self, path, prefix, parent=None, digits=None):
@@ -197,7 +197,7 @@ class Node(object):
 
         @raise DoorstopError: if the item cannot be removed
         """
-        item = self._find_item(identifier)
+        item = self.find_item(identifier)
         item.delete()
 
         return item
@@ -214,9 +214,9 @@ class Node(object):
         """
         logging.info("linking {} to {}...".format(cid, pid))
         # Find child item
-        child = self._find_item(cid, 'child')
+        child = self.find_item(cid, 'child')
         # Find parent item
-        parent = self._find_item(pid, 'parent')
+        parent = self.find_item(pid, 'parent')
         # Add link
         child.add_link(parent.id)
         return child, parent
@@ -233,9 +233,9 @@ class Node(object):
         """
         logging.info("unlinking {} from {}...".format(cid, pid))
         # Find child item
-        child = self._find_item(cid, 'child')
+        child = self.find_item(cid, 'child')
         # Find parent item
-        parent = self._find_item(pid, 'parent')
+        parent = self.find_item(pid, 'parent')
         # Remove link
         child.remove_link(parent.id)
         return child, parent
@@ -251,13 +251,13 @@ class Node(object):
         """
         logging.debug("looking for {}...".format(identifier))
         # Find item
-        item = self._find_item(identifier)
+        item = self.find_item(identifier)
         # Open item
         if launch:
             _open(item.path, tool=tool)
         return item
 
-    def _find_item(self, identifier, kind=''):
+    def find_item(self, identifier, kind=''):
         """Return an the item from its ID.
 
         @param identifier: item ID
@@ -302,10 +302,11 @@ def _open(path, tool=None):  # pragma: no cover, integration test
         subprocess.call(args)
 
 
-def build(cwd):
+def build(cwd, root=None):
     """Build a document heirachy from the current root directory.
 
     @param cwd: current working directory
+    @param root: path to root of the working copy
 
     @return: tree built from Nodes
 
@@ -314,7 +315,7 @@ def build(cwd):
     documents = []
 
     # Find the root of the working copy
-    root = vcs.find_root(cwd)
+    root = root or vcs.find_root(cwd)
 
     # Find all documents in the working copy
     logging.info("looking for documents in {}...".format(root))

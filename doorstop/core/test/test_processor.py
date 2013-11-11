@@ -17,7 +17,7 @@ from doorstop.core import processor
 from doorstop.core.processor import Node
 from doorstop.core.document import Document
 
-from doorstop.core.test import FILES, EMPTY
+from doorstop.core.test import FILES, SYS, EMPTY
 
 
 class MockDocument(Document):
@@ -126,7 +126,8 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Node class."""  # pylint: disable=C0103
 
     def setUp(self):
-        self.tree = Node(MockDocument(FILES))
+        self.tree = Node(Document(SYS))
+        self.tree.place(Document(FILES))
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
@@ -146,6 +147,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
 
     def test_check(self):
         """Verify document trees can be checked."""
+        logging.info("tree: {}".format(self.tree))
         self.tree.check()
 
     def test_new(self):
@@ -259,7 +261,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_build(self):
         """Verify a tree can be built."""
         tree = processor.build(FILES)
-        self.assertEqual(2, len(tree))
+        self.assertEqual(3, len(tree))
 
     @patch('doorstop.core.document.Document', MockDocument)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
