@@ -146,8 +146,10 @@ class Item(object):
         with open(path, 'w'):
             pass  # just touch the file
 
-    def load(self):
+    def load(self, reload=False):
         """Load the item's properties from a file."""
+        if getattr(self, '_loaded', False) and not reload:
+            return
         logging.debug("loading {}...".format(repr(self)))
         # Read the YAML from file
         text = self._read()
@@ -163,6 +165,7 @@ class Item(object):
             self._text = data.get('text', self._text).strip()
             self._ref = data.get('ref', self._ref)
             self._links = set(data.get('links', self._links))
+        setattr(self, '_loaded', True)
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
@@ -309,13 +312,15 @@ class Item(object):
         for root, _, filenames in os.walk(self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
-                if path == self.path or 'env' in path or (os.path.sep + '.') in path:
+                if (path == self.path or  # skip the item's file
+                    'env' in path or  # skip virtualenvs
+                    (os.path.sep + '.') in path):  # skip  hidden directories
                     continue
                 try:
                     with open(path, 'r') as external:
-                        logging.debug("reading {}...".format(path))
                         for index, line in enumerate(external):
                             if regex.search(line):
+                                logging.info("found ref: {}".format(path))
                                 return path, index + 1
                 except UnicodeDecodeError:
                     pass

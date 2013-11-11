@@ -43,6 +43,7 @@ class Document(object):
         self.prefix = _prefix or Document.DEFAULT_PREFIX
         self.parent = _parent or Document.DEFAULT_PARENT
         self.digits = _digits or Document.DEFAULT_DIGITS
+        self._items = None
         self.load()
         self.save()
         # Mark if skippable
@@ -56,12 +57,7 @@ class Document(object):
         return "{} (@{}{})".format(self.prefix, os.sep, relpath)
 
     def __iter__(self):
-        for filename in os.listdir(self.path):
-            path = os.path.join(self.path, filename)
-            try:
-                yield Item(path)
-            except DoorstopError as error:
-                logging.debug(error)
+        return iter(self.items)
 
     def __eq__(self, other):
         return isinstance(other, Document) and self.path == other.path
@@ -144,7 +140,18 @@ class Document(object):
     @property
     def items(self):
         """Get an ordered list of items in the document."""
-        return sorted(item for item in self)
+        if self._items is None:
+            self._items = sorted(self._iteritems())
+        return self._items
+
+    def _iteritems(self):
+        """Return an iterator of items from the file system."""
+        for filename in os.listdir(self.path):
+            path = os.path.join(self.path, filename)
+            try:
+                yield Item(path)
+            except DoorstopError:
+                logging.debug("skipped path: {}".format(path))
 
     def add(self):
         """Create a new item for the document and return it."""

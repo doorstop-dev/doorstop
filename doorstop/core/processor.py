@@ -144,7 +144,7 @@ class Node(object):
 
         @raise DoorstopError: on issue
         """
-        logging.info("checking tree...")
+        logging.info("checking document tree...")
         for document in self:
             document.check(tree=self)
         return True
@@ -330,7 +330,7 @@ def build(cwd, root=None):
         logging.warning("no documents found")
     logging.info("building document tree...")
     tree = Node.from_list(documents, root=root)
-    logging.info("final tree: {}".format(tree))
+    logging.info("final document tree: {}".format(tree))
     return tree
 
 
