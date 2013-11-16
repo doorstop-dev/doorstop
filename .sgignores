@@ -1,14 +1,22 @@
+# Temporary Python files
 *.pyc
 *.egg-info
 __pycache__
 
+# Temporary OS X files
+Icon*
+
+# Temporary virtualenv files
 @/.cache
 @/env
 
+# Generated documentation
 @/apidocs
 @/docs/README.html
 
+# Testing results
 .coverage
 
+# Build and release directories
 @/build
 @/dist
