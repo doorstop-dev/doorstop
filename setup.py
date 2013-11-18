@@ -25,5 +25,5 @@ setuptools.setup(
     long_description=open('README.rst').read(),
     license='LGPL',
 
-    install_requires=["PyYAML >= 3.10"],
+    install_requires=["wheel", "PyYAML >= 3.10"],
 )
