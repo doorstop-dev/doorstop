@@ -7,7 +7,13 @@ Integration tests for the doorstop.core.vcs package.
 import unittest
 from unittest.mock import patch, Mock
 
+import os
+
+from doorstop.common import DoorstopError
 from doorstop.core import vcs
+
+DIR = os.path.dirname(__file__)
+ROOT = os.path.join(DIR, '..', '..', '..', '..')
 
 
 class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
@@ -22,4 +28,16 @@ class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
     @patch('os.listdir', Mock(return_value=[]))
     def test_find_root_error(self):
         """Verify an error occurs when no VCS directory can be found."""
-        self.assertRaises(vcs.VersionControlError, vcs.find_root, 'fake')
+        self.assertRaises(DoorstopError, vcs.find_root, 'fake')
+
+    def test_load(self):
+        """Verify a working copy can be created."""
+        working = vcs.load(ROOT)
+        self.assertIsInstance(working, vcs.veracity.WorkingCopy)
+        self.assertEqual(ROOT, working.path)
+
+    def test_load_unknown(self):
+        """Verify a working copy can be created."""
+        working = vcs.load(DIR)
+        self.assertIsInstance(working, vcs.mockvcs.WorkingCopy)
+        self.assertEqual(DIR, working.path)

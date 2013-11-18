@@ -225,12 +225,14 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised with an unknown parent prefix."""
         self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'req9999')
 
+    @patch('doorstop.core.vcs.veracity.WorkingCopy.lock')
     @patch('doorstop.core.processor._open')
-    def test_edit(self, mock_open):
+    def test_edit(self, mock_open, mock_lock):
         """Verify an item can be edited in a tree."""
         self.tree.edit('req2', launch=True)
-        mock_open.assert_called_once_with(os.path.join(FILES, 'REQ002.yml'),
-                                          tool=None)
+        path = os.path.join(FILES, 'REQ002.yml')
+        mock_open.assert_called_once_with(path, tool=None)
+        mock_lock.assert_called_once_with(path)
 
     def test_edit_unknown_prefix(self):
         """Verify an exception is rasied for an unknown prefix (document)."""
