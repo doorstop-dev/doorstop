@@ -156,7 +156,7 @@ class Item(object):
         # Parse the YAML data
         try:
             data = yaml.load(text)
-        except yaml.scanner.ScannerError as error:
+        except yaml.scanner.ScannerError as error:  # pylint: disable=E1101
             msg = "invalid contents: {}:\n{}".format(self, error)
             raise DoorstopError(msg)
         # Store parsed data
@@ -312,10 +312,16 @@ class Item(object):
         for root, _, filenames in os.walk(self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
-                if (path == self.path or  # skip the item's file
-                    'env' in path or  # skip virtualenvs
-                    (os.path.sep + '.') in path):  # skip  hidden directories
+                # Skip the item's file while searching
+                if path == self.path:
                     continue
+                # Skip virtualenv directories
+                if 'env' in path:
+                    continue
+                # Skip hidden directories
+                if (os.path.sep + '.') in path:
+                    continue
+                # Search for the reference in the file
                 try:
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):

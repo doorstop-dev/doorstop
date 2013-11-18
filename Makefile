@@ -51,19 +51,14 @@ $(DEPENDS):
 	$(MAKE) .pylint
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
-# issue: pylint is not currently installing on Windows
-# tracker: https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
-# workaround: skip pylint on windows
+# issue: pylint is not currently installing on Windows from PyPI
+# tracker: https://bitbucket.org/logilab/pylint/issue/51
+# workaround: install from the source repositories on Windows/Cygwin
 .PHONY: .pylint
-ifeq ($(shell uname),Windows)
+ifeq ($(shell uname),$(filter $(shell uname),Windows CYGWIN_NT-6.1 CYGWIN_NT-6.1-WOW64))
 .pylint: .env
-	@echo pylint cannot be installed on Windows
-else ifeq ($(shell uname),CYGWIN_NT-6.1)
-.pylint: .env
-	@echo pylint cannot be installed on Cygwin
-else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
-.pylint: .env
-	@echo pylint cannot be installed on Cygwin
+	$(PIP) install https://bitbucket.org/moben/logilab-common/get/cb9cb5b8fff228b9a4244e4a6d9b2464a7b6148f.zip --download-cache=$(CACHE)
+	$(PIP) install https://bitbucket.org/logilab/pylint/get/8200a32b14597c24f0f4706417bf30aec1e25386.zip --download-cache=$(CACHE)
 else
 .pylint: .env
 	$(PIP) install pylint --download-cache=$(CACHE)
@@ -92,26 +87,12 @@ doc-open: doc
 pep8: depends
 	$(PEP8) $(PACKAGE) --ignore=E501 
 
-# issue: pylint is not currently installing on Windows
-# tracker: https://bitbucket.org/logilab/pylint/issue/51/building-pylint-windows-installer-for
-# workaround: skip pylint on windows
 .PHONY: pylint
-ifeq ($(shell uname),Windows)
-pylint: depends
-	@echo pylint cannot be run on Windows
-else ifeq ($(shell uname),CYGWIN_NT-6.1)
-pylint: depends
-	@echo pylint cannot be run on Cygwin
-else ifeq ($(shell uname),CYGWIN_NT-6.1-WOW64)
-pylint: depends
-	@echo pylint cannot be run on Cygwin
-else
 pylint: depends
 	$(PYLINT) $(PACKAGE) --reports no \
 	                     --msg-template="{msg_id}: {msg}: {obj} line:{line}" \
 	                     --max-line-length=99 \
 	                     --disable=I0011,W0142,W0511,R0801
-endif
 
 .PHONY: check
 check: depends
@@ -152,9 +133,11 @@ clean-all: clean
 # Release ####################################################################
 
 .PHONY: dist
-dist: .clean-dist
+dist: develop
 	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py bdist_wheel
 
 .PHONY: upload
-upload: .clean-dist
+upload: develop
 	$(PYTHON) setup.py register sdist upload
+	$(PYTHON) setup.py bdist_wheel upload
