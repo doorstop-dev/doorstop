@@ -30,6 +30,7 @@ class Node(object):
         self.root = root or document.root  # allows non-documents to be used in tests
         self.parent = parent
         self.children = []
+        self._vcs = None
 
     def __repr__(self):
         return "<Node {}>".format(self)
@@ -100,6 +101,12 @@ class Node(object):
                 raise DoorstopError(msg)
 
         return tree
+
+    @property
+    def vcs(self):
+        if self._vcs is None:
+            self._vcs = vcs.load(self.root)
+        return self._vcs
 
     def place(self, doc):
         """Attempt to place the Document in the current tree.
@@ -252,9 +259,12 @@ class Node(object):
         logging.debug("looking for {}...".format(identifier))
         # Find item
         item = self.find_item(identifier)
+        # Lock the item
+        self.vcs.lock(item.path)
         # Open item
         if launch:
             _open(item.path, tool=tool)
+        # Return the item
         return item
 
     def find_item(self, identifier, kind=''):

@@ -9,12 +9,12 @@ import logging
 
 from doorstop.common import DoorstopError
 
-# TODO: build dymacially from the modules in this package
-VCS_DIRECTORIES = ['.git', '.sgdrawer', '.mockvcs']
+from doorstop.core.vcs import git
+from doorstop.core.vcs import veracity
+from doorstop.core.vcs import mockvcs
 
-
-class VersionControlError(DoorstopError):
-    """Exception for Version Control errors."""
+from doorstop.core.vcs.base import BaseWorkingCopy as _bwc
+DIRECTORIES = {wc.DIRECTORY: wc for wc in _bwc.__subclasses__()}  # pylint: disable=E1101
 
 
 def find_root(cwd):
@@ -25,13 +25,23 @@ def find_root(cwd):
     path = cwd
 
     logging.debug("looking for working copy from {}...".format(path))
-    while not any(d in VCS_DIRECTORIES for d in os.listdir(path)):
+    logging.debug("options: {}".format(DIRECTORIES))
+    while not any(d in DIRECTORIES for d in os.listdir(path)):
         parent = os.path.dirname(path)
         if path == parent:
             msg = "no working copy found from: {}".format(cwd)
-            raise VersionControlError(msg)
+            raise DoorstopError(msg)
         else:
             path = parent
 
     logging.debug("found working copy: {}".format(path))
     return path
+
+
+def load(path):
+    """Return a working copy for the specified path."""
+    for directory in os.listdir(path):
+        if directory in DIRECTORIES:
+            return DIRECTORIES[directory](path)
+    logging.warning("no working copy found at: {}".format(path))
+    return mockvcs.WorkingCopy(path)
