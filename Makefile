@@ -40,8 +40,8 @@ $(EGG_INFO): $(SOURCES)
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
 .PHONY: .env
-.env: $(PYTHON)
-$(PYTHON):
+.env: $(PIP)
+$(PIP):
 	virtualenv --python $(VERSION) $(VIRTUALENV)
 
 .PHONY: depends
