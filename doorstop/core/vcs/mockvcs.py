@@ -17,5 +17,5 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
     def lock(self, path):
         logging.info("simulated lock on: {}...".format(path))
 
-    def save(self):
+    def save(self, message=None):
         logging.info("simulated save")

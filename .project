@@ -3,6 +3,7 @@
 	<name>Doorstop</name>
 	<comment></comment>
 	<projects>
+		<project>python-veracity</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

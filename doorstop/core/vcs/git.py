@@ -17,5 +17,5 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
     def lock(self, path):
         logging.warning("git does not support locking: {}".format(path))
 
-    def save(self):
+    def save(self, message=None):
         raise NotImplementedError("TODO: add git add/commit/push")

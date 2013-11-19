@@ -21,6 +21,6 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         raise NotImplementedError()
 
     @abstractmethod
-    def save(self):  # pragma: no cover - abstract method
+    def save(self, message=None):  # pragma: no cover - abstract method
         """Unlock files, commit, and push."""
         raise NotImplementedError()

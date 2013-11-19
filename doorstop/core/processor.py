@@ -27,7 +27,7 @@ class Node(object):
 
     def __init__(self, document, parent=None, root=None):
         self.document = document
-        self.root = root or document.root  # allows non-documents to be used in tests
+        self.root = root or document.root  # allows non-documents in tests
         self.parent = parent
         self.children = []
         self._vcs = None
@@ -104,6 +104,7 @@ class Node(object):
 
     @property
     def vcs(self):
+        """Get the working copy."""
         if self._vcs is None:
             self._vcs = vcs.load(self.root)
         return self._vcs

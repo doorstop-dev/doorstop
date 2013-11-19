@@ -36,6 +36,7 @@ all: develop
 .PHONY: develop
 develop: .env $(EGG_INFO)
 $(EGG_INFO): $(SOURCES)
+	$(PIP) install pbs  # TODO: https://github.com/larroy/pbs/issues/1
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
@@ -47,7 +48,7 @@ $(PIP):
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
-	$(PIP) install docutils pdoc pep8 nose coverage --download-cache=$(CACHE)
+	$(PIP) install docutils pdoc pep8 nose coverage wheel --download-cache=$(CACHE)
 	$(MAKE) .pylint
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
@@ -133,11 +134,11 @@ clean-all: clean
 # Release ####################################################################
 
 .PHONY: dist
-dist: develop
+dist: develop depends
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
 
 .PHONY: upload
-upload: develop
+upload: develop depends
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
