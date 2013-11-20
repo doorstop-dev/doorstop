@@ -25,5 +25,5 @@ setuptools.setup(
     long_description=open('README.rst').read(),
     license='LGPL',
 
-    install_requires=["PyYAML >= 3.10", "python-veracity >= 0.0.10"],
+    install_requires=["PyYAML >= 3.10"],
 )

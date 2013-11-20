@@ -36,7 +36,6 @@ all: develop
 .PHONY: develop
 develop: .env $(EGG_INFO)
 $(EGG_INFO): $(SOURCES)
-	$(PIP) install pbs  # TODO: https://github.com/larroy/pbs/issues/1
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 

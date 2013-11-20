@@ -4,7 +4,6 @@
 Plug-in module to store requirements in a Git repository.
 """
 
-import subprocess
 import logging
 
 from doorstop.core.vcs.base import BaseWorkingCopy
@@ -19,9 +18,6 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
         logging.warning("git does not support locking: {}".format(path))
 
     def save(self, message=None):
-        args = ['git', 'commit', '-a', '-m', message]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-        args = ['git', 'push']
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
+        message = message or input("Commit message: ")  # pylint: disable=W0141
+        self.call('git', 'commit', '-a', '-m', message)
+        self.call('git', 'push')

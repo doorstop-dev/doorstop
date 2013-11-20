@@ -4,6 +4,8 @@
 Abstract interface to verson control systems.
 """
 
+import subprocess
+import logging
 from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 
@@ -14,6 +16,12 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     def __init__(self, path):
         self.path = path
+
+    @staticmethod
+    def call(*args):  # pragma: no cover - abstract method
+        """Call a command with string arguments."""
+        logging.debug("$ {}".format(' '.join(args)))
+        subprocess.call(args)
 
     @abstractmethod
     def lock(self, path):  # pragma: no cover - abstract method
