@@ -56,7 +56,8 @@ class Node(object):
         raise IndexError("{} cannot be indexed by key".format(self.__class__))
 
     def __iter__(self):
-        yield self.document
+        if self.document:
+            yield self.document
         for document in chain(*(iter(c) for c in self.children)):
             yield document
 
@@ -338,7 +339,7 @@ def build(cwd, root=None):
 
     # Build the document tree
     if not documents:
-        logging.warning("no documents found")
+        logging.warning("no documents found in: {}".format(root))
     logging.info("building document tree...")
     tree = Node.from_list(documents, root=root)
     logging.info("final document tree: {}".format(tree))

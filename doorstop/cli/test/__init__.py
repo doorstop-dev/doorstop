@@ -56,6 +56,12 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' treats KeyboardInterrupt as an error."""
         self.assertRaises(SystemExit, main, [])
 
+    def test_empty(self):
+        """Verify 'doorstop' can be run in a working copy with no docs."""
+        os.mkdir(os.path.join(self.temp, '.mockvcs'))
+        os.chdir(self.temp)
+        self.assertIs(None, main([]))
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestNew(unittest.TestCase):  # pylint: disable=R0904
