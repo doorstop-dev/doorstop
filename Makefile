@@ -76,10 +76,10 @@ doc: depends
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 	$(MAKE) req
 
-.PHONY: doc-open
-doc-open: doc
-	$(OPEN) docs/README.html
+.PHONY: read
+read: doc
 	$(OPEN) apidocs/$(PACKAGE)/index.html
+	$(OPEN) docs/README.html
 
 # Static Analysis ############################################################
 

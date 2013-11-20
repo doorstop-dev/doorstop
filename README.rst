@@ -10,7 +10,7 @@ be linked to one another to form a document hiearchy. Doorstop provides
 mechanisms for modifying this hiearchy and checking the tree for consistency.
 
 .. NOTE::
-   0.0.x releases are experimental and non-functional.
+   0.0.x releases are experimental and no functionality is gaurenteed.
 
 
 
