@@ -209,7 +209,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop import' command."""
 
-    def test_import(self):  # TODO: implement test
+    def test_import(self):  # TODO: implement test: doorstop import
         """Verify 'doorstop import' can be called."""
         self.assertRaises(NotImplementedError, main, ['import', 'PATH'])
 
@@ -218,7 +218,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
 class TestExport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop export' command."""
 
-    def test_export(self):  # TODO: implement test
+    def test_export(self):  # TODO: implement test: doorstop export
         """Verify 'doorstop export' can be called."""
         self.assertRaises(NotImplementedError, main, ['export', 'PATH'])
 
@@ -227,7 +227,7 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
 class TestReport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop report' command."""
 
-    def test_report(self):  # TODO: implement test
+    def test_report(self):  # TODO: implement test: doorstop report
         """Verify 'doorstop report' can be called."""
         self.assertRaises(NotImplementedError, main, ['report', 'PATH'])
 

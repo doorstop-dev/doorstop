@@ -49,7 +49,6 @@ def _auto_save(func):
     return wrapped
 
 
-# TODO: only load if an attribute is blank?
 class Item(object):
     """Represents a file with linkable text that is part of a document."""
 

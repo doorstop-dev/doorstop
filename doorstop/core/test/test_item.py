@@ -77,7 +77,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify item non-equality is correct."""
         self.assertNotEqual(self.item, None)
 
-    # TODO: use MockItem.new()
     def test_lt(self):
         """Verify items can be compared."""
         item0 = MockItem('path/to/RQ002.yml', _level=(1, 1))
