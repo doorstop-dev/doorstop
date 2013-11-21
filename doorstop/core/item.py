@@ -302,14 +302,21 @@ class Item(object):
         self._ref = ref
 
     @_auto_load
-    def find_ref(self):
-        """Find the external file reference and line number."""
+    def find_ref(self, root=None):
+        """Find the external file reference and line number.
+
+        @param root: override the path to the working copy (for testing)
+
+        @return: path to file, line number (or None, None when no ref)
+
+        @raise DoorstopError: when no ref is found
+        """
         if not self.ref:
             logging.debug("no external reference to search for")
             return None, None
         logging.info("seraching for ref '{}'...".format(self.ref))
         regex = re.compile(r"\b{}\b".format(self.ref))
-        for root, _, filenames in os.walk(self.root):
+        for root, _, filenames in os.walk(root or self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
                 # Skip the item's file while searching

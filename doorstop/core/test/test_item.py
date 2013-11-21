@@ -13,7 +13,7 @@ import logging
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import FILES, EMPTY
+from doorstop.core.test import ENV, REASON, FILES, EMPTY
 
 
 class MockItem(Item):
@@ -149,9 +149,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = 'level: 1\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
-    # TODO: speed up this test, add integration test?
     def test_find_ref_error(self):
-        """Verify an error is raised when no external reference is found."""
+        """Verify an error occurs when no external reference found."""
+        self.item.ref = "not found".replace(' ', '')  # avoids self match
+        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_find_ref_error_long(self):
+        """Verify an error occurs when no external reference found (long)."""
         self.item.ref = "not found".replace(' ', '')  # avoids self match
         self.assertRaises(DoorstopError, self.item.find_ref)
 
@@ -202,8 +207,33 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
 
+    def test_check_document(self):
+        """Verify an item can be checked against a document."""
+        document = Mock()
+        document.parent = 'fake'
+        self.item.check(document=document)
+
+    def test_check_document_with_links(self):
+        """Verify an item can be checked against a document with links."""
+        self.item.add_link('unknown1')
+        document = Mock()
+        document.parent = 'fake'
+        self.item.check(document=document)
+
+    def test_check_tree(self):
+        """Verify an item can be checked against a tree."""
+        self.item.add_link('fake1')
+        tree = Mock(find_item=Mock())
+        self.item.check(tree=tree)
+
+    def test_check_tree_error(self):
+        """Verify an item can be checked against a tree with errors."""
+        self.item.add_link('fake1')
+        tree = Mock(find_item=Mock(side_effect=DoorstopError))
+        self.assertRaises(DoorstopError, self.item.check, tree=tree)
+
     @patch('os.remove')
-    def test_remove(self, mock_remove):
+    def test_delete(self, mock_remove):
         """Verify an item can be deleted."""
         self.item.delete()
         mock_remove.assert_called_once_with(self.item.path)

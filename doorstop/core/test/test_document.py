@@ -14,7 +14,7 @@ from doorstop.core.item import Item
 from doorstop.core.document import Document
 from doorstop.common import DoorstopError
 
-from doorstop.core.test import ROOT, FILES, EMPTY, NEW
+from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, NEW
 
 
 class MockItem(Item, Mock):  # pylint: disable=R0904
@@ -129,9 +129,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsNot(None, document.add())
         mock_new.assert_called_once_with(NEW, ROOT, 'NEW', 5, 1, None)
 
-    # TODO: speed up this test?
-    def test_check(self):
+    @patch('doorstop.core.item.Item.check')
+    def test_check(self, mock_check):
         """Verify a document can be validated."""
+        self.document.check()
+        self.assertEqual(3, mock_check.call_count)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_check_long(self):
+        """Verify a document can be validated (long)."""
         self.document.check()
 
 

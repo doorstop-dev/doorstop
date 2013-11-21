@@ -17,7 +17,7 @@ from doorstop.core import processor
 from doorstop.core.processor import Node
 from doorstop.core.document import Document
 
-from doorstop.core.test import FILES, SYS, EMPTY
+from doorstop.core.test import ENV, REASON, FILES, SYS, EMPTY
 
 
 class MockDocument(Document):
@@ -145,9 +145,16 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
                                parent='REQ')
         self.assertRaises(DoorstopError, tree.place, doc)
 
-    # TODO: speed up this test?
-    def test_check(self):
+    @patch('doorstop.core.document.Document.check')
+    def test_check(self, mock_check):
         """Verify document trees can be checked."""
+        logging.info("tree: {}".format(self.tree))
+        self.tree.check()
+        self.assertEqual(2, mock_check.call_count)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_check_long(self):
+        """Verify document trees can be checked (long)."""
         logging.info("tree: {}".format(self.tree))
         self.tree.check()
 
