@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
 """
-Integration tests for the doorstop.gui package.
+Package for the doorstop.gui tests.
 """

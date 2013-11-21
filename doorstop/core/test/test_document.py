@@ -129,6 +129,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsNot(None, document.add())
         mock_new.assert_called_once_with(NEW, ROOT, 'NEW', 5, 1, None)
 
+    # TODO: speed up this test?
     def test_check(self):
         """Verify a document can be validated."""
         self.document.check()

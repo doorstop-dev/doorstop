@@ -145,6 +145,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
                                parent='REQ')
         self.assertRaises(DoorstopError, tree.place, doc)
 
+    # TODO: speed up this test?
     def test_check(self):
         """Verify document trees can be checked."""
         logging.info("tree: {}".format(self.tree))

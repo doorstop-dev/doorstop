@@ -149,6 +149,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = 'level: 1\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
+    # TODO: speed up this test, add integration test?
     def test_find_ref_error(self):
         """Verify an error is raised when no external reference is found."""
         self.item.ref = "not found".replace(' ', '')  # avoids self match
