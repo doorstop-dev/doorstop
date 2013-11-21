@@ -227,9 +227,9 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
 class TestReport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop report' command."""
 
-    def test_report(self):  # TODO: implement test: doorstop report
-        """Verify 'doorstop report' can be called."""
-        self.assertRaises(NotImplementedError, main, ['report', 'PATH'])
+    def test_report_text(self):
+        """Verify 'doorstop report' can create text output."""
+        self.assertIs(None, main(['report', 'tut']))
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

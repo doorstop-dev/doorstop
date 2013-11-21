@@ -12,6 +12,7 @@ import logging
 from doorstop import CLI, VERSION
 from doorstop.cli import settings
 from doorstop.core import processor
+from doorstop.core import report
 from doorstop.common import DoorstopError
 
 
@@ -120,7 +121,8 @@ def main(args=None):
     sub = subs.add_parser('report',
                           help="publish document items to a report",
                           **shared)
-    sub.add_argument('report', help="report to create")
+    sub.add_argument('prefix', help="prefix of document to publish")
+    sub.add_argument('-w', '--width', type=int, help="limit line width")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -310,14 +312,25 @@ def _run_export(args, cwd, err):
     raise NotImplementedError("'doorstop export' not implemented")
 
 
-def _run_report(args, cwd, err):
+def _run_report(args, cwd, _):
     """Process arguments and run the `doorstop report` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
     """
-    logging.warning((args, cwd, err))
-    raise NotImplementedError("'doorstop report' not implemented")
+    try:
+        tree = processor.build(cwd)
+        document = tree.find_document(args.prefix)
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        kwargs = {}
+        if args.width:
+            kwargs['width'] = args.width
+        for line in report.get_text(document, **kwargs):
+            print(line)
+        return True
 
 
 if __name__ == '__main__':  # pragma: no cover, manual test

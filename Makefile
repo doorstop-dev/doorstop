@@ -110,6 +110,10 @@ test: develop depends
 tests: develop depends
 	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=doorstop.cli
 
+.PHONY: tutorial
+tutorial: develop
+	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
+
 # Cleanup ####################################################################
 
 .PHONY: .clean-env

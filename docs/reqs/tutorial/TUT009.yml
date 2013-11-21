@@ -1,0 +1,13 @@
+level: 2.1
+links: []
+text: |-
+  "**Creating a text report.**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Display the documents on standard output:
+
+      doorstop report req
+      doorstop report tst

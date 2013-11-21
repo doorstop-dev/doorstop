@@ -191,11 +191,8 @@ class Node(object):
 
         @raise DoorstopError: if the item cannot be created
         """
-        for document in self:
-            if document.prefix.lower() == prefix.lower():
-                return document.add()
-
-        raise DoorstopError("no matching prefix: {}".format(prefix))
+        document = self.find_document(prefix)
+        return document.add()
 
     def remove(self, identifier):
         """Remove an new item from a document.
@@ -268,6 +265,21 @@ class Node(object):
             _open(item.path, tool=tool)
         # Return the item
         return item
+
+    def find_document(self, prefix):
+        """Return an the document from its prefix.
+
+        @param prefix: document's prefix
+
+        @return: matching Document
+
+        @raise DoorstopError: if the document cannot be found
+        """
+        for document in self:
+            if document.prefix.lower() == prefix.lower():
+                return document
+
+        raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def find_item(self, identifier, kind=''):
         """Return an the item from its ID.
