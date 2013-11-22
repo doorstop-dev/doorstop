@@ -17,6 +17,7 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
     def lock(self, path):
         """Pull and lock the item for editing."""
         self.call('vv', 'pull')
+        self.call('vv', 'update')
         # TODO: item locking requires password input
         # tracker: http://veracity-scm.com/qa/questions/2034
         msg = "veracity does not support scripted locking: {}".format(path)

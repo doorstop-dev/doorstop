@@ -15,6 +15,7 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
     DIRECTORY = '.git'
 
     def lock(self, path):
+        self.call('git', 'pull')
         logging.warning("git does not support locking: {}".format(path))
 
     def save(self, message=None):
