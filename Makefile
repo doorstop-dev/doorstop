@@ -68,7 +68,11 @@ endif
 
 .PHONY: req
 req: develop
-	$(BIN)/doorstop  # TODO: 'doorstop report' when implemented
+	$(BIN)/doorstop
+	$(BIN)/doorstop report REQ > docs/Requirements.gen.txt
+	$(BIN)/doorstop report TUT > docs/Tutorials.gen.txt
+	$(BIN)/doorstop report HLT > docs/HighLevelTests.gen.txt
+	$(BIN)/doorstop report LLT > docs/LowLevelTests.gen.txt
 
 .PHONY: doc
 doc: depends
