@@ -227,9 +227,22 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
 class TestReport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop report' command."""
 
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
     def test_report_text(self):
         """Verify 'doorstop report' can create text output."""
-        self.assertIs(None, main(['report', 'tut']))
+        self.assertIs(None, main(['report', 'tut', '--width', '75']))
+
+    def test_report_error(self):
+        """Verify 'doorstop report' returns an error in an empty directory."""
+        os.chdir(self.temp)
+        self.assertRaises(SystemExit, main, ['report', 'req'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

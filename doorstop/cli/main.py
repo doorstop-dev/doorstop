@@ -40,7 +40,7 @@ class _WarningFormatter(logging.Formatter, object):
         return super().format(record)
 
 
-def main(args=None):
+def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program.
     """
     # Shared options

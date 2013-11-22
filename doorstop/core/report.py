@@ -31,7 +31,7 @@ def get_text(document, indent=8, width=79):
                 for chunk in _chunks(line, width, indent):
                     yield chunk
 
-                if not line:
+                if not line:  # pragma: no cover - integration test
                     yield ""  # break between paragraphs
 
         # Reference

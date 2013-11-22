@@ -21,8 +21,8 @@ class MockItem(Item):
 
     @patch('os.path.isfile', Mock(return_value=True))
     def __init__(self, *args, **kwargs):
+        self._file = kwargs.pop('_file', "")  # file system mock
         super().__init__(*args, **kwargs)
-        self._file = ""  # file system mock
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
@@ -45,8 +45,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join('path', 'to', 'RQ001.yml')
-        self.item = MockItem(self.path)
-        self.item._file = "links: []\ntext: ''\nlevel: 1.1.1"
+        self.item = MockItem(self.path,
+                             _file="links: []\ntext: ''\nlevel: 1.1.1")
 
     def test_load_empty(self):
         """Verify loading calls read."""
