@@ -10,6 +10,7 @@ from unittest.mock import Mock
 import os
 
 from doorstop.core.report import get_text
+from doorstop.core.vcs.mockvcs import WorkingCopy
 
 from doorstop.core.test import FILES
 from doorstop.core.test.test_item import MockItem
@@ -34,12 +35,14 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req4.yml',
                      _file="links: [sys2]\nref: 'r1'\nlevel: 2.1"),
         ]
+        cls.work = WorkingCopy(None)
 
     def test_get_text(self):
         """Verify a text report can be created."""
         path = os.path.join(FILES, 'report.txt')
         expected = open(path).read()
-        text = ''.join(line + '\n' for line in get_text(self.document))
+        lines = get_text(self.document, ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
         with open(path, 'w') as rep:

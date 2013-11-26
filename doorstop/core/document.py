@@ -168,8 +168,11 @@ class Document(object):
         except ValueError:
             return 0
 
-    def check(self, tree=None):
+    def check(self, tree=None, ignored=None):
         """Confirm the document is valid.
+
+        @param tree: tree to validate the document
+        @param ignored: function to determine if a path should be skipped
 
         @return: indication that document is valid
         """
@@ -180,6 +183,6 @@ class Document(object):
             logging.warning("no items: {}".format(self))
         # Check each item
         for item in items:
-            item.check(document=self, tree=tree)
+            item.check(document=self, tree=tree, ignored=ignored)
         # Document is valid
         return True

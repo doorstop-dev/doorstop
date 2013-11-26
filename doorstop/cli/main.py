@@ -325,7 +325,7 @@ def _run_report(args, cwd, _):
         logging.error(error)
         return False
     else:
-        kwargs = {}
+        kwargs = {'ignored': tree.vcs.ignored}
         if args.width:
             kwargs['width'] = args.width
         for line in report.get_text(document, **kwargs):

@@ -19,3 +19,8 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
 
     def save(self, message=None):
         logging.info("simulated save")
+
+    @property
+    def ignores(self):
+        """Get a list of glob expressions to ignore."""
+        return ("*env*", "*apidocs*")

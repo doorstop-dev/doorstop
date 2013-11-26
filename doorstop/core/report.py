@@ -8,11 +8,13 @@ import os
 import textwrap
 
 
-def get_text(document, indent=8, width=79):
+def get_text(document, indent=8, width=79, ignored=None):
     """Yield text for a standard output report.
 
     @param document: Document to publish
     @param indent: number of spaces to indent text
+    @param width: maximum line length
+    @param ignored: function to determine if a path should be skipped
 
     @return: iterator of text
     """
@@ -37,7 +39,7 @@ def get_text(document, indent=8, width=79):
         # Reference
         if item.ref:
             yield ""  # break before reference
-            path, line = item.find_ref()
+            path, line = item.find_ref(ignored=ignored)
             relpath = os.path.relpath(path, item.root)
             ref = "Reference: {p} @ {l}".format(p=relpath, l=line)
             for chunk in _chunks(ref, width, indent):

@@ -155,7 +155,7 @@ class Node(object):
         """
         logging.info("checking document tree...")
         for document in self:
-            document.check(tree=self)
+            document.check(tree=self, ignored=self.vcs.ignored)
         return True
 
     def new(self, path, prefix, parent=None, digits=None):

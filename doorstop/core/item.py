@@ -301,10 +301,11 @@ class Item(object):
         self._ref = ref
 
     @_auto_load
-    def find_ref(self, root=None):
+    def find_ref(self, root=None, ignored=None):
         """Find the external file reference and line number.
 
         @param root: override the path to the working copy (for testing)
+        @param ignored: function to determine if a path should be skipped
 
         @return: path to file, line number (or None, None when no ref)
 
@@ -313,6 +314,7 @@ class Item(object):
         if not self.ref:
             logging.debug("no external reference to search for")
             return None, None
+        ignored = ignored or (lambda _: False)
         logging.info("seraching for ref '{}'...".format(self.ref))
         regex = re.compile(r"\b{}\b".format(self.ref))
         for root, _, filenames in os.walk(root or self.root):
@@ -321,11 +323,11 @@ class Item(object):
                 # Skip the item's file while searching
                 if path == self.path:
                     continue
-                # Skip virtualenv directories
-                if 'env' in path:
-                    continue
                 # Skip hidden directories
                 if (os.path.sep + '.') in path:
+                    continue
+                # Skip ignored paths
+                if ignored(path):
                     continue
                 # Search for the reference in the file
                 try:
@@ -366,8 +368,12 @@ class Item(object):
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def check(self, document=None, tree=None):
+    def check(self, document=None, tree=None, ignored=None):
         """Confirm the item is valid.
+
+        @param document: document to validate the item
+        @param tree: tree to validate the item
+        @param ignored: function to determine if a path should be skipped
 
         @return: indication that the item is valid
         """
@@ -378,7 +384,7 @@ class Item(object):
         if not self.text and not self.ref:
             logging.warning("no text: {}".format(self))
         # Check external references
-        self.find_ref()
+        self.find_ref(ignored=ignored)
         # Check links against the document
         if document:
             if document.parent and not self.links:
