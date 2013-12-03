@@ -224,8 +224,8 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestReport(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the 'doorstop report' command."""
+class TestPublish(unittest.TestCase):  # pylint: disable=R0904
+    """Integration tests for the 'doorstop publish' command."""
 
     def setUp(self):
         self.cwd = os.getcwd()
@@ -235,14 +235,22 @@ class TestReport(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
-    def test_report_text(self):
-        """Verify 'doorstop report' can create text output."""
-        self.assertIs(None, main(['report', 'tut', '--width', '75']))
+    def test_publish_text(self):
+        """Verify 'doorstop publish' can create text output."""
+        self.assertIs(None, main(['publish', 'tut', '--width', '75']))
+
+    def test_publish_markdown(self):
+        """Verify 'doorstop publish' can create Markdown output."""
+        self.assertIs(None, main(['publish', 'req', '--markdown']))
+
+    def test_publish_html(self):
+        """Verify 'doorstop publish' can create HTML output."""
+        self.assertIs(None, main(['publish', 'hlt', '--html']))
 
     def test_report_error(self):
-        """Verify 'doorstop report' returns an error in an empty directory."""
+        """Verify 'doorstop publish' returns an error in an empty folder."""
         os.chdir(self.temp)
-        self.assertRaises(SystemExit, main, ['report', 'req'])
+        self.assertRaises(SystemExit, main, ['publish', 'req'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

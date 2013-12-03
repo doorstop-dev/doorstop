@@ -117,11 +117,15 @@ def main(args=None):  # pylint: disable=R0915
                           **shared)
     sub.add_argument('output', help="file to export")
 
-    # Report subparser
-    sub = subs.add_parser('report',
-                          help="publish document items to a report",
+    # Publish subparser
+    sub = subs.add_parser('publish',
+                          help="publish a document as text or another format",
                           **shared)
     sub.add_argument('prefix', help="prefix of document to publish")
+    sub.add_argument('-m', '--markdown', action='store_true',
+                     help="output Markdown instead of raw text")
+    sub.add_argument('-H', '--html', action='store_true',
+                     help="output HTML converted from Markdown")
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
 
@@ -313,7 +317,7 @@ def _run_export(args, cwd, err):
     raise NotImplementedError("'doorstop export' not implemented")
 
 
-def _run_report(args, cwd, _):
+def _run_publish(args, cwd, _):
     """Process arguments and run the `doorstop report` subcommand.
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
@@ -325,8 +329,23 @@ def _run_report(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        kwargs = {'ignored': tree.vcs.ignored}
+
+    kwargs = {'ignored': tree.vcs.ignored}
+
+    if args.markdown:
+
+        for line in report.get_markdown(document, **kwargs):
+            print(line)
+        return True
+
+    elif args.html:
+
+        for line in report.get_html(document, **kwargs):
+            print(line)
+        return True
+
+    else:  # raw text
+
         if args.width:
             kwargs['width'] = args.width
         for line in report.get_text(document, **kwargs):

@@ -69,10 +69,14 @@ endif
 .PHONY: req
 req: develop
 	$(BIN)/doorstop
-	$(BIN)/doorstop report REQ > docs/Requirements.gen.txt
-	$(BIN)/doorstop report TUT > docs/Tutorials.gen.txt
-	$(BIN)/doorstop report HLT > docs/HighLevelTests.gen.txt
-	$(BIN)/doorstop report LLT > docs/LowLevelTests.gen.txt
+	$(BIN)/doorstop publish REQ > docs/Requirements.gen.txt
+	$(BIN)/doorstop publish TUT > docs/Tutorials.gen.txt
+	$(BIN)/doorstop publish HLT > docs/HighLevelTests.gen.txt
+	$(BIN)/doorstop publish LLT > docs/LowLevelTests.gen.txt
+	$(BIN)/doorstop publish REQ --html > docs/Requirements.gen.html
+	$(BIN)/doorstop publish TUT --html > docs/Tutorials.gen.html
+	$(BIN)/doorstop publish HLT --html > docs/HighLevelTests.gen.html
+	$(BIN)/doorstop publish LLT --html > docs/LowLevelTests.gen.html
 
 .PHONY: doc
 doc: depends

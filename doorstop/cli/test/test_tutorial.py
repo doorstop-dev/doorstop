@@ -110,8 +110,8 @@ class TestSection1(TestBase):  # pylint: disable=R0904
 
         # 2.1
 
-        self.doorstop("report REQ")
-        self.doorstop("report TST")
+        self.doorstop("publish REQ")
+        self.doorstop("publish TST")
 
 
 if __name__ == '__main__':

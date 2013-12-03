@@ -13,7 +13,7 @@ Icon*
 # Generated documentation
 @/apidocs
 @/docs/README.html
-@/docs/*.gen.txt
+@/docs/*.gen.*
 
 # Testing results
 .coverage
