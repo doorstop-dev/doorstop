@@ -9,7 +9,7 @@ from unittest.mock import Mock
 
 import os
 
-from doorstop.core.report import get_text
+from doorstop.core.report import get_text, get_markdown, get_html
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 from doorstop.core.test import FILES
@@ -45,8 +45,30 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
-        with open(path, 'wb') as rep:
-            rep.write(bytes(text, 'utf-8'))
+        with open(path, 'wb') as outfile:
+            outfile.write(bytes(text, 'utf-8'))
+
+    def test_get_markdown(self):
+        """Verify a Markdown report can be created."""
+        path = os.path.join(FILES, 'report.md')
+        expected = open(path).read()
+        lines = get_markdown(self.document, ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        if ASSERT_CONTENTS:
+            self.assertEqual(expected, text)
+        with open(path, 'wb') as outfile:
+            outfile.write(bytes(text, 'utf-8'))
+
+    def test_get_html(self):
+        """Verify an HTML report can be created."""
+        path = os.path.join(FILES, 'report.html')
+        expected = open(path).read()
+        lines = get_html(self.document, ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        if ASSERT_CONTENTS:
+            self.assertEqual(expected, text)
+        with open(path, 'wb') as outfile:
+            outfile.write(bytes(text, 'utf-8'))
 
 
 if __name__ == '__main__':

@@ -122,7 +122,8 @@ def main(args=None):  # pylint: disable=R0915
                           help="publish document items to a report",
                           **shared)
     sub.add_argument('prefix', help="prefix of document to publish")
-    sub.add_argument('-w', '--width', type=int, help="limit line width")
+    sub.add_argument('-w', '--width', type=int,
+                     help="limit line width on text output")
 
     # Parse arguments
     args = parser.parse_args(args=args)
