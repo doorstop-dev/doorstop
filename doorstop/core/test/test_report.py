@@ -45,8 +45,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
-        with open(path, 'w') as rep:
-            rep.write(text)
+        with open(path, 'wb') as rep:
+            rep.write(bytes(text, 'utf-8'))
 
 
 if __name__ == '__main__':
