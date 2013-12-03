@@ -192,7 +192,9 @@ class Node(object):
         @raise DoorstopError: if the item cannot be created
         """
         document = self.find_document(prefix)
-        return document.add()
+        self.vcs.lock(document.config)  # prevents duplicate item IDs
+        item = document.add()
+        return item
 
     def remove(self, identifier):
         """Remove an new item from a document.
@@ -205,7 +207,6 @@ class Node(object):
         """
         item = self.find_item(identifier)
         item.delete()
-
         return item
 
     def link(self, cid, pid):

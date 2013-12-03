@@ -69,6 +69,11 @@ class Document(object):
     def __ne__(self, other):
         return not self == other
 
+    @property
+    def config(self):
+        """Get the path to the document's configuration."""
+        return os.path.join(self.path, Document.CONFIG)
+
     @staticmethod
     def new(path, root, prefix, parent=None, digits=None):
         """Create a new Document.
@@ -117,7 +122,7 @@ class Document(object):
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
-        path = os.path.join(self.path, Document.CONFIG)
+        path = self.config
         if not os.path.exists(path):
             logging.debug("document does not exist yet: {}".format(path))
             return ""
@@ -137,7 +142,7 @@ class Document(object):
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
-        path = os.path.join(self.path, Document.CONFIG)
+        path = self.config
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
 
