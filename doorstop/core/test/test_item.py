@@ -108,6 +108,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = 'level: 1.2.3\nlinks: []\ntext: ""\n'
         self.item._write.assert_called_once_with(text)
 
+    def test_heading(self):
+        """Verify the heading can be read from the item's level."""
+        self.item.level = (1,)
+        self.assertEqual(1, self.item.heading)
+        self.item.level = (1, 0)
+        self.assertEqual(1, self.item.heading)
+        self.item.level = (2, 0, 1)
+        self.assertEqual(3, self.item.heading)
+        self.item.level = (2, 0, 1, 1, 0, 0)
+        self.assertEqual(4, self.item.heading)
+
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2"

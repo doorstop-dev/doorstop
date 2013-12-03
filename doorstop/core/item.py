@@ -252,6 +252,14 @@ class Item(object):
         """Set the item's level."""
         self._level = self._convert_level(level)
 
+    @property
+    def heading(self):
+        """Get the heading order based on the level."""
+        level = list(self.level)
+        while level[-1] == 0:
+            del level[-1]
+        return len(level)
+
     @staticmethod
     def _convert_level(text):
         """Convert a level string to a tuple.

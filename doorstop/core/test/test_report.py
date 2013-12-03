@@ -31,9 +31,9 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req1.yml',
                      _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
             MockItem('path/to/req2.yml',
-                     _file="links: [sys1, sys2]\ntext: ''\nlevel: 2.0"),
+                     _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: 'r1'\nlevel: 2.1"),
+                     _file="links: [sys2]\nref: 'r1'\nlevel: 2.1.1"),
         ]
         cls.work = WorkingCopy(None)
 

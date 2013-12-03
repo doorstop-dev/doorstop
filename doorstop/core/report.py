@@ -25,7 +25,7 @@ def get_text(document, indent=8, width=79, ignored=None):
         identifier = item.id
 
         # Level and ID
-        yield "{lvl:<{sp}}{id}".format(lvl=level, id=identifier, sp=indent)
+        yield "{l:<{s}}{i}".format(l=level, i=identifier, s=indent)
 
         # Text
         if item.text:
@@ -74,11 +74,12 @@ def get_markdown(document, ignored=None):
     """
     for item in document.items:
 
+        heading = '#' * item.heading
         level = '.'.join(str(l) for l in item.level)
         identifier = item.id
 
         # Level and ID
-        yield "## {lvl} ({id})".format(lvl=level, id=identifier)
+        yield "{h} {l} ({i})".format(h=heading, l=level, i=identifier)
 
         # Text
         if item.text:
