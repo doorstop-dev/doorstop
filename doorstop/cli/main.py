@@ -10,12 +10,14 @@ import argparse
 import logging
 
 from doorstop import CLI, VERSION
-from doorstop.cli import settings
+from doorstop.gui.main import run as gui
 from doorstop.core import processor
 from doorstop.core import report
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 
+# TODO: use the classes from doorstop.common
 class _HelpFormatter(argparse.HelpFormatter):
     """Command-line help text formatter with wider help text."""
     def __init__(self, *args, **kwargs):
@@ -136,7 +138,9 @@ def main(args=None):  # pylint: disable=R0915
     _configure_logging(args.verbose)
 
     # Run the program
-    if args.command:
+    if args.gui:
+        gui()
+    elif args.command:
         logging.debug("launching command '{}'...".format(args.command))
         function = globals()['_run_' + args.command]
     else:

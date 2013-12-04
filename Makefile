@@ -8,14 +8,16 @@ DEPENDS := $(VIRTUALENV)/.depends
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
 ifeq ($(OS),Windows_NT)
-VERSION := C:\\Python33\\python.exe
-BIN := $(VIRTUALENV)/Scripts
-EXE := .exe
-OPEN := cmd /c start
+	VERSION := C:\\Python33\\python.exe
+	BIN := $(VIRTUALENV)/Scripts
+	EXE := .exe
+	OPEN := cmd /c start
+	# https://bugs.launchpad.net/virtualenv/+bug/449537
+	export TCL_LIBRARY=C:\\Python33\\tcl\\tcl8.5
 else
-VERSION := python3
-BIN := $(VIRTUALENV)/bin
-OPEN := open
+	VERSION := python3
+	BIN := $(VIRTUALENV)/bin
+	OPEN := open
 endif
 MAN := man
 SHARE := share
@@ -116,7 +118,8 @@ test: develop depends
 
 .PHONY: tests
 tests: develop depends
-	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=doorstop.cli
+	TEST_INTEGRATION=1 $(NOSE) --verbose --stop \
+	                           --cover-package=doorstop.cli,doorstop.gui
 
 .PHONY: tutorial
 tutorial: develop
@@ -153,3 +156,10 @@ dist: develop depends
 upload: develop depends
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
+	
+	
+# Execution ##################################################################
+
+.PHONY: gui
+gui: develop
+	$(BIN)/$(PROJECT)$(EXE)
