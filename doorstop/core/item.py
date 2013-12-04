@@ -324,7 +324,9 @@ class Item(object):
             return None, None
         ignored = ignored or (lambda _: False)
         logging.info("seraching for ref '{}'...".format(self.ref))
-        regex = re.compile(r"\b{}\b".format(self.ref))
+        pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
+        logging.debug("regex: {}".format(pattern))
+        regex = re.compile(pattern)
         for root, _, filenames in os.walk(root or self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
@@ -395,7 +397,7 @@ class Item(object):
         self.find_ref(ignored=ignored)
         # Check links against the document
         if document:
-            if document.parent and not self.links:
+            if document.parent and self.level[-1] != 0 and not self.links:
                 logging.warning("no links: {}".format(self))
 
             for identifier in self.links:

@@ -1,5 +1,7 @@
 level: 1.2
-links: []
+links:
+- REQ003
+- REQ004
 text: |-
   **Creating a child document with links to the parent document.**
 

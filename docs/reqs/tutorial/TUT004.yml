@@ -1,5 +1,6 @@
 level: 1.3
-links: []
+links:
+- REQ003
 text: |-
   **Removing items and links.**
 

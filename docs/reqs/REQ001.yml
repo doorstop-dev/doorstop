@@ -1,4 +1,4 @@
-level: 1.2
+level: 1.3
 links: []
 text: |-
-  Doorstop shall support non-text requirements assets (images, files, etc.) as links in the Markdown text.
+  Doorstop **shall** support the storage of external requirements assets.

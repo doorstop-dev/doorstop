@@ -1,5 +1,7 @@
 level: 1.1
-links: []
+links:
+- REQ003
+- REQ004
 text: |-
   **Creating a new document and adding items.**
 

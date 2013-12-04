@@ -42,7 +42,7 @@ def get_text(document, indent=8, width=79, ignored=None):
             yield ""  # break before reference
             path, line = item.find_ref(ignored=ignored)
             relpath = os.path.relpath(path, item.root).replace('\\', '/')
-            ref = "Reference: {p} @ {l}".format(p=relpath, l=line)
+            ref = "Reference: {p} (line {l})".format(p=relpath, l=line)
             for chunk in _chunks(ref, width, indent):
                 yield chunk
 
@@ -92,13 +92,13 @@ def get_markdown(document, ignored=None):
             yield ""  # break before reference
             path, line = item.find_ref(ignored=ignored)
             relpath = os.path.relpath(path, item.root).replace('\\', '/')
-            ref = "Reference: {p} @ {l}".format(p=relpath, l=line)
+            ref = "Reference: {p} (line {l})".format(p=relpath, l=line)
             yield ref
 
         # Links
         if item.links:
             yield ""  # break before links
-            links = "Links: " + ', '.join(item.links)
+            links = '*' + "Links: " + ', '.join(item.links) + '*'
             yield links
 
         yield ""  # break between items
