@@ -19,7 +19,7 @@ from itertools import chain
 import logging
 
 
-from doorstop import GUI
+from doorstop import GUI, __version__
 from doorstop.common import SHARED, WarningFormatter
 from doorstop import settings
 
@@ -242,7 +242,7 @@ def run():
     else:  # pragma: no cover - manual test
 
         root = tk.Tk()
-        root.title(GUI)
+        root.title("{} ({})".format(GUI, __version__))
         root.minsize(500, 500)
 
         # Map the Mac 'command' key to 'control'
