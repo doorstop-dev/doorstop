@@ -50,7 +50,7 @@ class MockDocumentNoSkip(MockDocument):
 
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
-class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
+class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Tree class using strings."""  # pylint: disable=C0103
 
     @classmethod
@@ -121,7 +121,7 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
 @patch('doorstop.core.tree.Document', MockDocument)  # pylint: disable=R0904
-class TestNode(unittest.TestCase):  # pylint: disable=R0904
+class TestTree(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Tree class."""  # pylint: disable=C0103
 
     def setUp(self):
@@ -261,12 +261,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify an empty directory is an empty hiearchy."""
         tree = build(EMPTY)
         self.assertEqual(0, len(tree))
-
-    @patch('doorstop.core.build', Mock())
-    def test_run(self):
-        """Verify a valid tree can be checked."""
-        tree = build(FILES)
-        self.assertTrue(tree.check())
 
     @patch('doorstop.core.document.Document', MockDocumentNoSkip)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))

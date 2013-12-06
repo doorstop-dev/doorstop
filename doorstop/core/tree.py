@@ -68,7 +68,7 @@ class Tree(object):
         @param root: path to root of the project
         @param documents: list of Documents
 
-        @return: tree built from Nodes
+        @return: new tree
 
         @raise DoorstopError: when the tree cannot be built
         """
@@ -333,7 +333,7 @@ def build(cwd=None, root=None):
     @param cwd: current working directory
     @param root: path to root of the working copy
 
-    @return: tree built from Nodes
+    @return: new tree
 
     @raise DoorstopError: when the tree cannot be built
     """

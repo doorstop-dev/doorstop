@@ -15,6 +15,10 @@ import yaml
 from doorstop.common import DoorstopError
 
 
+# http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")
+
+
 class _literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
     pass
@@ -183,7 +187,7 @@ class Item(object):
             level = float(level)
         elif len(self._level) == 1:
             level = int(level)
-        text = _literal(self._text.strip())
+        text = _literal(self._sbd(self._text))
         ref = self._ref.strip()
         links = sorted(self._links)
         # Build the data structure
@@ -195,6 +199,19 @@ class Item(object):
         dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
         self._write(dump)
+
+    @staticmethod
+    def _sbd(text):
+        """Replace sentence boundaries with newlines.
+
+        >>> Item._sbd("Hello, world!")
+        'Hello, world!'
+
+        >>> Item._sbd("Hello, world! How are you? I'm fine. Good.")
+        "Hello, world!\\nHow are you?\\nI'm fine.\\nGood."
+
+        """
+        return SBD.sub('\n', text.strip())
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
@@ -214,6 +231,7 @@ class Item(object):
 
         >>> Item.join_id('ABC', 5, 123)
         'ABC00123'
+
         """
         return "{}{}".format(prefix, str(number).zfill(digits))
 

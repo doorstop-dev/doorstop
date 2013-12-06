@@ -71,7 +71,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the Node class."""
+    """Integration tests for the Tree class."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
 

@@ -109,8 +109,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_level(self):
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
-        self.assertEqual((1, 2, 3), self.item.level)
         self.assertIn("level: 1.2.3\n", self.item._write.call_args[0][0])
+        self.assertEqual((1, 2, 3), self.item.level)
 
     def test_heading(self):
         """Verify the heading can be read from the item's level."""
@@ -125,32 +125,45 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
-        self.item.level = "4.2.0"
-        self.assertEqual((4, 2, 0), self.item.level)
+        self.item.level = "4.2.0 "
         self.assertIn("level: 4.2.0\n", self.item._write.call_args[0][0])
+        self.assertEqual((4, 2, 0), self.item.level)
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""
         self.item.level = 4.2
-        self.assertEqual((4, 2), self.item.level)
         self.assertIn("level: 4.2\n", self.item._write.call_args[0][0])
+        self.assertEqual((4, 2), self.item.level)
 
     def test_level_from_int(self):
         """Verify an item's level can be set from a int and read."""
         self.item.level = 42
-        self.assertEqual((42,), self.item.level)
         self.assertIn("level: 42\n", self.item._write.call_args[0][0])
+        self.assertEqual((42,), self.item.level)
 
     def test_text(self):
         """Verify an item's text can be set and read."""
-        self.item.text = "test text"
-        self.assertEqual("test text", self.item.text)
+        self.item.text = "test "
+        self.assertIn("text: |-\n  test\n", self.item._write.call_args[0][0])
+        self.assertEqual("test", self.item.text)
+
+    def test_text_sentences(self):
+        """Verify newlines separate sentences in an item's text."""
+        self.item.text = ("A sentence. Another sentence! Hello? Hi.\n"
+                          "A new line. And another sentece.")
+        expected = ("A sentence.\n"
+                    "Another sentence!\n"
+                    "Hello?\n"
+                    "Hi.\n"
+                    "A new line.\n"
+                    "And another sentece.")
+        self.assertEqual(expected, self.item.text)
 
     def test_ref(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
-        self.assertEqual("abc123", self.item.ref)
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
+        self.assertEqual("abc123", self.item.ref)
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
