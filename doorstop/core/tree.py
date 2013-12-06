@@ -17,9 +17,9 @@ from doorstop.core.item import Item
 from doorstop.core import vcs
 
 
-class Node(object):
+class Tree(object):
     """
-    A bidirectional tree structure to store the document heirarchy.
+    A bidirectional tree structure to store the heirarchy or documents.
 
     Although requirements link "upwards", bidirectionality simplifies
     document processing and validation.
@@ -33,7 +33,7 @@ class Node(object):
         self._vcs = None
 
     def __repr__(self):
-        return "<Node {}>".format(self)
+        return "<{} {}>".format(self.__class__.__name__, self)
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -73,12 +73,12 @@ class Node(object):
         @raise DoorstopError: when the tree cannot be built
         """
         if not docs:
-            return Node(document=None, root=root)
+            return Tree(document=None, root=root)
         unplaced = list(docs)
         for doc in list(unplaced):
             if doc.parent is None:
                 logging.debug("added root of tree: {}".format(doc))
-                tree = Node(doc)
+                tree = Tree(doc)
                 logging.info("root of tree: {}".format(doc))
                 unplaced.remove(doc)
                 break
@@ -129,7 +129,7 @@ class Node(object):
         elif doc.parent == self.document.prefix:
 
             # Current document is the parent
-            node = Node(doc, self)
+            node = Tree(doc, self)
             self.children.append(node)
 
         else:
@@ -355,7 +355,7 @@ def build(cwd=None, root=None):
     if not documents:
         logging.warning("no documents found in: {}".format(root))
     logging.info("building document tree...")
-    tree = Node.from_list(documents, root=root)
+    tree = Tree.from_list(documents, root=root)
     logging.info("final document tree: {}".format(tree))
     return tree
 

@@ -11,7 +11,7 @@ import logging
 
 from doorstop import CLI, VERSION
 from doorstop.cli import settings
-from doorstop.core import processor
+from doorstop.core.tree import build
 from doorstop.core import report
 from doorstop.common import DoorstopError
 
@@ -185,12 +185,13 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         tree.check()
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
+        print("validated: {}".format(tree))
         return True
 
 
@@ -201,14 +202,14 @@ def _run_new(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
-        document = tree.new(args.root, args.prefix,
-                            parent=args.parent, digits=args.digits)
-        print("created: {}".format(document))
+        tree = build(cwd)
+        doc = tree.new(args.root, args.prefix,
+                       parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
+        print("created: {}".format(doc))
         return True
 
 
@@ -219,7 +220,7 @@ def _run_add(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         item = tree.add(args.prefix)
     except DoorstopError as error:
         logging.error(error)
@@ -236,7 +237,7 @@ def _run_remove(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         item = tree.remove(args.id)
     except DoorstopError as error:
         logging.error(error)
@@ -253,7 +254,7 @@ def _run_link(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         child, parent = tree.link(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
@@ -270,7 +271,7 @@ def _run_unlink(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         child, parent = tree.unlink(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
@@ -287,7 +288,7 @@ def _run_edit(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
+        tree = build(cwd)
         item = tree.edit(args.id, tool=args.tool, launch=True)
     except DoorstopError as error:
         logging.error(error)
@@ -324,32 +325,29 @@ def _run_publish(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = processor.build(cwd)
-        document = tree.find_document(args.prefix)
+        tree = build(cwd)
+        doc = tree.find_document(args.prefix)
     except DoorstopError as error:
         logging.error(error)
         return False
+    else:
 
-    kwargs = {'ignored': tree.vcs.ignored}
+        kwargs = {'ignored': tree.vcs.ignored}
 
-    if args.markdown:
+        if args.markdown:
+            for line in report.get_markdown(doc, **kwargs):
+                print(line)
 
-        for line in report.get_markdown(document, **kwargs):
-            print(line)
-        return True
+        elif args.html:
+            for line in report.get_html(doc, **kwargs):
+                print(line)
 
-    elif args.html:
+        else:  # raw text
+            if args.width:
+                kwargs['width'] = args.width
+            for line in report.get_text(doc, **kwargs):
+                print(line)
 
-        for line in report.get_html(document, **kwargs):
-            print(line)
-        return True
-
-    else:  # raw text
-
-        if args.width:
-            kwargs['width'] = args.width
-        for line in report.get_text(document, **kwargs):
-            print(line)
         return True
 
 

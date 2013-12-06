@@ -7,10 +7,6 @@ from unittest.mock import patch
 
 import os
 
-from doorstop.core import Item
-from doorstop.core import Document
-from doorstop.core import processor
-from doorstop.common import DoorstopError
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 

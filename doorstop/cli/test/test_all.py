@@ -193,7 +193,7 @@ class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
 class TestEdit(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop edit' command."""
 
-    @patch('doorstop.core.processor._open')
+    @patch('doorstop.core.tree._open')
     def test_edit(self, mock_open):
         """Verify 'doorstop edit' can be called."""
         self.assertIs(None, main(['edit', 'tut2']))

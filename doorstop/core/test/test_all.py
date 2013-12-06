@@ -9,7 +9,7 @@ import os
 
 from doorstop.core import Item
 from doorstop.core import Document
-from doorstop.core import processor
+from doorstop.core import Tree, build
 from doorstop.common import DoorstopError
 
 from doorstop.core.test import ENV, REASON, FILES, EMPTY
@@ -88,5 +88,6 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         """Verify a tree is invalid with a bad link."""
         item = Item(self.ITEM)
         item.add_link('SYS003')
-        tree = processor.build(FILES, root=FILES)
+        tree = build(FILES, root=FILES)
+        self.assertIsInstance(tree, Tree)
         self.assertRaises(DoorstopError, tree.check)
