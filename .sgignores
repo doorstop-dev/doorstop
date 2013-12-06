@@ -11,9 +11,9 @@ Icon*
 @/env
 
 # Generated documentation
+*.gen.*
 @/apidocs
 @/docs/README.html
-@/docs/*.gen.*
 
 # Testing results
 .coverage
