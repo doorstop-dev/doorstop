@@ -22,6 +22,6 @@ else:
 
 
 try:
-    from doorstop.core import Item, Document, build
+    from doorstop.core import Item, Document, Tree, build
 except ImportError:
     pass

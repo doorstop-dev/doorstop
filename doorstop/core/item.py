@@ -16,7 +16,7 @@ from doorstop.common import DoorstopError
 
 
 # http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")
+SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
 
 
 class _literal(str):  # pylint: disable=R0904
@@ -199,6 +199,7 @@ class Item(object):
         dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
         self._write(dump)
+        setattr(self, '_loaded', False)
 
     @staticmethod
     def _sbd(text):
