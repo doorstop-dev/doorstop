@@ -29,7 +29,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         shutil.rmtree(self.temp)
 
     def test_main(self):
-        """Verify the 'doorstop' can be called."""
+        """Verify 'doorstop' can be called."""
         self.assertIs(None, main([]))
 
     def test_main_help(self):

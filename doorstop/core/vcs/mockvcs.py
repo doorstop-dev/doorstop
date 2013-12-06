@@ -23,4 +23,4 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
     @property
     def ignores(self):
         """Get a list of glob expressions to ignore."""
-        return ("*env*", "*apidocs*")
+        return ("*env*", "*apidocs*", "*build*", "*dist*")
