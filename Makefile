@@ -136,7 +136,7 @@ tutorial: develop
 clean: .clean-env .clean-dist
 	rm -rf */*.pyc */*/*.pyc */*/*/*.pyc */*/*/*/*.pyc
 	rm -rf */__pycache__ */*/__pycache__ */*/*/__pycache__ */*/*/*/__pycache__
-	rm -rf apidocs docs/README.html .coverage
+	rm -rf apidocs docs/README.html docs/gen/* .coverage
 
 .PHONY: clean-all
 clean-all: clean
