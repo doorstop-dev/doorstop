@@ -22,7 +22,8 @@ class _literal(str):  # pylint: disable=R0904
 
 def _literal_representer(dumper, data):
     """Return a custom dumper that formats str in the literal style."""
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    style = '|' if data else ''
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style=style)
 
 yaml.add_representer(_literal, _literal_representer)
 
@@ -56,7 +57,7 @@ class Item(object):
 
     DEFAULT_LEVEL = (1,)
     DEFAULT_TEXT = ""
-    DEFAULT_REF = None
+    DEFAULT_REF = ""
     DEFAULT_LINKS = set()
 
     def __init__(self, path, root=os.getcwd(),
@@ -161,7 +162,7 @@ class Item(object):
         # Store parsed data
         if data:
             self._level = self._convert_level(data.get('level', self._level))
-            self._text = data.get('text', self._text).strip()
+            self._text = data.get('text', self._text)
             self._ref = data.get('ref', self._ref)
             self._links = set(data.get('links', self._links))
         setattr(self, '_loaded', True)
@@ -174,7 +175,7 @@ class Item(object):
             return infile.read().decode('UTF-8')
 
     def save(self):
-        """Save the item's properties to a file."""
+        """Format and save the item's properties to a file."""
         logging.debug("saving {}...".format(repr(self)))
         # Collect the data items
         level = '.'.join(str(n) for n in self._level)
@@ -182,15 +183,14 @@ class Item(object):
             level = float(level)
         elif len(self._level) == 1:
             level = int(level)
-        text = _literal(self._text)
-        ref = self._ref
+        text = _literal(self._text.strip())
+        ref = self._ref.strip()
         links = sorted(self._links)
         # Build the data structure
         data = {'level': level,
                 'text': text,
-                'links': links}
-        if ref:
-            data['ref'] = ref
+                'links': links,
+                'ref': ref}
         # Dump the data to YAML
         dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
@@ -294,7 +294,7 @@ class Item(object):
     @_auto_save
     def text(self, text):
         """Set the item's text."""
-        self._text = text.strip()
+        self._text = text
 
     @property
     @_auto_load

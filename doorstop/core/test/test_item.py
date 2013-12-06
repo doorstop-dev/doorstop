@@ -45,8 +45,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join('path', 'to', 'RQ001.yml')
-        self.item = MockItem(self.path,
-                             _file="links: []\ntext: ''\nlevel: 1.1.1")
+        self.item = MockItem(self.path, _file=("links: []\n"
+                                               "ref: ''\n"
+                                               "text: ''\n"
+                                               "level: 1.1.1"))
 
     def test_load_empty(self):
         """Verify loading calls read."""
@@ -65,7 +67,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = 'level: 1\nlinks: []\ntext: ""\n'
+        text = ("level: 1\n"
+                "links: []\n"
+                "ref: ''\n"
+                "text: ''\n")
         self.item._write.assert_called_once_with(text)
 
     def test_str(self):
@@ -105,8 +110,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
         self.assertEqual((1, 2, 3), self.item.level)
-        text = 'level: 1.2.3\nlinks: []\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
+        self.assertIn("level: 1.2.3\n", self.item._write.call_args[0][0])
 
     def test_heading(self):
         """Verify the heading can be read from the item's level."""
@@ -121,24 +125,21 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
-        self.item.level = "4.2"
-        self.assertEqual((4, 2), self.item.level)
-        text = 'level: 4.2\nlinks: []\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
+        self.item.level = "4.2.0"
+        self.assertEqual((4, 2, 0), self.item.level)
+        self.assertIn("level: 4.2.0\n", self.item._write.call_args[0][0])
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""
         self.item.level = 4.2
         self.assertEqual((4, 2), self.item.level)
-        text = 'level: 4.2\nlinks: []\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
+        self.assertIn("level: 4.2\n", self.item._write.call_args[0][0])
 
     def test_level_from_int(self):
         """Verify an item's level can be set from a int and read."""
         self.item.level = 42
         self.assertEqual((42,), self.item.level)
-        text = 'level: 42\nlinks: []\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
+        self.assertIn("level: 42\n", self.item._write.call_args[0][0])
 
     def test_text(self):
         """Verify an item's text can be set and read."""
@@ -149,15 +150,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertEqual("abc123", self.item.ref)
-        text = 'level: 1\nlinks: []\nref: abc123\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
-
-    def test_ref_none(self):
-        """Verify item refs are only saved if they exist."""
-        self.item.ref = None
-        self.assertEqual(None, self.item.ref)
-        text = 'level: 1\nlinks: []\ntext: ""\n'
-        self.item._write.assert_called_once_with(text)
+        self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
