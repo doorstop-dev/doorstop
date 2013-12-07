@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Interfaces to version control systems.
 """

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Compiles the Doorstop document hierarchy.
 """

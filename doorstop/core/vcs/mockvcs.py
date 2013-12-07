@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Plug-in module to simulate the storage of requirements in a repository.
 """

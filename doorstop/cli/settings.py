@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Settings for the Doorstop package.
 """
