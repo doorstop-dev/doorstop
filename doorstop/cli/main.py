@@ -53,28 +53,28 @@ def main(args=None):  # pylint: disable=R0915
     # Main parser
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
     parser.add_argument('-g', '--gui', action='store_true',
-                        help="launch the GUI")
+                        help="launch the graphical user interface")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
     # New subparser
     sub = subs.add_parser('new',
                           help="create a new document directory",
                           **shared)
-    sub.add_argument('prefix', help="prefix for item IDs")
-    sub.add_argument('root', help="path to directory for document items")
+    sub.add_argument('prefix', help="document prefix for new item IDs")
+    sub.add_argument('root', help="path to a directory for document items")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
     sub = subs.add_parser('add',
-                          help="add a new item to a document",
+                          help="add a new item to a document directory",
                           **shared)
     sub.add_argument('prefix',
-                     help="prefix of document for the new item")
+                     help="document prefix for the new item")
 
     # Remove subparser
     sub = subs.add_parser('remove',
-                          help="remove an item from a document",
+                          help="remove an item from a document directory",
                           **shared)
     sub.add_argument('id', metavar='ID',
                      help="item ID to remove from a document")
@@ -99,9 +99,9 @@ def main(args=None):  # pylint: disable=R0915
 
     # Edit subparser
     sub = subs.add_parser('edit',
-                          help="edit an existing document item",
+                          help="open an existing item file for editing",
                           **shared)
-    sub.add_argument('id', metavar='ID', help="item to edit")
+    sub.add_argument('id', metavar='ID', help="item ID to open for editing")
     sub.add_argument('-t', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
 
