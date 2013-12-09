@@ -7,10 +7,11 @@ source code in version control.
 Each requirement item is stored as a YAML file in a designated directory.
 The items in each designated directory form a document. Document items can
 be linked to one another to form a document hiearchy. Doorstop provides
-mechanisms for modifying this hiearchy and checking the tree for consistency.
+mechanisms for modifying this hiearchy, checking the tree for consistency,
+and publishing documents in serveral formats.
 
 .. NOTE::
-   0.0.x releases are experimental and no functionality is gaurenteed.
+   0.0.x releases are experimental and interfaces will likely change.
 
 
 
@@ -27,17 +28,17 @@ Requirements
 Installation
 ------------
 
-Doorstop can be installed with ``pip``::
+Doorstop can be installed with ``pip`` or ``easy_install``::
 
-    pip install Doorstop
+    $ pip install Doorstop
 
 After installation, Doorstop is available on the command-line::
 
-   doorstop --help
+    $ doorstop --help
 
 And the package is available under the name ``doorstop``::
 
-    python
+    $ python
     >>> import doorstop
     >>> doorstop.__version__
 
@@ -50,27 +51,33 @@ Parent Document
 
 After configuring version control, a new parent document can be created::
 
-    doorstop new REQ ./reqs
+    $ doorstop new REQ ./reqs
+    created: REQ (@/reqs)
 
 Items can be added to the document and edited::
 
-    doorstop add REQ
+    $ doorstop add REQ
+    added: REQ001 (@/reqs/REQ001.yml)
 
-    doorstop edit REQ1
+    $ doorstop edit REQ1
+    opened: REQ001 (@/reqs/REQ001.yml)
 
 
 Child Documents
 ---------------
 
-Additional documents can be created that will link to the parent::
+Additional documents can be created that link to other documents::
 
-    doorstop new TST ./reqs/tests --parent REQ
+    $ doorstop new TST ./reqs/tests --parent REQ
+    created: TST (@/reqs/tests)
 
 Items can be added and linked to parent items::
 
-    doorstop add TST
+    $ doorstop add TST
+    added: TST001 (@/reqs/tests/TST001.yml)
 
-    doorstop link TST1 REQ1
+    $ doorstop link TST1 REQ1
+    linked: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
 
 Document Validation
@@ -78,6 +85,25 @@ Document Validation
 
 To check a document hiearchy for consistency, run the main command::
 
-    doorstop
+    $ doorstop
+    validated: REQ <- [ TST ]
 
 
+Document Publishing
+===================
+
+A text report of a document can be created::
+
+    $ doorstop publish TST
+    1       TST001
+
+            Verify the foobar will foo and bar.
+
+            Links: REQ001
+
+Other formats are also supported::
+
+    $ doorstop publish TST --html
+	<h1>1 (TST001)</h1>
+	<p>Verify the foobar will foo and bar.</p>
+	<p><em>Links: REQ001</em></p>

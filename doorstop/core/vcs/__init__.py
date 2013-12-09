@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Interfaces to version control systems.
 """
@@ -25,7 +23,7 @@ def find_root(cwd):
     path = cwd
 
     logging.debug("looking for working copy from {}...".format(path))
-    logging.debug("options: {}".format(DIRECTORIES))
+    logging.debug("options: {}".format(', '.join([d for d in DIRECTORIES])))
     while not any(d in DIRECTORIES for d in os.listdir(path)):
         parent = os.path.dirname(path)
         if path == parent:

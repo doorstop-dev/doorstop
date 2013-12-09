@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Unit tests for the doorstop.core.processor module.
+Unit tests for the doorstop.core.tree module.
 """
 
 import unittest
@@ -13,8 +13,7 @@ import operator
 import logging
 
 from doorstop.common import DoorstopError
-from doorstop.core import processor
-from doorstop.core.processor import Node
+from doorstop.core.tree import Tree, build
 from doorstop.core.document import Document
 
 from doorstop.core.test import ENV, REASON, FILES, SYS, EMPTY
@@ -51,23 +50,23 @@ class MockDocumentNoSkip(MockDocument):
 
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
-class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the Node class using strings."""  # pylint: disable=C0103
+class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
+    """Unit tests for the Tree class using strings."""  # pylint: disable=C0103
 
     @classmethod
     def setUpClass(cls):
-        a = Node('a', root='.')
-        b1 = Node('b1', parent=a, root='.')
-        b2 = Node('b2', parent=a, root='.')
-        c1 = Node('c1', parent=b2, root='.')
-        c2 = Node('c2', parent=b2, root='.')
+        a = Tree('a', root='.')
+        b1 = Tree('b1', parent=a, root='.')
+        b2 = Tree('b2', parent=a, root='.')
+        c1 = Tree('c1', parent=b2, root='.')
+        c2 = Tree('c2', parent=b2, root='.')
         a.children = [b1, b2]
         b2.children = [c1, c2]
         cls.tree = a
 
     def test_repr(self):
         """Verify trees can be represented."""
-        text = "<Node a <- [ b1, b2 <- [ c1, c2 ] ]>"
+        text = "<Tree a <- [ b1, b2 <- [ c1, c2 ] ]>"
         self.assertEqual(text, repr(self.tree))
 
     def test_str(self):
@@ -99,7 +98,7 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
         b = MockDocument(EMPTY, _prefix='B', _parent='A')
         c = MockDocument(EMPTY, _prefix='C', _parent='B')
         docs = [a, b, c]
-        tree = Node.from_list(docs)
+        tree = Tree.from_list(docs)
         self.assertEqual(3, len(tree))
         tree.check()
 
@@ -108,7 +107,7 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
         a = MockDocument(EMPTY, _prefix='A', _parent='B')
         b = MockDocument(EMPTY, _prefix='B', _parent='A')
         docs = [a, b]
-        self.assertRaises(DoorstopError, Node.from_list, docs)
+        self.assertRaises(DoorstopError, Tree.from_list, docs)
 
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
@@ -117,22 +116,22 @@ class TestNodeStrings(unittest.TestCase):  # pylint: disable=R0904
         b = MockDocument(EMPTY, _prefix='B', _parent='A')
         c = MockDocument(EMPTY, _prefix='C', _parent='?')
         docs = [a, b, c]
-        self.assertRaises(DoorstopError, Node.from_list, docs)
+        self.assertRaises(DoorstopError, Tree.from_list, docs)
 
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
-@patch('doorstop.core.processor.Document', MockDocument)  # pylint: disable=R0904
-class TestNode(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the Node class."""  # pylint: disable=C0103
+@patch('doorstop.core.tree.Document', MockDocument)  # pylint: disable=R0904
+class TestTree(unittest.TestCase):  # pylint: disable=R0904
+    """Unit tests for the Tree class."""  # pylint: disable=C0103
 
     def setUp(self):
-        self.tree = Node(Document(SYS))
+        self.tree = Tree(Document(SYS))
         self.tree.place(Document(FILES))
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
-        tree = processor.build(EMPTY)
+        tree = build(EMPTY)
         doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
         tree.place(doc)
         self.assertEqual(1, len(tree))
@@ -140,7 +139,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
-        tree = processor.build(EMPTY)
+        tree = build(EMPTY)
         doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
                                parent='REQ')
         self.assertRaises(DoorstopError, tree.place, doc)
@@ -237,7 +236,7 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'req9999')
 
     @patch('doorstop.core.vcs.veracity.WorkingCopy.lock')
-    @patch('doorstop.core.processor._open')
+    @patch('doorstop.core.tree._open')
     def test_edit(self, mock_open, mock_lock):
         """Verify an item can be edited in a tree."""
         self.tree.edit('req2', launch=True)
@@ -255,32 +254,26 @@ class TestNode(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
-    """Unit tests for the doorstop.core.processor module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.tree module."""  # pylint: disable=C0103
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_run_empty(self):
         """Verify an empty directory is an empty hiearchy."""
-        tree = processor.build(EMPTY)
+        tree = build(EMPTY)
         self.assertEqual(0, len(tree))
-
-    @patch('doorstop.core.processor.build', Mock())
-    def test_run(self):
-        """Verify a valid tree passes the processor."""
-        tree = processor.build(FILES)
-        self.assertTrue(tree.check())
 
     @patch('doorstop.core.document.Document', MockDocumentNoSkip)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
     def test_build(self):
         """Verify a tree can be built."""
-        tree = processor.build(FILES)
+        tree = build(FILES)
         self.assertEqual(3, len(tree))
 
     @patch('doorstop.core.document.Document', MockDocument)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
     def test_build_with_skips(self):
         """Verify documents can be skipped while building a tree."""
-        tree = processor.build(FILES)
+        tree = build(FILES)
         self.assertEqual(0, len(tree))
 
 
