@@ -8,7 +8,7 @@ __project__ = 'Doorstop'
 __version__ = None  # required for initial installation
 
 CLI = 'doorstop'
-GUI = 'Doorstop'
+GUI = 'doorstop-gui'
 
 
 try:

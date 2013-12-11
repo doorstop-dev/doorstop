@@ -139,7 +139,8 @@ def main(args=None):  # pylint: disable=R0915
 
     # Run the program
     if args.gui:
-        gui()
+        logging.debug("launching GUI...")
+        function = gui
     elif args.command:
         logging.debug("launching command '{}'...".format(args.command))
         function = globals()['_run_' + args.command]

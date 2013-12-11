@@ -1,8 +1,12 @@
-v0.0.6 - 2013/12/04:	Added basic report creation via 'doorstop publish'.
+v0.0.7 - 2013/12/09:    Always showing 'ref' in items.
+                        Reloading item attributes after a save.
+                        Inserting lines breaks after sentences in item 'text'.
+
+v0.0.6 - 2013/12/04:    Added basic report creation via 'doorstop publish'.
 
 v0.0.5 - 2013/11/20:    Added item link and reference validation.
-						Added cached of loaded items.
-						Added preliminary VCS support for Git and Veracity.
+                        Added cached of loaded items.
+                        Added preliminary VCS support for Git and Veracity.
 
 v0.0.4 - 2013/11/04:    Implemented 'add', 'remove', 'link', and 'unlink' commands.
                         Added basic document tree validation.

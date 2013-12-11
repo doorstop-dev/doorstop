@@ -162,4 +162,4 @@ upload: develop depends
 
 .PHONY: gui
 gui: develop
-	$(BIN)/$(PROJECT)$(EXE)
+	$(BIN)/$(PACKAGE)-gui$(EXE)
