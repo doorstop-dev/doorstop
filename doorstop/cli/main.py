@@ -153,7 +153,7 @@ def main(args=None):  # pylint: disable=R0915
         logging.debug("command cancelled")
         success = False
     if success:
-        logging.debug("command succedded")
+        logging.debug("command succeeded")
     else:
         logging.debug("command failed")
         sys.exit(1)

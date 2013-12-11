@@ -57,6 +57,11 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.temp)
         self.assertIs(None, main([]))
 
+    @patch('doorstop.cli.main.gui', Mock(return_value=True))
+    def test_gui(self):
+        """Verify 'doorstop --gui' launches the GUI."""
+        self.assertIs(None, main(['--gui']))
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestNew(unittest.TestCase):  # pylint: disable=R0904

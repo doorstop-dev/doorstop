@@ -205,12 +205,12 @@ def main(args=None):
         success = run(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
         logging.debug("program manually closed")
+        success = False
+    if success:
+        logging.debug("program exited")
     else:
-        if success:
-            logging.debug("program exited")
-        else:
-            logging.debug("program exited with error")
-            sys.exit(1)
+        logging.debug("program exited with error")
+        sys.exit(1)
 
 
 def _configure_logging(verbosity=0):
