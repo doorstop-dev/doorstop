@@ -12,7 +12,7 @@ from doorstop.core import Document
 from doorstop.core import Tree, build
 from doorstop.common import DoorstopError
 
-from doorstop.core.test import ENV, REASON, FILES, EMPTY
+from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY
 
 
 class DocumentNoSkip(Document):
@@ -40,7 +40,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's external reference can be found."""
         item = Item(os.path.join(FILES, 'REQ003.yml'))
         path, line = item.find_ref()
-        self.assertEqual(os.path.join(FILES, 'external', 'text.txt'), path)
+        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
+                                  ROOT)
+        self.assertEqual(relpath, path)
         self.assertEqual(3, line)
 
 

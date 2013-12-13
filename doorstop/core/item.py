@@ -332,7 +332,8 @@ class Item(object):
         @param root: override the path to the working copy (for testing)
         @param ignored: function to determine if a path should be skipped
 
-        @return: path to file, line number (or None, None when no ref)
+        @return: relative path to file, line number
+                 None, None (when no ref)
 
         @raise DoorstopError: when no ref is found
         """
@@ -361,8 +362,9 @@ class Item(object):
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
                             if regex.search(line):
-                                logging.info("found ref: {}".format(path))
-                                return path, index + 1
+                                relpath = os.path.relpath(path, self.root)
+                                logging.info("found ref: {}".format(relpath))
+                                return relpath, index + 1
                 except UnicodeDecodeError:
                     pass
         msg = "external reference not found: {}".format(self.ref)
