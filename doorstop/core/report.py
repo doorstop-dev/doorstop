@@ -2,7 +2,6 @@
 Doorstop reporting functionality.
 """
 
-import os
 import textwrap
 import markdown
 

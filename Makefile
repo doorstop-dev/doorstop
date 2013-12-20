@@ -49,7 +49,8 @@ $(PIP):
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
-	$(PIP) install docutils pdoc pep8 nose coverage wheel --download-cache=$(CACHE)
+	$(PIP) install docutils pdoc pep8 nose coverage wheel \
+	       --use-mirrors --download-cache=$(CACHE)
 	$(MAKE) .pylint
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
 
@@ -100,8 +101,8 @@ pep8: depends
 .PHONY: pylint
 pylint: depends
 	$(PYLINT) $(PACKAGE) --reports no \
-	                     --msg-template="{msg_id}: {msg}: {obj} line:{line}" \
-	                     --max-line-length=99 \
+	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
+	                     --max-line-length=79 \
 	                     --disable=I0011,W0142,W0511,R0801
 
 .PHONY: check
@@ -118,8 +119,7 @@ test: develop depends
 
 .PHONY: tests
 tests: develop depends
-	TEST_INTEGRATION=1 $(NOSE) --verbose --stop \
-	                           --cover-package=doorstop.cli,doorstop.gui
+	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
 tutorial: develop
@@ -155,9 +155,8 @@ dist: develop depends
 .PHONY: upload
 upload: develop depends
 	$(PYTHON) setup.py register sdist upload
-	$(PYTHON) setup.py bdist_wheel upload
-	
-	
+	$(PYTHON) setup.py bdist_wheel upload	
+
 # Execution ##################################################################
 
 .PHONY: gui
