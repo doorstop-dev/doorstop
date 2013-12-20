@@ -17,7 +17,7 @@ from doorstop.core import vcs
 
 class Tree(object):
     """
-    A bidirectional tree structure to store the heirarchy or documents.
+    A bidirectional tree structure to store the hierarchy or documents.
 
     Although requirements link "upwards", bidirectionality simplifies
     document processing and validation.
