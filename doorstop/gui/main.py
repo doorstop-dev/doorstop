@@ -42,7 +42,6 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
         self.incoming = []
 
         # Initialize the GUI
-        self.listbox_outgoing = None
         self.listbox_incoming = None
         self.init(master)
 
@@ -61,58 +60,45 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
         # Create frames
 
-        frame_settings = tk.Frame(master)
-        frame_incoming = tk.Frame(master)
-        frame_outgoing = tk.Frame(master)
+        frame_documents = tk.Frame(master)
+        frame_items = tk.Frame(master)
 
         frame_div1 = tk.Frame(master, height=2, bd=1, relief=tk.SUNKEN)
-        frame_div2 = tk.Frame(master, height=2, bd=1, relief=tk.SUNKEN)
 
         # Create widets for frames
 
-        label_downloads = tk.Label(frame_settings, text="Downloads:")
-        entry_downloads = tk.Entry(frame_settings, state='readonly', textvariable=self.path_downloads)
-        button_downlods = tk.Button(frame_settings, text="...", command=self.browse_downloads)
+        label_project = tk.Label(frame_documents, text="Project:")
+        entry_project = tk.Entry(frame_documents, state='readonly', textvariable=self.path_downloads)
+        button_project = tk.Button(frame_documents, text="...", command=self.browse_downloads)
 
-        self.listbox_outgoing = tk.Listbox(frame_outgoing, selectmode=tk.EXTENDED)
-        button_refout = tk.Button(frame_outgoing, text="\u21BB", command=self.update)
-        button_remove = tk.Button(frame_outgoing, text="Remove Selected", command=self.do_remove)
-        button_share = tk.Button(frame_outgoing, text="Share Songs...", command=self.do_share)
+        label_document = tk.Label(frame_documents, text="Document:")
+        option_document = tk.OptionMenu(frame_documents, tk.StringVar(), "a")
 
-        self.listbox_incoming = tk.Listbox(frame_incoming, selectmode=tk.EXTENDED)
-        button_refin = tk.Button(frame_incoming, text="\u21BB", command=self.update)
-        button_ignore = tk.Button(frame_incoming, text="Ignore Selected", command=self.do_ignore)
-        button_download = tk.Button(frame_incoming, text="Download Selected", command=self.do_download)
+        self.listbox_incoming = tk.Listbox(frame_items, selectmode=tk.EXTENDED)
+        button_refin = tk.Button(frame_items, text="\u21BB", command=self.update)
+        button_ignore = tk.Button(frame_items, text="Ignore Selected", command=self.do_ignore)
+        button_download = tk.Button(frame_items, text="Download Selected", command=self.do_download)
 
         # Specify frame resizing
 
-        frame_settings.rowconfigure(0, weight=1)
-        frame_settings.columnconfigure(0, weight=0)
-        frame_settings.columnconfigure(1, weight=1)
-        frame_settings.columnconfigure(2, weight=0)
+        frame_documents.rowconfigure(0, weight=1)
+        frame_documents.columnconfigure(0, weight=0)
+        frame_documents.columnconfigure(1, weight=1)
+        frame_documents.columnconfigure(2, weight=0)
 
-        frame_incoming.rowconfigure(0, weight=1)
-        frame_incoming.rowconfigure(1, weight=0)
-        frame_incoming.columnconfigure(0, weight=0)
-        frame_incoming.columnconfigure(1, weight=1)
-        frame_incoming.columnconfigure(2, weight=1)
-
-        frame_outgoing.rowconfigure(0, weight=1)
-        frame_outgoing.rowconfigure(1, weight=0)
-        frame_outgoing.columnconfigure(0, weight=0)
-        frame_outgoing.columnconfigure(1, weight=1)
-        frame_outgoing.columnconfigure(2, weight=1)
+        frame_items.rowconfigure(0, weight=1)
+        frame_items.rowconfigure(1, weight=0)
+        frame_items.columnconfigure(0, weight=0)
+        frame_items.columnconfigure(1, weight=1)
+        frame_items.columnconfigure(2, weight=1)
 
         # Pack widgets in frames
 
-        label_downloads.grid(row=0, column=0, **pad)
-        entry_downloads.grid(row=0, column=1, **stickypad)
-        button_downlods.grid(row=0, column=2, ipadx=5, **pad)
-
-        self.listbox_outgoing.grid(row=0, column=0, columnspan=3, **stickypad)
-        button_refout.grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
-        button_remove.grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
-        button_share.grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
+        label_project.grid(row=0, column=0, **pad)
+        entry_project.grid(row=0, column=1, **stickypad)
+        button_project.grid(row=0, column=2, ipadx=5, **pad)
+        label_document.grid(row=0, column=3)
+        option_document.grid(row=0, column=4)
 
         self.listbox_incoming.grid(row=0, column=0, columnspan=3, **stickypad)
         button_refin.grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
@@ -128,11 +114,9 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
         # Pack frames in master
 
-        frame_settings.grid(row=0, **stickypad)
-        frame_div1.grid(row=1, sticky=tk.EW, padx=10)
-        frame_outgoing.grid(row=2, **stickypad)
-        frame_div2.grid(row=3, sticky=tk.EW, padx=10)
-        frame_incoming.grid(row=4, **stickypad)
+        frame_documents.grid(row=0, **stickypad)
+        frame_div1.grid(row=3, sticky=tk.EW, padx=10)
+        frame_items.grid(row=4, **stickypad)
 
     def browse_downloads(self):
         """Browser for a new downloads directory."""
@@ -172,20 +156,7 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
     def update(self):
         """Update the list of outgoing and incoming songs."""
-        # Cleanup outgoing songs
-        self.user.cleanup()
-        # Update outgoing songs list
-        logging.info("updating outoing songs...")
-        self.outgoing = list(self.user.outgoing)
-        self.listbox_outgoing.delete(0, tk.END)
-        for song in self.outgoing:
-            self.listbox_outgoing.insert(tk.END, song.out_string)
-        # Update incoming songs list
-        logging.info("updating incoming songs...")
-        self.incoming = list(self.user.incoming)
-        self.listbox_incoming.delete(0, tk.END)
-        for song in self.incoming:
-            self.listbox_incoming.insert(tk.END, song.in_string)
+        pass
 
 
 def main(args=None):
