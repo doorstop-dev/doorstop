@@ -196,7 +196,8 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         logging.error(error)
         return False
     else:
-        print("validated: {}".format(tree))
+        if tree:
+            print("validated: {}".format(tree))
         return True
 
 
