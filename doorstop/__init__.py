@@ -21,5 +21,5 @@ else:
 
 try:
     from doorstop.core import Item, Document, Tree, build
-except ImportError:
+except ImportError:  # pragma: no cover, manual test
     pass

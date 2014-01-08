@@ -27,7 +27,7 @@ class WarningFormatter(logging.Formatter, object):
         self.default_format = default_format
         self.verbose_format = verbose_format
 
-    def format(self, record):
+    def format(self, record):  # pragma: no cover, manual test
         """Python 3 hack to change the formatting style dynamically."""
         if record.levelno > logging.INFO:
             self._style._fmt = self.verbose_format  # pylint: disable=W0212

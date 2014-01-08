@@ -332,7 +332,8 @@ class Item(object):
         @param root: override the path to the working copy (for testing)
         @param ignored: function to determine if a path should be skipped
 
-        @return: relative path to file, line number
+        @return: relative path to file, line number (when found in file)
+                 relative path to file, None (when found as filename)
                  None, None (when no ref)
 
         @raise DoorstopError: when no ref is found
@@ -348,6 +349,7 @@ class Item(object):
         for root, _, filenames in os.walk(root or self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
+                relpath = os.path.relpath(path, self.root)
                 # Skip the item's file while searching
                 if path == self.path:
                     continue
@@ -358,11 +360,12 @@ class Item(object):
                 if ignored(path):
                     continue
                 # Search for the reference in the file
+                if filename == self.ref:
+                    return relpath, None
                 try:
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
                             if regex.search(line):
-                                relpath = os.path.relpath(path, self.root)
                                 logging.info("found ref: {}".format(relpath))
                                 return relpath, index + 1
                 except UnicodeDecodeError:

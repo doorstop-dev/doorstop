@@ -13,7 +13,7 @@ import logging
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import ENV, REASON, FILES, EMPTY
+from doorstop.core.test import ENV, REASON, FILES, EMPTY, EXTERNAL
 
 
 class MockItem(Item):
@@ -164,6 +164,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.ref = "abc123"
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
+
+    def test_find_ref(self):
+        """Verify an item's reference can be found."""
+        self.item.ref = "REF" + "123"  # to avoid matching in this file
+        relpath, line = self.item.find_ref(EXTERNAL)
+        self.assertEqual('text.txt', os.path.basename(relpath))
+        self.assertEqual(3, line)
+
+    def test_find_ref_filename(self):
+        """Verify an item's reference can also be a filename."""
+        self.item.ref = "text.txt"
+        relpath, line = self.item.find_ref(FILES)
+        self.assertEqual('text.txt', os.path.basename(relpath))
+        self.assertEqual(None, line)
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
