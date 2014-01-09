@@ -266,7 +266,7 @@ class Tree(object):
         return item
 
     def find_document(self, prefix):
-        """Return an the document from its prefix.
+        """Return a document from its prefix.
 
         @param prefix: document's prefix
 
@@ -281,7 +281,7 @@ class Tree(object):
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def find_item(self, identifier, kind=''):
-        """Return an the item from its ID.
+        """Return an item from its ID.
 
         @param identifier: item ID
         @param kind: type of item for logging messages
@@ -326,7 +326,7 @@ def _open(path, tool=None):  # pragma: no cover, integration test
 
 
 def build(cwd=None, root=None):
-    """Build a document heirachy from the current root directory.
+    """Build a document hierarchy from the current root directory.
 
     @param cwd: current working directory
     @param root: path to root of the working copy
