@@ -226,10 +226,21 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item', MockItem)
     def test_new(self):
         """Verify items can be created."""
+        MockItem._new.reset_mock()
         item = MockItem.new(EMPTY, FILES, 'TEST', 5, 42, (1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
+        MockItem._new.assert_called_once_with(path)
+
+    @patch('doorstop.core.item.Item', MockItem)
+    def test_new_special(self):
+        """Verify items can be created with a specially named prefix."""
+        MockItem._new.reset_mock()
+        item = MockItem.new(EMPTY, FILES, 'VSM-002-', 3, 42, (1,))
+        path = os.path.join(EMPTY, 'VSM-002-042.yml')
+        self.assertEqual(path, item.path)
+        self.assertEqual((1,), item.level)
         MockItem._new.assert_called_once_with(path)
 
     def test_new_existing(self):

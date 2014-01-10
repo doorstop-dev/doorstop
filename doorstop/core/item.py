@@ -241,8 +241,11 @@ class Item(object):
         >>> Item.split_id('ABC00123')
         ('ABC', 123)
 
+        >>> Item.split_id('ABC01-00123')
+        ('ABC01-', 123)
+
         """
-        match = re.match(r"([a-zA-Z]+)(\d+)", text)
+        match = re.match(r"([\w-]*\D)(\d+)", text)
         if not match:
             raise DoorstopError("invalid ID: {}".format(text))
         return match.group(1), int(match.group(2))
