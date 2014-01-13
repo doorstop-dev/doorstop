@@ -6,13 +6,33 @@ Unit tests for the doorstop.vcs.base module.
 
 import unittest
 
+from doorstop.core.vcs.base import BaseWorkingCopy
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+
+class SampleWorkingCopy(BaseWorkingCopy):
+    """Sample WorkingCopy implementation."""
+
+    @property
+    def ignores(self):
+        return ["ignored.*"]
+
+    def lock(self, *args, **kwargs):
+        pass
+
+    def save(self, *args, **kwargs):
+        pass
+
+
+class TestSampleWorkingCopy(unittest.TestCase):  # pylint: disable=R0904
     """Tests for the doorstop.vcs.base module."""  # pylint: disable=C0103
 
-    def test_tbd(self):
-        """Verify TBD."""
-        self.assertTrue(True)
+    def setUp(self):
+        self.wc = SampleWorkingCopy(None)
+
+    def test_ignored(self):
+        """Verify ignored paths are detected."""
+        self.assertTrue(self.wc.ignored("ignored.txt"))
+        self.assertFalse(self.wc.ignored("not_ignored.txt"))
 
 
 if __name__ == '__main__':
