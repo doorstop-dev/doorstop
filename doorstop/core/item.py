@@ -36,7 +36,8 @@ def _auto_load(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.load() before execution."""
         self.load()
-        return func(self, *args, **kwargs)
+        if self.auto_load:
+            return func(self, *args, **kwargs)
     return wrapped
 
 
@@ -46,7 +47,8 @@ def _auto_save(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
-        self.save()
+        if self.auto_save:
+            self.save()
         return result
 
     return wrapped
@@ -61,6 +63,9 @@ class Item(object):
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
     DEFAULT_LINKS = set()
+
+    auto_load = True  # enables automatic load before read
+    auto_save = True  # enables automatic save after update
 
     def __init__(self, path, root=os.getcwd(),
                  _level=None,
@@ -96,6 +101,7 @@ class Item(object):
         self._text = _text or Item.DEFAULT_TEXT
         self._ref = _ref or Item.DEFAULT_REF
         self._links = _links or Item.DEFAULT_LINKS
+        self._data = {}
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))
@@ -157,16 +163,15 @@ class Item(object):
         text = self._read()
         # Parse the YAML data
         try:
-            data = yaml.load(text)
+            self._data = yaml.load(text) or {}
         except yaml.scanner.ScannerError as error:  # pylint: disable=E1101
             msg = "invalid contents: {}:\n{}".format(self, error)
             raise DoorstopError(msg)
         # Store parsed data
-        if data:
-            self._level = self._convert_level(data.get('level', self._level))
-            self._text = data.get('text', self._text)
-            self._ref = data.get('ref', self._ref)
-            self._links = set(data.get('links', self._links))
+        self._level = self._convert_level(self._data.get('level', self._level))
+        self._text = self._data.get('text', self._text)
+        self._ref = self._data.get('ref', self._ref)
+        self._links = set(self._data.get('links', self._links))
         setattr(self, '_loaded', True)
 
     def _read(self):  # pragma: no cover, integration test
@@ -189,12 +194,12 @@ class Item(object):
         ref = self._ref.strip()
         links = sorted(self._links)
         # Build the data structure
-        data = {'level': level,
-                'text': text,
-                'links': links,
-                'ref': ref}
+        self._data['level'] = level
+        self._data['text'] = text
+        self._data['links'] = links
+        self._data['ref'] = ref
         # Dump the data to YAML
-        dump = yaml.dump(data, default_flow_style=False)
+        dump = yaml.dump(self._data, default_flow_style=False)
         # Save the YAML to file
         self._write(dump)
         setattr(self, '_loaded', False)
@@ -402,6 +407,17 @@ class Item(object):
             self._links.remove(item)
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
+
+    @_auto_load
+    def get(self, name):
+        """Get an extended attribute."""
+        return self._data[name]
+
+    @_auto_load
+    @_auto_save
+    def set(self, name, value):
+        """SEt an extended attribute."""
+        self._data[name] = value
 
     def check(self, document=None, tree=None, ignored=None):
         """Confirm the item is valid.

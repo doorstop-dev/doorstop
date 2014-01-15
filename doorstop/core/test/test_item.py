@@ -213,6 +213,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
 
+    def test_extended(self):
+        """Verify an extended attribute can be used."""
+        self.item.set('ext1', 'foobar')
+        self.assertEqual('foobar', self.item.get('ext1'))
+
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
         self.assertRaises(DoorstopError, MockItem, "path/to/REQ.yaml")
