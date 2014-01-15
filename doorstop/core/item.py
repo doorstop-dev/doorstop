@@ -438,25 +438,43 @@ class Item(object):
         self.find_ref(ignored=ignored)
         # Check links against the document
         if document:
-            if document.parent and self.level[-1] != 0 and not self.links:
-                logging.warning("no links: {}".format(self))
-
-            for identifier in self.links:
-                prefix = self.split_id(identifier)[0]
-                if prefix.lower() != document.parent.lower():
-                    msg = "link to non-parent '{}' in {}".format(identifier,
-                                                                 self)
-                    logging.warning(msg)
+            self._check_document(document)
         # Check links against the tree
         if tree:
-            for identifier in self.links:
-                item = tree.find_item(identifier)
-                logging.debug("found linked item: {}".format(item))
-
+            self._check_tree(tree)
         # Reformat the file
         self.save()
         # Item is valid
         return True
+
+    def _check_document(self, document):
+        """Check the item against its document."""
+        # Verify an item has up links
+        if document.parent and self.level[-1] != 0 and not self.links:
+            logging.warning("no links: {}".format(self))
+        # Verify an item's links are to the correct parent
+        for identifier in self.links:
+            prefix = self.split_id(identifier)[0]
+            if prefix.lower() != document.parent.lower():
+                msg = "link to non-parent '{}' in {}".format(identifier, self)
+                logging.warning(msg)
+
+    def _check_tree(self, tree):
+        """Check the item against the full tree."""
+        # Verify an item's links are valid
+        for identifier in self.links:
+            item = tree.find_item(identifier)
+            logging.debug("found linked item: {}".format(item))
+        # Verify an item has down links
+        for document in tree:
+            if document.parent == self.prefix:
+                down_links = []
+                for item in document:
+                    if self.id in item.links:
+                        down_links.append(item.id)
+                if not down_links:
+                    logging.warning("no links from {} to {}".format(document,
+                                                                    self))
 
     def delete(self):
         """Delete the item from the file system."""

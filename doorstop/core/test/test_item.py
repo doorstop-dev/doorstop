@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.item module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
 import logging
@@ -269,7 +269,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_check_tree(self):
         """Verify an item can be checked against a tree."""
         self.item.add_link('fake1')
-        tree = Mock(find_item=Mock())
+        tree = MagicMock(find_item=Mock())
         self.item.check(tree=tree)
 
     def test_check_tree_error(self):
