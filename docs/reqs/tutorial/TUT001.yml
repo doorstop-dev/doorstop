@@ -3,7 +3,7 @@ links:
 - REQ003
 - REQ004
 ref: ''
-text: |-
+text: |
   **Creating a new document and adding items.**
 
   Enter VCS working copy:

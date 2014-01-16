@@ -169,7 +169,7 @@ class Item(object):
             raise DoorstopError(msg)
         # Store parsed data
         self._level = self._convert_level(self._data.get('level', self._level))
-        self._text = self._data.get('text', self._text)
+        self._text = self._data.get('text', self._text).strip()
         self._ref = self._data.get('ref', self._ref)
         self._links = set(self._data.get('links', self._links))
         setattr(self, '_loaded', True)
@@ -206,16 +206,20 @@ class Item(object):
 
     @staticmethod
     def _sbd(text):
-        """Replace sentence boundaries with newlines.
+        """Replace sentence boundaries with newlines and append a newline.
 
         >>> Item._sbd("Hello, world!")
-        'Hello, world!'
+        'Hello, world!\\n'
 
         >>> Item._sbd("Hello, world! How are you? I'm fine. Good.")
-        "Hello, world!\\nHow are you?\\nI'm fine.\\nGood."
+        "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
 
         """
-        return SBD.sub('\n', text.strip())
+        stripped = text.strip()
+        if stripped:
+            return SBD.sub('\n', stripped) + '\n'
+        else:
+            return ''
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""

@@ -2,7 +2,7 @@ level: 1.3
 links:
 - REQ003
 ref: ''
-text: |-
+text: |
   **Removing items and links.**
 
   Enter VCS working copy:

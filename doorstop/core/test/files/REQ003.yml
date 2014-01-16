@@ -2,5 +2,5 @@ level: 1.2
 links:
 - REQ001
 ref: REF123
-text: |-
+text: |
   Hello, world!

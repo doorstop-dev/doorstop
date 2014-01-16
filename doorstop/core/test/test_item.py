@@ -143,20 +143,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_text(self):
         """Verify an item's text can be set and read."""
-        self.item.text = "test "
-        self.assertIn("text: |-\n  test\n", self.item._write.call_args[0][0])
-        self.assertEqual("test", self.item.text)
+        self.item.text = "abc "
+        self.assertIn("text: |\n  abc\n", self.item._write.call_args[0][0])
+        self.assertEqual("abc", self.item.text)
 
     def test_text_sentences(self):
         """Verify newlines separate sentences in an item's text."""
         self.item.text = ("A sentence. Another sentence! Hello? Hi.\n"
-                          "A new line. And another sentece.")
+                          "A new line. And another sentence.")
         expected = ("A sentence.\n"
                     "Another sentence!\n"
                     "Hello?\n"
                     "Hi.\n"
                     "A new line.\n"
-                    "And another sentece.")
+                    "And another sentence.")
         self.assertEqual(expected, self.item.text)
 
     def test_ref(self):
