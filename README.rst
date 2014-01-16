@@ -1,14 +1,14 @@
 Introduction
 ============
 
-Doorstop is a tool to manage the storage of texual requirements alongside
+Doorstop is a tool to manage the storage of textual requirements alongside
 source code in version control.
 
 Each requirement item is stored as a YAML file in a designated directory.
 The items in each designated directory form a document. Document items can
-be linked to one another to form a document hiearchy. Doorstop provides
-mechanisms for modifying this hiearchy, checking the tree for consistency,
-and publishing documents in serveral formats.
+be linked to one another to form a document hierarchy. Doorstop provides
+mechanisms for modifying this hierarchy, checking the tree for consistency,
+and publishing documents in several formats.
 
 .. NOTE::
    0.0.x releases are experimental and interfaces will likely change.
@@ -83,7 +83,7 @@ Items can be added and linked to parent items::
 Document Validation
 ===================
 
-To check a document hiearchy for consistency, run the main command::
+To check a document hierarchy for consistency, run the main command::
 
     $ doorstop
     validated: REQ <- [ TST ]
@@ -104,6 +104,6 @@ A text report of a document can be created::
 Other formats are also supported::
 
     $ doorstop publish TST --html
-	<h1>1 (TST001)</h1>
-	<p>Verify the foobar will foo and bar.</p>
-	<p><em>Links: REQ001</em></p>
+    <h1>1 (TST001)</h1>
+    <p>Verify the foobar will foo and bar.</p>
+    <p><em>Links: REQ001</em></p>

@@ -10,7 +10,7 @@ from doorstop import __project__, CLI, GUI
 
 setuptools.setup(
     name=__project__,
-    version='0.0.7',
+    version='0.0.8',
 
     description="Text-based requirements management using version control.",
     url='http://pypi.python.org/pypi/Doorstop',
@@ -25,7 +25,7 @@ setuptools.setup(
     long_description=open('README.rst').read(),
     license='LGPL',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',  # pylint: disable=C0301
         'Natural Language :: English',
