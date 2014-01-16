@@ -74,7 +74,7 @@ class Item(object):
         """Load an item from an existing file.
 
         Internally, this constructor is also used to initialize new
-        items by providing default properites.
+        items by providing default properties.
 
         @param path: path to Item file
         @param root: path to root of project
