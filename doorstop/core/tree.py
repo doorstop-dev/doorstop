@@ -56,8 +56,7 @@ class Tree(object):
     def __iter__(self):
         if self.document:
             yield self.document
-        for document in chain(*(iter(c) for c in self.children)):
-            yield document
+        yield from chain(*(iter(c) for c in self.children))
 
     @staticmethod
     def from_list(docs, root=None):
