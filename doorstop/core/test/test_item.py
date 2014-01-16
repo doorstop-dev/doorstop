@@ -269,7 +269,44 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_check_tree(self):
         """Verify an item can be checked against a tree."""
         self.item.add_link('fake1')
-        tree = MagicMock(find_item=Mock())
+        tree = Mock(find_item=Mock())
+
+        def mock_iter(self):  # pylint: disable=W0613
+            """Mock Tree.__iter__ to yield a mock Document."""
+            mock_document = Mock()
+            mock_document.parent = 'RQ'
+
+            def mock_iter2(self):  # pylint: disable=W0613
+                """Mock Document.__iter__ to yield a mock Item."""
+                mock_item = Mock()
+                mock_item.id = 'TST001'
+                mock_item.links = ['RQ001']
+                yield mock_item
+
+            mock_document.__iter__ = mock_iter2
+            yield mock_document
+        tree.__iter__ = mock_iter
+        self.item.check(tree=tree)
+
+    def test_check_tree_no_down_links(self):
+        """Verify an item can be checked against a tree without down links."""
+        self.item.add_link('fake1')
+        tree = Mock(find_item=Mock())
+
+        def mock_iter(self):  # pylint: disable=W0613
+            """Mock Tree.__iter__ to yield a mock Document."""
+            mock_document = Mock()
+            mock_document.parent = 'RQ'
+
+            def mock_iter2(self):  # pylint: disable=W0613
+                """Mock Document.__iter__ to yield a mock Item."""
+                mock_item = Mock()
+                mock_item.links = []
+                yield mock_item
+
+            mock_document.__iter__ = mock_iter2
+            yield mock_document
+        tree.__iter__ = mock_iter
         self.item.check(tree=tree)
 
     def test_check_tree_error(self):

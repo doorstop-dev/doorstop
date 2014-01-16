@@ -472,12 +472,15 @@ class Item(object):
                 for item in document:
                     if self.id in item.links:
                         down_links.append(item.id)
-                if not down_links:
-                    logging.warning("no links from {} to {}".format(document,
-                                                                    self))
+                if down_links:
+                    msg = "down links: {}".format(', '.join(down_links))
+                    logging.debug(msg)
+                else:
+                    msg = "no links from {} to {}".format(document, self)
+                    logging.warning(msg)
 
     def delete(self):
         """Delete the item from the file system."""
         logging.info("deleting {}...".format(self.path))
         os.remove(self.path)
-        self._exists = False  # prevent furthur access
+        self._exists = False  # prevent future access
