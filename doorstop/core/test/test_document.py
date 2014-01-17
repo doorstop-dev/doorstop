@@ -94,7 +94,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify the items in a document can be accessed."""
         items = self.document.items
         logging.debug("items: {}".format(items))
-        self.assertEqual(3, len(items))
+        self.assertEqual(4, len(items))
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -133,7 +133,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_check(self, mock_check):
         """Verify a document can be validated."""
         self.document.check()
-        self.assertEqual(3, mock_check.call_count)
+        self.assertEqual(4, mock_check.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_check_long(self):
