@@ -13,24 +13,7 @@ import yaml
 from doorstop.common import DoorstopError
 
 
-# http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
-
-
-class _literal(str):  # pylint: disable=R0904
-    """Custom type for text which should be dumped in the literal style."""
-    pass
-
-
-def _literal_representer(dumper, data):
-    """Return a custom dumper that formats str in the literal style."""
-    style = '|' if data else ''
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style=style)
-
-yaml.add_representer(_literal, _literal_representer)
-
-
-def _auto_load(func):
+def auto_load(func):
     """Decorator for methods that should automatically load from file."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
@@ -41,7 +24,7 @@ def _auto_load(func):
     return wrapped
 
 
-def _auto_save(func):
+def auto_save(func):
     """Decorator for methods that should automatically save to file."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
@@ -191,7 +174,7 @@ class Item(object):
             level = float(level)
         elif len(self._level) == 1:
             level = int(level)
-        text = _literal(self._sbd(self._text))
+        text = Literal(sbd(self._text))
         ref = self._ref.strip()
         links = sorted(self._links)
         normative = self._normative
@@ -208,23 +191,6 @@ class Item(object):
         # Set meta attributes
         setattr(self, '_loaded', False)
         self.auto = True
-
-    @staticmethod
-    def _sbd(text):
-        """Replace sentence boundaries with newlines and append a newline.
-
-        >>> Item._sbd("Hello, world!")
-        'Hello, world!\\n'
-
-        >>> Item._sbd("Hello, world! How are you? I'm fine. Good.")
-        "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
-
-        """
-        stripped = text.strip()
-        if stripped:
-            return SBD.sub('\n', stripped) + '\n'
-        else:
-            return ''
 
     def _write(self, text):  # pragma: no cover, integration test
         """Write text to the file."""
@@ -275,13 +241,13 @@ class Item(object):
         return self.split_id(self.id)[1]
 
     @property
-    @_auto_load
+    @auto_load
     def level(self):
         """Get the item level."""
         return self._level
 
     @level.setter
-    @_auto_save
+    @auto_save
     def level(self, level):
         """Set the item's level."""
         self._level = self._convert_level(level)
@@ -319,30 +285,30 @@ class Item(object):
         return tuple(int(n) for n in nums)
 
     @property
-    @_auto_load
+    @auto_load
     def text(self):
         """Get the item's text."""
         return self._text
 
     @text.setter
-    @_auto_save
+    @auto_save
     def text(self, text):
         """Set the item's text."""
         self._text = text
 
     @property
-    @_auto_load
+    @auto_load
     def ref(self):
         """Get the item's external file reference."""
         return self._ref
 
     @ref.setter
-    @_auto_save
+    @auto_save
     def ref(self, ref):
         """Set the item's external file reference."""
         self._ref = ref
 
-    @_auto_load
+    @auto_load
     def find_ref(self, root=None, ignored=None):
         """Find the external file reference and line number.
 
@@ -391,37 +357,37 @@ class Item(object):
         raise DoorstopError(msg)
 
     @property
-    @_auto_load
+    @auto_load
     def links(self):
         """Get the items this item links to."""
         return sorted(self._links)
 
     @links.setter
-    @_auto_save
+    @auto_save
     def links(self, links):
         """Set the items this item links to."""
         self._links = set(links)
 
     @property
-    @_auto_load
+    @auto_load
     def normative(self):
         """Get the item's normative status."""
         return self._normative
 
     @normative.setter
-    @_auto_save
+    @auto_save
     def normative(self, status):
         """Set the item's normative status."""
         self._normative = bool(status)
 
-    @_auto_load
-    @_auto_save
+    @auto_load
+    @auto_save
     def add_link(self, item):
         """Add a new link to another item."""
         self._links.add(item)
 
-    @_auto_load
-    @_auto_save
+    @auto_load
+    @auto_save
     def remove_link(self, item):
         """Remove an existing link."""
         try:
@@ -429,13 +395,13 @@ class Item(object):
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    @_auto_load
+    @auto_load
     def get(self, name):
         """Get an extended attribute."""
         return self._data[name]
 
-    @_auto_load
-    @_auto_save
+    @auto_load
+    @auto_save
     def set(self, name, value):
         """SEt an extended attribute."""
         self._data[name] = value
@@ -511,3 +477,37 @@ class Item(object):
         logging.info("deleting {}...".format(self.path))
         os.remove(self.path)
         self._exists = False  # prevent future access
+
+
+class Literal(str):  # pylint: disable=R0904
+    """Custom type for text which should be dumped in the literal style."""
+    pass
+
+
+def _literal_representer(dumper, data):
+    """Return a custom dumper that formats str in the literal style."""
+    style = '|' if data else ''
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style=style)
+
+yaml.add_representer(Literal, _literal_representer)
+
+
+# http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
+
+
+def sbd(text):
+    """Replace sentence boundaries with newlines and append a newline.
+
+    >>> sbd("Hello, world!")
+    'Hello, world!\\n'
+
+    >>> sbd("Hello, world! How are you? I'm fine. Good.")
+    "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
+
+    """
+    stripped = text.strip()
+    if stripped:
+        return SBD.sub('\n', stripped) + '\n'
+    else:
+        return ''
