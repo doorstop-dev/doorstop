@@ -119,7 +119,7 @@ class Tree(object):
 
             # Tree is empty
             if doc.parent:
-                msg = "no parent for: {}".format(doc)
+                msg = "unknown parent for {}: {}".format(doc, doc.parent)
                 raise DoorstopError(msg)
             self.document = doc
 
@@ -140,7 +140,7 @@ class Tree(object):
                 else:
                     break
             else:
-                msg = "no parent for: {}".format(doc)
+                msg = "unknown parent for {}: {}".format(doc, doc.parent)
                 raise DoorstopError(msg)
 
     def check(self):
