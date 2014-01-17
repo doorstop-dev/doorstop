@@ -1,0 +1,20 @@
+level: 7
+links:
+- REQ009
+- REQ011
+- REQ012
+- REQ013
+- REQ014
+- REQ015
+normative: true
+ref: ''
+text: |
+  **Inspection Tests**
+
+  These checks ensure the version control system (VCS) meets the needs of requirements management:
+
+  - Verify the VCS includes a 'tag' feature.
+  - Verify the VCS stores files in a permanent and secure manner.
+  - Verify the VCS handles change management of files.
+  - Verify the VCS associates changes to existing developer acccounts.
+  - Verify the VCS can manage changes to thousands of files.
