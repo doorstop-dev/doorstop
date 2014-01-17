@@ -1,8 +1,9 @@
 level: 2.1
 links:
 - REQ007
+normative: true
 ref: ''
-text: |-
+text: |
   **Creating a text report.**
 
   Enter VCS working copy:

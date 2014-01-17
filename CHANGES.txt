@@ -1,6 +1,7 @@
 v0.0.8 - 2014/01/16:    Searching for 'ref' will now also find filenames.
                         Item files can now contain arbitrary fields.
                         Document prefixes can now contain numbers, dashes, and periods.
+                        Added a 'normative' attribute to the Item class.
 
 v0.0.7 - 2013/12/09:    Always showing 'ref' in items.
                         Reloading item attributes after a save.

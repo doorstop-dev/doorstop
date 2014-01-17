@@ -1,5 +1,6 @@
 level: 1
 links:
 - REQ003
+normative: true
 ref: Verify an item can be added to a document.
 text: ''

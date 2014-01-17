@@ -1,5 +1,6 @@
 level: 2
 links:
 - REQ004
+normative: true
 ref: Verify a Markdown report can be created.
 text: ''

@@ -1,5 +1,6 @@
 level: 4
 links:
 - REQ008
+normative: true
 ref: Verify the items in a document can be accessed.
 text: ''

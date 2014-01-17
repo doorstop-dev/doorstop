@@ -28,8 +28,7 @@ def get_text(document, indent=8, width=79, ignored=None):
         if item.text:
             yield ""  # break before text
             for line in item.text.splitlines():
-                for chunk in _chunks(line, width, indent):
-                    yield chunk
+                yield from _chunks(line, width, indent)
 
                 if not line:  # pragma: no cover - integration test
                     yield ""  # break between paragraphs
@@ -40,25 +39,22 @@ def get_text(document, indent=8, width=79, ignored=None):
             path, line = item.find_ref(ignored=ignored)
             path = path.replace('\\', '/')  # always write unix-style paths
             ref = "Reference: {p} (line {l})".format(p=path, l=line)
-            for chunk in _chunks(ref, width, indent):
-                yield chunk
+            yield from _chunks(ref, width, indent)
 
         # Links
         if item.links:
             yield ""  # break before links
             links = "Links: " + ', '.join(item.links)
-            for chunk in _chunks(links, width, indent):
-                yield chunk
+            yield from _chunks(links, width, indent)
 
         yield ""  # break between items
 
 
 def _chunks(text, width, indent):
     """Yield wrapped lines of text."""
-    for chunk in textwrap.wrap(text, width,
-                               initial_indent=' ' * indent,
-                               subsequent_indent=' ' * indent):
-        yield chunk
+    yield from textwrap.wrap(text, width,
+                             initial_indent=' ' * indent,
+                             subsequent_indent=' ' * indent)
 
 
 def get_markdown(document, ignored=None):
@@ -81,8 +77,7 @@ def get_markdown(document, ignored=None):
         # Text
         if item.text:
             yield ""  # break before text
-            for line in item.text.splitlines():
-                yield line
+            yield from item.text.splitlines()
 
         # Reference
         if item.ref:
@@ -112,5 +107,4 @@ def get_html(document, ignored=None):
     lines = get_markdown(document, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
-    for line in html.splitlines():
-        yield line
+    yield from html.splitlines()

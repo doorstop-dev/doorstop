@@ -1,5 +1,6 @@
 level: 3
 links:
 - REQ007
+normative: true
 ref: Verify a text report can be created.
 text: ''

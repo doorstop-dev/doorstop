@@ -1,5 +1,6 @@
 level: 3.4
 links: []
+normative: true
 ref: ''
-text: |-
+text: |
   Doorstop **shall** be scaleable to support thousands of requirements.

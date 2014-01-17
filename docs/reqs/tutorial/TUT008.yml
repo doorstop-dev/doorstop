@@ -1,8 +1,9 @@
 level: 1.4
 links:
 - REQ003
+normative: true
 ref: ''
-text: |-
+text: |
   **Validating the document tree.**
 
   Enter VCS working copy:

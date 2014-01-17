@@ -2,8 +2,12 @@ level: 1.2
 links:
 - REQ003
 - REQ004
+- REQ011
+- REQ012
+- REQ013
+normative: true
 ref: ''
-text: |-
+text: |
   **Creating a child document with links to the parent document.**
 
   Enter VCS working copy:

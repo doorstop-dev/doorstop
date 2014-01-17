@@ -1,5 +1,6 @@
 level: 3.1
 links: []
+normative: true
 ref: ''
-text: |-
+text: |
   Doorstop **shall** store requirements in a permanent and secure manner.

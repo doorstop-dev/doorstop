@@ -4,5 +4,6 @@ links:
 - TUT002
 - TUT004
 - TUT008
+normative: true
 ref: test_tutorial_section_1
 text: ''

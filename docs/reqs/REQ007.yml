@@ -1,5 +1,6 @@
 level: 2.1
 links: []
+normative: true
 ref: ''
-text: |-
+text: |
   Doorstop **shall** provide a way to view requirements as a document.

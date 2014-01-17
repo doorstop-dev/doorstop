@@ -2,8 +2,9 @@ level: 1.1
 links:
 - REQ003
 - REQ004
+normative: true
 ref: ''
-text: |-
+text: |
   **Creating a new document and adding items.**
 
   Enter VCS working copy:

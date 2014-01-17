@@ -1,0 +1,6 @@
+level: 5
+links:
+- REQ001
+normative: true
+ref: Verify an item's reference can also be a filename.
+text: ''

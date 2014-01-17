@@ -1,5 +1,6 @@
 level: 2.0
 links: []
+normative: true
 ref: ''
-text: |-
+text: |
   Hello, world!
