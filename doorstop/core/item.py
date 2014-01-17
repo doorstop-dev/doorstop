@@ -457,6 +457,9 @@ class Item(object):
             logging.warning("no text: {}".format(self))
         # Check external references
         self.find_ref(ignored=ignored)
+        # Check links
+        if not self.normative and self.links:
+            logging.warning("non-normative item has links: {}".format(self))
         # Check links against the document
         if document:
             self._check_document(document)
@@ -470,7 +473,7 @@ class Item(object):
 
     def _check_document(self, document):
         """Check the item against its document."""
-        # Verify an item has up links
+        # Verify an item has upward links
         if document.parent and self.normative and not self.links:
             logging.warning("no links: {}".format(self))
         # Verify an item's links are to the correct parent
@@ -483,10 +486,14 @@ class Item(object):
     def _check_tree(self, tree):
         """Check the item against the full tree."""
         # Verify an item's links are valid
+        identifiers = []
         for identifier in self.links:
             item = tree.find_item(identifier)
-            logging.debug("found linked item: {}".format(item))
-        # Verify an item has down links
+            identifier = item.id  # format the item ID
+            logging.debug("found linked item: {}".format(identifier))
+            identifiers.append(identifier)
+        self._links = set(identifiers)
+        # Verify an item has downward (reverse) links
         for document in tree:
             if document.parent == self.prefix:
                 links = []

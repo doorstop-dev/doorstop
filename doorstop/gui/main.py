@@ -220,7 +220,7 @@ def run(args, cwd, err):
         root.bind_class('Listbox', '<Command-Button-1>',
                         root.bind_class('Listbox', '<Control-Button-1>'))
 
-        # Temporarity hide the window for other dialogs
+        # Temporarily hide the window for other dialogs
         root.withdraw()
 
         # Start the application
