@@ -119,7 +119,7 @@ class Tree(object):
 
             # Tree is empty
             if doc.parent:
-                msg = "no parent for: {}".format(doc)
+                msg = "unknown parent for {}: {}".format(doc, doc.parent)
                 raise DoorstopError(msg)
             self.document = doc
 
@@ -140,7 +140,7 @@ class Tree(object):
                 else:
                     break
             else:
-                msg = "no parent for: {}".format(doc)
+                msg = "unknown parent for {}: {}".format(doc, doc.parent)
                 raise DoorstopError(msg)
 
     def check(self):
@@ -290,6 +290,8 @@ class Tree(object):
         @raise DoorstopError: if the item cannot be found
         """
         _kind = (' ' + kind) if kind else kind
+
+        # Search using the prefix and number
         prefix, number = Item.split_id(identifier)
         for document in self:
             if document.prefix.lower() == prefix.lower():
@@ -301,6 +303,12 @@ class Tree(object):
                 break
         else:
             logging.info("no matching{} prefix: {}".format(_kind, prefix))
+
+        # Search using the exact ID
+        for document in self:
+            for item in document:
+                if item.id.lower() == identifier.lower():
+                    return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -351,9 +359,9 @@ def build(cwd=None, root=None):
     # Build the document tree
     if not documents:
         logging.warning("no documents found in: {}".format(root))
-    logging.info("building document tree...")
+    logging.info("building tree...")
     tree = Tree.from_list(documents, root=root)
-    logging.info("final document tree: {}".format(tree))
+    logging.info("final tree: {}".format(tree))
     return tree
 
 

@@ -245,12 +245,16 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         mock_lock.assert_called_once_with(path)
 
     def test_edit_unknown_prefix(self):
-        """Verify an exception is rasied for an unknown prefix (document)."""
+        """Verify an exception is raised for an unknown prefix (document)."""
         self.assertRaises(DoorstopError, self.tree.edit, 'unknown1')
 
     def test_edit_unknown_number(self):
-        """Verify an exception is rasied for an unknown number."""
+        """Verify an exception is raised for an unknown number."""
         self.assertRaises(DoorstopError, self.tree.edit, 'req9999')
+
+    def test_find_item(self):
+        """Verify an item can be found by exact ID."""
+        item = self.tree.find_item('req2-001')
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
