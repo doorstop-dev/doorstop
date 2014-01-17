@@ -1,6 +1,7 @@
 level: 1.4
 links:
 - REQ003
+normative: true
 ref: ''
 text: |
   **Validating the document tree.**

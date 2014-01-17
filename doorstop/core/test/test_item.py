@@ -67,10 +67,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = ("level: 1\n"
-                "links: []\n"
-                "ref: ''\n"
-                "text: ''\n")
+        text = ("level: 1" + '\n'
+                "links: []" + '\n'
+                "normative: true" + '\n'
+                "ref: ''" + '\n'
+                "text: ''" + '\n')
         self.item._write.assert_called_once_with(text)
 
     def test_str(self):
@@ -84,9 +85,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_lt(self):
         """Verify items can be compared."""
-        item0 = MockItem('path/to/RQ002.yml', _level=(1, 1))
+        item0 = MockItem('path/to/RQ002.yml')
+        item0.level = (1, 1)
         item1 = self.item
-        item2 = MockItem('path/to/RQ003.yml', _level=(1, 1, 2))
+        item2 = MockItem('path/to/RQ003.yml')
+        item2.level = (1, 1, 2)
         self.assertLess(item0, item1)
         self.assertLess(item1, item2)
         self.assertGreater(item2, item0)
@@ -213,6 +216,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
 
+    def test_normative(self):
+        """Verify an item's normative status can be set and read."""
+        self.item.normative = 0  # converted to False
+        self.assertIn("normative: false\n", self.item._write.call_args[0][0])
+        self.assertFalse(self.item.normative)
+
     def test_extended(self):
         """Verify an extended attribute can be used."""
         self.item.set('ext1', 'foobar')
@@ -268,6 +277,29 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_check_tree(self):
         """Verify an item can be checked against a tree."""
+        self.item.add_link('fake1')
+        tree = Mock(find_item=Mock())
+
+        def mock_iter(self):  # pylint: disable=W0613
+            """Mock Tree.__iter__ to yield a mock Document."""
+            mock_document = Mock()
+            mock_document.parent = 'RQ'
+
+            def mock_iter2(self):  # pylint: disable=W0613
+                """Mock Document.__iter__ to yield a mock Item."""
+                mock_item = Mock()
+                mock_item.id = 'TST001'
+                mock_item.links = ['RQ001']
+                yield mock_item
+
+            mock_document.__iter__ = mock_iter2
+            yield mock_document
+        tree.__iter__ = mock_iter
+        self.item.check(tree=tree)
+
+    def test_check_tree_non_normative(self):
+        """Verify a non-normative item can be checked against a tree."""
+        self.item.normative = False
         self.item.add_link('fake1')
         tree = Mock(find_item=Mock())
 

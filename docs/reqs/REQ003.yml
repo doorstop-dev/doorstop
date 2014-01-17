@@ -1,5 +1,6 @@
 level: 1.1
 links: []
+normative: true
 ref: ''
 text: |
   Doorstop **shall** provide unique and permanent idetifiers to linkable sections of text.

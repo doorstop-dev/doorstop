@@ -1,6 +1,6 @@
 level: 2
 links:
-- TUT005
 - TUT009
+normative: true
 ref: test_tutorial_section_2
 text: ''

@@ -1,5 +1,6 @@
 level: 2.3
 links: []
+normative: true
 ref: ''
 text: |
   Doorstop **shall** provide the capability to baseline versions of requirements.

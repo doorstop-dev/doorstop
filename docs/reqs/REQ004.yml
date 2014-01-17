@@ -1,5 +1,6 @@
 level: 1.2
 links: []
+normative: true
 ref: ''
 text: |
   Doorstop **shall** support formatting within linkable text.

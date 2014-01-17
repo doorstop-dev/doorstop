@@ -36,7 +36,7 @@ def _auto_load(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.load() before execution."""
         self.load()
-        if self.auto_load:
+        if self.auto:
             return func(self, *args, **kwargs)
     return wrapped
 
@@ -47,7 +47,7 @@ def _auto_save(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
-        if self.auto_save:
+        if self.auto:
             self.save()
         return result
 
@@ -63,14 +63,11 @@ class Item(object):
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
     DEFAULT_LINKS = set()
+    DEFAULT_NORMATIVE = True
 
-    auto_load = True  # enables automatic load before read
-    auto_save = True  # enables automatic save after update
+    auto = True  # set to False to delay automatic load/save until load/save
 
-    def __init__(self, path, root=os.getcwd(),
-                 _level=None,
-                 # TODO: are these arguments needed here?
-                 _text=None, _ref=None, _links=None):
+    def __init__(self, path, root=os.getcwd()):
         """Load an item from an existing file.
 
         Internally, this constructor is also used to initialize new
@@ -97,10 +94,11 @@ class Item(object):
         self.path = path
         self.root = root
         self._exists = True
-        self._level = _level or Item.DEFAULT_LEVEL
-        self._text = _text or Item.DEFAULT_TEXT
-        self._ref = _ref or Item.DEFAULT_REF
-        self._links = _links or Item.DEFAULT_LINKS
+        self._level = Item.DEFAULT_LEVEL
+        self._text = Item.DEFAULT_TEXT
+        self._ref = Item.DEFAULT_REF
+        self._links = Item.DEFAULT_LINKS
+        self._normative = Item.DEFAULT_NORMATIVE
         self._data = {}
 
     def __repr__(self):
@@ -141,8 +139,8 @@ class Item(object):
         # Create the item file
         Item._new(path2)
         # Return the new item
-        item = Item(path2, root=root, _level=level)
-        item.save()
+        item = Item(path2, root=root)
+        item.level = level or Item.DEFAULT_LEVEL  # also saves the item
         return item
 
     @staticmethod
@@ -172,7 +170,10 @@ class Item(object):
         self._text = self._data.get('text', self._text).strip()
         self._ref = self._data.get('ref', self._ref)
         self._links = set(self._data.get('links', self._links))
+        self._normative = bool(self._data.get('normative', self._normative))
+        # Set meta attributes
         setattr(self, '_loaded', True)
+        self.auto = True
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
@@ -193,16 +194,20 @@ class Item(object):
         text = _literal(self._sbd(self._text))
         ref = self._ref.strip()
         links = sorted(self._links)
+        normative = self._normative
         # Build the data structure
         self._data['level'] = level
         self._data['text'] = text
         self._data['links'] = links
         self._data['ref'] = ref
+        self._data['normative'] = normative
         # Dump the data to YAML
         dump = yaml.dump(self._data, default_flow_style=False)
         # Save the YAML to file
         self._write(dump)
+        # Set meta attributes
         setattr(self, '_loaded', False)
+        self.auto = True
 
     @staticmethod
     def _sbd(text):
@@ -397,6 +402,18 @@ class Item(object):
         """Set the items this item links to."""
         self._links = set(links)
 
+    @property
+    @_auto_load
+    def normative(self):
+        """Get the item's normative status."""
+        return self._normative
+
+    @normative.setter
+    @_auto_save
+    def normative(self, status):
+        """Set the item's normative status."""
+        self._normative = bool(status)
+
     @_auto_load
     @_auto_save
     def add_link(self, item):
@@ -454,7 +471,7 @@ class Item(object):
     def _check_document(self, document):
         """Check the item against its document."""
         # Verify an item has up links
-        if document.parent and self.level[-1] != 0 and not self.links:
+        if document.parent and self.normative and not self.links:
             logging.warning("no links: {}".format(self))
         # Verify an item's links are to the correct parent
         for identifier in self.links:
@@ -472,15 +489,21 @@ class Item(object):
         # Verify an item has down links
         for document in tree:
             if document.parent == self.prefix:
-                down_links = []
+                links = []
                 for item in document:
                     if self.id in item.links:
-                        down_links.append(item.id)
-                if down_links:
-                    msg = "down links: {}".format(', '.join(down_links))
-                    logging.debug(msg)
-                else:
-                    msg = "no links from {} to {}".format(document, self)
+                        links.append(item.id)
+                if links:
+                    if self.normative:
+                        msg = "down links: {}".format(', '.join(links))
+                        logging.debug(msg)
+                    else:
+                        for link in links:
+                            msg = "{} links to non-normative {}".format(link,
+                                                                        self)
+                            logging.warning(msg)
+                elif self.normative:
+                    msg = "{} has no links from {}".format(self, document)
                     logging.warning(msg)
 
     def delete(self):

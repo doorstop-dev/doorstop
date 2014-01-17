@@ -1,6 +1,7 @@
 level: 1.3
 links:
 - REQ003
+normative: true
 ref: ''
 text: |
   **Removing items and links.**
