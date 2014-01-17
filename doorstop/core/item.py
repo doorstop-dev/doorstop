@@ -481,15 +481,14 @@ class Item(object):
 
 class Literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
-    pass
 
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the literal style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|' if data else '')
 
-def _literal_representer(dumper, data):
-    """Return a custom dumper that formats str in the literal style."""
-    style = '|' if data else ''
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data, style=style)
-
-yaml.add_representer(Literal, _literal_representer)
+yaml.add_representer(Literal, Literal.representer)
 
 
 # http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
