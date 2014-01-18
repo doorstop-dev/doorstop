@@ -66,7 +66,7 @@ class Item(object):
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
-            self.split_id(name)
+            split_id(name)
         except DoorstopError:
             raise
         # Check file extension
@@ -113,7 +113,7 @@ class Item(object):
 
         @raise DoorstopError: if the item already exists
         """
-        identifier = Item.join_id(prefix, digits, number)
+        identifier = join_id(prefix, digits, number)
         filename = identifier + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Check for an existing item
@@ -135,6 +135,7 @@ class Item(object):
         with open(path, 'w'):
             pass  # just touch the file
 
+
     def load(self, reload=False):
         """Load the item's properties from a file."""
         if getattr(self, '_loaded', False) and not reload:
@@ -149,7 +150,7 @@ class Item(object):
             msg = "invalid contents: {}:\n{}".format(self, error)
             raise DoorstopError(msg)
         # Store parsed data
-        self._level = self._convert_level(self._data.get('level', self._level))
+        self._level = convert_level(self._data.get('level', self._level))
         self._text = self._data.get('text', self._text).strip()
         self._ref = self._data.get('ref', self._ref)
         self._links = set(self._data.get('links', self._links))
@@ -199,46 +200,22 @@ class Item(object):
         with open(self.path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
 
+    # standard attributes ####################################################
+
     @property
     def id(self):  # pylint: disable=C0103
         """Get the item's ID."""
         return os.path.splitext(os.path.basename(self.path))[0]
 
-    @staticmethod
-    def join_id(prefix, digits, number):
-        """Join the parts of an item's ID into an ID.
-
-        >>> Item.join_id('ABC', 5, 123)
-        'ABC00123'
-
-        """
-        return "{}{}".format(prefix, str(number).zfill(digits))
-
-    @staticmethod
-    def split_id(text):
-        """Split an item's ID into a prefix and number.
-
-        >>> Item.split_id('ABC00123')
-        ('ABC', 123)
-
-        >>> Item.split_id('ABC.HLR_01-00123')
-        ('ABC.HLR_01-', 123)
-
-        """
-        match = re.match(r"([\w.-]*\D)(\d+)", text)
-        if not match:
-            raise DoorstopError("invalid ID: {}".format(text))
-        return match.group(1), int(match.group(2))
-
     @property
     def prefix(self):
         """Get the item ID's prefix."""
-        return self.split_id(self.id)[0]
+        return split_id(self.id)[0]
 
     @property
     def number(self):
         """Get the item ID's number."""
-        return self.split_id(self.id)[1]
+        return split_id(self.id)[1]
 
     @property
     @auto_load
@@ -250,39 +227,15 @@ class Item(object):
     @auto_save
     def level(self, level):
         """Set the item's level."""
-        self._level = self._convert_level(level)
+        self._level = convert_level(level)
 
     @property
     def heading(self):
         """Get the heading order based on the level."""
-        level = list(self.level)
-        while level[-1] == 0:
-            del level[-1]
-        return len(level)
-
-    @staticmethod
-    def _convert_level(text):
-        """Convert a level string to a tuple.
-
-        >>> Item._convert_level("1.2.3")
-        (1, 2, 3)
-
-        >>> Item._convert_level(['4', '5'])
-        (4, 5)
-
-        >>> Item._convert_level(4.2)
-        (4, 2)
-
-        """
-        # Correct for integers (42) and floats (4.2) in YAML
-        if isinstance(text, int) or isinstance(text, float):
-            text = str(text)
-        # Split strings by periods
-        if isinstance(text, str):
-            nums = text.split('.')
-        else:
-            nums = text
-        return tuple(int(n) for n in nums)
+        lev = list(self.level)
+        while lev[-1] == 0:
+            del lev[-1]
+        return len(lev)
 
     @property
     @auto_load
@@ -308,7 +261,133 @@ class Item(object):
         """Set the item's external file reference."""
         self._ref = ref
 
+    @property
     @auto_load
+    def links(self):
+        """Get the items this item links to."""
+        return sorted(self._links)
+
+    @links.setter
+    @auto_save
+    def links(self, links):
+        """Set the items this item links to."""
+        self._links = set(links)
+
+    @property
+    @auto_load
+    def normative(self):
+        """Get the item's normative status."""
+        return self._normative
+
+    @normative.setter
+    @auto_save
+    def normative(self, status):
+        """Set the item's normative status."""
+        self._normative = bool(status)
+
+    # extended attributes ####################################################
+
+    @auto_load
+    def get(self, name):
+        """Get an extended attribute."""
+        return self._data[name]
+
+    @auto_load
+    @auto_save
+    def set(self, name, value):
+        """SEt an extended attribute."""
+        self._data[name] = value
+
+    # actions ################################################################
+
+    @auto_load
+    @auto_save
+    def add_link(self, item):
+        """Add a new link to another item."""
+        self._links.add(item)
+
+    @auto_load
+    @auto_save
+    def remove_link(self, item):
+        """Remove an existing link."""
+        try:
+            self._links.remove(item)
+        except KeyError:
+            logging.warning("link to {0} does not exist".format(item))
+
+    def check(self, document=None, tree=None, ignored=None):
+        """Confirm the item is valid.
+
+        @param document: document to validate the item
+        @param tree: tree to validate the item
+        @param ignored: function to determine if a path should be skipped
+
+        @return: indication that the item is valid
+        """
+        logging.info("checking item {}...".format(self))
+        # Verify the file can be parsed
+        self.load()
+        # Check text
+        if not self.text and not self.ref:
+            logging.warning("no text: {}".format(self))
+        # Check external references
+        self.find_ref(ignored=ignored)
+        # Check links
+        if not self.normative and self.links:
+            logging.warning("non-normative item has links: {}".format(self))
+        # Check links against the document
+        if document:
+            self._check_document(document)
+        # Check links against the tree
+        if tree:
+            self._check_tree(tree)
+        # Reformat the file
+        self.save()
+        # Item is valid
+        return True
+
+    def _check_document(self, document):
+        """Check the item against its document."""
+        # Verify an item has upward links
+        if document.parent and self.normative and not self.links:
+            logging.warning("no links: {}".format(self))
+        # Verify an item's links are to the correct parent
+        for identifier in self.links:
+            prefix = split_id(identifier)[0]
+            if prefix.lower() != document.parent.lower():
+                msg = "link to non-parent '{}' in {}".format(identifier, self)
+                logging.warning(msg)
+
+    def _check_tree(self, tree):
+        """Check the item against the full tree."""
+        # Verify an item's links are valid
+        identifiers = []
+        for identifier in self.links:
+            item = tree.find_item(identifier)
+            identifier = item.id  # format the item ID
+            logging.debug("found linked item: {}".format(identifier))
+            identifiers.append(identifier)
+        self._links = set(identifiers)
+        # Verify an item has downward (reverse) links
+        for document in tree:
+            if document.parent == self.prefix:
+                links = []
+                for item in document:
+                    if self.id in item.links:
+                        links.append(item.id)
+                if links:
+                    if self.normative:
+                        msg = "down links: {}".format(', '.join(links))
+                        logging.debug(msg)
+                    else:
+                        for link in links:
+                            msg = "{} links to non-normative {}".format(link,
+                                                                        self)
+                            logging.warning(msg)
+                elif self.normative:
+                    msg = "{} has no links from {}".format(self, document)
+                    logging.warning(msg)
+
     def find_ref(self, root=None, ignored=None):
         """Find the external file reference and line number.
 
@@ -356,135 +435,13 @@ class Item(object):
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
-    @property
-    @auto_load
-    def links(self):
-        """Get the items this item links to."""
-        return sorted(self._links)
-
-    @links.setter
-    @auto_save
-    def links(self, links):
-        """Set the items this item links to."""
-        self._links = set(links)
-
-    @property
-    @auto_load
-    def normative(self):
-        """Get the item's normative status."""
-        return self._normative
-
-    @normative.setter
-    @auto_save
-    def normative(self, status):
-        """Set the item's normative status."""
-        self._normative = bool(status)
-
-    @auto_load
-    @auto_save
-    def add_link(self, item):
-        """Add a new link to another item."""
-        self._links.add(item)
-
-    @auto_load
-    @auto_save
-    def remove_link(self, item):
-        """Remove an existing link."""
-        try:
-            self._links.remove(item)
-        except KeyError:
-            logging.warning("link to {0} does not exist".format(item))
-
-    @auto_load
-    def get(self, name):
-        """Get an extended attribute."""
-        return self._data[name]
-
-    @auto_load
-    @auto_save
-    def set(self, name, value):
-        """SEt an extended attribute."""
-        self._data[name] = value
-
-    def check(self, document=None, tree=None, ignored=None):
-        """Confirm the item is valid.
-
-        @param document: document to validate the item
-        @param tree: tree to validate the item
-        @param ignored: function to determine if a path should be skipped
-
-        @return: indication that the item is valid
-        """
-        logging.info("checking item {}...".format(self))
-        # Verify the file can be parsed
-        self.load()
-        # Check text
-        if not self.text and not self.ref:
-            logging.warning("no text: {}".format(self))
-        # Check external references
-        self.find_ref(ignored=ignored)
-        # Check links
-        if not self.normative and self.links:
-            logging.warning("non-normative item has links: {}".format(self))
-        # Check links against the document
-        if document:
-            self._check_document(document)
-        # Check links against the tree
-        if tree:
-            self._check_tree(tree)
-        # Reformat the file
-        self.save()
-        # Item is valid
-        return True
-
-    def _check_document(self, document):
-        """Check the item against its document."""
-        # Verify an item has upward links
-        if document.parent and self.normative and not self.links:
-            logging.warning("no links: {}".format(self))
-        # Verify an item's links are to the correct parent
-        for identifier in self.links:
-            prefix = self.split_id(identifier)[0]
-            if prefix.lower() != document.parent.lower():
-                msg = "link to non-parent '{}' in {}".format(identifier, self)
-                logging.warning(msg)
-
-    def _check_tree(self, tree):
-        """Check the item against the full tree."""
-        # Verify an item's links are valid
-        identifiers = []
-        for identifier in self.links:
-            item = tree.find_item(identifier)
-            identifier = item.id  # format the item ID
-            logging.debug("found linked item: {}".format(identifier))
-            identifiers.append(identifier)
-        self._links = set(identifiers)
-        # Verify an item has downward (reverse) links
-        for document in tree:
-            if document.parent == self.prefix:
-                links = []
-                for item in document:
-                    if self.id in item.links:
-                        links.append(item.id)
-                if links:
-                    if self.normative:
-                        msg = "down links: {}".format(', '.join(links))
-                        logging.debug(msg)
-                    else:
-                        for link in links:
-                            msg = "{} links to non-normative {}".format(link,
-                                                                        self)
-                            logging.warning(msg)
-                elif self.normative:
-                    msg = "{} has no links from {}".format(self, document)
-                    logging.warning(msg)
-
     def delete(self):
         """Delete the item from the file system."""
         logging.info("deleting {}...".format(self.path))
         os.remove(self.path)
         self._exists = False  # prevent future access
 
+# YAML representer classes ###################################################
 
 class Literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
@@ -496,6 +453,58 @@ class Literal(str):  # pylint: disable=R0904
                                        style='|' if data else '')
 
 yaml.add_representer(Literal, Literal.representer)
+
+
+# attribute formatters #######################################################
+
+def split_id(text):
+    """Split an item's ID into a prefix and number.
+
+    >>> split_id('ABC00123')
+    ('ABC', 123)
+
+    >>> split_id('ABC.HLR_01-00123')
+    ('ABC.HLR_01-', 123)
+
+    """
+    match = re.match(r"([\w.-]*\D)(\d+)", text)
+    if not match:
+        raise DoorstopError("invalid ID: {}".format(text))
+    return match.group(1), int(match.group(2))
+
+
+def join_id(prefix, digits, number):
+    """Join the parts of an item's ID into an ID.
+
+    >>> join_id('ABC', 5, 123)
+    'ABC00123'
+
+    """
+    return "{}{}".format(prefix, str(number).zfill(digits))
+
+
+def convert_level(text):
+    """Convert a level string to a tuple.
+
+    >>> convert_level("1.2.3")
+    (1, 2, 3)
+
+    >>> convert_level(['4', '5'])
+    (4, 5)
+
+    >>> convert_level(4.2)
+    (4, 2)
+
+    """
+    # Correct for integers (42) and floats (4.2) in YAML
+    if isinstance(text, int) or isinstance(text, float):
+        text = str(text)
+    # Split strings by periods
+    if isinstance(text, str):
+        nums = text.split('.')
+    else:
+        nums = text
+    return tuple(int(n) for n in nums)
 
 
 # http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation

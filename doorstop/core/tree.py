@@ -11,7 +11,7 @@ from itertools import chain
 
 from doorstop.common import DoorstopError
 from doorstop.core.document import Document
-from doorstop.core.item import Item
+from doorstop.core.item import split_id
 from doorstop.core import vcs
 
 
@@ -292,7 +292,7 @@ class Tree(object):
         _kind = (' ' + kind) if kind else kind
 
         # Search using the prefix and number
-        prefix, number = Item.split_id(identifier)
+        prefix, number = split_id(identifier)
         for document in self:
             if document.prefix.lower() == prefix.lower():
                 for item in document:
@@ -304,7 +304,7 @@ class Tree(object):
         else:
             logging.info("no matching{} prefix: {}".format(_kind, prefix))
 
-        # Search using the exact ID
+        # Fall back to a search using the exact ID
         for document in self:
             for item in document:
                 if item.id.lower() == identifier.lower():
