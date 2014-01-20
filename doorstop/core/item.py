@@ -37,7 +37,7 @@ def auto_save(func):
     return wrapped
 
 
-class Item(object):
+class Item(object):  # pylint: disable=R0902
     """Represents a file with linkable text that is part of a document."""
 
     EXTENSIONS = '.yml', '.yaml'

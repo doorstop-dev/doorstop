@@ -8,9 +8,9 @@ import sys
 from unittest.mock import Mock, MagicMock
 try:  # pragma: no cover - not measurable
     import tkinter as tk
-    from tkinter import messagebox, simpledialog, filedialog
-except ImportError as err:  # pragma: no cover - not measurable
-    sys.stderr.write("WARNING: {}\n".format(err))
+    from tkinter import filedialog
+except ImportError as _err:  # pragma: no cover - not measurable
+    sys.stderr.write("WARNING: {}\n".format(_err))
     tk = Mock()  # pylint: disable=C0103
 
 import os
@@ -24,10 +24,11 @@ from doorstop.common import SHARED, WarningFormatter
 from doorstop import settings
 
 
-class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=R0904,R0924
+class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=R0904
     """Tkinter application for DropTheBeat."""
 
     def __init__(self, master=None, root=None, name=None):
+        logging.debug("unused: {}".format(name))
         tk.Frame.__init__(self, master)
 
         # Load the root sharing directory
@@ -128,8 +129,8 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
     def do_remove(self):
         """Remove selected songs."""
-        for index in (int(s) for s in self.listbox_outgoing.curselection()):
-            self.outgoing[index].ignore()
+        # for index in (int(s) for s in self.listbox_outgoing.curselection()):
+        #    self.outgoing[index].ignore()
         self.update()
 
     def do_share(self):
@@ -204,6 +205,8 @@ def _configure_logging(verbosity=0):
 
 def run(args, cwd, err):
     """Start the GUI."""
+
+    logging.debug("unused: {}".format((args, cwd, err)))
 
     # Exit if tkinter is not available
     if isinstance(tk, Mock):
