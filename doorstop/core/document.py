@@ -67,11 +67,6 @@ class Document(object):
     def __ne__(self, other):
         return not self == other
 
-    @property
-    def config(self):
-        """Get the path to the document's configuration."""
-        return os.path.join(self.path, Document.CONFIG)
-
     @staticmethod
     def new(path, root, prefix, parent=None, digits=None):
         """Create a new Document.
@@ -144,10 +139,27 @@ class Document(object):
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
 
+    # attributes #############################################################
+
+    @property
+    def config(self):
+        """Get the path to the document's configuration."""
+        return os.path.join(self.path, Document.CONFIG)
+
     @property
     def items(self):
         """Get an ordered list of items in the document."""
         return sorted(item for item in self)
+
+    @property
+    def maximum(self):
+        """Return the highest item number in the document."""
+        try:
+            return max(item.number for item in self)
+        except ValueError:
+            return 0
+
+    # actions ################################################################
 
     def add(self):
         """Create a new item for the document and return it."""
@@ -162,14 +174,6 @@ class Document(object):
         logging.debug("next level: {}".format(level))
         return Item.new(self.path, self.root, self.prefix, self.digits,
                         number, level)
-
-    @property
-    def maximum(self):
-        """Return the highest item number in the document."""
-        try:
-            return max(item.number for item in self)
-        except ValueError:
-            return 0
 
     def check(self, tree=None, ignored=None):
         """Confirm the document is valid.

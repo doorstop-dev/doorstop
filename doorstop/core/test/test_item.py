@@ -16,7 +16,7 @@ from doorstop.core.item import Item
 from doorstop.core.test import ENV, REASON, FILES, EMPTY, EXTERNAL
 
 
-class MockItem(Item):
+class MockItem(Item):  # pylint: disable=R0902
     """Item class with mock read/write methods."""
 
     @patch('os.path.isfile', Mock(return_value=True))

@@ -86,7 +86,7 @@ class Tree(object):
             count = len(unplaced)
             for doc in list(unplaced):
                 try:
-                    tree.place(doc)
+                    tree._place(doc)  # pylint: disable=W0212
                 except DoorstopError as error:
                     logging.debug(error)
                 else:
@@ -100,14 +100,7 @@ class Tree(object):
 
         return tree
 
-    @property
-    def vcs(self):
-        """Get the working copy."""
-        if self._vcs is None:
-            self._vcs = vcs.load(self.root)
-        return self._vcs
-
-    def place(self, doc):
+    def _place(self, doc):
         """Attempt to place the Document in the current tree.
 
         @param doc: Document to add
@@ -134,7 +127,7 @@ class Tree(object):
             # Search for the parent
             for child in self.children:
                 try:
-                    child.place(doc)
+                    child._place(doc)  # pylint: disable=W0212
                 except DoorstopError:
                     pass  # the error is raised later
                 else:
@@ -143,17 +136,16 @@ class Tree(object):
                 msg = "unknown parent for {}: {}".format(doc, doc.parent)
                 raise DoorstopError(msg)
 
-    def check(self):
-        """Confirm the document hiearchy is valid.
+    # attributes #############################################################
 
-        @return: indication that hiearchy is valid
+    @property
+    def vcs(self):
+        """Get the working copy."""
+        if self._vcs is None:
+            self._vcs = vcs.load(self.root)
+        return self._vcs
 
-        @raise DoorstopError: on issue
-        """
-        logging.info("checking document tree...")
-        for document in self:
-            document.check(tree=self, ignored=self.vcs.ignored)
-        return True
+    # actions ################################################################
 
     def new(self, path, prefix, parent=None, digits=None):
         """Create a new document and add it to the tree.
@@ -170,7 +162,7 @@ class Tree(object):
         document = Document.new(path, self.root, prefix,
                                 parent=parent, digits=digits)
         try:
-            self.place(document)
+            self._place(document)
         except DoorstopError:
             msg = "deleting unplaced directory {}...".format(document.path)
             logging.debug(msg)
@@ -311,6 +303,18 @@ class Tree(object):
                     return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
+
+    def check(self):
+        """Confirm the document hiearchy is valid.
+
+        @return: indication that hiearchy is valid
+
+        @raise DoorstopError: on issue
+        """
+        logging.info("checking document tree...")
+        for document in self:
+            document.check(tree=self, ignored=self.vcs.ignored)
+        return True
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test

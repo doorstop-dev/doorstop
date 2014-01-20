@@ -95,7 +95,7 @@ class Item(object):
         return isinstance(other, Item) and self.path == other.path
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
     def __lt__(self, other):
         return self.level < other.level
@@ -134,7 +134,6 @@ class Item(object):
         """
         with open(path, 'w'):
             pass  # just touch the file
-
 
     def load(self, reload=False):
         """Load the item's properties from a file."""
@@ -416,7 +415,7 @@ class Item(object):
                 if path == self.path:
                     continue
                 # Skip hidden directories
-                if (os.path.sep + '.') in path:
+                if os.path.sep + '.' in path:
                     continue
                 # Skip ignored paths
                 if ignored(path):
@@ -440,6 +439,7 @@ class Item(object):
         logging.info("deleting {}...".format(self.path))
         os.remove(self.path)
         self._exists = False  # prevent future access
+
 
 # YAML representer classes ###################################################
 

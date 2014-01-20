@@ -126,14 +126,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.tree = Tree(Document(SYS))
-        self.tree.place(Document(FILES))
+        self.tree._place(Document(FILES))  # pylint: disable=W0212
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
         doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
-        tree.place(doc)
+        tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
@@ -142,7 +142,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         tree = build(EMPTY)
         doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
                                parent='REQ')
-        self.assertRaises(DoorstopError, tree.place, doc)
+        self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
     @patch('doorstop.core.document.Document.check')
     def test_check(self, mock_check):
@@ -255,6 +255,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_find_item(self):
         """Verify an item can be found by exact ID."""
         item = self.tree.find_item('req2-001')
+        self.assertIsNot(None, item)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
