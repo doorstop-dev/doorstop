@@ -119,10 +119,12 @@ class Item(object):  # pylint: disable=R0902
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
         Item._new(path2)
-        # Return the new item
+        # Initialize the item
         item = Item(path2, root=root)
+        item.auto = False
+        item.level = level or Item.DEFAULT_LEVEL
         item.auto = Item.auto if auto is None else auto
-        item.level = level or Item.DEFAULT_LEVEL  # also saves the item
+        # Return the new item
         return item
 
     @staticmethod
