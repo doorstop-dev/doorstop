@@ -357,7 +357,7 @@ class Item(object):  # pylint: disable=R0902
             prefix = split_id(identifier)[0]
             if prefix.lower() != document.parent.lower():
                 msg = "link to non-parent '{}' in {}".format(identifier, self)
-                logging.warning(msg)
+                logging.info(msg)
 
     def _check_tree(self, tree):
         """Check the item against the full tree."""
