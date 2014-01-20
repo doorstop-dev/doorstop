@@ -49,23 +49,9 @@ $(PIP):
 .PHONY: depends
 depends: .env $(DEPENDS) $(SOURCES)
 $(DEPENDS):
-	$(PIP) install docutils pdoc pep8 nose coverage wheel \
+	$(PIP) install docutils pdoc pep8 pylint nose coverage wheel \
 	       --use-mirrors --download-cache=$(CACHE)
-	$(MAKE) .pylint
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
-
-# issue: pylint is not currently installing on Windows from PyPI
-# tracker: https://bitbucket.org/logilab/pylint/issue/51
-# workaround: install from the source repositories on Windows/Cygwin
-.PHONY: .pylint
-ifeq ($(shell uname),$(filter $(shell uname),Windows CYGWIN_NT-6.1 CYGWIN_NT-6.1-WOW64))
-.pylint: .env
-	$(PIP) install https://bitbucket.org/moben/logilab-common/get/cb9cb5b8fff228b9a4244e4a6d9b2464a7b6148f.zip --download-cache=$(CACHE)
-	$(PIP) install https://bitbucket.org/logilab/pylint/get/8200a32b14597c24f0f4706417bf30aec1e25386.zip --download-cache=$(CACHE)
-else
-.pylint: .env
-	$(PIP) install pylint --download-cache=$(CACHE)
-endif
 
 # Documentation ##############################################################
 
