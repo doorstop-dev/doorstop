@@ -19,8 +19,7 @@ def auto_load(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.load() before execution."""
         self.load()
-        if self.auto:
-            return func(self, *args, **kwargs)
+        return func(self, *args, **kwargs)
     return wrapped
 
 
@@ -48,7 +47,7 @@ class Item(object):  # pylint: disable=R0902
     DEFAULT_LINKS = set()
     DEFAULT_NORMATIVE = True
 
-    auto = True  # set to False to delay automatic load/save until load/save
+    auto = True  # set to False to delay automatic save until explicit save
 
     def __init__(self, path, root=os.getcwd()):
         """Load an item from an existing file.
@@ -101,7 +100,7 @@ class Item(object):  # pylint: disable=R0902
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, digits, number, level):  # pylint: disable=R0913
+    def new(path, root, prefix, digits, number, level, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
@@ -110,19 +109,19 @@ class Item(object):  # pylint: disable=R0902
         @param digits: number of digits for the new document
         @param number: number for the new item
         @param level: level for the new item (None for default)
+        @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
         """
         identifier = join_id(prefix, digits, number)
         filename = identifier + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
-        # Check for an existing item
-        if os.path.exists(path2):
-            raise DoorstopError("item already exists: {}".format(path2))
-        # Create the item file
+        # Create the initial item file
+        logging.debug("creating item file at {}...".format(path2))
         Item._new(path2)
         # Return the new item
         item = Item(path2, root=root)
+        item.auto = Item.auto if auto is None else auto
         item.level = level or Item.DEFAULT_LEVEL  # also saves the item
         return item
 
@@ -132,6 +131,8 @@ class Item(object):  # pylint: disable=R0902
 
         @param config: path to new item file
         """
+        if os.path.exists(path):
+            raise DoorstopError("item already exists: {}".format(path))
         with open(path, 'w'):
             pass  # just touch the file
 
@@ -156,7 +157,6 @@ class Item(object):  # pylint: disable=R0902
         self._normative = bool(self._data.get('normative', self._normative))
         # Set meta attributes
         setattr(self, '_loaded', True)
-        self.auto = True
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
