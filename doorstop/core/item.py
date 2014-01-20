@@ -370,24 +370,27 @@ class Item(object):  # pylint: disable=R0902
             identifiers.append(identifier)
         self._links = set(identifiers)
         # Verify an item has downward (reverse) links
+        links = []
+        children = []
         for document in tree:
             if document.parent == self.prefix:
-                links = []
+                children.append(document)
                 for item in document:
                     if self.id in item.links:
                         links.append(item.id)
-                if links:
-                    if self.normative:
-                        msg = "down links: {}".format(', '.join(links))
-                        logging.debug(msg)
-                    else:
-                        for link in links:
-                            msg = "{} links to non-normative {}".format(link,
-                                                                        self)
-                            logging.warning(msg)
-                elif self.normative:
-                    msg = "{} has no links from {}".format(self, document)
+        if links:
+            if self.normative:
+                msg = "down links: {}".format(', '.join(links))
+                logging.debug(msg)
+            else:
+                for link in links:
+                    msg = "{} links to non-normative {}".format(link,
+                                                                self)
                     logging.warning(msg)
+        elif self.normative:
+            for child in children:
+                msg = "{} has no links from {}".format(self, child)
+                logging.warning(msg)
 
     def find_ref(self, root=None, ignored=None):
         """Find the external file reference and line number.
