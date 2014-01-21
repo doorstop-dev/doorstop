@@ -292,9 +292,9 @@ class Item(object):  # pylint: disable=R0902
     # extended attributes ####################################################
 
     @auto_load
-    def get(self, name):
+    def get(self, name, default=None):
         """Get an extended attribute."""
-        return self._data[name]
+        return self._data.get(name, default)
 
     @auto_load
     @auto_save
