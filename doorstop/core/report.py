@@ -2,8 +2,13 @@
 Doorstop reporting functionality.
 """
 
+import os
+import shutil
 import textwrap
+
 import markdown
+
+CSS = os.path.join('files', 'doorstop.css')
 
 
 def get_text(document, indent=8, width=79, ignored=None):
@@ -120,7 +125,13 @@ def get_html(document, ignored=None):
 
     @return: iterator of lines of text
     """
+    yield '<p><link href="doorstop.css" rel="stylesheet"></link></p>'
     lines = get_markdown(document, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
     yield from html.splitlines()
+
+
+def copy_css(directory):
+    """Copy the style sheet for generated HTML to the specified directory."""
+    shutil.copy(CSS, directory)
