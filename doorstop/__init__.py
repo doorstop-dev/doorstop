@@ -21,6 +21,6 @@ else:
 
 try:
     from doorstop.common import DoorstopError
-    from doorstop.core import Item, Document, Tree, build
+    from doorstop.core import Item, Document, Tree, build, report
 except ImportError:  # pragma: no cover, manual test
     pass
