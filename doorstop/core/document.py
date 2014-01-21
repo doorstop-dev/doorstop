@@ -152,23 +152,23 @@ class Document(object):
         return sorted(item for item in self)
 
     @property
-    def maximum(self):
-        """Return the highest item number in the document."""
-        try:
-            return max(item.number for item in self)
-        except ValueError:
-            return 0
-
-    @property
     def depth(self):
         """Return the maximum item level depth."""
-        return max(len(item.level) for item in self)
+        return max(item.depth for item in self)
+
+    @property
+    def next(self):
+        """Return the next item number in the document."""
+        try:
+            return max(item.number for item in self) + 1
+        except ValueError:
+            return 1
 
     # actions ################################################################
 
     def add(self):
         """Create a new item for the document and return it."""
-        number = self.maximum + 1
+        number = self.next
         logging.debug("next number: {}".format(number))
         try:
             last = self.items[-1]

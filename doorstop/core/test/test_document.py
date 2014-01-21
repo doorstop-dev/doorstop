@@ -116,13 +116,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised on an invalid document."""
         self.assertRaises(DoorstopError, Document, EMPTY)
 
-    def test_maximum(self):
-        """Verify the maximum item number can be determined."""
-        self.assertEqual(3, self.document.maximum)
-
     def test_depth(self):
         """Verify the maximum item level depth can be determined."""
         self.assertEqual(3, self.document.depth)
+
+    def test_next(self):
+        """Verify the next item number can be determined."""
+        self.assertEqual(4, self.document.next)
 
     @patch('doorstop.core.item.Item.new')
     def test_add(self, mock_new):

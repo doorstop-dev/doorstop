@@ -19,33 +19,41 @@ def get_text(document, indent=8, width=79, ignored=None):
     for item in document.items:
 
         level = '.'.join(str(l) for l in item.level)
-        identifier = item.id
+        if level.endswith('.0'):
+            level = level[:-2]
 
-        # Level and ID
-        yield "{l:<{s}}{i}".format(l=level, i=identifier, s=indent)
+        if item.header:
 
-        # Text
-        if item.text:
-            yield ""  # break before text
-            for line in item.text.splitlines():
-                yield from _chunks(line, width, indent)
+            # Level and Text
+            yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
 
-                if not line:  # pragma: no cover - integration test
-                    yield ""  # break between paragraphs
+        else:
 
-        # Reference
-        if item.ref:
-            yield ""  # break before reference
-            path, line = item.find_ref(ignored=ignored)
-            path = path.replace('\\', '/')  # always write unix-style paths
-            ref = "Reference: {p} (line {l})".format(p=path, l=line)
-            yield from _chunks(ref, width, indent)
+            # Level and ID
+            yield "{l:<{s}}{i}".format(l=level, s=indent, i=item.id)
 
-        # Links
-        if item.links:
-            yield ""  # break before links
-            links = "Links: " + ', '.join(item.links)
-            yield from _chunks(links, width, indent)
+            # Text
+            if item.text:
+                yield ""  # break before text
+                for line in item.text.splitlines():
+                    yield from _chunks(line, width, indent)
+
+                    if not line:  # pragma: no cover - integration test
+                        yield ""  # break between paragraphs
+
+            # Reference
+            if item.ref:
+                yield ""  # break before reference
+                path, line = item.find_ref(ignored=ignored)
+                path = path.replace('\\', '/')  # always write unix-style paths
+                ref = "Reference: {p} (line {l})".format(p=path, l=line)
+                yield from _chunks(ref, width, indent)
+
+            # Links
+            if item.links:
+                yield ""  # break before links
+                links = "Links: " + ', '.join(item.links)
+                yield from _chunks(links, width, indent)
 
         yield ""  # break between items
 
@@ -67,31 +75,39 @@ def get_markdown(document, ignored=None):
     """
     for item in document.items:
 
-        heading = '#' * item.heading
+        heading = '#' * item.depth
         level = '.'.join(str(l) for l in item.level)
-        identifier = item.id
+        if level.endswith('.0'):
+            level = level[:-2]
 
-        # Level and ID
-        yield "{h} {l} ({i})".format(h=heading, l=level, i=identifier)
+        if item.header:
 
-        # Text
-        if item.text:
-            yield ""  # break before text
-            yield from item.text.splitlines()
+            # Level and Text
+            yield "{h} {l}. {t}".format(h=heading, l=level, t=item.text)
 
-        # Reference
-        if item.ref:
-            yield ""  # break before reference
-            path, line = item.find_ref(ignored=ignored)
-            path = path.replace('\\', '/')  # always write unix-style paths
-            ref = "Reference: {p} (line {l})".format(p=path, l=line)
-            yield ref
+        else:
 
-        # Links
-        if item.links:
-            yield ""  # break before links
-            links = '*' + "Links: " + ', '.join(item.links) + '*'
-            yield links
+            # Level and ID
+            yield "{h} {l}. {i}".format(h=heading, l=level, i=item.id)
+
+            # Text
+            if item.text:
+                yield ""  # break before text
+                yield from item.text.splitlines()
+
+            # Reference
+            if item.ref:
+                yield ""  # break before reference
+                path, line = item.find_ref(ignored=ignored)
+                path = path.replace('\\', '/')  # always use unix-style paths
+                ref = "Reference: {p} (line {l})".format(p=path, l=line)
+                yield ref
+
+            # Links
+            if item.links:
+                yield ""  # break before links
+                links = '*' + "Links: " + ', '.join(item.links) + '*'
+                yield links
 
         yield ""  # break between items
 

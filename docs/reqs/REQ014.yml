@@ -3,4 +3,4 @@ links: []
 normative: true
 ref: ''
 text: |
-  Doorstop **shall** be scaleable to support thousands of requirements.
+  Doorstop **shall** be scalable to support thousands of requirements.

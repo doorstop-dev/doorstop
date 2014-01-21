@@ -31,8 +31,11 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         cls.document = Mock()
         cls.document.items = [
             MockItem('path/to/req3.yml',
+                     _file="links: [sys3]\ntext: 'Heading'\nlevel: 1.0\n"
+                     "normative: false"),
+            MockItem('path/to/req3.yml',
                      _file="links: [sys3]\ntext: '" + ("Hello, world! " * 10)
-                     + "'\nlevel: 1.0"),
+                     + "'\nlevel: 1.2"),
             MockItem('path/to/req1.yml',
                      _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
             MockItem('path/to/req2.yml',

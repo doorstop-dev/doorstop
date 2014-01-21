@@ -229,12 +229,17 @@ class Item(object):  # pylint: disable=R0902
         self._level = convert_level(level)
 
     @property
-    def heading(self):
+    def depth(self):
         """Get the heading order based on the level."""
-        lev = list(self.level)
-        while lev[-1] == 0:
-            del lev[-1]
-        return len(lev)
+        level = list(self.level)
+        while level[-1] == 0:
+            del level[-1]
+        return len(level)
+
+    @property
+    def header(self):
+        """Indicates if the item is a header."""
+        return self.level[-1] == 0 and not self.normative
 
     @property
     @auto_load
@@ -515,7 +520,7 @@ def convert_level(text):
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
-    # Ensure the top level always ends in a zero
+    # Ensure the top level always a header (ends in a zero)
     if len(parts) == 1:
         parts.append(0)
     # Convert the level to a tuple
