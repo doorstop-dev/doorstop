@@ -159,6 +159,11 @@ class Document(object):
         except ValueError:
             return 0
 
+    @property
+    def depth(self):
+        """Return the maximum item level depth."""
+        return max(len(item.level) for item in self)
+
     # actions ################################################################
 
     def add(self):
