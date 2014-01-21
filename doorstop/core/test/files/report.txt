@@ -1,4 +1,4 @@
-1       Heading
+1.0     Heading
 
 1.2     req3
 
@@ -11,7 +11,7 @@
 
         abc 123
 
-2       req2
+2.0     req2
 
         Links: sys1, sys2
 
@@ -20,4 +20,6 @@
         Reference: doorstop/core/test/test_report.py (line 44)
 
         Links: sys2
+
+2.1     Heading 2
 

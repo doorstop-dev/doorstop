@@ -515,11 +515,12 @@ def convert_level(text):
         nums = text.split('.')
     else:
         nums = text
-    # Clean up trailing zeros
+    # Clean up multiple trailing zeros
     parts = [int(n) for n in nums]
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
+        parts.append(0)
     # Ensure the top level always a header (ends in a zero)
     if len(parts) == 1:
         parts.append(0)

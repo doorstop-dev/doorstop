@@ -129,8 +129,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2.0 "
-        self.assertIn("level: 4.2\n", self.item._write.call_args[0][0])
-        self.assertEqual((4, 2), self.item.level)
+        self.assertIn("level: 4.2.0\n", self.item._write.call_args[0][0])
+        self.assertEqual((4, 2, 0), self.item.level)
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""

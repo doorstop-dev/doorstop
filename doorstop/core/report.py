@@ -19,7 +19,7 @@ def get_text(document, indent=8, width=79, ignored=None):
     for item in document.items:
 
         level = '.'.join(str(l) for l in item.level)
-        if level.endswith('.0'):
+        if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
         if item.header:
@@ -77,18 +77,18 @@ def get_markdown(document, ignored=None):
 
         heading = '#' * item.depth
         level = '.'.join(str(l) for l in item.level)
-        if level.endswith('.0'):
+        if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
         if item.header:
 
             # Level and Text
-            yield "{h} {l}. {t}".format(h=heading, l=level, t=item.text)
+            yield "{h} {l} {t}".format(h=heading, l=level, t=item.text)
 
         else:
 
             # Level and ID
-            yield "{h} {l}. {i}".format(h=heading, l=level, i=item.id)
+            yield "{h} {l} {i}".format(h=heading, l=level, i=item.id)
 
             # Text
             if item.text:
