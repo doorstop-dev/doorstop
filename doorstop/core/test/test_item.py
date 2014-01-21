@@ -67,7 +67,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = ("level: 1" + '\n'
+        text = ("level: 1.0" + '\n'
                 "links: []" + '\n'
                 "normative: true" + '\n'
                 "ref: ''" + '\n'
@@ -129,8 +129,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_level_from_text(self):
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2.0 "
-        self.assertIn("level: 4.2.0\n", self.item._write.call_args[0][0])
-        self.assertEqual((4, 2, 0), self.item.level)
+        self.assertIn("level: 4.2\n", self.item._write.call_args[0][0])
+        self.assertEqual((4, 2), self.item.level)
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""
@@ -141,8 +141,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_level_from_int(self):
         """Verify an item's level can be set from a int and read."""
         self.item.level = 42
-        self.assertIn("level: 42\n", self.item._write.call_args[0][0])
-        self.assertEqual((42,), self.item.level)
+        self.assertIn("level: 42.0\n", self.item._write.call_args[0][0])
+        self.assertEqual((42, 0), self.item.level)
 
     def test_text(self):
         """Verify an item's text can be set and read."""
@@ -254,7 +254,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002-', 3, 42, (1,))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
-        self.assertEqual((1,), item.level)
+        self.assertEqual((1, 0), item.level)
         MockItem._new.assert_called_once_with(path)
 
     def test_new_existing(self):

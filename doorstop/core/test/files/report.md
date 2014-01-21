@@ -8,13 +8,13 @@ Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, wor
 
 abc 123
 
-# 2 (req2)
+# 2.0 (req2)
 
 *Links: sys1, sys2*
 
 ### 2.1.1 (req4)
 
-Reference: doorstop/core/test/test_report.py (line 36)
+Reference: doorstop/core/test/test_report.py (line 41)
 
 *Links: sys2*
 

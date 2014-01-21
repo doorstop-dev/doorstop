@@ -41,7 +41,7 @@ class Item(object):  # pylint: disable=R0902
 
     EXTENSIONS = '.yml', '.yaml'
 
-    DEFAULT_LEVEL = (1,)
+    DEFAULT_LEVEL = (1, 0)
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
     DEFAULT_LINKS = set()
@@ -174,8 +174,6 @@ class Item(object):  # pylint: disable=R0902
         level = '.'.join(str(n) for n in self._level)
         if len(self._level) == 2:
             level = float(level)
-        elif len(self._level) == 1:
-            level = int(level)
         text = Literal(sbd(self._text))
         ref = self._ref.strip()
         links = sorted(self._links)
@@ -500,6 +498,9 @@ def convert_level(text):
     >>> convert_level(4.2)
     (4, 2)
 
+    >>> convert_level([7, 0, 0])
+    (7, 0)
+
     """
     # Correct for integers (42) and floats (4.2) in YAML
     if isinstance(text, int) or isinstance(text, float):
@@ -509,7 +510,16 @@ def convert_level(text):
         nums = text.split('.')
     else:
         nums = text
-    return tuple(int(n) for n in nums)
+    # Clean up trailing zeros
+    parts = [int(n) for n in nums]
+    if parts[-1] == 0:
+        while parts[-1] == 0:
+            del parts[-1]
+    # Ensure the top level always ends in a zero
+    if len(parts) == 1:
+        parts.append(0)
+    # Convert the level to a tuple
+    return tuple(parts)
 
 
 # http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation

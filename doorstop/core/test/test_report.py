@@ -15,7 +15,12 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.core.test import FILES
 from doorstop.core.test.test_item import MockItem
 
-ASSERT_CONTENTS = True  # set to False to overrite contents
+# Whenever the report format is changed:
+#  1. set ASSERT_CONTENTS to False
+#  2. re-run all tests
+#  3. manually verify the newly generated reports are correct
+#  4. set ASSERT_CONTENTS to True
+ASSERT_CONTENTS = True  # set to False to override contents
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
