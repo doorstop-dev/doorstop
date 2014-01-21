@@ -367,7 +367,11 @@ class Item(object):  # pylint: disable=R0902
         # Verify an item's links are valid
         identifiers = []
         for identifier in self.links:
-            item = tree.find_item(identifier)
+            try:
+                item = tree.find_item(identifier)
+            except DoorstopError:
+                msg = "{} linked to unknown item: {}".format(self, identifier)
+                raise DoorstopError(msg) from None
             identifier = item.id  # format the item ID
             logging.debug("found linked item: {}".format(identifier))
             identifiers.append(identifier)
