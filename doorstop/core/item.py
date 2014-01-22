@@ -292,9 +292,9 @@ class Item(object):  # pylint: disable=R0902
     # extended attributes ####################################################
 
     @auto_load
-    def get(self, name):
+    def get(self, name, default=None):
         """Get an extended attribute."""
-        return self._data[name]
+        return self._data.get(name, default)
 
     @auto_load
     @auto_save
@@ -367,7 +367,11 @@ class Item(object):  # pylint: disable=R0902
         # Verify an item's links are valid
         identifiers = []
         for identifier in self.links:
-            item = tree.find_item(identifier)
+            try:
+                item = tree.find_item(identifier)
+            except DoorstopError:
+                msg = "{} linked to unknown item: {}".format(self, identifier)
+                raise DoorstopError(msg) from None
             identifier = item.id  # format the item ID
             logging.debug("found linked item: {}".format(identifier))
             identifiers.append(identifier)
