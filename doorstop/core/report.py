@@ -28,9 +28,6 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
         with open(path, 'wb') as outfile:
             for line in iter_lines(document, ext, ignored=ignored, **kwargs):
                 outfile.write(bytes(line + '\n', 'utf-8'))
-        if ext == '.html':
-            directory = os.path.dirname(path)
-            copy_css(directory)
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
@@ -165,17 +162,21 @@ def iter_lines_html(document, ignored=None):
     @return: iterator of lines of text
     """
     yield '<!DOCTYPE html>'
-    yield '<p><link href="doorstop.css" rel="stylesheet"></link></p>'
+    yield '<head>'
+    yield '<style type="text/css">'
+    yield ''
+    with open(CSS) as infile:
+        for line in infile:
+            yield line
+    yield '</style>'
+    yield '</head>'
+    yield '<body>'
     lines = iter_lines_markdown(document, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
     yield from html.splitlines()
+    yield '</body>'
     yield '</html>'
-
-
-def copy_css(directory):
-    """Copy the style sheet for generated HTML to the specified directory."""
-    shutil.copy(CSS, directory)
 
 
 # Mapping from file extension to lines generator

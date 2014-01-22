@@ -267,10 +267,8 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     def test_publish_html_file(self):
         """Verify 'doorstop publish' can create an HTML file."""
         path = os.path.join(self.temp, 'req.html')
-        css_path = os.path.join(self.temp, 'doorstop.css')
         self.assertIs(None, main(['publish', 'req', path]))
         self.assertTrue(os.path.isfile(path))
-        self.assertTrue(os.path.isfile(css_path))
 
     def test_report_error(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

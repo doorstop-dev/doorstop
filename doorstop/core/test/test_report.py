@@ -56,10 +56,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         temp = tempfile.mkdtemp()
         try:
             path = os.path.join(temp, 'report.html')
-            css_path = os.path.join(temp, 'doorstop.css')
             publish(self.document, path, '.html')
             self.assertTrue(os.path.isfile(path))
-            self.assertTrue(os.path.isfile(css_path))
         finally:
             shutil.rmtree(temp)
 
