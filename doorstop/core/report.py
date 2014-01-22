@@ -167,8 +167,7 @@ def copy_css(directory):
     shutil.copy(CSS, directory)
 
 
-FORMAT = {
-'.txt': iter_lines_text,
-'.md': iter_lines_markdown,
-'.html': iter_lines_html,
-}
+# Mapping from file extension to lines generator
+FORMAT = {'.txt': iter_lines_text,
+          '.md': iter_lines_markdown,
+          '.html': iter_lines_html}

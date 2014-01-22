@@ -12,6 +12,7 @@ Icon*
 
 # Generated documentation
 *.gen.*
+gen/*.css
 @/apidocs
 @/docs/README.html
 
