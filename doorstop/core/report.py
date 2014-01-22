@@ -13,14 +13,20 @@ from doorstop.common import DoorstopError
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 
 
-def publish(document, path, ext, **kwargs):
+def publish(document, path, ext=None, ignored=None, **kwargs):
     """Publish a document to a given format.
 
+    @param document: Doorstop document to publish
+    @param path: output file location with desired extension
+    @param ext: file extension to override output path's extension
+    @param ignored: function to determine if a path should be skipped
 
+    @raise DoorstopError: for unknown file formats
     """
+    ext = ext or os.path.splitext(path)[-1]
     if ext in FORMAT:
         with open(path, 'wb') as outfile:
-            for line in iter_lines(document, ext, **kwargs):
+            for line in iter_lines(document, ext, ignored=ignored, **kwargs):
                 outfile.write(bytes(line + '\n', 'utf-8'))
         if ext == '.html':
             directory = os.path.dirname(path)
@@ -29,25 +35,28 @@ def publish(document, path, ext, **kwargs):
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines(document, ext, **kwargs):
+def iter_lines(document, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
+    @param document: Doorstop document to publish
+    @param ext: file extension to specify the output format
+    @param ignored: function to determine if a path should be skipped
 
-
+    @raise DoorstopError: for unknown file formats
     """
     if ext in FORMAT:
-        yield from FORMAT[ext](document, **kwargs)
+        yield from FORMAT[ext](document, ignored=ignored, **kwargs)
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines_text(document, indent=8, width=79, ignored=None):
+def iter_lines_text(document, ignored=None, indent=8, width=79):
     """Yield lines for a text report.
 
     @param document: Document to publish
+    @param ignored: function to determine if a path should be skipped
     @param indent: number of spaces to indent text
     @param width: maximum line length
-    @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
@@ -155,11 +164,13 @@ def iter_lines_html(document, ignored=None):
 
     @return: iterator of lines of text
     """
+    yield '<!DOCTYPE html>'
     yield '<p><link href="doorstop.css" rel="stylesheet"></link></p>'
     lines = iter_lines_markdown(document, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
     yield from html.splitlines()
+    yield '</html>'
 
 
 def copy_css(directory):
