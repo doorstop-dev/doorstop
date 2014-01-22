@@ -92,7 +92,7 @@ To check a document hierarchy for consistency, run the main command::
 Document Publishing
 ===================
 
-A text report of a document can be created::
+A text report of a document can be displayed::
 
     $ doorstop publish TST
     1       TST001
@@ -107,3 +107,13 @@ Other formats are also supported::
     <h1>1 (TST001)</h1>
     <p>Verify the foobar will foo and bar.</p>
     <p><em>Links: REQ001</em></p>
+
+Or a file can be created using one of the supported extensions::
+
+   $ doorstop publish TST path/to/tst.md
+
+Supported formats:
+
+ - Text: **.txt**
+ - Markdown: **.md**
+ - HTML: **.html**
