@@ -244,13 +244,33 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop publish' can create text output."""
         self.assertIs(None, main(['publish', 'tut', '--width', '75']))
 
+    def test_publish_text_file(self):
+        """Verify 'doorstop publish' can create a text file."""
+        path = os.path.join(self.temp, 'req.txt')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+
     def test_publish_markdown(self):
         """Verify 'doorstop publish' can create Markdown output."""
         self.assertIs(None, main(['publish', 'req', '--markdown']))
 
+    def test_publish_markdown_file(self):
+        """Verify 'doorstop publish' can create a Markdown file."""
+        path = os.path.join(self.temp, 'req.md')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+
     def test_publish_html(self):
         """Verify 'doorstop publish' can create HTML output."""
         self.assertIs(None, main(['publish', 'hlt', '--html']))
+
+    def test_publish_html_file(self):
+        """Verify 'doorstop publish' can create an HTML file."""
+        path = os.path.join(self.temp, 'req.html')
+        css_path = os.path.join(self.temp, 'doorstop.css')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(css_path))
 
     def test_report_error(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

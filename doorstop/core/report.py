@@ -8,10 +8,40 @@ import textwrap
 
 import markdown
 
-CSS = os.path.join('files', 'doorstop.css')
+from doorstop.common import DoorstopError
+
+CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 
 
-def get_text(document, indent=8, width=79, ignored=None):
+def publish(document, path, ext, **kwargs):
+    """Publish a document to a given format.
+
+
+    """
+    if ext in FORMAT:
+        with open(path, 'wb') as outfile:
+            for line in iter_lines(document, ext, **kwargs):
+                outfile.write(bytes(line + '\n', 'utf-8'))
+        if ext == '.html':
+            directory = os.path.dirname(path)
+            copy_css(directory)
+    else:
+        raise DoorstopError("unknown format: {}".format(ext))
+
+
+def iter_lines(document, ext, **kwargs):
+    """Yield lines for a report in the specified format.
+
+
+
+    """
+    if ext in FORMAT:
+        yield from FORMAT[ext](document, **kwargs)
+    else:
+        raise DoorstopError("unknown format: {}".format(ext))
+
+
+def iter_lines_text(document, indent=8, width=79, ignored=None):
     """Yield lines for a text report.
 
     @param document: Document to publish
@@ -70,7 +100,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def get_markdown(document, ignored=None):
+def iter_lines_markdown(document, ignored=None):
     """Yield lines for a Markdown report.
 
     @param document: Document to publish
@@ -117,7 +147,7 @@ def get_markdown(document, ignored=None):
         yield ""  # break between items
 
 
-def get_html(document, ignored=None):
+def iter_lines_html(document, ignored=None):
     """Yield lines for an HTML report.
 
     @param document: Document to publish
@@ -126,7 +156,7 @@ def get_html(document, ignored=None):
     @return: iterator of lines of text
     """
     yield '<p><link href="doorstop.css" rel="stylesheet"></link></p>'
-    lines = get_markdown(document, ignored=ignored)
+    lines = iter_lines_markdown(document, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
     yield from html.splitlines()
@@ -135,3 +165,10 @@ def get_html(document, ignored=None):
 def copy_css(directory):
     """Copy the style sheet for generated HTML to the specified directory."""
     shutil.copy(CSS, directory)
+
+
+FORMAT = {
+'.txt': iter_lines_text,
+'.md': iter_lines_markdown,
+'.html': iter_lines_html,
+}

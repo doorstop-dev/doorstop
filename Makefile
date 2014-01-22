@@ -58,14 +58,14 @@ $(DEPENDS):
 .PHONY: req
 req: develop
 	$(BIN)/doorstop
-	$(BIN)/doorstop publish REQ > docs/gen/Requirements.gen.txt
-	$(BIN)/doorstop publish TUT > docs/gen/Tutorials.gen.txt
-	$(BIN)/doorstop publish HLT > docs/gen/HighLevelTests.gen.txt
-	$(BIN)/doorstop publish LLT > docs/gen/LowLevelTests.gen.txt
-	$(BIN)/doorstop publish REQ --html > docs/gen/Requirements.gen.html
-	$(BIN)/doorstop publish TUT --html > docs/gen/Tutorials.gen.html
-	$(BIN)/doorstop publish HLT --html > docs/gen/HighLevelTests.gen.html
-	$(BIN)/doorstop publish LLT --html > docs/gen/LowLevelTests.gen.html
+	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
+	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.txt
+	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.txt
+	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.txt
+	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.html
+	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.html
+	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.html
+	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.html
 
 .PHONY: doc
 doc: depends

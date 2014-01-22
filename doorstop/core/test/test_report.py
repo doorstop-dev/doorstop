@@ -8,9 +8,12 @@ import unittest
 from unittest.mock import Mock
 
 import os
+import tempfile
+import shutil
 
-from doorstop.core.report import get_text, get_markdown, get_html
+from doorstop.core.report import publish, iter_lines
 from doorstop.core.vcs.mockvcs import WorkingCopy
+from doorstop.common import DoorstopError
 
 from doorstop.core.test import FILES
 from doorstop.core.test.test_item import MockItem
@@ -48,38 +51,59 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         ]
         cls.work = WorkingCopy(None)
 
-    def test_get_text(self):
+    def test_publish_html(self):
+        """Verify an HTML file can be created."""
+        temp = tempfile.mkdtemp()
+        try:
+            path = os.path.join(temp, 'report.html')
+            css_path = os.path.join(temp, 'doorstop.css')
+            publish(self.document, path, '.html')
+            self.assertTrue(os.path.isfile(path))
+            self.assertTrue(os.path.isfile(css_path))
+        finally:
+            shutil.rmtree(temp)
+
+    def test_publish_unknown(self):
+        """Verify publishing to an unknown format raises an exception."""
+        self.assertRaises(DoorstopError, publish, self.document, 'a.a', '.a')
+
+    def test_iter_lines_text(self):
         """Verify a text report can be created."""
         path = os.path.join(FILES, 'report.txt')
         expected = open(path).read()
-        lines = get_text(self.document, ignored=self.work.ignored)
+        lines = iter_lines(self.document, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'utf-8'))
 
-    def test_get_markdown(self):
+    def test_iter_lines_markdown(self):
         """Verify a Markdown report can be created."""
         path = os.path.join(FILES, 'report.md')
         expected = open(path).read()
-        lines = get_markdown(self.document, ignored=self.work.ignored)
+        lines = iter_lines(self.document, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'utf-8'))
 
-    def test_get_html(self):
+    def test_iter_lines_html(self):
         """Verify an HTML report can be created."""
         path = os.path.join(FILES, 'report.html')
         expected = open(path).read()
-        lines = get_html(self.document, ignored=self.work.ignored)
+        lines = iter_lines(self.document, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'utf-8'))
+
+    def test_iter_lines_unknown(self):
+        """Verify iterating an unknown format raises an exception."""
+        gen = iter_lines(self.document, '.a')
+        self.assertRaises(DoorstopError, list, gen)
 
 
 if __name__ == '__main__':

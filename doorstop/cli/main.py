@@ -124,6 +124,7 @@ def main(args=None):  # pylint: disable=R0915
                           help="publish a document as text or another format",
                           **shared)
     sub.add_argument('prefix', help="prefix of document to publish")
+    sub.add_argument('path', nargs='?', help="path of published file")
     sub.add_argument('-m', '--markdown', action='store_true',
                      help="output Markdown instead of raw text")
     sub.add_argument('-H', '--html', action='store_true',
@@ -332,26 +333,29 @@ def _run_publish(args, cwd, _):
     """
     try:
         tree = build(cwd)
-        doc = tree.find_document(args.prefix)
+        document = tree.find_document(args.prefix)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
 
         kwargs = {'ignored': tree.vcs.ignored}
+        if args.width:
+            kwargs['width'] = args.width
 
+        if args.path:
+            ext = os.path.splitext(args.path)[-1]
         if args.markdown:
-            for line in report.get_markdown(doc, **kwargs):
-                print(line)
-
+            ext = '.md'
         elif args.html:
-            for line in report.get_html(doc, **kwargs):
-                print(line)
+            ext = '.html'
+        elif not args.path:
+            ext = '.txt'
 
-        else:  # raw text
-            if args.width:
-                kwargs['width'] = args.width
-            for line in report.get_text(doc, **kwargs):
+        if args.path:
+            report.publish(document, args.path, ext)
+        else:
+            for line in report.iter_lines(document, ext, **kwargs):
                 print(line)
 
         return True
