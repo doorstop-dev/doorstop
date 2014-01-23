@@ -215,6 +215,7 @@ class Item(object):  # pylint: disable=R0902,R0904
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 
+    # TODO: think of a better name for this property
     @property
     def id_relpath(self):
         """Get the item's ID and relative path string."""

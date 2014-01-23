@@ -150,6 +150,7 @@ class Document(object):
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 
+    # TODO: think of a better name for this property
     @property
     def prefix_relpath(self):
         """Get the document's prefix and relative path string."""
