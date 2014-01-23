@@ -1,3 +1,9 @@
+0.0.10 (2014/01/23)
+-------------------
+
+- Added Item.active property to disable certain items.
+- Added Item.dervied property to disable link checking on certain items.
+
 0.0.10 (2014/01/22)
 -------------------
 
