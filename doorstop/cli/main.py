@@ -358,7 +358,7 @@ def _run_publish(args, cwd, _):
 
         if args.path:
             print("publishing {} to {}...".format(document, args.path))
-            report.publish(document, args.path, ext)
+            report.publish(document, args.path, ext, **kwargs)
         else:
             for line in report.iter_lines(document, ext, **kwargs):
                 print(line)

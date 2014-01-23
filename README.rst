@@ -52,15 +52,15 @@ Parent Document
 After configuring version control, a new parent document can be created::
 
     $ doorstop new REQ ./reqs
-    created: REQ (@/reqs)
+    created document: REQ (@/reqs)
 
 Items can be added to the document and edited::
 
     $ doorstop add REQ
-    added: REQ001 (@/reqs/REQ001.yml)
+    added item: REQ001 (@/reqs/REQ001.yml)
 
     $ doorstop edit REQ1
-    opened: REQ001 (@/reqs/REQ001.yml)
+    opened item: REQ001 (@/reqs/REQ001.yml)
 
 
 Child Documents
@@ -69,15 +69,15 @@ Child Documents
 Additional documents can be created that link to other documents::
 
     $ doorstop new TST ./reqs/tests --parent REQ
-    created: TST (@/reqs/tests)
+    created document: TST (@/reqs/tests)
 
 Items can be added and linked to parent items::
 
     $ doorstop add TST
-    added: TST001 (@/reqs/tests/TST001.yml)
+    added item: TST001 (@/reqs/tests/TST001.yml)
 
     $ doorstop link TST1 REQ1
-    linked: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
+    linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
 
 Document Validation
@@ -86,7 +86,7 @@ Document Validation
 To check a document hierarchy for consistency, run the main command::
 
     $ doorstop
-    validated: REQ <- [ TST ]
+    valid tree: REQ <- [ TST ]
 
 
 Document Publishing
@@ -104,16 +104,22 @@ A text report of a document can be displayed::
 Other formats are also supported::
 
     $ doorstop publish TST --html
+    <!DOCTYPE html>
+    ...
+    <body>
     <h1>1 (TST001)</h1>
     <p>Verify the foobar will foo and bar.</p>
     <p><em>Links: REQ001</em></p>
+    </body>
+    </html>
 
 Or a file can be created using one of the supported extensions::
 
    $ doorstop publish TST path/to/tst.md
+   publishing TST to path/to/tst.md...
 
 Supported formats:
 
- - Text: **.txt**
- - Markdown: **.md**
- - HTML: **.html**
+* Text: **.txt**
+* Markdown: **.md**
+* HTML: **.html**

@@ -75,6 +75,10 @@ doc: depends
 
 .PHONY: read
 read: doc
+	$(OPEN) docs/gen/LowLevelTests.gen.html
+	$(OPEN) docs/gen/HighLevelTests.gen.html
+	$(OPEN) docs/gen/Tutorials.gen.html
+	$(OPEN) docs/gen/Requirements.gen.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 	$(OPEN) docs/README.html
 
