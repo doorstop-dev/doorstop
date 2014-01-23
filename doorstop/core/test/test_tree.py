@@ -146,14 +146,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.document.Document.check')
     def test_check(self, mock_check):
-        """Verify document trees can be checked."""
+        """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
         self.tree.check()
         self.assertEqual(2, mock_check.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_check_long(self):
-        """Verify document trees can be checked (long)."""
+        """Verify trees can be checked (long)."""
         logging.info("tree: {}".format(self.tree))
         self.tree.check()
 

@@ -12,6 +12,7 @@ import logging
 
 from doorstop.core.item import Item
 from doorstop.core.document import Document
+from doorstop import common
 from doorstop.common import DoorstopError
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, NEW
@@ -82,8 +83,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify documents can be converted to strings."""
-        path = os.path.join('doorstop', 'core', 'test', 'files')
-        text = "REQ (@{}{})".format(os.sep, path)
+        common.VERBOSITY = 1
+        self.assertEqual("REQ", str(self.document))
+
+    def test_str_verbose(self):
+        """Verify documents can be converted to strings in verbose mode."""
+        common.VERBOSITY = 2
+        relpath = os.path.relpath(self.document.path, self.document.root)
+        text = "REQ (@{}{})".format(os.sep, relpath)
         self.assertEqual(text, str(self.document))
 
     def test_ne(self):
@@ -115,6 +122,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
         self.assertRaises(DoorstopError, Document, EMPTY)
+
+    def test_relpath(self):
+        """Verify the document's relative path string can be determined."""
+        relpath = os.path.relpath(self.document.path, self.document.root)
+        text = "@{}{}".format(os.sep, relpath)
+        self.assertEqual(text, self.document.relpath)
+
+    def test_prefix_relpath(self):
+        """Verify the document's prefix and relpath can be determined."""
+        relpath = os.path.relpath(self.document.path, self.document.root)
+        text = "{} (@{}{})".format(self.document.prefix, os.sep, relpath)
+        self.assertEqual(text, self.document.prefix_relpath)
 
     def test_depth(self):
         """Verify the maximum item level depth can be determined."""

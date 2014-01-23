@@ -8,6 +8,9 @@ import logging
 from doorstop import VERSION
 
 
+VERBOSITY = 0  # global verbosity setting for controlling string formatting
+
+
 class DoorstopError(Exception):
     """Generic Doorstop error."""
 

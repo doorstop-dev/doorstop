@@ -3,8 +3,8 @@ Doorstop reporting functionality.
 """
 
 import os
-import shutil
 import textwrap
+import logging
 
 import markdown
 
@@ -25,7 +25,8 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     if ext in FORMAT:
-        with open(path, 'wb') as outfile:
+        logging.info("writing {} as {} to {}...".format(document, ext, path))
+        with open(path, 'wb') as outfile:  # pragma: no cover, integration test
             for line in iter_lines(document, ext, ignored=ignored, **kwargs):
                 outfile.write(bytes(line + '\n', 'utf-8'))
     else:
@@ -42,6 +43,7 @@ def iter_lines(document, ext='.txt', ignored=None, **kwargs):
     @raise DoorstopError: for unknown file formats
     """
     if ext in FORMAT:
+        logging.info("yielding {} as lines of {}...".format(document, ext))
         yield from FORMAT[ext](document, ignored=ignored, **kwargs)
     else:
         raise DoorstopError("unknown format: {}".format(ext))

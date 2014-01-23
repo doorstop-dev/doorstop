@@ -8,6 +8,7 @@ import logging
 import yaml
 
 from doorstop.core.item import Item
+from doorstop import common
 from doorstop.common import DoorstopError
 
 
@@ -50,16 +51,18 @@ class Document(object):
         return "Document({})".format(repr(self.path))
 
     def __str__(self):
-        relpath = os.path.relpath(self.path, self.root)
-        return "{} (@{}{})".format(self.prefix, os.sep, relpath)
+        if common.VERBOSITY <= 1:
+            return self.prefix
+        else:
+            return self.prefix_relpath
 
     def __iter__(self):
         for filename in os.listdir(self.path):
             path = os.path.join(self.path, filename)
             try:
                 yield Item(path)
-            except DoorstopError as error:
-                logging.debug(error)
+            except DoorstopError:
+                pass  # skip non-item files
 
     def __eq__(self, other):
         return isinstance(other, Document) and self.path == other.path
@@ -140,6 +143,17 @@ class Document(object):
             outfile.write(bytes(text, 'UTF-8'))
 
     # attributes #############################################################
+
+    @property
+    def relpath(self):
+        """Get the document's relative path string."""
+        relpath = os.path.relpath(self.path, self.root)
+        return "@{}{}".format(os.sep, relpath)
+
+    @property
+    def prefix_relpath(self):
+        """Get the document's prefix and relative path string."""
+        return "{} ({})".format(self.prefix, self.relpath)
 
     @property
     def config(self):

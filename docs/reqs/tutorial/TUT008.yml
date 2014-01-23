@@ -4,12 +4,12 @@ links:
 normative: true
 ref: ''
 text: |
-  **Validating the document tree.**
+  **Validating the tree.**
 
   Enter VCS working copy:
 
       cd /tmp/doorstop
 
-  Build and validate the document tree:
+  Build and validate the tree:
 
       doorstop

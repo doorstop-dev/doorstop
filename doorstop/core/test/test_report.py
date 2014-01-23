@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.report module.
 """
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import os
 import tempfile
@@ -15,7 +15,7 @@ from doorstop.core.report import publish, iter_lines
 from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.common import DoorstopError
 
-from doorstop.core.test import FILES
+from doorstop.core.test import FILES, ENV, REASON
 from doorstop.core.test.test_item import MockItem
 
 # Whenever the report format is changed:
@@ -51,8 +51,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         ]
         cls.work = WorkingCopy(None)
 
-    def test_publish_html(self):
+    @patch('builtins.open')
+    @patch('doorstop.core.report.iter_lines')
+    def test_publish_html(self, mock_iter_lines, mock_open):
         """Verify an HTML file can be created."""
+        path = os.path.join('mock', 'report.html')
+        publish(self.document, path, '.html')
+        mock_open.assert_called_once_with(path, 'wb')
+        mock_iter_lines.assert_called_once_with(self.document, '.html',
+                                                ignored=None)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_publish_html_long(self):
+        """Verify an HTML file can be created (long)."""
         temp = tempfile.mkdtemp()
         try:
             path = os.path.join(temp, 'report.html')

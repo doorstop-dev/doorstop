@@ -116,7 +116,7 @@ class Tree(object):
                 raise DoorstopError(msg)
             self.document = doc
 
-        elif doc.parent == self.document.prefix:
+        elif doc.parent.lower() == self.document.prefix.lower():
 
             # Current document is the parent
             node = Tree(doc, self)
@@ -311,7 +311,7 @@ class Tree(object):
 
         @raise DoorstopError: on issue
         """
-        logging.info("checking document tree...")
+        logging.info("checking tree...")
         for document in self:
             document.check(tree=self, ignored=self.vcs.ignored)
         return True
@@ -360,12 +360,12 @@ def build(cwd=None, root=None):
             path = os.path.join(dirpath, dirname)
             _add_document_from_path(path, root, documents)
 
-    # Build the document tree
+    # Build the tree
     if not documents:
         logging.warning("no documents found in: {}".format(root))
     logging.info("building tree...")
     tree = Tree.from_list(documents, root=root)
-    logging.info("final tree: {}".format(tree))
+    logging.info("built tree: {}".format(tree))
     return tree
 
 

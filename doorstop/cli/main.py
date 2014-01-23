@@ -13,6 +13,7 @@ from doorstop import CLI, VERSION
 from doorstop.gui.main import run as gui
 from doorstop.core.tree import build
 from doorstop.core import report
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop import settings
 
@@ -177,6 +178,7 @@ def _configure_logging(verbosity=0):
     else:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
+    common.VERBOSITY = verbosity
 
     # Set a custom formatter
     logging.basicConfig(level=level)
@@ -198,7 +200,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         return False
     else:
         if tree:
-            print("validated: {}".format(tree))
+            print("valid tree: {}".format(tree))
         return True
 
 
@@ -210,13 +212,13 @@ def _run_new(args, cwd, _):
     """
     try:
         tree = build(cwd)
-        doc = tree.new(args.root, args.prefix,
-                       parent=args.parent, digits=args.digits)
+        document = tree.new(args.root, args.prefix,
+                            parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("created: {}".format(doc))
+        print("created document: {}".format(document.prefix_relpath))
         return True
 
 
@@ -233,7 +235,7 @@ def _run_add(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("added: {}".format(item))
+        print("added item: {}".format(item.id_relpath))
         return True
 
 
@@ -250,7 +252,7 @@ def _run_remove(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("removed: {}".format(item))
+        print("removed item: {}".format(item.id_relpath))
         return True
 
 
@@ -267,7 +269,8 @@ def _run_link(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("linked: {} -> {}".format(child, parent))
+        print("linked item: {} -> {}".format(child.id_relpath,
+                                             parent.id_relpath))
         return True
 
 
@@ -284,7 +287,8 @@ def _run_unlink(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("unlinked: {} -> {}".format(child, parent))
+        print("unlinked item: {} -> {}".format(child.id_relpath,
+                                               parent.id_relpath))
         return True
 
 
@@ -301,7 +305,7 @@ def _run_edit(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("opened: {}".format(item))
+        print("opened item: {}".format(item.id_relpath))
         return True
 
 
@@ -353,6 +357,7 @@ def _run_publish(args, cwd, _):
             ext = '.txt'
 
         if args.path:
+            print("publishing {} to {}...".format(document, args.path))
             report.publish(document, args.path, ext)
         else:
             for line in report.iter_lines(document, ext, **kwargs):

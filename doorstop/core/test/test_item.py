@@ -10,13 +10,14 @@ from unittest.mock import patch, Mock
 import os
 import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
 from doorstop.core.test import ENV, REASON, FILES, EMPTY, EXTERNAL
 
 
-class MockItem(Item):  # pylint: disable=R0902
+class MockItem(Item):  # pylint: disable=R0902,R0904
     """Item class with mock read/write methods."""
 
     @patch('os.path.isfile', Mock(return_value=True))
@@ -75,8 +76,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item._write.assert_called_once_with(text)
 
     def test_str(self):
-        """Verify an item can be printed."""
-        text = "RQ001 (@{}{})".format(os.sep, self.path)
+        """Verify an item can be converted to strings."""
+        common.VERBOSITY = 1
+        self.assertEqual("RQ001", str(self.item))
+
+    def test_str_verbose(self):
+        """Verify an item can be converted to strings in verbose mode."""
+        common.VERBOSITY = 2
+        text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 
     def test_ne(self):
@@ -98,6 +105,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's ID can be read but not set."""
         self.assertEqual('RQ001', self.item.id)
         self.assertRaises(AttributeError, setattr, self.item, 'id', 'RQ002')
+
+    def test_relpath(self):
+        """Verify an item's relative path string can be read but not set."""
+        text = "@{}{}".format(os.sep, self.item.path)
+        self.assertEqual(text, self.item.relpath)
+        self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
+
+    def test_id_relpath(self):
+        """Verify an item's ID and relative path string can be read."""
+        text = "{} (@{}{})".format(self.item.id, os.sep, self.item.path)
+        self.assertEqual(text, self.item.id_relpath)
 
     def test_prefix(self):
         """Verify an item's prefix can be read but not set."""

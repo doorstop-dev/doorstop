@@ -9,7 +9,7 @@ import logging
 
 import yaml
 
-
+from doorstop import common
 from doorstop.common import DoorstopError
 
 
@@ -36,7 +36,7 @@ def auto_save(func):
     return wrapped
 
 
-class Item(object):  # pylint: disable=R0902
+class Item(object):  # pylint: disable=R0902,R0904
     """Represents a file with linkable text that is part of a document."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -67,7 +67,8 @@ class Item(object):  # pylint: disable=R0902
         try:
             split_id(name)
         except DoorstopError:
-            raise
+            msg = "invalid item filename: {}".format(filename)
+            raise DoorstopError(msg) from None
         # Check file extension
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
@@ -87,8 +88,10 @@ class Item(object):  # pylint: disable=R0902
         return "Item({})".format(repr(self.path))
 
     def __str__(self):
-        relpath = os.path.relpath(self.path, self.root)
-        return "{} (@{}{})".format(self.id, os.sep, relpath)
+        if common.VERBOSITY <= 1:
+            return self.id
+        else:
+            return self.id_relpath
 
     def __eq__(self, other):
         return isinstance(other, Item) and self.path == other.path
@@ -205,6 +208,17 @@ class Item(object):  # pylint: disable=R0902
     def id(self):  # pylint: disable=C0103
         """Get the item's ID."""
         return os.path.splitext(os.path.basename(self.path))[0]
+
+    @property
+    def relpath(self):
+        """Get the item's relative path string."""
+        relpath = os.path.relpath(self.path, self.root)
+        return "@{}{}".format(os.sep, relpath)
+
+    @property
+    def id_relpath(self):
+        """Get the item's ID and relative path string."""
+        return "{} ({})".format(self.id, self.relpath)
 
     @property
     def prefix(self):
