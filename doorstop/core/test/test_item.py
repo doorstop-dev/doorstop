@@ -69,6 +69,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify saving calls write."""
         self.item.save()
         text = ("active: true" + '\n'
+                "derived: false" + '\n'
                 "level: 1.0" + '\n'
                 "links: []" + '\n'
                 "normative: true" + '\n'
@@ -174,6 +175,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.normative = 0  # converted to False
         self.assertIn("normative: false\n", self.item._write.call_args[0][0])
         self.assertFalse(self.item.normative)
+
+    def test_derived(self):
+        """Verify an item's normative status can be set and read."""
+        self.item.derived = 1  # converted to True
+        self.assertIn("derived: true\n", self.item._write.call_args[0][0])
+        self.assertTrue(self.item.derived)
 
     def test_text(self):
         """Verify an item's text can be set and read."""

@@ -44,6 +44,7 @@ class Item(object):  # pylint: disable=R0902,R0904
     DEFAULT_LEVEL = (1, 0)
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
+    DEFAULT_DERIVED = False
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
     DEFAULT_LINKS = set()
@@ -81,6 +82,7 @@ class Item(object):  # pylint: disable=R0902,R0904
         self._level = Item.DEFAULT_LEVEL
         self._active = Item.DEFAULT_ACTIVE
         self._normative = Item.DEFAULT_NORMATIVE
+        self._derived = Item.DEFAULT_DERIVED
         self._text = Item.DEFAULT_TEXT
         self._ref = Item.DEFAULT_REF
         self._links = Item.DEFAULT_LINKS
@@ -160,6 +162,7 @@ class Item(object):  # pylint: disable=R0902,R0904
         self._level = convert_level(self._data.get('level', self._level))
         self._active = bool(self._data.get('active', self._active))
         self._normative = bool(self._data.get('normative', self._normative))
+        self._derived = bool(self._data.get('derived', self._derived))
         self._text = self._data.get('text', self._text).strip()
         self._ref = self._data.get('ref', self._ref)
         self._links = set(self._data.get('links', self._links))
@@ -183,11 +186,13 @@ class Item(object):  # pylint: disable=R0902,R0904
         text = Literal(sbd(self._text))
         active = self._active
         normative = self._normative
+        derived = self._derived
         ref = self._ref.strip()
         links = sorted(self._links)
         # Build the data structure
         self._data['level'] = level
         self._data['normative'] = normative
+        self._data['derived'] = derived
         self._data['active'] = active
         self._data['text'] = text
         self._data['links'] = links
@@ -261,7 +266,7 @@ class Item(object):  # pylint: disable=R0902,R0904
     def active(self):
         """Indicates the item should be considered for linking.
 
-        Inactive items are intended to be used for any of these cases:
+        Inactive items are intended to be used for:
          - future requirements
          - temporarily disabled requirements or tests
          - externally implemented requirements
@@ -278,7 +283,14 @@ class Item(object):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def normative(self):
-        """Get the item's normative status."""
+        """Get the item's normative status.
+
+        A non-normative item should not have or be linked to.
+        Non-normative items are intended to be used for:
+         - headings
+         - comments
+
+        """
         return self._normative
 
     @normative.setter
@@ -286,6 +298,23 @@ class Item(object):  # pylint: disable=R0902,R0904
     def normative(self, status):
         """Set the item's normative status."""
         self._normative = bool(status)
+
+    @property
+    @auto_load
+    def derived(self):
+        """Get the item's derived status.
+
+        A derived item does not have links to items in its parent
+        document, but should still be linked to by items in its child
+        document.
+        """
+        return self._derived
+
+    @derived.setter
+    @auto_save
+    def derived(self, status):
+        """Set the item's derived status."""
+        self._derived = bool(status)
 
     @property
     def header(self):
@@ -396,7 +425,9 @@ class Item(object):  # pylint: disable=R0902,R0904
     def _check_document(self, document):
         """Check the item against its document."""
         # Verify an item has upward links
-        if document.parent and self.normative and not self.links:
+        if all((document.parent,
+                self.normative,
+                not self.derived)) and not self.links:
             logging.warning("no links: {}".format(self))
         # Verify an item's links are to the correct parent
         for identifier in self.links:
