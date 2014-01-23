@@ -1,4 +1,9 @@
-0.0.10 (2014/01/23)
+0.0.12 (2014/01/23)
+-------------------
+
+- Fixed missing package data.
+
+0.0.11 (2014/01/23)
 -------------------
 
 - Added Item.active property to disable certain items.
