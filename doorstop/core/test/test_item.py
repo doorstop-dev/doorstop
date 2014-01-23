@@ -68,7 +68,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()
-        text = ("level: 1.0" + '\n'
+        text = ("active: true" + '\n'
+                "level: 1.0" + '\n'
                 "links: []" + '\n'
                 "normative: true" + '\n'
                 "ref: ''" + '\n'
@@ -162,6 +163,18 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn("level: 42.0\n", self.item._write.call_args[0][0])
         self.assertEqual((42, 0), self.item.level)
 
+    def test_active(self):
+        """Verify an item's active status can be set and read."""
+        self.item.active = 0  # converted to False
+        self.assertIn("active: false\n", self.item._write.call_args[0][0])
+        self.assertFalse(self.item.active)
+
+    def test_normative(self):
+        """Verify an item's normative status can be set and read."""
+        self.item.normative = 0  # converted to False
+        self.assertIn("normative: false\n", self.item._write.call_args[0][0])
+        self.assertFalse(self.item.normative)
+
     def test_text(self):
         """Verify an item's text can be set and read."""
         self.item.text = "abc "
@@ -234,12 +247,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.remove_link('abc')
         self.assertEqual(['123'], self.item.links)
 
-    def test_normative(self):
-        """Verify an item's normative status can be set and read."""
-        self.item.normative = 0  # converted to False
-        self.assertIn("normative: false\n", self.item._write.call_args[0][0])
-        self.assertFalse(self.item.normative)
-
     def test_extended(self):
         """Verify an extended attribute can be used."""
         self.item.set('ext1', 'foobar')
@@ -279,6 +286,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised if the item already exists."""
         self.assertRaises(DoorstopError,
                           Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
+
+    def test_check_inactive(self):
+        """Verify an inactive item is not checked."""
+        self.item.active = False
+        self.item.ref = "invalid" + "reference"  # addition to avoid match
+        self.assertTrue(self.item.check())
 
     def test_check_document(self):
         """Verify an item can be checked against a document."""

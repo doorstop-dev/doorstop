@@ -42,10 +42,11 @@ class Item(object):  # pylint: disable=R0902,R0904
     EXTENSIONS = '.yml', '.yaml'
 
     DEFAULT_LEVEL = (1, 0)
+    DEFAULT_ACTIVE = True
+    DEFAULT_NORMATIVE = True
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
     DEFAULT_LINKS = set()
-    DEFAULT_NORMATIVE = True
 
     auto = True  # set to False to delay automatic save until explicit save
 
@@ -78,10 +79,11 @@ class Item(object):  # pylint: disable=R0902,R0904
         self.root = root
         self._exists = True
         self._level = Item.DEFAULT_LEVEL
+        self._active = Item.DEFAULT_ACTIVE
+        self._normative = Item.DEFAULT_NORMATIVE
         self._text = Item.DEFAULT_TEXT
         self._ref = Item.DEFAULT_REF
         self._links = Item.DEFAULT_LINKS
-        self._normative = Item.DEFAULT_NORMATIVE
         self._data = {}
 
     def __repr__(self):
@@ -156,10 +158,11 @@ class Item(object):  # pylint: disable=R0902,R0904
             raise DoorstopError(msg)
         # Store parsed data
         self._level = convert_level(self._data.get('level', self._level))
+        self._active = bool(self._data.get('active', self._active))
+        self._normative = bool(self._data.get('normative', self._normative))
         self._text = self._data.get('text', self._text).strip()
         self._ref = self._data.get('ref', self._ref)
         self._links = set(self._data.get('links', self._links))
-        self._normative = bool(self._data.get('normative', self._normative))
         # Set meta attributes
         setattr(self, '_loaded', True)
 
@@ -178,15 +181,17 @@ class Item(object):  # pylint: disable=R0902,R0904
         if len(self._level) == 2:
             level = float(level)
         text = Literal(sbd(self._text))
+        active = self._active
+        normative = self._normative
         ref = self._ref.strip()
         links = sorted(self._links)
-        normative = self._normative
         # Build the data structure
         self._data['level'] = level
+        self._data['normative'] = normative
+        self._data['active'] = active
         self._data['text'] = text
         self._data['links'] = links
         self._data['ref'] = ref
-        self._data['normative'] = normative
         # Dump the data to YAML
         dump = yaml.dump(self._data, default_flow_style=False)
         # Save the YAML to file
@@ -252,6 +257,37 @@ class Item(object):  # pylint: disable=R0902,R0904
         return len(level)
 
     @property
+    @auto_load
+    def active(self):
+        """Indicates the item should be considered for linking.
+
+        Inactive items are intended to be used for any of these cases:
+         - future requirements
+         - temporarily disabled requirements or tests
+         - externally implemented requirements
+
+        """
+        return self._active
+
+    @active.setter
+    @auto_save
+    def active(self, status):
+        """Set the item's active status."""
+        self._active = bool(status)
+
+    @property
+    @auto_load
+    def normative(self):
+        """Get the item's normative status."""
+        return self._normative
+
+    @normative.setter
+    @auto_save
+    def normative(self, status):
+        """Set the item's normative status."""
+        self._normative = bool(status)
+
+    @property
     def header(self):
         """Indicates if the item is a header."""
         return self.level[-1] == 0 and not self.normative
@@ -291,18 +327,6 @@ class Item(object):  # pylint: disable=R0902,R0904
     def links(self, links):
         """Set the items this item links to."""
         self._links = set(links)
-
-    @property
-    @auto_load
-    def normative(self):
-        """Get the item's normative status."""
-        return self._normative
-
-    @normative.setter
-    @auto_save
-    def normative(self, status):
-        """Set the item's normative status."""
-        self._normative = bool(status)
 
     # extended attributes ####################################################
 
@@ -346,6 +370,10 @@ class Item(object):  # pylint: disable=R0902,R0904
         logging.info("checking item {}...".format(self))
         # Verify the file can be parsed
         self.load()
+        # Skip inactive items
+        if not self.active:
+            logging.info("skipped inactive item: {}".format(self))
+            return True
         # Check text
         if not self.text and not self.ref:
             logging.warning("no text: {}".format(self))
@@ -387,26 +415,30 @@ class Item(object):  # pylint: disable=R0902,R0904
             except DoorstopError:
                 msg = "{} linked to unknown item: {}".format(self, identifier)
                 raise DoorstopError(msg) from None
-            identifier = item.id  # format the item ID
+            # TODO: not sure if we want this warning
+            # if not item.active:
+            #    logging.warn("{} linked to inactive item: {}".format(self,
+            #                                                         item))
+            identifier = item.id  # re-format the item's ID
             logging.debug("found linked item: {}".format(identifier))
             identifiers.append(identifier)
         self._links = set(identifiers)
         # Verify an item has downward (reverse) links
-        links = []
+        rlinks = []
         children = []
         for document in tree:
             if document.parent == self.prefix:
                 children.append(document)
                 for item in document:
                     if self.id in item.links:
-                        links.append(item.id)
-        if links:
+                        rlinks.append(item.id)
+        if rlinks:
             if self.normative:
-                msg = "down links: {}".format(', '.join(links))
+                msg = "down links: {}".format(', '.join(rlinks))
                 logging.debug(msg)
             else:
-                for link in links:
-                    msg = "{} links to non-normative {}".format(link,
+                for rlink in rlinks:
+                    msg = "{} links to non-normative {}".format(rlink,
                                                                 self)
                     logging.warning(msg)
         elif self.normative:
