@@ -55,8 +55,22 @@ $(DEPENDS):
 
 # Documentation ##############################################################
 
+.PHONY: doc
+doc: readme apidocs req
+
+.PHONY: readme
+readme: depends docs/README.html
+docs/README.html: README.rst
+	$(PYTHON) $(RST2HTML) README.rst docs/README.html
+
+.PHONY: apidocs
+apidocs: depends apidocs/$(PACKAGE)/index.html
+apidocs/$(PACKAGE)/index.html: */*.py */*/*.py */*/*/*.py */*/*/*/*/*.py
+	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+
 .PHONY: req
-req: develop
+req: develop docs/gen/*.gen.*
+docs/gen/*.gen.*: */*/*.yml */*/*/*.yml */*/*/*/*.yml
 	$(BIN)/doorstop
 	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
 	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.txt
@@ -66,12 +80,6 @@ req: develop
 	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.html
 	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.html
 	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.html
-
-.PHONY: doc
-doc: depends
-	$(PYTHON) $(RST2HTML) README.rst docs/README.html
-	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-	$(MAKE) req
 
 .PHONY: read
 read: doc
