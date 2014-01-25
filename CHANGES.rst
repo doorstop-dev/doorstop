@@ -1,9 +1,9 @@
-0.0.13 (development)
---------------------
+0.0.13 (2014/01/25)
+-------------------
 
 - Added Document.sep to separate prefix and item numbers.
 
-0.0.12 (2014/01/23)
+0.0.12 (2014/01/24)
 -------------------
 
 - Fixed missing package data.
