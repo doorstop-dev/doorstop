@@ -1,3 +1,8 @@
+0.0.13 (development)
+--------------------
+
+- Added Document.sep to separate prefix and item numbers.
+
 0.0.12 (2014/01/23)
 -------------------
 
