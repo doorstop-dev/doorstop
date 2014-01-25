@@ -169,10 +169,10 @@ def _configure_logging(verbosity=0):
         level = settings.DEFAULT_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity == 1:
+    elif verbosity in (1, 2):  # level 2 adds verbose string formatting
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity == 2:
+    elif verbosity == 3:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     else:
@@ -184,6 +184,11 @@ def _configure_logging(verbosity=0):
     logging.basicConfig(level=level)
     formatter = _WarningFormatter(default_format, verbose_format)
     logging.root.handlers[0].setFormatter(formatter)
+
+    # Warn about excessive verbosity
+    if common.VERBOSITY > 4:
+        logging.warn("maximum supported verbosity level is 4")
+        common.VERBOSITY = 4
 
 
 def _run(args, cwd, err):  # pylint: disable=W0613

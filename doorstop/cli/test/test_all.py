@@ -12,6 +12,7 @@ import tempfile
 import shutil
 
 from doorstop.cli.main import main
+from doorstop import common
 
 from doorstop.cli.test import ENV, REASON, TUTORIAL
 
@@ -286,8 +287,17 @@ class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
     def test_verbose_2(self):
         """Verify verbose level 2 can be set."""
-        self.assertIs(None, main(['-v', '-v']))
+        self.assertIs(None, main(['-vv']))
 
     def test_verbose_3(self):
-        """Verify verbose level 1 can be set."""
-        self.assertIs(None, main(['-v', '-v', '-v']))
+        """Verify verbose level 3 can be set."""
+        self.assertIs(None, main(['-vvv']))
+
+    def test_verbose_4(self):
+        """Verify verbose level 4 can be set."""
+        self.assertIs(None, main(['-vvvv']))
+
+    def test_verbose_5(self):
+        """Verify verbose level 5 cannot be set."""
+        self.assertIs(None, main(['-vvvvv']))
+        self.assertEqual(4, common.VERBOSITY)
