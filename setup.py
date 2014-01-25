@@ -23,7 +23,8 @@ setuptools.setup(
     entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
                                       GUI + ' = doorstop.gui.main:main']},
 
-    long_description=open('README.rst').read(),
+    long_description=(open('README.rst').read() + '\n' +
+                      open('CHANGES.rst').read()),
     license='LGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',
