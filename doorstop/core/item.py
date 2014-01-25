@@ -11,6 +11,7 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 
 def auto_load(func):
@@ -107,20 +108,21 @@ class Item(object):  # pylint: disable=R0902,R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, digits, number, level, auto=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep, number, digits, level, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
         @param root: path to root of the project
         @param prefix: prefix for the new item
-        @param digits: number of digits for the new document
+        @param sep: separator between prefix and number
         @param number: number for the new item
+        @param digits: number of digits for the new document
         @param level: level for the new item (None for default)
         @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
         """
-        identifier = join_id(prefix, digits, number)
+        identifier = join_id(prefix, sep, number, digits)
         filename = identifier + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
@@ -554,23 +556,28 @@ def split_id(text):
     ('ABC', 123)
 
     >>> split_id('ABC.HLR_01-00123')
-    ('ABC.HLR_01-', 123)
+    ('ABC.HLR_01', 123)
 
     """
     match = re.match(r"([\w.-]*\D)(\d+)", text)
     if not match:
         raise DoorstopError("invalid ID: {}".format(text))
-    return match.group(1), int(match.group(2))
+    prefix = match.group(1).rstrip(settings.SEP_CHARS)
+    number = int(match.group(2))
+    return prefix, number
 
 
-def join_id(prefix, digits, number):
+def join_id(prefix, sep, number, digits):
     """Join the parts of an item's ID into an ID.
 
-    >>> join_id('ABC', 5, 123)
+    >>> join_id('ABC', '', 123, 5)
     'ABC00123'
 
+    >>> join_id('REQ.H', '-', 42, 4)
+    'REQ.H-0042'
+
     """
-    return "{}{}".format(prefix, str(number).zfill(digits))
+    return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
 def convert_level(text):

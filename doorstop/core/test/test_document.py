@@ -72,7 +72,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.prefix = 'SRD'
         self.document.digits = 5
         self.document.save()
-        text = "settings:\n  digits: 5\n  parent: SYS\n  prefix: SRD\n"
+        text = ("settings:\n  "
+                "digits: 5\n  "
+                "parent: SYS\n  "
+                "prefix: SRD\n  "
+                "sep: ''\n")
         self.assertEqual(text, self.document._file)
 
     def test_save_parent(self):
@@ -147,14 +151,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_add(self, mock_new):
         """Verify an item can be added to a document."""
         self.document.add()
-        mock_new.assert_called_once_with(FILES, ROOT, 'REQ', 2, 4, (2, 2))
+        mock_new.assert_called_once_with(FILES, ROOT, 'REQ', '', 4, 2, (2, 2))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
         self.assertIsNot(None, document.add())
-        mock_new.assert_called_once_with(NEW, ROOT, 'NEW', 5, 1, None)
+        mock_new.assert_called_once_with(NEW, ROOT, 'NEW', '', 1, 5, None)
 
     @patch('doorstop.core.item.Item.check')
     def test_check(self, mock_check):

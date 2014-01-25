@@ -147,11 +147,12 @@ class Tree(object):
 
     # actions ################################################################
 
-    def new(self, path, prefix, parent=None, digits=None):
+    def new(self, path, prefix, sep=None, parent=None, digits=None):
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
         @param prefix: document's prefix
+        @param sep: separator between prefix and number for items
         @param parent: parent document's prefix
         @param digits: number of digits for the document's numbers
 
@@ -159,7 +160,7 @@ class Tree(object):
 
         @raise DoorstopError: if the document cannot be created
         """
-        document = Document.new(path, self.root, prefix,
+        document = Document.new(path, self.root, prefix, sep=sep,
                                 parent=parent, digits=digits)
         try:
             self._place(document)

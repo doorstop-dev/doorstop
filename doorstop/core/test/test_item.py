@@ -273,7 +273,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new(self):
         """Verify items can be created."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'TEST', 5, 42, (1, 2, 3))
+        item = MockItem.new(EMPTY, FILES, 'TEST', '', 42, 5, (1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
@@ -283,7 +283,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002-', 3, 42, (1,))
+        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002', '-', 42, 3, (1,))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 0), item.level)
@@ -292,7 +292,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
         self.assertRaises(DoorstopError,
-                          Item.new, FILES, FILES, 'REQ', 3, 2, (1, 2, 3))
+                          Item.new, FILES, FILES, 'REQ', '', 2, 3, (1, 2, 3))
 
     def test_check_inactive(self):
         """Verify an inactive item is not checked."""

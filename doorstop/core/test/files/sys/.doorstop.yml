@@ -1,3 +1,4 @@
 settings:
   digits: 3
   prefix: SYS
+  sep: ''

@@ -10,6 +10,7 @@ import yaml
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 
 class Document(object):
@@ -18,15 +19,16 @@ class Document(object):
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
     DEFAULT_PREFIX = 'REQ'
+    DEFAULT_SEP = ''
     DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, root=os.getcwd(),
-                 _prefix=None, _parent=None, _digits=None):
+                 _prefix=None, _sep=None, _parent=None, _digits=None):
         """Load a Document from an exiting directory.
 
         Internally, this constructor is also used to initialize new
-        documents by providing default properites.
+        documents by providing default properties.
 
         @param path: path to Document directory
         @param root: path to root of project
@@ -40,6 +42,7 @@ class Document(object):
         self.path = path
         self.root = root
         self.prefix = _prefix or Document.DEFAULT_PREFIX
+        self.sep = _sep or Document.DEFAULT_SEP
         self.parent = _parent or Document.DEFAULT_PARENT
         self.digits = _digits or Document.DEFAULT_DIGITS
         self.load()
@@ -71,17 +74,20 @@ class Document(object):
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, parent=None, digits=None):
+    def new(path, root, prefix, sep=None, parent=None, digits=None):
         """Create a new Document.
 
         @param path: path to directory for the new document
         @param root: path to root of the project
         @param prefix: prefix for the new document
+        @param sep: separator ('_', '-', or '.') between prefix and numbers
         @param parent: parent ID for the new document
         @param digits: number of digits for the new document
 
         @raise DoorstopError: if the document already exists
         """
+        # TODO: remove after testing or raise specific exception
+        assert sep is None or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
         if os.path.exists(config):
@@ -89,8 +95,8 @@ class Document(object):
         # Create the document directory
         Document._new(path, config)
         # Return the new document
-        return Document(path, root=root,
-                        _prefix=prefix, _parent=parent, _digits=digits)
+        return Document(path, root=root, _prefix=prefix, _sep=sep,
+                        _parent=parent, _digits=digits)
 
     @staticmethod
     def _new(path, config):  # pragma: no cover, integration test
@@ -113,6 +119,7 @@ class Document(object):
             settings = data.get('settings', {})
             if settings:
                 self.prefix = settings.get('prefix', self.prefix)
+                self.sep = settings.get('sep', self.sep)
                 self.parent = settings.get('parent', self.parent)
                 self.digits = settings.get('digits', self.digits)
 
@@ -129,6 +136,7 @@ class Document(object):
         """Save the document's properties to a file."""
         logging.debug("saving {}...".format(repr(self)))
         settings = {'prefix': self.prefix,
+                    'sep': self.sep,
                     'digits': self.digits}
         if self.parent:
             settings['parent'] = self.parent
@@ -192,8 +200,8 @@ class Document(object):
         else:
             level = last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
-        return Item.new(self.path, self.root, self.prefix, self.digits,
-                        number, level)
+        return Item.new(self.path, self.root, self.prefix, self.sep, number,
+                        self.digits, level)
 
     def check(self, tree=None, ignored=None):
         """Confirm the document is valid.

@@ -2,3 +2,4 @@ settings:
   digits: 2
   parent: SYS
   prefix: REQ
+  sep: ''

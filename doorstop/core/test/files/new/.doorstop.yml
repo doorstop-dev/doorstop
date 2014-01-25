@@ -2,3 +2,4 @@ settings:
   digits: 5
   parent: REQ
   prefix: NEW
+  sep: ''
