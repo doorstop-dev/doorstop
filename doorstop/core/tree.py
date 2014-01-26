@@ -147,12 +147,12 @@ class Tree(object):
 
     # actions ################################################################
 
-    def new(self, path, prefix, sep=None, parent=None, digits=None):
+    def new(self, path, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
         @param prefix: document's prefix
-        @param sep: separator between prefix and number for items
+        @param sep: separator between prefix and numbers
         @param parent: parent document's prefix
         @param digits: number of digits for the document's numbers
 

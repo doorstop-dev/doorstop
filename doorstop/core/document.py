@@ -74,19 +74,19 @@ class Document(object):
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, parent=None, digits=None):
+    def new(path, root, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
         """Create a new Document.
 
         @param path: path to directory for the new document
         @param root: path to root of the project
         @param prefix: prefix for the new document
-        @param sep: separator ('_', '-', or '.') between prefix and numbers
+        @param sep: separator between prefix and numbers
         @param parent: parent ID for the new document
         @param digits: number of digits for the new document
 
         @raise DoorstopError: if the document already exists
         """
-        # TODO: remove after testing or raise specific exception
+        # TODO: remove after testing or raise a specific exception
         assert sep is None or sep in SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document

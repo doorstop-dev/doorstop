@@ -37,7 +37,7 @@ def auto_save(func):
     return wrapped
 
 
-class Item(object):  # pylint: disable=R0902,R0904
+class Item(object):  # pylint: disable=R0904
     """Represents a file with linkable text that is part of a document."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -80,14 +80,14 @@ class Item(object):  # pylint: disable=R0902,R0904
         self.path = path
         self.root = root
         self._exists = True
-        self._level = Item.DEFAULT_LEVEL
-        self._active = Item.DEFAULT_ACTIVE
-        self._normative = Item.DEFAULT_NORMATIVE
-        self._derived = Item.DEFAULT_DERIVED
-        self._text = Item.DEFAULT_TEXT
-        self._ref = Item.DEFAULT_REF
-        self._links = Item.DEFAULT_LINKS
         self._data = {}
+        self._data['level'] = Item.DEFAULT_LEVEL
+        self._data['active'] = Item.DEFAULT_ACTIVE
+        self._data['normative'] = Item.DEFAULT_NORMATIVE
+        self._data['derived'] = Item.DEFAULT_DERIVED
+        self._data['text'] = Item.DEFAULT_TEXT
+        self._data['ref'] = Item.DEFAULT_REF
+        self._data['links'] = Item.DEFAULT_LINKS
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))
@@ -156,18 +156,28 @@ class Item(object):  # pylint: disable=R0902,R0904
         text = self._read()
         # Parse the YAML data
         try:
-            self._data = yaml.load(text) or {}
+            data = yaml.load(text) or {}
         except yaml.scanner.ScannerError as error:  # pylint: disable=E1101
             msg = "invalid contents: {}:\n{}".format(self, error)
             raise DoorstopError(msg)
         # Store parsed data
-        self._level = convert_level(self._data.get('level', self._level))
-        self._active = bool(self._data.get('active', self._active))
-        self._normative = bool(self._data.get('normative', self._normative))
-        self._derived = bool(self._data.get('derived', self._derived))
-        self._text = self._data.get('text', self._text).strip()
-        self._ref = self._data.get('ref', self._ref)
-        self._links = set(self._data.get('links', self._links))
+        for key, value in data.items():
+            if key == 'level':
+                self._data['level'] = convert_level(value)
+            elif key == 'active':
+                self._data['active'] = bool(value)
+            elif key == 'normative':
+                self._data['normative'] = bool(value)
+            elif key == 'derived':
+                self._data['derived'] = bool(value)
+            elif key == 'text':
+                self._data['text'] = value.strip()
+            elif key == 'ref':
+                self._data['ref'] = value.strip()
+            elif key == 'links':
+                self._data['links'] = set(value)
+            else:
+                self._data[key] = value
         # Set meta attributes
         setattr(self, '_loaded', True)
 
@@ -181,26 +191,24 @@ class Item(object):  # pylint: disable=R0902,R0904
     def save(self):
         """Format and save the item's properties to a file."""
         logging.debug("saving {}...".format(repr(self)))
-        # Collect the data items
-        level = '.'.join(str(n) for n in self._level)
-        if len(self._level) == 2:
-            level = float(level)
-        text = Literal(sbd(self._text))
-        active = self._active
-        normative = self._normative
-        derived = self._derived
-        ref = self._ref.strip()
-        links = sorted(self._links)
-        # Build the data structure
-        self._data['level'] = level
-        self._data['normative'] = normative
-        self._data['derived'] = derived
-        self._data['active'] = active
-        self._data['text'] = text
-        self._data['links'] = links
-        self._data['ref'] = ref
+        # Format the data items
+        data = {}
+        for key, value in self._data.items():
+            if key == 'level':
+                level = '.'.join(str(n) for n in value)
+                if len(value) == 2:
+                    level = float(level)
+                data['level'] = level
+            elif key == 'text':
+                data['text'] = Literal(sbd(self._data['text']))
+            elif key == 'ref':
+                data['ref'] = value.strip()
+            elif key == 'links':
+                data['links'] = sorted(value)
+            else:
+                data[key] = value
         # Dump the data to YAML
-        dump = yaml.dump(self._data, default_flow_style=False)
+        dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
         self._write(dump)
         # Set meta attributes
@@ -247,13 +255,13 @@ class Item(object):  # pylint: disable=R0902,R0904
     @auto_load
     def level(self):
         """Get the item level."""
-        return self._level
+        return self._data['level']
 
     @level.setter
     @auto_save
     def level(self, level):
         """Set the item's level."""
-        self._level = convert_level(level)
+        self._data['level'] = convert_level(level)
 
     @property
     def depth(self):
@@ -274,13 +282,13 @@ class Item(object):  # pylint: disable=R0902,R0904
          - externally implemented requirements
 
         """
-        return self._active
+        return self._data['active']
 
     @active.setter
     @auto_save
     def active(self, status):
         """Set the item's active status."""
-        self._active = bool(status)
+        self._data['active'] = bool(status)
 
     @property
     @auto_load
@@ -293,13 +301,13 @@ class Item(object):  # pylint: disable=R0902,R0904
          - comments
 
         """
-        return self._normative
+        return self._data['normative']
 
     @normative.setter
     @auto_save
     def normative(self, status):
         """Set the item's normative status."""
-        self._normative = bool(status)
+        self._data['normative'] = bool(status)
 
     @property
     @auto_load
@@ -310,13 +318,13 @@ class Item(object):  # pylint: disable=R0902,R0904
         document, but should still be linked to by items in its child
         document.
         """
-        return self._derived
+        return self._data['derived']
 
     @derived.setter
     @auto_save
     def derived(self, status):
         """Set the item's derived status."""
-        self._derived = bool(status)
+        self._data['derived'] = bool(status)
 
     @property
     def header(self):
@@ -327,37 +335,37 @@ class Item(object):  # pylint: disable=R0902,R0904
     @auto_load
     def text(self):
         """Get the item's text."""
-        return self._text
+        return self._data['text']
 
     @text.setter
     @auto_save
     def text(self, text):
         """Set the item's text."""
-        self._text = text
+        self._data['text'] = text
 
     @property
     @auto_load
     def ref(self):
         """Get the item's external file reference."""
-        return self._ref
+        return self._data['ref']
 
     @ref.setter
     @auto_save
     def ref(self, ref):
         """Set the item's external file reference."""
-        self._ref = ref
+        self._data['ref'] = ref
 
     @property
     @auto_load
     def links(self):
         """Get the items this item links to."""
-        return sorted(self._links)
+        return sorted(self._data['links'])
 
     @links.setter
     @auto_save
     def links(self, links):
         """Set the items this item links to."""
-        self._links = set(links)
+        self._data['links'] = set(links)
 
     # extended attributes ####################################################
 
@@ -390,14 +398,14 @@ class Item(object):  # pylint: disable=R0902,R0904
     @auto_save
     def add_link(self, item):
         """Add a new link to another item."""
-        self._links.add(item)
+        self._data['links'].add(item)
 
     @auto_load
     @auto_save
     def remove_link(self, item):
         """Remove an existing link."""
         try:
-            self._links.remove(item)
+            self._data['links'].remove(item)
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
@@ -467,7 +475,7 @@ class Item(object):  # pylint: disable=R0902,R0904
             identifier = item.id  # re-format the item's ID
             logging.debug("found linked item: {}".format(identifier))
             identifiers.append(identifier)
-        self._links = set(identifiers)
+        self._data['links'] = set(identifiers)
         # Verify an item has downward (reverse) links
         rlinks = []
         children = []

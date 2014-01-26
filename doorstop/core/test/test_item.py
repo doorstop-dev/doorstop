@@ -55,9 +55,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify loading calls read."""
         self.item.load()
         self.item._read.assert_called_once_with()
-        self.assertEqual('', self.item._text)
-        self.assertEqual(set(), self.item._links)
-        self.assertEqual((1, 1, 1), self.item._level)
+        self.assertEqual('', self.item._data['text'])
+        self.assertEqual(set(), self.item._data['links'])
+        self.assertEqual((1, 1, 1), self.item._data['level'])
         self.item.check()
 
     def test_load_error(self):
