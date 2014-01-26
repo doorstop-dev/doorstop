@@ -10,7 +10,7 @@ import yaml
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop import settings
+from doorstop.settings import SEP_CHARS
 
 
 class Document(object):
@@ -87,7 +87,7 @@ class Document(object):
         @raise DoorstopError: if the document already exists
         """
         # TODO: remove after testing or raise specific exception
-        assert sep is None or sep in settings.SEP_CHARS
+        assert sep is None or sep in SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
         if os.path.exists(config):

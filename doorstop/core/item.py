@@ -11,7 +11,7 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop import settings
+from doorstop.settings import SEP_CHARS
 
 
 def auto_load(func):
@@ -364,13 +364,25 @@ class Item(object):  # pylint: disable=R0902,R0904
     @auto_load
     def get(self, name, default=None):
         """Get an extended attribute."""
-        return self._data.get(name, default)
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
+            logging.warn(msg)
+            return getattr(self, name)
+        else:
+            return self._data.get(name, default)
 
     @auto_load
     @auto_save
     def set(self, name, value):
-        """SEt an extended attribute."""
-        self._data[name] = value
+        """Set an extended attribute."""
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
+            logging.warn(msg)
+            return setattr(self, name, value)
+        else:
+            self._data[name] = value
 
     # actions ################################################################
 
@@ -562,7 +574,7 @@ def split_id(text):
     match = re.match(r"([\w.-]*\D)(\d+)", text)
     if not match:
         raise DoorstopError("invalid ID: {}".format(text))
-    prefix = match.group(1).rstrip(settings.SEP_CHARS)
+    prefix = match.group(1).rstrip(SEP_CHARS)
     number = int(match.group(2))
     return prefix, number
 

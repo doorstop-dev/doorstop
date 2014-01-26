@@ -259,6 +259,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.set('ext1', 'foobar')
         self.assertEqual('foobar', self.item.get('ext1'))
 
+    def test_extended_get_standard(self):
+        """Verify extended attribute access can get standard properties."""
+        active = self.item.get('active')
+        self.assertEqual(self.item.active, active)
+
+    def test_extended_set_standard(self):
+        """Verify extended attribute access can set standard properties."""
+        self.item.set('text', "extended access")
+        self.assertEqual("extended access", self.item.text)
+
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
         self.assertRaises(DoorstopError, MockItem, "path/to/REQ.yaml")
