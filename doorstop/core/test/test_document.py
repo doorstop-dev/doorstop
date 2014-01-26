@@ -160,6 +160,24 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsNot(None, document.add())
         mock_new.assert_called_once_with(NEW, ROOT, 'NEW', '', 1, 5, None)
 
+    def test_find_item(self):
+        """Verify an item can be found by ID."""
+        item = self.document.find_item('req2')
+        self.assertIsNot(None, item)
+
+    def test_find_item_exact(self):
+        """Verify an item can be found by its exact ID."""
+        item = self.document.find_item('req2-001')
+        self.assertIsNot(None, item)
+
+    def test_find_item_unknown_number(self):
+        """Verify an exception is raised on an unknown number."""
+        self.assertRaises(DoorstopError, self.document.find_item, 'req99')
+
+    def test_find_item_unknown_ID(self):
+        """Verify an exception is raised on an unknown ID."""
+        self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
+
     @patch('doorstop.core.item.Item.check')
     def test_check(self, mock_check):
         """Verify a document can be validated."""

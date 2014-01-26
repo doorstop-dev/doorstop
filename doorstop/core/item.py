@@ -375,7 +375,7 @@ class Item(object):  # pylint: disable=R0904
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.warn(msg)
+            logging.info(msg)
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -387,7 +387,7 @@ class Item(object):  # pylint: disable=R0904
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.warn(msg)
+            logging.info(msg)
             return setattr(self, name, value)
         else:
             self._data[name] = value

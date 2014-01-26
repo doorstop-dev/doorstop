@@ -211,9 +211,9 @@ class Tree(object):
         """
         logging.info("linking {} to {}...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, 'child')
+        child = self.find_item(cid, _kind='child')
         # Find parent item
-        parent = self.find_item(pid, 'parent')
+        parent = self.find_item(pid, _kind='parent')
         # Add link
         child.add_link(parent.id)
         return child, parent
@@ -230,9 +230,9 @@ class Tree(object):
         """
         logging.info("unlinking {} from {}...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, 'child')
+        child = self.find_item(cid, _kind='child')
         # Find parent item
-        parent = self.find_item(pid, 'parent')
+        parent = self.find_item(pid, _kind='parent')
         # Remove link
         child.remove_link(parent.id)
         return child, parent
@@ -272,30 +272,24 @@ class Tree(object):
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
-    def find_item(self, identifier, kind=''):
+    def find_item(self, identifier, _kind=''):
         """Return an item from its ID.
 
         @param identifier: item ID
-        @param kind: type of item for logging messages
 
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
         """
-        _kind = (' ' + kind) if kind else kind
+        # Type of item ('parent', 'child', or '') for logging messages
+        _kind = (' ' + _kind) if _kind else _kind
 
         # Search using the prefix and number
-        prefix, number = split_id(identifier)
+        prefix = split_id(identifier)[0]
         for document in self:
             if document.prefix.lower() == prefix.lower():
-                for item in document:
-                    if item.number == number:
-                        return item
-                msg = "no matching{} number: {}".format(_kind, number)
-                logging.info(msg)
-                break
-        else:
-            logging.info("no matching{} prefix: {}".format(_kind, prefix))
+                return document.find_item(identifier, _kind=_kind)
+        logging.info("no matching{} prefix: {}".format(_kind, prefix))
 
         # Fall back to a search using the exact ID
         for document in self:
@@ -306,9 +300,9 @@ class Tree(object):
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
     def check(self):
-        """Confirm the document hiearchy is valid.
+        """Confirm the document hierarchy is valid.
 
-        @return: indication that hiearchy is valid
+        @return: indication that hierarchy is valid
 
         @raise DoorstopError: on issue
         """

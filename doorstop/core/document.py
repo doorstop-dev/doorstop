@@ -7,7 +7,7 @@ import logging
 
 import yaml
 
-from doorstop.core.item import Item
+from doorstop.core.item import Item, split_id
 from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.settings import SEP_CHARS
@@ -202,6 +202,32 @@ class Document(object):
         logging.debug("next level: {}".format(level))
         return Item.new(self.path, self.root, self.prefix, self.sep, number,
                         self.digits, level)
+
+    def find_item(self, identifier, _kind=''):
+        """Return an item from its ID.
+
+        @param identifier: item ID
+
+        @return: matching Item
+
+        @raise DoorstopError: if the item cannot be found
+        """
+        # Search using the prefix and number
+        prefix, number = split_id(identifier)
+        if self.prefix.lower() == prefix.lower():
+            for item in self:
+                if item.number == number:
+                    return item
+            msg = "no matching{} number: {}".format(_kind, number)
+            logging.info(msg)
+
+        # Fall back to a search using the exact ID
+        else:
+            for item in self:
+                if item.id.lower() == identifier.lower():
+                    return item
+
+        raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
     def check(self, tree=None, ignored=None):
         """Confirm the document is valid.
