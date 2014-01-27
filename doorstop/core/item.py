@@ -48,7 +48,6 @@ class Item(object):  # pylint: disable=R0904
     DEFAULT_DERIVED = False
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
-    DEFAULT_LINKS = set()
 
     auto = True  # set to False to delay automatic save until explicit save
 
@@ -87,7 +86,7 @@ class Item(object):  # pylint: disable=R0904
         self._data['derived'] = Item.DEFAULT_DERIVED
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
-        self._data['links'] = Item.DEFAULT_LINKS
+        self._data['links'] = set()
 
     def __repr__(self):
         return "Item({})".format(repr(self.path))
@@ -488,12 +487,12 @@ class Item(object):  # pylint: disable=R0904
     def _iter_issues_tree(self, tree):
         """Yield all the item's issues against the full tree."""
         # Verify an item's links are valid
-        identifiers = []
+        identifiers = set()
         for identifier in self.links:
             try:
                 item = tree.find_item(identifier)
             except DoorstopError:
-                identifiers.append(identifier)  # keep the invalid ID
+                identifiers.add(identifier)  # keep the invalid ID
                 msg = "linked to unknown item: {}".format(identifier)
                 yield DoorstopError(msg)
             else:
@@ -505,9 +504,9 @@ class Item(object):  # pylint: disable=R0904
                     yield DoorstopWarning(msg)
                 identifier = item.id  # reformat the item's ID
                 logging.debug("found linked item: {}".format(identifier))
-                identifiers.append(identifier)
+                identifiers.add(identifier)
         # Apply the reformatted item IDs
-        self._data['links'] = set(identifiers)
+        self._data['links'] = identifiers
         # Verify an item is being linked to (reverse links)
         rlinks = []
         children = []
