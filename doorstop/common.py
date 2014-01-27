@@ -8,7 +8,7 @@ import logging
 from doorstop import VERSION
 
 
-VERBOSITY = None  # global verbosity setting for controlling string formatting
+VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
 MAX_VERBOSITY = 5
 
