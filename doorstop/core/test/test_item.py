@@ -206,12 +206,74 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
 
+    def test_extended(self):
+        """Verify an extended attribute can be used."""
+        self.item.set('ext1', 'foobar')
+        self.assertEqual('foobar', self.item.get('ext1'))
+
+    def test_extended_get_standard(self):
+        """Verify extended attribute access can get standard properties."""
+        active = self.item.get('active')
+        self.assertEqual(self.item.active, active)
+
+    def test_extended_set_standard(self):
+        """Verify extended attribute access can set standard properties."""
+        self.item.set('text', "extended access")
+        self.assertEqual("extended access", self.item.text)
+
+    def test_link_add(self):
+        """Verify links can be added to an item."""
+        self.item.add_link('abc')
+        self.item.add_link('123')
+        self.assertEqual(['123', 'abc'], self.item.links)
+
+    def test_link_add_duplicate(self):
+        """Verify duplicate links are ignored."""
+        self.item.add_link('abc')
+        self.item.add_link('abc')
+        self.assertEqual(['abc'], self.item.links)
+
+    def test_link_remove_duplicate(self):
+        """Verify removing a link twice is not an error."""
+        self.item.links = ['123', 'abc']
+        self.item.remove_link('abc')
+        self.item.remove_link('abc')
+        self.assertEqual(['123'], self.item.links)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
         relpath, line = self.item.find_ref(EXTERNAL)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
+
+    def test_find_rlinks(self):
+        """Verify an item's reverse links can be found."""
+
+        mock_document = Mock()
+        mock_document.parent = 'RQ'
+
+        mock_item = Mock()
+        mock_item.id = 'TST001'
+        mock_item.links = ['RQ001']
+
+        def mock_iter(self):  # pylint: disable=W0613
+            """Mock Tree.__iter__ to yield a mock Document."""
+
+            def mock_iter2(self):  # pylint: disable=W0613
+                """Mock Document.__iter__ to yield a mock Item."""
+                yield mock_item
+
+            mock_document.__iter__ = mock_iter2
+            yield mock_document
+
+        self.item.add_link('fake1')
+        tree = Mock()
+        tree.__iter__ = mock_iter
+        tree.find_item = lambda identifier: Mock(id='fake1')
+        rlinks, childrem = self.item.find_rlinks(tree)
+        self.assertEqual(['TST001'], rlinks)
+        self.assertEqual([mock_document], childrem)
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""
@@ -234,40 +296,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_find_ref_none(self):
         """Verify nothing returned when no external reference is specified."""
         self.assertEqual((None, None), self.item.find_ref())
-
-    def test_link_add(self):
-        """Verify links can be added to an item."""
-        self.item.add_link('abc')
-        self.item.add_link('123')
-        self.assertEqual(['123', 'abc'], self.item.links)
-
-    def test_link_add_duplicate(self):
-        """Verify duplicate links are ignored."""
-        self.item.add_link('abc')
-        self.item.add_link('abc')
-        self.assertEqual(['abc'], self.item.links)
-
-    def test_link_remove_duplicate(self):
-        """Verify removing a link twice is not an error."""
-        self.item.links = ['123', 'abc']
-        self.item.remove_link('abc')
-        self.item.remove_link('abc')
-        self.assertEqual(['123'], self.item.links)
-
-    def test_extended(self):
-        """Verify an extended attribute can be used."""
-        self.item.set('ext1', 'foobar')
-        self.assertEqual('foobar', self.item.get('ext1'))
-
-    def test_extended_get_standard(self):
-        """Verify extended attribute access can get standard properties."""
-        active = self.item.get('active')
-        self.assertEqual(self.item.active, active)
-
-    def test_extended_set_standard(self):
-        """Verify extended attribute access can set standard properties."""
-        self.item.set('text', "extended access")
-        self.assertEqual("extended access", self.item.text)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""

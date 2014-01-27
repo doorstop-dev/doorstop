@@ -509,24 +509,15 @@ class Item(object):  # pylint: disable=R0904
         # Apply the reformatted item IDs
         self._data['links'] = identifiers
         # Verify an item is being linked to (reverse links)
-        rlinks = []
-        children = []
-        for document in tree:
-            if document.parent == self.prefix:
-                children.append(document)
-                for item in document:
-                    if self.id in item.links:
-                        rlinks.append(item.id)
-        if rlinks:
-            msg = "reverse links: {}".format(', '.join(rlinks))
-            logging.debug(msg)
-        elif self.normative:
-            for child in children:
-                msg = "no links from child document: {}".format(child)
-                yield DoorstopWarning(msg)
+        if self.normative:
+            rlinks, children = self.find_rlinks(tree, find_all=False)
+            if not rlinks:
+                for child in children:
+                    msg = "no links from child document: {}".format(child)
+                    yield DoorstopWarning(msg)
 
     def find_ref(self, root=None, ignored=None):
-        """Find the external file reference and line number.
+        """Get the external file reference and line number.
 
         @param root: override the path to the working copy (for testing)
         @param ignored: function to determine if a path should be skipped
@@ -571,6 +562,31 @@ class Item(object):  # pylint: disable=R0904
                     pass
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
+
+    def find_rlinks(self, tree, find_all=True):
+        """Get a list of item IDs that link to this item (reverse links).
+
+        @param tree: tree to look up items
+        @param find_all: find all items (not just the first) before returning
+
+        @return: list of found item IDs, list of all child documents
+        """
+        rlinks = []
+        children = []
+        for document in tree:
+            if document.parent == self.prefix:
+                children.append(document)
+                # Search for reverse links unless we only need to find one
+                if not rlinks or find_all:
+                    for item in document:
+                        if self.id in item.links:
+                            rlinks.append(item.id)
+                            if not find_all:
+                                break
+        if rlinks and find_all:
+            msg = "reverse links: {}".format(', '.join(rlinks))
+            logging.debug(msg)
+        return rlinks, children
 
     def delete(self):
         """Delete the item from the file system."""
