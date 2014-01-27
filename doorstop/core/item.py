@@ -80,6 +80,7 @@ class Item(object):  # pylint: disable=R0904
         self.root = root
         self._exists = True
         self._data = {}
+        # Set defaults
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
         self._data['normative'] = Item.DEFAULT_NORMATIVE

@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.0.15 (development)
---------------------
+0.0.15 (2014/01/27)
+-------------------
 
 - Fixed a mutable default argument bug in Item creation
 
