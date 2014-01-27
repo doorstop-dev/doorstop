@@ -4,8 +4,9 @@ Changelog
 0.0.14 (development)
 --------------------
 
-- Added Tree/Document/Item.iter_issues() method to yield issues
+- Added Tree/Document/Item.iter_issues() method to yield all issues
 - Tree/Document/Item.check() now logs all issues rather than failing fast
+- Renamed Tree/Document/Item.check() to valid()
 
 0.0.13 (2014/01/25)
 -------------------

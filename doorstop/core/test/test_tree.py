@@ -100,7 +100,7 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         docs = [a, b, c]
         tree = Tree.from_list(docs)
         self.assertEqual(3, len(tree))
-        self.assertTrue(tree.check())
+        self.assertTrue(tree.valid())
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
@@ -145,25 +145,25 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
     @patch('doorstop.core.document.Document.iter_issues')
-    def test_check(self, mock_iter_issues):
+    def test_valid(self, mock_iter_issues):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
-        self.assertTrue(self.tree.check())
+        self.assertTrue(self.tree.valid())
         self.assertEqual(2, mock_iter_issues.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_check_long(self):
+    def test_valid_long(self):
         """Verify trees can be checked (long)."""
         logging.info("tree: {}".format(self.tree))
-        self.assertTrue(self.tree.check())
+        self.assertTrue(self.tree.valid())
 
-    def test_check_error(self):
-        """Verify an document error fails the tree check."""
+    def test_valid_error(self):
+        """Verify an document error fails the tree valid."""
         with patch.object(self.tree, 'iter_issues',
                           Mock(return_value=[DoorstopError('e'),
                                              DoorstopWarning('w'),
                                              DoorstopInfo('i')])):
-            self.assertFalse(self.tree.check())
+            self.assertFalse(self.tree.valid())
 
     def test_new(self):
         """Verify a new document can be created on a tree."""

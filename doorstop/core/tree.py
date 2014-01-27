@@ -60,7 +60,7 @@ class Tree(object):
 
     @staticmethod
     def from_list(docs, root=None):
-        """Get a new tree from the list of Documents.
+        """Get a new tree from the list of documents.
 
         @param root: path to root of the project
         @param documents: list of Documents
@@ -299,8 +299,8 @@ class Tree(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def check(self):
-        """Confirm the tree is valid.
+    def valid(self):
+        """Check the tree (and its documents) for validity.
 
         @return: indication that the tree is valid
         """

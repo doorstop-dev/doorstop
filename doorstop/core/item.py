@@ -61,10 +61,10 @@ class Item(object):  # pylint: disable=R0904
         @param path: path to Item file
         @param root: path to root of project
         """
-        # Check item's path
+        # Ensure the path is valid
         if not os.path.isfile(path):
             raise DoorstopError("item does not exist: {}".format(path))
-        # Check file name
+        # Ensure the filename is valid
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
@@ -72,7 +72,7 @@ class Item(object):  # pylint: disable=R0904
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
-        # Check file extension
+        # Ensure the file extension is valid
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
             raise DoorstopError(msg)
@@ -409,8 +409,8 @@ class Item(object):  # pylint: disable=R0904
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def check(self, document=None, tree=None, ignored=None):
-        """Confirm the item is valid.
+    def valid(self, document=None, tree=None, ignored=None):
+        """Check the item for validity.
 
         @param document: document to validate the item
         @param tree: tree to validate the item

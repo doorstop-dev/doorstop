@@ -85,10 +85,10 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
             item.write(self.backup)
 
     @patch('doorstop.core.document.Document', DocumentNoSkip)
-    def test_check_invalid_link(self):
+    def test_valid_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
         item = Item(self.ITEM)
         item.add_link('SYS003')
         tree = build(FILES, root=FILES)
         self.assertIsInstance(tree, Tree)
-        self.assertFalse(tree.check())
+        self.assertFalse(tree.valid())

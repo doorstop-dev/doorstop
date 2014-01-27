@@ -33,7 +33,7 @@ class Document(object):
         @param path: path to Document directory
         @param root: path to root of project
         """
-        # Check document's directory
+        # Ensure the directory is valid
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
             msg = "no {} in {}".format(Document.CONFIG, relpath)
@@ -229,8 +229,8 @@ class Document(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def check(self, tree=None, ignored=None):
-        """Confirm the document is valid.
+    def valid(self, tree=None, ignored=None):
+        """Check the document (and its items) for validity.
 
         @param tree: tree to validate the document
         @param ignored: function to determine if a path should be skipped
