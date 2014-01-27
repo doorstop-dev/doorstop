@@ -13,7 +13,7 @@ import logging
 from doorstop.core.item import Item
 from doorstop.core.document import Document
 from doorstop import common
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, NEW
 
@@ -178,16 +178,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised on an unknown ID."""
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
-    @patch('doorstop.core.item.Item.check')
-    def test_check(self, mock_check):
+    @patch('doorstop.core.item.Item.iter_issues')
+    def test_check(self, mock_iter_issues):
         """Verify a document can be validated."""
-        self.document.check()
-        self.assertEqual(4, mock_check.call_count)
+        mock_iter_issues.return_value = [DoorstopInfo('i')]
+        self.assertTrue(self.document.check())
+        self.assertEqual(4, mock_iter_issues.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_check_long(self):
         """Verify a document can be validated (long)."""
-        self.document.check()
+        self.assertTrue(self.document.check())
+
+    def test_check_error(self):
+        """Verify an item error fails the document check."""
+        with patch.object(self.document, 'iter_issues',
+                          Mock(return_value=[DoorstopError('e'),
+                                             DoorstopWarning('w'),
+                                             DoorstopInfo('i')])):
+            self.assertFalse(self.document.check())
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

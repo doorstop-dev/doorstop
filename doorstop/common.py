@@ -15,6 +15,14 @@ class DoorstopError(Exception):
     """Generic Doorstop error."""
 
 
+class DoorstopWarning(DoorstopError, Warning):
+    """Generic Doorstop warning."""
+
+
+class DoorstopInfo(DoorstopError, Warning):
+    """Generic Doorstop info."""
+
+
 class HelpFormatter(argparse.HelpFormatter):
     """Command-line help text formatter with wider help text."""
     def __init__(self, *args, **kwargs):

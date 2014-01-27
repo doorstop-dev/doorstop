@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.14 (development)
+--------------------
+
+- Added Tree/Document/Item.iter_issues() method to yield issues
+- Tree/Document/Item.check() now logs all issues rather than failing fast
+
 0.0.13 (2014/01/25)
 -------------------
 

@@ -199,14 +199,14 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     """
     try:
         tree = build(cwd)
-        tree.check()
+        valid = tree.check()
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        if tree:
+        if tree and valid:
             print("valid tree: {}".format(tree))
-        return True
+        return valid
 
 
 def _run_new(args, cwd, _):

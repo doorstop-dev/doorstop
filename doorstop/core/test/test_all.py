@@ -10,7 +10,6 @@ import os
 from doorstop.core import Item
 from doorstop.core import Document
 from doorstop.core import Tree, build
-from doorstop.common import DoorstopError
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY
 
@@ -92,4 +91,4 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         item.add_link('SYS003')
         tree = build(FILES, root=FILES)
         self.assertIsInstance(tree, Tree)
-        self.assertRaises(DoorstopError, tree.check)
+        self.assertFalse(tree.check())

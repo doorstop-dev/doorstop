@@ -10,7 +10,7 @@ import logging
 import yaml
 
 from doorstop import common
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.settings import SEP_CHARS
 
 
@@ -418,65 +418,92 @@ class Item(object):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
+        valid = True
         logging.info("checking item {}...".format(self))
         # Verify the file can be parsed
         self.load()
         # Skip inactive items
         if not self.active:
             logging.info("skipped inactive item: {}".format(self))
-            return True
-        # Check text
-        if not self.text and not self.ref:
-            logging.warning("no text: {}".format(self))
-        # Check external references
-        self.find_ref(ignored=ignored)
-        # Check links
-        if not self.normative and self.links:
-            logging.warning("non-normative item has links: {}".format(self))
-        # Check links against the document
-        if document:
-            self._check_document(document)
-        # Check links against the tree
-        if tree:
-            self._check_tree(tree)
+            return valid
+        # Display all issues
+        self.auto = False
+        for issue in self.iter_issues(document=document, tree=tree,
+                                      ignored=ignored):
+            if isinstance(issue, DoorstopInfo):
+                logging.info(issue)
+            elif isinstance(issue, DoorstopWarning):
+                logging.warning(issue)
+            else:
+                assert isinstance(issue, DoorstopError)
+                logging.error(issue)
+                valid = False
         # Reformat the file
         self.save()
-        # Item is valid
-        return True
+        # Return the result
+        return valid
 
-    def _check_document(self, document):
-        """Check the item against its document."""
+    def iter_issues(self, document=None, tree=None, ignored=None):
+        """Yield all the item's issues.
+
+        @param document: document to validate the item
+        @param tree: tree to validate the item
+        @param ignored: function to determine if a path should be skipped
+
+        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        """
+        # Check text
+        if not self.text and not self.ref:
+            yield DoorstopWarning("no text")
+        # Check external references
+        try:
+            self.find_ref(ignored=ignored)
+        except DoorstopError as exc:
+            yield exc
+        # Check links
+        if not self.normative and self.links:
+            yield DoorstopWarning("non-normative, but has links")
+        # Check links against the document
+        if document:
+            yield from self._iter_issues_document(document)
+        # Check links against the tree
+        if tree:
+            yield from self._iter_issues_tree(tree)
+
+    def _iter_issues_document(self, document):
+        """Yield all the item's issues against its document."""
         # Verify an item has upward links
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
-            logging.warning("no links: {}".format(self))
+            yield DoorstopWarning("no links")
         # Verify an item's links are to the correct parent
         for identifier in self.links:
             prefix = split_id(identifier)[0]
             if prefix.lower() != document.parent.lower():
-                msg = "link to non-parent '{}' in {}".format(identifier, self)
-                logging.info(msg)
+                msg = "linked to non-parent item: {}".format(identifier)
+                yield DoorstopInfo(msg)
 
-    def _check_tree(self, tree):
-        """Check the item against the full tree."""
+    def _iter_issues_tree(self, tree):
+        """Yield all the item's issues against the full tree."""
         # Verify an item's links are valid
         identifiers = []
         for identifier in self.links:
             try:
                 item = tree.find_item(identifier)
             except DoorstopError:
-                msg = "{} linked to unknown item: {}".format(self, identifier)
-                raise DoorstopError(msg) from None
-            # TODO: not sure if we want this warning
-            # if not item.active:
-            #    logging.warn("{} linked to inactive item: {}".format(self,
-            #                                                         item))
-            identifier = item.id  # re-format the item's ID
-            logging.debug("found linked item: {}".format(identifier))
-            identifiers.append(identifier)
+                msg = "linked to unknown item: {}".format(identifier)
+                yield DoorstopError(msg)
+            else:
+                if not item.active:
+                    msg = "linked to inactive item: {}".format(item)
+                    yield DoorstopInfo(msg)
+                identifier = item.id  # reformat the item's ID
+                logging.debug("found linked item: {}".format(identifier))
+                identifiers.append(identifier)
+        # Apply the reformatted item IDs
         self._data['links'] = set(identifiers)
-        # Verify an item has downward (reverse) links
+        # Verify an item is being linked to (reverse links)
         rlinks = []
         children = []
         for document in tree:
@@ -491,13 +518,12 @@ class Item(object):  # pylint: disable=R0904
                 logging.debug(msg)
             else:
                 for rlink in rlinks:
-                    msg = "{} links to non-normative {}".format(rlink,
-                                                                self)
-                    logging.warning(msg)
+                    msg = "linked to non-normative item: {}".format(rlink)
+                    yield DoorstopWarning(msg)
         elif self.normative:
             for child in children:
-                msg = "{} has no links from {}".format(self, child)
-                logging.warning(msg)
+                msg = "no links from child document: {}".format(child)
+                yield DoorstopWarning(msg)
 
     def find_ref(self, root=None, ignored=None):
         """Find the external file reference and line number.

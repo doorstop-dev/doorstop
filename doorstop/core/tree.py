@@ -9,7 +9,7 @@ import subprocess
 import logging
 from itertools import chain
 
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.document import Document
 from doorstop.core.item import split_id
 from doorstop.core import vcs
@@ -300,16 +300,36 @@ class Tree(object):
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
     def check(self):
-        """Confirm the document hierarchy is valid.
+        """Confirm the tree is valid.
 
-        @return: indication that hierarchy is valid
-
-        @raise DoorstopError: on issue
+        @return: indication that the tree is valid
         """
+        valid = True
         logging.info("checking tree...")
+        # Display all issues
+        for issue in self.iter_issues():
+            if isinstance(issue, DoorstopInfo):
+                logging.info(issue)
+            elif isinstance(issue, DoorstopWarning):
+                logging.warning(issue)
+            else:
+                assert isinstance(issue, DoorstopError)
+                logging.error(issue)
+                valid = False
+        # Return the result
+        return valid
+
+    def iter_issues(self):
+        """Yield all the tree's issues.
+
+        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        """
+        # Check each document
         for document in self:
-            document.check(tree=self, ignored=self.vcs.ignored)
-        return True
+            for issue in document.iter_issues(tree=self,
+                                               ignored=self.vcs.ignored):
+                # Prepend the document's prefix
+                yield type(issue)("{}: {}".format(document.prefix, issue))
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test

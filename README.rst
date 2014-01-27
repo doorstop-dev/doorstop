@@ -21,14 +21,14 @@ Getting Started
 Requirements
 ------------
 
-* Python 3
+* Python 3.3
 * Git or Veracity (for requirements storage)
 
 
 Installation
 ------------
 
-Doorstop can be installed with ``pip`` or ``easy_install``::
+Doorstop can be installed with ``pip``::
 
     $ pip install Doorstop
 

@@ -9,7 +9,7 @@ import yaml
 
 from doorstop.core.item import Item, split_id
 from doorstop import common
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.settings import SEP_CHARS
 
 
@@ -237,13 +237,36 @@ class Document(object):
 
         @return: indication that document is valid
         """
+        valid = True
         logging.info("checking document {}...".format(self))
+        # Display all issues
+        for issue in self.iter_issues(tree=tree, ignored=ignored):
+            if isinstance(issue, DoorstopInfo):
+                logging.info(issue)
+            elif isinstance(issue, DoorstopWarning):
+                logging.warning(issue)
+            else:
+                assert isinstance(issue, DoorstopError)
+                logging.error(issue)
+                valid = False
+        # Return the result
+        return valid
+
+    def iter_issues(self, tree=None, ignored=None):
+        """Yield all the document's issues.
+
+        @param tree: tree to validate the item
+        @param ignored: function to determine if a path should be skipped
+
+        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        """
         items = list(self)
         # Check for items
         if not items:
-            logging.warning("no items: {}".format(self))
+            yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            item.check(document=self, tree=tree, ignored=ignored)
-        # Document is valid
-        return True
+            for issue in item.iter_issues(document=self, tree=tree,
+                                          ignored=ignored):
+                # Prepend the item's ID
+                yield type(issue)("{}: {}".format(item.id, issue))

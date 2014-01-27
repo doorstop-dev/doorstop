@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.item module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
 import logging
@@ -58,7 +58,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('', self.item._data['text'])
         self.assertEqual(set(), self.item._data['links'])
         self.assertEqual((1, 1, 1), self.item._data['level'])
-        self.item.check()
+        self.assertTrue(self.item.check())
 
     def test_load_error(self):
         """Verify an exception is raised with invalid YAML."""
@@ -304,24 +304,39 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           Item.new, FILES, FILES, 'REQ', '', 2, 3, (1, 2, 3))
 
+    def test_check_invalid_ref(self):
+        """Verify an invalid reference fails check."""
+        with patch('doorstop.core.item.Item.find_ref',
+                   Mock(side_effect=DoorstopError)):
+            self.assertFalse(self.item.check())
+
     def test_check_inactive(self):
         """Verify an inactive item is not checked."""
         self.item.active = False
         self.item.ref = "invalid" + "reference"  # addition to avoid match
         self.assertTrue(self.item.check())
 
+    def test_check_link_to_inactive(self):
+        """Verify a link to an inactive item can be checked."""
+        item = Mock()
+        item.active = False
+        tree = MagicMock()
+        tree.find_item = Mock(return_value=item)
+        self.item.links = ['a']
+        self.assertTrue(self.item.check(tree=tree))
+
     def test_check_document(self):
         """Verify an item can be checked against a document."""
         document = Mock()
         document.parent = 'fake'
-        self.item.check(document=document)
+        self.assertTrue(self.item.check(document=document))
 
     def test_check_document_with_links(self):
         """Verify an item can be checked against a document with links."""
         self.item.add_link('unknown1')
         document = Mock()
         document.parent = 'fake'
-        self.item.check(document=document)
+        self.assertTrue(self.item.check(document=document))
 
     def test_check_tree(self):
         """Verify an item can be checked against a tree."""
@@ -345,7 +360,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         tree = Mock()
         tree.__iter__ = mock_iter
         tree.find_item = lambda identifier: Mock(id='fake1')
-        self.item.check(tree=tree)
+        self.assertTrue(self.item.check(tree=tree))
 
     def test_check_tree_non_normative(self):
         """Verify a non-normative item can be checked against a tree."""
@@ -394,13 +409,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         tree = Mock()
         tree.__iter__ = mock_iter
         tree.find_item = lambda identifier: Mock(id='fake1')
-        self.item.check(tree=tree)
+        self.assertTrue(self.item.check(tree=tree))
 
     def test_check_tree_error(self):
         """Verify an item can be checked against a tree with errors."""
         self.item.add_link('fake1')
-        tree = Mock(find_item=Mock(side_effect=DoorstopError))
-        self.assertRaises(DoorstopError, self.item.check, tree=tree)
+        tree = MagicMock()
+        tree.find_item = Mock(side_effect=DoorstopError)
+        self.assertFalse(self.item.check(tree=tree))
 
     @patch('os.remove')
     def test_delete(self, mock_remove):
