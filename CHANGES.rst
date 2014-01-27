@@ -5,6 +5,7 @@ Changelog
 --------------------
 
 - Added Item.find_rlinks() to return reverse links and child documents
+- Changed the logging format
 
 
 0.0.15 (2014/01/27)

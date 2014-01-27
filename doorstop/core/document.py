@@ -10,7 +10,7 @@ import yaml
 from doorstop.core.item import Item, split_id
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.settings import SEP_CHARS
+from doorstop import settings
 
 
 class Document(object):
@@ -54,7 +54,7 @@ class Document(object):
         return "Document({})".format(repr(self.path))
 
     def __str__(self):
-        if common.VERBOSITY <= 1:
+        if common.VERBOSITY < common.STR_VERBOSITY:
             return self.prefix
         else:
             return self.prefix_relpath
@@ -87,7 +87,7 @@ class Document(object):
         @raise DoorstopError: if the document already exists
         """
         # TODO: remove after testing or raise a specific exception
-        assert sep is None or sep in SEP_CHARS
+        assert sep is None or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
         if os.path.exists(config):
@@ -116,12 +116,12 @@ class Document(object):
         text = self._read()
         data = yaml.load(text)
         if data:
-            settings = data.get('settings', {})
-            if settings:
-                self.prefix = settings.get('prefix', self.prefix)
-                self.sep = settings.get('sep', self.sep)
-                self.parent = settings.get('parent', self.parent)
-                self.digits = settings.get('digits', self.digits)
+            sets = data.get('settings', {})
+            if sets:
+                self.prefix = sets.get('prefix', self.prefix)
+                self.sep = sets.get('sep', self.sep)
+                self.parent = sets.get('parent', self.parent)
+                self.digits = sets.get('digits', self.digits)
 
     def _read(self):  # pragma: no cover, integration test
         """Read text from the file."""
@@ -135,12 +135,12 @@ class Document(object):
     def save(self):
         """Save the document's properties to a file."""
         logging.debug("saving {}...".format(repr(self)))
-        settings = {'prefix': self.prefix,
-                    'sep': self.sep,
-                    'digits': self.digits}
+        sets = {'prefix': self.prefix,
+                'sep': self.sep,
+                'digits': self.digits}
         if self.parent:
-            settings['parent'] = self.parent
-        data = {'settings': settings}
+            sets['parent'] = self.parent
+        data = {'settings': sets}
         text = yaml.dump(data, default_flow_style=False)
         self._write(text)
 

@@ -79,12 +79,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_str(self):
         """Verify an item can be converted to strings."""
-        common.VERBOSITY = 1
+        common.VERBOSITY = 2
         self.assertEqual("RQ001", str(self.item))
 
     def test_str_verbose(self):
         """Verify an item can be converted to strings in verbose mode."""
-        common.VERBOSITY = 2
+        common.VERBOSITY = 3
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 

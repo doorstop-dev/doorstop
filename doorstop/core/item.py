@@ -11,7 +11,7 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.settings import SEP_CHARS
+from doorstop import settings
 
 
 def auto_load(func):
@@ -93,7 +93,7 @@ class Item(object):  # pylint: disable=R0904
         return "Item({})".format(repr(self.path))
 
     def __str__(self):
-        if common.VERBOSITY <= 1:
+        if common.VERBOSITY < common.STR_VERBOSITY:
             return self.id
         else:
             return self.id_relpath
@@ -624,7 +624,7 @@ def split_id(text):
     match = re.match(r"([\w.-]*\D)(\d+)", text)
     if not match:
         raise DoorstopError("invalid ID: {}".format(text))
-    prefix = match.group(1).rstrip(SEP_CHARS)
+    prefix = match.group(1).rstrip(settings.SEP_CHARS)
     number = int(match.group(2))
     return prefix, number
 
