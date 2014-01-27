@@ -337,7 +337,7 @@ class Tree(object):
         # Check each document
         for document in documents:
             for issue in document.iter_issues(tree=self,
-                                               ignored=self.vcs.ignored):
+                                              ignored=self.vcs.ignored):
                 # Prepend the document's prefix
                 yield type(issue)("{}: {}".format(document.prefix, issue))
 

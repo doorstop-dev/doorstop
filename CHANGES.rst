@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.14 (development)
+0.0.14 (2014/01/27)
 --------------------
 
 - Added Tree/Document/Item.iter_issues() method to yield all issues
@@ -38,7 +38,7 @@ Changelog
 - Added a CSS for generated HTML.
 - The 'publish' command now accepts an output file path.
 
-0.0.8 (2014/01/16 )
+0.0.8 (2014/01/16)
 ------------------
 
 - Searching for 'ref' will now also find filenames.
