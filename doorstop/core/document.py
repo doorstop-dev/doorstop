@@ -219,7 +219,7 @@ class Document(object):
                 if item.number == number:
                     return item
             msg = "no matching{} number: {}".format(_kind, number)
-            logging.info(msg)
+            logging.debug(msg)
 
         # Fall back to a search using the exact ID
         else:

@@ -295,7 +295,7 @@ class Tree(object):
         for document in self:
             if document.prefix.lower() == prefix.lower():
                 return document.find_item(identifier, _kind=_kind)
-        logging.info("no matching{} prefix: {}".format(_kind, prefix))
+        logging.debug("no matching{} prefix: {}".format(_kind, prefix))
 
         # Fall back to a search using the exact ID
         for document in self:

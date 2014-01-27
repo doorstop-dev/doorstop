@@ -16,6 +16,9 @@ gen/*.css
 @/apidocs
 @/docs/README.html
 
+# Google Drive
+*.gdraw
+
 # Testing results
 .coverage
 
