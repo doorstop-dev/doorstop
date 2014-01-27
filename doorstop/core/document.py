@@ -238,7 +238,6 @@ class Document(object):
         @return: indication that document is valid
         """
         valid = True
-        logging.info("checking document {}...".format(self))
         # Display all issues
         for issue in self.iter_issues(tree=tree, ignored=ignored):
             if isinstance(issue, DoorstopInfo):
@@ -260,6 +259,7 @@ class Document(object):
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
+        logging.info("checking document {}...".format(self))
         items = list(self)
         # Check for items
         if not items:

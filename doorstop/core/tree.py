@@ -59,39 +59,42 @@ class Tree(object):
         yield from chain(*(iter(c) for c in self.children))
 
     @staticmethod
-    def from_list(docs, root=None):
+    def from_list(documents, root=None):
         """Get a new tree from the list of documents.
 
-        @param root: path to root of the project
         @param documents: list of Documents
+        @param root: path to root of the project
 
         @return: new tree
 
         @raise DoorstopError: when the tree cannot be built
         """
-        if not docs:
+        if not documents:
             return Tree(document=None, root=root)
-        unplaced = list(docs)
-        for doc in list(unplaced):
-            if doc.parent is None:
-                logging.debug("added root of tree: {}".format(doc))
-                tree = Tree(doc)
-                logging.info("root of tree: {}".format(doc))
-                unplaced.remove(doc)
+        unplaced = list(documents)
+        for document in list(unplaced):
+            if document.parent is None:
+                logging.debug("added root of tree: {}".format(document))
+                tree = Tree(document)
+                logging.info("root of the tree: {}".format(document))
+                unplaced.remove(document)
                 break
         else:
             raise DoorstopError("no root document")
 
         while unplaced:
             count = len(unplaced)
-            for doc in list(unplaced):
+            for document in list(unplaced):
+                if document.parent is None:
+                    logging.info("root of the tree: {}".format(document))
+                    raise DoorstopError("multiple root documents")
                 try:
-                    tree._place(doc)  # pylint: disable=W0212
+                    tree._place(document)  # pylint: disable=W0212
                 except DoorstopError as error:
                     logging.debug(error)
                 else:
-                    logging.info("added to tree: {}".format(doc))
-                    unplaced.remove(doc)
+                    logging.info("added to tree: {}".format(document))
+                    unplaced.remove(document)
 
             if len(unplaced) == count:  # no more documents could be placed
                 logging.debug("unplaced documents: {}".format(unplaced))
@@ -100,26 +103,28 @@ class Tree(object):
 
         return tree
 
-    def _place(self, doc):
+    def _place(self, document):
         """Attempt to place the Document in the current tree.
 
-        @param doc: Document to add
+        @param document: Document to add
 
         @raise DoorstopError: if the Document cannot yet be placed
         """
-        logging.debug("trying to add '{}'...".format(doc))
+        logging.debug("trying to add '{}'...".format(document))
         if not self.document:
 
             # Tree is empty
-            if doc.parent:
-                msg = "unknown parent for {}: {}".format(doc, doc.parent)
+            if document.parent:
+                msg = "unknown parent for {}: {}".format(document,
+                                                         document.parent)
                 raise DoorstopError(msg)
-            self.document = doc
+            self.document = document
 
-        elif doc.parent.lower() == self.document.prefix.lower():
+        elif (document.parent and
+              document.parent.lower() == self.document.prefix.lower()):
 
             # Current document is the parent
-            node = Tree(doc, self)
+            node = Tree(document, self)
             self.children.append(node)
 
         else:
@@ -127,13 +132,14 @@ class Tree(object):
             # Search for the parent
             for child in self.children:
                 try:
-                    child._place(doc)  # pylint: disable=W0212
+                    child._place(document)  # pylint: disable=W0212
                 except DoorstopError:
                     pass  # the error is raised later
                 else:
                     break
             else:
-                msg = "unknown parent for {}: {}".format(doc, doc.parent)
+                msg = "unknown parent for {}: {}".format(document,
+                                                         document.parent)
                 raise DoorstopError(msg)
 
     # attributes #############################################################
@@ -324,8 +330,12 @@ class Tree(object):
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
+        documents = list(self)
+        # Check for documents
+        if not documents:
+            yield DoorstopWarning("no documents")
         # Check each document
-        for document in self:
+        for document in documents:
             for issue in document.iter_issues(tree=self,
                                                ignored=self.vcs.ignored):
                 # Prepend the document's prefix
@@ -377,7 +387,7 @@ def build(cwd=None, root=None):
 
     # Build the tree
     if not documents:
-        logging.warning("no documents found in: {}".format(root))
+        logging.info("no documents found in: {}".format(root))
     logging.info("building tree...")
     tree = Tree.from_list(documents, root=root)
     logging.info("built tree: {}".format(tree))

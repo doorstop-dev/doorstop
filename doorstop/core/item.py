@@ -419,15 +419,7 @@ class Item(object):  # pylint: disable=R0904
         @return: indication that the item is valid
         """
         valid = True
-        logging.info("checking item {}...".format(self))
-        # Verify the file can be parsed
-        self.load()
-        # Skip inactive items
-        if not self.active:
-            logging.info("skipped inactive item: {}".format(self))
-            return valid
         # Display all issues
-        self.auto = False
         for issue in self.iter_issues(document=document, tree=tree,
                                       ignored=ignored):
             if isinstance(issue, DoorstopInfo):
@@ -438,8 +430,6 @@ class Item(object):  # pylint: disable=R0904
                 assert isinstance(issue, DoorstopError)
                 logging.error(issue)
                 valid = False
-        # Reformat the file
-        self.save()
         # Return the result
         return valid
 
@@ -452,6 +442,14 @@ class Item(object):  # pylint: disable=R0904
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
+        logging.info("checking item {}...".format(self))
+        # Verify the file can be parsed
+        self.load()
+        # Skip inactive items
+        if not self.active:
+            logging.info("skipped inactive item: {}".format(self))
+            return
+        self.auto = False
         # Check text
         if not self.text and not self.ref:
             yield DoorstopWarning("no text")
@@ -469,6 +467,8 @@ class Item(object):  # pylint: disable=R0904
         # Check links against the tree
         if tree:
             yield from self._iter_issues_tree(tree)
+        # Reformat the file
+        self.save()
 
     def _iter_issues_document(self, document):
         """Yield all the item's issues against its document."""
@@ -476,7 +476,8 @@ class Item(object):  # pylint: disable=R0904
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
-            yield DoorstopWarning("no links")
+            msg = "no links to parent document: {}".format(document.parent)
+            yield DoorstopWarning(msg)
         # Verify an item's links are to the correct parent
         for identifier in self.links:
             prefix = split_id(identifier)[0]
@@ -492,12 +493,16 @@ class Item(object):  # pylint: disable=R0904
             try:
                 item = tree.find_item(identifier)
             except DoorstopError:
+                identifiers.append(identifier)  # keep the invalid ID
                 msg = "linked to unknown item: {}".format(identifier)
                 yield DoorstopError(msg)
             else:
                 if not item.active:
                     msg = "linked to inactive item: {}".format(item)
                     yield DoorstopInfo(msg)
+                if not item.normative:
+                    msg = "linked to non-normative item: {}".format(item)
+                    yield DoorstopWarning(msg)
                 identifier = item.id  # reformat the item's ID
                 logging.debug("found linked item: {}".format(identifier))
                 identifiers.append(identifier)
@@ -513,13 +518,8 @@ class Item(object):  # pylint: disable=R0904
                     if self.id in item.links:
                         rlinks.append(item.id)
         if rlinks:
-            if self.normative:
-                msg = "down links: {}".format(', '.join(rlinks))
-                logging.debug(msg)
-            else:
-                for rlink in rlinks:
-                    msg = "linked to non-normative item: {}".format(rlink)
-                    yield DoorstopWarning(msg)
+            msg = "reverse links: {}".format(', '.join(rlinks))
+            logging.debug(msg)
         elif self.normative:
             for child in children:
                 msg = "no links from child document: {}".format(child)
@@ -541,7 +541,7 @@ class Item(object):  # pylint: disable=R0904
             logging.debug("no external reference to search for")
             return None, None
         ignored = ignored or (lambda _: False)
-        logging.info("seraching for ref '{}'...".format(self.ref))
+        logging.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
         logging.debug("regex: {}".format(pattern))
         regex = re.compile(pattern)
@@ -565,7 +565,7 @@ class Item(object):  # pylint: disable=R0904
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
                             if regex.search(line):
-                                logging.info("found ref: {}".format(relpath))
+                                logging.debug("found ref: {}".format(relpath))
                                 return relpath, index + 1
                 except UnicodeDecodeError:
                     pass

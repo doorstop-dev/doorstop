@@ -190,7 +190,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be validated (long)."""
         self.assertTrue(self.document.valid())
 
-    def test_valid_error(self):
+    def test_valid_item(self):
         """Verify an item error fails the document check."""
         with patch.object(self.document, 'iter_issues',
                           Mock(return_value=[DoorstopError('e'),

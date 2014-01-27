@@ -109,6 +109,13 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
+    def test_from_list_multiple_roots(self):
+        """Verify an error occurs when the tree has multiple roots."""
+        a = MockDocument(EMPTY, _prefix='A')
+        b = MockDocument(EMPTY, _prefix='B')
+        docs = [a, b]
+        self.assertRaises(DoorstopError, Tree.from_list, docs)
+
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
 
@@ -157,7 +164,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         logging.info("tree: {}".format(self.tree))
         self.assertTrue(self.tree.valid())
 
-    def test_valid_error(self):
+    def test_valid_no_documents(self):
+        """Verify an empty tree can be checked."""
+        tree = Tree(None, root='.')
+        self.assertTrue(tree.valid())
+
+    def test_valid_document(self):
         """Verify an document error fails the tree valid."""
         with patch.object(self.tree, 'iter_issues',
                           Mock(return_value=[DoorstopError('e'),

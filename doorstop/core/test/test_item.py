@@ -317,10 +317,25 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                    Mock(side_effect=DoorstopError)):
             self.assertTrue(self.item.valid())
 
+    def test_valid_nonnormative_with_links(self):
+        """Verify a non-normative item with links can be checked."""
+        self.item.normative = False
+        self.item.links = ['a']
+        self.assertTrue(self.item.valid())
+
     def test_valid_link_to_inactive(self):
         """Verify a link to an inactive item can be checked."""
         item = Mock()
         item.active = False
+        tree = MagicMock()
+        tree.find_item = Mock(return_value=item)
+        self.item.links = ['a']
+        self.assertTrue(self.item.valid(tree=tree))
+
+    def test_valid_link_to_nonnormative(self):
+        """Verify a link to an non-normative item can be checked."""
+        item = Mock()
+        item.normative = False
         tree = MagicMock()
         tree.find_item = Mock(return_value=item)
         self.item.links = ['a']
@@ -363,33 +378,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         tree.find_item = lambda identifier: Mock(id='fake1')
         self.assertTrue(self.item.valid(tree=tree))
 
-    def test_valid_tree_non_normative(self):
-        """Verify a non-normative item can be checked against a tree."""
-
-        def mock_iter(self):  # pylint: disable=W0613
-            """Mock Tree.__iter__ to yield a mock Document."""
-            mock_document = Mock()
-            mock_document.parent = 'RQ'
-
-            def mock_iter2(self):  # pylint: disable=W0613
-                """Mock Document.__iter__ to yield a mock Item."""
-                mock_item = Mock()
-                mock_item.id = 'TST001'
-                mock_item.links = ['RQ001']
-                yield mock_item
-
-            mock_document.__iter__ = mock_iter2
-            yield mock_document
-
-        self.item.normative = False
-        self.item.add_link('fake1')
-        tree = Mock()
-        tree.__iter__ = mock_iter
-        tree.find_item = lambda identifier: Mock(id='fake1')
-        self.item.valid(tree=tree)
-
-    def test_valid_tree_no_down_links(self):
-        """Verify an item can be checked against a tree without down links."""
+    def test_valid_tree_no_reverse_links(self):
+        """Verify an item can be checked against a tree (no reverse links)."""
 
         def mock_iter(self):  # pylint: disable=W0613
             """Mock Tree.__iter__ to yield a mock Document."""
