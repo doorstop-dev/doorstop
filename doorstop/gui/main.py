@@ -8,11 +8,12 @@ import sys
 from unittest.mock import Mock, MagicMock
 try:  # pragma: no cover - not measurable
     import tkinter as tk
-    from tkinter import filedialog
-except ImportError as _err:  # pragma: no cover - not measurable
-    sys.stderr.write("WARNING: {}\n".format(_err))
+    from tkinter import ttk
+    from tkinter import messagebox, simpledialog, filedialog
+except ImportError as err:  # pragma: no cover - not measurable
+    sys.stderr.write("WARNING: {}\n".format(err))
     tk = Mock()  # pylint: disable=C0103
-
+    ttk = Mock()  # pylint: disable=C0103
 import os
 import argparse
 from itertools import chain
@@ -24,18 +25,42 @@ from doorstop.common import SHARED, WarningFormatter
 from doorstop import settings
 
 
-class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=R0904
-    """Tkinter application for DropTheBeat."""
+class Application(ttk.Frame):  # pragma: no cover - manual test
+    """Tkinter application for Doorstop."""
 
     def __init__(self, master=None, root=None, name=None):
-        logging.debug("unused: {}".format(name))
-        tk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, master)
 
         # Load the root sharing directory
         self.root = root or MagicMock()
 
         # Load the user
         self.user = MagicMock()
+        try:
+            self.user = self.user or MagicMock()
+        except EnvironmentError:
+
+            while True:
+
+                msg = "Enter your name in the form 'FirstLast':"
+                text = simpledialog.askstring("Create a User", msg)
+                logging.debug("text: {}".format(repr(text)))
+                name = text.strip(" '") if text else None
+                if not name:
+                    raise KeyboardInterrupt("no user specified")
+                try:
+                    self.user = MagicMock()
+                except EnvironmentError:
+                    existing = MagicMock()
+                    msg = "Is this you:"
+                    for info in existing.info:
+                        msg += "\n\n'{}' on '{}'".format(info[1], info[0])
+                    if not existing.info or \
+                            messagebox.askyesno("Add to Existing User", msg):
+                        self.user = MagicMock()
+                        break
+                else:
+                    break
 
         # Create variables
         self.path_downloads = tk.StringVar(value=self.user.path_downloads)
@@ -43,6 +68,7 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
         self.incoming = []
 
         # Initialize the GUI
+        self.listbox_outgoing = None
         self.listbox_incoming = None
         self.init(master)
 
@@ -53,71 +79,83 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
     def init(self, master):  # pylint: disable=R0914
         """Initialize frames and widgets."""  # pylint: disable=C0301
 
-        # Shared settings
-
         sticky = {'sticky': tk.NSEW}
         pad = {'padx': 5, 'pady': 5}
         stickypad = dict(chain(sticky.items(), pad.items()))
 
-        # Create frames
-
-        frame_documents = tk.Frame(master)
-        frame_items = tk.Frame(master)
-
-        frame_div1 = tk.Frame(master, height=2, bd=1, relief=tk.SUNKEN)
-
-        # Create widets for frames
-
-        label_project = tk.Label(frame_documents, text="Project:")
-        entry_project = tk.Entry(frame_documents, state='readonly', textvariable=self.path_downloads)
-        button_project = tk.Button(frame_documents, text="...", command=self.browse_downloads)
-
-        label_document = tk.Label(frame_documents, text="Document:")
-        option_document = tk.OptionMenu(frame_documents, tk.StringVar(), "a")
-
-        self.listbox_incoming = tk.Listbox(frame_items, selectmode=tk.EXTENDED)
-        button_refin = tk.Button(frame_items, text="\u21BB", command=self.update)
-        button_ignore = tk.Button(frame_items, text="Ignore Selected", command=self.do_ignore)
-        button_download = tk.Button(frame_items, text="Download Selected", command=self.do_download)
-
-        # Specify frame resizing
-
-        frame_documents.rowconfigure(0, weight=1)
-        frame_documents.columnconfigure(0, weight=0)
-        frame_documents.columnconfigure(1, weight=1)
-        frame_documents.columnconfigure(2, weight=0)
-
-        frame_items.rowconfigure(0, weight=1)
-        frame_items.rowconfigure(1, weight=0)
-        frame_items.columnconfigure(0, weight=0)
-        frame_items.columnconfigure(1, weight=1)
-        frame_items.columnconfigure(2, weight=1)
-
-        # Pack widgets in frames
-
-        label_project.grid(row=0, column=0, **pad)
-        entry_project.grid(row=0, column=1, **stickypad)
-        button_project.grid(row=0, column=2, ipadx=5, **pad)
-        label_document.grid(row=0, column=3)
-        option_document.grid(row=0, column=4)
-
-        self.listbox_incoming.grid(row=0, column=0, columnspan=3, **stickypad)
-        button_refin.grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
-        button_ignore.grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
-        button_download.grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
-
-        # Specify master resizing
-
+        # Configure grid
         master.rowconfigure(0, weight=0)
         master.rowconfigure(2, weight=1)
         master.rowconfigure(4, weight=1)
         master.columnconfigure(0, weight=1)
 
-        # Pack frames in master
+        # Create widgets
+        def frame_settings(master):
+            """Frame for the settings."""
+            frame = ttk.Frame(master)
 
-        frame_documents.grid(row=0, **stickypad)
-        frame_div1.grid(row=3, sticky=tk.EW, padx=10)
-        frame_items.grid(row=4, **stickypad)
+            # Configure grid
+            frame.rowconfigure(0, weight=1)
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=1)
+            frame.columnconfigure(2, weight=0)
+
+            # Place widgets
+            ttk.Label(frame, text="Downloads:").grid(row=0, column=0, **pad)
+            ttk.Entry(frame, state='readonly', textvariable=self.path_downloads).grid(row=0, column=1, **stickypad)
+            ttk.Button(frame, text="...", width=0, command=self.browse_downloads).grid(row=0, column=2, ipadx=5, **pad)
+
+            return frame
+
+        def frame_incoming(master):
+            """Frame for incoming songs."""
+            frame = ttk.Frame(master)
+
+            # Configure grid
+            frame.rowconfigure(0, weight=1)
+            frame.rowconfigure(1, weight=0)
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=1)
+            frame.columnconfigure(2, weight=1)
+
+            # Place widgets
+            self.listbox_incoming = tk.Listbox(frame, selectmode=tk.EXTENDED)
+            self.listbox_incoming.grid(row=0, column=0, columnspan=3, **stickypad)
+            ttk.Button(frame, text="\u21BB", width=0, command=self.update).grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
+            ttk.Button(frame, text="Ignore Selected", command=self.do_ignore).grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
+            ttk.Button(frame, text="Download Selected", command=self.do_download).grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
+            return frame
+
+        def frame_outgoing(master):
+            """Frame for outgoing songs."""
+            frame = ttk.Frame(master)
+
+            # Configure grid
+            frame.rowconfigure(0, weight=1)
+            frame.rowconfigure(1, weight=0)
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=1)
+            frame.columnconfigure(2, weight=1)
+
+            # Place widgets
+            self.listbox_outgoing = tk.Listbox(frame, selectmode=tk.EXTENDED)
+            self.listbox_outgoing.grid(row=0, column=0, columnspan=3, **stickypad)
+            ttk.Button(frame, text="\u21BB", width=0, command=self.update).grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
+            ttk.Button(frame, text="Remove Selected", command=self.do_remove).grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
+            ttk.Button(frame, text="Share Songs...", command=self.do_share).grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
+
+            return frame
+
+        def separator(master):
+            """Widget to separate frames."""
+            return ttk.Separator(master)
+
+        # Place widgets
+        frame_settings(master).grid(row=0, **stickypad)
+        separator(master).grid(row=1, sticky=tk.EW, padx=10)
+        frame_outgoing(master).grid(row=2, **stickypad)
+        separator(master).grid(row=3, sticky=tk.EW, padx=10)
+        frame_incoming(master).grid(row=4, **stickypad)
 
     def browse_downloads(self):
         """Browser for a new downloads directory."""
@@ -129,8 +167,8 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
     def do_remove(self):
         """Remove selected songs."""
-        # for index in (int(s) for s in self.listbox_outgoing.curselection()):
-        #    self.outgoing[index].ignore()
+        for index in (int(s) for s in self.listbox_outgoing.curselection()):
+            self.outgoing[index].ignore()
         self.update()
 
     def do_share(self):
@@ -157,7 +195,20 @@ class Application(tk.Frame):  # pragma: no cover - manual test, pylint: disable=
 
     def update(self):
         """Update the list of outgoing and incoming songs."""
-        pass
+        # Cleanup outgoing songs
+        self.user.cleanup()
+        # Update outgoing songs list
+        logging.info("updating outoing songs...")
+        self.outgoing = list(self.user.outgoing)
+        self.listbox_outgoing.delete(0, tk.END)
+        for song in self.outgoing:
+            self.listbox_outgoing.insert(tk.END, song.out_string)
+        # Update incoming songs list
+        logging.info("updating incoming songs...")
+        self.incoming = list(self.user.incoming)
+        self.listbox_incoming.delete(0, tk.END)
+        for song in self.incoming:
+            self.listbox_incoming.insert(tk.END, song.in_string)
 
 
 def main(args=None):
@@ -165,6 +216,10 @@ def main(args=None):
     """
     # Main parser
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **SHARED)
+    # Hidden argument to override the root sharing directory path
+    parser.add_argument('--root', metavar="PATH", help=argparse.SUPPRESS)
+    # Hidden argument to run the program as a different user
+    parser.add_argument('--test', metavar='FirstLast', help=argparse.SUPPRESS)
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -174,15 +229,15 @@ def main(args=None):
 
     # Run the program
     try:
-        success = run(args, os.getcwd(), parser.error)
+        success = run(args)
     except KeyboardInterrupt:
         logging.debug("program manually closed")
-        success = False
-    if success:
-        logging.debug("program exited")
     else:
-        logging.debug("program exited with error")
-        sys.exit(1)
+        if success:
+            logging.debug("program exited")
+        else:
+            logging.debug("program exited with error")
+            sys.exit(1)
 
 
 def _configure_logging(verbosity=0):
@@ -203,13 +258,11 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def run(args, cwd, err):
+def run(args):
     """Start the GUI."""
 
-    logging.debug("unused: {}".format((args, cwd, err)))
-
     # Exit if tkinter is not available
-    if isinstance(tk, Mock):
+    if isinstance(tk, Mock) or isinstance(ttk, Mock):
         logging.error("tkinter is not available")
         return False
 
@@ -223,11 +276,11 @@ def run(args, cwd, err):
         root.bind_class('Listbox', '<Command-Button-1>',
                         root.bind_class('Listbox', '<Control-Button-1>'))
 
-        # Temporarily hide the window for other dialogs
+        # Temporarity hide the window for other dialogs
         root.withdraw()
 
         # Start the application
-        app = Application(master=root)
+        app = Application(master=root, root=args.root, name=args.test)
         app.mainloop()
 
         return True
