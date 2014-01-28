@@ -212,20 +212,22 @@ class Document(object):
 
         @raise DoorstopError: if the item cannot be found
         """
+        items = list(self)  # TODO: should this be cached another way?
+
+        # Search using the exact ID
+        for item in items:
+            if item.id.lower() == identifier.lower():
+                return item
+        logging.debug("no exactly matching ID: {}".format(identifier))
+
         # Search using the prefix and number
         prefix, number = split_id(identifier)
         if self.prefix.lower() == prefix.lower():
-            for item in self:
+            for item in items:
                 if item.number == number:
                     return item
             msg = "no matching{} number: {}".format(_kind, number)
             logging.debug(msg)
-
-        # Fall back to a search using the exact ID
-        else:
-            for item in self:
-                if item.id.lower() == identifier.lower():
-                    return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
