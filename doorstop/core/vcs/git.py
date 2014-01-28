@@ -24,7 +24,6 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
 
     @property
     def ignores(self):
-        """Get a list of glob expressions to ignore."""
         if not self._ignores:
             path = os.path.join(self.path, '.gitignore')
             if os.path.isfile(path):

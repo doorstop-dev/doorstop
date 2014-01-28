@@ -18,7 +18,11 @@ DIRECTORIES = {wc.DIRECTORY: wc for wc in _bwc.__subclasses__()}  # pylint: disa
 def find_root(cwd):
     """Find the root of the working copy.
 
-    @param: current working directory
+    @param cwd: current working directory
+
+    @return: path to root of working copy
+
+    @raise Doorstop: if the root cannot be found
     """
     path = cwd
 
