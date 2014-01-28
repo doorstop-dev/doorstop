@@ -28,44 +28,17 @@ from doorstop import settings
 class Application(ttk.Frame):  # pragma: no cover - manual test
     """Tkinter application for Doorstop."""
 
-    def __init__(self, master=None, root=None, name=None):
+    def __init__(self, master, root=""):
         ttk.Frame.__init__(self, master)
 
-        # Load the root sharing directory
-        self.root = root or MagicMock()
-
-        # Load the user
-        self.user = MagicMock()
-        try:
-            self.user = self.user or MagicMock()
-        except EnvironmentError:
-
-            while True:
-
-                msg = "Enter your name in the form 'FirstLast':"
-                text = simpledialog.askstring("Create a User", msg)
-                logging.debug("text: {}".format(repr(text)))
-                name = text.strip(" '") if text else None
-                if not name:
-                    raise KeyboardInterrupt("no user specified")
-                try:
-                    self.user = MagicMock()
-                except EnvironmentError:
-                    existing = MagicMock()
-                    msg = "Is this you:"
-                    for info in existing.info:
-                        msg += "\n\n'{}' on '{}'".format(info[1], info[0])
-                    if not existing.info or \
-                            messagebox.askyesno("Add to Existing User", msg):
-                        self.user = MagicMock()
-                        break
-                else:
-                    break
-
         # Create variables
-        self.path_downloads = tk.StringVar(value=self.user.path_downloads)
+        self.user = MagicMock()
+        self.path_downloads = MagicMock()
         self.outgoing = []
         self.incoming = []
+
+        self.stringvar_root = tk.StringVar()
+        self.stringvar_root.set(root)
 
         # Initialize the GUI
         self.listbox_outgoing = None
@@ -80,18 +53,26 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
         """Initialize frames and widgets."""  # pylint: disable=C0301
 
         sticky = {'sticky': tk.NSEW}
-        pad = {'padx': 5, 'pady': 5}
+        pad = {'padx': 2, 'pady': 2}
         stickypad = dict(chain(sticky.items(), pad.items()))
+        width_outline = 20
+        width_text = 40
+        width_code = 30
+        height_text = 10
+        height_ext = 5
+        height_code = 3
 
         # Configure grid
         master.rowconfigure(0, weight=0)
-        master.rowconfigure(2, weight=1)
-        master.rowconfigure(4, weight=1)
-        master.columnconfigure(0, weight=1)
+        master.rowconfigure(1, weight=1)
+        master.columnconfigure(0, weight=2)
+        master.columnconfigure(1, weight=1)
+        master.columnconfigure(2, weight=1)
+        master.columnconfigure(3, weight=2)
 
         # Create widgets
-        def frame_settings(master):
-            """Frame for the settings."""
+        def frame_project(master):
+            """Frame for the current project."""
             frame = ttk.Frame(master)
 
             # Configure grid
@@ -101,69 +82,178 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
             frame.columnconfigure(2, weight=0)
 
             # Place widgets
-            ttk.Label(frame, text="Downloads:").grid(row=0, column=0, **pad)
-            ttk.Entry(frame, state='readonly', textvariable=self.path_downloads).grid(row=0, column=1, **stickypad)
-            ttk.Button(frame, text="...", width=0, command=self.browse_downloads).grid(row=0, column=2, ipadx=5, **pad)
+            ttk.Label(frame, text="Project:").grid(row=0, column=0, **pad)
+            ttk.Entry(frame, state='readonly', textvariable=self.stringvar_root).grid(row=0, column=1, **stickypad)
+            ttk.Button(frame, text="...", width=0, command=self.browse_root).grid(row=0, column=2, **pad)
 
             return frame
 
-        def frame_incoming(master):
-            """Frame for incoming songs."""
+        def frame_document(master):
+            """Frame for the current document."""
             frame = ttk.Frame(master)
 
             # Configure grid
             frame.rowconfigure(0, weight=1)
-            frame.rowconfigure(1, weight=0)
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=1)
+            frame.columnconfigure(2, weight=0)
+
+            # Place widgets
+            ttk.Label(frame, text="Document:").grid(row=0, column=0, **pad)
+            self.stringvar_document = tk.StringVar()
+            self.optionmenu_documents = ttk.OptionMenu(frame, self.stringvar_document, "a", "b")
+            self.optionmenu_documents.grid(row=0, column=1, **stickypad)
+            ttk.Button(frame, text="New", width=0, command=self.new).grid(row=0, column=2, **pad)
+
+            return frame
+
+        def frame_outline(master):
+            """Frame for current document's outline and items."""
+            frame = ttk.Frame(master)
+
+            # Configure grid
+            frame.rowconfigure(0, weight=0)
+            frame.rowconfigure(1, weight=5)
+            frame.rowconfigure(2, weight=0)
+            frame.rowconfigure(3, weight=0)
+            frame.rowconfigure(4, weight=1)
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=0)
+            frame.columnconfigure(2, weight=0)
+            frame.columnconfigure(3, weight=0)
+            frame.columnconfigure(4, weight=1)
+            frame.columnconfigure(5, weight=1)
+
+            # Place widgets
+            ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **pad)
+            ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **pad)
+            self.listbox_outline = tk.Listbox(frame, width=width_outline)
+            self.listbox_outline.grid(row=1, column=0, columnspan=4, **stickypad)
+            self.listbox_items = tk.Listbox(frame, width=width_text)
+            self.listbox_items.grid(row=1, column=4, columnspan=2, **stickypad)
+            ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, **pad)
+            ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, **pad)
+            ttk.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, **pad)
+            ttk.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, **pad)
+            ttk.Button(frame, text="Add", width=0, command=self.add).grid(row=2, column=4, **pad)
+            ttk.Button(frame, text="Remove", width=0, command=self.remove).grid(row=2, column=5, **pad)
+            ttk.Label(frame, text="Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **pad)
+            tk.Text(frame, height=height_code, width=width_code).grid(row=4, column=0, columnspan=5, **stickypad)
+            ttk.Button(frame, text="Clear", width=0, command=self.clear).grid(row=4, column=5, **pad)
+
+            return frame
+
+        def frame_selected(master):
+            """Frame for the currently selected item."""
+            frame = ttk.Frame(master)
+
+            # Configure grid
+            frame.rowconfigure(0, weight=0)
+            frame.rowconfigure(1, weight=1)
+            frame.rowconfigure(2, weight=0)
+            frame.rowconfigure(3, weight=0)
+            frame.rowconfigure(4, weight=0)
+            frame.rowconfigure(5, weight=0)
+            frame.rowconfigure(6, weight=0)
+            frame.rowconfigure(7, weight=0)
+            frame.rowconfigure(8, weight=0)
+            frame.rowconfigure(9, weight=0)
+            frame.rowconfigure(10, weight=0)
+            frame.rowconfigure(11, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=1)
             frame.columnconfigure(2, weight=1)
 
             # Place widgets
-            self.listbox_incoming = tk.Listbox(frame, selectmode=tk.EXTENDED)
-            self.listbox_incoming.grid(row=0, column=0, columnspan=3, **stickypad)
-            ttk.Button(frame, text="\u21BB", width=0, command=self.update).grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
-            ttk.Button(frame, text="Ignore Selected", command=self.do_ignore).grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
-            ttk.Button(frame, text="Download Selected", command=self.do_download).grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
+            ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **pad)
+            tk.Text(frame, width=width_text, height=height_text).grid(row=1, column=0, columnspan=3, **stickypad)
+            ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **pad)
+            ttk.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **pad)
+            ttk.Checkbutton(frame, text="Active").grid(row=3, column=0, sticky=tk.W, **pad)
+            self.listbox_links = tk.Listbox(frame, width=10)
+            self.listbox_links.grid(row=3, column=1, rowspan=4, **stickypad)
+            self.stringvar_link = tk.StringVar()
+            ttk.Entry(frame, width=10, state='readonly', textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW, **pad)
+            ttk.Checkbutton(frame, text="Derived").grid(row=4, column=0, sticky=tk.W, **pad)
+            ttk.Button(frame, text="<< Link", width=0, command=self.link).grid(row=4, column=2, **pad)
+            ttk.Checkbutton(frame, text="Heading").grid(row=5, column=0, sticky=tk.W, **pad)
+            self.stringvar_unlink = tk.StringVar()
+            ttk.Entry(frame, width=10, state='readonly', textvariable=self.stringvar_unlink).grid(row=5, column=2, sticky=tk.EW, **pad)
+            ttk.Checkbutton(frame, text="Normative").grid(row=6, column=0, sticky=tk.W, **pad)
+            ttk.Button(frame, text=">> Unlink", width=0, command=self.link).grid(row=6, column=2, **pad)
+            ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **pad)
+            self.stringvar_ref = tk.StringVar()
+            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **pad)
+            ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **pad)
+            self.stringvar_extended = tk.StringVar()
+            self.optionmenu_extended = ttk.OptionMenu(frame, self.stringvar_extended, "a", "b")
+            self.optionmenu_extended.grid(row=10, column=0, columnspan=3, **pad)
+            tk.Text(frame, width=width_text, height=height_ext).grid(row=11, column=0, columnspan=3, **stickypad)
+
             return frame
 
-        def frame_outgoing(master):
-            """Frame for outgoing songs."""
+        def frame_family(master):
+            """Frame for the parent and child document items."""
             frame = ttk.Frame(master)
 
             # Configure grid
-            frame.rowconfigure(0, weight=1)
-            frame.rowconfigure(1, weight=0)
-            frame.columnconfigure(0, weight=0)
-            frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=1)
+            frame.rowconfigure(0, weight=0)
+            frame.rowconfigure(1, weight=1)
+            frame.rowconfigure(2, weight=0)
+            frame.rowconfigure(3, weight=1)
+            frame.columnconfigure(0, weight=1)
 
             # Place widgets
-            self.listbox_outgoing = tk.Listbox(frame, selectmode=tk.EXTENDED)
-            self.listbox_outgoing.grid(row=0, column=0, columnspan=3, **stickypad)
-            ttk.Button(frame, text="\u21BB", width=0, command=self.update).grid(row=1, column=0, sticky=tk.SW, ipadx=5, **pad)
-            ttk.Button(frame, text="Remove Selected", command=self.do_remove).grid(row=1, column=1, sticky=tk.SW, ipadx=5, **pad)
-            ttk.Button(frame, text="Share Songs...", command=self.do_share).grid(row=1, column=2, sticky=tk.SE, ipadx=5, **pad)
+            ttk.Label(frame, text="Linked Parent Items:").grid(row=0, column=0, sticky=tk.W, **pad)
+            self.listbox_parents = tk.Listbox(frame, width=width_text)
+            self.listbox_parents.grid(row=1, column=0, **stickypad)
+            ttk.Label(frame, text="Linked Child Items:").grid(row=2, column=0, sticky=tk.W, **pad)
+            self.listbox_children = tk.Listbox(frame, width=width_text)
+            self.listbox_children.grid(row=3, column=0, **stickypad)
 
             return frame
-
-        def separator(master):
-            """Widget to separate frames."""
-            return ttk.Separator(master)
 
         # Place widgets
-        frame_settings(master).grid(row=0, **stickypad)
-        separator(master).grid(row=1, sticky=tk.EW, padx=10)
-        frame_outgoing(master).grid(row=2, **stickypad)
-        separator(master).grid(row=3, sticky=tk.EW, padx=10)
-        frame_incoming(master).grid(row=4, **stickypad)
+        frame_project(master).grid(row=0, column=0, columnspan=2, **stickypad)
+        frame_document(master).grid(row=0, column=2, columnspan=2, **stickypad)
+        frame_outline(master).grid(row=1, column=0, **stickypad)
+        frame_selected(master).grid(row=1, column=1, columnspan=2, **stickypad)
+        frame_family(master).grid(row=1, column=3, **stickypad)
 
-    def browse_downloads(self):
-        """Browser for a new downloads directory."""
+    def browse_root(self):
+        """Browse the root of the project."""
         path = filedialog.askdirectory()
         logging.debug("path: {}".format(path))
         if path:
             self.user.path_downloads = path
             self.path_downloads.set(self.user.path_downloads)
+
+    def new(self):
+        raise NotImplementedError()
+
+    def left(self):
+        raise NotImplementedError()
+
+    def down(self):
+        raise NotImplementedError()
+
+    def up(self):
+        raise NotImplementedError()
+
+    def right(self):
+        raise NotImplementedError()
+
+    def add(self):
+        raise NotImplementedError()
+
+    def remove(self):
+        raise NotImplementedError()
+
+    def clear(self):
+        raise NotImplementedError()
+
+    def link(self):
+        raise NotImplementedError()
 
     def do_remove(self):
         """Remove selected songs."""
@@ -195,20 +285,20 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
 
     def update(self):
         """Update the list of outgoing and incoming songs."""
-        # Cleanup outgoing songs
-        self.user.cleanup()
-        # Update outgoing songs list
-        logging.info("updating outoing songs...")
-        self.outgoing = list(self.user.outgoing)
-        self.listbox_outgoing.delete(0, tk.END)
-        for song in self.outgoing:
-            self.listbox_outgoing.insert(tk.END, song.out_string)
-        # Update incoming songs list
-        logging.info("updating incoming songs...")
-        self.incoming = list(self.user.incoming)
-        self.listbox_incoming.delete(0, tk.END)
-        for song in self.incoming:
-            self.listbox_incoming.insert(tk.END, song.in_string)
+#         # Cleanup outgoing songs
+#         self.user.cleanup()
+#         # Update outgoing songs list
+#         logging.info("updating outoing songs...")
+#         self.outgoing = list(self.user.outgoing)
+#         self.listbox_outgoing.delete(0, tk.END)
+#         for song in self.outgoing:
+#             self.listbox_outgoing.insert(tk.END, song.out_string)
+#         # Update incoming songs list
+#         logging.info("updating incoming songs...")
+#         self.incoming = list(self.user.incoming)
+#         self.listbox_incoming.delete(0, tk.END)
+#         for song in self.incoming:
+#             self.listbox_incoming.insert(tk.END, song.in_string)
 
 
 def main(args=None):
@@ -270,7 +360,7 @@ def run(args):
 
         root = tk.Tk()
         root.title("{} ({})".format(__project__, __version__))
-        root.minsize(500, 500)
+        # root.minsize(1000, 600)
 
         # Map the Mac 'command' key to 'control'
         root.bind_class('Listbox', '<Command-Button-1>',
@@ -280,7 +370,7 @@ def run(args):
         root.withdraw()
 
         # Start the application
-        app = Application(master=root, root=args.root, name=args.test)
+        app = Application(master=root, root=args.root)
         app.mainloop()
 
         return True
