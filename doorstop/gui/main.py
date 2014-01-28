@@ -58,6 +58,7 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
         width_outline = 20
         width_text = 40
         width_code = 30
+        width_button = 3
         height_text = 10
         height_ext = 5
         height_code = 3
@@ -83,8 +84,8 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
 
             # Place widgets
             ttk.Label(frame, text="Project:").grid(row=0, column=0, **pad)
-            ttk.Entry(frame, state='readonly', textvariable=self.stringvar_root).grid(row=0, column=1, **stickypad)
-            ttk.Button(frame, text="...", width=0, command=self.browse_root).grid(row=0, column=2, **pad)
+            ttk.Entry(frame, textvariable=self.stringvar_root).grid(row=0, column=1, **stickypad)
+            ttk.Button(frame, text="...", width=width_button, command=self.browse_root).grid(row=0, column=2, **pad)
 
             return frame
 
@@ -101,9 +102,9 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
             # Place widgets
             ttk.Label(frame, text="Document:").grid(row=0, column=0, **pad)
             self.stringvar_document = tk.StringVar()
-            self.optionmenu_documents = ttk.OptionMenu(frame, self.stringvar_document, "a", "b")
-            self.optionmenu_documents.grid(row=0, column=1, **stickypad)
-            ttk.Button(frame, text="New", width=0, command=self.new).grid(row=0, column=2, **pad)
+            self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
+            self.combobox_documents.grid(row=0, column=1, **stickypad)
+            ttk.Button(frame, text="New...", command=self.new).grid(row=0, column=2, **pad)
 
             return frame
 
@@ -131,15 +132,15 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **stickypad)
             self.listbox_items = tk.Listbox(frame, width=width_text)
             self.listbox_items.grid(row=1, column=4, columnspan=2, **stickypad)
-            ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, **pad)
-            ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, **pad)
-            ttk.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, **pad)
-            ttk.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, **pad)
-            ttk.Button(frame, text="Add", width=0, command=self.add).grid(row=2, column=4, **pad)
-            ttk.Button(frame, text="Remove", width=0, command=self.remove).grid(row=2, column=5, **pad)
+            ttk.Button(frame, text="<", width=width_button, command=self.left).grid(row=2, column=0, **pad)
+            ttk.Button(frame, text="v", width=width_button, command=self.down).grid(row=2, column=1, **pad)
+            ttk.Button(frame, text="^", width=width_button, command=self.up).grid(row=2, column=2, **pad)
+            ttk.Button(frame, text=">", width=width_button, command=self.right).grid(row=2, column=3, **pad)
+            ttk.Button(frame, text="Add", command=self.add).grid(row=2, column=4, **pad)
+            ttk.Button(frame, text="Remove", command=self.remove).grid(row=2, column=5, **pad)
             ttk.Label(frame, text="Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **pad)
             tk.Text(frame, height=height_code, width=width_code).grid(row=4, column=0, columnspan=5, **stickypad)
-            ttk.Button(frame, text="Clear", width=0, command=self.clear).grid(row=4, column=5, **pad)
+            ttk.Button(frame, text="Clear", command=self.clear).grid(row=4, column=5, **pad)
 
             return frame
 
@@ -173,21 +174,21 @@ class Application(ttk.Frame):  # pragma: no cover - manual test
             self.listbox_links = tk.Listbox(frame, width=10)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **stickypad)
             self.stringvar_link = tk.StringVar()
-            ttk.Entry(frame, width=10, state='readonly', textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW, **pad)
+            ttk.Entry(frame, width=10, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW, **pad)
             ttk.Checkbutton(frame, text="Derived").grid(row=4, column=0, sticky=tk.W, **pad)
-            ttk.Button(frame, text="<< Link", width=0, command=self.link).grid(row=4, column=2, **pad)
+            ttk.Button(frame, text="<< Link", command=self.link).grid(row=4, column=2, **pad)
             ttk.Checkbutton(frame, text="Heading").grid(row=5, column=0, sticky=tk.W, **pad)
             self.stringvar_unlink = tk.StringVar()
-            ttk.Entry(frame, width=10, state='readonly', textvariable=self.stringvar_unlink).grid(row=5, column=2, sticky=tk.EW, **pad)
+            ttk.Entry(frame, width=10, textvariable=self.stringvar_unlink).grid(row=5, column=2, sticky=tk.EW, **pad)
             ttk.Checkbutton(frame, text="Normative").grid(row=6, column=0, sticky=tk.W, **pad)
-            ttk.Button(frame, text=">> Unlink", width=0, command=self.link).grid(row=6, column=2, **pad)
+            ttk.Button(frame, text=">> Unlink", command=self.link).grid(row=6, column=2, **pad)
             ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **pad)
             self.stringvar_ref = tk.StringVar()
-            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **pad)
+            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **stickypad)
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **pad)
             self.stringvar_extended = tk.StringVar()
-            self.optionmenu_extended = ttk.OptionMenu(frame, self.stringvar_extended, "a", "b")
-            self.optionmenu_extended.grid(row=10, column=0, columnspan=3, **pad)
+            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extended)
+            self.combobox_extended.grid(row=10, column=0, columnspan=3, **stickypad)
             tk.Text(frame, width=width_text, height=height_ext).grid(row=11, column=0, columnspan=3, **stickypad)
 
             return frame
