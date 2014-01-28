@@ -6,6 +6,7 @@ Changelog
 
 - Added Item.find_rlinks() to return reverse links and child documents
 - Changed the logging format
+- Added a '--project' argument to provide a path to the root of the project
 
 
 0.0.15 (2014/01/27)

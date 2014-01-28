@@ -42,6 +42,11 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.temp)
         self.assertRaises(SystemExit, main, [])
 
+    def test_main_custom_root(self):
+        """Verify 'doorstop' can be provided a custom root path."""
+        os.chdir(self.temp)
+        self.assertIs(None, main(['--project', '.']))
+
     @patch('doorstop.cli.main._run', Mock(return_value=False))
     def test_exit(self):
         """Verify 'doorstop' treats False as an error ."""

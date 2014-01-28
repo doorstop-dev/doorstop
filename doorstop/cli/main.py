@@ -48,6 +48,8 @@ def main(args=None):  # pylint: disable=R0915
     """
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
+    debug.add_argument('-j', '--project', metavar='PATH',
+                       help="path to the root of the project")
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     debug.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
@@ -207,7 +209,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         valid = tree.valid()
     except DoorstopError as error:
         logging.error(error)
@@ -225,7 +227,7 @@ def _run_new(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         document = tree.new(args.root, args.prefix,
                             parent=args.parent, digits=args.digits)
     except DoorstopError as error:
@@ -243,7 +245,7 @@ def _run_add(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         item = tree.add(args.prefix)
     except DoorstopError as error:
         logging.error(error)
@@ -260,7 +262,7 @@ def _run_remove(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         item = tree.remove(args.id)
     except DoorstopError as error:
         logging.error(error)
@@ -277,7 +279,7 @@ def _run_link(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         child, parent = tree.link(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
@@ -295,7 +297,7 @@ def _run_unlink(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         child, parent = tree.unlink(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
@@ -313,7 +315,7 @@ def _run_edit(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         item = tree.edit(args.id, tool=args.tool, launch=True)
     except DoorstopError as error:
         logging.error(error)
@@ -350,7 +352,7 @@ def _run_publish(args, cwd, _):
     @param err: function to call for CLI errors
     """
     try:
-        tree = build(cwd)
+        tree = build(cwd, root=args.project)
         document = tree.find_document(args.prefix)
     except DoorstopError as error:
         logging.error(error)
