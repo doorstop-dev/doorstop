@@ -16,8 +16,7 @@ from doorstop.core import vcs
 
 
 class Tree(object):
-    """
-    A bidirectional tree structure to store the hierarchy or documents.
+    """A bidirectional tree structure to store the hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
     document processing and validation.
@@ -60,12 +59,12 @@ class Tree(object):
 
     @staticmethod
     def from_list(documents, root=None):
-        """Get a new tree from the list of documents.
+        """Get a new tree from a list of documents.
 
         @param documents: list of Documents
         @param root: path to root of the project
 
-        @return: new tree
+        @return: new Tree
 
         @raise DoorstopError: when the tree cannot be built
         """
@@ -104,11 +103,11 @@ class Tree(object):
         return tree
 
     def _place(self, document):
-        """Attempt to place the Document in the current tree.
+        """Attempt to place the document in the current tree.
 
         @param document: Document to add
 
-        @raise DoorstopError: if the Document cannot yet be placed
+        @raise DoorstopError: if the document cannot yet be placed
         """
         logging.debug("trying to add '{}'...".format(document))
         if not self.document:
@@ -179,7 +178,7 @@ class Tree(object):
         return document
 
     def add(self, prefix):
-        """Add a new item to an existing document.
+        """Add a new item to an existing document by prefix.
 
         @param prefix: document's prefix
 
@@ -193,11 +192,11 @@ class Tree(object):
         return item
 
     def remove(self, identifier):
-        """Remove an new item from a document.
+        """Remove an item from a document by ID.
 
         @param identifier: item's ID
 
-        @return: removed item
+        @return: removed Item
 
         @raise DoorstopError: if the item cannot be removed
         """
@@ -206,12 +205,12 @@ class Tree(object):
         return item
 
     def link(self, cid, pid):
-        """Add a new link between two items.
+        """Add a new link between two items by IDs.
 
         @param cid: child item's ID
         @param pid: parent item's ID
 
-        @return: (child, parent) item pair
+        @return: child Item, parent Item
 
         @raise DoorstopError: if the link cannot be created
         """
@@ -225,12 +224,12 @@ class Tree(object):
         return child, parent
 
     def unlink(self, cid, pid):
-        """Remove a link between two items.
+        """Remove a link between two items by IDs.
 
         @param cid: child item's ID
         @param pid: parent item's ID
 
-        @return: (child, parent) item pair
+        @return: child Item, parent Item
 
         @raise DoorstopError: if the link cannot be removed
         """
@@ -244,7 +243,7 @@ class Tree(object):
         return child, parent
 
     def edit(self, identifier, tool=None, launch=False):
-        """Open an item for editing.
+        """Open an item for editing by ID.
 
         @param identifier: ID of item to edit
         @param tool: alternative text editor to open the item
@@ -264,7 +263,7 @@ class Tree(object):
         return item
 
     def find_document(self, prefix):
-        """Return a document from its prefix.
+        """Get a document from its prefix.
 
         @param prefix: document's prefix
 
@@ -279,7 +278,7 @@ class Tree(object):
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def find_item(self, identifier, _kind=''):
-        """Return an item from its ID.
+        """Get an item from its ID.
 
         @param identifier: item ID
 
@@ -336,8 +335,7 @@ class Tree(object):
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            for issue in document.iter_issues(tree=self,
-                                              ignored=self.vcs.ignored):
+            for issue in document.iter_issues(tree=self):
                 # Prepend the document's prefix
                 yield type(issue)("{}: {}".format(document.prefix, issue))
 
@@ -362,12 +360,12 @@ def _open(path, tool=None):  # pragma: no cover, integration test
 
 
 def build(cwd=None, root=None):
-    """Build a document hierarchy from the current root directory.
+    """Build a tree from the current working directory or explicit root.
 
     @param cwd: current working directory
     @param root: path to root of the working copy
 
-    @return: new tree
+    @return: new Tree
 
     @raise DoorstopError: when the tree cannot be built
     """
@@ -379,11 +377,11 @@ def build(cwd=None, root=None):
 
     # Find all documents in the working copy
     logging.info("looking for documents in {}...".format(root))
-    _add_document_from_path(root, root, documents)
+    _document_from_path(root, root, documents)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
-            _add_document_from_path(path, root, documents)
+            _document_from_path(path, root, documents)
 
     # Build the tree
     if not documents:
@@ -394,12 +392,12 @@ def build(cwd=None, root=None):
     return tree
 
 
-def _add_document_from_path(path, root, documents):
+def _document_from_path(path, root, documents):
     """Attempt to create and append a document from the specified path.
 
     @param path: path to a potential document
     @param root: path to root of working copy
-    @param documents: list of documents to append results
+    @param documents: list of Documents to append results
     """
     try:
         document = Document(path, root)

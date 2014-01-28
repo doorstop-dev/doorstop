@@ -64,27 +64,27 @@ def main(args=None):  # pylint: disable=R0915
                           help="create a new document directory",
                           **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
-    sub.add_argument('root', help="path to a directory for document items")
+    sub.add_argument('root', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
     sub = subs.add_parser('add',
-                          help="add a new item to a document directory",
+                          help="create an item file in a document directory",
                           **shared)
     sub.add_argument('prefix',
                      help="document prefix for the new item")
 
     # Remove subparser
     sub = subs.add_parser('remove',
-                          help="remove an item from a document directory",
+                          help="remove an item file from a document directory",
                           **shared)
     sub.add_argument('id', metavar='ID',
-                     help="item ID to remove from a document")
+                     help="item ID to remove from its document")
 
     # Link subparser
     sub = subs.add_parser('link',
-                          help="add a new link between two document items",
+                          help="add a new link between two items",
                           **shared)
     sub.add_argument('child',
                      help="child item ID to link to the parent")
@@ -93,7 +93,7 @@ def main(args=None):  # pylint: disable=R0915
 
     # Unlink subparser
     sub = subs.add_parser('unlink',
-                          help="remove a link between two document items",
+                          help="remove a link between two items",
                           **shared)
     sub.add_argument('child',
                      help="child item ID to unlink from parent")
@@ -110,15 +110,15 @@ def main(args=None):  # pylint: disable=R0915
 
     # Import subparser
     sub = subs.add_parser('import',
-                          help="import document items from another format",
+                          help="import a document from another format",
                           **shared)
-    sub.add_argument('input', help="file to import")
+    sub.add_argument('input', help="path to a file for import")
 
     # Export subparser
     sub = subs.add_parser('export',
-                          help="export document items to another format",
+                          help="export a document to another format",
                           **shared)
-    sub.add_argument('output', help="file to export")
+    sub.add_argument('output', help="path to a file for export")
 
     # Publish subparser
     sub = subs.add_parser('publish',

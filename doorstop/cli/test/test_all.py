@@ -132,7 +132,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(os.path.exists(self.ITEM))
 
     def test_remove_error(self):
-        """Verify 'doorstop remove' returns an error on unknown items."""
+        """Verify 'doorstop remove' returns an error on unknown item IDs."""
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
 

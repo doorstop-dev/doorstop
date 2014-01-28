@@ -38,7 +38,7 @@ def auto_save(func):
 
 
 class Item(object):  # pylint: disable=R0904
-    """Represents a file with linkable text that is part of a document."""
+    """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
 
@@ -148,7 +148,7 @@ class Item(object):  # pylint: disable=R0904
             pass  # just touch the file
 
     def load(self, reload=False):
-        """Load the item's properties from a file."""
+        """Load the item's properties from its file."""
         if getattr(self, '_loaded', False) and not reload:
             return
         logging.debug("loading {}...".format(repr(self)))
@@ -182,14 +182,14 @@ class Item(object):  # pylint: disable=R0904
         setattr(self, '_loaded', True)
 
     def _read(self):  # pragma: no cover, integration test
-        """Read text from the file."""
+        """Read text from the item's file."""
         if not self._exists:
             raise DoorstopError("cannot load from deleted: {}".format(self))
         with open(self.path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 
     def save(self):
-        """Format and save the item's properties to a file."""
+        """Format and save the item's properties to its file."""
         logging.debug("saving {}...".format(repr(self)))
         # Format the data items
         data = {}
@@ -206,6 +206,7 @@ class Item(object):  # pylint: disable=R0904
             elif key == 'links':
                 data['links'] = sorted(value)
             else:
+                # TODO: dump long strings as Literal (and SBD?)
                 data[key] = value
         # Dump the data to YAML
         dump = yaml.dump(data, default_flow_style=False)
@@ -216,7 +217,7 @@ class Item(object):  # pylint: disable=R0904
         self.auto = True
 
     def _write(self, text):  # pragma: no cover, integration test
-        """Write text to the file."""
+        """Write text to the item's file."""
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
         with open(self.path, 'wb') as outfile:
@@ -238,7 +239,7 @@ class Item(object):  # pylint: disable=R0904
     # TODO: think of a better name for this property
     @property
     def id_relpath(self):
-        """Get the item's ID and relative path string."""
+        """Get the item's ID + relative path string."""
         return "{} ({})".format(self.id, self.relpath)
 
     @property
@@ -254,7 +255,7 @@ class Item(object):  # pylint: disable=R0904
     @property
     @auto_load
     def level(self):
-        """Get the item level."""
+        """Get the item's level."""
         return self._data['level']
 
     @level.setter
@@ -265,7 +266,7 @@ class Item(object):  # pylint: disable=R0904
 
     @property
     def depth(self):
-        """Get the heading order based on the level."""
+        """Get the item's heading order based on it's level."""
         level = list(self.level)
         while level[-1] == 0:
             del level[-1]
@@ -274,12 +275,14 @@ class Item(object):  # pylint: disable=R0904
     @property
     @auto_load
     def active(self):
-        """Indicates the item should be considered for linking.
+        """Get the item's active status.
 
-        Inactive items are intended to be used for:
+        An inactive item will not be validated. Inactive items are
+        intended to be used for:
          - future requirements
          - temporarily disabled requirements or tests
          - externally implemented requirements
+         - etc.
 
         """
         return self._data['active']
@@ -299,6 +302,7 @@ class Item(object):  # pylint: disable=R0904
         Non-normative items are intended to be used for:
          - headings
          - comments
+         - etc.
 
         """
         return self._data['normative']
@@ -316,7 +320,7 @@ class Item(object):  # pylint: disable=R0904
 
         A derived item does not have links to items in its parent
         document, but should still be linked to by items in its child
-        document.
+        documents.
         """
         return self._data['derived']
 
@@ -346,7 +350,11 @@ class Item(object):  # pylint: disable=R0904
     @property
     @auto_load
     def ref(self):
-        """Get the item's external file reference."""
+        """Get the item's external file reference.
+
+        An external reference can be part of a line in a text file or
+        the filename of any type of file.
+        """
         return self._data['ref']
 
     @ref.setter
@@ -358,20 +366,26 @@ class Item(object):  # pylint: disable=R0904
     @property
     @auto_load
     def links(self):
-        """Get the items this item links to."""
+        """Get a list of the item IDs this item links to."""
         return sorted(self._data['links'])
 
     @links.setter
     @auto_save
     def links(self, links):
-        """Set the items this item links to."""
+        """Set the list of item IDs this item links to."""
         self._data['links'] = set(links)
 
     # extended attributes ####################################################
 
     @auto_load
     def get(self, name, default=None):
-        """Get an extended attribute."""
+        """Get an extended attribute.
+
+        @param name: name of extended attribute
+        @param default: value to return for missing attributes
+
+        @return: value of extended attribute
+        """
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
@@ -383,7 +397,11 @@ class Item(object):  # pylint: disable=R0904
     @auto_load
     @auto_save
     def set(self, name, value):
-        """Set an extended attribute."""
+        """Set an extended attribute.
+
+        @param name: name of extended attribute
+        @param value: value to set
+        """
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
@@ -397,31 +415,29 @@ class Item(object):  # pylint: disable=R0904
     @auto_load
     @auto_save
     def add_link(self, item):
-        """Add a new link to another item."""
+        """Add a new link to another item ID."""
         self._data['links'].add(item)
 
     @auto_load
     @auto_save
     def remove_link(self, item):
-        """Remove an existing link."""
+        """Remove an existing link by item ID."""
         try:
             self._data['links'].remove(item)
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def valid(self, document=None, tree=None, ignored=None):
+    def valid(self, document=None, tree=None):
         """Check the item for validity.
 
-        @param document: document to validate the item
-        @param tree: tree to validate the item
-        @param ignored: function to determine if a path should be skipped
+        @param document: Document containing the item
+        @param tree: Tree containing the item
 
         @return: indication that the item is valid
         """
         valid = True
         # Display all issues
-        for issue in self.iter_issues(document=document, tree=tree,
-                                      ignored=ignored):
+        for issue in self.iter_issues(document=document, tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -433,12 +449,11 @@ class Item(object):  # pylint: disable=R0904
         # Return the result
         return valid
 
-    def iter_issues(self, document=None, tree=None, ignored=None):
+    def iter_issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
-        @param document: document to validate the item
-        @param tree: tree to validate the item
-        @param ignored: function to determine if a path should be skipped
+        @param document: Document containing the item
+        @param tree: Tree containing the item
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
@@ -455,7 +470,7 @@ class Item(object):  # pylint: disable=R0904
             yield DoorstopWarning("no text")
         # Check external references
         try:
-            self.find_ref(ignored=ignored)
+            self.find_ref(ignored=tree.vcs.ignored if tree else None)
         except DoorstopError as exc:
             yield exc
         # Check links
@@ -566,10 +581,10 @@ class Item(object):  # pylint: disable=R0904
     def find_rlinks(self, tree, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
-        @param tree: tree to look up items
+        @param tree: Tree containing the item
         @param find_all: find all items (not just the first) before returning
 
-        @return: list of found item IDs, list of all child documents
+        @return: list of found item IDs, list of all child Documents
         """
         rlinks = []
         children = []

@@ -14,7 +14,7 @@ from doorstop.settings import SEP_CHARS
 
 
 class Document(object):
-    """Represents a document containing an outline of items."""
+    """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
@@ -25,12 +25,12 @@ class Document(object):
 
     def __init__(self, path, root=os.getcwd(),
                  _prefix=None, _sep=None, _parent=None, _digits=None):
-        """Load a Document from an exiting directory.
+        """Load a document from an exiting directory.
 
         Internally, this constructor is also used to initialize new
         documents by providing default properties.
 
-        @param path: path to Document directory
+        @param path: path to document directory
         @param root: path to root of project
         """
         # Ensure the directory is valid
@@ -75,7 +75,7 @@ class Document(object):
 
     @staticmethod
     def new(path, root, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
-        """Create a new Document.
+        """Create a new document.
 
         @param path: path to directory for the new document
         @param root: path to root of the project
@@ -111,7 +111,7 @@ class Document(object):
             pass  # just touch the file
 
     def load(self):
-        """Load the document's properties from a file."""
+        """Load the document's properties from its file."""
         logging.debug("loading {}...".format(repr(self)))
         text = self._read()
         data = yaml.load(text)
@@ -124,7 +124,7 @@ class Document(object):
                 self.digits = settings.get('digits', self.digits)
 
     def _read(self):  # pragma: no cover, integration test
-        """Read text from the file."""
+        """Read text from the document's file."""
         path = self.config
         if not os.path.exists(path):
             logging.debug("document does not exist yet: {}".format(path))
@@ -133,7 +133,7 @@ class Document(object):
             return infile.read().decode('UTF-8')
 
     def save(self):
-        """Save the document's properties to a file."""
+        """Save the document's properties to its file."""
         logging.debug("saving {}...".format(repr(self)))
         settings = {'prefix': self.prefix,
                     'sep': self.sep,
@@ -145,7 +145,7 @@ class Document(object):
         self._write(text)
 
     def _write(self, text):  # pragma: no cover, integration test
-        """Write text to the file."""
+        """Write text to the document's file."""
         path = self.config
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
@@ -161,12 +161,12 @@ class Document(object):
     # TODO: think of a better name for this property
     @property
     def prefix_relpath(self):
-        """Get the document's prefix and relative path string."""
+        """Get the document's prefix + relative path string."""
         return "{} ({})".format(self.prefix, self.relpath)
 
     @property
     def config(self):
-        """Get the path to the document's configuration."""
+        """Get the path to the document's file."""
         return os.path.join(self.path, Document.CONFIG)
 
     @property
@@ -229,17 +229,16 @@ class Document(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, tree=None, ignored=None):
+    def valid(self, tree=None):
         """Check the document (and its items) for validity.
 
-        @param tree: tree to validate the document
-        @param ignored: function to determine if a path should be skipped
+        @param tree: Tree containing the document
 
         @return: indication that document is valid
         """
         valid = True
         # Display all issues
-        for issue in self.iter_issues(tree=tree, ignored=ignored):
+        for issue in self.iter_issues(tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -251,11 +250,10 @@ class Document(object):
         # Return the result
         return valid
 
-    def iter_issues(self, tree=None, ignored=None):
+    def iter_issues(self, tree=None):
         """Yield all the document's issues.
 
-        @param tree: tree to validate the item
-        @param ignored: function to determine if a path should be skipped
+        @param tree: Tree containing the document
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
@@ -266,7 +264,6 @@ class Document(object):
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            for issue in item.iter_issues(document=self, tree=tree,
-                                          ignored=ignored):
+            for issue in item.iter_issues(document=self, tree=tree):
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))

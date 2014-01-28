@@ -16,7 +16,7 @@ CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 def publish(document, path, ext=None, ignored=None, **kwargs):
     """Publish a document to a given format.
 
-    @param document: Doorstop document to publish
+    @param document: Document to publish
     @param path: output file location with desired extension
     @param ext: file extension to override output path's extension
     @param ignored: function to determine if a path should be skipped
@@ -36,7 +36,7 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
 def iter_lines(document, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param document: Doorstop document to publish
+    @param document: Document to publish
     @param ext: file extension to specify the output format
     @param ignored: function to determine if a path should be skipped
 
