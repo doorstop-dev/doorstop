@@ -47,7 +47,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self._loaded = False
 
     @staticmethod
-    def _new(path, name='file'):  # pragma: no cover, integration test
+    def _new(path, name):  # pragma: no cover, integration test
         """Create a new file for the object.
 
         @param path: path to new file
@@ -57,6 +57,9 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if os.path.exists(path):
             raise DoorstopError("{} already exists: {}".format(name, path))
+        dirpath = os.path.dirname(path)
+        if not os.path.isdir(dirpath):
+            os.makedirs(dirpath)
         with open(path, 'w'):
             pass  # just touch the file
 

@@ -33,15 +33,17 @@ class MockDocument(Document):
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
-    def _mock_read(self):
-        """Mock read function."""
+    def _mock_read(self, path):
+        """Mock read method."""
+        logging.debug("mock read path: {}".format(path))
         text = self._file
-        logging.debug("mock read: {0}".format(repr(text)))
+        logging.debug("mock read text: {}".format(repr(text)))
         return text
 
-    def _mock_write(self, text):
-        """Mock write function"""
-        logging.debug("mock write: {0}".format(repr(text)))
+    def _mock_write(self, text, path):
+        """Mock write method"""
+        logging.debug("mock write text: {}".format(repr(text)))
+        logging.debug("mock write path: {}".format(path))
         self._file = text
 
     _new = Mock()
@@ -108,6 +110,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(4, len(items))
 
     @patch('doorstop.core.document.Document', MockDocument)
+    @patch('doorstop.core.document.Document.load', Mock())
     def test_new(self):
         """Verify a new document can be created with defaults."""
         path = os.path.join(EMPTY, '.doorstop.yml')
@@ -117,7 +120,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             os.remove(path)
         self.assertEqual('NEW', doc.prefix)
         self.assertEqual(2, doc.digits)
-        MockDocument._new.assert_called_once_with(EMPTY, path)
+        MockDocument._new.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""

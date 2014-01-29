@@ -7,13 +7,14 @@ import logging
 
 import yaml
 
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.item import Item, split_id
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Document(object):
+class Document(BaseFileObject):
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
@@ -33,14 +34,18 @@ class Document(object):
         @param path: path to document directory
         @param root: path to root of project
         """
+        super().__init__()
+        self._loaded_items = False
         # Ensure the directory is valid
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
             msg = "no {} in {}".format(Document.CONFIG, relpath)
             raise DoorstopError(msg)
-        # Initialize Document
+        # Initialize the document
         self.path = path
         self.root = root
+
+        # TODO: init like Item
         self.prefix = _prefix or Document.DEFAULT_PREFIX
         self.sep = _sep or Document.DEFAULT_SEP
         self.parent = _parent or Document.DEFAULT_PARENT
@@ -93,27 +98,21 @@ class Document(object):
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
         # Create the document directory
-        Document._new(path, config)
+        Document._new(config, name='document')
         # Return the new document
         return Document(path, root=root, _prefix=prefix, _sep=sep,
                         _parent=parent, _digits=digits)
 
-    @staticmethod
-    def _new(path, config):  # pragma: no cover, integration test
-        """Create a new document directory.
-
-        @param path: path to new document directory
-        @param config: path to new document config file
-        """
-        if not os.path.exists(path):
-            os.makedirs(path)
-        with open(config, 'w'):
-            pass  # just touch the file
-
-    def load(self):
+    def load(self, reload=False):
         """Load the document's properties from its file."""
+        if self._loaded and not reload:
+            return
         logging.debug("loading {}...".format(repr(self)))
-        text = self._read()
+        # Read the YAML from file
+        text = self._read(self.config)
+        # Parse the YAML data
+
+        # TODO: load like Item
         data = yaml.load(text)
         if data:
             sets = data.get('settings', {})
@@ -122,33 +121,29 @@ class Document(object):
                 self.sep = sets.get('sep', self.sep)
                 self.parent = sets.get('parent', self.parent)
                 self.digits = sets.get('digits', self.digits)
-
-    def _read(self):  # pragma: no cover, integration test
-        """Read text from the document's file."""
-        path = self.config
-        if not os.path.exists(path):
-            logging.debug("document does not exist yet: {}".format(path))
-            return ""
-        with open(path, 'rb') as infile:
-            return infile.read().decode('UTF-8')
+        # Set meta attributes
+        self._loaded = True
 
     def save(self):
         """Save the document's properties to its file."""
         logging.debug("saving {}...".format(repr(self)))
+        # Format the data items
+
+        # TODO: save like Item
         sets = {'prefix': self.prefix,
                 'sep': self.sep,
                 'digits': self.digits}
         if self.parent:
             sets['parent'] = self.parent
         data = {'settings': sets}
-        text = yaml.dump(data, default_flow_style=False)
-        self._write(text)
 
-    def _write(self, text):  # pragma: no cover, integration test
-        """Write text to the document's file."""
-        path = self.config
-        with open(path, 'wb') as outfile:
-            outfile.write(bytes(text, 'UTF-8'))
+        # Dump the data to YAML
+        text = yaml.dump(data, default_flow_style=False)
+        # Save the YAML to file
+        self._write(text, self.config)
+        # Set meta attributes
+        self._loaded = False
+        self.auto = True
 
     # attributes #############################################################
 
@@ -160,6 +155,7 @@ class Document(object):
 
     # TODO: think of a better name for this property
     @property
+    @auto_load
     def prefix_relpath(self):
         """Get the document's prefix + relative path string."""
         return "{} ({})".format(self.prefix, self.relpath)

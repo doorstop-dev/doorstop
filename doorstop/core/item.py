@@ -51,11 +51,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
             raise DoorstopError(msg)
-        # Initialize Item
+        # Initialize the item
         self.path = path
         self.root = root
         self._data = {}
-        # Set defaults
+        # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
         self._data['normative'] = Item.DEFAULT_NORMATIVE
@@ -102,7 +102,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
-        Item._new(path2)
+        Item._new(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root)
         item.auto = False

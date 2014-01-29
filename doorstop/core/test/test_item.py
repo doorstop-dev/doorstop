@@ -317,7 +317,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
-        MockItem._new.assert_called_once_with(path)
+        MockItem._new.assert_called_once_with(path, name='item')
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_special(self):
@@ -327,7 +327,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 0), item.level)
-        MockItem._new.assert_called_once_with(path)
+        MockItem._new.assert_called_once_with(path, name='item')
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
