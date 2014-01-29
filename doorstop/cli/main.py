@@ -110,18 +110,6 @@ def main(args=None):  # pylint: disable=R0915
     sub.add_argument('-t', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
 
-    # Import subparser
-    sub = subs.add_parser('import',
-                          help="import a document from another format",
-                          **shared)
-    sub.add_argument('input', help="path to a file for import")
-
-    # Export subparser
-    sub = subs.add_parser('export',
-                          help="export a document to another format",
-                          **shared)
-    sub.add_argument('output', help="path to a file for export")
-
     # Publish subparser
     sub = subs.add_parser('publish',
                           help="publish a document as text or another format",
@@ -323,26 +311,6 @@ def _run_edit(args, cwd, _):
     else:
         print("opened item: {}".format(item.id_relpath))
         return True
-
-
-def _run_import(args, cwd, err):
-    """Process arguments and run the `doorstop import` subcommand.
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
-    """
-    logging.warning((args, cwd, err))
-    raise NotImplementedError("'doorstop import' not implemented")
-
-
-def _run_export(args, cwd, err):
-    """Process arguments and run the `doorstop export` subcommand.
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
-    """
-    logging.warning((args, cwd, err))
-    raise NotImplementedError("'doorstop export' not implemented")
 
 
 def _run_publish(args, cwd, _):
