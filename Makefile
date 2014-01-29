@@ -32,21 +32,21 @@ NOSE := $(BIN)/nosetests$(EXE)
 # Installation ###############################################################
 
 .PHONY: all
-all: develop
+all: env
 
-.PHONY: develop
-develop: .env $(EGG_INFO)
+.PHONY: env
+env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): $(SOURCES)
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
-.PHONY: .env
-.env: $(PIP)
+.PHONY: .virtualenv
+.virtualenv: $(PIP)
 $(PIP):
 	virtualenv --python $(VERSION) $(VIRTUALENV)
 
 .PHONY: depends
-depends: .env $(DEPENDS) $(SOURCES)
+depends: .virtualenv $(DEPENDS) Makefile
 $(DEPENDS):
 	$(PIP) install docutils pdoc pep8 pylint nose coverage wheel
 	touch $(DEPENDS)  # flag to indicate dependencies are installed
@@ -63,11 +63,11 @@ docs/README.html: README.rst
 
 .PHONY: apidocs
 apidocs: depends apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(shell find $(PACKAGE) -name '*.py')
+apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: req
-req: develop docs/gen/*.gen.*
+req: env docs/gen/*.gen.*
 docs/gen/*.gen.*: */*/*.yml */*/*/*.yml */*/*/*/*.yml
 	$(BIN)/doorstop
 	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
@@ -103,25 +103,30 @@ pylint: depends
 
 .PHONY: check
 check: depends
-	$(MAKE) doc
 	$(MAKE) pep8
 	$(MAKE) pylint
 
 # Testing ####################################################################
 
 .PHONY: test
-test: develop depends
+test: env depends
 	$(NOSE)
 
 .PHONY: tests
-tests: develop depends
+tests: env depends
 	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
-tutorial: develop
+tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 # Cleanup ####################################################################
+
+.PHONY: clean
+clean: .clean-dist .clean-test .clean-doc .clean-build
+
+.PHONY: clean-all
+clean-all: clean .clean-env 
 
 .PHONY: .clean-env
 .clean-env:
@@ -129,11 +134,13 @@ tutorial: develop
 
 .PHONY: .clean-build
 .clean-build:
-		find . -name '*.pyc' -delete; find . -name '__pycache__' -delete
+	find . -name '*.pyc' -delete
+	find . -name '__pycache__' -delete
+	rm -rf *.egg-info
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html README.rst
+	rm -rf apidocs docs/README*.html
 
 .PHONY: .clean-test
 .clean-test:
@@ -141,25 +148,24 @@ tutorial: develop
 
 .PHONY: .clean-dist
 .clean-dist:
-	rm -rf dist build *.egg-info 
-
-.PHONY: clean
-clean: .clean-dist .clean-test .clean-doc .clean-build .clean-env 
+	rm -rf dist build
 
 # Release ####################################################################
 
 .PHONY: dist
-dist: develop depends
+dist: env depends check test tests doc
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
-
+	$(MAKE) read
+ 
 .PHONY: upload
-upload: develop depends
+upload: env depends doc
 	$(PYTHON) setup.py register sdist upload
-	$(PYTHON) setup.py bdist_wheel upload	
+	$(PYTHON) setup.py bdist_wheel upload
+	$(MAKE) dev  # restore the development environemnt
 
 # Execution ##################################################################
 
 .PHONY: gui
-gui: develop
+gui: env
 	$(BIN)/$(PACKAGE)-gui$(EXE)
