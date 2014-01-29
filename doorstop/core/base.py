@@ -7,6 +7,8 @@ import abc
 import functools
 import logging
 
+import yaml
+
 from doorstop.common import DoorstopError
 
 
@@ -80,6 +82,20 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             raise DoorstopError("cannot read from deleted: {}".format(self))
         with open(path, 'rb') as infile:
             return infile.read().decode('UTF-8')
+
+    def _parse(self, text):
+        """Load YAML data from text."""
+        # Load the YAML data
+        try:
+            data = yaml.load(text) or {}
+        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
+            msg = "invalid contents: {}:\n{}".format(self, exc)
+            raise DoorstopError(msg) from None
+       # Ensure data is a dictionary
+        if not isinstance(data, dict):
+            msg = "invalid contents: {}".format(self)
+            raise DoorstopError(msg)
+        return data
 
     @abc.abstractmethod
     def save(self):  # pragma: no cover, abstract method

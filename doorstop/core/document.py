@@ -19,13 +19,15 @@ class Document(BaseFileObject):
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
+
     DEFAULT_PREFIX = 'REQ'
-    DEFAULT_SEP = ''
-    DEFAULT_PARENT = None  # which indicates this is the root document
     DEFAULT_DIGITS = 3
+    DEFAULT_SEP = ''
+    DEFAULT_PARENT = None  # a parent of None indicates this is the root
 
     def __init__(self, path, root=os.getcwd(),
-                 _prefix=None, _sep=None, _parent=None, _digits=None):
+                 # TODO: remove these to match Item
+                 _prefix=None, _sep=None, _digits=None, _parent=None):
         """Load a document from an exiting directory.
 
         Internally, this constructor is also used to initialize new
@@ -44,16 +46,13 @@ class Document(BaseFileObject):
         # Initialize the document
         self.path = path
         self.root = root
-
-        # TODO: init like Item
-        self.prefix = _prefix or Document.DEFAULT_PREFIX
-        self.sep = _sep or Document.DEFAULT_SEP
-        self.parent = _parent or Document.DEFAULT_PARENT
-        self.digits = _digits or Document.DEFAULT_DIGITS
-        self.load()
-        self.save()
-        # Mark if skippable
         self.skip = os.path.isfile(os.path.join(self.path, Document.SKIP))
+        self._data = {}
+        # Set default values
+        self._data['prefix'] = _prefix or Document.DEFAULT_PREFIX
+        self._data['digits'] = _digits or Document.DEFAULT_DIGITS
+        self._data['sep'] = _sep or Document.DEFAULT_SEP
+        self._data['parent'] = _parent or Document.DEFAULT_PARENT
 
     def __repr__(self):
         return "Document({})".format(repr(self.path))
@@ -79,15 +78,15 @@ class Document(BaseFileObject):
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document.
 
         @param path: path to directory for the new document
         @param root: path to root of the project
         @param prefix: prefix for the new document
         @param sep: separator between prefix and numbers
-        @param parent: parent ID for the new document
         @param digits: number of digits for the new document
+        @param parent: parent ID for the new document
 
         @raise DoorstopError: if the document already exists
         """
@@ -100,27 +99,30 @@ class Document(BaseFileObject):
         # Create the document directory
         Document._new(config, name='document')
         # Return the new document
-        return Document(path, root=root, _prefix=prefix, _sep=sep,
-                        _parent=parent, _digits=digits)
+        return Document(path, root=root,
+                        _prefix=prefix, _sep=sep, _digits=digits,
+                        _parent=parent,)
 
     def load(self, reload=False):
         """Load the document's properties from its file."""
         if self._loaded and not reload:
             return
         logging.debug("loading {}...".format(repr(self)))
-        # Read the YAML from file
+        # Read text from file
         text = self._read(self.config)
-        # Parse the YAML data
-
-        # TODO: load like Item
-        data = yaml.load(text)
-        if data:
-            sets = data.get('settings', {})
-            if sets:
-                self.prefix = sets.get('prefix', self.prefix)
-                self.sep = sets.get('sep', self.sep)
-                self.parent = sets.get('parent', self.parent)
-                self.digits = sets.get('digits', self.digits)
+        # Parse YAML data from text
+        data = self._parse(text)
+        # Store parsed data
+        sets = data.get('settings', {})
+        for key, value in sets.items():
+            if key == 'prefix':
+                self._data['prefix'] = value.strip()
+            elif key == 'sep':
+                self._data['sep'] = value.strip()
+            elif key == 'parent':
+                self._data['parent'] = value.strip()
+            elif key == 'digits':
+                self._data['digits'] = int(value)
         # Set meta attributes
         self._loaded = True
 
@@ -128,15 +130,21 @@ class Document(BaseFileObject):
         """Save the document's properties to its file."""
         logging.debug("saving {}...".format(repr(self)))
         # Format the data items
-
-        # TODO: save like Item
-        sets = {'prefix': self.prefix,
-                'sep': self.sep,
-                'digits': self.digits}
-        if self.parent:
-            sets['parent'] = self.parent
-        data = {'settings': sets}
-
+        data = {}
+        sets = {}
+        for key, value in self._data.items():
+            if key == 'prefix':
+                sets['prefix'] = value
+            elif key == 'sep':
+                sets['sep'] = value
+            elif key == 'digits':
+                sets['digits'] = value
+            elif key == 'parent':
+                if value:
+                    sets['parent'] = value
+            else:
+                data[key] = value
+        data['settings'] = sets
         # Dump the data to YAML
         text = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
@@ -145,7 +153,25 @@ class Document(BaseFileObject):
         self._loaded = False
         self.auto = True
 
-    # attributes #############################################################
+    # standard attributes ####################################################
+
+    @property
+    def config(self):
+        """Get the path to the document's file."""
+        return os.path.join(self.path, Document.CONFIG)
+
+    @property
+    @auto_load
+    def prefix(self):
+        """Get the document's prefix."""
+        return self._data['prefix']
+
+    @prefix.setter
+    @auto_save
+    def prefix(self, value):
+        """Set the document's prefix."""
+        self._data['prefix'] = value.strip()
+        # TODO: should the new prefix be applied to all items?
 
     @property
     def relpath(self):
@@ -161,9 +187,43 @@ class Document(BaseFileObject):
         return "{} ({})".format(self.prefix, self.relpath)
 
     @property
-    def config(self):
-        """Get the path to the document's file."""
-        return os.path.join(self.path, Document.CONFIG)
+    @auto_load
+    def digits(self):
+        """Get the number of digits to use for new item IDs."""
+        return self._data['digits']
+
+    @digits.setter
+    @auto_save
+    def digits(self, value):
+        """Set the number of digits to use for new item IDs."""
+        self._data['digits'] = value
+        # TODO: should the new digits be applied to all items?
+
+    @property
+    @auto_load
+    def sep(self):
+        """Get the prefix-number separator to use for new item IDs."""
+        return self._data['sep']
+
+    @sep.setter
+    @auto_save
+    def sep(self, value):
+        """Set the prefix-number separator to use for new item IDs."""
+        self._data['sep'] = value.strip()
+        # TODO: should the new separator be applied to all items?
+
+    @property
+    @auto_load
+    def parent(self):
+        """Get the document's parent document prefix."""
+        return self._data['parent']
+
+    @parent.setter
+    @auto_save
+    def parent(self, value):
+        """Set the document's parent document prefix."""
+        self._data['parent'] = value.strip()
+        # TODO: should the new separator be applied to all items?
 
     @property
     def items(self):
@@ -196,8 +256,9 @@ class Document(BaseFileObject):
         else:
             level = last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
-        return Item.new(self.path, self.root, self.prefix, self.sep, number,
-                        self.digits, level)
+        return Item.new(self.path, self.root,
+                        self.prefix, self.sep, self.digits,
+                        number, level=level)
 
     def find_item(self, identifier, _kind=''):
         """Return an item from its ID.
@@ -208,6 +269,12 @@ class Document(BaseFileObject):
 
         @raise DoorstopError: if the item cannot be found
         """
+        # Search using the exact ID
+        for item in self:
+            if item.id.lower() == identifier.lower():
+                return item
+        logging.debug("no exactly matching ID: {}".format(identifier))
+
         # Search using the prefix and number
         prefix, number = split_id(identifier)
         if self.prefix.lower() == prefix.lower():
@@ -216,12 +283,6 @@ class Document(BaseFileObject):
                     return item
             msg = "no matching{} number: {}".format(_kind, number)
             logging.debug(msg)
-
-        # Fall back to a search using the exact ID
-        else:
-            for item in self:
-                if item.id.lower() == identifier.lower():
-                    return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 

@@ -83,15 +83,15 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, sep, number, digits, level, auto=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep, digits, number, level, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
         @param root: path to root of the project
         @param prefix: prefix for the new item
         @param sep: separator between prefix and number
-        @param number: number for the new item
         @param digits: number of digits for the new document
+        @param number: number for the new item
         @param level: level for the new item (None for default)
         @param auto: enables automatic save
 
@@ -116,14 +116,10 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if self._loaded and not reload:
             return
         logging.debug("loading {}...".format(repr(self)))
-        # Read the YAML from file
+        # Read text from file
         text = self._read(self.path)
-        # Parse the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as error:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(self, error)
-            raise DoorstopError(msg)
+        # Parse YAML data from text
+        data = self._parse(text)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -210,9 +206,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @level.setter
     @auto_save
-    def level(self, level):
+    def level(self, value):
         """Set the item's level."""
-        self._data['level'] = convert_level(level)
+        self._data['level'] = convert_level(value)
 
     @property
     def depth(self):
@@ -239,9 +235,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @active.setter
     @auto_save
-    def active(self, status):
+    def active(self, value):
         """Set the item's active status."""
-        self._data['active'] = bool(status)
+        self._data['active'] = bool(value)
 
     @property
     @auto_load
@@ -259,9 +255,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @normative.setter
     @auto_save
-    def normative(self, status):
+    def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = bool(status)
+        self._data['normative'] = bool(value)
 
     @property
     @auto_load
@@ -276,9 +272,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @derived.setter
     @auto_save
-    def derived(self, status):
+    def derived(self, value):
         """Set the item's derived status."""
-        self._data['derived'] = bool(status)
+        self._data['derived'] = bool(value)
 
     @property
     def header(self):
@@ -293,9 +289,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @text.setter
     @auto_save
-    def text(self, text):
+    def text(self, value):
         """Set the item's text."""
-        self._data['text'] = text
+        self._data['text'] = value
 
     @property
     @auto_load
@@ -309,9 +305,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @ref.setter
     @auto_save
-    def ref(self, ref):
+    def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = ref
+        self._data['ref'] = value
 
     @property
     @auto_load
@@ -321,9 +317,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @links.setter
     @auto_save
-    def links(self, links):
+    def links(self, value):
         """Set the list of item IDs this item links to."""
-        self._data['links'] = set(links)
+        self._data['links'] = set(value)
 
     # extended attributes ####################################################
 

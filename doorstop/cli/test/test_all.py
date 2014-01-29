@@ -217,24 +217,6 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestImport(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the 'doorstop import' command."""
-
-    def test_import(self):  # TODO: implement test: doorstop import
-        """Verify 'doorstop import' can be called."""
-        self.assertRaises(NotImplementedError, main, ['import', 'PATH'])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestExport(unittest.TestCase):  # pylint: disable=R0904
-    """Integration tests for the 'doorstop export' command."""
-
-    def test_export(self):  # TODO: implement test: doorstop export
-        """Verify 'doorstop export' can be called."""
-        self.assertRaises(NotImplementedError, main, ['export', 'PATH'])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop publish' command."""
 
