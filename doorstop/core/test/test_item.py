@@ -27,15 +27,17 @@ class MockItem(Item):  # pylint: disable=R0902,R0904
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
-    def _mock_read(self):
+    def _mock_read(self, path):
         """Mock read method."""
+        logging.debug("mock read path: {}".format(path))
         text = self._file
-        logging.debug("mock read: {0}".format(repr(text)))
+        logging.debug("mock read text: {}".format(repr(text)))
         return text
 
-    def _mock_write(self, text):
+    def _mock_write(self, text, path):
         """Mock write method"""
-        logging.debug("mock write: {0}".format(repr(text)))
+        logging.debug("mock write text: {}".format(repr(text)))
+        logging.debug("mock write path: {}".format(path))
         self._file = text
 
     _new = Mock()
@@ -54,7 +56,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_load_empty(self):
         """Verify loading calls read."""
         self.item.load()
-        self.item._read.assert_called_once_with()
+        self.item._read.assert_called_once_with(self.item.path)
         self.assertEqual('', self.item._data['text'])
         self.assertEqual(set(), self.item._data['links'])
         self.assertEqual((1, 1, 1), self.item._data['level'])
@@ -75,7 +77,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                 "normative: true" + '\n'
                 "ref: ''" + '\n'
                 "text: ''" + '\n')
-        self.item._write.assert_called_once_with(text)
+        self.item._write.assert_called_once_with(text, self.item.path)
 
     def test_str(self):
         """Verify an item can be converted to strings."""
@@ -442,6 +444,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be deleted."""
         self.item.delete()
         mock_remove.assert_called_once_with(self.item.path)
+        self.item.delete()  # ensure a second delete is ignored
 
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904

@@ -4,40 +4,17 @@ Representation of items in a Doorstop document.
 
 import os
 import re
-import functools
 import logging
 
 import yaml
 
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-def auto_load(func):
-    """Decorator for methods that should automatically load from file."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.load() before execution."""
-        self.load()
-        return func(self, *args, **kwargs)
-    return wrapped
-
-
-def auto_save(func):
-    """Decorator for methods that should automatically save to file."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.save() after execution."""
-        result = func(self, *args, **kwargs)
-        if self.auto:
-            self.save()
-        return result
-
-    return wrapped
-
-
-class Item(object):  # pylint: disable=R0904
+class Item(BaseFileObject):  # pylint: disable=R0904
     """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -49,8 +26,6 @@ class Item(object):  # pylint: disable=R0904
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
 
-    auto = True  # set to False to delay automatic save until explicit save
-
     def __init__(self, path, root=os.getcwd()):
         """Load an item from an existing file.
 
@@ -60,6 +35,7 @@ class Item(object):  # pylint: disable=R0904
         @param path: path to Item file
         @param root: path to root of project
         """
+        super().__init__()
         # Ensure the path is valid
         if not os.path.isfile(path):
             raise DoorstopError("item does not exist: {}".format(path))
@@ -78,7 +54,6 @@ class Item(object):  # pylint: disable=R0904
         # Initialize Item
         self.path = path
         self.root = root
-        self._exists = True
         self._data = {}
         # Set defaults
         self._data['level'] = Item.DEFAULT_LEVEL
@@ -136,24 +111,13 @@ class Item(object):  # pylint: disable=R0904
         # Return the new item
         return item
 
-    @staticmethod
-    def _new(path):  # pragma: no cover, integration test
-        """Create a new item file.
-
-        @param config: path to new item file
-        """
-        if os.path.exists(path):
-            raise DoorstopError("item already exists: {}".format(path))
-        with open(path, 'w'):
-            pass  # just touch the file
-
     def load(self, reload=False):
         """Load the item's properties from its file."""
-        if getattr(self, '_loaded', False) and not reload:
+        if self._loaded and not reload:
             return
         logging.debug("loading {}...".format(repr(self)))
         # Read the YAML from file
-        text = self._read()
+        text = self._read(self.path)
         # Parse the YAML data
         try:
             data = yaml.load(text) or {}
@@ -179,14 +143,7 @@ class Item(object):  # pylint: disable=R0904
             else:
                 self._data[key] = value
         # Set meta attributes
-        setattr(self, '_loaded', True)
-
-    def _read(self):  # pragma: no cover, integration test
-        """Read text from the item's file."""
-        if not self._exists:
-            raise DoorstopError("cannot load from deleted: {}".format(self))
-        with open(self.path, 'rb') as infile:
-            return infile.read().decode('UTF-8')
+        self._loaded = True
 
     def save(self):
         """Format and save the item's properties to its file."""
@@ -211,17 +168,10 @@ class Item(object):  # pylint: disable=R0904
         # Dump the data to YAML
         dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
-        self._write(dump)
+        self._write(dump, self.path)
         # Set meta attributes
-        setattr(self, '_loaded', False)
+        self._loaded = False
         self.auto = True
-
-    def _write(self, text):  # pragma: no cover, integration test
-        """Write text to the item's file."""
-        if not self._exists:
-            raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(self.path, 'wb') as outfile:
-            outfile.write(bytes(text, 'UTF-8'))
 
     # standard attributes ####################################################
 
@@ -603,11 +553,8 @@ class Item(object):  # pylint: disable=R0904
             logging.debug(msg)
         return rlinks, children
 
-    def delete(self):
-        """Delete the item from the file system."""
-        logging.info("deleting {}...".format(self.path))
-        os.remove(self.path)
-        self._exists = False  # prevent future access
+    def delete(self, path=None):
+        super().delete(self.path)
 
 
 # YAML representer classes ###################################################
