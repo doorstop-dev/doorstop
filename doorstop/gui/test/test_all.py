@@ -44,7 +44,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
         """Verify tkinter import errors are handled."""
         sys.modules['tkinter'] = Mock(side_effect=ImportError)
         imp.reload(gui)
-        self.assertFalse(gui.run(None, None, None))
+        self.assertFalse(gui.run(None))
         self.assertIsInstance(gui.tk, Mock)
 
 
