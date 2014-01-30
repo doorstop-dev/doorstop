@@ -108,7 +108,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         item.auto = False
         item.level = level or Item.DEFAULT_LEVEL
         item.auto = Item.auto if auto is None else auto
-        # Return the new item
+        # Return the item
         return item
 
     def load(self, reload=False):
@@ -441,8 +441,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield DoorstopWarning(msg)
         # Verify an item's links are to the correct parent
         for identifier in self.links:
-            prefix = split_id(identifier)[0]
-            if prefix.lower() != document.parent.lower():
+            prefix = split_id(identifier)[0].lower()
+            parent_prefix = document.parent.lower() if document.parent else ''
+            if  prefix != parent_prefix:
                 msg = "linked to non-parent item: {}".format(identifier)
                 yield DoorstopInfo(msg)
 

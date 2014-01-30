@@ -49,6 +49,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item._file = "invalid: -"
         self.assertRaises(DoorstopError, self.item.load)
 
+    def test_load_unexpected(self):
+        """Verify an exception is raised for unexpected file contents."""
+        self.item._file = "unexpected"
+        self.assertRaises(DoorstopError, self.item.load)
+
     def test_save_empty(self):
         """Verify saving calls write."""
         self.item.save()

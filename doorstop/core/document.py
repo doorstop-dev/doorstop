@@ -91,17 +91,20 @@ class Document(BaseFileObject):
         @raise DoorstopError: if the document already exists
         """
         # TODO: remove after testing or raise a specific exception
-        assert sep is None or sep in settings.SEP_CHARS
+        assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
         # Create the document directory
         Document._new(config, name='document')
-        # Return the new document
-        return Document(path, root=root,
-                        _prefix=prefix, _sep=sep, _digits=digits,
-                        _parent=parent,)
+        # Initialize the document
+        document = Document(path, root=root,
+                            _prefix=prefix, _sep=sep, _digits=digits,
+                            _parent=parent)
+        document.save()  # TODO: investigate why needed for Document not Item
+        # Return the document
+        return document
 
     def load(self, reload=False):
         """Load the document's properties from its file."""
@@ -209,6 +212,8 @@ class Document(BaseFileObject):
     @auto_save
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
+        # TODO: remove after testing or raise a specific exception
+        assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
 

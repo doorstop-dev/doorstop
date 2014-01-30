@@ -62,6 +62,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document._file = "invalid: -"
         self.assertRaises(DoorstopError, self.document.load)
 
+    def test_load_unexpected(self):
+        """Verify an exception is raised for unexpected file contents."""
+        self.document._file = "unexpected"
+        self.assertRaises(DoorstopError, self.document.load)
+
     def test_load(self):
         """Verify the document config can be loaded from file."""
         self.document._file = YAML_CUSTOM
@@ -87,6 +92,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.parent = 'SYS'
         self.document.save()
         self.assertIn("parent: SYS", self.document._file)
+
+    def test_save_custom(self):
+        """Verify a document can be saved with a custom attribute."""
+        self.document._data['custom'] = 'this'
+        self.document.save()
+        self.assertIn("custom: this", self.document._file)
 
     def test_str(self):
         """Verify documents can be converted to strings."""
@@ -138,6 +149,22 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         relpath = os.path.relpath(self.document.path, self.document.root)
         text = "{} (@{}{})".format(self.document.prefix, os.sep, relpath)
         self.assertEqual(text, self.document.prefix_relpath)
+
+    def test_sep(self):
+        """Verify an documents's separator can be set and read."""
+        self.document.sep = '_'
+        self.assertIn("sep: _\n", self.document._write.call_args[0][0])
+        self.assertEqual('_', self.document.sep)
+
+    def test_sep_invalid(self):
+        """Verify an invalid separator is rejected."""
+        self.assertRaises(AssertionError, setattr, self.document, 'sep', '?')
+
+    def test_digits(self):
+        """Verify an documents's digits can be set and read."""
+        self.document.digits = 42
+        self.assertIn("digits: 42\n", self.document._write.call_args[0][0])
+        self.assertEqual(42, self.document.digits)
 
     def test_depth(self):
         """Verify the maximum item level depth can be determined."""

@@ -89,11 +89,21 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         try:
             data = yaml.load(text) or {}
         except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(self, exc)
+            # TODO: this is a hack -- Document can't be converted to string
+            if hasattr(self, 'config'):
+                path = getattr(self, 'config')
+            else:
+                path = getattr(self, 'path')
+            msg = "invalid contents: {}:\n{}".format(path, exc)
             raise DoorstopError(msg) from None
-       # Ensure data is a dictionary
+        # Ensure data is a dictionary
         if not isinstance(data, dict):
-            msg = "invalid contents: {}".format(self)
+            # TODO: this is a hack -- Document can't be converted to string
+            if hasattr(self, 'config'):
+                path = getattr(self, 'config')
+            else:
+                path = getattr(self, 'path')
+            msg = "invalid contents: {}".format(path)
             raise DoorstopError(msg)
         return data
 
