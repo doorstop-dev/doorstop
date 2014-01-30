@@ -77,32 +77,34 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self._loaded = True
 
     def _read(self, path):  # pragma: no cover, integration test
-        """Read text from the object's file."""
+        """Read text from the object's file.
+
+        @param path: path to a text file
+
+        @return: contexts of text file
+        """
         if not self._exists:
             raise DoorstopError("cannot read from deleted: {}".format(self))
         with open(path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 
-    def _parse(self, text):
-        """Load YAML data from text."""
+    @staticmethod
+    def _parse(text, path):
+        """Load YAML data from text.
+
+        @param text: text read from a file
+        @param path: path to the file (for displaying errors)
+
+        @return: dictionary of YAML data
+        """
         # Load the YAML data
         try:
             data = yaml.load(text) or {}
         except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            # TODO: this is a hack -- Document can't be converted to string
-            if hasattr(self, 'config'):
-                path = getattr(self, 'config')
-            else:
-                path = getattr(self, 'path')
             msg = "invalid contents: {}:\n{}".format(path, exc)
             raise DoorstopError(msg) from None
         # Ensure data is a dictionary
         if not isinstance(data, dict):
-            # TODO: this is a hack -- Document can't be converted to string
-            if hasattr(self, 'config'):
-                path = getattr(self, 'config')
-            else:
-                path = getattr(self, 'path')
             msg = "invalid contents: {}".format(path)
             raise DoorstopError(msg)
         return data
@@ -117,7 +119,11 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self.auto = True
 
     def _write(self, text, path):  # pragma: no cover, integration test
-        """Write text to the object's file."""
+        """Write text to the object's file.
+
+        @param text: text to write to a file
+        @param path: path to the file
+        """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
         with open(path, 'wb') as outfile:

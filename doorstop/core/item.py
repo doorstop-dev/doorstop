@@ -119,7 +119,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
-        data = self._parse(text)
+        data = self._parse(text, self.path)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -443,7 +443,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         for identifier in self.links:
             prefix = split_id(identifier)[0].lower()
             parent_prefix = document.parent.lower() if document.parent else ''
-            if  prefix != parent_prefix:
+            if prefix != parent_prefix:
                 msg = "linked to non-parent item: {}".format(identifier)
                 yield DoorstopInfo(msg)
 

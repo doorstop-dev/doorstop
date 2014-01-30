@@ -114,7 +114,7 @@ class Document(BaseFileObject):
         # Read text from file
         text = self._read(self.config)
         # Parse YAML data from text
-        data = self._parse(text)
+        data = self._parse(text, self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
