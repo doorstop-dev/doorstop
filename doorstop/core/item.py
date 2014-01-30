@@ -602,6 +602,7 @@ class Item(object):  # pylint: disable=R0904
         for document2 in tree:
             if document2.parent == document.prefix:
                 children.append(document2)
+                # TODO: when item/document caching is enabled, search the tree
                 # Search for reverse links unless we only need to find one
                 if not rlinks or find_all:
                     for item in document2:
