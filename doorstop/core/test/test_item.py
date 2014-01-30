@@ -250,8 +250,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_find_rlinks(self):
         """Verify an item's reverse links can be found."""
 
-        mock_document = Mock()
-        mock_document.parent = 'RQ'
+        mock_document_p = Mock()
+        mock_document_p.prefix = 'RQ'
+
+        mock_document_c = Mock()
+        mock_document_c.parent = 'RQ'
 
         mock_item = Mock()
         mock_item.id = 'TST001'
@@ -264,16 +267,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                 """Mock Document.__iter__ to yield a mock Item."""
                 yield mock_item
 
-            mock_document.__iter__ = mock_iter2
-            yield mock_document
+            mock_document_c.__iter__ = mock_iter2
+            yield mock_document_c
 
         self.item.add_link('fake1')
-        tree = Mock()
-        tree.__iter__ = mock_iter
-        tree.find_item = lambda identifier: Mock(id='fake1')
-        rlinks, childrem = self.item.find_rlinks(tree)
+        mock_tree = Mock()
+        mock_tree.__iter__ = mock_iter
+        mock_tree.find_item = lambda identifier: Mock(id='fake1')
+        rlinks, childrem = self.item.find_rlinks(mock_document_p, mock_tree)
         self.assertEqual(['TST001'], rlinks)
-        self.assertEqual([mock_document], childrem)
+        self.assertEqual([mock_document_c], childrem)
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""

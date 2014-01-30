@@ -482,6 +482,9 @@ class Item(object):  # pylint: disable=R0904
         # Check links against the tree
         if tree:
             yield from self._iter_issues_tree(tree)
+        # Check links against both document and tree
+        if document and tree:
+            yield from self._iter_issues_both(document, tree)
         # Reformat the file
         self.save()
 
@@ -527,9 +530,12 @@ class Item(object):  # pylint: disable=R0904
                 identifiers.add(identifier)
         # Apply the reformatted item IDs
         self._data['links'] = identifiers
+
+    def _iter_issues_both(self, document, tree):
+        """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if self.normative:
-            rlinks, children = self.find_rlinks(tree, find_all=False)
+            rlinks, children = self.find_rlinks(document, tree, find_all=False)
             if not rlinks:
                 for child in children:
                     msg = "no links from child document: {}".format(child)
@@ -582,9 +588,10 @@ class Item(object):  # pylint: disable=R0904
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
-    def find_rlinks(self, tree, find_all=True):
+    def find_rlinks(self, document, tree, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
+        @param document: Document containing the item
         @param tree: Tree containing the item
         @param find_all: find all items (not just the first) before returning
 
@@ -592,12 +599,12 @@ class Item(object):  # pylint: disable=R0904
         """
         rlinks = []
         children = []
-        for document in tree:
-            if document.parent == self.prefix:
-                children.append(document)
+        for document2 in tree:
+            if document2.parent == document.prefix:
+                children.append(document2)
                 # Search for reverse links unless we only need to find one
                 if not rlinks or find_all:
-                    for item in document:
+                    for item in document2:
                         if self.id in item.links:
                             rlinks.append(item.id)
                             if not find_all:
