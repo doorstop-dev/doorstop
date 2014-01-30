@@ -495,10 +495,14 @@ class Item(object):  # pylint: disable=R0904
             yield DoorstopWarning(msg)
         # Verify an item's links are to the correct parent
         for identifier in self.links:
-            prefix = split_id(identifier)[0]
-            if prefix.lower() != document.parent.lower():
-                msg = "linked to non-parent item: {}".format(identifier)
-                yield DoorstopInfo(msg)
+            try:
+                prefix = split_id(identifier)[0]
+            except DoorstopError as exc:
+                yield exc
+            else:
+                if prefix.lower() != document.parent.lower():
+                    msg = "linked to non-parent item: {}".format(identifier)
+                    yield DoorstopInfo(msg)
 
     def _iter_issues_tree(self, tree):
         """Yield all the item's issues against the full tree."""

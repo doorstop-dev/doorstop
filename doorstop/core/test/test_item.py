@@ -382,6 +382,13 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         document.parent = 'fake'
         self.assertTrue(self.item.valid(document=document))
 
+    def test_valid_document_with_bad_link_IDs(self):
+        """Verify an item can be checked against a document w/ bad link IDs."""
+        self.item.add_link('invalid')
+        document = Mock()
+        document.parent = 'fake'
+        self.assertFalse(self.item.valid(document=document))
+
     def test_valid_tree(self):
         """Verify an item can be checked against a tree."""
 
