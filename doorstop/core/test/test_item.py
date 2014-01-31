@@ -339,41 +339,41 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_link_to_inactive(self):
         """Verify a link to an inactive item can be checked."""
-        item = Mock()
-        item.active = False
-        tree = MagicMock()
-        tree.find_item = Mock(return_value=item)
+        mock_item = Mock()
+        mock_item.active = False
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
-        self.assertTrue(self.item.valid(tree=tree))
+        self.assertTrue(self.item.valid(tree=mock_tree))
 
     def test_valid_link_to_nonnormative(self):
         """Verify a link to an non-normative item can be checked."""
-        item = Mock()
-        item.normative = False
-        tree = MagicMock()
-        tree.find_item = Mock(return_value=item)
+        mock_item = Mock()
+        mock_item.normative = False
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
-        self.assertTrue(self.item.valid(tree=tree))
+        self.assertTrue(self.item.valid(tree=mock_tree))
 
     def test_valid_document(self):
         """Verify an item can be checked against a document."""
-        document = Mock()
-        document.parent = 'fake'
-        self.assertTrue(self.item.valid(document=document))
+        mock_document = Mock()
+        mock_document.parent = 'fake'
+        self.assertTrue(self.item.valid(document=mock_document))
 
     def test_valid_document_with_links(self):
         """Verify an item can be checked against a document with links."""
         self.item.add_link('unknown1')
-        document = Mock()
-        document.parent = 'fake'
-        self.assertTrue(self.item.valid(document=document))
+        mock_document = Mock()
+        mock_document.parent = 'fake'
+        self.assertTrue(self.item.valid(document=mock_document))
 
     def test_valid_document_with_bad_link_IDs(self):
         """Verify an item can be checked against a document w/ bad link IDs."""
         self.item.add_link('invalid')
-        document = Mock()
-        document.parent = 'fake'
-        self.assertFalse(self.item.valid(document=document))
+        mock_document = Mock()
+        mock_document.parent = 'fake'
+        self.assertFalse(self.item.valid(document=mock_document))
 
     def test_valid_tree(self):
         """Verify an item can be checked against a tree."""
@@ -395,11 +395,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
         self.item.add_link('fake1')
 
-        tree = Mock()
-        tree.__iter__ = mock_iter
-        tree.find_item = lambda identifier: Mock(id='fake1')
+        mock_tree = Mock()
+        mock_tree.__iter__ = mock_iter
+        mock_tree.find_item = lambda identifier: Mock(id='fake1')
 
-        self.assertTrue(self.item.valid(tree=tree))
+        self.assertTrue(self.item.valid(tree=mock_tree))
 
     def test_valid_tree_error(self):
         """Verify an item can be checked against a tree with errors."""
@@ -455,11 +455,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         mock_document.prefix = 'RQ'
 
-        tree = Mock()
-        tree.__iter__ = mock_iter
-        tree.find_item = lambda identifier: Mock(id='fake1')
+        mock_tree = Mock()
+        mock_tree.__iter__ = mock_iter
+        mock_tree.find_item = lambda identifier: Mock(id='fake1')
 
-        self.assertTrue(self.item.valid(document=mock_document, tree=tree))
+        self.assertTrue(self.item.valid(document=mock_document,
+                                        tree=mock_tree))
 
     @patch('os.remove')
     def test_delete(self, mock_remove):
@@ -495,9 +496,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the doorstop.core.item module."""  # pylint: disable=C0103
 
-    def test_tbd(self):
-        """Verify TBD."""
-        self.assertTrue(True)
+    pass
 
 
 if __name__ == '__main__':

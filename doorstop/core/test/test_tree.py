@@ -154,10 +154,10 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_document(self):
         """Verify an document error fails the tree valid."""
-        with patch.object(self.tree, 'iter_issues',
-                          Mock(return_value=[DoorstopError('e'),
-                                             DoorstopWarning('w'),
-                                             DoorstopInfo('i')])):
+        mock_iter_issues = Mock(return_value=[DoorstopError('e'),
+                                              DoorstopWarning('w'),
+                                              DoorstopInfo('i')])
+        with patch.object(self.tree, 'iter_issues', mock_iter_issues):
             self.assertFalse(self.tree.valid())
 
     def test_new(self):

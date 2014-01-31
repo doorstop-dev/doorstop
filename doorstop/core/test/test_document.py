@@ -224,19 +224,17 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_item(self):
         """Verify an item error fails the document check."""
-        with patch.object(self.document, 'iter_issues',
-                          Mock(return_value=[DoorstopError('e'),
-                                             DoorstopWarning('w'),
-                                             DoorstopInfo('i')])):
+        mock_iter_issues = Mock(return_value=[DoorstopError('e'),
+                                              DoorstopWarning('w'),
+                                              DoorstopInfo('i')])
+        with patch.object(self.document, 'iter_issues', mock_iter_issues):
             self.assertFalse(self.document.valid())
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the doorstop.core.document module."""  # pylint: disable=C0103
 
-    def test_tbd(self):
-        """Verify TBD."""
-        self.assertTrue(True)
+    pass
 
 
 if __name__ == '__main__':
