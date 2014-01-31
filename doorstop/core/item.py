@@ -4,6 +4,7 @@ Representation of items in a Doorstop document.
 
 import os
 import re
+import textwrap
 import logging
 
 import yaml
@@ -159,7 +160,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             elif key == 'links':
                 data['links'] = sorted(value)
             else:
-                # TODO: dump long strings as Literal (and SBD?)
+                if isinstance(value, str):
+                    # length of "key_text: value_text"
+                    lenth = len(key) + 2 + len(value)
+                    if lenth > settings.MAX_LINE_LENTH:
+                        value = Literal(sbd(value))
                 data[key] = value
         # Dump the data to YAML
         dump = yaml.dump(data, default_flow_style=False)
@@ -680,3 +685,13 @@ def sbd(text):
         return SBD.sub('\n', stripped) + '\n'
     else:
         return ''
+
+
+def wrap(text, width=settings.MAX_LINE_LENTH):
+    """Wraps lines of text to the maximum line length.
+
+    >>> wrap("Hello, world!", 9)
+    'Hello, \\nworld!'
+    """
+    return textwrap.fill(text, width=width - 2,  # multiline indent is 2
+                         replace_whitespace=False, drop_whitespace=False)
