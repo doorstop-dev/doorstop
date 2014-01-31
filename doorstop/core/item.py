@@ -74,7 +74,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             return self.id_relpath
 
     def __eq__(self, other):
-        return isinstance(other, Item) and self.path == other.path
+        return isinstance(other, self.__class__) and self.path == other.path
 
     def __ne__(self, other):
         return not self == other

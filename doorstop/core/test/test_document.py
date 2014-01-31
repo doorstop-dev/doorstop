@@ -70,7 +70,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify the document config can be loaded from file."""
         self.document._file = YAML_CUSTOM
-        self.document.load()
+        self.document.load(reload=True)
         self.assertEqual('CUSTOM', self.document.prefix)
         self.assertEqual('-', self.document.sep)
         self.assertEqual(4, self.document.digits)
@@ -124,6 +124,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
         """Verify a new document can be created with defaults."""
+        MockDocument._new.reset_mock()
         path = os.path.join(EMPTY, '.doorstop.yml')
         document = MockDocument.new(EMPTY, root=FILES, prefix='NEW', digits=2)
         self.assertEqual('NEW', document.prefix)
@@ -191,6 +192,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_new.assert_called_once_with(NEW, ROOT,
                                          'NEW', '', 3,
                                          1, level=None)
+
+    def test_add_contains(self):
+        """Verify an added item is contained in the document."""
+        item = self.document.items[0]
+        self.assertIn(item, self.document)
+        item2 = self.document.add()
+        self.assertIn(item2, self.document)
+
+    @patch('os.remove')
+    def test_remove_contains(self, mock_remove):
+        """Verify a removed item is not contained in the document."""
+        item = self.document.items[0]
+        self.assertIn(item, self.document)
+        removed_item = self.document.remove(item.id)
+        self.assertEqual(item, removed_item)
+        self.assertNotIn(item, self.document)
+        mock_remove.assert_called_once_with(item.path)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""

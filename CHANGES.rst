@@ -4,7 +4,8 @@ Changelog
 0.0.17 (development)
 --------------------
 
-
+- Added caching of Items in the Document class
+- Added Document.remove() to delete an item by its ID
 
 0.0.16 (2014/01/28)
 -------------------

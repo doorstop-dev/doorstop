@@ -68,7 +68,7 @@ class Document(BaseFileObject):
         yield from self._iter()
 
     def __eq__(self, other):
-        return isinstance(other, Document) and self.path == other.path
+        return isinstance(other, self.__class__) and self.path == other.path
 
     def __ne__(self, other):
         return not self == other
@@ -124,6 +124,8 @@ class Document(BaseFileObject):
                 self._data['digits'] = int(value)
         # Set meta attributes
         self._loaded = True
+        if reload:
+            self._itered = False  # reload the items
 
     def save(self):
         """Save the document's properties to its file."""
@@ -282,12 +284,28 @@ class Document(BaseFileObject):
         else:
             level = last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
-        return Item.new(self.path, self.root,
-                        self.prefix, self.sep, self.digits,
-                        number, level=level)
+        item = Item.new(self.path, self.root,
+                       self.prefix, self.sep, self.digits,
+                       number, level=level)
+        self._items.append(item)
+        return item
+
+    def remove(self, identifier):
+        """Remove an item by its ID.
+
+        @param identifier: item ID
+
+        @return: removed Item
+
+        @raise DoorstopError: if the item cannot be found
+        """
+        item = self.find_item(identifier)
+        item.delete()
+        self._items.remove(item)
+        return item
 
     def find_item(self, identifier, _kind=''):
-        """Return an item from its ID.
+        """Return an item by its ID.
 
         @param identifier: item ID
 
