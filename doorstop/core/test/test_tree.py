@@ -29,15 +29,17 @@ class MockDocument(Document):
         self._write = Mock(side_effect=self._mock_write)
         super().__init__(*args, **kwargs)
 
-    def _mock_read(self):
-        """Mock read function."""
+    def _mock_read(self, path):
+        """Mock read method."""
+        logging.debug("mock read path: {}".format(path))
         text = self._file
-        logging.debug("mock read: {0}".format(repr(text)))
+        logging.debug("mock read text: {}".format(repr(text)))
         return text
 
-    def _mock_write(self, text):
-        """Mock write function"""
-        logging.debug("mock write: {0}".format(repr(text)))
+    def _mock_write(self, text, path):
+        """Mock write method"""
+        logging.debug("mock write text: {}".format(repr(text)))
+        logging.debug("mock write path: {}".format(path))
         self._file = text
 
     _new = Mock()

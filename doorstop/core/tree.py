@@ -152,21 +152,22 @@ class Tree(object):
 
     # actions ################################################################
 
-    def new(self, path, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
+    def new(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
         @param prefix: document's prefix
         @param sep: separator between prefix and numbers
-        @param parent: parent document's prefix
         @param digits: number of digits for the document's numbers
+        @param parent: parent document's prefix
 
         @return: newly created and placed Document
 
         @raise DoorstopError: if the document cannot be created
         """
-        document = Document.new(path, self.root, prefix, sep=sep,
-                                parent=parent, digits=digits)
+        document = Document.new(path, self.root, prefix,
+                                sep=sep, digits=digits,
+                                parent=parent)
         try:
             self._place(document)
         except DoorstopError:

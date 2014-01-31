@@ -10,41 +10,39 @@ from unittest.mock import patch, Mock
 import os
 import logging
 
-from doorstop.core.item import Item
 from doorstop.core.document import Document
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
-from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, NEW
+from doorstop.core.test import ENV, REASON
+from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
+from doorstop.core.test.test_item import MockItem
+
+YAML_DEFAULT = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+""".lstrip()
+
+YAML_CUSTOM = """
+settings:
+  digits: 4
+  prefix: CUSTOM
+  sep: '-'
+""".lstrip()
+
+YAML_CUSTOM_PARENT = """
+settings:
+  digits: 4
+  parent: PARENT
+  prefix: CUSTOM
+  sep: '-'
+""".lstrip()
 
 
-class MockItem(Item, Mock):  # pylint: disable=R0904
-    """Mock Item class for Document unit tests."""
-    pass
-
-
-class MockDocument(Document):
-    """Document class with mock read/write methods after initialization."""
-
-    @patch('os.path.isfile', Mock(return_value=True))
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._file = ""  # file system mock
-        self._read = Mock(side_effect=self._mock_read)
-        self._write = Mock(side_effect=self._mock_write)
-
-    def _mock_read(self):
-        """Mock read function."""
-        text = self._file
-        logging.debug("mock read: {0}".format(repr(text)))
-        return text
-
-    def _mock_write(self, text):
-        """Mock write function"""
-        logging.debug("mock write: {0}".format(repr(text)))
-        self._file = text
-
-    _new = Mock()
+class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902,R0904
+    """Mock Document class with stubbed file IO."""
 
 
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
@@ -54,36 +52,52 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.document = MockDocument(FILES, root=ROOT)
 
+    def test_load_empty(self):
+        """Verify loading calls read."""
+        self.document.load()
+        self.document._read.assert_called_once_with(self.document.config)
+
+    def test_load_error(self):
+        """Verify an exception is raised with invalid YAML."""
+        self.document._file = "invalid: -"
+        self.assertRaises(DoorstopError, self.document.load)
+
+    def test_load_unexpected(self):
+        """Verify an exception is raised for unexpected file contents."""
+        self.document._file = "unexpected"
+        self.assertRaises(DoorstopError, self.document.load)
+
     def test_load(self):
         """Verify the document config can be loaded from file."""
-        self.document._file = "settings:\n  prefix: SYS\n  digits: 4"
+        self.document._file = YAML_CUSTOM
         self.document.load()
-        self.assertEqual('SYS', self.document.prefix)
+        self.assertEqual('CUSTOM', self.document.prefix)
+        self.assertEqual('-', self.document.sep)
         self.assertEqual(4, self.document.digits)
 
     def test_load_parent(self):
         """Verify the document config can be loaded from file with a parent."""
-        self.document._file = "settings:\n  prefix: DC\n  parent: SYS"
+        self.document._file = YAML_CUSTOM_PARENT
         self.document.load()
-        self.assertEqual('SYS', self.document.parent)
+        self.assertEqual('PARENT', self.document.parent)
 
-    def test_save(self):
-        """Verify a document config can be saved."""
-        self.document.prefix = 'SRD'
-        self.document.digits = 5
+    def test_save_empty(self):
+        """Verify saving calls write."""
         self.document.save()
-        text = ("settings:\n  "
-                "digits: 5\n  "
-                "parent: SYS\n  "
-                "prefix: SRD\n  "
-                "sep: ''\n")
-        self.assertEqual(text, self.document._file)
+        self.document._write.assert_called_once_with(YAML_DEFAULT,
+                                                     self.document.config)
 
     def test_save_parent(self):
         """Verify a document can be saved with a parent."""
         self.document.parent = 'SYS'
         self.document.save()
         self.assertIn("parent: SYS", self.document._file)
+
+    def test_save_custom(self):
+        """Verify a document can be saved with a custom attribute."""
+        self.document._data['custom'] = 'this'
+        self.document.save()
+        self.assertIn("custom: this", self.document._file)
 
     def test_str(self):
         """Verify documents can be converted to strings."""
@@ -111,17 +125,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_new(self):
         """Verify a new document can be created with defaults."""
         path = os.path.join(EMPTY, '.doorstop.yml')
-        try:
-            doc = MockDocument.new(EMPTY, root=FILES, prefix='NEW', digits=2)
-        finally:
-            os.remove(path)
-        self.assertEqual('NEW', doc.prefix)
-        self.assertEqual(2, doc.digits)
-        MockDocument._new.assert_called_once_with(EMPTY, path)
+        document = MockDocument.new(EMPTY, root=FILES, prefix='NEW', digits=2)
+        self.assertEqual('NEW', document.prefix)
+        self.assertEqual(2, document.digits)
+        MockDocument._new.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
-        self.assertRaises(DoorstopError, Document.new, FILES, FILES, '_TEST')
+        self.assertRaises(DoorstopError, Document.new, FILES, ROOT, 'DUPL')
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
@@ -139,6 +150,22 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         text = "{} (@{}{})".format(self.document.prefix, os.sep, relpath)
         self.assertEqual(text, self.document.prefix_relpath)
 
+    def test_sep(self):
+        """Verify an documents's separator can be set and read."""
+        self.document.sep = '_'
+        self.assertIn("sep: _\n", self.document._write.call_args[0][0])
+        self.assertEqual('_', self.document.sep)
+
+    def test_sep_invalid(self):
+        """Verify an invalid separator is rejected."""
+        self.assertRaises(AssertionError, setattr, self.document, 'sep', '?')
+
+    def test_digits(self):
+        """Verify an documents's digits can be set and read."""
+        self.document.digits = 42
+        self.assertIn("digits: 42\n", self.document._write.call_args[0][0])
+        self.assertEqual(42, self.document.digits)
+
     def test_depth(self):
         """Verify the maximum item level depth can be determined."""
         self.assertEqual(3, self.document.depth)
@@ -151,14 +178,19 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_add(self, mock_new):
         """Verify an item can be added to a document."""
         self.document.add()
-        mock_new.assert_called_once_with(FILES, ROOT, 'REQ', '', 4, 2, (2, 2))
+        mock_new.assert_called_once_with(FILES, ROOT,
+                                         'REQ', '', 3,
+                                         4, level=(2, 2))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
+        document.prefix = 'NEW'
         self.assertIsNot(None, document.add())
-        mock_new.assert_called_once_with(NEW, ROOT, 'NEW', '', 1, 5, None)
+        mock_new.assert_called_once_with(NEW, ROOT,
+                                         'NEW', '', 3,
+                                         1, level=None)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""

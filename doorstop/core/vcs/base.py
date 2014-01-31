@@ -1,7 +1,5 @@
-#!/bin/usr/env python
-
 """
-Abstract interface to verson control systems.
+Abstract interface to version control systems.
 """
 
 import fnmatch
