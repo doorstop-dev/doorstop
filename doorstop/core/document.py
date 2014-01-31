@@ -216,7 +216,7 @@ class Document(BaseFileObject):
     @auto_save
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
-        # TODO: remove after testing or raise a specific exception
+        # TODO: raise a specific exception
         assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
@@ -245,7 +245,6 @@ class Document(BaseFileObject):
     def parent(self, value):
         """Set the document's parent document prefix."""
         self._data['parent'] = value.strip()
-        # TODO: should the new separator be applied to all items?
 
     @property
     def items(self):
