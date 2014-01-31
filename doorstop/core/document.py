@@ -285,8 +285,8 @@ class Document(BaseFileObject):
             level = last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
         item = Item.new(self.path, self.root,
-                       self.prefix, self.sep, self.digits,
-                       number, level=level)
+                        self.prefix, self.sep, self.digits,
+                        number, level=level)
         self._items.append(item)
         return item
 
