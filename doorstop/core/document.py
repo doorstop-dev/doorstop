@@ -38,7 +38,6 @@ class Document(BaseFileObject):
         @param root: path to root of project
         """
         super().__init__()
-        self._loaded_items = False
         # Ensure the directory is valid
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
@@ -47,8 +46,9 @@ class Document(BaseFileObject):
         # Initialize the document
         self.path = path
         self.root = root
-        self.skip = os.path.isfile(os.path.join(self.path, Document.SKIP))
         self._data = {}
+        self._items = []
+        self._itered = False
         # Set default values
         self._data['prefix'] = _prefix or Document.DEFAULT_PREFIX
         self._data['sep'] = _sep or Document.DEFAULT_SEP
@@ -65,12 +65,7 @@ class Document(BaseFileObject):
             return self.prefix_relpath
 
     def __iter__(self):
-        for filename in os.listdir(self.path):
-            path = os.path.join(self.path, filename)
-            try:
-                yield Item(path)
-            except DoorstopError:
-                pass  # skip non-item files
+        yield from self._iter()
 
     def __eq__(self, other):
         return isinstance(other, Document) and self.path == other.path
@@ -157,6 +152,27 @@ class Document(BaseFileObject):
         self._loaded = False
         self.auto = True
 
+    def _iter(self, reload=False):
+        """Yield the document's items."""
+        if self._itered and not reload:
+            logging.debug("iterating through previously loaded items...")
+            yield from self._items
+            return
+        logging.debug("iterating through items in {}...".format(self.path))
+        # Reload the document's item
+        self._items = []
+        for filename in os.listdir(self.path):
+            path = os.path.join(self.path, filename)
+            try:
+                item = Item(path)
+            except DoorstopError:
+                pass  # skip non-item files
+            else:
+                self._items.append(item)
+                yield item
+        # Set meta attributes
+        self._itered = True
+
     # standard attributes ####################################################
 
     @property
@@ -234,7 +250,7 @@ class Document(BaseFileObject):
     @property
     def items(self):
         """Get an ordered list of items in the document."""
-        return sorted(item for item in self)
+        return sorted(self._iter())
 
     @property
     def depth(self):
@@ -248,6 +264,11 @@ class Document(BaseFileObject):
             return max(item.number for item in self) + 1
         except ValueError:
             return 1
+
+    @property
+    def skip(self):
+        """Indicates the document should be skipped."""
+        return os.path.isfile(os.path.join(self.path, Document.SKIP))
 
     # actions ################################################################
 
