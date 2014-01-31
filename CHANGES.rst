@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.17 (development)
+0.0.17 (2014/01/31)
 --------------------
 
 - Added caching of Items in the Document class
