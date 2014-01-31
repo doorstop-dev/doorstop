@@ -164,6 +164,10 @@ upload: env depends doc
 	$(PYTHON) setup.py bdist_wheel upload
 	$(MAKE) dev  # restore the development environemnt
 
+.PHONY: dev
+dev:
+	python setup.py develop
+	
 # Execution ##################################################################
 
 .PHONY: gui

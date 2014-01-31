@@ -1,10 +1,12 @@
 Changelog
 =========
 
-0.0.17 (development)
+0.0.17 (2014/01/31)
 --------------------
 
-
+- Added caching of Items in the Document class
+- Added Document.remove() to delete an item by its ID
+- Item.find_rlinks() will now search the entire tree for links
 
 0.0.16 (2014/01/28)
 -------------------

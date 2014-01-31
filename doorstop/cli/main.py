@@ -44,8 +44,8 @@ class _WarningFormatter(logging.Formatter, object):
 
 
 def main(args=None):  # pylint: disable=R0915
-    """Process command-line arguments and run the program.
-    """
+    """Process command-line arguments and run the program."""
+
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
@@ -192,6 +192,7 @@ def _configure_logging(verbosity=0):
 
 def _run(args, cwd, err):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -210,6 +211,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
 
 def _run_new(args, cwd, _):
     """Process arguments and run the `doorstop new` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -228,6 +230,7 @@ def _run_new(args, cwd, _):
 
 def _run_add(args, cwd, _):
     """Process arguments and run the `doorstop add` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -245,6 +248,7 @@ def _run_add(args, cwd, _):
 
 def _run_remove(args, cwd, _):
     """Process arguments and run the `doorstop remove` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -262,6 +266,7 @@ def _run_remove(args, cwd, _):
 
 def _run_link(args, cwd, _):
     """Process arguments and run the `doorstop link` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -280,6 +285,7 @@ def _run_link(args, cwd, _):
 
 def _run_unlink(args, cwd, _):
     """Process arguments and run the `doorstop unlink` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -298,6 +304,7 @@ def _run_unlink(args, cwd, _):
 
 def _run_edit(args, cwd, _):
     """Process arguments and run the `doorstop edit` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
@@ -315,6 +322,7 @@ def _run_edit(args, cwd, _):
 
 def _run_publish(args, cwd, _):
     """Process arguments and run the `doorstop report` subcommand.
+
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors

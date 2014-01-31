@@ -4,40 +4,17 @@ Representation of items in a Doorstop document.
 
 import os
 import re
-import functools
 import logging
 
 import yaml
 
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-def auto_load(func):
-    """Decorator for methods that should automatically load from file."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.load() before execution."""
-        self.load()
-        return func(self, *args, **kwargs)
-    return wrapped
-
-
-def auto_save(func):
-    """Decorator for methods that should automatically save to file."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to call self.save() after execution."""
-        result = func(self, *args, **kwargs)
-        if self.auto:
-            self.save()
-        return result
-
-    return wrapped
-
-
-class Item(object):  # pylint: disable=R0904
+class Item(BaseFileObject):  # pylint: disable=R0904
     """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -49,8 +26,6 @@ class Item(object):  # pylint: disable=R0904
     DEFAULT_TEXT = ""
     DEFAULT_REF = ""
 
-    auto = True  # set to False to delay automatic save until explicit save
-
     def __init__(self, path, root=os.getcwd()):
         """Load an item from an existing file.
 
@@ -60,6 +35,7 @@ class Item(object):  # pylint: disable=R0904
         @param path: path to Item file
         @param root: path to root of project
         """
+        super().__init__()
         # Ensure the path is valid
         if not os.path.isfile(path):
             raise DoorstopError("item does not exist: {}".format(path))
@@ -75,12 +51,11 @@ class Item(object):  # pylint: disable=R0904
         if ext.lower() not in self.EXTENSIONS:
             msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
             raise DoorstopError(msg)
-        # Initialize Item
+        # Initialize the item
         self.path = path
         self.root = root
-        self._exists = True
         self._data = {}
-        # Set defaults
+        # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
         self._data['normative'] = Item.DEFAULT_NORMATIVE
@@ -99,7 +74,7 @@ class Item(object):  # pylint: disable=R0904
             return self.id_relpath
 
     def __eq__(self, other):
-        return isinstance(other, Item) and self.path == other.path
+        return isinstance(other, self.__class__) and self.path == other.path
 
     def __ne__(self, other):
         return not self == other
@@ -108,15 +83,15 @@ class Item(object):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, sep, number, digits, level, auto=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep, digits, number, level, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
         @param root: path to root of the project
         @param prefix: prefix for the new item
         @param sep: separator between prefix and number
-        @param number: number for the new item
         @param digits: number of digits for the new document
+        @param number: number for the new item
         @param level: level for the new item (None for default)
         @param auto: enables automatic save
 
@@ -127,39 +102,24 @@ class Item(object):  # pylint: disable=R0904
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
-        Item._new(path2)
+        Item._new(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root)
         item.auto = False
         item.level = level or Item.DEFAULT_LEVEL
         item.auto = Item.auto if auto is None else auto
-        # Return the new item
+        # Return the item
         return item
-
-    @staticmethod
-    def _new(path):  # pragma: no cover, integration test
-        """Create a new item file.
-
-        @param config: path to new item file
-        """
-        if os.path.exists(path):
-            raise DoorstopError("item already exists: {}".format(path))
-        with open(path, 'w'):
-            pass  # just touch the file
 
     def load(self, reload=False):
         """Load the item's properties from its file."""
-        if getattr(self, '_loaded', False) and not reload:
+        if self._loaded and not reload:
             return
         logging.debug("loading {}...".format(repr(self)))
-        # Read the YAML from file
-        text = self._read()
-        # Parse the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as error:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(self, error)
-            raise DoorstopError(msg)
+        # Read text from file
+        text = self._read(self.path)
+        # Parse YAML data from text
+        data = self._parse(text, self.path)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -179,14 +139,7 @@ class Item(object):  # pylint: disable=R0904
             else:
                 self._data[key] = value
         # Set meta attributes
-        setattr(self, '_loaded', True)
-
-    def _read(self):  # pragma: no cover, integration test
-        """Read text from the item's file."""
-        if not self._exists:
-            raise DoorstopError("cannot load from deleted: {}".format(self))
-        with open(self.path, 'rb') as infile:
-            return infile.read().decode('UTF-8')
+        self._loaded = True
 
     def save(self):
         """Format and save the item's properties to its file."""
@@ -211,17 +164,10 @@ class Item(object):  # pylint: disable=R0904
         # Dump the data to YAML
         dump = yaml.dump(data, default_flow_style=False)
         # Save the YAML to file
-        self._write(dump)
+        self._write(dump, self.path)
         # Set meta attributes
-        setattr(self, '_loaded', False)
+        self._loaded = False
         self.auto = True
-
-    def _write(self, text):  # pragma: no cover, integration test
-        """Write text to the item's file."""
-        if not self._exists:
-            raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(self.path, 'wb') as outfile:
-            outfile.write(bytes(text, 'UTF-8'))
 
     # standard attributes ####################################################
 
@@ -260,9 +206,9 @@ class Item(object):  # pylint: disable=R0904
 
     @level.setter
     @auto_save
-    def level(self, level):
+    def level(self, value):
         """Set the item's level."""
-        self._data['level'] = convert_level(level)
+        self._data['level'] = convert_level(value)
 
     @property
     def depth(self):
@@ -289,9 +235,9 @@ class Item(object):  # pylint: disable=R0904
 
     @active.setter
     @auto_save
-    def active(self, status):
+    def active(self, value):
         """Set the item's active status."""
-        self._data['active'] = bool(status)
+        self._data['active'] = bool(value)
 
     @property
     @auto_load
@@ -309,9 +255,9 @@ class Item(object):  # pylint: disable=R0904
 
     @normative.setter
     @auto_save
-    def normative(self, status):
+    def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = bool(status)
+        self._data['normative'] = bool(value)
 
     @property
     @auto_load
@@ -326,9 +272,9 @@ class Item(object):  # pylint: disable=R0904
 
     @derived.setter
     @auto_save
-    def derived(self, status):
+    def derived(self, value):
         """Set the item's derived status."""
-        self._data['derived'] = bool(status)
+        self._data['derived'] = bool(value)
 
     @property
     def header(self):
@@ -343,9 +289,9 @@ class Item(object):  # pylint: disable=R0904
 
     @text.setter
     @auto_save
-    def text(self, text):
+    def text(self, value):
         """Set the item's text."""
-        self._data['text'] = text
+        self._data['text'] = value
 
     @property
     @auto_load
@@ -359,9 +305,9 @@ class Item(object):  # pylint: disable=R0904
 
     @ref.setter
     @auto_save
-    def ref(self, ref):
+    def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = ref
+        self._data['ref'] = value
 
     @property
     @auto_load
@@ -371,9 +317,9 @@ class Item(object):  # pylint: disable=R0904
 
     @links.setter
     @auto_save
-    def links(self, links):
+    def links(self, value):
         """Set the list of item IDs this item links to."""
-        self._data['links'] = set(links)
+        self._data['links'] = set(value)
 
     # extended attributes ####################################################
 
@@ -435,6 +381,7 @@ class Item(object):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
+        # TODO: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
         for issue in self.iter_issues(document=document, tree=tree):
@@ -449,6 +396,7 @@ class Item(object):  # pylint: disable=R0904
         # Return the result
         return valid
 
+    # TODO: should this be renamed to 'issues'?
     def iter_issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
@@ -482,11 +430,18 @@ class Item(object):  # pylint: disable=R0904
         # Check links against the tree
         if tree:
             yield from self._iter_issues_tree(tree)
+        # Check links against both document and tree
+        if document and tree:
+            yield from self._iter_issues_both(document, tree)
         # Reformat the file
         self.save()
 
     def _iter_issues_document(self, document):
         """Yield all the item's issues against its document."""
+        # Verify an item's ID matches its document's prefix
+        if self.prefix != document.prefix:
+            msg = "prefix differs from document ({})".format(document.prefix)
+            yield DoorstopInfo(msg)
         # Verify an item has upward links
         if all((document.parent,
                 self.normative,
@@ -495,13 +450,21 @@ class Item(object):  # pylint: disable=R0904
             yield DoorstopWarning(msg)
         # Verify an item's links are to the correct parent
         for identifier in self.links:
-            prefix = split_id(identifier)[0]
-            if prefix.lower() != document.parent.lower():
-                msg = "linked to non-parent item: {}".format(identifier)
-                yield DoorstopInfo(msg)
+            try:
+                prefix = split_id(identifier)[0]
+            except DoorstopError:
+                msg = "invalid ID in links: {}".format(identifier)
+                yield DoorstopError(msg)
+            else:
+                if prefix != document.parent:
+                    # this is only 'info' because a document is allowed
+                    # to contain items with a different prefix, but
+                    # Doorstop will not create items like this
+                    msg = "linked to non-parent item: {}".format(identifier)
+                    yield DoorstopInfo(msg)
 
     def _iter_issues_tree(self, tree):
-        """Yield all the item's issues against the full tree."""
+        """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -523,9 +486,12 @@ class Item(object):  # pylint: disable=R0904
                 identifiers.add(identifier)
         # Apply the reformatted item IDs
         self._data['links'] = identifiers
+
+    def _iter_issues_both(self, document, tree):
+        """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if self.normative:
-            rlinks, children = self.find_rlinks(tree, find_all=False)
+            rlinks, children = self.find_rlinks(document, tree, find_all=False)
             if not rlinks:
                 for child in children:
                     msg = "no links from child document: {}".format(child)
@@ -578,9 +544,10 @@ class Item(object):  # pylint: disable=R0904
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
-    def find_rlinks(self, tree, find_all=True):
+    def find_rlinks(self, document, tree, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
+        @param document: Document containing the item
         @param tree: Tree containing the item
         @param find_all: find all items (not just the first) before returning
 
@@ -588,26 +555,26 @@ class Item(object):  # pylint: disable=R0904
         """
         rlinks = []
         children = []
-        for document in tree:
-            if document.parent == self.prefix:
-                children.append(document)
-                # Search for reverse links unless we only need to find one
-                if not rlinks or find_all:
-                    for item in document:
-                        if self.id in item.links:
-                            rlinks.append(item.id)
-                            if not find_all:
-                                break
-        if rlinks and find_all:
-            msg = "reverse links: {}".format(', '.join(rlinks))
+        for document2 in tree:
+            if document2.parent == document.prefix:
+                children.append(document2)
+            # Search for reverse links unless we only need to find one
+            if not rlinks or find_all:
+                for item in document2:
+                    if self.id in item.links:
+                        rlinks.append(item.id)
+                        if not find_all:
+                            break
+        if rlinks:
+            if find_all:
+                msg = "reverse links: {}".format(', '.join(rlinks))
+            else:
+                msg = "first reverse link: {}".format(rlinks[0])
             logging.debug(msg)
         return rlinks, children
 
-    def delete(self):
-        """Delete the item from the file system."""
-        logging.info("deleting {}...".format(self.path))
-        os.remove(self.path)
-        self._exists = False  # prevent future access
+    def delete(self, path=None):
+        super().delete(self.path)
 
 
 # YAML representer classes ###################################################

@@ -11,7 +11,6 @@ from itertools import chain
 
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.document import Document
-from doorstop.core.item import split_id
 from doorstop.core import vcs
 
 
@@ -28,9 +27,6 @@ class Tree(object):
         self.parent = parent
         self.children = []
         self._vcs = None
-
-    def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self)
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -152,21 +148,22 @@ class Tree(object):
 
     # actions ################################################################
 
-    def new(self, path, prefix, sep=None, parent=None, digits=None):  # pylint: disable=R0913
+    def new(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
         @param prefix: document's prefix
         @param sep: separator between prefix and numbers
-        @param parent: parent document's prefix
         @param digits: number of digits for the document's numbers
+        @param parent: parent document's prefix
 
         @return: newly created and placed Document
 
         @raise DoorstopError: if the document cannot be created
         """
-        document = Document.new(path, self.root, prefix, sep=sep,
-                                parent=parent, digits=digits)
+        document = Document.new(path, self.root, prefix,
+                                sep=sep, digits=digits,
+                                parent=parent)
         try:
             self._place(document)
         except DoorstopError:
@@ -200,9 +197,16 @@ class Tree(object):
 
         @raise DoorstopError: if the item cannot be removed
         """
-        item = self.find_item(identifier)
-        item.delete()
-        return item
+        for document in self:
+            try:
+                document.find_item(identifier)
+            except DoorstopError:
+                pass  # item not found in that document
+            else:
+                item = document.remove(identifier)
+                return item
+
+        raise DoorstopError("no matching ID: {}".format(identifier))
 
     def link(self, cid, pid):
         """Add a new link between two items by IDs.
@@ -259,11 +263,13 @@ class Tree(object):
         # Open item
         if launch:
             _open(item.path, tool=tool)
+            # TODO: force the item to reload after editing
+            item._loaded = False  # pylint: disable=W0212
         # Return the item
         return item
 
     def find_document(self, prefix):
-        """Get a document from its prefix.
+        """Get a document by its prefix.
 
         @param prefix: document's prefix
 
@@ -278,7 +284,7 @@ class Tree(object):
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
     def find_item(self, identifier, _kind=''):
-        """Get an item from its ID.
+        """Get an item by its ID.
 
         @param identifier: item ID
 
@@ -286,21 +292,12 @@ class Tree(object):
 
         @raise DoorstopError: if the item cannot be found
         """
-        # Type of item ('parent', 'child', or '') for logging messages
-        _kind = (' ' + _kind) if _kind else _kind
-
-        # Search using the prefix and number
-        prefix = split_id(identifier)[0]
+        _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         for document in self:
-            if document.prefix.lower() == prefix.lower():
+            try:
                 return document.find_item(identifier, _kind=_kind)
-        logging.debug("no matching{} prefix: {}".format(_kind, prefix))
-
-        # Fall back to a search using the exact ID
-        for document in self:
-            for item in document:
-                if item.id.lower() == identifier.lower():
-                    return item
+            except DoorstopError:
+                pass  # item not found in that document
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -324,6 +321,7 @@ class Tree(object):
         # Return the result
         return valid
 
+    # TODO: should this be renamed to 'issues'?
     def iter_issues(self):
         """Yield all the tree's issues.
 

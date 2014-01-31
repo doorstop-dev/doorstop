@@ -17,34 +17,17 @@ from doorstop.core.tree import Tree, build
 from doorstop.core.document import Document
 
 from doorstop.core.test import ENV, REASON, FILES, SYS, EMPTY
+from doorstop.core.test.test_document import MockDocument as _MockDocment
 
 
-class MockDocument(Document):
-    """Mock Document class that does not touch the file system."""
+class MockDocument(_MockDocment):  # pylint: disable=W0223,R0902,R0904
+    """Mock Document class that is always skipped in tree placement."""
 
-    @patch('os.path.isfile', Mock(return_value=True))
-    def __init__(self, *args, **kwargs):
-        self._file = ""  # file system mock
-        self._read = Mock(side_effect=self._mock_read)
-        self._write = Mock(side_effect=self._mock_write)
-        super().__init__(*args, **kwargs)
-
-    def _mock_read(self):
-        """Mock read function."""
-        text = self._file
-        logging.debug("mock read: {0}".format(repr(text)))
-        return text
-
-    def _mock_write(self, text):
-        """Mock write function"""
-        logging.debug("mock write: {0}".format(repr(text)))
-        self._file = text
-
-    _new = Mock()
+    skip = True
 
 
-class MockDocumentNoSkip(MockDocument):
-    """Mock Document class that does not touch the file system."""
+class MockDocumentNoSkip(MockDocument):  # pylint: disable=W0223,R0902,R0904
+    """Mock Document class that is never skipped in tree placement."""
 
     SKIP = '__disabled__'  # never skip mock Documents
 
@@ -63,11 +46,6 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         a.children = [b1, b2]
         b2.children = [c1, c2]
         cls.tree = a
-
-    def test_repr(self):
-        """Verify trees can be represented."""
-        text = "<Tree a <- [ b1, b2 <- [ c1, c2 ] ]>"
-        self.assertEqual(text, repr(self.tree))
 
     def test_str(self):
         """Verify trees can be converted to strings."""
@@ -171,10 +149,10 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_document(self):
         """Verify an document error fails the tree valid."""
-        with patch.object(self.tree, 'iter_issues',
-                          Mock(return_value=[DoorstopError('e'),
-                                             DoorstopWarning('w'),
-                                             DoorstopInfo('i')])):
+        mock_iter_issues = Mock(return_value=[DoorstopError('e'),
+                                              DoorstopWarning('w'),
+                                              DoorstopInfo('i')])
+        with patch.object(self.tree, 'iter_issues', mock_iter_issues):
             self.assertFalse(self.tree.valid())
 
     def test_new(self):
