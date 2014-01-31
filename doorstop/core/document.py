@@ -351,6 +351,7 @@ class Document(BaseFileObject):
         # Return the result
         return valid
 
+    # TODO: should this be renamed to 'issues'?
     def iter_issues(self, tree=None):
         """Yield all the document's issues.
 

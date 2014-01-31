@@ -28,9 +28,6 @@ class Tree(object):
         self.children = []
         self._vcs = None
 
-    def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self)
-
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
         prefix = getattr(self.document, 'prefix', self.document)
@@ -324,6 +321,7 @@ class Tree(object):
         # Return the result
         return valid
 
+    # TODO: should this be renamed to 'issues'?
     def iter_issues(self):
         """Yield all the tree's issues.
 

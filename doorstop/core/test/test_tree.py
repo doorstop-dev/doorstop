@@ -47,11 +47,6 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         b2.children = [c1, c2]
         cls.tree = a
 
-    def test_repr(self):
-        """Verify trees can be represented."""
-        text = "<Tree a <- [ b1, b2 <- [ c1, c2 ] ]>"
-        self.assertEqual(text, repr(self.tree))
-
     def test_str(self):
         """Verify trees can be converted to strings."""
         text = "a <- [ b1, b2 <- [ c1, c2 ] ]"

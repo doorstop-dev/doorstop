@@ -381,7 +381,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
-        # TODO: this should be common code with Item/Document/Tree
+        # TODO: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
         for issue in self.iter_issues(document=document, tree=tree):
@@ -396,6 +396,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Return the result
         return valid
 
+    # TODO: should this be renamed to 'issues'?
     def iter_issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
