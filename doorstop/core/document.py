@@ -86,7 +86,7 @@ class Document(object):
 
         @raise DoorstopError: if the document already exists
         """
-        # TODO: remove after testing or raise a specific exception
+        # TODO: raise a specific exception
         assert sep is None or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document

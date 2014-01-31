@@ -435,6 +435,7 @@ class Item(object):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
+        # TODO: this should be common code with Item/Document/Tree
         valid = True
         # Display all issues
         for issue in self.iter_issues(document=document, tree=tree):
@@ -490,6 +491,10 @@ class Item(object):  # pylint: disable=R0904
 
     def _iter_issues_document(self, document):
         """Yield all the item's issues against its document."""
+        # Verify an item's ID matches its document's prefix
+        if self.prefix != document.prefix:
+            msg = "prefix differs from document ({})".format(document.prefix)
+            yield DoorstopInfo(msg)
         # Verify an item has upward links
         if all((document.parent,
                 self.normative,
@@ -500,15 +505,19 @@ class Item(object):  # pylint: disable=R0904
         for identifier in self.links:
             try:
                 prefix = split_id(identifier)[0]
-            except DoorstopError as exc:
-                yield exc
+            except DoorstopError:
+                msg = "invalid ID in links: {}".format(identifier)
+                yield DoorstopError(msg)
             else:
-                if prefix.lower() != document.parent.lower():
+                if prefix != document.parent:
+                    # this is only 'info' because a document is allowed
+                    # to contain items with a different prefix, but
+                    # Doorstop will not create items like this
                     msg = "linked to non-parent item: {}".format(identifier)
                     yield DoorstopInfo(msg)
 
     def _iter_issues_tree(self, tree):
-        """Yield all the item's issues against the full tree."""
+        """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -602,7 +611,7 @@ class Item(object):  # pylint: disable=R0904
         for document2 in tree:
             if document2.parent == document.prefix:
                 children.append(document2)
-                # TODO: when item/document caching is enabled, search the tree
+                # TODO: when Item/Document caching is enabled, search the tree
                 # Search for reverse links unless we only need to find one
                 if not rlinks or find_all:
                     for item in document2:
@@ -610,8 +619,11 @@ class Item(object):  # pylint: disable=R0904
                             rlinks.append(item.id)
                             if not find_all:
                                 break
-        if rlinks and find_all:
-            msg = "reverse links: {}".format(', '.join(rlinks))
+        if rlinks:
+            if find_all:
+                msg = "reverse links: {}".format(', '.join(rlinks))
+            else:
+                msg = "first reverse link: {}".format(rlinks[0])
             logging.debug(msg)
         return rlinks, children
 
