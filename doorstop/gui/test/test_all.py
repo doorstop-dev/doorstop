@@ -14,10 +14,7 @@ import imp
 from doorstop.gui.main import main
 from doorstop.gui import main as gui
 
-from doorstop.gui.test import ENV, REASON
 
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestMain(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop-gui' command."""
 

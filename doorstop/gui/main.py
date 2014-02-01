@@ -278,13 +278,13 @@ def main(args=None):
     try:
         success = run(args)
     except KeyboardInterrupt:
-        logging.debug("program manually closed")
+        logging.debug("program interrupted")
+        success = False
+    if success:
+        logging.debug("program exited")
     else:
-        if success:
-            logging.debug("program exited")
-        else:
-            logging.debug("program exited with error")
-            sys.exit(1)
+        logging.debug("program exited with error")
+        sys.exit(1)
 
 
 def _configure_logging(verbosity=0):
