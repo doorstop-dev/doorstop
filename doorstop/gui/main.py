@@ -142,7 +142,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Start the application
-        self.root.after(0, self.find)
+        self.root.after(1000, self.find)
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
@@ -163,7 +163,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
         # Shared style
-        mono = font.Font(family="Droid Sans Mono", size=12)
+        mono = font.Font(family="TkFixedFont", size=10)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -241,7 +241,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             self.listbox_outline = tk.Listbox(frame, width=width_outline, font=mono)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -285,7 +285,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
+            self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=mono)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -326,10 +326,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # Place widgets
             ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -383,8 +383,8 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # TODO: determine a way to do this dynamically
             # width = self.listbox_outline.cget('width')
-            width = 35
-            value = indent + level
+            width = self.listbox_outline.cget('width')
+            value = indent + level + ' '
             while (len(value) + len(item.id)) < width:
                 value += ' '
             value += item.id
