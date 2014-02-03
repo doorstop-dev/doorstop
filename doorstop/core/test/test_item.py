@@ -153,17 +153,29 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn("active: false\n", self.item._write.call_args[0][0])
         self.assertFalse(self.item.active)
 
+    def test_derived(self):
+        """Verify an item's normative status can be set and read."""
+        self.item.derived = 1  # converted to True
+        self.assertIn("derived: true\n", self.item._write.call_args[0][0])
+        self.assertTrue(self.item.derived)
+
     def test_normative(self):
         """Verify an item's normative status can be set and read."""
         self.item.normative = 0  # converted to False
         self.assertIn("normative: false\n", self.item._write.call_args[0][0])
         self.assertFalse(self.item.normative)
 
-    def test_derived(self):
-        """Verify an item's normative status can be set and read."""
-        self.item.derived = 1  # converted to True
-        self.assertIn("derived: true\n", self.item._write.call_args[0][0])
-        self.assertTrue(self.item.derived)
+    def test_heading(self):
+        """Verify an item's heading status can be set and read."""
+        self.item.level = '1.1.1'
+        self.item.heading = 1  # converted to True
+        self.assertEqual(0, self.item.level[-1])
+        self.assertFalse(self.item.normative)
+        self.assertTrue(self.item.heading)
+        self.item.heading = 0  # converted to False
+        self.assertNotEqual(0, self.item.level[-1])
+        self.assertTrue(self.item.normative)
+        self.assertFalse(self.item.heading)
 
     def test_text(self):
         """Verify an item's text can be set and read."""

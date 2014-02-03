@@ -10,7 +10,7 @@ import argparse
 import logging
 
 from doorstop import CLI, VERSION
-from doorstop.gui.main import run as gui
+from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
 from doorstop.core import report
 from doorstop import common

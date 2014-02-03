@@ -241,6 +241,23 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @property
     @auto_load
+    def derived(self):
+        """Get the item's derived status.
+
+        A derived item does not have links to items in its parent
+        document, but should still be linked to by items in its child
+        documents.
+        """
+        return self._data['derived']
+
+    @derived.setter
+    @auto_save
+    def derived(self, value):
+        """Set the item's derived status."""
+        self._data['derived'] = bool(value)
+
+    @property
+    @auto_load
     def normative(self):
         """Get the item's normative status.
 
@@ -260,26 +277,24 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         self._data['normative'] = bool(value)
 
     @property
-    @auto_load
-    def derived(self):
-        """Get the item's derived status.
+    def heading(self):
+        """Indicates if the item is a heading.
 
-        A derived item does not have links to items in its parent
-        document, but should still be linked to by items in its child
-        documents.
+        Headings have a level that ends in zero and are non-normative.
         """
-        return self._data['derived']
-
-    @derived.setter
-    @auto_save
-    def derived(self, value):
-        """Set the item's derived status."""
-        self._data['derived'] = bool(value)
-
-    @property
-    def header(self):
-        """Indicates if the item is a header."""
         return self.level[-1] == 0 and not self.normative
+
+    @heading.setter
+    @auto_save
+    def heading(self, value):
+        """Set the item's heading status."""
+        heading = bool(value)
+        if heading and not self.heading:
+            self.level = list(self.level) + [0]
+            self.normative = False
+        elif not heading and self.heading:
+            self.level = list(self.level)[:-1]
+            self.normative = True
 
     @property
     @auto_load
@@ -654,7 +669,7 @@ def convert_level(text):
         while parts[-1] == 0:
             del parts[-1]
         parts.append(0)
-    # Ensure the top level always a header (ends in a zero)
+    # Ensure the top level always a heading (ends in a zero)
     if len(parts) == 1:
         parts.append(0)
     # Convert the level to a tuple

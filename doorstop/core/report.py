@@ -65,7 +65,7 @@ def iter_lines_text(document, ignored=None, indent=8, width=79):
         if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
-        if item.header:
+        if item.heading:
 
             # Level and Text
             yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
@@ -123,7 +123,7 @@ def iter_lines_markdown(document, ignored=None):
         if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
-        if item.header:
+        if item.heading:
 
             # Level and Text
             yield "{h} {l} {t}".format(h=heading, l=level, t=item.text)
