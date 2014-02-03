@@ -142,7 +142,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Start the application
-        self.root.after(1000, self.find)
+        self.root.after(0, self.find)
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
@@ -395,7 +395,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
 
 
-            chars = "{i}: {t}\n\n".format(i=item.id, t=item.text)
+            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
             self.text_items.insert('end', chars)
 
 
@@ -428,14 +428,14 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         self.text_parents.delete('1.0', 'end')
         for identifier in self.item.links:
             item = self.tree.find_item(identifier)
-            chars = "{i}: {t}\n\n".format(i=item.id, t=item.text)
+            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
             self.text_parents.insert('end', chars)
 
         self.text_children.delete('1.0', 'end')
         identifiers = self.item.find_rlinks(self.document, self.tree)[0]
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
-            chars = "{i}: {t}\n\n".format(i=item.id, t=item.text)
+            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
             self.text_children.insert('end', chars)
 
         self.ignore = False
