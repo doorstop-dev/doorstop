@@ -9,6 +9,7 @@ from doorstop.common import DoorstopError
 
 from doorstop.core.vcs import git
 from doorstop.core.vcs import veracity
+from doorstop.core.vcs import subversion
 from doorstop.core.vcs import mockvcs
 
 from doorstop.core.vcs.base import BaseWorkingCopy as _bwc

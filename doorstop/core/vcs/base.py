@@ -18,10 +18,13 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         self._ignores = []
 
     @staticmethod
-    def call(*args):  # pragma: no cover - abstract method
+    def call(*args, return_stdout=False):  # pragma: no cover, abstract method
         """Call a command with string arguments."""
         logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
+        if return_stdout:
+            return subprocess.check_output(args).decode('utf-8')
+        else:
+            return subprocess.call(args)
 
     @abstractmethod
     def lock(self, path):  # pragma: no cover - abstract method
