@@ -163,7 +163,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
         # Shared style
-        mono = font.Font(family="TkFixedFont", size=10)
+        fixed = font.Font(family="Courier", size=10)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -238,10 +238,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=mono)
+            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=fixed)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
+            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -285,7 +285,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=mono)
+            self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -326,10 +326,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # Place widgets
             ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
+            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=mono)
+            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -395,7 +395,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
 
 
-            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
+            chars = (item.text or item.ref or '???') + '\n\n'
             self.text_items.insert('end', chars)
 
 
@@ -428,14 +428,14 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         self.text_parents.delete('1.0', 'end')
         for identifier in self.item.links:
             item = self.tree.find_item(identifier)
-            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
+            chars = (item.text or item.ref or '???') + '\n\n'
             self.text_parents.insert('end', chars)
 
         self.text_children.delete('1.0', 'end')
         identifiers = self.item.find_rlinks(self.document, self.tree)[0]
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
-            chars = "{t} [{i}]\n\n".format(i=item.id, t=item.text)
+            chars = (item.text or item.ref or '???') + '\n\n'
             self.text_children.insert('end', chars)
 
         self.ignore = False
