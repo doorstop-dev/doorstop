@@ -74,7 +74,7 @@ class Document(BaseFileObject):
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913
         """Create a new document.
 
         @param path: path to directory for the new document
@@ -83,6 +83,7 @@ class Document(BaseFileObject):
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the new document
         @param parent: parent ID for the new document
+        @param auto: enables automatic save
 
         @raise DoorstopError: if the document already exists
         """
@@ -98,7 +99,8 @@ class Document(BaseFileObject):
         document = Document(path, root=root,
                             _prefix=prefix, _sep=sep, _digits=digits,
                             _parent=parent)
-        document.save()  # TODO: investigate why needed for Document not Item
+        if auto or (auto is None and Document.auto):
+            document.save()
         # Return the document
         return document
 

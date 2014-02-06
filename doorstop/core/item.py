@@ -107,7 +107,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         item = Item(path2, root=root)
         item.auto = False
         item.level = level or Item.DEFAULT_LEVEL
-        item.auto = Item.auto if auto is None else auto
+        if auto or (auto is None and Item.auto):
+            item.save()
         # Return the item
         return item
 
