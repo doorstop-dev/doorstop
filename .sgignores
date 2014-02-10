@@ -25,3 +25,6 @@ gen/*.css
 # Build and release directories
 @/build
 @/dist
+
+# Sublime Text
+*.sublime-workspace
