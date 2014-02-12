@@ -6,11 +6,11 @@ Setup script for Doorstop.
 
 import setuptools
 
-from doorstop import __project__, CLI, GUI
+from doorstop import __project__, __version__, CLI, GUI
 
 setuptools.setup(
     name=__project__,
-    version='0.0.17',
+    version=__version__,
 
     description="Text-based requirements management using version control.",
     url='http://pypi.python.org/pypi/Doorstop',

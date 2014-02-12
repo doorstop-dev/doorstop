@@ -1,21 +1,23 @@
 PROJECT := Doorstop
 PACKAGE := doorstop
-SOURCES := Makefile setup.py
+SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
 
-VIRTUALENV := env
-DEPENDS := $(VIRTUALENV)/.depends
+ENV := env
+DEPENDS := $(ENV)/.depends
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
 ifeq ($(OS),Windows_NT)
-	VERSION := C:\\Python33\\python.exe
-	BIN := $(VIRTUALENV)/Scripts
+    SYS_PYTHON := C:\\Python33\\python.exe
+    SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
+    BIN := $(ENV)/Scripts
 	EXE := .exe
 	OPEN := cmd /c start
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python33\\tcl\\tcl8.5
 else
-	VERSION := python3
-	BIN := $(VIRTUALENV)/bin
+    SYS_PYTHON := python3
+    SYS_VIRTUALENV := virtualenv
+    BIN := $(ENV)/bin
 	OPEN := open
 endif
 MAN := man
@@ -43,7 +45,7 @@ $(EGG_INFO): $(SOURCES)
 .PHONY: .virtualenv
 .virtualenv: $(PIP)
 $(PIP):
-	virtualenv --python $(VERSION) $(VIRTUALENV)
+	$(SYS_VIRTUALENV) --python $(SYS_PYTHON) $(ENV)
 
 .PHONY: depends
 depends: .virtualenv $(DEPENDS) Makefile
@@ -130,12 +132,12 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-env
 .clean-env:
-	rm -rf $(VIRTUALENV)
+	rm -rf $(ENV)
 
 .PHONY: .clean-build
 .clean-build:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -delete
+	find $(PACKAGE) -name '*.pyc' -delete
+	find $(PACKAGE) -name '__pycache__' -delete
 	rm -rf *.egg-info
 
 .PHONY: .clean-doc
@@ -162,7 +164,7 @@ dist: env depends check test tests doc
 upload: env depends doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
-	$(MAKE) dev  # restore the development environemnt
+	$(MAKE) dev  # restore the development environment
 
 .PHONY: dev
 dev:
