@@ -282,7 +282,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
 
-
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
