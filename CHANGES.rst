@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.20 (dev/02/13)
+0.0.20 (2014/02/13)
 -------------------
 
 - Updated doorstop.core.report to support lists of Items
