@@ -45,7 +45,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req2.yml',
                      _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: 'core.report'\nlevel: 2.1.1"),
+                     _file="links: [sys2]\nref: '123456789'\nlevel: 2.1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                      "normative: false"),
