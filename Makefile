@@ -38,7 +38,7 @@ all: env
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
-$(EGG_INFO): $(SOURCES)
+$(EGG_INFO): Makefile setup.py
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
