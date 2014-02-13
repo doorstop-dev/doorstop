@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.19 (dev)
+-------------------
+
+- Updated doorstop.core.report to support Items or Documents
+
+
 0.0.18 (2014/02/12)
 -------------------
 

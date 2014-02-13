@@ -27,4 +27,4 @@ gen/*.css
 @/dist
 
 # Sublime Text
-.sublime-project.sublime-workspace
+.*.sublime-workspace

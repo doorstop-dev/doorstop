@@ -31,11 +31,12 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
+        cls.item = MockItem('path/to/req3.yml',
+                            _file="links: [sys3]\ntext: 'Heading'\n"
+                            "level: 1.0\nnormative: false")
         cls.document = Mock()
         cls.document.items = [
-            MockItem('path/to/req3.yml',
-                     _file="links: [sys3]\ntext: 'Heading'\nlevel: 1.0\n"
-                     "normative: false"),
+            cls.item,
             MockItem('path/to/req3.yml',
                      _file="links: [sys3]\ntext: '" + ("Hello, world! " * 10)
                      + "'\nlevel: 1.2"),
@@ -44,7 +45,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req2.yml',
                      _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: 'r1'\nlevel: 2.1.1"),
+                     _file="links: [sys2]\nref: 'core.report'\nlevel: 2.1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                      "normative: false"),
@@ -76,8 +77,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify publishing to an unknown format raises an exception."""
         self.assertRaises(DoorstopError, publish, self.document, 'a.a', '.a')
 
-    def test_iter_lines_text(self):
-        """Verify a text report can be created."""
+    def test_iter_lines_text_item(self):
+        """Verify a text report can be created from an item."""
+        expected = "1.0     Heading\n\n"
+        lines = iter_lines(self.item, '.txt', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_iter_lines_text_document(self):
+        """Verify a text report can be created from a document."""
         path = os.path.join(FILES, 'report.txt')
         expected = open(path).read()
         lines = iter_lines(self.document, '.txt', ignored=self.work.ignored)
@@ -87,8 +95,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'utf-8'))
 
-    def test_iter_lines_markdown(self):
-        """Verify a Markdown report can be created."""
+    def test_iter_lines_markdown_item(self):
+        """Verify a Markdown report can be created from an item."""
+        expected = "# 1.0 Heading\n\n"
+        lines = iter_lines(self.item, '.md', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_iter_lines_markdown_document(self):
+        """Verify a Markdown report can be created from a document."""
         path = os.path.join(FILES, 'report.md')
         expected = open(path).read()
         lines = iter_lines(self.document, '.md', ignored=self.work.ignored)
@@ -98,8 +113,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'utf-8'))
 
-    def test_iter_lines_html(self):
-        """Verify an HTML report can be created."""
+    def test_iter_lines_html_item(self):
+        """Verify an HTML report can be created from an item."""
+        expected = "<h1>1.0 Heading</h1>\n"
+        lines = iter_lines(self.item, '.html', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_iter_lines_html_document(self):
+        """Verify an HTML report can be created from a document."""
         path = os.path.join(FILES, 'report.html')
         expected = open(path).read()
         lines = iter_lines(self.document, '.html', ignored=self.work.ignored)
@@ -110,7 +132,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             outfile.write(bytes(text, 'utf-8'))
 
     def test_iter_lines_unknown(self):
-        """Verify iterating an unknown format raises an exception."""
+        """Verify iterating an unknown format raises."""
         gen = iter_lines(self.document, '.a')
         self.assertRaises(DoorstopError, list, gen)
 

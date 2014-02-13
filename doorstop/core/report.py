@@ -33,33 +33,37 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines(document, ext='.txt', ignored=None, **kwargs):
+def iter_lines(obj, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param document: Document to publish
+    @param obj: Item or Document to publish
     @param ext: file extension to specify the output format
     @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
     """
     if ext in FORMAT:
-        logging.debug("yielding {} as lines of {}...".format(document, ext))
-        yield from FORMAT[ext](document, ignored=ignored, **kwargs)
+        logging.debug("yielding {} as lines of {}...".format(obj, ext))
+        yield from FORMAT[ext](obj, ignored=ignored, **kwargs)
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines_text(document, ignored=None, indent=8, width=79):
+def iter_lines_text(obj, ignored=None, indent=8, width=79):
     """Yield lines for a text report.
 
-    @param document: Document to publish
+    @param obj: Item or Document to publish
     @param ignored: function to determine if a path should be skipped
     @param indent: number of spaces to indent text
     @param width: maximum line length
 
     @return: iterator of lines of text
     """
-    for item in (i for i in document.items if i.active):
+    if hasattr(obj, 'items'):
+        items = (i for i in obj.items if i.active)
+    else:
+        items = [obj]
+    for item in items:
 
         level = '.'.join(str(l) for l in item.level)
         if level.endswith('.0') and len(level) > 3:
@@ -108,15 +112,19 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def iter_lines_markdown(document, ignored=None):
+def iter_lines_markdown(obj, ignored=None):
     """Yield lines for a Markdown report.
 
-    @param document: Document to publish
+    @param obj: Item or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    for item in (i for i in document.items if i.active):
+    if hasattr(obj, 'items'):
+        items = (i for i in obj.items if i.active)
+    else:
+        items = [obj]
+    for item in items:
 
         heading = '#' * item.depth
         level = '.'.join(str(l) for l in item.level)
@@ -155,30 +163,33 @@ def iter_lines_markdown(document, ignored=None):
         yield ""  # break between items
 
 
-def iter_lines_html(document, ignored=None):
+def iter_lines_html(obj, ignored=None):
     """Yield lines for an HTML report.
 
-    @param document: Document to publish
+    @param obj: Item or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    yield '<!DOCTYPE html>'
-    yield '<head>'
-    yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as infile:
-        for line in infile:
-            yield line
-    yield '</style>'
-    yield '</head>'
-    yield '<body>'
-    lines = iter_lines_markdown(document, ignored=ignored)
+    document = hasattr(obj, 'items')
+    if document:
+        yield '<!DOCTYPE html>'
+        yield '<head>'
+        yield '<style type="text/css">'
+        yield ''
+        with open(CSS) as infile:
+            for line in infile:
+                yield line
+        yield '</style>'
+        yield '</head>'
+        yield '<body>'
+    lines = iter_lines_markdown(obj, ignored=ignored)
     text = '\n'.join(lines)
     html = markdown.markdown(text)
     yield from html.splitlines()
-    yield '</body>'
-    yield '</html>'
+    if document:
+        yield '</body>'
+        yield '</html>'
 
 
 # Mapping from file extension to lines generator

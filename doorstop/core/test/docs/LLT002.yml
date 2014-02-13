@@ -4,5 +4,5 @@ level: 2.0
 links:
 - REQ004
 normative: true
-ref: Verify a Markdown report can be created.
+ref: Verify a Markdown report can be created from a document.
 text: ''
