@@ -228,12 +228,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised on an unknown ID."""
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
-    @patch('doorstop.core.item.Item.iter_issues')
-    def test_valid(self, mock_iter_issues):
+    @patch('doorstop.core.item.Item.issues')
+    def test_valid(self, mock_issues):
         """Verify a document can be validated."""
-        mock_iter_issues.return_value = [DoorstopInfo('i')]
+        mock_issues.return_value = [DoorstopInfo('i')]
         self.assertTrue(self.document.valid())
-        self.assertEqual(4, mock_iter_issues.call_count)
+        self.assertEqual(4, mock_issues.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_valid_long(self):
@@ -242,10 +242,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_item(self):
         """Verify an item error fails the document check."""
-        mock_iter_issues = Mock(return_value=[DoorstopError('e'),
-                                              DoorstopWarning('w'),
-                                              DoorstopInfo('i')])
-        with patch.object(self.document, 'iter_issues', mock_iter_issues):
+        mock_issues = Mock(return_value=[DoorstopError('e'),
+                                         DoorstopWarning('w'),
+                                         DoorstopInfo('i')])
+        with patch.object(self.document, 'issues', mock_issues):
             self.assertFalse(self.document.valid())
 
 

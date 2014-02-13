@@ -400,7 +400,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # TODO: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
-        for issue in self.iter_issues(document=document, tree=tree):
+        for issue in self.issues(document=document, tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -412,8 +412,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Return the result
         return valid
 
-    # TODO: should this be renamed to 'issues'?
-    def iter_issues(self, document=None, tree=None):
+    def issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
         @param document: Document containing the item
@@ -442,17 +441,17 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield DoorstopWarning("non-normative, but has links")
         # Check links against the document
         if document:
-            yield from self._iter_issues_document(document)
+            yield from self._issues_document(document)
         # Check links against the tree
         if tree:
-            yield from self._iter_issues_tree(tree)
+            yield from self._issues_tree(tree)
         # Check links against both document and tree
         if document and tree:
-            yield from self._iter_issues_both(document, tree)
+            yield from self._issues_both(document, tree)
         # Reformat the file
         self.save()
 
-    def _iter_issues_document(self, document):
+    def _issues_document(self, document):
         """Yield all the item's issues against its document."""
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
@@ -479,7 +478,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     msg = "linked to non-parent item: {}".format(identifier)
                     yield DoorstopInfo(msg)
 
-    def _iter_issues_tree(self, tree):
+    def _issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
@@ -503,7 +502,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Apply the reformatted item IDs
         self._data['links'] = identifiers
 
-    def _iter_issues_both(self, document, tree):
+    def _issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if self.normative:

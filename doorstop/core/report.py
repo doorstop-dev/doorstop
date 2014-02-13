@@ -27,13 +27,13 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     if ext in FORMAT:
         logging.info("creating {}...".format(path))
         with open(path, 'wb') as outfile:  # pragma: no cover, integration test
-            for line in iter_lines(document, ext, ignored=ignored, **kwargs):
+            for line in lines(document, ext, ignored=ignored, **kwargs):
                 outfile.write(bytes(line + '\n', 'utf-8'))
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines(obj, ext='.txt', ignored=None, **kwargs):
+def lines(obj, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
     @param obj: Item or Document to publish
@@ -49,7 +49,7 @@ def iter_lines(obj, ext='.txt', ignored=None, **kwargs):
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines_text(obj, ignored=None, indent=8, width=79):
+def lines_text(obj, ignored=None, indent=8, width=79):
     """Yield lines for a text report.
 
     @param obj: Item or Document to publish
@@ -112,7 +112,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def iter_lines_markdown(obj, ignored=None):
+def lines_markdown(obj, ignored=None):
     """Yield lines for a Markdown report.
 
     @param obj: Item or Document to publish
@@ -163,7 +163,7 @@ def iter_lines_markdown(obj, ignored=None):
         yield ""  # break between items
 
 
-def iter_lines_html(obj, ignored=None):
+def lines_html(obj, ignored=None):
     """Yield lines for an HTML report.
 
     @param obj: Item or Document to publish
@@ -183,9 +183,7 @@ def iter_lines_html(obj, ignored=None):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    lines = iter_lines_markdown(obj, ignored=ignored)
-    text = '\n'.join(lines)
-    html = markdown.markdown(text)
+    html = markdown.markdown('\n'.join(lines_markdown(obj, ignored=ignored)))
     yield from html.splitlines()
     if document:
         yield '</body>'
@@ -193,6 +191,6 @@ def iter_lines_html(obj, ignored=None):
 
 
 # Mapping from file extension to lines generator
-FORMAT = {'.txt': iter_lines_text,
-          '.md': iter_lines_markdown,
-          '.html': iter_lines_html}
+FORMAT = {'.txt': lines_text,
+          '.md': lines_markdown,
+          '.html': lines_html}

@@ -5,6 +5,7 @@ Changelog
 -------------------
 
 - Updated doorstop.core.report to support Items or Documents
+- Removed the 'iter_' prefix from all generators
 
 
 0.0.18 (2014/02/12)

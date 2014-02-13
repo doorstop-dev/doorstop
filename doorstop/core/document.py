@@ -341,7 +341,7 @@ class Document(BaseFileObject):
         """
         valid = True
         # Display all issues
-        for issue in self.iter_issues(tree=tree):
+        for issue in self.issues(tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -353,8 +353,7 @@ class Document(BaseFileObject):
         # Return the result
         return valid
 
-    # TODO: should this be renamed to 'issues'?
-    def iter_issues(self, tree=None):
+    def issues(self, tree=None):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
@@ -368,6 +367,6 @@ class Document(BaseFileObject):
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            for issue in item.iter_issues(document=self, tree=tree):
+            for issue in item.issues(document=self, tree=tree):
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))
