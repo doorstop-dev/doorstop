@@ -36,7 +36,7 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
 def lines(obj, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param obj: Item or Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ext: file extension to specify the output format
     @param ignored: function to determine if a path should be skipped
 
@@ -52,18 +52,14 @@ def lines(obj, ext='.txt', ignored=None, **kwargs):
 def lines_text(obj, ignored=None, indent=8, width=79):
     """Yield lines for a text report.
 
-    @param obj: Item or Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
     @param indent: number of spaces to indent text
     @param width: maximum line length
 
     @return: iterator of lines of text
     """
-    if hasattr(obj, 'items'):
-        items = (i for i in obj.items if i.active)
-    else:
-        items = [obj]
-    for item in items:
+    for item in _items(obj):
 
         level = '.'.join(str(l) for l in item.level)
         if level.endswith('.0') and len(level) > 3:
@@ -115,16 +111,12 @@ def _chunks(text, width, indent):
 def lines_markdown(obj, ignored=None):
     """Yield lines for a Markdown report.
 
-    @param obj: Item or Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    if hasattr(obj, 'items'):
-        items = (i for i in obj.items if i.active)
-    else:
-        items = [obj]
-    for item in items:
+    for item in _items(obj):
 
         heading = '#' * item.depth
         level = '.'.join(str(l) for l in item.level)
@@ -163,15 +155,36 @@ def lines_markdown(obj, ignored=None):
         yield ""  # break between items
 
 
+def _items(obj):
+    """Get an iterator of items from from an item, list, or document."""
+
+    if hasattr(obj, 'items'):
+        # a document
+        return (i for i in obj.items if i.active)
+    try:
+        # an iterable
+        return iter(obj)
+    except TypeError:
+        # an item
+        return [obj]  # an item
+
+
 def lines_html(obj, ignored=None):
     """Yield lines for an HTML report.
 
-    @param obj: Item or Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    document = hasattr(obj, 'items')
+    # Determine if a full HTML document should be generated
+    try:
+        iter(obj)
+    except TypeError:
+        document = False
+    else:
+        document = True
+    # Generate HTML
     if document:
         yield '<!DOCTYPE html>'
         yield '<head>'

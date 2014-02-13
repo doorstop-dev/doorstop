@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.report module.
 """
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch, MagicMock
 
 import os
 import tempfile
@@ -34,7 +34,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         cls.item = MockItem('path/to/req3.yml',
                             _file="links: [sys3]\ntext: 'Heading'\n"
                             "level: 1.0\nnormative: false")
-        cls.document = Mock()
+        cls.document = MagicMock()
         cls.document.items = [
             cls.item,
             MockItem('path/to/req3.yml',
