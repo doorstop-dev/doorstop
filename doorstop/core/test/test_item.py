@@ -39,6 +39,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join('path', 'to', 'RQ001.yml')
         self.item = MockItem(path)
 
+    def test_init_invalid(self):
+        """Verify an item cannot be initialized from an invalid path."""
+        self.assertRaises(DoorstopError, Item, 'not/a/path')
+
     def test_load_empty(self):
         """Verify loading calls read."""
         self.item.load()

@@ -3,7 +3,7 @@ Package for doorstop.
 """
 
 __project__ = 'Doorstop'
-__version__ = '0.0.20'
+__version__ = '0.0.21-dev'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'

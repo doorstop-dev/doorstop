@@ -46,7 +46,6 @@ class Document(BaseFileObject):
         # Initialize the document
         self.path = path
         self.root = root
-        self._data = {}
         self._items = []
         self._itered = False
         # Set default values
@@ -165,19 +164,27 @@ class Document(BaseFileObject):
         logging.debug("iterating through items in {}...".format(self.path))
         # Reload the document's item
         self._items = []
-        for filename in os.listdir(self.path):
-            path = os.path.join(self.path, filename)
-            try:
-                item = Item(path)
-            except DoorstopError:
-                pass  # skip non-item files
-            else:
-                self._items.append(item)
-                yield item
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for dirname in list(dirnames):
+                path = os.path.join(dirpath, dirname, Document.CONFIG)
+                if os.path.exists(path):
+                    path = os.path.dirname(path)
+                    msg = "found embedded document: {}".format(path)
+                    logging.debug(msg)
+                    dirnames.remove(dirname)
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                try:
+                    item = Item(path)
+                except DoorstopError:
+                    pass  # skip non-item files
+                else:
+                    self._items.append(item)
+                    yield item
         # Set meta attributes
         self._itered = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def config(self):

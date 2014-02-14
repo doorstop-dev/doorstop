@@ -45,6 +45,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     auto = True  # set to False to delay automatic save until explicit save
 
     def __init__(self):
+        self._data = {}
         self._exists = True
         self._loaded = False
 
@@ -128,6 +129,43 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             raise DoorstopError("cannot save to deleted: {}".format(self))
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
+
+    # extended attributes ####################################################
+
+    @auto_load
+    def get(self, name, default=None):
+        """Get an extended attribute.
+
+        @param name: name of extended attribute
+        @param default: value to return for missing attributes
+
+        @return: value of extended attribute
+        """
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
+            logging.info(msg)
+            return getattr(self, name)
+        else:
+            return self._data.get(name, default)
+
+    @auto_load
+    @auto_save
+    def set(self, name, value):
+        """Set an extended attribute.
+
+        @param name: name of extended attribute
+        @param value: value to set
+        """
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
+            logging.info(msg)
+            return setattr(self, name, value)
+        else:
+            self._data[name] = value
+
+    # actions ################################################################
 
     def delete(self, path):
         """Delete the object's file from the file system."""

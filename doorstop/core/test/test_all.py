@@ -60,7 +60,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         doc = Document(FILES)
         self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
-        self.assertEqual(4, len(doc.items))
+        self.assertEqual(5, len(doc.items))
 
     def test_new(self):
         """Verify a new document can be created."""

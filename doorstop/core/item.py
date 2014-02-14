@@ -54,7 +54,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Initialize the item
         self.path = path
         self.root = root
-        self._data = {}
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -170,7 +169,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         self._loaded = False
         self.auto = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def id(self):  # pylint: disable=C0103
@@ -336,41 +335,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     def links(self, value):
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
-
-    # extended attributes ####################################################
-
-    @auto_load
-    def get(self, name, default=None):
-        """Get an extended attribute.
-
-        @param name: name of extended attribute
-        @param default: value to return for missing attributes
-
-        @return: value of extended attribute
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return getattr(self, name)
-        else:
-            return self._data.get(name, default)
-
-    @auto_load
-    @auto_save
-    def set(self, name, value):
-        """Set an extended attribute.
-
-        @param name: name of extended attribute
-        @param value: value to set
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return setattr(self, name, value)
-        else:
-            self._data[name] = value
 
     # actions ################################################################
 
