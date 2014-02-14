@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.21 (dev)
+0.0.21 (2014/02/14)
 -------------------
 
 - Documents can now have Item files in sub-folders
