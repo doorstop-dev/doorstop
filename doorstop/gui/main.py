@@ -170,7 +170,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Start the application
-        root.after(0, self.find)
+        root.after(500, self.find)
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
@@ -191,7 +191,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
         # Shared style
-        fixed = font.Font(family="Courier New", size=14)
+        if sys.platform == 'darwin':
+            size = 14
+        else:
+            size = 10
+        fixed = font.Font(family="Courier New", size=size)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -387,6 +391,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         # Update the current tree
         self.tree = tree.build(root=self.stringvar_project.get())
+        logging.info("displaying tree...")
 
         # Display the documents in the tree
         values = [document.prefix_relpath for document in self.tree]
@@ -402,6 +407,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Update the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
+        logging.info("displaying document {}...".format(self.document))
 
         # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
@@ -409,18 +415,9 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         for item in self.document.items:
 
             # Add the item to the document outline
-            # TODO: make this part of the Item class and use in report.py
+            indent = ' ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
-            if level.endswith('.0') and len(level) > 3:
-                level = level[:-2]
-            indent = '  ' * (item.depth - 1)
-            # TODO: determine a way to do this dynamically
-            # width = self.listbox_outline.cget('width')
-            width = self.listbox_outline.cget('width')
-            value = indent + level + ' '
-            while (len(value) + len(item.id)) < width:
-                value += ' '
-            value += item.id
+            value = "{s}{l} {i}".format(s=indent, l=level, i=item.id)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
@@ -442,6 +439,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Update the current item
         identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
+        logging.info("displaying item {}...".format(self.item))
 
         # Display the item's properties
         self.text_item.replace('1.0', 'end', self.item.text)
