@@ -23,7 +23,7 @@ from doorstop.core.test.test_item import MockItem
 #  2. re-run all tests
 #  3. manually verify the newly generated reports are correct
 #  4. set ASSERT_CONTENTS to True
-ASSERT_CONTENTS = True  # set to False to override contents
+ASSERT_CONTENTS = True
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

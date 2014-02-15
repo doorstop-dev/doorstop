@@ -149,7 +149,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         for key, value in self._data.items():
             if key == 'level':
                 level = '.'.join(str(n) for n in value)
-                if len(value) == 2:
+                if len(value) == 1:
+                    level = int(level)
+                elif len(value) == 2:
                     level = float(level)
                 data['level'] = level
             elif key == 'text':
@@ -618,6 +620,9 @@ def convert_level(text):
     >>> convert_level([7, 0, 0])
     (7, 0)
 
+    >>> convert_level(1)
+    (1,)
+
     """
     # Correct for integers (42) and floats (4.2) in YAML
     if isinstance(text, int) or isinstance(text, float):
@@ -632,9 +637,6 @@ def convert_level(text):
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
-        parts.append(0)
-    # Ensure the top level always a heading (ends in a zero)
-    if len(parts) == 1:
         parts.append(0)
     # Convert the level to a tuple
     return tuple(parts)

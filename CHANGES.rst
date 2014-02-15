@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.22 (dev)
+-------------------
+
+- Top-level Items are no longer required to have a level ending in zero
+
 0.0.21 (2014/02/14)
 -------------------
 

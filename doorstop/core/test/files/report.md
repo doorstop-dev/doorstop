@@ -10,7 +10,7 @@ Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, wor
 
 abc 123
 
-# 2.0 req2
+# 2 req2
 
 *Links: sys1, sys2*
 
