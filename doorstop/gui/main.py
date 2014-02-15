@@ -85,7 +85,7 @@ def _run(args, cwd, error):
 
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
-        error("tkinter is not available")
+        return error("tkinter is not available")
 
     else:  # pragma: no cover, manual test
 
@@ -101,7 +101,7 @@ def _run(args, cwd, error):
         return True
 
 
-def _log(func):
+def _log(func):  # pragma: no cover, manual test
     """Decorator for methods that should log calls."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
