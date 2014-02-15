@@ -7,7 +7,6 @@ Integration tests for the doorstop.cli package.
 import unittest
 from unittest.mock import patch, Mock
 
-import os
 import sys
 import imp
 

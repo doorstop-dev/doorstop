@@ -14,7 +14,7 @@ from doorstop.core import Tree, build
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY
 
 
-class DocumentNoSkip(Document):
+class DocumentNoSkip(Document):  # pylint: disable=R0904
     """Document class that is never skipped."""
 
     SKIP = '__disabled__'  # never skip test Documents

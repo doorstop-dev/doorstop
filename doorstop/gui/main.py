@@ -9,13 +9,14 @@ from unittest.mock import Mock
 try:  # pragma: no cover - not measurable
     import tkinter as tk
     from tkinter import ttk
-    from tkinter import font, messagebox, simpledialog, filedialog
-except ImportError as err:  # pragma: no cover - not measurable
-    sys.stderr.write("WARNING: {}\n".format(err))
+    from tkinter import font, filedialog
+except ImportError as _exc:  # pragma: no cover, not measurable
+    sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()  # pylint: disable=C0103
     ttk = Mock()  # pylint: disable=C0103
 import os
 import argparse
+import functools
 from itertools import chain
 import logging
 
@@ -74,18 +75,17 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, err):
+def _run(args, cwd, error):
     """Start the GUI.
 
     @param args: Namespace of CLI arguments (from this module or the CLI)
     @param cwd: current working directory
-    @param err: function to call for CLI errors
+    @param error: function to call for CLI errors
     """
 
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
-        logging.error("tkinter is not available")
-        return False
+        error("tkinter is not available")
 
     else:  # pragma: no cover, manual test
 
@@ -101,23 +101,40 @@ def _run(args, cwd, err):
         return True
 
 
-class Application(ttk.Frame):  # pragma: no cover, manual test
+def _log(func):
+    """Decorator for methods that should log calls."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to log name and arguments."""
+        sargs = "{}, {}".format(', '.join(repr(a) for a in args),
+                                ', '.join("{}={}".format(k, repr(v))
+                                          for k, v in kwargs.items()))
+        msg = "{}: {}".format(func.__name__, sargs.strip(", "))
+        if not self.ignore:
+            logging.critical(msg.strip())
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):
-        self.root = root
-        self.cwd = cwd
-        ttk.Frame.__init__(self, self.root)
+        ttk.Frame.__init__(self, root)
 
-        self.ignore = False  # indicates an event is internal an can be ignored
+        # Create Doorstop variables
+        self.cwd = cwd
+        self.tree = None
+        self.document = None
+        self.item = None
 
         # Create string variables
         self.stringvar_project = tk.StringVar(value=project or '')
-        self.stringvar_project.trace('w', self.update_project)
+        self.stringvar_project.trace('w', self.display_tree)
         self.stringvar_document = tk.StringVar()
-        self.stringvar_document.trace('w', self.update_tree)
+        self.stringvar_document.trace('w', self.display_document)
         self.stringvar_item = tk.StringVar()
-        self.stringvar_item.trace('w', self.update_document)
+        self.stringvar_item.trace('w', self.display_item)
         self.stringvar_text = tk.StringVar()
         self.stringvar_text.trace('w', self.update_item)
         self.intvar_active = tk.IntVar()
@@ -128,21 +145,32 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         self.intvar_normative.trace('w', self.update_item)
         self.intvar_heading = tk.IntVar()
         self.intvar_heading.trace('w', self.update_item)
+        self.stringvar_link = tk.StringVar()
+        self.stringvar_link.trace('w', self.update_item)
+        self.stringvar_unlink = tk.StringVar()
+        self.stringvar_unlink.trace('w', self.update_item)
+        self.stringvar_ref = tk.StringVar()
+        self.stringvar_ref.trace('w', self.update_item)
+        self.stringvar_extended = tk.StringVar()
+        self.stringvar_extended.trace('w', self.update_item)
 
         # Create widget variables
         self.combobox_documents = None
         self.listbox_outline = None
         self.text_items = None
         self.text_item = None
+        self.listbox_links = None
+        self.combobox_extended = None
         self.text_parents = None
         self.text_children = None
 
         # Initialize the GUI
+        self.ignore = False  # flag to ignore internal events
         frame = self.init(root)
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Start the application
-        self.root.after(0, self.find)
+        root.after(0, self.find)
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
@@ -163,7 +191,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
         # Shared style
-        fixed = font.Font(family="Courier", size=10)
+        fixed = font.Font(family="Courier New", size=14)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -192,7 +220,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             return frame
 
-        def frame_document(root):
+        def frame_tree(root):
             """Frame for the current document."""
 
             # Configure grid
@@ -211,7 +239,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             return frame
 
-        def frame_outline(root):
+        def frame_document(root):
             """Frame for current document's outline and items."""
 
             # Configure grid
@@ -254,7 +282,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             return frame
 
-        def frame_selected(root):
+        def frame_item(root):
             """Frame for the currently selected item."""
 
             # Configure grid
@@ -335,15 +363,16 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
         # Place widgets
         frame_project(frame).grid(row=0, column=0, columnspan=2, **kw_gs)
-        frame_document(frame).grid(row=0, column=2, columnspan=2, **kw_gs)
-        frame_outline(frame).grid(row=1, column=0, **kw_gs)
-        frame_selected(frame).grid(row=1, column=1, columnspan=2, **kw_gs)
+        frame_tree(frame).grid(row=0, column=2, columnspan=2, **kw_gs)
+        frame_document(frame).grid(row=1, column=0, **kw_gs)
+        frame_item(frame).grid(row=1, column=1, columnspan=2, **kw_gs)
         frame_family(frame).grid(row=1, column=3, **kw_gs)
 
         return frame
 
     def find(self):
         """Find the root of the project."""
+
         if not self.stringvar_project.get():
             try:
                 path = vcs.find_root(self.cwd)
@@ -352,34 +381,39 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             else:
                 self.stringvar_project.set(path)
 
-    def update_project(self, *args):
-        logging.critical(self.update_project.__name__)
+    @_log
+    def display_tree(self, *_):
+        """Display the currently selected tree."""
 
+        # Update the current tree
         self.tree = tree.build(root=self.stringvar_project.get())
 
+        # Display the documents in the tree
         values = [document.prefix_relpath for document in self.tree]
         self.combobox_documents['values'] = values
+
+        # Select the first document
         self.combobox_documents.current(0)
 
-    def update_tree(self, *args, item_index=0):
-        logging.critical(self.update_tree.__name__)
+    @_log
+    def display_document(self, *_, item_index=0):
+        """Display the currently selected document."""
 
+        # Update the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
-        print(self.document)
 
-
+        # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
         self.text_items.delete('1.0', 'end')
         for item in self.document.items:
 
+            # Add the item to the document outline
             # TODO: make this part of the Item class and use in report.py
             level = '.'.join(str(l) for l in item.level)
             if level.endswith('.0') and len(level) > 3:
                 level = level[:-2]
-
             indent = '  ' * (item.depth - 1)
-
             # TODO: determine a way to do this dynamically
             # width = self.listbox_outline.cget('width')
             width = self.listbox_outline.cget('width')
@@ -387,62 +421,57 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             while (len(value) + len(item.id)) < width:
                 value += ' '
             value += item.id
-
-
-
             self.listbox_outline.insert(tk.END, value)
 
+            # Add the item to the document text
+            value = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
+                                           i=item.id)
+            self.text_items.insert('end', value)
 
-
-            chars = (item.text or item.ref or '???') + '\n\n'
-            self.text_items.insert('end', chars)
-
-
+        # Select the first item
         self.listbox_outline.selection_set(item_index)
         identifier = self.listbox_outline.selection_get()
         self.stringvar_item.set(identifier)  # manual call
 
-
-
-
-
-    def update_document(self, *args):
-        logging.critical(self.update_document.__name__)
-        print(self.stringvar_item.get())
+    @_log
+    def display_item(self, *_):
+        """Display the currently selected item."""
 
         self.ignore = True
 
-        value = self.stringvar_item.get()
-        identifier = value.rsplit(' ', 1)[-1]
+        # Update the current item
+        identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
 
+        # Display the item's properties
         self.text_item.replace('1.0', 'end', self.item.text)
-
         self.intvar_active.set(self.item.active)
         self.intvar_derived.set(self.item.derived)
         self.intvar_normative.set(self.item.normative)
         self.intvar_heading.set(self.item.heading)
 
-
+        # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
         for identifier in self.item.links:
             item = self.tree.find_item(identifier)
-            chars = (item.text or item.ref or '???') + '\n\n'
+            chars = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
+                                           i=item.id)
             self.text_parents.insert('end', chars)
 
+        # Display the items this item has links from
         self.text_children.delete('1.0', 'end')
         identifiers = self.item.find_rlinks(self.document, self.tree)[0]
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
-            chars = (item.text or item.ref or '???') + '\n\n'
+            chars = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
+                                           i=item.id)
             self.text_children.insert('end', chars)
 
         self.ignore = False
 
-
-    def update_item(self, *args):
-        logging.critical(self.update_item.__name__)
-
+    @_log
+    def update_item(self, *_):
+        """Update the current item from the fields."""
         if self.ignore:
             return
 
@@ -455,42 +484,54 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         self.item.save()
 
         index = self.listbox_outline.curselection()[0]
-        self.update_tree(item_index=index)
+        self.display_document(item_index=index)
 
+    @_log
     def browse(self):
         """Browse for the root of a project."""
+
         path = filedialog.askdirectory()
         logging.debug("path: {}".format(path))
         if path:
             self.stringvar_project.set(path)
 
+    @_log
     def new(self):
         raise NotImplementedError()
 
+    @_log
     def left(self):
         raise NotImplementedError()
 
+    @_log
     def down(self):
         raise NotImplementedError()
 
-    def up(self):
+    @_log
+    def up(self):  # pylint: disable=C0103
         raise NotImplementedError()
 
+    @_log
     def right(self):
         raise NotImplementedError()
 
+    @_log
     def add(self):
         raise NotImplementedError()
 
+    @_log
     def remove(self):
         raise NotImplementedError()
 
+    @_log
     def clear(self):
         raise NotImplementedError()
 
+    @_log
     def link(self):
         raise NotImplementedError()
 
+    @_log
     def unlink(self):
         raise NotImplementedError()
 

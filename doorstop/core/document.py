@@ -14,7 +14,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Document(BaseFileObject):
+class Document(BaseFileObject):  # pylint: disable=R0904
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
