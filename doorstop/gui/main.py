@@ -270,10 +270,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=fixed)
+            self.listbox_outline = tk.Listbox(frame, width=width_outline)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -282,7 +282,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             ttk.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
             ttk.Label(frame, text="Items Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **kw_gp)
-            tk.Text(frame, height=height_code, width=width_code).grid(row=4, column=0, columnspan=6, **kw_gsp)
+            tk.Text(frame, height=height_code, width=width_code, wrap=tk.WORD, font=fixed).grid(row=4, column=0, columnspan=6, **kw_gsp)
 
             return frame
 
@@ -340,7 +340,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext)
+            self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
             self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
@@ -359,10 +359,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
             # Place widgets
             ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -424,7 +424,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         for item in self.document.items:
 
             # Add the item to the document outline
-            indent = ' ' * (item.depth - 1)
+            indent = '  ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
             value = "{s}{l} {i}".format(s=indent, l=level, i=item.id)
             self.listbox_outline.insert(tk.END, value)
@@ -470,9 +470,8 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         # Display the item's extended attributes
         values = self.item.extended
-        self.combobox_extended['values'] = values
-        if values:
-            self.combobox_extended.current(0)
+        self.combobox_extended['values'] = values or ['']
+        self.combobox_extended.current(0)
 
         # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
@@ -507,7 +506,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         name = self.stringvar_extendedkey.get()
         logging.debug("displaying extended attribute '{}'...".format(name))
-        self.text_extendedvalue.replace('1.0', 'end', self.item.get(name))
+        self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
 
         self.ignore = False
 
