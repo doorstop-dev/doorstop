@@ -506,7 +506,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.ignore = True
 
         name = self.stringvar_extendedkey.get()
-        logging.info("displaying extended attribute '{}'...".format(name))
+        logging.debug("displaying extended attribute '{}'...".format(name))
         self.text_extendedvalue.replace('1.0', 'end', self.item.get(name))
 
         self.ignore = False
@@ -538,35 +538,31 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     @_log
     def new(self):
-        raise NotImplementedError()
+        """Create a new document."""
 
     @_log
     def left(self):
-        raise NotImplementedError()
+        """Dedent the current item's level."""
 
     @_log
     def down(self):
-        raise NotImplementedError()
+        """Increment the current item's level."""
 
     @_log
     def up(self):  # pylint: disable=C0103
-        raise NotImplementedError()
+        """Decrement the current item's level."""
 
     @_log
     def right(self):
-        raise NotImplementedError()
+        """Indent the current item's level."""
 
     @_log
     def add(self):
-        raise NotImplementedError()
+        """Add a new item to the document."""
 
     @_log
     def remove(self):
-        raise NotImplementedError()
-
-    @_log
-    def clear(self):
-        raise NotImplementedError()
+        """Remove the selected item from the document."""
 
     def link(self):
         """Add the specified link to the current item."""
