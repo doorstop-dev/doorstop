@@ -101,6 +101,7 @@ def _run(args, cwd, error):
         return True
 
 
+# TODO: remove this function when no longer used
 def _log(func):  # pragma: no cover, manual test
     """Decorator for methods that should log calls."""
     @functools.wraps(func)
@@ -145,10 +146,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.intvar_normative.trace('w', self.update_item)
         self.intvar_heading = tk.IntVar()
         self.intvar_heading.trace('w', self.update_item)
-        self.stringvar_link = tk.StringVar()
-        self.stringvar_link.trace('w', self.update_item)
-        self.stringvar_unlink = tk.StringVar()
-        self.stringvar_unlink.trace('w', self.update_item)
+        self.stringvar_link = tk.StringVar()  # no trace event
         self.stringvar_ref = tk.StringVar()
         self.stringvar_ref.trace('w', self.update_item)
         self.stringvar_extended = tk.StringVar()
@@ -309,7 +307,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
             def text_item_focusout(event):
                 """Callback for updating text."""
-                logging.critical(text_item_focusout.__name__)
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
@@ -324,20 +321,15 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             ttk.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
             self.listbox_links = tk.Listbox(frame, width=width_id, height=6)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            self.stringvar_link = tk.StringVar()
             ttk.Entry(frame, width=width_id, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
             ttk.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
             ttk.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            self.stringvar_unlink = tk.StringVar()
-            ttk.Entry(frame, width=width_id, textvariable=self.stringvar_unlink).grid(row=5, column=2, sticky=tk.EW, **kw_gp)
             ttk.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
             ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.stringvar_ref = tk.StringVar()
             ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.stringvar_extended = tk.StringVar()
             self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extended)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
             tk.Text(frame, width=width_text, height=height_ext).grid(row=11, column=0, columnspan=3, **kw_gsp)
@@ -386,10 +378,18 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
                 self.stringvar_project.set(path)
 
     @_log
+    def browse(self):
+        """Browse for the root of a project."""
+
+        path = filedialog.askdirectory()
+        logging.debug("path: {}".format(path))
+        if path:
+            self.stringvar_project.set(path)
+
     def display_tree(self, *_):
         """Display the currently selected tree."""
 
-        # Update the current tree
+        # Set the current tree
         self.tree = tree.build(root=self.stringvar_project.get())
         logging.info("displaying tree...")
 
@@ -400,11 +400,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Select the first document
         self.combobox_documents.current(0)
 
-    @_log
     def display_document(self, *_, item_index=0):
         """Display the currently selected document."""
 
-        # Update the current document
+        # Set the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
         logging.info("displaying document {}...".format(self.document))
@@ -430,30 +429,40 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         identifier = self.listbox_outline.selection_get()
         self.stringvar_item.set(identifier)  # manual call
 
-    @_log
     def display_item(self, *_):
         """Display the currently selected item."""
 
         self.ignore = True
 
-        # Update the current item
+        # Set the current item
         identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
         logging.info("displaying item {}...".format(self.item))
 
         # Display the item's properties
         self.text_item.replace('1.0', 'end', self.item.text)
+        self.stringvar_text.set(self.item.text)  # manual call
         self.intvar_active.set(self.item.active)
         self.intvar_derived.set(self.item.derived)
         self.intvar_normative.set(self.item.normative)
         self.intvar_heading.set(self.item.heading)
+        self.listbox_links.delete(0, tk.END)
+        for identifier in self.item.links:
+            self.listbox_links.insert(tk.END, identifier)
+        self.stringvar_link.set('')
+        self.stringvar_ref.set(self.item.ref)
 
         # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
         for identifier in self.item.links:
-            item = self.tree.find_item(identifier)
-            chars = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
-                                           i=item.id)
+            try:
+                item = self.tree.find_item(identifier)
+            except DoorstopError:
+                text = "???"
+            else:
+                text = item.text or item.ref or '???'
+                identifier = item.id
+            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
             self.text_parents.insert('end', chars)
 
         # Display the items this item has links from
@@ -461,37 +470,34 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         identifiers = self.item.find_rlinks(self.document, self.tree)[0]
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
-            chars = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
-                                           i=item.id)
+            text = item.text or item.ref or '???'
+            identifier = item.id
+            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
             self.text_children.insert('end', chars)
 
         self.ignore = False
 
-    @_log
     def update_item(self, *_):
         """Update the current item from the fields."""
         if self.ignore:
             return
 
+        # Update the current item
+        logging.info("updating {}...".format(self.item))
         self.item.auto = False
         self.item.text = self.stringvar_text.get()
         self.item.active = self.intvar_active.get()
         self.item.derived = self.intvar_derived.get()
         self.item.normative = self.intvar_normative.get()
         self.item.heading = self.intvar_heading.get()
+        self.item.links = self.listbox_links.get(0, tk.END)
+        self.item.ref = self.stringvar_ref.get()
         self.item.save()
 
-        index = self.listbox_outline.curselection()[0]
-        self.display_document(item_index=index)
-
-    @_log
-    def browse(self):
-        """Browse for the root of a project."""
-
-        path = filedialog.askdirectory()
-        logging.debug("path: {}".format(path))
-        if path:
-            self.stringvar_project.set(path)
+        # Re-select this item
+        indexes = self.listbox_outline.curselection()
+        if indexes:
+            self.display_document(item_index=indexes[0])
 
     @_log
     def new(self):
@@ -525,13 +531,27 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     def clear(self):
         raise NotImplementedError()
 
-    @_log
     def link(self):
-        raise NotImplementedError()
+        """Add the specified link to the current item."""
 
-    @_log
+        # Add the specified link to the list
+        identifier = self.stringvar_link.get()
+        if identifier:
+            self.listbox_links.insert(tk.END, identifier)
+            self.stringvar_link.set('')
+
+            # Update the current item
+            self.update_item()
+
     def unlink(self):
-        raise NotImplementedError()
+        """Remove the currently selected link from the current item."""
+
+        # Remove the selected link from the list
+        index = self.listbox_links.curselection()
+        self.listbox_links.delete(index)
+
+        # Update the current item
+        self.update_item()
 
 
 if __name__ == '__main__':  # pragma: no cover - manual test
