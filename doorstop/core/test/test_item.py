@@ -209,6 +209,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an extended attribute can be used."""
         self.item.set('ext1', 'foobar')
         self.assertEqual('foobar', self.item.get('ext1'))
+        self.assertEqual(['ext1'], self.item.extended)
 
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""

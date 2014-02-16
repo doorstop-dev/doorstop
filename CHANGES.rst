@@ -5,6 +5,7 @@ Changelog
 -------------------
 
 - Top-level Items are no longer required to have a level ending in zero
+- Added Item/Document.extended to get a list of extended attribute names
 
 0.0.21 (2014/02/14)
 -------------------

@@ -132,6 +132,16 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     # extended attributes ####################################################
 
+    @property
+    @auto_load
+    def extended(self):
+        """Get a list of all extended attribute names."""
+        names = []
+        for name in self._data:
+            if not hasattr(self, name):
+                names.append(name)
+        return sorted(names)
+
     @auto_load
     def get(self, name, default=None):
         """Get an extended attribute.

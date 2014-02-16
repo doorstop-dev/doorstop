@@ -149,8 +149,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.stringvar_link = tk.StringVar()  # no trace event
         self.stringvar_ref = tk.StringVar()
         self.stringvar_ref.trace('w', self.update_item)
-        self.stringvar_extended = tk.StringVar()
-        self.stringvar_extended.trace('w', self.update_item)
+        self.stringvar_extendedkey = tk.StringVar()
+        self.stringvar_extendedkey.trace('w', self.display_extended)
+        self.stringvar_extendedvalue = tk.StringVar()
+        self.stringvar_extendedvalue.trace('w', self.update_item)
 
         # Create widget variables
         self.combobox_documents = None
@@ -159,6 +161,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.text_item = None
         self.listbox_links = None
         self.combobox_extended = None
+        self.text_extendedvalue = None
         self.text_parents = None
         self.text_children = None
 
@@ -235,7 +238,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Place widgets
             ttk.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
             self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
-            # self.combobox_documents.bind("<<ComboboxSelected>>", self.update_items)
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
             ttk.Button(frame, text="New...", command=self.new).grid(row=0, column=2, **kw_gp)
 
@@ -311,6 +313,12 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
 
+            def text_extendedvalue_focusout(event):
+                """Callback for updating extended attributes."""
+                widget = event.widget
+                value = widget.get('1.0', 'end')
+                self.stringvar_extendedvalue.set(value)
+
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
@@ -330,9 +338,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extended)
+            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            tk.Text(frame, width=width_text, height=height_ext).grid(row=11, column=0, columnspan=3, **kw_gsp)
+            self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext)
+            self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
+            self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
             return frame
 
@@ -439,18 +449,30 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.item = self.tree.find_item(identifier)
         logging.info("displaying item {}...".format(self.item))
 
-        # Display the item's properties
+        # Display the item's text
         self.text_item.replace('1.0', 'end', self.item.text)
+
+        # Display the item's properties
         self.stringvar_text.set(self.item.text)  # manual call
         self.intvar_active.set(self.item.active)
         self.intvar_derived.set(self.item.derived)
         self.intvar_normative.set(self.item.normative)
         self.intvar_heading.set(self.item.heading)
+
+        # Display the item's links
         self.listbox_links.delete(0, tk.END)
         for identifier in self.item.links:
             self.listbox_links.insert(tk.END, identifier)
         self.stringvar_link.set('')
+
+        # Display the item's external reference
         self.stringvar_ref.set(self.item.ref)
+
+        # Display the item's extended attributes
+        values = self.item.extended
+        self.combobox_extended['values'] = values
+        if values:
+            self.combobox_extended.current(0)
 
         # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
@@ -477,6 +499,18 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         self.ignore = False
 
+    @_log
+    def display_extended(self, *_):
+        """Display the currently selected extended attribute."""
+
+        self.ignore = True
+
+        name = self.stringvar_extendedkey.get()
+        logging.info("displaying extended attribute '{}'...".format(name))
+        self.text_extendedvalue.replace('1.0', 'end', self.item.get(name))
+
+        self.ignore = False
+
     def update_item(self, *_):
         """Update the current item from the fields."""
         if self.ignore:
@@ -492,6 +526,9 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.item.heading = self.intvar_heading.get()
         self.item.links = self.listbox_links.get(0, tk.END)
         self.item.ref = self.stringvar_ref.get()
+        name = self.stringvar_extendedkey.get()
+        if name:
+            self.item.set(name, self.stringvar_extendedvalue.get())
         self.item.save()
 
         # Re-select this item
