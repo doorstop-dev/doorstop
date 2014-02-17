@@ -128,6 +128,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.tree = None
         self.document = None
         self.item = None
+        self.index = None
 
         # Create string variables
         self.stringvar_project = tk.StringVar(value=project or '')
@@ -196,7 +197,8 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             size = 14
         else:
             size = 10
-        fixed = font.Font(family="Courier New", size=size)
+        normal = font.Font(family='TkDefaultFont')
+        fixed = font.Font(family='Courier New', size=size)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -270,10 +272,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = tk.Listbox(frame, width=width_outline)
+            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=normal)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -336,9 +338,9 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             ttk.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
             ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
+            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref, font=fixed).grid(row=8, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey)
+            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey, font=fixed)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
             self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
@@ -359,10 +361,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
             # Place widgets
             ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -410,7 +412,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Select the first document
         self.combobox_documents.current(0)
 
-    def display_document(self, *_, item_index=0):
+    def display_document(self, *_):
         """Display the currently selected document."""
 
         # Set the current document
@@ -435,7 +437,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             self.text_items.insert('end', value)
 
         # Select the first item
-        self.listbox_outline.selection_set(item_index)
+        self.listbox_outline.selection_set(self.index or 0)
         identifier = self.listbox_outline.selection_get()
         self.stringvar_item.set(identifier)  # manual call
 
@@ -447,6 +449,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Set the current item
         identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
+        self.index = self.listbox_outline.curselection()[0]
         logging.info("displaying item {}...".format(self.item))
 
         # Display the item's text
@@ -531,9 +534,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.item.save()
 
         # Re-select this item
-        indexes = self.listbox_outline.curselection()
-        if indexes:
-            self.display_document(item_index=indexes[0])
+        self.display_document()
 
     @_log
     def new(self):
