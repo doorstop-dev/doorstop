@@ -197,7 +197,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             size = 14
         else:
             size = 10
-        normal = font.Font(family='TkDefaultFont')
+        normal = font.Font(family='TkDefaultFont', size=size)
         fixed = font.Font(family='Courier New', size=size)
 
         # Configure grid
