@@ -5,8 +5,6 @@ Representation of a collection of Doorstop items.
 import os
 import logging
 
-import yaml
-
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.item import Item, split_id
 from doorstop import common
@@ -111,7 +109,7 @@ class Document(BaseFileObject):  # pylint: disable=R0904
         # Read text from file
         text = self._read(self.config)
         # Parse YAML data from text
-        data = self._parse(text, self.config)
+        data = self._load(text, self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
@@ -148,7 +146,7 @@ class Document(BaseFileObject):  # pylint: disable=R0904
                 data[key] = value
         data['settings'] = sets
         # Dump the data to YAML
-        text = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
         self._write(text, self.config)
         # Set meta attributes

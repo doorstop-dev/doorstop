@@ -6,9 +6,7 @@ import os
 import re
 import logging
 
-import yaml
-
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import auto_load, auto_save, BaseFileObject, Literal
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -119,7 +117,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
-        data = self._parse(text, self.path)
+        data = self._load(text, self.path)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -164,9 +162,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 # TODO: dump long strings as Literal (and SBD?)
                 data[key] = value
         # Dump the data to YAML
-        dump = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
-        self._write(dump, self.path)
+        self._write(text, self.path)
         # Set meta attributes
         self._loaded = False
         self.auto = True
@@ -556,31 +554,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     def delete(self, path=None):
         super().delete(self.path)
-
-
-# YAML representer classes ###################################################
-
-class Literal(str):  # pylint: disable=R0904
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-
-class Folded(str):  # pylint: disable=R0904
-    """Custom type for text which should be dumped in the folded style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the folded style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='>' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-yaml.add_representer(Folded, Folded.representer)
 
 
 # attribute formatters #######################################################
