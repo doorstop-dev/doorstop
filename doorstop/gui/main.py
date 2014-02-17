@@ -117,6 +117,24 @@ def _log(func):  # pragma: no cover, manual test
     return wrapped
 
 
+class Listbox2(tk.Listbox):
+    """Listbox class with automatic width adjustment."""
+
+    def autowidth(self, maxwidth=250):
+        """Resize the widget width to fit contents."""
+        f = font.Font(font=self.cget("font"))
+        pixels = 0
+        for item in self.get(0, "end"):
+            pixels = max(pixels, f.measure(item))
+        # bump listbox size until all entries fit
+        pixels = pixels + 10
+        width = int(self.cget("width"))
+        for w in range(0, maxwidth + 1, 5):
+            if self.winfo_reqwidth() >= pixels:
+                break
+            self.config(width=width + w)
+
+
 class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904
     """Graphical application for Doorstop."""
 
@@ -272,7 +290,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=normal)
+            self.listbox_outline = Listbox2(frame, width=width_outline, font=normal)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
             self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
@@ -435,6 +453,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             value = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
                                            i=item.id)
             self.text_items.insert('end', value)
+        self.listbox_outline.autowidth()
 
         # Select the first item
         self.listbox_outline.selection_set(self.index or 0)
