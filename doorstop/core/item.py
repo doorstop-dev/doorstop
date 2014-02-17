@@ -569,7 +569,18 @@ class Literal(str):  # pylint: disable=R0904
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|' if data else '')
 
+
+class Folded(str):  # pylint: disable=R0904
+    """Custom type for text which should be dumped in the folded style."""
+
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the folded style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='>' if data else '')
+
 yaml.add_representer(Literal, Literal.representer)
+yaml.add_representer(Folded, Folded.representer)
 
 
 # attribute formatters #######################################################
