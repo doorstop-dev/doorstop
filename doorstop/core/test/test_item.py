@@ -211,6 +211,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('foobar', self.item.get('ext1'))
         self.assertEqual(['ext1'], self.item.extended)
 
+    def test_extended_wrap(self):
+        """Verify a long extended attribute is wrapped."""
+        text = "This extended attribute should be long enough to wrap."
+        self.item.set('a_very_long_extended_attr', text)
+        self.assertEqual(text, self.item.get('a_very_long_extended_attr'))
+
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""
         active = self.item.get('active')

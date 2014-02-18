@@ -163,8 +163,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 if isinstance(value, str):
                     # length of "key_text: value_text"
                     lenth = len(key) + 2 + len(value)
-                    if lenth > settings.MAX_LINE_LENTH:
-                        value = Literal(sbd(value))
+                    if lenth > settings.MAX_LINE_LENTH or '\n' in value:
+                        end = '\n' if value.endswith('\n') else ''
+                        value = Literal(sbd(value, end=end))
                 data[key] = value
         # Dump the data to YAML
         text = self._dump(data)
@@ -641,8 +642,11 @@ def convert_level(text):
 SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
 
 
-def sbd(text):
+def sbd(text, end='\n'):
     """Replace sentence boundaries with newlines and append a newline.
+
+    @param text: string to line break at sentences
+    @param end: appended to the end of the update text
 
     >>> sbd("Hello, world!")
     'Hello, world!\\n'
@@ -653,7 +657,7 @@ def sbd(text):
     """
     stripped = text.strip()
     if stripped:
-        return SBD.sub('\n', stripped) + '\n'
+        return SBD.sub('\n', stripped) + end
     else:
         return ''
 
