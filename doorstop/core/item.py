@@ -508,6 +508,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     continue
                 # Skip ignored paths
                 if ignored(path):
+                    # TODO: remove this logging line
+                    logging.debug("skipped: {}".format(path))
                     continue
                 # Search for the reference in the file
                 if filename == self.ref:
@@ -523,6 +525,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
+    # TODO: should this only return IDs and add a find_children method?
     def find_rlinks(self, document, tree, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
