@@ -117,22 +117,22 @@ def _log(func):  # pragma: no cover, manual test
     return wrapped
 
 
-class Listbox2(tk.Listbox):
+class Listbox2(tk.Listbox):  # pylint: disable=R0901,R0904
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):
         """Resize the widget width to fit contents."""
-        f = font.Font(font=self.cget("font"))
+        fnt = font.Font(font=self.cget("font"))
         pixels = 0
         for item in self.get(0, "end"):
-            pixels = max(pixels, f.measure(item))
+            pixels = max(pixels, fnt.measure(item))
         # bump listbox size until all entries fit
         pixels = pixels + 10
         width = int(self.cget("width"))
-        for w in range(0, maxwidth + 1, 5):
+        for shift in range(0, maxwidth + 1, 5):
             if self.winfo_reqwidth() >= pixels:
                 break
-            self.config(width=width + w)
+            self.config(width=width + shift)
 
 
 class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904

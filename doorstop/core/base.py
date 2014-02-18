@@ -209,7 +209,8 @@ class Literal(str):  # pylint: disable=R0904
                                        style='|' if data else '')
 
 
-class Folded(str):  # pylint: disable=R0904
+# TODO: use this class?
+class Folded(str):  # pragma: no cover, pylint: disable=R0904
     """Custom type for text which should be dumped in the folded style."""
 
     @staticmethod
