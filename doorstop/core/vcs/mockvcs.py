@@ -20,4 +20,4 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
 
     @property
     def ignores(self):
-        return ("*/env/*", "*/apidocs/*")
+        return ("*/env/*", "*/apidocs/*", "*/build/lib/*")
