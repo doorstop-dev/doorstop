@@ -1,0 +1,8 @@
+language: python
+python:
+  - 3.3
+install:
+  - pip install coveralls
+script: make test
+after_success:
+  - coveralls

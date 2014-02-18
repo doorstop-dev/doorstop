@@ -59,9 +59,13 @@ $(DEPENDS):
 doc: readme apidocs req
 
 .PHONY: readme
-readme: depends docs/README.html
-docs/README.html: README.rst
-	$(PYTHON) $(RST2HTML) README.rst docs/README.html
+readme: depends docs/README-github.html docs/README-pypi.html
+docs/README-github.html: README.md
+	pandoc -f markdown_github -t html -o docs/README-github.html README.md
+docs/README-pypi.html: README.rst
+	$(PYTHON) $(RST2HTML) README.rst docs/README-pypi.html
+README.rst: README.md
+	pandoc -f markdown_github -t rst -o README.rst README.md
 
 .PHONY: apidocs
 apidocs: depends apidocs/$(PACKAGE)/index.html
@@ -72,6 +76,7 @@ apidocs/$(PACKAGE)/index.html: $(SOURCES)
 req: env docs/gen/*.gen.*
 docs/gen/*.gen.*: */*/*.yml */*/*/*.yml */*/*/*/*.yml
 	$(BIN)/doorstop
+	- mkdir docs/gen
 	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
 	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.txt
 	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.txt
@@ -88,13 +93,14 @@ read: doc
 	$(OPEN) docs/gen/Tutorials.gen.html
 	$(OPEN) docs/gen/Requirements.gen.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
-	$(OPEN) docs/README.html
+	$(OPEN) docs/README-pypi.html
+	$(OPEN) docs/README-github.html
 
 # Static Analysis ############################################################
 
 .PHONY: pep8
 pep8: depends
-	$(PEP8) $(PACKAGE) --ignore=E501 
+	$(PEP8) $(PACKAGE) --ignore=E501
 
 .PHONY: pylint
 pylint: depends
@@ -128,7 +134,7 @@ tutorial: env
 clean: .clean-dist .clean-test .clean-doc .clean-build
 
 .PHONY: clean-all
-clean-all: clean .clean-env 
+clean-all: clean .clean-env
 
 .PHONY: .clean-env
 .clean-env:
@@ -142,7 +148,7 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html
+	rm -rf apidocs docs/README*.html README.rst
 
 .PHONY: .clean-test
 .clean-test:
@@ -159,7 +165,7 @@ dist: env depends check test tests doc
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
 	$(MAKE) read
- 
+
 .PHONY: upload
 upload: env depends doc
 	$(PYTHON) setup.py register sdist upload
@@ -169,7 +175,7 @@ upload: env depends doc
 .PHONY: dev
 dev:
 	python setup.py develop
-	
+
 # Execution ##################################################################
 
 .PHONY: gui
