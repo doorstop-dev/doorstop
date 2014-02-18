@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.0.22 (dev)
+-------------------
+
+- Top-level Items are no longer required to have a level ending in zero
+- Added Item/Document.extended to get a list of extended attribute names
+
+0.0.21 (2014/02/14)
+-------------------
+
+- Documents can now have Item files in sub-folders
+
 0.0.20 (2014/02/13)
 -------------------
 
@@ -10,7 +21,7 @@ Changelog
 -------------------
 
 - Updated doorstop.core.report to support Items or Documents
-- Removed the 'iter_' prefix from all generators
+- Removed the 'iter\_' prefix from all generators
 
 0.0.18 (2014/02/12)
 -------------------
@@ -18,7 +29,7 @@ Changelog
 - Fixed CSS bullets indent
 
 0.0.17 (2014/01/31)
---------------------
+-------------------
 
 - Added caching of Items in the Document class
 - Added Document.remove() to delete an item by its ID

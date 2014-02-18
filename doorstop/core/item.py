@@ -6,9 +6,7 @@ import os
 import re
 import logging
 
-import yaml
-
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import auto_load, auto_save, BaseFileObject, Literal
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -54,7 +52,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Initialize the item
         self.path = path
         self.root = root
-        self._data = {}
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -120,7 +117,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
-        data = self._parse(text, self.path)
+        data = self._load(text, self.path)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -150,7 +147,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         for key, value in self._data.items():
             if key == 'level':
                 level = '.'.join(str(n) for n in value)
-                if len(value) == 2:
+                if len(value) == 1:
+                    level = int(level)
+                elif len(value) == 2:
                     level = float(level)
                 data['level'] = level
             elif key == 'text':
@@ -163,14 +162,14 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 # TODO: dump long strings as Literal (and SBD?)
                 data[key] = value
         # Dump the data to YAML
-        dump = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
-        self._write(dump, self.path)
+        self._write(text, self.path)
         # Set meta attributes
         self._loaded = False
         self.auto = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def id(self):  # pylint: disable=C0103
@@ -336,41 +335,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     def links(self, value):
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
-
-    # extended attributes ####################################################
-
-    @auto_load
-    def get(self, name, default=None):
-        """Get an extended attribute.
-
-        @param name: name of extended attribute
-        @param default: value to return for missing attributes
-
-        @return: value of extended attribute
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return getattr(self, name)
-        else:
-            return self._data.get(name, default)
-
-    @auto_load
-    @auto_save
-    def set(self, name, value):
-        """Set an extended attribute.
-
-        @param name: name of extended attribute
-        @param value: value to set
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return setattr(self, name, value)
-        else:
-            self._data[name] = value
 
     # actions ################################################################
 
@@ -592,20 +556,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         super().delete(self.path)
 
 
-# YAML representer classes ###################################################
-
-class Literal(str):  # pylint: disable=R0904
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-
-
 # attribute formatters #######################################################
 
 def split_id(text):
@@ -654,6 +604,9 @@ def convert_level(text):
     >>> convert_level([7, 0, 0])
     (7, 0)
 
+    >>> convert_level(1)
+    (1,)
+
     """
     # Correct for integers (42) and floats (4.2) in YAML
     if isinstance(text, int) or isinstance(text, float):
@@ -668,9 +621,6 @@ def convert_level(text):
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
-        parts.append(0)
-    # Ensure the top level always a heading (ends in a zero)
-    if len(parts) == 1:
         parts.append(0)
     # Convert the level to a tuple
     return tuple(parts)

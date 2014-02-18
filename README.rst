@@ -22,7 +22,7 @@ Requirements
 ------------
 
 * Python 3.3
-* Git or Veracity (for requirements storage)
+* A version control system for requirements storage
 
 
 Installation

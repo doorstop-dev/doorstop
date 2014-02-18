@@ -39,6 +39,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join('path', 'to', 'RQ001.yml')
         self.item = MockItem(path)
 
+    def test_init_invalid(self):
+        """Verify an item cannot be initialized from an invalid path."""
+        self.assertRaises(DoorstopError, Item, 'not/a/path')
+
     def test_load_empty(self):
         """Verify loading calls read."""
         self.item.load()
@@ -144,8 +148,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_level_from_int(self):
         """Verify an item's level can be set from a int and read."""
         self.item.level = 42
-        self.assertIn("level: 42.0\n", self.item._write.call_args[0][0])
-        self.assertEqual((42, 0), self.item.level)
+        self.assertIn("level: 42\n", self.item._write.call_args[0][0])
+        self.assertEqual((42,), self.item.level)
 
     def test_active(self):
         """Verify an item's active status can be set and read."""
@@ -205,6 +209,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an extended attribute can be used."""
         self.item.set('ext1', 'foobar')
         self.assertEqual('foobar', self.item.get('ext1'))
+        self.assertEqual(['ext1'], self.item.extended)
 
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""
@@ -319,7 +324,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002', '-', 3, 42, (1,))
+        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002', '-', 3, 42, (1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 0), item.level)

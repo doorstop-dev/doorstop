@@ -9,13 +9,14 @@ from unittest.mock import Mock
 try:  # pragma: no cover - not measurable
     import tkinter as tk
     from tkinter import ttk
-    from tkinter import font, messagebox, simpledialog, filedialog
-except ImportError as err:  # pragma: no cover - not measurable
-    sys.stderr.write("WARNING: {}\n".format(err))
+    from tkinter import font, filedialog
+except ImportError as _exc:  # pragma: no cover, not measurable
+    sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()  # pylint: disable=C0103
     ttk = Mock()  # pylint: disable=C0103
 import os
 import argparse
+import functools
 from itertools import chain
 import logging
 
@@ -74,18 +75,17 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, err):
+def _run(args, cwd, error):
     """Start the GUI.
 
     @param args: Namespace of CLI arguments (from this module or the CLI)
     @param cwd: current working directory
-    @param err: function to call for CLI errors
+    @param error: function to call for CLI errors
     """
 
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
-        logging.error("tkinter is not available")
-        return False
+        return error("tkinter is not available")
 
     else:  # pragma: no cover, manual test
 
@@ -101,23 +101,60 @@ def _run(args, cwd, err):
         return True
 
 
-class Application(ttk.Frame):  # pragma: no cover, manual test
+# TODO: remove this function when no longer used
+def _log(func):  # pragma: no cover, manual test
+    """Decorator for methods that should log calls."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to log name and arguments."""
+        sargs = "{}, {}".format(', '.join(repr(a) for a in args),
+                                ', '.join("{}={}".format(k, repr(v))
+                                          for k, v in kwargs.items()))
+        msg = "{}: {}".format(func.__name__, sargs.strip(", "))
+        if not self.ignore:
+            logging.critical(msg.strip())
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+class Listbox2(tk.Listbox):
+    """Listbox class with automatic width adjustment."""
+
+    def autowidth(self, maxwidth=250):
+        """Resize the widget width to fit contents."""
+        f = font.Font(font=self.cget("font"))
+        pixels = 0
+        for item in self.get(0, "end"):
+            pixels = max(pixels, f.measure(item))
+        # bump listbox size until all entries fit
+        pixels = pixels + 10
+        width = int(self.cget("width"))
+        for w in range(0, maxwidth + 1, 5):
+            if self.winfo_reqwidth() >= pixels:
+                break
+            self.config(width=width + w)
+
+
+class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):
-        self.root = root
-        self.cwd = cwd
-        ttk.Frame.__init__(self, self.root)
+        ttk.Frame.__init__(self, root)
 
-        self.ignore = False  # indicates an event is internal an can be ignored
+        # Create Doorstop variables
+        self.cwd = cwd
+        self.tree = None
+        self.document = None
+        self.item = None
+        self.index = None
 
         # Create string variables
         self.stringvar_project = tk.StringVar(value=project or '')
-        self.stringvar_project.trace('w', self.update_project)
+        self.stringvar_project.trace('w', self.display_tree)
         self.stringvar_document = tk.StringVar()
-        self.stringvar_document.trace('w', self.update_tree)
+        self.stringvar_document.trace('w', self.display_document)
         self.stringvar_item = tk.StringVar()
-        self.stringvar_item.trace('w', self.update_document)
+        self.stringvar_item.trace('w', self.display_item)
         self.stringvar_text = tk.StringVar()
         self.stringvar_text.trace('w', self.update_item)
         self.intvar_active = tk.IntVar()
@@ -128,21 +165,32 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         self.intvar_normative.trace('w', self.update_item)
         self.intvar_heading = tk.IntVar()
         self.intvar_heading.trace('w', self.update_item)
+        self.stringvar_link = tk.StringVar()  # no trace event
+        self.stringvar_ref = tk.StringVar()
+        self.stringvar_ref.trace('w', self.update_item)
+        self.stringvar_extendedkey = tk.StringVar()
+        self.stringvar_extendedkey.trace('w', self.display_extended)
+        self.stringvar_extendedvalue = tk.StringVar()
+        self.stringvar_extendedvalue.trace('w', self.update_item)
 
         # Create widget variables
         self.combobox_documents = None
         self.listbox_outline = None
         self.text_items = None
         self.text_item = None
+        self.listbox_links = None
+        self.combobox_extended = None
+        self.text_extendedvalue = None
         self.text_parents = None
         self.text_children = None
 
         # Initialize the GUI
+        self.ignore = False  # flag to ignore internal events
         frame = self.init(root)
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Start the application
-        self.root.after(0, self.find)
+        root.after(500, self.find)
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
@@ -163,7 +211,12 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
         # Shared style
-        fixed = font.Font(family="Courier", size=10)
+        if sys.platform == 'darwin':
+            size = 14
+        else:
+            size = 10
+        normal = font.Font(family='TkDefaultFont', size=size)
+        fixed = font.Font(family='Courier New', size=size)
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -192,7 +245,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             return frame
 
-        def frame_document(root):
+        def frame_tree(root):
             """Frame for the current document."""
 
             # Configure grid
@@ -205,13 +258,12 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             # Place widgets
             ttk.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
             self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
-            # self.combobox_documents.bind("<<ComboboxSelected>>", self.update_items)
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
             ttk.Button(frame, text="New...", command=self.new).grid(row=0, column=2, **kw_gp)
 
             return frame
 
-        def frame_outline(root):
+        def frame_document(root):
             """Frame for current document's outline and items."""
 
             # Configure grid
@@ -238,10 +290,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = tk.Listbox(frame, width=width_outline, font=fixed)
+            self.listbox_outline = Listbox2(frame, width=width_outline, font=normal)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -250,11 +302,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             ttk.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
             ttk.Label(frame, text="Items Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **kw_gp)
-            tk.Text(frame, height=height_code, width=width_code).grid(row=4, column=0, columnspan=6, **kw_gsp)
+            tk.Text(frame, height=height_code, width=width_code, wrap=tk.WORD, font=fixed).grid(row=4, column=0, columnspan=6, **kw_gsp)
 
             return frame
 
-        def frame_selected(root):
+        def frame_item(root):
             """Frame for the currently selected item."""
 
             # Configure grid
@@ -277,10 +329,15 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             def text_item_focusout(event):
                 """Callback for updating text."""
-                logging.critical(text_item_focusout.__name__)
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
+
+            def text_extendedvalue_focusout(event):
+                """Callback for updating extended attributes."""
+                widget = event.widget
+                value = widget.get('1.0', 'end')
+                self.stringvar_extendedvalue.set(value)
 
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
@@ -292,23 +349,20 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             ttk.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
             self.listbox_links = tk.Listbox(frame, width=width_id, height=6)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            self.stringvar_link = tk.StringVar()
             ttk.Entry(frame, width=width_id, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
             ttk.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
             ttk.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            self.stringvar_unlink = tk.StringVar()
-            ttk.Entry(frame, width=width_id, textvariable=self.stringvar_unlink).grid(row=5, column=2, sticky=tk.EW, **kw_gp)
             ttk.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
             ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.stringvar_ref = tk.StringVar()
-            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
+            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref, font=fixed).grid(row=8, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.stringvar_extended = tk.StringVar()
-            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extended)
+            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey, font=fixed)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            tk.Text(frame, width=width_text, height=height_ext).grid(row=11, column=0, columnspan=3, **kw_gsp)
+            self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
+            self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
+            self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
             return frame
 
@@ -325,25 +379,26 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
 
             # Place widgets
             ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=fixed)
+            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
 
         # Place widgets
         frame_project(frame).grid(row=0, column=0, columnspan=2, **kw_gs)
-        frame_document(frame).grid(row=0, column=2, columnspan=2, **kw_gs)
-        frame_outline(frame).grid(row=1, column=0, **kw_gs)
-        frame_selected(frame).grid(row=1, column=1, columnspan=2, **kw_gs)
+        frame_tree(frame).grid(row=0, column=2, columnspan=2, **kw_gs)
+        frame_document(frame).grid(row=1, column=0, **kw_gs)
+        frame_item(frame).grid(row=1, column=1, columnspan=2, **kw_gs)
         frame_family(frame).grid(row=1, column=3, **kw_gs)
 
         return frame
 
     def find(self):
         """Find the root of the project."""
+
         if not self.stringvar_project.get():
             try:
                 path = vcs.find_root(self.cwd)
@@ -352,147 +407,203 @@ class Application(ttk.Frame):  # pragma: no cover, manual test
             else:
                 self.stringvar_project.set(path)
 
-    def update_project(self, *args):
-        logging.critical(self.update_project.__name__)
+    @_log
+    def browse(self):
+        """Browse for the root of a project."""
 
+        path = filedialog.askdirectory()
+        logging.debug("path: {}".format(path))
+        if path:
+            self.stringvar_project.set(path)
+
+    def display_tree(self, *_):
+        """Display the currently selected tree."""
+
+        # Set the current tree
         self.tree = tree.build(root=self.stringvar_project.get())
+        logging.info("displaying tree...")
 
+        # Display the documents in the tree
         values = [document.prefix_relpath for document in self.tree]
         self.combobox_documents['values'] = values
+
+        # Select the first document
         self.combobox_documents.current(0)
 
-    def update_tree(self, *args, item_index=0):
-        logging.critical(self.update_tree.__name__)
+    def display_document(self, *_):
+        """Display the currently selected document."""
 
+        # Set the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
-        print(self.document)
+        logging.info("displaying document {}...".format(self.document))
 
-
+        # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
         self.text_items.delete('1.0', 'end')
         for item in self.document.items:
 
-            # TODO: make this part of the Item class and use in report.py
-            level = '.'.join(str(l) for l in item.level)
-            if level.endswith('.0') and len(level) > 3:
-                level = level[:-2]
-
+            # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
-
-            # TODO: determine a way to do this dynamically
-            # width = self.listbox_outline.cget('width')
-            width = self.listbox_outline.cget('width')
-            value = indent + level + ' '
-            while (len(value) + len(item.id)) < width:
-                value += ' '
-            value += item.id
-
-
-
+            level = '.'.join(str(l) for l in item.level)
+            value = "{s}{l} {i}".format(s=indent, l=level, i=item.id)
             self.listbox_outline.insert(tk.END, value)
 
+            # Add the item to the document text
+            value = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
+                                           i=item.id)
+            self.text_items.insert('end', value)
+        self.listbox_outline.autowidth()
 
-
-            chars = (item.text or item.ref or '???') + '\n\n'
-            self.text_items.insert('end', chars)
-
-
-        self.listbox_outline.selection_set(item_index)
+        # Select the first item
+        self.listbox_outline.selection_set(self.index or 0)
         identifier = self.listbox_outline.selection_get()
         self.stringvar_item.set(identifier)  # manual call
 
-
-
-
-
-    def update_document(self, *args):
-        logging.critical(self.update_document.__name__)
-        print(self.stringvar_item.get())
+    def display_item(self, *_):
+        """Display the currently selected item."""
 
         self.ignore = True
 
-        value = self.stringvar_item.get()
-        identifier = value.rsplit(' ', 1)[-1]
+        # Set the current item
+        identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
+        self.index = self.listbox_outline.curselection()[0]
+        logging.info("displaying item {}...".format(self.item))
 
+        # Display the item's text
         self.text_item.replace('1.0', 'end', self.item.text)
 
+        # Display the item's properties
+        self.stringvar_text.set(self.item.text)  # manual call
         self.intvar_active.set(self.item.active)
         self.intvar_derived.set(self.item.derived)
         self.intvar_normative.set(self.item.normative)
         self.intvar_heading.set(self.item.heading)
 
+        # Display the item's links
+        self.listbox_links.delete(0, tk.END)
+        for identifier in self.item.links:
+            self.listbox_links.insert(tk.END, identifier)
+        self.stringvar_link.set('')
 
+        # Display the item's external reference
+        self.stringvar_ref.set(self.item.ref)
+
+        # Display the item's extended attributes
+        values = self.item.extended
+        self.combobox_extended['values'] = values or ['']
+        self.combobox_extended.current(0)
+
+        # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
         for identifier in self.item.links:
-            item = self.tree.find_item(identifier)
-            chars = (item.text or item.ref or '???') + '\n\n'
+            try:
+                item = self.tree.find_item(identifier)
+            except DoorstopError:
+                text = "???"
+            else:
+                text = item.text or item.ref or '???'
+                identifier = item.id
+            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
             self.text_parents.insert('end', chars)
 
+        # Display the items this item has links from
         self.text_children.delete('1.0', 'end')
         identifiers = self.item.find_rlinks(self.document, self.tree)[0]
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
-            chars = (item.text or item.ref or '???') + '\n\n'
+            text = item.text or item.ref or '???'
+            identifier = item.id
+            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
             self.text_children.insert('end', chars)
 
         self.ignore = False
 
+    @_log
+    def display_extended(self, *_):
+        """Display the currently selected extended attribute."""
 
-    def update_item(self, *args):
-        logging.critical(self.update_item.__name__)
+        self.ignore = True
 
+        name = self.stringvar_extendedkey.get()
+        logging.debug("displaying extended attribute '{}'...".format(name))
+        self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
+
+        self.ignore = False
+
+    def update_item(self, *_):
+        """Update the current item from the fields."""
         if self.ignore:
             return
 
+        # Update the current item
+        logging.info("updating {}...".format(self.item))
         self.item.auto = False
         self.item.text = self.stringvar_text.get()
         self.item.active = self.intvar_active.get()
         self.item.derived = self.intvar_derived.get()
         self.item.normative = self.intvar_normative.get()
         self.item.heading = self.intvar_heading.get()
+        self.item.links = self.listbox_links.get(0, tk.END)
+        self.item.ref = self.stringvar_ref.get()
+        name = self.stringvar_extendedkey.get()
+        if name:
+            self.item.set(name, self.stringvar_extendedvalue.get())
         self.item.save()
 
-        index = self.listbox_outline.curselection()[0]
-        self.update_tree(item_index=index)
+        # Re-select this item
+        self.display_document()
 
-    def browse(self):
-        """Browse for the root of a project."""
-        path = filedialog.askdirectory()
-        logging.debug("path: {}".format(path))
-        if path:
-            self.stringvar_project.set(path)
-
+    @_log
     def new(self):
-        raise NotImplementedError()
+        """Create a new document."""
 
+    @_log
     def left(self):
-        raise NotImplementedError()
+        """Dedent the current item's level."""
 
+    @_log
     def down(self):
-        raise NotImplementedError()
+        """Increment the current item's level."""
 
-    def up(self):
-        raise NotImplementedError()
+    @_log
+    def up(self):  # pylint: disable=C0103
+        """Decrement the current item's level."""
 
+    @_log
     def right(self):
-        raise NotImplementedError()
+        """Indent the current item's level."""
 
+    @_log
     def add(self):
-        raise NotImplementedError()
+        """Add a new item to the document."""
 
+    @_log
     def remove(self):
-        raise NotImplementedError()
-
-    def clear(self):
-        raise NotImplementedError()
+        """Remove the selected item from the document."""
 
     def link(self):
-        raise NotImplementedError()
+        """Add the specified link to the current item."""
+
+        # Add the specified link to the list
+        identifier = self.stringvar_link.get()
+        if identifier:
+            self.listbox_links.insert(tk.END, identifier)
+            self.stringvar_link.set('')
+
+            # Update the current item
+            self.update_item()
 
     def unlink(self):
-        raise NotImplementedError()
+        """Remove the currently selected link from the current item."""
+
+        # Remove the selected link from the list
+        index = self.listbox_links.curselection()
+        self.listbox_links.delete(index)
+
+        # Update the current item
+        self.update_item()
 
 
 if __name__ == '__main__':  # pragma: no cover - manual test

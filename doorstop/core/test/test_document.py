@@ -52,6 +52,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.document = MockDocument(FILES, root=ROOT)
 
+    def test_init_invalid(self):
+        """Verify a document cannot be initialized from an invalid path."""
+        self.assertRaises(DoorstopError, Document, 'not/a/path')
+
     def test_load_empty(self):
         """Verify loading calls read."""
         self.document.load()
@@ -119,7 +123,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify the items in a document can be accessed."""
         items = self.document.items
         logging.debug("items: {}".format(items))
-        self.assertEqual(4, len(items))
+        self.assertEqual(5, len(items))
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -173,7 +177,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_next(self):
         """Verify the next item number can be determined."""
-        self.assertEqual(4, self.document.next)
+        self.assertEqual(5, self.document.next)
 
     @patch('doorstop.core.item.Item.new')
     def test_add(self, mock_new):
@@ -181,7 +185,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.add()
         mock_new.assert_called_once_with(FILES, ROOT,
                                          'REQ', '', 3,
-                                         4, level=(2, 2))
+                                         5, level=(2, 2))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
@@ -233,7 +237,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be validated."""
         mock_issues.return_value = [DoorstopInfo('i')]
         self.assertTrue(self.document.valid())
-        self.assertEqual(4, mock_issues.call_count)
+        self.assertEqual(5, mock_issues.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_valid_long(self):

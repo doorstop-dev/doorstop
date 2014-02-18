@@ -45,6 +45,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     auto = True  # set to False to delay automatic save until explicit save
 
     def __init__(self):
+        self._data = {}
         self._exists = True
         self._loaded = False
 
@@ -89,7 +90,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             return infile.read().decode('UTF-8')
 
     @staticmethod
-    def _parse(text, path):
+    def _load(text, path):
         """Load YAML data from text.
 
         @param text: text read from a file
@@ -129,6 +130,63 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         with open(path, 'wb') as outfile:
             outfile.write(bytes(text, 'UTF-8'))
 
+    @staticmethod
+    def _dump(data):
+        """Dump YAML data to text.
+
+        @param data: dictionary of YAML data
+
+        @return: text to write to a file
+        """
+        return yaml.dump(data, default_flow_style=False)
+
+    # extended attributes ####################################################
+
+    @property
+    @auto_load
+    def extended(self):
+        """Get a list of all extended attribute names."""
+        names = []
+        for name in self._data:
+            if not hasattr(self, name):
+                names.append(name)
+        return sorted(names)
+
+    @auto_load
+    def get(self, name, default=None):
+        """Get an extended attribute.
+
+        @param name: name of extended attribute
+        @param default: value to return for missing attributes
+
+        @return: value of extended attribute
+        """
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
+            logging.info(msg)
+            return getattr(self, name)
+        else:
+            return self._data.get(name, default)
+
+    @auto_load
+    @auto_save
+    def set(self, name, value):
+        """Set an extended attribute.
+
+        @param name: name of extended attribute
+        @param value: value to set
+        """
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
+            logging.info(msg)
+            return setattr(self, name, value)
+        else:
+            self._data[name] = value
+
+    # actions ################################################################
+
     def delete(self, path):
         """Delete the object's file from the file system."""
         if self._exists:
@@ -139,3 +197,26 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
+
+
+class Literal(str):  # pylint: disable=R0904
+    """Custom type for text which should be dumped in the literal style."""
+
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the literal style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|' if data else '')
+
+
+class Folded(str):  # pylint: disable=R0904
+    """Custom type for text which should be dumped in the folded style."""
+
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the folded style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='>' if data else '')
+
+yaml.add_representer(Literal, Literal.representer)
+yaml.add_representer(Folded, Folded.representer)

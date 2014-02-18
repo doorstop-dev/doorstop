@@ -5,8 +5,6 @@ Representation of a collection of Doorstop items.
 import os
 import logging
 
-import yaml
-
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.item import Item, split_id
 from doorstop import common
@@ -14,7 +12,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Document(BaseFileObject):
+class Document(BaseFileObject):  # pylint: disable=R0904
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
@@ -46,7 +44,6 @@ class Document(BaseFileObject):
         # Initialize the document
         self.path = path
         self.root = root
-        self._data = {}
         self._items = []
         self._itered = False
         # Set default values
@@ -112,7 +109,7 @@ class Document(BaseFileObject):
         # Read text from file
         text = self._read(self.config)
         # Parse YAML data from text
-        data = self._parse(text, self.config)
+        data = self._load(text, self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
@@ -149,7 +146,7 @@ class Document(BaseFileObject):
                 data[key] = value
         data['settings'] = sets
         # Dump the data to YAML
-        text = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
         self._write(text, self.config)
         # Set meta attributes
@@ -165,19 +162,27 @@ class Document(BaseFileObject):
         logging.debug("iterating through items in {}...".format(self.path))
         # Reload the document's item
         self._items = []
-        for filename in os.listdir(self.path):
-            path = os.path.join(self.path, filename)
-            try:
-                item = Item(path)
-            except DoorstopError:
-                pass  # skip non-item files
-            else:
-                self._items.append(item)
-                yield item
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for dirname in list(dirnames):
+                path = os.path.join(dirpath, dirname, Document.CONFIG)
+                if os.path.exists(path):
+                    path = os.path.dirname(path)
+                    msg = "found embedded document: {}".format(path)
+                    logging.debug(msg)
+                    dirnames.remove(dirname)
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                try:
+                    item = Item(path)
+                except DoorstopError:
+                    pass  # skip non-item files
+                else:
+                    self._items.append(item)
+                    yield item
         # Set meta attributes
         self._itered = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def config(self):
