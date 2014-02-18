@@ -7,14 +7,14 @@ __pycache__
 Icon*
 
 # Temporary virtualenv files
-@/.cache
-@/env
+.cache
+env
 
 # Generated documentation
 *.gen.*
 gen/*.css
-@/apidocs
-@/docs/README.html
+apidocs
+docs/README.html
 
 # Google Drive
 *.gdraw
@@ -23,8 +23,8 @@ gen/*.css
 .coverage
 
 # Build and release directories
-@/build
-@/dist
+build
+dist
 
 # Sublime Text
 .*.sublime-workspace

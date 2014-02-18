@@ -166,7 +166,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
                           temp, '_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 
-    @patch('doorstop.core.vcs.veracity.WorkingCopy.lock')
+    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.document.Document.add')
     def test_add(self, mock_add, mock_lock):
         """Verify an item can be added to a document."""
@@ -233,7 +233,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         """Verify an exception is raised with an unknown parent prefix."""
         self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'req9999')
 
-    @patch('doorstop.core.vcs.veracity.WorkingCopy.lock')
+    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.tree._open')
     def test_edit(self, mock_open, mock_lock):
         """Verify an item can be edited in a tree."""

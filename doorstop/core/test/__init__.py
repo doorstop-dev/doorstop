@@ -22,6 +22,9 @@ NEW = os.path.join(FILES, 'new')  # new document with no items
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
+if not os.path.exists(EMPTY):
+    os.makedirs(EMPTY)
+
 
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
     """Mock FileObject class with stubbed file IO."""
