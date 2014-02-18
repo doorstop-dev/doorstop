@@ -117,7 +117,7 @@ def _log(func):  # pragma: no cover, manual test
     return wrapped
 
 
-class Listbox2(tk.Listbox):  # pylint: disable=R0901,R0904
+class Listbox2(tk.Listbox):  # pragma: no cover, manual test, pylint: disable=R0901,R0904
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):
