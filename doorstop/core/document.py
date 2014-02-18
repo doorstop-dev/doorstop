@@ -328,12 +328,9 @@ class Document(BaseFileObject):  # pylint: disable=R0904
 
         # Search using the prefix and number
         prefix, number = split_id(identifier)
-        if self.prefix.lower() == prefix.lower():
-            for item in self:
-                if item.number == number:
-                    return item
-            msg = "no matching{} number: {}".format(_kind, number)
-            logging.debug(msg)
+        for item in self:
+            if item.prefix.lower() == prefix.lower() and item.number == number:
+                return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
