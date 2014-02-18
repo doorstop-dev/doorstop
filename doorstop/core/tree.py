@@ -237,7 +237,7 @@ class Tree(object):
 
         @raise DoorstopError: if the link cannot be removed
         """
-        logging.info("unlinking {} from {}...".format(cid, pid))
+        logging.info("unlinking '{}' from '{}'...".format(cid, pid))
         # Find child item
         child = self.find_item(cid, _kind='child')
         # Find parent item
@@ -277,8 +277,10 @@ class Tree(object):
 
         @raise DoorstopError: if the document cannot be found
         """
+        logging.debug("looking for document '{}'...".format(prefix))
         for document in self:
             if document.prefix.lower() == prefix.lower():
+                logging.debug("found document: {}".format(document))
                 return document
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
@@ -293,11 +295,15 @@ class Tree(object):
         @raise DoorstopError: if the item cannot be found
         """
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
+        logging.debug("looking for{} item '{}'...".format(_kind, identifier))
         for document in self:
             try:
-                return document.find_item(identifier, _kind=_kind)
+                item = document.find_item(identifier, _kind=_kind)
             except DoorstopError:
                 pass  # item not found in that document
+            else:
+                logging.debug("found item: {}".format(item))
+                return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 

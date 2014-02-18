@@ -567,6 +567,9 @@ def split_id(text):
     >>> split_id('ABC.HLR_01-00123')
     ('ABC.HLR_01', 123)
 
+    >>> split_id('REQ2-001')
+    ('REQ2', 1)
+
     """
     match = re.match(r"([\w.-]*\D)(\d+)", text)
     if not match:
