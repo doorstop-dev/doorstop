@@ -221,7 +221,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify a long extended attribute is wrapped with newlines."""
         text = "Another extended attribute.\n\nNote: with a note."
         self.item.set('ext2', text)
-        self.assertEqual(text + '\n', self.item.get('ext2'))
+        self.assertEqual(text, self.item.get('ext2'))
 
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""

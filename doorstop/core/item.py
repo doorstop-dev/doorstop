@@ -130,12 +130,15 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             elif key == 'derived':
                 self._data['derived'] = bool(value)
             elif key == 'text':
-                self._data['text'] = value.strip()
+                # TODO: clean up this regex and make it common with the else
+                self._data['text'] = re.sub(r'([a-z])(\n)([a-z])', r'\1 \3', value, re.IGNORECASE).strip()
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
                 self._data['links'] = set(value)
             else:
+                if isinstance(value, str):
+                    value = re.sub(r'([a-z])(\n)([a-z])', r'\1 \3', value, re.IGNORECASE).strip()
                 self._data[key] = value
         # Set meta attributes
         self._loaded = True
