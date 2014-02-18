@@ -5,4 +5,5 @@ links: []
 normative: true
 ref: ''
 text: |
-  Doorstop **shall** provide unique and permanent identifiers to linkable sections of text.
+  Doorstop **shall** provide unique and permanent identifiers to linkable
+  sections of text.

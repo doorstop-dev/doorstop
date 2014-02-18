@@ -10,4 +10,5 @@ text: |
 
   These checks ensure the Python package is distributed properly:
 
-  - Verify the installation can be performed on a new computer in fewer than 10 seconds.
+  - Verify the installation can be performed on a new computer in fewer than 10
+  seconds.

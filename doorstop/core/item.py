@@ -154,7 +154,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     level = float(level)
                 data['level'] = level
             elif key == 'text':
-                data['text'] = Literal(sbd(self._data['text']))
+                data['text'] = Literal(wrap(sbd(self._data['text'])))
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
@@ -165,7 +165,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     lenth = len(key) + 2 + len(value)
                     if lenth > settings.MAX_LINE_LENTH or '\n' in value:
                         end = '\n' if value.endswith('\n') else ''
-                        value = Literal(sbd(value, end=end))
+                        value = Literal(wrap(sbd(value, end=end)))
                 data[key] = value
         # Dump the data to YAML
         text = self._dump(data)
@@ -666,7 +666,18 @@ def wrap(text, width=settings.MAX_LINE_LENTH):
     """Wraps lines of text to the maximum line length.
 
     >>> wrap("Hello, world!", 9)
-    'Hello, \\nworld!'
+    'Hello,\\nworld!'
+
+    >>> wrap("How are you?\\nI'm fine.\\n", 14)
+    "How are you?\\nI'm fine.\\n"
+
     """
-    return textwrap.fill(text, width=width - 2,  # multiline indent is 2
-                         replace_whitespace=False, drop_whitespace=False)
+    end = '\n' if text.endswith('\n') else ''
+    lines = []
+    for line in text.splitlines():
+        # wrap longs lines of text compensating for the 2-space indent
+        lines.extend(textwrap.wrap(line, width=width - 2,
+                                   replace_whitespace=True))
+        if not line.strip():
+            lines.append('')
+    return '\n'.join(lines) + end
