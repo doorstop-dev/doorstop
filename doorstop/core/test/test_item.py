@@ -221,7 +221,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify a long extended attribute is wrapped with newlines."""
         text = "Another extended attribute.\n\nNote: with a note."
         self.item.set('ext2', text)
-        self.assertEqual(text, self.item.get('ext2'))
+        self.assertEqual(text + '\n', self.item.get('ext2'))
 
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""
@@ -505,11 +505,11 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as infile:
+        with open(self.ITEM, 'r') as infile:
             self.backup = infile.read()
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as outfile:
+        with open(self.ITEM, 'w') as outfile:
             outfile.write(self.backup)
 
     def test_load_save(self):
@@ -517,7 +517,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'rb') as infile:
+        with open(self.ITEM, 'r') as infile:
             text = infile.read()
         self.assertEqual(self.backup, text)
 

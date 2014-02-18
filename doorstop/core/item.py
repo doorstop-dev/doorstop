@@ -672,7 +672,7 @@ def wrap(text, width=settings.MAX_LINE_LENTH):
     "How are you?\\nI'm fine.\\n"
 
     """
-    end = '\n' if text.endswith('\n') else ''
+    end = '\n' if '\n' in text else ''
     lines = []
     for line in text.splitlines():
         # wrap longs lines of text compensating for the 2-space indent
