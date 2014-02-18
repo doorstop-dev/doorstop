@@ -45,6 +45,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     def ignored(self, path):
         """Indicates if a path should be considered ignored."""
         for pattern in self.ignores:
-            if fnmatch.fnmatch(path, pattern):
-                return True
+            if pattern not in ('build',):  # CI always runs under build
+                if fnmatch.fnmatch(path, pattern):
+                    return True
         return False

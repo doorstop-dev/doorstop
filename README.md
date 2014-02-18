@@ -30,17 +30,17 @@ Requirements
 Installation
 ------------
 
-Doorstop can be installed with `pip`:
+Doorstop can be installed with 'pip':
 
-    pip install Doorstop
+    $ pip install Doorstop
 
 After installation, Doorstop is available on the command-line:
 
-    doorstop --help
+    $ doorstop --help
 
-And the package is available under the name `doorstop`:
+And the package is available under the name 'doorstop':
 
-    python
+    $ python
     >>> import doorstop
     >>> doorstop.__version__
 
