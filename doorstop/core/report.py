@@ -27,45 +27,45 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     if ext in FORMAT:
         logging.info("creating {}...".format(path))
         with open(path, 'wb') as outfile:  # pragma: no cover, integration test
-            for line in iter_lines(document, ext, ignored=ignored, **kwargs):
+            for line in lines(document, ext, ignored=ignored, **kwargs):
                 outfile.write(bytes(line + '\n', 'utf-8'))
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines(document, ext='.txt', ignored=None, **kwargs):
+def lines(obj, ext='.txt', ignored=None, **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param document: Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ext: file extension to specify the output format
     @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
     """
     if ext in FORMAT:
-        logging.debug("yielding {} as lines of {}...".format(document, ext))
-        yield from FORMAT[ext](document, ignored=ignored, **kwargs)
+        logging.debug("yielding {} as lines of {}...".format(obj, ext))
+        yield from FORMAT[ext](obj, ignored=ignored, **kwargs)
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def iter_lines_text(document, ignored=None, indent=8, width=79):
+def lines_text(obj, ignored=None, indent=8, width=79):
     """Yield lines for a text report.
 
-    @param document: Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
     @param indent: number of spaces to indent text
     @param width: maximum line length
 
     @return: iterator of lines of text
     """
-    for item in (i for i in document.items if i.active):
+    for item in _items(obj):
 
         level = '.'.join(str(l) for l in item.level)
         if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
-        if item.header:
+        if item.heading:
 
             # Level and Text
             yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
@@ -108,22 +108,22 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def iter_lines_markdown(document, ignored=None):
+def lines_markdown(obj, ignored=None):
     """Yield lines for a Markdown report.
 
-    @param document: Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    for item in (i for i in document.items if i.active):
+    for item in _items(obj):
 
         heading = '#' * item.depth
         level = '.'.join(str(l) for l in item.level)
         if level.endswith('.0') and len(level) > 3:
             level = level[:-2]
 
-        if item.header:
+        if item.heading:
 
             # Level and Text
             yield "{h} {l} {t}".format(h=heading, l=level, t=item.text)
@@ -155,33 +155,55 @@ def iter_lines_markdown(document, ignored=None):
         yield ""  # break between items
 
 
-def iter_lines_html(document, ignored=None):
+def _items(obj):
+    """Get an iterator of items from from an item, list, or document."""
+
+    if hasattr(obj, 'items'):
+        # a document
+        return (i for i in obj.items if i.active)
+    try:
+        # an iterable
+        return iter(obj)
+    except TypeError:
+        # an item
+        return [obj]  # an item
+
+
+def lines_html(obj, ignored=None):
     """Yield lines for an HTML report.
 
-    @param document: Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
     """
-    yield '<!DOCTYPE html>'
-    yield '<head>'
-    yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as infile:
-        for line in infile:
-            yield line
-    yield '</style>'
-    yield '</head>'
-    yield '<body>'
-    lines = iter_lines_markdown(document, ignored=ignored)
-    text = '\n'.join(lines)
-    html = markdown.markdown(text)
+    # Determine if a full HTML document should be generated
+    try:
+        iter(obj)
+    except TypeError:
+        document = False
+    else:
+        document = True
+    # Generate HTML
+    if document:
+        yield '<!DOCTYPE html>'
+        yield '<head>'
+        yield '<style type="text/css">'
+        yield ''
+        with open(CSS) as infile:
+            for line in infile:
+                yield line
+        yield '</style>'
+        yield '</head>'
+        yield '<body>'
+    html = markdown.markdown('\n'.join(lines_markdown(obj, ignored=ignored)))
     yield from html.splitlines()
-    yield '</body>'
-    yield '</html>'
+    if document:
+        yield '</body>'
+        yield '</html>'
 
 
 # Mapping from file extension to lines generator
-FORMAT = {'.txt': iter_lines_text,
-          '.md': iter_lines_markdown,
-          '.html': iter_lines_html}
+FORMAT = {'.txt': lines_text,
+          '.md': lines_markdown,
+          '.html': lines_html}

@@ -7,9 +7,7 @@ import re
 import textwrap
 import logging
 
-import yaml
-
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import auto_load, auto_save, BaseFileObject, Literal
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -55,7 +53,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Initialize the item
         self.path = path
         self.root = root
-        self._data = {}
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -108,7 +105,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         item = Item(path2, root=root)
         item.auto = False
         item.level = level or Item.DEFAULT_LEVEL
-        item.auto = Item.auto if auto is None else auto
+        if auto or (auto is None and Item.auto):
+            item.save()
         # Return the item
         return item
 
@@ -120,7 +118,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
-        data = self._parse(text, self.path)
+        data = self._load(text, self.path)
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
@@ -150,7 +148,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         for key, value in self._data.items():
             if key == 'level':
                 level = '.'.join(str(n) for n in value)
-                if len(value) == 2:
+                if len(value) == 1:
+                    level = int(level)
+                elif len(value) == 2:
                     level = float(level)
                 data['level'] = level
             elif key == 'text':
@@ -167,14 +167,14 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                         value = Literal(sbd(value))
                 data[key] = value
         # Dump the data to YAML
-        dump = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
-        self._write(dump, self.path)
+        self._write(text, self.path)
         # Set meta attributes
         self._loaded = False
         self.auto = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def id(self):  # pylint: disable=C0103
@@ -246,6 +246,23 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @property
     @auto_load
+    def derived(self):
+        """Get the item's derived status.
+
+        A derived item does not have links to items in its parent
+        document, but should still be linked to by items in its child
+        documents.
+        """
+        return self._data['derived']
+
+    @derived.setter
+    @auto_save
+    def derived(self, value):
+        """Set the item's derived status."""
+        self._data['derived'] = bool(value)
+
+    @property
+    @auto_load
     def normative(self):
         """Get the item's normative status.
 
@@ -265,26 +282,24 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         self._data['normative'] = bool(value)
 
     @property
-    @auto_load
-    def derived(self):
-        """Get the item's derived status.
+    def heading(self):
+        """Indicates if the item is a heading.
 
-        A derived item does not have links to items in its parent
-        document, but should still be linked to by items in its child
-        documents.
+        Headings have a level that ends in zero and are non-normative.
         """
-        return self._data['derived']
-
-    @derived.setter
-    @auto_save
-    def derived(self, value):
-        """Set the item's derived status."""
-        self._data['derived'] = bool(value)
-
-    @property
-    def header(self):
-        """Indicates if the item is a header."""
         return self.level[-1] == 0 and not self.normative
+
+    @heading.setter
+    @auto_save
+    def heading(self, value):
+        """Set the item's heading status."""
+        heading = bool(value)
+        if heading and not self.heading:
+            self.level = list(self.level) + [0]
+            self.normative = False
+        elif not heading and self.heading:
+            self.level = list(self.level)[:-1]
+            self.normative = True
 
     @property
     @auto_load
@@ -326,41 +341,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
 
-    # extended attributes ####################################################
-
-    @auto_load
-    def get(self, name, default=None):
-        """Get an extended attribute.
-
-        @param name: name of extended attribute
-        @param default: value to return for missing attributes
-
-        @return: value of extended attribute
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return getattr(self, name)
-        else:
-            return self._data.get(name, default)
-
-    @auto_load
-    @auto_save
-    def set(self, name, value):
-        """Set an extended attribute.
-
-        @param name: name of extended attribute
-        @param value: value to set
-        """
-        if hasattr(self, name):
-            cname = self.__class__.__name__
-            msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
-            return setattr(self, name, value)
-        else:
-            self._data[name] = value
-
     # actions ################################################################
 
     @auto_load
@@ -389,7 +369,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # TODO: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
-        for issue in self.iter_issues(document=document, tree=tree):
+        for issue in self.issues(document=document, tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -401,8 +381,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Return the result
         return valid
 
-    # TODO: should this be renamed to 'issues'?
-    def iter_issues(self, document=None, tree=None):
+    def issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
         @param document: Document containing the item
@@ -431,17 +410,17 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield DoorstopWarning("non-normative, but has links")
         # Check links against the document
         if document:
-            yield from self._iter_issues_document(document)
+            yield from self._issues_document(document)
         # Check links against the tree
         if tree:
-            yield from self._iter_issues_tree(tree)
+            yield from self._issues_tree(tree)
         # Check links against both document and tree
         if document and tree:
-            yield from self._iter_issues_both(document, tree)
+            yield from self._issues_both(document, tree)
         # Reformat the file
         self.save()
 
-    def _iter_issues_document(self, document):
+    def _issues_document(self, document):
         """Yield all the item's issues against its document."""
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
@@ -468,7 +447,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     msg = "linked to non-parent item: {}".format(identifier)
                     yield DoorstopInfo(msg)
 
-    def _iter_issues_tree(self, tree):
+    def _issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
@@ -492,7 +471,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Apply the reformatted item IDs
         self._data['links'] = identifiers
 
-    def _iter_issues_both(self, document, tree):
+    def _issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if self.normative:
@@ -534,6 +513,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     continue
                 # Skip ignored paths
                 if ignored(path):
+                    # TODO: remove this logging line
+                    logging.debug("skipped: {}".format(path))
                     continue
                 # Search for the reference in the file
                 if filename == self.ref:
@@ -549,6 +530,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
+    # TODO: should this only return IDs and add a find_children method?
     def find_rlinks(self, document, tree, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
@@ -582,20 +564,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         super().delete(self.path)
 
 
-# YAML representer classes ###################################################
-
-class Literal(str):  # pylint: disable=R0904
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-
-
 # attribute formatters #######################################################
 
 def split_id(text):
@@ -606,6 +574,9 @@ def split_id(text):
 
     >>> split_id('ABC.HLR_01-00123')
     ('ABC.HLR_01', 123)
+
+    >>> split_id('REQ2-001')
+    ('REQ2', 1)
 
     """
     match = re.match(r"([\w.-]*\D)(\d+)", text)
@@ -644,6 +615,9 @@ def convert_level(text):
     >>> convert_level([7, 0, 0])
     (7, 0)
 
+    >>> convert_level(1)
+    (1,)
+
     """
     # Correct for integers (42) and floats (4.2) in YAML
     if isinstance(text, int) or isinstance(text, float):
@@ -658,9 +632,6 @@ def convert_level(text):
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
-        parts.append(0)
-    # Ensure the top level always a header (ends in a zero)
-    if len(parts) == 1:
         parts.append(0)
     # Convert the level to a tuple
     return tuple(parts)

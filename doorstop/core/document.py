@@ -5,8 +5,6 @@ Representation of a collection of Doorstop items.
 import os
 import logging
 
-import yaml
-
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.item import Item, split_id
 from doorstop import common
@@ -14,7 +12,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Document(BaseFileObject):
+class Document(BaseFileObject):  # pylint: disable=R0904
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
@@ -46,7 +44,6 @@ class Document(BaseFileObject):
         # Initialize the document
         self.path = path
         self.root = root
-        self._data = {}
         self._items = []
         self._itered = False
         # Set default values
@@ -74,7 +71,7 @@ class Document(BaseFileObject):
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913
         """Create a new document.
 
         @param path: path to directory for the new document
@@ -83,6 +80,7 @@ class Document(BaseFileObject):
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the new document
         @param parent: parent ID for the new document
+        @param auto: enables automatic save
 
         @raise DoorstopError: if the document already exists
         """
@@ -98,7 +96,8 @@ class Document(BaseFileObject):
         document = Document(path, root=root,
                             _prefix=prefix, _sep=sep, _digits=digits,
                             _parent=parent)
-        document.save()  # TODO: investigate why needed for Document not Item
+        if auto or (auto is None and Document.auto):
+            document.save()
         # Return the document
         return document
 
@@ -110,7 +109,7 @@ class Document(BaseFileObject):
         # Read text from file
         text = self._read(self.config)
         # Parse YAML data from text
-        data = self._parse(text, self.config)
+        data = self._load(text, self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
@@ -147,7 +146,7 @@ class Document(BaseFileObject):
                 data[key] = value
         data['settings'] = sets
         # Dump the data to YAML
-        text = yaml.dump(data, default_flow_style=False)
+        text = self._dump(data)
         # Save the YAML to file
         self._write(text, self.config)
         # Set meta attributes
@@ -163,19 +162,27 @@ class Document(BaseFileObject):
         logging.debug("iterating through items in {}...".format(self.path))
         # Reload the document's item
         self._items = []
-        for filename in os.listdir(self.path):
-            path = os.path.join(self.path, filename)
-            try:
-                item = Item(path)
-            except DoorstopError:
-                pass  # skip non-item files
-            else:
-                self._items.append(item)
-                yield item
+        for dirpath, dirnames, filenames in os.walk(self.path):
+            for dirname in list(dirnames):
+                path = os.path.join(dirpath, dirname, Document.CONFIG)
+                if os.path.exists(path):
+                    path = os.path.dirname(path)
+                    msg = "found embedded document: {}".format(path)
+                    logging.debug(msg)
+                    dirnames.remove(dirname)
+            for filename in filenames:
+                path = os.path.join(dirpath, filename)
+                try:
+                    item = Item(path)
+                except DoorstopError:
+                    pass  # skip non-item files
+                else:
+                    self._items.append(item)
+                    yield item
         # Set meta attributes
         self._itered = True
 
-    # standard attributes ####################################################
+    # properties #############################################################
 
     @property
     def config(self):
@@ -321,12 +328,9 @@ class Document(BaseFileObject):
 
         # Search using the prefix and number
         prefix, number = split_id(identifier)
-        if self.prefix.lower() == prefix.lower():
-            for item in self:
-                if item.number == number:
-                    return item
-            msg = "no matching{} number: {}".format(_kind, number)
-            logging.debug(msg)
+        for item in self:
+            if item.prefix.lower() == prefix.lower() and item.number == number:
+                return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -339,7 +343,7 @@ class Document(BaseFileObject):
         """
         valid = True
         # Display all issues
-        for issue in self.iter_issues(tree=tree):
+        for issue in self.issues(tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -351,8 +355,7 @@ class Document(BaseFileObject):
         # Return the result
         return valid
 
-    # TODO: should this be renamed to 'issues'?
-    def iter_issues(self, tree=None):
+    def issues(self, tree=None):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
@@ -366,6 +369,6 @@ class Document(BaseFileObject):
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            for issue in item.iter_issues(document=self, tree=tree):
+            for issue in item.issues(document=self, tree=tree):
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))

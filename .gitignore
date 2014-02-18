@@ -3,25 +3,30 @@
 *.egg-info
 __pycache__
 
-# Temporary OS X files
+# Temporary OS files
 Icon*
 
 # Temporary virtualenv files
-@/.cache
-@/env
+.cache
+env
 
 # Generated documentation
 *.gen.*
-gen/*.css
-@/apidocs
-@/docs/README.html
+apidocs
+docs/*.html
+*.rst
 
 # Google Drive
 *.gdraw
+*.gsheet
+*.gdoc
 
-# Testing results
+# Testing and coverage results
 .coverage
 
 # Build and release directories
-@/build
-@/dist
+build
+dist
+
+# Sublime Text
+.*.sublime-workspace

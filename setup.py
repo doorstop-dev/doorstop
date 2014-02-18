@@ -6,11 +6,18 @@ Setup script for Doorstop.
 
 import setuptools
 
-from doorstop import __project__, CLI, GUI
+from doorstop import __project__, __version__, CLI, GUI
+
+import os
+if os.path.exists('README.rst'):
+    README = open('README.rst').read()
+else:
+    README = ""  # a placeholder, readme is generated on release
+CHANGES = open('CHANGES.md').read()
 
 setuptools.setup(
     name=__project__,
-    version='0.0.17',
+    version=__version__,
 
     description="Text-based requirements management using version control.",
     url='http://pypi.python.org/pypi/Doorstop',
@@ -23,8 +30,7 @@ setuptools.setup(
     entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
                                       GUI + ' = doorstop.gui.main:main']},
 
-    long_description=(open('README.rst').read() + '\n' +
-                      open('CHANGES.rst').read()),
+    long_description=(README + '\n' + CHANGES),
     license='LGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -19,7 +19,7 @@ ROOT = os.path.join(DIR, '..', '..', '..', '..')
 class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for top-level VCS functions."""
 
-    @patch('os.listdir', Mock(return_value=['.sgdrawer']))
+    @patch('os.listdir', Mock(return_value=['.git']))
     def test_find_root(self):
         """Verify a root VCS directory can be found."""
         path = vcs.find_root('fake/path')
@@ -33,7 +33,7 @@ class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
     def test_load(self):
         """Verify a working copy can be created."""
         working = vcs.load(ROOT)
-        self.assertIsInstance(working, vcs.veracity.WorkingCopy)
+        self.assertIsInstance(working, vcs.git.WorkingCopy)
         self.assertEqual(ROOT, working.path)
 
     def test_load_unknown(self):

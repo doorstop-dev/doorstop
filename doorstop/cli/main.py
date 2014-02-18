@@ -10,7 +10,7 @@ import argparse
 import logging
 
 from doorstop import CLI, VERSION
-from doorstop.gui.main import run as gui
+from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
 from doorstop.core import report
 from doorstop import common
@@ -352,7 +352,7 @@ def _run_publish(args, cwd, _):
             print("publishing {} to {}...".format(document, args.path))
             report.publish(document, args.path, ext, **kwargs)
         else:
-            for line in report.iter_lines(document, ext, **kwargs):
+            for line in report.lines(document, ext, **kwargs):
                 print(line)
 
         return True
