@@ -285,11 +285,6 @@ class TestLogging(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['-vvvv']))
 
     def test_verbose_5(self):
-        """Verify verbose level 5 can be set."""
+        """Verify verbose level 5 cannot be set."""
         self.assertIs(None, main(['-vvvvv']))
-        self.assertEqual(5, common.VERBOSITY)
-
-    def test_verbose_6(self):
-        """Verify verbose level 6 cannot be set."""
-        self.assertIs(None, main(['-vvvvvv']))
-        self.assertEqual(5, common.VERBOSITY)
+        self.assertEqual(4, common.VERBOSITY)

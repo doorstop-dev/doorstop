@@ -155,7 +155,7 @@ def _configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
 
     assert common.STR_VERBOSITY == 3
-    assert common.MAX_VERBOSITY == 5
+    assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
     if verbosity == 0:
@@ -166,10 +166,10 @@ def _configure_logging(verbosity=0):
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity in (2, 3):  # 3 adds verbose string formatting
+    elif verbosity == 2:
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity == 4:
+    elif verbosity == 3:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     else:
