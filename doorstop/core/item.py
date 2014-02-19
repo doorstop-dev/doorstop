@@ -104,7 +104,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Initialize the item
         item = Item(path2, root=root)
         item.auto = False
-        item.level = level or Item.DEFAULT_LEVEL
+        item.level = level if level is not None else item.level
         if auto or (auto is None and Item.auto):
             item.save()
         # Return the item
@@ -511,8 +511,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     continue
                 # Skip ignored paths
                 if ignored(path):
-                    # TODO: remove this logging line
-                    logging.debug("skipped: {}".format(path))
                     continue
                 # Search for the reference in the file
                 if filename == self.ref:

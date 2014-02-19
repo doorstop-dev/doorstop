@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.2 (dev)
+----------------
+
+- All Item text attributes will now be split by sentences and line-wrapped.
+
 
 0.1 (2014/02/17)
 ----------------

@@ -72,9 +72,14 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list(self):
         """Verify a tree can be created from a list."""
-        a = MockDocument(EMPTY, _prefix='A')
-        b = MockDocument(EMPTY, _prefix='B', _parent='A')
-        c = MockDocument(EMPTY, _prefix='C', _parent='B')
+        a = MockDocument(EMPTY)
+        a.prefix = 'A'
+        b = MockDocument(EMPTY)
+        b.prefix = 'B'
+        b.parent = 'A'
+        c = MockDocument(EMPTY)
+        c.prefix = 'C'
+        c.parent = 'B'
         docs = [a, b, c]
         tree = Tree.from_list(docs)
         self.assertEqual(3, len(tree))
@@ -82,24 +87,35 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
-        a = MockDocument(EMPTY, _prefix='A', _parent='B')
-        b = MockDocument(EMPTY, _prefix='B', _parent='A')
+        a = MockDocument(EMPTY)
+        a.prefix = 'A'
+        a.parent = 'B'
+        b = MockDocument(EMPTY)
+        b.prefix = 'B'
+        b.parent = 'A'
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
     def test_from_list_multiple_roots(self):
         """Verify an error occurs when the tree has multiple roots."""
-        a = MockDocument(EMPTY, _prefix='A')
-        b = MockDocument(EMPTY, _prefix='B')
+        a = MockDocument(EMPTY)
+        a.prefix = 'A'
+        b = MockDocument(EMPTY)
+        b.prefix = 'B'
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
 
-        a = MockDocument(EMPTY, _prefix='A')
-        b = MockDocument(EMPTY, _prefix='B', _parent='A')
-        c = MockDocument(EMPTY, _prefix='C', _parent='?')
+        a = MockDocument(EMPTY)
+        a.prefix = 'A'
+        b = MockDocument(EMPTY)
+        b.prefix = 'B'
+        b.parent = 'A'
+        c = MockDocument(EMPTY)
+        c.prefix = 'C'
+        c.parent = '?'
         docs = [a, b, c]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 

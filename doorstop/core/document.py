@@ -22,15 +22,8 @@ class Document(BaseFileObject):  # pylint: disable=R0904
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
-    DEFAULT_PARENT = None  # a parent of None indicates this is the root
-
-    def __init__(self, path, root=os.getcwd(),
-                 # TODO: remove these to match Item
-                 _prefix=None, _sep=None, _digits=None, _parent=None):
+    def __init__(self, path, root=os.getcwd()):
         """Load a document from an exiting directory.
-
-        Internally, this constructor is also used to initialize new
-        documents by providing default properties.
 
         @param path: path to document directory
         @param root: path to root of project
@@ -47,10 +40,10 @@ class Document(BaseFileObject):  # pylint: disable=R0904
         self._items = []
         self._itered = False
         # Set default values
-        self._data['prefix'] = _prefix or Document.DEFAULT_PREFIX
-        self._data['sep'] = _sep or Document.DEFAULT_SEP
-        self._data['digits'] = _digits or Document.DEFAULT_DIGITS
-        self._data['parent'] = _parent or Document.DEFAULT_PARENT
+        self._data['prefix'] = Document.DEFAULT_PREFIX
+        self._data['sep'] = ''
+        self._data['digits'] = Document.DEFAULT_DIGITS
+        self._data['parent'] = None  # the root document does not have a parent
 
     def __repr__(self):
         return "Document({})".format(repr(self.path))
@@ -93,9 +86,12 @@ class Document(BaseFileObject):  # pylint: disable=R0904
         # Create the document directory
         Document._new(config, name='document')
         # Initialize the document
-        document = Document(path, root=root,
-                            _prefix=prefix, _sep=sep, _digits=digits,
-                            _parent=parent)
+        document = Document(path, root=root)
+        document.auto = False
+        document.prefix = prefix if prefix is not None else document.prefix
+        document.sep = sep if sep is not None else document.sep
+        document.digits = digits if digits is not None else document.digits
+        document.parent = parent if parent is not None else document.parent
         if auto or (auto is None and Document.auto):
             document.save()
         # Return the document
@@ -253,7 +249,7 @@ class Document(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def parent(self, value):
         """Set the document's parent document prefix."""
-        self._data['parent'] = value.strip()
+        self._data['parent'] = str(value) if value else ""
 
     @property
     def items(self):
