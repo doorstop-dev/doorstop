@@ -3,13 +3,16 @@ Classes and functions for objects whose attributes save to a file.
 """
 
 import os
+import re
 import abc
 import functools
+import textwrap
 import logging
 
 import yaml
 
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 
 def auto_load(func):
@@ -199,6 +202,9 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             logging.warning("already deleted: {}".format(self))
 
 
+# formatting functions #######################################################
+
+
 class Literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
 
@@ -209,15 +215,49 @@ class Literal(str):  # pylint: disable=R0904
                                        style='|' if data else '')
 
 
-# TODO: use this class?
-class Folded(str):  # pragma: no cover, pylint: disable=R0904
-    """Custom type for text which should be dumped in the folded style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the folded style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='>' if data else '')
-
 yaml.add_representer(Literal, Literal.representer)
-yaml.add_representer(Folded, Folded.representer)
+
+
+# Modified from http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+SBD = re.compile(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
+
+
+def sbd(text, end='\n'):
+    """Replace sentence boundaries with newlines and append a newline.
+
+    @param text: string to line break at sentences
+    @param end: appended to the end of the update text
+
+    >>> sbd("Hello, world!", end='')
+    'Hello, world!'
+
+    >>> sbd("Hello, world! How are you? I'm fine. Good.")
+    "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
+
+    """
+    stripped = text.strip()
+    if stripped:
+        return SBD.sub('\n', stripped) + end
+    else:
+        return ''
+
+
+def wrap(text, width=settings.MAX_LINE_LENTH):
+    """Wraps lines of text to the maximum line length.
+
+    >>> wrap("Hello, world!", 9)
+    'Hello,\\nworld!'
+
+    >>> wrap("How are you?\\nI'm fine.\\n", 14)
+    "How are you?\\nI'm fine.\\n"
+
+    """
+    end = '\n' if '\n' in text else ''
+    lines = []
+    for line in text.splitlines():
+        # wrap longs lines of text compensating for the 2-space indent
+        lines.extend(textwrap.wrap(line, width=width - 2,
+                                   replace_whitespace=True))
+        if not line.strip():
+            lines.append('')
+    return '\n'.join(lines) + end

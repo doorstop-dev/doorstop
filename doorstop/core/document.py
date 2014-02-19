@@ -84,7 +84,7 @@ class Document(BaseFileObject):  # pylint: disable=R0904
 
         @raise DoorstopError: if the document already exists
         """
-        # TODO: raise a specific exception
+        # TODO: raise a specific exception for invalid separator characters
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
@@ -225,7 +225,7 @@ class Document(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
-        # TODO: raise a specific exception
+        # TODO: raise a specific exception for invalid separator characters
         assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?

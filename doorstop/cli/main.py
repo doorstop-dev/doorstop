@@ -18,7 +18,7 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
-# TODO: use the classes from doorstop.common
+# TODO: refactor: use the classes from doorstop.common
 class _HelpFormatter(argparse.HelpFormatter):
     """Command-line help text formatter with wider help text."""
     def __init__(self, *args, **kwargs):

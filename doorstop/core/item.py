@@ -6,7 +6,8 @@ import os
 import re
 import logging
 
-from doorstop.core.base import auto_load, auto_save, BaseFileObject, Literal
+from doorstop.core import base
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -121,7 +122,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                self._data['level'] = convert_level(value)
+                self._data['level'] = load_level(value)
             elif key == 'active':
                 self._data['active'] = bool(value)
             elif key == 'normative':
@@ -129,12 +130,14 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             elif key == 'derived':
                 self._data['derived'] = bool(value)
             elif key == 'text':
-                self._data['text'] = value.strip()
+                self._data['text'] = load_text(value)
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
                 self._data['links'] = set(value)
             else:
+                if isinstance(value, str):
+                    value = load_text(value)
                 self._data[key] = value
         # Set meta attributes
         self._loaded = True
@@ -146,20 +149,20 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                level = '.'.join(str(n) for n in value)
-                if len(value) == 1:
-                    level = int(level)
-                elif len(value) == 2:
-                    level = float(level)
-                data['level'] = level
+                data['level'] = save_level(value)
             elif key == 'text':
-                data['text'] = Literal(sbd(self._data['text']))
+                data['text'] = save_text(self._data['text'])
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
                 data['links'] = sorted(value)
             else:
-                # TODO: dump long strings as Literal (and SBD?)
+                if isinstance(value, str):
+                    # length of "key_text: value_text"
+                    lenth = len(key) + 2 + len(value)
+                    if lenth > settings.MAX_LINE_LENTH or '\n' in value:
+                        end = '\n' if value.endswith('\n') else ''
+                        value = save_text(value, end=end)
                 data[key] = value
         # Dump the data to YAML
         text = self._dump(data)
@@ -208,7 +211,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def level(self, value):
         """Set the item's level."""
-        self._data['level'] = convert_level(value)
+        self._data['level'] = load_level(value)
 
     @property
     def depth(self):
@@ -306,7 +309,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def text(self, value):
         """Set the item's text."""
-        self._data['text'] = value
+        self._data['text'] = str(value) if value else ""
 
     @property
     @auto_load
@@ -322,7 +325,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = value
+        self._data['ref'] = str(value) if value else ""
 
     @property
     @auto_load
@@ -361,7 +364,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
-        # TODO: this could be common code with Item/Document/Tree
+        # TODO: refactor: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
         for issue in self.issues(document=document, tree=tree):
@@ -595,59 +598,86 @@ def join_id(prefix, sep, number, digits):
     return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-def convert_level(text):
-    """Convert a level string to a tuple.
+def load_text(value):
+    """Convert dumped text to the original string.
 
-    >>> convert_level("1.2.3")
+    >>> load_text("abc\\ndef")
+    'abc def'
+
+    >>> load_text("list:\\n\\n- a\\n- b\\n")
+    'list:\\n\\n- a\\n- b'
+
+    """
+    # Replace single newlines in sentences with spaces
+    return re.sub(r'([a-z])(\n)([a-z])', r'\1 \3', value, re.I).strip()
+
+
+def save_text(text, end='\n'):
+    """Break a string at sentences and dump as literal YAML with wrapping."""
+
+    return base.Literal(base.wrap(base.sbd(text, end=end)))
+
+
+def load_level(value):
+    """Convert an iterable, number, or level string to a tuple.
+
+    >>> load_level("1.2.3")
     (1, 2, 3)
 
-    >>> convert_level(['4', '5'])
+    >>> load_level(['4', '5'])
     (4, 5)
 
-    >>> convert_level(4.2)
+    >>> load_level(4.2)
     (4, 2)
 
-    >>> convert_level([7, 0, 0])
+    >>> load_level([7, 0, 0])
     (7, 0)
 
-    >>> convert_level(1)
+    >>> load_level(1)
     (1,)
 
     """
-    # Correct for integers (42) and floats (4.2) in YAML
-    if isinstance(text, int) or isinstance(text, float):
-        text = str(text)
+    # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
+    if isinstance(value, (int, float)):
+        value = str(value)
+
     # Split strings by periods
-    if isinstance(text, str):
-        nums = text.split('.')
-    else:
-        nums = text
+    if isinstance(value, str):
+        nums = value.split('.')
+    else:  # assume an iterable
+        nums = value
+
     # Clean up multiple trailing zeros
     parts = [int(n) for n in nums]
     if parts[-1] == 0:
         while parts[-1] == 0:
             del parts[-1]
         parts.append(0)
+
     # Convert the level to a tuple
     return tuple(parts)
 
 
-# http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
+def save_level(parts):
+    """Convert a level's part into non-quoted YAML value.
 
+    >>> save_level((1,))
+    1
 
-def sbd(text):
-    """Replace sentence boundaries with newlines and append a newline.
+    >>> save_level((1,0))
+    1.0
 
-    >>> sbd("Hello, world!")
-    'Hello, world!\\n'
-
-    >>> sbd("Hello, world! How are you? I'm fine. Good.")
-    "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
+    >>> save_level((1,0,0))
+    '1.0.0'
 
     """
-    stripped = text.strip()
-    if stripped:
-        return SBD.sub('\n', stripped) + '\n'
-    else:
-        return ''
+    # Join the level's parts
+    level = '.'.join(str(n) for n in parts)
+
+    # Convert formats to cleaner YAML formats
+    if len(parts) == 1:
+        level = int(level)
+    elif len(parts) == 2:
+        level = float(level)
+
+    return level

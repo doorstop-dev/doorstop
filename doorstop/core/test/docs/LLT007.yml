@@ -13,7 +13,8 @@ ref: ''
 text: |
   **Inspection Tests**
 
-  These checks ensure the version control system (VCS) meets the needs of requirements management:
+  These checks ensure the version control system (VCS) meets the needs of
+  requirements management:
 
   - Verify the VCS includes a 'tag' feature.
   - Verify the VCS stores files in a permanent and secure manner.

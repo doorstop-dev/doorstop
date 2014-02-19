@@ -5,4 +5,5 @@ links: []
 normative: true
 ref: ''
 text: |
-  Doorstop **shall** provide the capability to baseline versions of requirements.
+  Doorstop **shall** provide the capability to baseline versions of
+  requirements.

@@ -5,4 +5,5 @@ links: []
 normative: true
 ref: ''
 text: |
-  Doorstop **shall** associate requirements changes to existing developer identification.
+  Doorstop **shall** associate requirements changes to existing developer
+  identification.

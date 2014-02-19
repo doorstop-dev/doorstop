@@ -199,6 +199,18 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                     "And another sentence.")
         self.assertEqual(expected, self.item.text)
 
+    def test_text_list(self):
+        """Verify list items are not broken up with newlines."""
+        self.item.text = "A list:\n\n1. Abc\n2. Def"
+        expected = "A list:\n\n1. Abc\n2. Def"
+        self.assertEqual(expected, self.item.text)
+
+    def test_text_parenthesis(self):
+        """Verify non-alpha characters ending sentences get broken up."""
+        self.item.text = "A value (with parenthesis). Sentence two."
+        expected = "A value (with parenthesis).\nSentence two."
+        self.assertEqual(expected, self.item.text)
+
     def test_ref(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
@@ -210,6 +222,18 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.set('ext1', 'foobar')
         self.assertEqual('foobar', self.item.get('ext1'))
         self.assertEqual(['ext1'], self.item.extended)
+
+    def test_extended_wrap(self):
+        """Verify a long extended attribute is wrapped."""
+        text = "This extended attribute should be long enough to wrap."
+        self.item.set('a_very_long_extended_attr', text)
+        self.assertEqual(text, self.item.get('a_very_long_extended_attr'))
+
+    def test_extended_wrap_multi(self):
+        """Verify a long extended attribute is wrapped with newlines."""
+        text = "Another extended attribute.\n\nNote: with a note."
+        self.item.set('ext2', text)
+        self.assertEqual(text, self.item.get('ext2'))
 
     def test_extended_get_standard(self):
         """Verify extended attribute access can get standard properties."""
