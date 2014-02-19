@@ -101,7 +101,7 @@ def _run(args, cwd, error):
         return True
 
 
-# TODO: remove this function when no longer used
+# TODO: remove this logging decorator when no longer used
 def _log(func):  # pragma: no cover, manual test
     """Decorator for methods that should log calls."""
     @functools.wraps(func)

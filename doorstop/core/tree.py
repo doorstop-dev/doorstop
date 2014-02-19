@@ -263,7 +263,7 @@ class Tree(object):
         # Open item
         if launch:
             _open(item.path, tool=tool)
-            # TODO: force the item to reload after editing
+            # TODO: force an item reload without touching a private attribute
             item._loaded = False  # pylint: disable=W0212
         # Return the item
         return item

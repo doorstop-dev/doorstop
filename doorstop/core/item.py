@@ -309,7 +309,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def text(self, value):
         """Set the item's text."""
-        self._data['text'] = value
+        self._data['text'] = str(value) if value else ""
 
     @property
     @auto_load
@@ -325,7 +325,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = value
+        self._data['ref'] = str(value) if value else ""
 
     @property
     @auto_load
@@ -364,7 +364,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         @return: indication that the item is valid
         """
-        # TODO: this could be common code with Item/Document/Tree
+        # TODO: refactor: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
         for issue in self.issues(document=document, tree=tree):
