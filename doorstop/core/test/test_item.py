@@ -199,6 +199,18 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                     "And another sentence.")
         self.assertEqual(expected, self.item.text)
 
+    def test_text_list(self):
+        """Verify list items are not broken up with newlines."""
+        self.item.text = "A list:\n\n1. Abc\n2. Def"
+        expected = "A list:\n\n1. Abc\n2. Def"
+        self.assertEqual(expected, self.item.text)
+
+    def test_text_parenthesis(self):
+        """Verify non-alpha characters ending sentences get broken up."""
+        self.item.text = "A value (with parenthesis). Sentence two."
+        expected = "A value (with parenthesis).\nSentence two."
+        self.assertEqual(expected, self.item.text)
+
     def test_ref(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"

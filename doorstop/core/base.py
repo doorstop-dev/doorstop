@@ -229,8 +229,8 @@ yaml.add_representer(Literal, Literal.representer)
 yaml.add_representer(Folded, Folded.representer)
 
 
-# http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-SBD = re.compile(r"((?<=[a-z0-9][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
+# Modified from http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+SBD = re.compile(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
 
 
 def sbd(text, end='\n'):
@@ -239,8 +239,8 @@ def sbd(text, end='\n'):
     @param text: string to line break at sentences
     @param end: appended to the end of the update text
 
-    >>> sbd("Hello, world!")
-    'Hello, world!\\n'
+    >>> sbd("Hello, world!", end='')
+    'Hello, world!'
 
     >>> sbd("Hello, world! How are you? I'm fine. Good.")
     "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
