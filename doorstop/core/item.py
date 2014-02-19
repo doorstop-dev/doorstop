@@ -606,8 +606,7 @@ def load_text(value):
     'list:\\n\\n- a\\n- b'
 
     """
-    # Replace single newlines in sentences with spaces
-    return re.sub(r'([a-z])(\n)([a-z])', r'\1 \3', value, re.I).strip()
+    return base.unwarp(value)
 
 
 def save_text(text, end='\n'):

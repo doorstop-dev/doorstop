@@ -219,7 +219,7 @@ yaml.add_representer(Literal, Literal.representer)
 
 
 # Modified from http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-SBD = re.compile(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
+RE_SBD = re.compile(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
 
 
 def sbd(text, end='\n'):
@@ -237,7 +237,7 @@ def sbd(text, end='\n'):
     """
     stripped = text.strip()
     if stripped:
-        return SBD.sub('\n', stripped) + end
+        return RE_SBD.sub('\n', stripped) + end
     else:
         return ''
 
@@ -261,3 +261,18 @@ def wrap(text, width=settings.MAX_LINE_LENTH):
         if not line.strip():
             lines.append('')
     return '\n'.join(lines) + end
+
+
+def unwarp(text):
+    """Converts single newlines (ignored by Markdown) to spaces.
+
+    >>> unwarp("abc\\ndef")
+    'abc def'
+
+    >>> unwarp("list:\\n\\n- a\\n- b\\n")
+    'list:\\n\\n- a\\n- b'
+
+    """
+    return re.sub(r"([^.])(\r?\n)((?:[a-z])|(?:\d+[^\d.]))",
+                  r"\1 \3",
+                  text, re.IGNORECASE).strip()

@@ -211,6 +211,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         expected = "A value (with parenthesis).\nSentence two."
         self.assertEqual(expected, self.item.text)
 
+    def test_text_split_numbers(self):
+        """Verify lines ending in numbers are joined correctly."""
+        self.item.text = "Split at a number: 1\n42 or punctuation.\nHere."
+        expected = "Split at a number: 1 42 or punctuation.\nHere."
+        self.assertEqual(expected, self.item.text)
+
     def test_ref(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
