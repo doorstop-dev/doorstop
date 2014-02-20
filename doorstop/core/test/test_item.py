@@ -232,9 +232,15 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected, self.item.text)
 
     def test_text_heading(self):
-        """Verify headings are preserved."""
+        """Verify headings are not inserted."""
         self.item.text = "line break before the \n# symbol should not be treated as a heading."
         expected = "line break before the # symbol should not be treated as a heading."
+        self.assertEqual(expected, self.item.text)
+
+    def test_text_heading2(self):
+        """Verify headings are preserved."""
+        self.item.text = "the following should be a heading still\n\n# should be treated as a heading"
+        expected = "the following should be a heading still\n\n# should be treated as a heading"
         self.assertEqual(expected, self.item.text)
 
     ##########################################################################
