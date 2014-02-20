@@ -267,6 +267,7 @@ def unwarp(text):
     'list:\\n\\n- a\\n- b'
 
     """
-    return re.sub(r"([^.])(\r?\n)((?:[a-z])|(?:\d+[^\d.]))",
+    # TODO: make this regex verbose
+    return re.sub(r"([^.])(\r?\n)((?:[a-z_])|(?:\d+[^\d.])|(?:\*\*+))",
                   r"\1 \3",
                   text, re.IGNORECASE).strip()

@@ -223,6 +223,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         expected = "Some text.\n\nNote: here."
         self.assertEqual(expected, self.item.text)
 
+    def test_text_formatting(self):
+        """Verify formatting is preserved."""
+        self.item.text = "The thing\n**_SHALL_** do this.\n"
+        expected = "The thing **_SHALL_** do this."
+        self.assertEqual(expected, self.item.text)
+
     def test_ref(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
