@@ -202,9 +202,6 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             logging.warning("already deleted: {}".format(self))
 
 
-# formatting functions #######################################################
-
-
 class Literal(str):  # pylint: disable=R0904
     """Custom type for text which should be dumped in the literal style."""
 
@@ -214,12 +211,7 @@ class Literal(str):  # pylint: disable=R0904
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|' if data else '')
 
-
 yaml.add_representer(Literal, Literal.representer)
-
-
-# Modified from http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-RE_SBD = re.compile(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])")  # pylint: disable=C0301
 
 
 def sbd(text, end='\n'):
@@ -237,7 +229,9 @@ def sbd(text, end='\n'):
     """
     stripped = text.strip()
     if stripped:
-        return RE_SBD.sub('\n', stripped) + end
+        # See: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+        return re.sub(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])",  # pylint: disable=C0301
+                      '\n', stripped) + end
     else:
         return ''
 

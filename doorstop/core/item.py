@@ -28,9 +28,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     def __init__(self, path, root=os.getcwd()):
         """Load an item from an existing file.
 
-        Internally, this constructor is also used to initialize new
-        items by providing default properties.
-
         @param path: path to Item file
         @param root: path to root of project
         """
@@ -81,7 +78,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, sep, digits, number, level, auto=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep, digits, number, level=None, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
@@ -90,7 +87,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         @param sep: separator between prefix and number
         @param digits: number of digits for the new document
         @param number: number for the new item
-        @param level: level for the new item (None for default)
+        @param level: level for the new item
         @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
