@@ -199,6 +199,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                     "And another sentence.")
         self.assertEqual(expected, self.item.text)
 
+    # TODO: consolidate these tests into one complete example ################
+
     def test_text_list(self):
         """Verify list items are not broken up with newlines."""
         self.item.text = "A list:\n\n1. Abc\n2. Def"
@@ -228,6 +230,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.text = "The thing\n**_SHALL_** do this.\n"
         expected = "The thing **_SHALL_** do this."
         self.assertEqual(expected, self.item.text)
+
+    ##########################################################################
 
     def test_ref(self):
         """Verify an item's reference can be set and read."""

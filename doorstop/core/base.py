@@ -230,6 +230,7 @@ def sbd(text, end='\n'):
     stripped = text.strip()
     if stripped:
         # See: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+        # TODO: make this regex verbose
         return re.sub(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])",  # pylint: disable=C0301
                       '\n', stripped) + end
     else:
@@ -268,6 +269,7 @@ def unwarp(text):
 
     """
     # TODO: make this regex verbose
+    # TODO: find a simpler way to do this
     return re.sub(r"([^.])(\r?\n)((?:[a-z_])|(?:\d+[^\d.])|(?:\*\*+))",
                   r"\1 \3",
                   text, re.IGNORECASE).strip()
