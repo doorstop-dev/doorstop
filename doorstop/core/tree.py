@@ -346,7 +346,8 @@ class Tree(object):
         # Check each document
         for document in documents:
             issues = chain(document.issues(tree=self, item_hook=item_hook),
-                           document_hook(tree=self) if document_hook else [])
+                           document_hook(document=document, tree=self)
+                               if document_hook else [])
             for issue in issues:
                 # Prepend the document's prefix
                 yield type(issue)("{}: {}".format(document.prefix, issue))

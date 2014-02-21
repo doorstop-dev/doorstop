@@ -368,9 +368,9 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            kwargs = {'document': self, 'tree': tree}
-            issues = chain(item.issues(**kwargs),
-                           item_hook(**kwargs) if item_hook else [])
+            issues = chain(item.issues(document=self, tree=tree),
+                           item_hook(item=item, document=self, tree=tree)
+                               if item_hook else [])
             for issue in issues:
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))

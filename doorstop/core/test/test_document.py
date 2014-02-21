@@ -258,7 +258,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_hook = MagicMock()
         self.document.valid(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
-        mock_hook.assert_called_with(tree=None, document=self.document)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

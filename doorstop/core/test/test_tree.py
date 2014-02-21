@@ -177,7 +177,6 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         mock_hook = MagicMock()
         self.tree.valid(document_hook=mock_hook)
         self.assertEqual(2, mock_hook.call_count)
-        mock_hook.assert_called_with(tree=self.tree)
 
     def test_new(self):
         """Verify a new document can be created on a tree."""
