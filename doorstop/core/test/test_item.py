@@ -239,7 +239,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_text_non_heading(self):
         """Verify newlines are removed around non-headings."""
-        self.item.text = "break (before\n#2) symbol should not be a heading."
+        self.item.text = "break (before \n#2) symbol should not be a heading."
         expected = "break (before #2) symbol should not be a heading."
         self.assertEqual(expected, self.item.text)
 

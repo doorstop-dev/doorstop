@@ -274,9 +274,9 @@ def wrap(text, width=settings.MAX_LINE_LENTH):
 
 RE_MARKDOWN_SPACES = re.compile(r"""
 
-([^\n])  # any character but a newline
+([^\n ])  # any character but a newline or space
 
-(\n)     # a single newline
+(\ ?\n)     # optional space + single newline
 
 (?!      # none of the following:
 
@@ -299,9 +299,11 @@ def join(text):
     >>> join("abc\\n123")
     'abc 123'
 
-
     >>> join("abc\\n\\n123")
     'abc\\n\\n123'
+
+    >>> join("abc \\n123")
+    'abc 123'
 
     """
     return RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
