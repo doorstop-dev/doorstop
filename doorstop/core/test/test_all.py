@@ -77,11 +77,11 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
+        with open(self.ITEM, 'r') as item:
             self.backup = item.read()
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
+        with open(self.ITEM, 'w') as item:
             item.write(self.backup)
 
     @patch('doorstop.core.document.Document', DocumentNoSkip)

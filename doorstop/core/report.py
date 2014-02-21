@@ -26,9 +26,9 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     ext = ext or os.path.splitext(path)[-1]
     if ext in FORMAT:
         logging.info("creating {}...".format(path))
-        with open(path, 'wb') as outfile:  # pragma: no cover, integration test
+        with open(path, 'w') as outfile:  # pragma: no cover, integration test
             for line in lines(document, ext, ignored=ignored, **kwargs):
-                outfile.write(bytes(line + '\n', 'utf-8'))
+                outfile.write(line + '\n')
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 

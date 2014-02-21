@@ -124,11 +124,11 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
+        with open(self.ITEM, 'r') as item:
             self.backup = item.read()
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
+        with open(self.ITEM, 'w') as item:
             item.write(self.backup)
 
     def test_remove(self):
@@ -148,11 +148,11 @@ class TestLink(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
+        with open(self.ITEM, 'r') as item:
             self.backup = item.read()
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
+        with open(self.ITEM, 'w') as item:
             item.write(self.backup)
 
     def test_link(self):
@@ -177,12 +177,12 @@ class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
+        with open(self.ITEM, 'r') as item:
             self.backup = item.read()
         main(['link', 'tut3', 'req2'])  # create a temporary link
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
+        with open(self.ITEM, 'w') as item:
             item.write(self.backup)
 
     def test_unlink(self):

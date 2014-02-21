@@ -130,8 +130,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(path, 'wb') as outfile:
-            outfile.write(bytes(text, 'UTF-8'))
+        with open(path, 'w') as outfile:
+            outfile.write(text)
 
     @staticmethod
     def _dump(data):

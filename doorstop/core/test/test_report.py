@@ -58,7 +58,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify an HTML file can be created."""
         path = os.path.join('mock', 'report.html')
         report.publish(self.document, path, '.html')
-        mock_open.assert_called_once_with(path, 'wb')
+        mock_open.assert_called_once_with(path, 'w')
         mock_lines.assert_called_once_with(self.document, '.html',
                                            ignored=None)
 
@@ -93,8 +93,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
-        with open(path, 'wb') as outfile:
-            outfile.write(bytes(text, 'utf-8'))
+        with open(path, 'w') as outfile:
+            outfile.write(text)
 
     def test_lines_markdown_item(self):
         """Verify a Markdown report can be created from an item."""
@@ -111,8 +111,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
-        with open(path, 'wb') as outfile:
-            outfile.write(bytes(text, 'utf-8'))
+        with open(path, 'w') as outfile:
+            outfile.write(text)
 
     def test_lines_html_item(self):
         """Verify an HTML report can be created from an item."""
@@ -129,8 +129,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
-        with open(path, 'wb') as outfile:
-            outfile.write(bytes(text, 'utf-8'))
+        with open(path, 'w') as outfile:
+            outfile.write(text)
 
     def test_lines_unknown(self):
         """Verify iterating an unknown format raises."""
