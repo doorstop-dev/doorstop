@@ -603,7 +603,7 @@ def load_text(value):
     'list:\\n\\n- a\\n- b'
 
     """
-    return base.unwarp(value)
+    return base.join(value)
 
 
 def save_text(text, end='\n'):

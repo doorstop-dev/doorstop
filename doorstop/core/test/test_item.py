@@ -183,67 +183,71 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_text(self):
         """Verify an item's text can be set and read."""
-        self.item.text = "abc "
-        self.assertIn("text: |\n  abc\n", self.item._write.call_args[0][0])
-        self.assertEqual("abc", self.item.text)
+        value = "abc "
+        text = "abc"
+        yaml = "text: |\n  abc\n"
+        self.item.text = value
+        self.assertEqual(text, self.item.text)
+        self.assertIn(yaml, self.item._write.call_args[0][0])
 
-    def test_text_sentences(self):
+    def test_text_sbd(self):
         """Verify newlines separate sentences in an item's text."""
-        self.item.text = ("A sentence. Another sentence! Hello? Hi.\n"
-                          "A new line. And another sentence.")
-        expected = ("A sentence.\n"
-                    "Another sentence!\n"
-                    "Hello?\n"
-                    "Hi.\n"
-                    "A new line.\n"
-                    "And another sentence.")
-        self.assertEqual(expected, self.item.text)
+        value = ("A sentence. Another sentence! Hello? Hi.\n"
+                "A new line (here). And another sentence.")
+        text = ("A sentence. Another sentence! Hello? Hi. "
+                "A new line (here). And another sentence.")
+        yaml = ("text: |\n"
+                "  A sentence.\n"
+                "  Another sentence!\n"
+                "  Hello?\n"
+                "  Hi.\n"
+                "  A new line (here).\n"
+                "  And another sentence.\n")
+        self.item.text = value
+        self.assertEqual(text, self.item.text)
+        self.assertIn(yaml, self.item._write.call_args[0][0])
 
-    # TODO: consolidate these tests into one complete example ################
-
-    def test_text_list(self):
-        """Verify list items are not broken up with newlines."""
-        self.item.text = "A list:\n\n1. Abc\n2. Def"
+    def test_text_ordered_list(self):
+        """Verify newlines are preserved in an ordered list."""
+        self.item.text = "A list:\n\n1. Abc\n2. Def\n"
         expected = "A list:\n\n1. Abc\n2. Def"
         self.assertEqual(expected, self.item.text)
 
-    def test_text_parenthesis(self):
-        """Verify non-alpha characters ending sentences get broken up."""
-        self.item.text = "A value (with parenthesis). Sentence two."
-        expected = "A value (with parenthesis).\nSentence two."
+    def test_text_unordered_list(self):
+        """Verify newlines are preserved in an ordered list."""
+        self.item.text = "A list:\n\n- Abc\n- Def\n"
+        expected = "A list:\n\n- Abc\n- Def"
         self.assertEqual(expected, self.item.text)
 
     def test_text_split_numbers(self):
         """Verify lines ending in numbers are joined correctly."""
         self.item.text = "Split at a number: 1\n42 or punctuation.\nHere."
-        expected = "Split at a number: 1 42 or punctuation.\nHere."
+        expected = "Split at a number: 1 42 or punctuation. Here."
         self.assertEqual(expected, self.item.text)
 
     def test_text_newlines(self):
-        """Verify deliberate newlines are kept in text."""
+        """Verify newlines are preserved when deliberate."""
         self.item.text = "Some text.\n\nNote: here.\n"
         expected = "Some text.\n\nNote: here."
         self.assertEqual(expected, self.item.text)
 
     def test_text_formatting(self):
-        """Verify formatting is preserved."""
+        """Verify newlines are removed around formatting."""
         self.item.text = "The thing\n**_SHALL_** do this.\n"
         expected = "The thing **_SHALL_** do this."
         self.assertEqual(expected, self.item.text)
 
+    def test_text_non_heading(self):
+        """Verify newlines are removed around non-headings."""
+        self.item.text = "break before \n# symbol should not be a heading."
+        expected = "break before # symbol should not be a heading."
+        self.assertEqual(expected, self.item.text)
+
     def test_text_heading(self):
-        """Verify headings are not inserted."""
-        self.item.text = "line break before the \n# symbol should not be treated as a heading."
-        expected = "line break before the # symbol should not be treated as a heading."
+        """Verify newlines are preserved around headings."""
+        self.item.text = "should be a heading\n\n# right here"
+        expected = "should be a heading\n\n# right here"
         self.assertEqual(expected, self.item.text)
-
-    def test_text_heading2(self):
-        """Verify headings are preserved."""
-        self.item.text = "the following should be a heading still\n\n# should be treated as a heading"
-        expected = "the following should be a heading still\n\n# should be treated as a heading"
-        self.assertEqual(expected, self.item.text)
-
-    ##########################################################################
 
     def test_ref(self):
         """Verify an item's reference can be set and read."""

@@ -213,6 +213,23 @@ class Literal(str):  # pylint: disable=R0904
 
 yaml.add_representer(Literal, Literal.representer)
 
+# Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+RE_SENTENCE_BOUNDARIES = re.compile(r"""
+
+(            # one of the following:
+
+  (?<=[a-z)][.?!])      # lowercase letter + punctuation
+  |
+  (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
+
+)
+
+(\s)          # any whitespace
+
+(?=\"?[A-Z])  # optional quote + an upppercase letter
+
+""", re.VERBOSE)
+
 
 def sbd(text, end='\n'):
     """Replace sentence boundaries with newlines and append a newline.
@@ -229,10 +246,7 @@ def sbd(text, end='\n'):
     """
     stripped = text.strip()
     if stripped:
-        # See: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-        # TODO: make this regex verbose
-        return re.sub(r"((?<=[a-z)][.?!])|(?<=[a-z0-9][.?!]\"))(\s|\r\n)(?=\"?[A-Z])",  # pylint: disable=C0301
-                      '\n', stripped) + end
+        return RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
     else:
         return ''
 
@@ -258,18 +272,36 @@ def wrap(text, width=settings.MAX_LINE_LENTH):
     return '\n'.join(lines) + end
 
 
-def unwarp(text):
+RE_MARKDOWN_SPACES = re.compile(r"""
+
+([^\n])  # any character but a newline
+
+(\n)     # a single newline
+
+(?!      # none of the following:
+
+  (?:\s)       # whitespace
+  |
+  (?:[-+*]\s)  # unordered list separator + whitespace
+  |
+  (?:\d+\.\s)  # number + period + whitespace
+
+)
+
+([^\n])  # any character but a newline
+
+""", re.VERBOSE | re.IGNORECASE)
+
+
+def join(text):
     """Converts single newlines (ignored by Markdown) to spaces.
 
-    >>> unwarp("abc\\ndef")
-    'abc def'
+    >>> join("abc\\n123")
+    'abc 123'
 
-    >>> unwarp("list:\\n\\n- a\\n- b\\n")
-    'list:\\n\\n- a\\n- b'
+
+    >>> join("abc\\n\\n123")
+    'abc\\n\\n123'
 
     """
-    # TODO: make this regex verbose
-    # TODO: find a simpler way to do this
-    return re.sub(r"([^.])(\r?\n)((?:[a-z_])|(?:\d+[^\d.])|(?:\*\*+))",
-                  r"\1 \3",
-                  text, re.IGNORECASE).strip()
+    return RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
