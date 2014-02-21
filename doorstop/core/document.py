@@ -370,7 +370,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items:
             issues = chain(item.issues(document=self, tree=tree),
                            item_hook(item=item, document=self, tree=tree)
-                               if item_hook else [])
+                           if item_hook else [])
             for issue in issues:
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))
