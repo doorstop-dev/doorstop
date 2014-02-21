@@ -193,7 +193,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_text_sbd(self):
         """Verify newlines separate sentences in an item's text."""
         value = ("A sentence. Another sentence! Hello? Hi.\n"
-                "A new line (here). And another sentence.")
+                 "A new line (here). And another sentence.")
         text = ("A sentence. Another sentence! Hello? Hi. "
                 "A new line (here). And another sentence.")
         yaml = ("text: |\n"
