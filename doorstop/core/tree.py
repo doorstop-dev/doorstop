@@ -307,15 +307,19 @@ class Tree(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self):
+    def valid(self, document_hook=None, item_hook=None):
         """Check the tree (and its documents) for validity.
+
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
 
         @return: indication that the tree is valid
         """
         valid = True
         logging.info("checking tree...")
         # Display all issues
-        for issue in self.issues():
+        for issue in self.issues(document_hook=document_hook,
+                                 item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -327,8 +331,11 @@ class Tree(object):
         # Return the result
         return valid
 
-    def issues(self):
+    def issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
+
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
@@ -338,7 +345,9 @@ class Tree(object):
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            for issue in document.issues(tree=self):
+            issues = chain(document.issues(tree=self, item_hook=item_hook),
+                           document_hook(tree=self) if document_hook else [])
+            for issue in issues:
                 # Prepend the document's prefix
                 yield type(issue)("{}: {}".format(document.prefix, issue))
 

@@ -10,7 +10,7 @@ GUI = 'doorstop-gui'
 VERSION = __project__ + '-' + __version__
 
 try:
-    from doorstop.common import DoorstopError
+    from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
     from doorstop.core import Item, Document, Tree, build, report
 except ImportError:  # pragma: no cover, manual test
     pass

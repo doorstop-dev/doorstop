@@ -3,6 +3,7 @@ Representation of a collection of Doorstop items.
 """
 
 import os
+from itertools import chain
 import logging
 
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
@@ -330,16 +331,17 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, tree=None):
+    def valid(self, tree=None, item_hook=None):
         """Check the document (and its items) for validity.
 
         @param tree: Tree containing the document
+        @param item_hook: function to call for custom item validation
 
         @return: indication that document is valid
         """
         valid = True
         # Display all issues
-        for issue in self.issues(tree=tree):
+        for issue in self.issues(tree=tree, item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -351,10 +353,11 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         # Return the result
         return valid
 
-    def issues(self, tree=None):
+    def issues(self, tree=None, item_hook=None):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
+        @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
@@ -365,6 +368,9 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            for issue in item.issues(document=self, tree=tree):
+            kwargs = {'document': self, 'tree': tree}
+            issues = chain(item.issues(**kwargs),
+                           item_hook(**kwargs) if item_hook else [])
+            for issue in issues:
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))

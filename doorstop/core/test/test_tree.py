@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.tree module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
 import tempfile
@@ -170,6 +170,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
                                          DoorstopInfo('i')])
         with patch.object(self.tree, 'issues', mock_issues):
             self.assertFalse(self.tree.valid())
+
+    @patch('doorstop.core.document.Document.issues', Mock(return_value=[]))
+    def test_valid_hook(self):
+        """Verify a document hook can be called."""
+        mock_hook = MagicMock()
+        self.tree.valid(document_hook=mock_hook)
+        self.assertEqual(2, mock_hook.call_count)
+        mock_hook.assert_called_with(tree=self.tree)
 
     def test_new(self):
         """Verify a new document can be created on a tree."""

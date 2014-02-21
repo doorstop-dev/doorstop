@@ -358,6 +358,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         @param document: Document containing the item
         @param tree: Tree containing the item
+        @param hook: function to call for custom validation
 
         @return: indication that the item is valid
         """

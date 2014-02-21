@@ -5,7 +5,7 @@ Unit tests for the doorstop.core.document module.
 """
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
 import logging
@@ -251,6 +251,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                          DoorstopInfo('i')])
         with patch.object(self.document, 'issues', mock_issues):
             self.assertFalse(self.document.valid())
+
+    @patch('doorstop.core.item.Item.issues', Mock(return_value=[]))
+    def test_valid_hook(self):
+        """Verify an item hook can be called."""
+        mock_hook = MagicMock()
+        self.document.valid(item_hook=mock_hook)
+        self.assertEqual(5, mock_hook.call_count)
+        mock_hook.assert_called_with(tree=None, document=self.document)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
