@@ -20,7 +20,7 @@ setuptools.setup(
     version=__version__,
 
     description="Text-based requirements management using version control.",
-    url='http://pypi.python.org/pypi/Doorstop',
+    url='http://github.com/jacebrowning/doorstop',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
 

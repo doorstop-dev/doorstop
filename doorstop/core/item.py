@@ -353,19 +353,18 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def valid(self, document=None, tree=None):
+    def valid(self, document=None, tree=None, **kwargs):
         """Check the item for validity.
 
         @param document: Document containing the item
         @param tree: Tree containing the item
-        @param hook: function to call for custom validation
 
         @return: indication that the item is valid
         """
         # TODO: refactor: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
-        for issue in self.issues(document=document, tree=tree):
+        for issue in self.issues(document=document, tree=tree, **kwargs):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -377,15 +376,22 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Return the result
         return valid
 
-    def issues(self, document=None, tree=None):
+    def issues(self, document=None, tree=None, **kwargs):
         """Yield all the item's issues.
 
         @param document: Document containing the item
         @param tree: Tree containing the item
 
+        @param check_ref: check external references
+        @param check_rlinks: check reverse links
+        @param reformat: load/save the item during check
+
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
         """
         logging.info("checking item {}...".format(self))
+        check_ref = kwargs.get('check_ref', True)
+        check_rlinks = kwargs.get('check_rlinks', True)
+        reformat = kwargs.get('reformat', True)
         # Verify the file can be parsed
         self.load()
         # Skip inactive items
@@ -397,10 +403,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if not self.text and not self.ref:
             yield DoorstopWarning("no text")
         # Check external references
-        try:
-            self.find_ref(ignored=tree.vcs.ignored if tree else None)
-        except DoorstopError as exc:
-            yield exc
+        if check_ref:
+            try:
+                self.find_ref(ignored=tree.vcs.ignored if tree else None)
+            except DoorstopError as exc:
+                yield exc
         # Check links
         if not self.normative and self.links:
             yield DoorstopWarning("non-normative, but has links")
@@ -409,12 +416,14 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield from self._issues_document(document)
         # Check links against the tree
         if tree:
-            yield from self._issues_tree(tree)
+            yield from self._issues_tree(tree, reformat=reformat)
         # Check links against both document and tree
         if document and tree:
-            yield from self._issues_both(document, tree)
+            yield from self._issues_both(document, tree,
+                                         check_rlinks=check_rlinks)
         # Reformat the file
-        self.save()
+        if reformat:
+            self.save()
 
     def _issues_document(self, document):
         """Yield all the item's issues against its document."""
@@ -443,7 +452,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                     msg = "linked to non-parent item: {}".format(identifier)
                     yield DoorstopInfo(msg)
 
-    def _issues_tree(self, tree):
+    def _issues_tree(self, tree, reformat=True):
         """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
@@ -465,12 +474,13 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 logging.debug("found linked item: {}".format(identifier))
                 identifiers.add(identifier)
         # Apply the reformatted item IDs
-        self._data['links'] = identifiers
+        if reformat:
+            self._data['links'] = identifiers
 
-    def _issues_both(self, document, tree):
+    def _issues_both(self, document, tree, check_rlinks=True):
         """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
-        if self.normative:
+        if check_rlinks and self.normative:
             rlinks, children = self.find_rlinks(document, tree, find_all=False)
             if not rlinks:
                 for child in children:
@@ -539,13 +549,13 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         for document2 in tree:
             if document2.parent == document.prefix:
                 children.append(document2)
-            # Search for reverse links unless we only need to find one
-            if not rlinks or find_all:
-                for item in document2:
-                    if self.id in item.links:
-                        rlinks.append(item.id)
-                        if not find_all:
-                            break
+                # Search for reverse links unless we only need to find one
+                if not rlinks or find_all:
+                    for item in document2:
+                        if self.id in item.links:
+                            rlinks.append(item.id)
+                            if not find_all:
+                                break
         if rlinks:
             if find_all:
                 msg = "reverse links: {}".format(', '.join(rlinks))

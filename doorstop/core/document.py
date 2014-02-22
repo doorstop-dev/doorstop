@@ -121,7 +121,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         # Set meta attributes
         self._loaded = True
         if reload:
-            self._itered = False  # reload the items
+            list(self._iter(reload=reload))
 
     def save(self):
         """Save the document's properties to its file."""
@@ -331,7 +331,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, tree=None, item_hook=None):
+    def valid(self, tree=None, item_hook=None, **kwargs):
         """Check the document (and its items) for validity.
 
         @param tree: Tree containing the document
@@ -341,7 +341,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         """
         valid = True
         # Display all issues
-        for issue in self.issues(tree=tree, item_hook=item_hook):
+        for issue in self.issues(tree=tree, item_hook=item_hook, **kwargs):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -353,7 +353,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         # Return the result
         return valid
 
-    def issues(self, tree=None, item_hook=None):
+    def issues(self, tree=None, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
@@ -368,9 +368,9 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("no items")
         # Check each item
         for item in items:
-            issues = chain(item.issues(document=self, tree=tree),
-                           item_hook(item=item, document=self, tree=tree)
-                           if item_hook else [])
+            issues = chain(item_hook(item=item, document=self, tree=tree)
+                           if item_hook else [],
+                           item.issues(document=self, tree=tree, **kwargs))
             for issue in issues:
                 # Prepend the item's ID
                 yield type(issue)("{}: {}".format(item.id, issue))

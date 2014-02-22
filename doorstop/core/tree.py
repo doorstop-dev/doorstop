@@ -307,7 +307,7 @@ class Tree(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, document_hook=None, item_hook=None):
+    def valid(self, document_hook=None, item_hook=None, **kwargs):
         """Check the tree (and its documents) for validity.
 
         @param document_hook: function to call for custom document validation
@@ -319,7 +319,7 @@ class Tree(object):
         logging.info("checking tree...")
         # Display all issues
         for issue in self.issues(document_hook=document_hook,
-                                 item_hook=item_hook):
+                                 item_hook=item_hook, **kwargs):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -331,7 +331,7 @@ class Tree(object):
         # Return the result
         return valid
 
-    def issues(self, document_hook=None, item_hook=None):
+    def issues(self, document_hook=None, item_hook=None, **kwargs):
         """Yield all the tree's issues.
 
         @param document_hook: function to call for custom document validation
@@ -345,12 +345,19 @@ class Tree(object):
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            issues = chain(document.issues(tree=self, item_hook=item_hook),
-                           document_hook(document=document, tree=self)
-                           if document_hook else [])
+            issues = chain(document_hook(document=document, tree=self)
+                           if document_hook else [],
+                           document.issues(tree=self, item_hook=item_hook,
+                                           **kwargs))
             for issue in issues:
                 # Prepend the document's prefix
                 yield type(issue)("{}: {}".format(document.prefix, issue))
+
+    def reload(self):
+        """Force the tree's documents and item to reload."""
+        logging.info("reloading the tree...")
+        for document in self:
+            document.load(reload=True)
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test

@@ -278,6 +278,10 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         item = self.tree.find_item('req2-001')
         self.assertIsNot(None, item)
 
+    def test_reload(self):
+        """Verify an a tree can be reloaded."""
+        self.tree.reload()
+
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the doorstop.core.tree module."""  # pylint: disable=C0103
