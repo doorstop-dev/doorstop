@@ -3,23 +3,31 @@ PACKAGE := doorstop
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
 
 ENV := env
-DEPENDS := $(ENV)/.depends
+DEPENTS_CI := $(ENV)/.depends.ci
+DEPENDS_DEV := $(ENV)/.depends.dev
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
-ifeq ($(OS),Windows_NT)
-    SYS_PYTHON := C:\\Python33\\python.exe
-    SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
-    BIN := $(ENV)/Scripts
+PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
+
+ifneq ($(findstring win32, $(PLATFORM)), )
+	SYS_PYTHON := C:\\Python33\\python.exe
+	SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
+	BIN := $(ENV)/Scripts
 	EXE := .exe
 	OPEN := cmd /c start
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python33\\tcl\\tcl8.5
 else
-    SYS_PYTHON := python3
-    SYS_VIRTUALENV := virtualenv
-    BIN := $(ENV)/bin
-	OPEN := open
+	SYS_PYTHON := python3
+	SYS_VIRTUALENV := virtualenv
+	BIN := $(ENV)/bin
+	ifneq ($(findstring cygwin, $(PLATFORM)), )
+		OPEN := cygstart
+	else
+		OPEN := open
+	endif
 endif
+
 MAN := man
 SHARE := share
 
@@ -28,6 +36,7 @@ PIP := $(BIN)/pip$(EXE)
 RST2HTML := $(BIN)/rst2html.py
 PDOC := $(BIN)/pdoc
 PEP8 := $(BIN)/pep8$(EXE)
+PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint$(EXE)
 NOSE := $(BIN)/nosetests$(EXE)
 
@@ -48,10 +57,19 @@ $(PIP):
 	$(SYS_VIRTUALENV) --python $(SYS_PYTHON) $(ENV)
 
 .PHONY: depends
-depends: .virtualenv $(DEPENDS) Makefile
-$(DEPENDS):
-	$(PIP) install docutils pdoc pep8 pylint nose coverage wheel
-	touch $(DEPENDS)  # flag to indicate dependencies are installed
+depends: .depends-ci .depends-dev
+
+.PHONY: .depends-ci
+.depends-ci: .virtualenv Makefile $(DEPENTS_CI)
+$(DEPENTS_CI):
+	$(PIP) install pep8 pep257 nose coverage
+	touch $(DEPENTS_CI)  # flag to indicate dependencies are installed
+
+.PHONY: .depends-dev
+.depends-dev: .virtualenv Makefile $(DEPENDS_DEV)
+$(DEPENDS_DEV):
+	$(PIP) install docutils pdoc pylint wheel
+	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Documentation ##############################################################
 
@@ -99,34 +117,39 @@ read: doc
 # Static Analysis ############################################################
 
 .PHONY: pep8
-pep8: depends
+pep8: env .depends-ci
 	$(PEP8) $(PACKAGE) --ignore=E501
 
+.PHONY: pep257
+pep257: env .depends-ci
+	$(PEP257) $(PACKAGE) --ignore=E501
+
 .PHONY: pylint
-pylint: depends
+pylint: env .depends-ci
 	$(PYLINT) $(PACKAGE) --reports no \
 	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
 	                     --max-line-length=79 \
 	                     --disable=I0011,W0142,W0511,R0801
 
 .PHONY: check
-check: depends
-	$(MAKE) pep8
-	$(MAKE) pylint
+check: pep8 pylint
 
 # Testing ####################################################################
 
 .PHONY: test
-test: env depends
+test: env .depends-ci
 	$(NOSE)
 
 .PHONY: tests
-tests: env depends
+tests: env .depends-ci
 	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
 tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
+
+.PHONY: ci
+ci: pep8 test tests
 
 # Cleanup ####################################################################
 

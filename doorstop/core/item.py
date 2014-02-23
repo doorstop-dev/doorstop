@@ -398,7 +398,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if not self.active:
             logging.info("skipped inactive item: {}".format(self))
             return
-        self.auto = False
+        # Delay item save if reformatting
+        if reformat:
+            self.auto = False
         # Check text
         if not self.text and not self.ref:
             yield DoorstopWarning("no text")

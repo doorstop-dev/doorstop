@@ -17,9 +17,10 @@ docs/*.html
 *.rst
 
 # Google Drive
-*.gdraw
-*.gsheet
 *.gdoc
+*.gsheet
+*.gslides
+*.gdraw
 
 # Testing and coverage results
 .coverage

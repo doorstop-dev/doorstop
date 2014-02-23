@@ -3,6 +3,6 @@ python:
   - 3.3
 install:
   - pip install coveralls
-script: make doorstop pep8 test tests
+script: make ci
 after_success:
   - coveralls
