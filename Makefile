@@ -3,7 +3,7 @@ PACKAGE := doorstop
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
 
 ENV := env
-DEPENTS_CI := $(ENV)/.depends.ci
+DEPENDS_CI := $(ENV)/.depends.ci
 DEPENDS_DEV := $(ENV)/.depends.dev
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
@@ -60,14 +60,14 @@ $(PIP):
 depends: .depends-ci .depends-dev
 
 .PHONY: .depends-ci
-.depends-ci: .virtualenv Makefile $(DEPENTS_CI)
-$(DEPENTS_CI):
+.depends-ci: .virtualenv Makefile $(DEPENDS_CI)
+$(DEPENDS_CI): Makefile
 	$(PIP) install pep8 pep257 nose coverage
-	touch $(DEPENTS_CI)  # flag to indicate dependencies are installed
+	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
 .depends-dev: .virtualenv Makefile $(DEPENDS_DEV)
-$(DEPENDS_DEV):
+$(DEPENDS_DEV): Makefile
 	$(PIP) install docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
@@ -77,7 +77,7 @@ $(DEPENDS_DEV):
 doc: readme apidocs req
 
 .PHONY: readme
-readme: depends docs/README-github.html docs/README-pypi.html
+readme: .depends-ci docs/README-github.html docs/README-pypi.html
 docs/README-github.html: README.md
 	pandoc -f markdown_github -t html -o docs/README-github.html README.md
 docs/README-pypi.html: README.rst
@@ -86,7 +86,7 @@ README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
 .PHONY: apidocs
-apidocs: depends apidocs/$(PACKAGE)/index.html
+apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
@@ -132,7 +132,7 @@ pylint: env .depends-ci
 	                     --disable=I0011,W0142,W0511,R0801
 
 .PHONY: check
-check: pep8 pylint
+check: pep8 pep257 pylint
 
 # Testing ####################################################################
 
@@ -183,14 +183,25 @@ clean-all: clean .clean-env
 
 # Release ####################################################################
 
+.PHONY: .git-no-changes
+.git-no-changes:
+	@if git diff --name-only --exit-code;         \
+	then                                          \
+		echo Git working copy is clean...;        \
+	else                                          \
+		echo ERROR: Git working copy is dirty!;   \
+		echo Commit your changes and try again.;  \
+		exit -1;                                  \
+	fi;
+
 .PHONY: dist
-dist: env depends check test tests doc
+dist: .git-no-changes env depends check test tests doc
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
 	$(MAKE) read
 
 .PHONY: upload
-upload: env depends doc
+upload: .git-no-changes env depends doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
 	$(MAKE) dev  # restore the development environment

@@ -30,4 +30,4 @@ build
 dist
 
 # Sublime Text
-.*.sublime-workspace
+*.sublime-workspace
