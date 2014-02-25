@@ -33,6 +33,12 @@ Installation
 Doorstop can be installed with 'pip':
 
     $ pip install Doorstop
+    
+Or directly from source:
+
+    $ git clone https://github.com/jacebrowning/doorstop.git
+    $ cd doorstop
+    $ python setup.py install
 
 After installation, Doorstop is available on the command-line:
 
