@@ -149,7 +149,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: pep8 test tests
+ci: req pep8 test tests
 
 # Cleanup ####################################################################
 
