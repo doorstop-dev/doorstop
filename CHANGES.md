@@ -5,6 +5,7 @@ Changelog
 ----------------
 
 - All Item text attributes will now be split by sentences and line-wrapped.
+- Added Tree.load for cases when lazy loading is too slow
 
 
 0.1 (2014/02/17)

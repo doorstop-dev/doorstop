@@ -27,6 +27,7 @@ class Tree(object):
         self.parent = parent
         self.children = []
         self._vcs = None
+        self._loaded = False
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -353,11 +354,21 @@ class Tree(object):
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
-    def reload(self):
-        """Force the tree's documents and item to reload."""
-        logging.info("reloading the tree...")
+    def load(self, reload=False):
+        """Load the tree's documents and items.
+
+        Unlike the Document and Item class, this load method is not
+        used internally. Its purpose is to force the loading of
+        content in large trees where lazy loading may be too slow.
+
+        """
+        if self._loaded and not reload:
+            return
+        logging.info("loading the tree...")
         for document in self:
             document.load(reload=True)
+        # Set meta attributes
+        self._loaded = True
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test
