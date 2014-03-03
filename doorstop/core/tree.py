@@ -28,6 +28,7 @@ class Tree(object):
         self.children = []
         self._vcs = None
         self._loaded = False
+        self._cache = {}
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -297,14 +298,21 @@ class Tree(object):
         """
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         logging.debug("looking for{} item '{}'...".format(_kind, identifier))
-        for document in self:
-            try:
-                item = document.find_item(identifier, _kind=_kind)
-            except DoorstopError:
-                pass  # item not found in that document
-            else:
-                logging.debug("found item: {}".format(item))
+        try:
+            item = self._cache[identifier]
+            if item:
                 return item
+        except KeyError:
+            for document in self:
+                try:
+                    item = document.find_item(identifier, _kind=_kind)
+                except DoorstopError:
+                    pass  # item not found in that document
+                else:
+                    logging.debug("found item: {}".format(item))
+                    self._cache[identifier] = item
+                    return item
+            self._cache[identifier] = None
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -369,6 +377,7 @@ class Tree(object):
             document.load(reload=True)
         # Set meta attributes
         self._loaded = True
+        self._cache = {}
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test

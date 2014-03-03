@@ -275,8 +275,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_item(self):
         """Verify an item can be found by exact ID."""
+        # Cache miss
         item = self.tree.find_item('req2-001')
         self.assertIsNot(None, item)
+        # Cache hit
+        item2 = self.tree.find_item('req2-001')
+        self.assertIs(item2, item)
 
     def test_load(self):
         """Verify an a tree can be reloaded."""
