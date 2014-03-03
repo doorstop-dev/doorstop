@@ -1,5 +1,5 @@
-PROJECT := Doorstop
-PACKAGE := doorstop
+PROJECT := $(patsubst ./%.sublime-project,%, $(shell find . -type f -name '*.sublime-p*'))
+PACKAGE := $(patsubst ./%/__init__.py,%, $(shell find . -maxdepth 2 -name '__init__.py'))
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
 
 ENV := env
@@ -122,10 +122,10 @@ pep8: env .depends-ci
 
 .PHONY: pep257
 pep257: env .depends-ci
-	$(PEP257) $(PACKAGE) --ignore=E501
+	$(PEP257) $(PACKAGE) --ignore=E501,D102
 
 .PHONY: pylint
-pylint: env .depends-ci
+pylint: env .depends-dev
 	$(PYLINT) $(PACKAGE) --reports no \
 	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
 	                     --max-line-length=79 \

@@ -16,7 +16,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1386361315223</id>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -25,16 +25,7 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1386361315243</id>
-			<name></name>
-			<type>26</type>
-			<matcher>
-				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-env</arguments>
-			</matcher>
-		</filter>
-		<filter>
-			<id>1386361315263</id>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -43,16 +34,25 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1386361315278</id>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-dist</arguments>
+				<arguments>1.0-name-matches-false-false-env</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1386361315301</id>
+			<id>0</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-README.rst</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
@@ -61,21 +61,39 @@
 			</matcher>
 		</filter>
 		<filter>
-			<id>1386361315312</id>
+			<id>0</id>
 			<name></name>
-			<type>26</type>
+			<type>22</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-build</arguments>
+				<arguments>1.0-name-matches-false-false-*.sublime-project</arguments>
 			</matcher>
 		</filter>
 		<filter>
-			<id>1386361315324</id>
+			<id>0</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-README*.html</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
 				<id>org.eclipse.ui.ide.multiFilter</id>
-				<arguments>1.0-projectRelativePath-matches-false-false-dist</arguments>
+				<arguments>1.0-name-matches-false-false-build</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>0</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-dist</arguments>
 			</matcher>
 		</filter>
 	</filteredResources>
