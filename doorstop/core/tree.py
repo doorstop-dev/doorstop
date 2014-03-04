@@ -13,7 +13,7 @@ from doorstop.core.document import Document
 from doorstop.core import vcs
 
 
-class Tree(object):
+class Tree(object):  # pylint: disable=R0902
 
     """A bidirectional tree structure to store the hierarchy of documents.
 
