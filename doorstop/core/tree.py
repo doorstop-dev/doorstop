@@ -7,6 +7,7 @@ import subprocess
 import logging
 from itertools import chain
 
+from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.document import Document
 from doorstop.core import vcs
@@ -28,7 +29,8 @@ class Tree(object):
         self.children = []
         self._vcs = None
         self._loaded = False
-        self._cache = {}
+        self._item_cache = {}
+        self._document_cache = {}
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -152,6 +154,8 @@ class Tree(object):
 
     # actions ################################################################
 
+    @clear_document_cache
+    @clear_item_cache
     def new(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -179,6 +183,7 @@ class Tree(object):
             raise
         return document
 
+    @clear_item_cache
     def add(self, prefix):
         """Add a new item to an existing document by prefix.
 
@@ -194,6 +199,7 @@ class Tree(object):
         item = document.add()
         return item
 
+    @clear_item_cache
     def remove(self, identifier):
         """Remove an item from a document by ID.
 
@@ -289,10 +295,21 @@ class Tree(object):
 
         """
         logging.debug("looking for document '{}'...".format(prefix))
-        for document in self:
-            if document.prefix.lower() == prefix.lower():
-                logging.debug("found document: {}".format(document))
+        try:
+            document = self._document_cache[prefix]
+            if document:
+                logging.debug("found cached document: {}".format(document))
                 return document
+            else:
+                logging.debug("found cached unknown: {}".format(prefix))
+        except KeyError:
+            for document in self:
+                if document.prefix.lower() == prefix.lower():
+                    logging.debug("found document: {}".format(document))
+                    self._document_cache[prefix] = document
+                    return document
+            logging.debug("could not find document: {}".format(prefix))
+            self._document_cache[prefix] = None
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
@@ -309,9 +326,12 @@ class Tree(object):
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         logging.debug("looking for{} item '{}'...".format(_kind, identifier))
         try:
-            item = self._cache[identifier]
+            item = self._item_cache[identifier]
             if item:
+                logging.debug("found cached item: {}".format(item))
                 return item
+            else:
+                logging.debug("found cached unknown: {}".format(identifier))
         except KeyError:
             for document in self:
                 try:
@@ -320,9 +340,10 @@ class Tree(object):
                     pass  # item not found in that document
                 else:
                     logging.debug("found item: {}".format(item))
-                    self._cache[identifier] = item
+                    self._item_cache[identifier] = item
                     return item
-            self._cache[identifier] = None
+            logging.debug("could not find item: {}".format(identifier))
+            self._item_cache[identifier] = None
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -374,6 +395,8 @@ class Tree(object):
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
+    @clear_document_cache
+    @clear_item_cache
     def load(self, reload=False):
         """Load the tree's documents and items.
 
@@ -389,7 +412,6 @@ class Tree(object):
             document.load(reload=True)
         # Set meta attributes
         self._loaded = True
-        self._cache = {}
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test
