@@ -29,6 +29,12 @@ def main(args=None):  # pylint: disable=R0915
 
     # Main parser
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
+    parser.add_argument('-F', '--no-reformat', action='store_true',
+                        help="do not reformat item files during validation")
+    parser.add_argument('-R', '--no-ref-check', action='store_true',
+                        help="do not validate external file references")
+    parser.add_argument('-L', '--no-rlinks-check', action='store_true',
+                        help="do not validate reverse links")
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the graphical user interface")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -169,6 +175,15 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param err: function to call for CLI errors
 
     """
+    # Configure validation settings
+    if args.no_reformat is not None:
+        settings.REFORMAT = not args.no_reformat
+    if args.no_ref_check is not None:
+        settings.CHECK_REF = not args.no_ref_check
+    if args.no_rlinks_check is not None:
+        settings.CHECK_RLINKS = not args.no_rlinks_check
+
+    # Validate the tree
     try:
         tree = build(cwd, root=args.project)
         tree.load()

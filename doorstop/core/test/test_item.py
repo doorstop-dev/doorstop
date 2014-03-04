@@ -396,7 +396,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                           Item.new, FILES, FILES, 'REQ', '', 3, 2, (1, 2, 3))
 
     def test_valid_invalid_ref(self):
-        """Verify an invalid reference fails valid."""
+        """Verify an invalid reference fails validity."""
         with patch('doorstop.core.item.Item.find_ref',
                    Mock(side_effect=DoorstopError)):
             self.assertFalse(self.item.valid())

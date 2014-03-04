@@ -9,6 +9,7 @@ import shutil
 
 from doorstop.cli.main import main
 from doorstop import common
+from doorstop import settings
 
 from doorstop.cli.test import ENV, REASON, TUTORIAL
 
@@ -21,10 +22,16 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
+        self.backup = (settings.REFORMAT,
+                       settings.CHECK_REF,
+                       settings.CHECK_RLINKS)
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+        (settings.REFORMAT,
+         settings.CHECK_REF,
+         settings.CHECK_RLINKS) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -59,6 +66,20 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.mkdir(os.path.join(self.temp, '.mockvcs'))
         os.chdir(self.temp)
         self.assertIs(None, main([]))
+        self.assertTrue(settings.REFORMAT)
+        self.assertTrue(settings.CHECK_REF)
+        self.assertTrue(settings.CHECK_RLINKS)
+
+    def test_options(self):
+        """Verify 'doorstop' can be run with options."""
+        os.mkdir(os.path.join(self.temp, '.mockvcs'))
+        os.chdir(self.temp)
+        self.assertIs(None, main(['--no-reformat',
+                                  '--no-ref-check',
+                                  '--no-rlinks-check']))
+        self.assertFalse(settings.REFORMAT)
+        self.assertFalse(settings.CHECK_REF)
+        self.assertFalse(settings.CHECK_RLINKS)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))
     def test_gui(self):
