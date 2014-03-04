@@ -17,22 +17,51 @@ from doorstop import settings
 
 def auto_load(func):
     """Decorator for methods that should automatically load from file."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.load() before execution."""
         self.load()
         return func(self, *args, **kwargs)
+
     return wrapped
 
 
 def auto_save(func):
     """Decorator for methods that should automatically save to file."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
+        return result
+
+    return wrapped
+
+
+def clear_document_cache(func):
+    """Decorator for methods that should clear the document cache."""
+
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear document cache after execution."""
+        result = func(self, *args, **kwargs)
+        self._document_cache.clear()  # pylint: disable=W0212
+        return result
+
+    return wrapped
+
+
+def clear_item_cache(func):
+    """Decorator for methods that should clear the item cache."""
+
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear item cache after execution."""
+        result = func(self, *args, **kwargs)
+        self._item_cache.clear()  # pylint: disable=W0212
         return result
 
     return wrapped

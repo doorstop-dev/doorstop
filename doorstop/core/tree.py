@@ -9,6 +9,7 @@ import subprocess
 import logging
 from itertools import chain
 
+from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.document import Document
 from doorstop.core import vcs
@@ -151,6 +152,8 @@ class Tree(object):
 
     # actions ################################################################
 
+    @clear_document_cache
+    @clear_item_cache
     def new(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -177,6 +180,7 @@ class Tree(object):
             raise
         return document
 
+    @clear_item_cache
     def add(self, prefix):
         """Add a new item to an existing document by prefix.
 
@@ -191,6 +195,7 @@ class Tree(object):
         item = document.add()
         return item
 
+    @clear_item_cache
     def remove(self, identifier):
         """Remove an item from a document by ID.
 
@@ -378,6 +383,8 @@ class Tree(object):
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
+    @clear_document_cache
+    @clear_item_cache
     def load(self, reload=False):
         """Load the tree's documents and items.
 
@@ -393,7 +400,6 @@ class Tree(object):
             document.load(reload=True)
         # Set meta attributes
         self._loaded = True
-        self._item_cache = {}
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test
