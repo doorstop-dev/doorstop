@@ -200,6 +200,9 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_add_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (item)."""
+        # Cache miss
+        self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
+        # Cache hit
         self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
 
     @patch('doorstop.core.item.Item.delete')
@@ -284,6 +287,15 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         # Cache hit
         item2 = self.tree.find_item('req2-001')
         self.assertIs(item2, item)
+
+    def test_find_document(self):
+        """Verify an document can be found by prefix"""
+        # Cache miss
+        document = self.tree.find_document('req')
+        self.assertIsNot(None, document)
+        # Cache hit
+        document2 = self.tree.find_document('req')
+        self.assertIs(document2, document)
 
     def test_load(self):
         """Verify an a tree can be reloaded."""

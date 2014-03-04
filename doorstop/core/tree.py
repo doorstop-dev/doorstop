@@ -281,10 +281,21 @@ class Tree(object):
         @raise DoorstopError: if the document cannot be found
         """
         logging.debug("looking for document '{}'...".format(prefix))
-        for document in self:
-            if document.prefix.lower() == prefix.lower():
-                logging.debug("found document: {}".format(document))
+        try:
+            document = self._document_cache[prefix]
+            if document:
+                logging.debug("found cached document: {}".format(document))
                 return document
+            else:
+                logging.debug("found cached unknown: {}".format(prefix))
+        except KeyError:
+            for document in self:
+                if document.prefix.lower() == prefix.lower():
+                    logging.debug("found document: {}".format(document))
+                    self._document_cache[prefix] = document
+                    return document
+            logging.debug("could not find document: {}".format(prefix))
+            self._document_cache[prefix] = None
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
@@ -305,7 +316,7 @@ class Tree(object):
                 logging.debug("found cached item: {}".format(item))
                 return item
             else:
-                logging.debug("found cached miss: {}".format(identifier))
+                logging.debug("found cached unknown: {}".format(identifier))
         except KeyError:
             for document in self:
                 try:
@@ -316,7 +327,7 @@ class Tree(object):
                     logging.debug("found item: {}".format(item))
                     self._item_cache[identifier] = item
                     return item
-            logging.debug("could not find: {}".format(identifier))
+            logging.debug("could not find item: {}".format(identifier))
             self._item_cache[identifier] = None
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
