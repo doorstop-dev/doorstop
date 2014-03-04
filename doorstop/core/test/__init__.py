@@ -1,6 +1,4 @@
-"""
-Package for the doorstop.core tests.
-"""
+"""Package for the doorstop.core tests."""
 
 import unittest
 from unittest.mock import patch, Mock
@@ -27,6 +25,7 @@ if not os.path.exists(EMPTY):
 
 
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
+
     """Mock FileObject class with stubbed file IO."""
 
     def __init__(self, *args, **kwargs):
@@ -46,7 +45,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
         return text
 
     def _mock_write(self, text, path):
-        """Mock write method"""
+        """Mock write method."""
         logging.debug("mock write text: {}".format(repr(text)))
         logging.debug("mock write path: {}".format(path))
         self._file = text

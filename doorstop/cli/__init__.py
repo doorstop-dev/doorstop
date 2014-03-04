@@ -1,3 +1,1 @@
-"""
-Command-line interface for Doorstop.
-"""
+"""Command-line interface for Doorstop."""

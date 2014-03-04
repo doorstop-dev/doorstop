@@ -1,6 +1,4 @@
-"""
-Plug-in module to store requirements in a Subversion (1.7) repository.
-"""
+"""Plug-in module to store requirements in a Subversion (1.7) repository."""
 
 import os
 
@@ -8,6 +6,7 @@ from doorstop.core.vcs.base import BaseWorkingCopy
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover, integration test
+
     """Subversion working copy."""
 
     DIRECTORY = '.svn'

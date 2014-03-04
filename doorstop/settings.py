@@ -1,6 +1,4 @@
-"""
-Settings for the Doorstop package.
-"""
+"""Settings for the Doorstop package."""
 
 import logging
 

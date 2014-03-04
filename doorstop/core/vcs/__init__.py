@@ -1,6 +1,4 @@
-"""
-Interfaces to version control systems.
-"""
+"""Interfaces to version control systems."""
 
 import os
 import logging
@@ -24,6 +22,7 @@ def find_root(cwd):
     @return: path to root of working copy
 
     @raise Doorstop: if the root cannot be found
+
     """
     path = cwd
 

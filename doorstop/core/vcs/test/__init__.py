@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Integration tests for the doorstop.core.vcs package.
-"""
+"""Integration tests for the doorstop.core.vcs package."""
 
 import unittest
 from unittest.mock import patch, Mock
@@ -17,6 +13,7 @@ ROOT = os.path.join(DIR, '..', '..', '..', '..')
 
 
 class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for top-level VCS functions."""
 
     @patch('os.listdir', Mock(return_value=['.git']))

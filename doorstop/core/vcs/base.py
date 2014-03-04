@@ -1,6 +1,4 @@
-"""
-Abstract interface to version control systems.
-"""
+"""Abstract interface to version control systems."""
 
 import fnmatch
 import subprocess
@@ -9,6 +7,7 @@ from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
+
     """Abstract base class for VCS working copies."""
 
     DIRECTORY = None  # special hidden directory for the working copy
@@ -43,7 +42,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         return []
 
     def ignored(self, path):
-        """Indicates if a path should be considered ignored."""
+        """Indicate if a path should be considered ignored."""
         for pattern in self.ignores:
             if pattern not in ('*build*',):  # CI always runs under build
                 if fnmatch.fnmatch(path, pattern):

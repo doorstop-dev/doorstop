@@ -1,6 +1,4 @@
-"""
-Plug-in module to store requirements in a Veracity repository.
-"""
+"""Plug-in module to store requirements in a Veracity repository."""
 
 import os
 import logging
@@ -9,6 +7,7 @@ from doorstop.core.vcs.base import BaseWorkingCopy
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
+
     """Veracity working copy."""
 
     DIRECTORY = '.sgdrawer'

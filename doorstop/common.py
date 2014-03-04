@@ -1,6 +1,4 @@
-"""
-Common exceptions, classes, and functions for Doorstop.
-"""
+"""Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
 import logging
@@ -14,26 +12,31 @@ MAX_VERBOSITY = 4
 
 
 class DoorstopError(Exception):
+
     """Generic Doorstop error."""
 
 
 class DoorstopWarning(DoorstopError, Warning):
+
     """Generic Doorstop warning."""
 
 
 class DoorstopInfo(DoorstopError, Warning):
+
     """Generic Doorstop info."""
 
 
 class HelpFormatter(argparse.HelpFormatter):
+
     """Command-line help text formatter with wider help text."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, max_help_position=40, **kwargs)
 
 
 class WarningFormatter(logging.Formatter, object):
-    """Logging formatter that always displays a verbose logging
-    format for logging level WARNING or higher."""
+
+    """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):
         super().__init__(*args, **kwargs)

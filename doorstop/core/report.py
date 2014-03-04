@@ -1,6 +1,4 @@
-"""
-Doorstop reporting functionality.
-"""
+"""Doorstop reporting functionality."""
 
 import os
 import textwrap
@@ -22,6 +20,7 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
+
     """
     ext = ext or os.path.splitext(path)[-1]
     if ext in FORMAT:
@@ -41,6 +40,7 @@ def lines(obj, ext='.txt', ignored=None, **kwargs):
     @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
+
     """
     if ext in FORMAT:
         logging.debug("yielding {} as lines of {}...".format(obj, ext))
@@ -58,6 +58,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
     @param width: maximum line length
 
     @return: iterator of lines of text
+
     """
     for item in _items(obj):
 
@@ -115,6 +116,7 @@ def lines_markdown(obj, ignored=None):
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
+
     """
     for item in _items(obj):
 
@@ -157,7 +159,6 @@ def lines_markdown(obj, ignored=None):
 
 def _items(obj):
     """Get an iterator of items from from an item, list, or document."""
-
     if hasattr(obj, 'items'):
         # a document
         return (i for i in obj.items if i.active)
@@ -176,6 +177,7 @@ def lines_html(obj, ignored=None):
     @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
+
     """
     # Determine if a full HTML document should be generated
     try:

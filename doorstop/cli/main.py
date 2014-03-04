@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Command-line interface for Doorstop.
-"""
+"""Command-line interface for Doorstop."""
 
 import os
 import sys
@@ -20,14 +18,16 @@ from doorstop import settings
 
 # TODO: refactor: use the classes from doorstop.common
 class _HelpFormatter(argparse.HelpFormatter):
+
     """Command-line help text formatter with wider help text."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, max_help_position=32, **kwargs)
 
 
 class _WarningFormatter(logging.Formatter, object):
-    """Logging formatter that always displays a verbose logging
-    format for logging level WARNING or higher."""
+
+    """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,7 +45,6 @@ class _WarningFormatter(logging.Formatter, object):
 
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
-
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
@@ -153,7 +152,6 @@ def main(args=None):  # pylint: disable=R0915
 
 def _configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
-
     assert common.STR_VERBOSITY == 3
     assert common.MAX_VERBOSITY == 4
 
@@ -196,6 +194,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -216,6 +215,7 @@ def _run_new(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -235,6 +235,7 @@ def _run_add(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -253,6 +254,7 @@ def _run_remove(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -271,6 +273,7 @@ def _run_link(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -290,6 +293,7 @@ def _run_unlink(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -309,6 +313,7 @@ def _run_edit(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
@@ -327,6 +332,7 @@ def _run_publish(args, cwd, _):
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
     @param err: function to call for CLI errors
+
     """
     try:
         tree = build(cwd, root=args.project)
