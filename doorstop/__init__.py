@@ -1,6 +1,4 @@
-"""
-Package for doorstop.
-"""
+"""Package for doorstop."""
 
 __project__ = 'Doorstop'
 __version__ = '0.2-dev'

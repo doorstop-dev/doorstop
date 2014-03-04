@@ -1,6 +1,4 @@
-"""
-Representation of a collection of Doorstop items.
-"""
+"""Representation of a collection of Doorstop items."""
 
 import os
 from itertools import chain
@@ -14,6 +12,7 @@ from doorstop import settings
 
 
 class Document(BaseFileObject):  # pylint: disable=R0902,R0904
+
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
@@ -28,6 +27,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         @param path: path to document directory
         @param root: path to root of project
+
         """
         super().__init__()
         # Ensure the directory is valid
@@ -77,6 +77,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         @param auto: enables automatic save
 
         @raise DoorstopError: if the document already exists
+
         """
         # TODO: raise a specific exception for invalid separator characters
         assert not sep or sep in settings.SEP_CHARS
@@ -272,7 +273,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     def skip(self):
-        """Indicates the document should be skipped."""
+        """Indicate the document should be skipped."""
         return os.path.isfile(os.path.join(self.path, Document.SKIP))
 
     # actions ################################################################
@@ -302,6 +303,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         @return: removed Item
 
         @raise DoorstopError: if the item cannot be found
+
         """
         item = self.find_item(identifier)
         item.delete()
@@ -316,6 +318,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
+
         """
         # Search using the exact ID
         for item in self:
@@ -338,6 +341,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         @param item_hook: function to call for custom item validation
 
         @return: indication that document is valid
+
         """
         valid = True
         # Display all issues
@@ -360,6 +364,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+
         """
         logging.info("checking document {}...".format(self))
         items = list(self)

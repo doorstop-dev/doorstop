@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Package for the doorstop.cli tests.
-"""
+"""Package for the doorstop.cli tests."""
 
 import os
 

@@ -1,6 +1,4 @@
-"""
-Classes and functions for objects whose attributes save to a file.
-"""
+"""Classes and functions for objects whose attributes save to a file."""
 
 import os
 import re
@@ -39,10 +37,12 @@ def auto_save(func):
 
 
 class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+
     """Abstract Base Class for objects whose attributes save to a file.
 
     For properties that are saved to a file, decorate their getters
     with @auto_load and their setters with @auto_save.
+
     """
 
     auto = True  # set to False to delay automatic save until explicit save
@@ -60,6 +60,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @param name: humanized name for this file
 
         @raise DoorstopError: if the file already exists
+
         """
         if os.path.exists(path):
             raise DoorstopError("{} already exists: {}".format(name, path))
@@ -86,6 +87,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @param path: path to a text file
 
         @return: contexts of text file
+
         """
         if not self._exists:
             raise DoorstopError("cannot read from deleted: {}".format(self))
@@ -100,6 +102,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @param path: path to the file (for displaying errors)
 
         @return: dictionary of YAML data
+
         """
         # Load the YAML data
         try:
@@ -127,6 +130,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         @param text: text to write to a file
         @param path: path to the file
+
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
@@ -140,6 +144,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @param data: dictionary of YAML data
 
         @return: text to write to a file
+
         """
         return yaml.dump(data, default_flow_style=False)
 
@@ -163,6 +168,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @param default: value to return for missing attributes
 
         @return: value of extended attribute
+
         """
         if hasattr(self, name):
             cname = self.__class__.__name__
@@ -179,6 +185,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         @param name: name of extended attribute
         @param value: value to set
+
         """
         if hasattr(self, name):
             cname = self.__class__.__name__
@@ -203,6 +210,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
 
 class Literal(str):  # pylint: disable=R0904
+
     """Custom type for text which should be dumped in the literal style."""
 
     @staticmethod
@@ -232,7 +240,7 @@ RE_SENTENCE_BOUNDARIES = re.compile(r"""
 
 
 def sbd(text, end='\n'):
-    """Replace sentence boundaries with newlines and append a newline.
+    r"""Replace sentence boundaries with newlines and append a newline.
 
     @param text: string to line break at sentences
     @param end: appended to the end of the update text
@@ -241,7 +249,7 @@ def sbd(text, end='\n'):
     'Hello, world!'
 
     >>> sbd("Hello, world! How are you? I'm fine. Good.")
-    "Hello, world!\\nHow are you?\\nI'm fine.\\nGood.\\n"
+    "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
 
     """
     stripped = text.strip()
@@ -252,13 +260,13 @@ def sbd(text, end='\n'):
 
 
 def wrap(text, width=settings.MAX_LINE_LENTH):
-    """Wraps lines of text to the maximum line length.
+    r"""Wrap lines of text to the maximum line length.
 
     >>> wrap("Hello, world!", 9)
-    'Hello,\\nworld!'
+    'Hello,\nworld!'
 
-    >>> wrap("How are you?\\nI'm fine.\\n", 14)
-    "How are you?\\nI'm fine.\\n"
+    >>> wrap("How are you?\nI'm fine.\n", 14)
+    "How are you?\nI'm fine.\n"
 
     """
     end = '\n' if '\n' in text else ''
@@ -294,15 +302,15 @@ RE_MARKDOWN_SPACES = re.compile(r"""
 
 
 def join(text):
-    """Converts single newlines (ignored by Markdown) to spaces.
+    r"""Convert single newlines (ignored by Markdown) to spaces.
 
-    >>> join("abc\\n123")
+    >>> join("abc\n123")
     'abc 123'
 
-    >>> join("abc\\n\\n123")
-    'abc\\n\\n123'
+    >>> join("abc\n\n123")
+    'abc\n\n123'
 
-    >>> join("abc \\n123")
+    >>> join("abc \n123")
     'abc 123'
 
     """

@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Integration tests for the doorstop.cli package.
-"""
+"""Integration tests for the doorstop.cli package."""
 
 import unittest
 from unittest.mock import patch, Mock
@@ -19,6 +15,7 @@ from doorstop.cli.test import ENV, REASON, TUTORIAL
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestMain(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop' command."""
 
     def setUp(self):
@@ -71,6 +68,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestNew(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop new' command."""
 
     def setUp(self):
@@ -94,6 +92,7 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop add' command."""
 
     @classmethod
@@ -119,6 +118,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestRemove(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop remove' command."""
 
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
@@ -143,6 +143,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestLink(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop link' command."""
 
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
@@ -172,6 +173,7 @@ class TestLink(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop unlink' command."""
 
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
@@ -202,6 +204,7 @@ class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestEdit(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop edit' command."""
 
     @patch('doorstop.core.tree._open')
@@ -218,6 +221,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop publish' command."""
 
     def setUp(self):
@@ -266,6 +270,7 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the Doorstop CLI logging."""
 
     def test_verbose_1(self):

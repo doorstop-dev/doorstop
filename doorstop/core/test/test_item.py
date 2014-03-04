@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Unit tests for the doorstop.core.item module.
-"""
+"""Unit tests for the doorstop.core.item module."""
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock
@@ -29,10 +25,12 @@ text: ''
 
 
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902,R0904
+
     """Mock Item class with stubbed file IO."""
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
@@ -550,6 +548,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for text formatting in Items."""  # pylint: disable=C0103
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
@@ -573,10 +572,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the doorstop.core.item module."""  # pylint: disable=C0103
 
     pass
-
-
-if __name__ == '__main__':
-    unittest.main()

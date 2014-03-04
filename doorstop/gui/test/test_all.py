@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Integration tests for the doorstop.cli package.
-"""
+"""Integration tests for the doorstop.cli package."""
 
 import unittest
 from unittest.mock import patch, Mock
@@ -15,6 +11,7 @@ from doorstop.gui import main as gui
 
 
 class TestMain(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the 'doorstop-gui' command."""
 
     @patch('doorstop.gui.main._run', Mock(return_value=True))
@@ -34,6 +31,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for importing the GUI module."""
 
     def test_import(self):
@@ -46,6 +44,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
 @patch('doorstop.gui.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the Doorstop GUI logging."""
 
     def test_verbose_1(self):

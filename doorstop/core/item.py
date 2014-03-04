@@ -1,6 +1,4 @@
-"""
-Representation of items in a Doorstop document.
-"""
+"""Representation of items in a Doorstop document."""
 
 import os
 import re
@@ -14,6 +12,7 @@ from doorstop import settings
 
 
 class Item(BaseFileObject):  # pylint: disable=R0904
+
     """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -30,6 +29,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         @param path: path to Item file
         @param root: path to root of project
+
         """
         super().__init__()
         # Ensure the path is valid
@@ -91,6 +91,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
+
         """
         identifier = join_id(prefix, sep, number, digits)
         filename = identifier + Item.EXTENSIONS[0]
@@ -247,6 +248,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         A derived item does not have links to items in its parent
         document, but should still be linked to by items in its child
         documents.
+
         """
         return self._data['derived']
 
@@ -278,9 +280,10 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @property
     def heading(self):
-        """Indicates if the item is a heading.
+        """Indicate if the item is a heading.
 
         Headings have a level that ends in zero and are non-normative.
+
         """
         return self.level[-1] == 0 and not self.normative
 
@@ -315,6 +318,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
         An external reference can be part of a line in a text file or
         the filename of any type of file.
+
         """
         return self._data['ref']
 
@@ -360,6 +364,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         @param tree: Tree containing the item
 
         @return: indication that the item is valid
+
         """
         # TODO: refactor: this could be common code with Item/Document/Tree
         valid = True
@@ -387,6 +392,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         @param reformat: load/save the item during check
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+
         """
         logging.info("checking item {}...".format(self))
         check_ref = kwargs.get('check_ref', True)
@@ -500,6 +506,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                  None, None (when no ref)
 
         @raise DoorstopError: when no ref is found
+
         """
         if not self.ref:
             logging.debug("no external reference to search for")
@@ -545,6 +552,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         @param find_all: find all items (not just the first) before returning
 
         @return: list of found item IDs, list of all child Documents
+
         """
         rlinks = []
         children = []
@@ -607,13 +615,13 @@ def join_id(prefix, sep, number, digits):
 
 
 def load_text(value):
-    """Convert dumped text to the original string.
+    r"""Convert dumped text to the original string.
 
-    >>> load_text("abc\\ndef")
+    >>> load_text("abc\ndef")
     'abc def'
 
-    >>> load_text("list:\\n\\n- a\\n- b\\n")
-    'list:\\n\\n- a\\n- b'
+    >>> load_text("list:\n\n- a\n- b\n")
+    'list:\n\n- a\n- b'
 
     """
     return base.join(value)
@@ -621,7 +629,6 @@ def load_text(value):
 
 def save_text(text, end='\n'):
     """Break a string at sentences and dump as literal YAML with wrapping."""
-
     return base.Literal(base.wrap(base.sbd(text, end=end)))
 
 

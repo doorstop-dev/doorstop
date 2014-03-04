@@ -1,6 +1,4 @@
-"""
-Plug-in module to store requirements in a Git repository.
-"""
+"""Plug-in module to store requirements in a Git repository."""
 
 import os
 import logging
@@ -9,7 +7,8 @@ from doorstop.core.vcs.base import BaseWorkingCopy
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
-    """Simulated working copy."""
+
+    """Git working copy."""
 
     DIRECTORY = '.git'
 

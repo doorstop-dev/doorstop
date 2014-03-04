@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Unit tests for the doorstop.core.tree module.
-"""
+"""Unit tests for the doorstop.core.tree module."""
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock
@@ -21,12 +17,14 @@ from doorstop.core.test.test_document import MockDocument as _MockDocment
 
 
 class MockDocument(_MockDocment):  # pylint: disable=W0223,R0902,R0904
+
     """Mock Document class that is always skipped in tree placement."""
 
     skip = True
 
 
 class MockDocumentNoSkip(MockDocument):  # pylint: disable=W0223,R0902,R0904
+
     """Mock Document class that is never skipped in tree placement."""
 
     SKIP = '__disabled__'  # never skip mock Documents
@@ -34,6 +32,7 @@ class MockDocumentNoSkip(MockDocument):  # pylint: disable=W0223,R0902,R0904
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
 class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the Tree class using strings."""  # pylint: disable=C0103
 
     @classmethod
@@ -123,6 +122,7 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
 @patch('doorstop.core.tree.Document', MockDocument)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the Tree class."""  # pylint: disable=C0103
 
     def setUp(self):
@@ -289,6 +289,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the doorstop.core.tree module."""  # pylint: disable=C0103
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
@@ -310,7 +311,3 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify documents can be skipped while building a tree."""
         tree = build(FILES)
         self.assertEqual(0, len(tree))
-
-
-if __name__ == '__main__':
-    unittest.main()

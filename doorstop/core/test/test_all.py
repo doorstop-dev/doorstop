@@ -1,6 +1,4 @@
-"""
-Integration tests for the doorstop.core package.
-"""
+"""Integration tests for the doorstop.core package."""
 
 import unittest
 from unittest.mock import patch
@@ -15,6 +13,7 @@ from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY
 
 
 class DocumentNoSkip(Document):  # pylint: disable=R0904
+
     """Document class that is never skipped."""
 
     SKIP = '__disabled__'  # never skip test Documents
@@ -22,6 +21,7 @@ class DocumentNoSkip(Document):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the Item class."""  # pylint: disable=C0103
 
     def test_save_load(self):
@@ -47,6 +47,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the Document class."""  # pylint: disable=C0103
 
     def tearDown(self):
@@ -72,6 +73,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
+
     """Integration tests for the Tree class."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')

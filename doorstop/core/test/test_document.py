@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Unit tests for the doorstop.core.document module.
-"""
+"""Unit tests for the doorstop.core.document module."""
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock
@@ -42,11 +38,13 @@ settings:
 
 
 class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902,R0904
+
     """Mock Document class with stubbed file IO."""
 
 
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
 
     def setUp(self):
@@ -261,10 +259,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the doorstop.core.document module."""  # pylint: disable=C0103
 
     pass
-
-
-if __name__ == '__main__':
-    unittest.main()

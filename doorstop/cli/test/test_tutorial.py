@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Integration tests for the documentation tutorials.
-"""
+"""Integration tests for the documentation tutorials."""
 
 import unittest
 
@@ -28,6 +26,7 @@ if __name__ == '__main__':
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestBase(unittest.TestCase):  # pylint: disable=R0904
+
     """Base class for tutorial tests."""
 
     def setUp(self):
@@ -53,6 +52,7 @@ class TestBase(unittest.TestCase):  # pylint: disable=R0904
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestSection1(TestBase):  # pylint: disable=R0904
+
     """Integration tests for section 1.0 of the tutorial."""
 
     def test_tutorial_section_1(self):

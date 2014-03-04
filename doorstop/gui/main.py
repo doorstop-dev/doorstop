@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Graphical interface for Doorstop.
-"""
+"""Graphical interface for Doorstop."""
 
 import sys
 from unittest.mock import Mock
@@ -29,8 +27,7 @@ from doorstop import settings
 
 
 def main(args=None):
-    """Process command-line arguments and run the program.
-    """
+    """Process command-line arguments and run the program."""
     # Main parser
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **SHARED)
     # Hidden argument to override the root sharing directory path
@@ -58,7 +55,6 @@ def main(args=None):
 
 def _configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
-
     # Configure the logging level and format
     if verbosity == 0:
         level = settings.VERBOSE_LOGGING_LEVEL
@@ -81,8 +77,8 @@ def _run(args, cwd, error):
     @param args: Namespace of CLI arguments (from this module or the CLI)
     @param cwd: current working directory
     @param error: function to call for CLI errors
-    """
 
+    """
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
         return error("tkinter is not available")
@@ -118,6 +114,7 @@ def _log(func):  # pragma: no cover, manual test
 
 
 class Listbox2(tk.Listbox):  # pragma: no cover, manual test, pylint: disable=R0901,R0904
+
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):
@@ -136,6 +133,7 @@ class Listbox2(tk.Listbox):  # pragma: no cover, manual test, pylint: disable=R0
 
 
 class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904
+
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):
@@ -194,7 +192,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def init(self, root):  # pylint: disable=R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
-
         # Shared arguments
         width_outline = 20
         width_text = 40
@@ -230,7 +227,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Create widgets
         def frame_project(root):
             """Frame for the current project."""
-
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=1)
@@ -247,7 +243,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         def frame_tree(root):
             """Frame for the current document."""
-
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=1)
@@ -265,7 +260,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         def frame_document(root):
             """Frame for current document's outline and items."""
-
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=0)
@@ -308,7 +302,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         def frame_item(root):
             """Frame for the currently selected item."""
-
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=0)
@@ -368,7 +361,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         def frame_family(root):
             """Frame for the parent and child document items."""
-
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=0)
@@ -398,7 +390,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def find(self):
         """Find the root of the project."""
-
         if not self.stringvar_project.get():
             try:
                 path = vcs.find_root(self.cwd)
@@ -410,7 +401,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     @_log
     def browse(self):
         """Browse for the root of a project."""
-
         path = filedialog.askdirectory()
         logging.debug("path: {}".format(path))
         if path:
@@ -418,7 +408,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def display_tree(self, *_):
         """Display the currently selected tree."""
-
         # Set the current tree
         self.tree = tree.build(root=self.stringvar_project.get())
         logging.info("displaying tree...")
@@ -432,7 +421,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def display_document(self, *_):
         """Display the currently selected document."""
-
         # Set the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
@@ -462,7 +450,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def display_item(self, *_):
         """Display the currently selected item."""
-
         self.ignore = True
 
         # Set the current item
@@ -523,7 +510,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     @_log
     def display_extended(self, *_):
         """Display the currently selected extended attribute."""
-
         self.ignore = True
 
         name = self.stringvar_extendedkey.get()
@@ -585,7 +571,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def link(self):
         """Add the specified link to the current item."""
-
         # Add the specified link to the list
         identifier = self.stringvar_link.get()
         if identifier:
@@ -597,7 +582,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
     def unlink(self):
         """Remove the currently selected link from the current item."""
-
         # Remove the selected link from the list
         index = self.listbox_links.curselection()
         self.listbox_links.delete(index)

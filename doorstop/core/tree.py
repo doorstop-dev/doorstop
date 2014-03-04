@@ -1,6 +1,4 @@
-"""
-Compiles the Doorstop document hierarchy.
-"""
+"""Compiles the Doorstop document hierarchy."""
 
 import os
 import sys
@@ -15,10 +13,12 @@ from doorstop.core import vcs
 
 
 class Tree(object):
+
     """A bidirectional tree structure to store the hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
     document processing and validation.
+
     """
 
     def __init__(self, document, parent=None, root=None):
@@ -65,6 +65,7 @@ class Tree(object):
         @return: new Tree
 
         @raise DoorstopError: when the tree cannot be built
+
         """
         if not documents:
             return Tree(document=None, root=root)
@@ -106,6 +107,7 @@ class Tree(object):
         @param document: Document to add
 
         @raise DoorstopError: if the document cannot yet be placed
+
         """
         logging.debug("trying to add '{}'...".format(document))
         if not self.document:
@@ -162,6 +164,7 @@ class Tree(object):
         @return: newly created and placed Document
 
         @raise DoorstopError: if the document cannot be created
+
         """
         document = Document.new(path, self.root, prefix,
                                 sep=sep, digits=digits,
@@ -184,6 +187,7 @@ class Tree(object):
         @return: newly created Item
 
         @raise DoorstopError: if the item cannot be created
+
         """
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
@@ -198,6 +202,7 @@ class Tree(object):
         @return: removed Item
 
         @raise DoorstopError: if the item cannot be removed
+
         """
         for document in self:
             try:
@@ -219,6 +224,7 @@ class Tree(object):
         @return: child Item, parent Item
 
         @raise DoorstopError: if the link cannot be created
+
         """
         logging.info("linking {} to {}...".format(cid, pid))
         # Find child item
@@ -238,6 +244,7 @@ class Tree(object):
         @return: child Item, parent Item
 
         @raise DoorstopError: if the link cannot be removed
+
         """
         logging.info("unlinking '{}' from '{}'...".format(cid, pid))
         # Find child item
@@ -256,6 +263,7 @@ class Tree(object):
         @param launch: open the default text editor
 
         @raise DoorstopError: if the item cannot be found
+
         """
         logging.debug("looking for {}...".format(identifier))
         # Find item
@@ -278,6 +286,7 @@ class Tree(object):
         @return: matching Document
 
         @raise DoorstopError: if the document cannot be found
+
         """
         logging.debug("looking for document '{}'...".format(prefix))
         for document in self:
@@ -295,6 +304,7 @@ class Tree(object):
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
+
         """
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         logging.debug("looking for{} item '{}'...".format(_kind, identifier))
@@ -323,6 +333,7 @@ class Tree(object):
         @param item_hook: function to call for custom item validation
 
         @return: indication that the tree is valid
+
         """
         valid = True
         logging.info("checking tree...")
@@ -347,6 +358,7 @@ class Tree(object):
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+
         """
         documents = list(self)
         # Check for documents
@@ -408,6 +420,7 @@ def build(cwd=None, root=None):
     @return: new Tree
 
     @raise DoorstopError: when the tree cannot be built
+
     """
     documents = []
 
@@ -438,6 +451,7 @@ def _document_from_path(path, root, documents):
     @param path: path to a potential document
     @param root: path to root of working copy
     @param documents: list of Documents to append results
+
     """
     try:
         document = Document(path, root)

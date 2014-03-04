@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""
-Unit tests for the doorstop.core.report module.
-"""
+"""Unit tests for the doorstop.core.report module."""
 
 import unittest
 from unittest.mock import patch, MagicMock
@@ -27,6 +23,7 @@ ASSERT_CONTENTS = True
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
+
     """Unit tests for the doorstop.core.report module."""  # pylint: disable=C0103
 
     @classmethod
@@ -136,7 +133,3 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify iterating an unknown format raises."""
         gen = report.lines(self.document, '.a')
         self.assertRaises(DoorstopError, list, gen)
-
-
-if __name__ == '__main__':
-    unittest.main()
