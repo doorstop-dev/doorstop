@@ -28,7 +28,8 @@ class Tree(object):
         self.children = []
         self._vcs = None
         self._loaded = False
-        self._cache = {}
+        self._item_cache = {}
+        self._document_cache = {}
 
     def __str__(self):
         # Build parent prefix string (getattr to support testing)
@@ -299,9 +300,12 @@ class Tree(object):
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         logging.debug("looking for{} item '{}'...".format(_kind, identifier))
         try:
-            item = self._cache[identifier]
+            item = self._item_cache[identifier]
             if item:
+                logging.debug("found cached item: {}".format(item))
                 return item
+            else:
+                logging.debug("found cached miss: {}".format(identifier))
         except KeyError:
             for document in self:
                 try:
@@ -310,9 +314,10 @@ class Tree(object):
                     pass  # item not found in that document
                 else:
                     logging.debug("found item: {}".format(item))
-                    self._cache[identifier] = item
+                    self._item_cache[identifier] = item
                     return item
-            self._cache[identifier] = None
+            logging.debug("could not find: {}".format(identifier))
+            self._item_cache[identifier] = None
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
@@ -377,7 +382,7 @@ class Tree(object):
             document.load(reload=True)
         # Set meta attributes
         self._loaded = True
-        self._cache = {}
+        self._item_cache = {}
 
 
 def _open(path, tool=None):  # pragma: no cover, integration test

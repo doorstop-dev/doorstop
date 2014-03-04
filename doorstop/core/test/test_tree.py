@@ -250,6 +250,9 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_unlink_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
+        # Cache miss
+        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'unknown1')
+        # Cache hit
         self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'unknown1')
 
     def test_unlink_unknown_parent_number(self):
