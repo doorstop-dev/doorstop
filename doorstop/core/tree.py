@@ -13,7 +13,7 @@ from doorstop.core.document import Document
 from doorstop.core import vcs
 
 
-class Tree(object):
+class Tree(object):  # pylint: disable=R0902
 
     """A bidirectional tree structure to store the hierarchy of documents.
 
@@ -347,7 +347,7 @@ class Tree(object):
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, document_hook=None, item_hook=None, **kwargs):
+    def valid(self, document_hook=None, item_hook=None):
         """Check the tree (and its documents) for validity.
 
         @param document_hook: function to call for custom document validation
@@ -360,7 +360,7 @@ class Tree(object):
         logging.info("checking tree...")
         # Display all issues
         for issue in self.issues(document_hook=document_hook,
-                                 item_hook=item_hook, **kwargs):
+                                 item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -372,7 +372,7 @@ class Tree(object):
         # Return the result
         return valid
 
-    def issues(self, document_hook=None, item_hook=None, **kwargs):
+    def issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
         @param document_hook: function to call for custom document validation
@@ -389,8 +389,8 @@ class Tree(object):
         for document in documents:
             for issue in chain(document_hook(document=document, tree=self)
                                if document_hook else [],
-                               document.issues(tree=self, item_hook=item_hook,
-                                               **kwargs)):
+                               document.issues(tree=self,
+                                               item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))

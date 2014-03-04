@@ -12,35 +12,8 @@ from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
 from doorstop.core import report
 from doorstop import common
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, HelpFormatter, WarningFormatter
 from doorstop import settings
-
-
-# TODO: refactor: use the classes from doorstop.common
-class _HelpFormatter(argparse.HelpFormatter):
-
-    """Command-line help text formatter with wider help text."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, max_help_position=32, **kwargs)
-
-
-class _WarningFormatter(logging.Formatter, object):
-
-    """Logging formatter that displays verbose formatting for WARNING+."""
-
-    def __init__(self, default_format, verbose_format, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.default_format = default_format
-        self.verbose_format = verbose_format
-
-    def format(self, record):
-        """Python 3 hack to change the formatting style dynamically."""
-        if record.levelno > logging.INFO:
-            self._style._fmt = self.verbose_format  # pylint: disable=W0212
-        else:
-            self._style._fmt = self.default_format  # pylint: disable=W0212
-        return super().format(record)
 
 
 def main(args=None):  # pylint: disable=R0915
@@ -52,10 +25,16 @@ def main(args=None):  # pylint: disable=R0915
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     debug.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
-    shared = {'formatter_class': _HelpFormatter, 'parents': [debug]}
+    shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Main parser
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
+    parser.add_argument('-F', '--no-reformat', action='store_true',
+                        help="do not reformat item files during validation")
+    parser.add_argument('-R', '--no-ref-check', action='store_true',
+                        help="do not validate external file references")
+    parser.add_argument('-L', '--no-rlinks-check', action='store_true',
+                        help="do not validate reverse links")
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the graphical user interface")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -176,7 +155,7 @@ def _configure_logging(verbosity=0):
 
     # Set a custom formatter
     logging.basicConfig(level=level)
-    formatter = _WarningFormatter(default_format, verbose_format)
+    formatter = WarningFormatter(default_format, verbose_format)
     logging.root.handlers[0].setFormatter(formatter)
 
     # Warn about excessive verbosity
@@ -196,6 +175,15 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param err: function to call for CLI errors
 
     """
+    # Configure validation settings
+    if args.no_reformat is not None:
+        settings.REFORMAT = not args.no_reformat
+    if args.no_ref_check is not None:
+        settings.CHECK_REF = not args.no_ref_check
+    if args.no_rlinks_check is not None:
+        settings.CHECK_RLINKS = not args.no_rlinks_check
+
+    # Validate the tree
     try:
         tree = build(cwd, root=args.project)
         tree.load()

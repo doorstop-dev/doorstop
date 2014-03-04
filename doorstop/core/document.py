@@ -334,7 +334,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, tree=None, item_hook=None, **kwargs):
+    def valid(self, tree=None, item_hook=None):
         """Check the document (and its items) for validity.
 
         @param tree: Tree containing the document
@@ -345,7 +345,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         """
         valid = True
         # Display all issues
-        for issue in self.issues(tree=tree, item_hook=item_hook, **kwargs):
+        for issue in self.issues(tree=tree, item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -357,7 +357,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         # Return the result
         return valid
 
-    def issues(self, tree=None, item_hook=None, **kwargs):
+    def issues(self, tree=None, item_hook=None):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
@@ -375,8 +375,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items:
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],
-                               item.issues(document=self, tree=tree,
-                                           **kwargs)):
+                               item.issues(document=self, tree=tree)):
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
