@@ -33,7 +33,7 @@ Installation
 Doorstop can be installed with 'pip':
 
     $ pip install Doorstop
-    
+
 Or directly from source:
 
     $ git clone https://github.com/jacebrowning/doorstop.git
