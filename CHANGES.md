@@ -1,11 +1,12 @@
 Changelog
 =========
 
-0.2 (dev)
+0.2 (2014/03/05)
 ----------------
 
-- All Item text attributes will now be split by sentences and line-wrapped.
-- Added Tree.load for cases when lazy loading is too slow
+- All Item text attributes are now be split by sentences and line-wrapped
+- Added Tree.load() for cases when lazy loading is too slow
+- Added caching to Tree.find_item() and Tree.find_document()
 
 
 0.1 (2014/02/17)
