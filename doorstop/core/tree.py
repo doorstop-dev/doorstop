@@ -485,3 +485,25 @@ def _document_from_path(path, root, documents):
         else:
             logging.info("found document: {}".format(document))
             documents.append(document)
+
+# convenience functions ######################################################
+
+_TREE = None  # implicitly created tree created for convenience functions
+
+
+def find_document(prefix):
+    """Find a document without an explicitly building a tree."""
+    global _TREE  # pylint: disable=W0603
+    if _TREE is None:
+        _TREE = build()
+    document = _TREE.find_document(prefix)
+    return document
+
+
+def find_item(identifier):
+    """Find an item without an explicitly building a tree."""
+    global _TREE  # pylint: disable=W0603
+    if _TREE is None:
+        _TREE = build()
+    item = _TREE.find_item(identifier)
+    return item
