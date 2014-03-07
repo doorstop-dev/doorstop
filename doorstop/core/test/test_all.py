@@ -96,7 +96,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the doorstop module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core module."""  # pylint: disable=C0103
 
     def setUp(self):
         """Reset the internal tree."""

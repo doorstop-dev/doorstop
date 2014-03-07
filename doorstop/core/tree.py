@@ -488,7 +488,7 @@ def _document_from_path(path, root, documents):
 
 # convenience functions ######################################################
 
-_TREE = None
+_TREE = None  # implicitly created tree created for convenience functions
 
 
 def find_document(prefix):
