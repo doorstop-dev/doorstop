@@ -7,6 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 
@@ -88,9 +89,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                path, line = item.find_ref(ignored=ignored)
-                path = path.replace('\\', '/')  # always write unix-style paths
-                ref = "Reference: {p} (line {l})".format(p=path, l=line)
+                ref = _ref(item, ignored=ignored)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -143,10 +142,7 @@ def lines_markdown(obj, ignored=None):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                path, line = item.find_ref(ignored=ignored)
-                path = path.replace('\\', '/')  # always use unix-style paths
-                ref = "Reference: {p} (line {l})".format(p=path, l=line)
-                yield ref
+                yield _ref(item, ignored=ignored)
 
             # Links
             if item.links:
@@ -168,6 +164,16 @@ def _items(obj):
     except TypeError:
         # an item
         return [obj]  # an item
+
+
+def _ref(item, ignored=None):
+    """Format an external reference for publishing."""
+    if settings.CHECK_REF:
+        path, line = item.find_ref(ignored=ignored)
+        path = path.replace('\\', '/')  # always use unix-style paths
+        return "Reference: {p} (line {l})".format(p=path, l=line)
+    else:
+        return "Reference: '{r}'".format(r=item.ref)
 
 
 def lines_html(obj, ignored=None):

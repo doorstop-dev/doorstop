@@ -10,6 +10,7 @@ import shutil
 from doorstop.core import report
 from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 from doorstop.core.test import FILES, ENV, REASON
 from doorstop.core.test.test_item import MockItem
@@ -81,6 +82,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
+
+    def test_lines_text_item_no_ref(self):
+        """Verify a text report can be created without checking references."""
+        self.item.ref = 'abc123'
+        self.item.heading = False
+        _check_ref = bool(settings.CHECK_REF)
+        try:
+            settings.CHECK_REF = False
+            lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
+            text = ''.join(line + '\n' for line in lines)
+        finally:
+            settings.CHECK_REF = _check_ref
+        self.assertIn("Reference: 'abc123'", text)
 
     def test_lines_text_document(self):
         """Verify a text report can be created from a document."""
