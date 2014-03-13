@@ -302,6 +302,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.tree.load()
         self.tree.load()  # should return immediately
 
+    @patch('doorstop.core.document.Document.delete')
+    def test_delete(self, mock_delete):
+        """Verify a tree can be deleted."""
+        self.tree.delete()
+        self.assertEqual(0, len(self.tree))
+        self.assertEqual(2, mock_delete.call_count)
+        self.tree.delete()  # ensure a second delete is ignored
+
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 

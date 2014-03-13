@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4 (dev)
+---------
+
+- Added Tree.delete() to delete all Documents and Items
+
 0.3 (2014/03/12)
 ----------------
 

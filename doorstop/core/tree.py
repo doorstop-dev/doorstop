@@ -413,6 +413,13 @@ class Tree(object):  # pylint: disable=R0902
         # Set meta attributes
         self._loaded = True
 
+    def delete(self):
+        """Delete the tree and its documents and items."""
+        for document in self:
+            document.delete()
+        self.document = None
+        self.children = []
+
 
 def _open(path, tool=None):  # pragma: no cover, integration test
     """Open the text file using the default editor."""
