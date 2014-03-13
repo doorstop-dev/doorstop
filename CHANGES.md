@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.3 (dev)
+0.3 (2014/03/12)
 ----------------
 
 - Added find_document and find_item convenience functions
