@@ -1,21 +1,24 @@
-box: wercker/python
+box: flenter/multi-python@0.0.4
 # Build definition
 build:
   # The steps that will be executed on build
   steps:
-    # A step that sets up the python virtual environment
-    - virtualenv:
-        name: setup virtual environment
-        install_wheel: false # Enable wheel to speed up builds (experimental)
-
-
+    - flenter/py-virtualenv
     - script:
-        name: echo python information
-        code: |
-          echo "python version $(python --version) running"
-          echo "pip version $(pip --version) running"
-          
+        name: create virtualenv
+        code: make env
     - script:
-        name: install and run tests
-        code: |
-          make ci
+        name: install package
+        code: make
+    - script:
+        name: install dependencies
+        code: make .depends-ci
+    - script:
+        name: run doorstop
+        code: make doorstop
+    - script:
+        name: run unit tests
+        code: make test
+    - script:
+        name: run integration tests
+        code: make tests
