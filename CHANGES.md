@@ -5,6 +5,7 @@ Changelog
 ----------------
 
 - Added find_document and find_item convenience functions
+- Added Document.delete() to delete a Document and its Items
 
 0.2 (2014/03/05)
 ----------------

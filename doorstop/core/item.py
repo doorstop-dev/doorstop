@@ -567,6 +567,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return rlinks, children
 
     def delete(self, path=None):
+        """Delete the item."""
         super().delete(self.path)
 
 

@@ -379,3 +379,9 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
+
+    def delete(self, path=None):
+        """Delete the document and its items."""
+        for item in self:
+            item.delete()
+        super().delete(self.config)
