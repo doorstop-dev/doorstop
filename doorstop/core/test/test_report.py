@@ -60,6 +60,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         mock_lines.assert_called_once_with(self.document, '.html',
                                            ignored=None)
 
+
+
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_publish_html_long(self):
         """Verify an HTML file can be created (long)."""

@@ -291,7 +291,7 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     def test_publish_tree_html(self):
         """Verify 'doorstop publish' can create an HTML directory."""
         path = os.path.join(self.temp, 'all')
-        self.assertIs(None, main(['publish', path]))
+        self.assertIs(None, main(['publish', 'all', path]))
         self.assertTrue(os.path.isdir(path))
         self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
 

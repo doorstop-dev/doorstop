@@ -92,7 +92,7 @@ def main(args=None):  # pylint: disable=R0915
     sub = subs.add_parser('publish',
                           help="publish a document as text or another format",
                           **shared)
-    sub.add_argument('prefix', help="prefix of document to publish")
+    sub.add_argument('prefix', nargs='?', help="prefix of document to publish")
     sub.add_argument('path', nargs='?', help="path of published file")
     sub.add_argument('-m', '--markdown', action='store_true',
                      help="output Markdown instead of raw text")
@@ -324,7 +324,11 @@ def _run_publish(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        document = tree.find_document(args.prefix)
+        if args.prefix == 'all':
+            documents = [document for document in tree]
+        else:
+            documents = [tree.find_document(args.prefix)]
+
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -335,7 +339,10 @@ def _run_publish(args, cwd, _):
             kwargs['width'] = args.width
 
         if args.path:
-            ext = os.path.splitext(args.path)[-1]
+            if len(documents) > 1:
+                ext = '.html'
+            else:
+                ext = os.path.splitext(args.path)[-1]
         if args.markdown:
             ext = '.md'
         elif args.html:
@@ -344,8 +351,9 @@ def _run_publish(args, cwd, _):
             ext = '.txt'
 
         if args.path:
-            print("publishing {} to {}...".format(document, args.path))
-            report.publish(document, args.path, ext, **kwargs)
+            for document in documents:
+                print("publishing {} to {}...".format(document, args.path))
+                report.publish(document, args.path, ext, **kwargs)
         else:
             for line in report.lines(document, ext, **kwargs):
                 print(line)
