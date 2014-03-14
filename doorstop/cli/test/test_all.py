@@ -253,6 +253,11 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_publish_error(self):
+        """Verify 'doorstop publish' returns an error in an empty folder."""
+        os.chdir(self.temp)
+        self.assertRaises(SystemExit, main, ['publish', 'req'])
+
     def test_publish_text(self):
         """Verify 'doorstop publish' can create text output."""
         self.assertIs(None, main(['publish', 'tut', '--width', '75']))
@@ -283,10 +288,12 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['publish', 'req', path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_report_error(self):
-        """Verify 'doorstop publish' returns an error in an empty folder."""
-        os.chdir(self.temp)
-        self.assertRaises(SystemExit, main, ['publish', 'req'])
+    def test_publish_tree_html(self):
+        """Verify 'doorstop publish' can create an HTML directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', path]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
