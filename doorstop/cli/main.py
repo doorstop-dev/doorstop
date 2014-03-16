@@ -317,7 +317,7 @@ def _run_edit(args, cwd, _):
         return True
 
 
-def _run_publish(args, cwd, error):
+def _run_publish(args, cwd, err):
     """Process arguments and run the `doorstop report` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -372,7 +372,7 @@ def _run_publish(args, cwd, error):
                 report.publish(documents[0], args.path, ext, **kwargs)
         else:
             if publish_tree:
-                error("only single documents can be displayed")
+                err("only single documents can be displayed")
             for line in report.lines(documents[0], ext, **kwargs):
                 print(line)
 
