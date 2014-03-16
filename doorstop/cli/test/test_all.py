@@ -295,6 +295,17 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(os.path.isdir(path))
         self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
 
+    def test_publish_tree_text(self):
+        """Verify 'doorstop publish' can create a text directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', 'all', path, '--text']))
+        self.assertTrue(os.path.isdir(path))
+        self.assertFalse(os.path.isfile(os.path.join(path, 'index.html')))
+
+    def test_publish_tree_no_path(self):
+        """Verify 'doorstop publish' returns an error with no path."""
+        self.assertRaises(SystemExit, main, ['publish', 'all'])
+
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
