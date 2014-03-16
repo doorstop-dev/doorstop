@@ -194,8 +194,8 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['prefix']
 
     @prefix.setter
-    @auto_load
     @auto_save
+    @auto_load
     def prefix(self, value):
         """Set the document's prefix."""
         self._data['prefix'] = value.strip()
@@ -221,8 +221,8 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['sep']
 
     @sep.setter
-    @auto_load
     @auto_save
+    @auto_load
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
         # TODO: raise a specific exception for invalid separator characters
@@ -237,8 +237,8 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['digits']
 
     @digits.setter
-    @auto_load
     @auto_save
+    @auto_load
     def digits(self, value):
         """Set the number of digits to use for new item IDs."""
         self._data['digits'] = value
@@ -251,8 +251,8 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['parent']
 
     @parent.setter
-    @auto_load
     @auto_save
+    @auto_load
     def parent(self, value):
         """Set the document's parent document prefix."""
         self._data['parent'] = str(value) if value else ""

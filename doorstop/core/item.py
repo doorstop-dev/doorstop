@@ -206,8 +206,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['level']
 
     @level.setter
-    @auto_load
     @auto_save
+    @auto_load
     def level(self, value):
         """Set the item's level."""
         self._data['level'] = load_level(value)
@@ -236,8 +236,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['active']
 
     @active.setter
-    @auto_load
     @auto_save
+    @auto_load
     def active(self, value):
         """Set the item's active status."""
         self._data['active'] = bool(value)
@@ -255,8 +255,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['derived']
 
     @derived.setter
-    @auto_load
     @auto_save
+    @auto_load
     def derived(self, value):
         """Set the item's derived status."""
         self._data['derived'] = bool(value)
@@ -276,8 +276,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['normative']
 
     @normative.setter
-    @auto_load
     @auto_save
+    @auto_load
     def normative(self, value):
         """Set the item's normative status."""
         self._data['normative'] = bool(value)
@@ -292,8 +292,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self.level[-1] == 0 and not self.normative
 
     @heading.setter
-    @auto_load
     @auto_save
+    @auto_load
     def heading(self, value):
         """Set the item's heading status."""
         heading = bool(value)
@@ -311,8 +311,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['text']
 
     @text.setter
-    @auto_load
     @auto_save
+    @auto_load
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = str(value) if value else ""
@@ -329,8 +329,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['ref']
 
     @ref.setter
-    @auto_load
     @auto_save
+    @auto_load
     def ref(self, value):
         """Set the item's external file reference."""
         self._data['ref'] = str(value) if value else ""
@@ -342,22 +342,22 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return sorted(self._data['links'])
 
     @links.setter
-    @auto_load
     @auto_save
+    @auto_load
     def links(self, value):
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
 
     # actions ################################################################
 
-    @auto_load
     @auto_save
+    @auto_load
     def add_link(self, item):
         """Add a new link to another item ID."""
         self._data['links'].add(item)
 
-    @auto_load
     @auto_save
+    @auto_load
     def remove_link(self, item):
         """Remove an existing link by item ID."""
         try:
