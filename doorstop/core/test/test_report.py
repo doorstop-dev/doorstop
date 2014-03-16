@@ -12,7 +12,7 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.common import DoorstopError
 from doorstop import settings
 
-from doorstop.core.test import FILES, ENV, REASON
+from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_item import MockItem
 
 # Whenever the report format is changed:
@@ -50,12 +50,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         ]
         cls.work = WorkingCopy(None)
 
+    @patch('os.makedirs')
     @patch('builtins.open')
     @patch('doorstop.core.report.lines')
-    def test_publish_html(self, mock_lines, mock_open):
+    def test_publish_html(self, mock_lines, mock_open, mock_makedirs):
         """Verify an HTML file can be created."""
-        path = os.path.join('mock', 'report.html')
+        path = os.path.join('mock', 'directory', 'report.html')
         report.publish(self.document, path, '.html')
+        mock_makedirs.assert_called_once_with(os.path.join('mock',
+                                                           'directory'))
         mock_open.assert_called_once_with(path, 'w')
         mock_lines.assert_called_once_with(self.document, '.html',
                                            ignored=None)
@@ -75,6 +78,18 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify publishing to an unknown format raises an exception."""
         self.assertRaises(DoorstopError,
                           report.publish, self.document, 'a.a', '.a')
+
+    def test_index(self):
+        """Verify an HTML index can be created."""
+        path = os.path.join(FILES, 'index.html')
+        report.index(FILES)
+        self.assertTrue(os.path.isfile(path))
+
+    def test_index_no_files(self):
+        """Verify an HTML index is only created when files exist."""
+        path = os.path.join(EMPTY, 'index.html')
+        report.index(EMPTY)
+        self.assertFalse(os.path.isfile(path))
 
     def test_lines_text_item(self):
         """Verify a text report can be created from an item."""

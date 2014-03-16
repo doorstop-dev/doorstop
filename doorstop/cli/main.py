@@ -92,12 +92,15 @@ def main(args=None):  # pylint: disable=R0915
     sub = subs.add_parser('publish',
                           help="publish a document as text or another format",
                           **shared)
-    sub.add_argument('prefix', help="prefix of document to publish")
-    sub.add_argument('path', nargs='?', help="path of published file")
+    sub.add_argument('prefix', help="prefix of document to publish or 'all'")
+    sub.add_argument('path', nargs='?',
+                     help="path to published file or directory for 'all'")
+    sub.add_argument('-t', '--text', action='store_true',
+                     help="output text (default when no path)")
     sub.add_argument('-m', '--markdown', action='store_true',
-                     help="output Markdown instead of raw text")
+                     help="output Markdown")
     sub.add_argument('-H', '--html', action='store_true',
-                     help="output HTML converted from Markdown")
+                     help="output HTML (default for 'all')")
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
 
@@ -314,7 +317,7 @@ def _run_edit(args, cwd, _):
         return True
 
 
-def _run_publish(args, cwd, _):
+def _run_publish(args, cwd, error):
     """Process arguments and run the `doorstop report` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -322,32 +325,55 @@ def _run_publish(args, cwd, _):
     @param err: function to call for CLI errors
 
     """
+    publish_tree = args.prefix == 'all'
     try:
         tree = build(cwd, root=args.project)
-        document = tree.find_document(args.prefix)
+        if publish_tree:
+            documents = [document for document in tree]
+        else:
+            documents = [tree.find_document(args.prefix)]
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
 
+        # Set base arguments
         kwargs = {'ignored': tree.vcs.ignored}
         if args.width:
             kwargs['width'] = args.width
 
+        # Set file extension
         if args.path:
-            ext = os.path.splitext(args.path)[-1]
-        if args.markdown:
+            if publish_tree:
+                ext = '.html'
+            else:
+                ext = os.path.splitext(args.path)[-1]
+        if args.text:
+            ext = '.txt'
+        elif args.markdown:
             ext = '.md'
         elif args.html:
             ext = '.html'
         elif not args.path:
             ext = '.txt'
 
+        # Publish documents
         if args.path:
-            print("publishing {} to {}...".format(document, args.path))
-            report.publish(document, args.path, ext, **kwargs)
+            if publish_tree:
+                print("publishing tree to {}...".format(args.path))
+                for document in documents:
+                    path = os.path.join(args.path, document.prefix + ext)
+                    print("publishing {} to {}...".format(document, path))
+                    report.publish(document, path, ext, **kwargs)
+                if ext == '.html':
+                    report.index(args.path)
+            else:
+                print("publishing {} to {}...".format(documents[0], args.path))
+                report.publish(documents[0], args.path, ext, **kwargs)
         else:
-            for line in report.lines(document, ext, **kwargs):
+            if publish_tree:
+                error("only single documents can be displayed")
+            for line in report.lines(documents[0], ext, **kwargs):
                 print(line)
 
         return True

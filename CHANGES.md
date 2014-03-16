@@ -5,6 +5,7 @@ Changelog
 ---------
 
 - Added Tree.delete() to delete all Documents and Items
+- Added 'doorstop publish all <directory>' to publish Trees and index.html
 
 0.3 (2014/03/12)
 ----------------

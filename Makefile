@@ -74,7 +74,7 @@ $(DEPENDS_DEV): Makefile
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme apidocs req
+doc: readme apidocs html doorstop
 
 .PHONY: readme
 readme: .depends-ci docs/README-github.html docs/README-pypi.html
@@ -90,26 +90,19 @@ apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
-.PHONY: req
-req: env docs/gen/*.gen.*
-docs/gen/*.gen.*: */*/*.yml */*/*/*.yml */*/*/*/*.yml
+.PHONY: html
+html: env docs/gen/*.html
+docs/gen/*.html: $(shell find . -name '*.yml')
+	$(BIN)/doorstop publish all docs/gen --text
+	$(BIN)/doorstop publish all docs/gen --markdown
+	$(BIN)/doorstop publish all docs/gen --html
+
+.PHONY: doorstop
 	$(BIN)/doorstop
-	- mkdir docs/gen
-	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
-	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.txt
-	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.txt
-	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.txt
-	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.html
-	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.html
-	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.html
-	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.html
 
 .PHONY: read
-read: doc
-	$(OPEN) docs/gen/LowLevelTests.gen.html
-	$(OPEN) docs/gen/HighLevelTests.gen.html
-	$(OPEN) docs/gen/Tutorials.gen.html
-	$(OPEN) docs/gen/Requirements.gen.html
+read: readme apidocs html
+	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 	$(OPEN) docs/README-pypi.html
 	$(OPEN) docs/README-github.html
@@ -149,7 +142,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: req pep8 pep257 test tests
+ci: doorstop pep8 pep257 test tests
 
 # Cleanup ####################################################################
 

@@ -10,12 +10,13 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
+INDEX = 'index.html'
 
 
-def publish(document, path, ext=None, ignored=None, **kwargs):
+def publish(obj, path, ext=None, ignored=None, **kwargs):
     """Publish a document to a given format.
 
-    @param document: Document to publish
+    @param obj: Item, list of Items, or Document to publish
     @param path: output file location with desired extension
     @param ext: file extension to override output path's extension
     @param ignored: function to determine if a path should be skipped
@@ -25,12 +26,63 @@ def publish(document, path, ext=None, ignored=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     if ext in FORMAT:
-        logging.info("creating {}...".format(path))
+
+        # Create output directory
+        dirpath = os.path.dirname(path)
+        if not os.path.isdir(dirpath):
+            logging.info("creating {}...".format(dirpath))
+            os.makedirs(dirpath)
+
+        # Publish report
+        logging.info("publishing {}...".format(path))
         with open(path, 'w') as outfile:  # pragma: no cover, integration test
-            for line in lines(document, ext, ignored=ignored, **kwargs):
+            for line in lines(obj, ext, ignored=ignored, **kwargs):
                 outfile.write(line + '\n')
     else:
         raise DoorstopError("unknown format: {}".format(ext))
+
+
+def index(directory, extensions=('.html',)):
+    """Create an HTML index of all files in a directory.
+
+    @param directory: directory for index
+    @param extensions: file extensions to include
+
+    """
+    # Get paths for the index index
+    filenames = []
+    for filename in os.listdir(directory):
+        if filename.endswith(extensions) and filename != INDEX:
+            filenames.append(os.path.join(filename))
+
+    # Create the index
+    if filenames:
+        path = os.path.join(directory, INDEX)
+        logging.info("publishing {}...".format(path))
+        with open(path, 'w') as outfile:
+            for line in _lines_index(filenames):
+                outfile.write(line + '\n')
+    else:
+        logging.warning("no files for {}".format(INDEX))
+
+
+def _lines_index(filenames):
+    """Yield lines of HTML for index.html."""
+    yield '<!DOCTYPE html>'
+    yield '<head>'
+    yield '<style type="text/css">'
+    yield ''
+    with open(CSS) as infile:
+        for line in infile:
+            yield line
+    yield '</style>'
+    yield '</head>'
+    yield '<body>'
+    for filename in filenames:
+        name = os.path.splitext(filename)[0]
+        yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+    yield '</body>'
+    yield '</html>'
 
 
 def lines(obj, ext='.txt', ignored=None, **kwargs):
