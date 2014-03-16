@@ -206,6 +206,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['level']
 
     @level.setter
+    @auto_load
     @auto_save
     def level(self, value):
         """Set the item's level."""
@@ -235,6 +236,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['active']
 
     @active.setter
+    @auto_load
     @auto_save
     def active(self, value):
         """Set the item's active status."""
@@ -253,6 +255,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['derived']
 
     @derived.setter
+    @auto_load
     @auto_save
     def derived(self, value):
         """Set the item's derived status."""
@@ -273,6 +276,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['normative']
 
     @normative.setter
+    @auto_load
     @auto_save
     def normative(self, value):
         """Set the item's normative status."""
@@ -288,6 +292,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self.level[-1] == 0 and not self.normative
 
     @heading.setter
+    @auto_load
     @auto_save
     def heading(self, value):
         """Set the item's heading status."""
@@ -306,6 +311,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['text']
 
     @text.setter
+    @auto_load
     @auto_save
     def text(self, value):
         """Set the item's text."""
@@ -323,6 +329,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return self._data['ref']
 
     @ref.setter
+    @auto_load
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
@@ -335,6 +342,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         return sorted(self._data['links'])
 
     @links.setter
+    @auto_load
     @auto_save
     def links(self, value):
         """Set the list of item IDs this item links to."""

@@ -194,6 +194,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['prefix']
 
     @prefix.setter
+    @auto_load
     @auto_save
     def prefix(self, value):
         """Set the document's prefix."""
@@ -220,6 +221,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['sep']
 
     @sep.setter
+    @auto_load
     @auto_save
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
@@ -235,6 +237,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['digits']
 
     @digits.setter
+    @auto_load
     @auto_save
     def digits(self, value):
         """Set the number of digits to use for new item IDs."""
@@ -248,6 +251,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         return self._data['parent']
 
     @parent.setter
+    @auto_load
     @auto_save
     def parent(self, value):
         """Set the document's parent document prefix."""
