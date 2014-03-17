@@ -171,7 +171,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path)
+                    item = Item(path, root=self.root)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
