@@ -693,7 +693,7 @@ def save_level(parts):
     # Convert formats to cleaner YAML formats
     if len(parts) == 1:
         level = int(level)
-    elif len(parts) == 2:
+    elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
         level = float(level)
 
     return level

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.5 (dev)
+------------------
+
+- Fixed storage of 2-part levels ending in a multiple of 10
+
 0.4.2 (2014/03/17)
 ------------------
 

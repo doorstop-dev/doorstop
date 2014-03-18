@@ -120,6 +120,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn("level: 1.2.3\n", self.item._write.call_args[0][0])
         self.assertEqual((1, 2, 3), self.item.level)
 
+    def test_level_with_float(self):
+        """Verify an item's level can be set and read (2-part w/ float)."""
+        self.item.level = (1, 10)
+        self.assertIn("level: '1.10'\n", self.item._write.call_args[0][0])
+        self.assertEqual((1, 10), self.item.level)
+
     def test_depth(self):
         """Verify the depth can be read from the item's level."""
         self.item.level = (1,)
