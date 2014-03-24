@@ -176,9 +176,10 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                     pass  # skip non-item files
                 else:
                     self._items.append(item)
-                    yield item
         # Set meta attributes
         self._itered = True
+        # Yield items
+        yield from self._items
 
     # properties #############################################################
 
