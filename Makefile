@@ -13,7 +13,6 @@ ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_PYTHON := C:\\Python33\\python.exe
 	SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
 	BIN := $(ENV)/Scripts
-	EXE := .exe
 	OPEN := cmd /c start
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python33\\tcl\\tcl8.5
@@ -31,16 +30,16 @@ endif
 MAN := man
 SHARE := share
 
-PYTHON := $(BIN)/python$(EXE)
-PIP := $(BIN)/pip$(EXE)
+PYTHON := $(BIN)/python
+PIP := $(BIN)/pip
 RST2HTML := $(BIN)/rst2html.py
 PDOC := $(BIN)/pdoc
-PEP8 := $(BIN)/pep8$(EXE)
+PEP8 := $(BIN)/pep8
 PEP257 := $(BIN)/pep257
-PYLINT := $(BIN)/pylint$(EXE)
-NOSE := $(BIN)/nosetests$(EXE)
+PYLINT := $(BIN)/pylint
+NOSE := $(BIN)/nosetests
 
-# Installation ###############################################################
+# Development Installation ###################################################
 
 .PHONY: all
 all: env
@@ -77,7 +76,7 @@ $(DEPENDS_DEV): Makefile
 doc: readme apidocs html doorstop
 
 .PHONY: readme
-readme: .depends-ci docs/README-github.html docs/README-pypi.html
+readme: .depends-dev docs/README-github.html docs/README-pypi.html
 docs/README-github.html: README.md
 	pandoc -f markdown_github -t html -o docs/README-github.html README.md
 docs/README-pypi.html: README.rst
@@ -197,14 +196,17 @@ dist: .git-no-changes env depends check test tests doc
 upload: .git-no-changes env depends doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
-	$(MAKE) dev  # restore the development environment
 
-.PHONY: dev
-dev:
+# System Installation ########################################################
+
+.PHONY: develop
+develop:
 	python setup.py develop
 
-# Execution ##################################################################
+.PHONY: install
+install:
+	python setup.py install
 
-.PHONY: gui
-gui: env
-	$(BIN)/$(PACKAGE)-gui$(EXE)
+.PHONY: download
+download:
+	pip install $(PROJECT)
