@@ -25,6 +25,6 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover, integration test
         if not self._ignores:
             os.chdir(self.path)
             for line in self.call('svn', 'pg', '-R', 'svn:ignore', '.',
-                                  return_stdout=True).splitliens():
+                                  return_stdout=True).splitlines():
                 self._ignores.append(line)
         return self._ignores
