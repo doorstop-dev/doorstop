@@ -145,12 +145,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
                                parent='REQ')
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
-    @patch('doorstop.core.document.Document.issues')
-    def test_valid(self, mock_issues):
+    @patch('doorstop.core.document.Document.get_issues')
+    def test_valid(self, mock_get_issues):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
         self.assertTrue(self.tree.valid())
-        self.assertEqual(2, mock_issues.call_count)
+        self.assertEqual(2, mock_get_issues.call_count)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_valid_long(self):
@@ -165,18 +165,23 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_valid_document(self):
         """Verify an document error fails the tree valid."""
-        mock_issues = Mock(return_value=[DoorstopError('e'),
-                                         DoorstopWarning('w'),
-                                         DoorstopInfo('i')])
-        with patch.object(self.tree, 'issues', mock_issues):
+        mock_get_issues = Mock(return_value=[DoorstopError('e'),
+                                             DoorstopWarning('w'),
+                                             DoorstopInfo('i')])
+        with patch.object(self.tree, 'get_issues', mock_get_issues):
             self.assertFalse(self.tree.valid())
 
-    @patch('doorstop.core.document.Document.issues', Mock(return_value=[]))
+    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_valid_hook(self):
         """Verify a document hook can be called."""
         mock_hook = MagicMock()
         self.tree.valid(document_hook=mock_hook)
         self.assertEqual(2, mock_hook.call_count)
+
+    @patch('doorstop.core.tree.Tree.get_issues', Mock(return_value=[]))
+    def test_issues(self):
+        """Verify an tree's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.tree.issues))
 
     def test_new(self):
         """Verify a new document can be created on a tree."""

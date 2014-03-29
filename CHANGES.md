@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.5 (dev)
+------------------
+
+- Converted Item.issues() to a property and added Item.get_issues()
+
 0.4.3 (2014/03/18)
 ------------------
 

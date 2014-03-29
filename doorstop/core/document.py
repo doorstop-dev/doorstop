@@ -354,7 +354,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         """
         valid = True
         # Display all issues
-        for issue in self.issues(tree=tree, item_hook=item_hook):
+        for issue in self.get_issues(tree=tree, item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -366,7 +366,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         # Return the result
         return valid
 
-    def issues(self, tree=None, item_hook=None):
+    def get_issues(self, tree=None, item_hook=None):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document
@@ -384,10 +384,15 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items:
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],
-                               item.issues(document=self, tree=tree)):
+                               item.get_issues(document=self, tree=tree)):
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
+
+    @property
+    def issues(self):
+        """Get a list of just the document's issues."""
+        return list(self.get_issues())
 
     def delete(self, path=None):
         """Delete the document and its items."""
