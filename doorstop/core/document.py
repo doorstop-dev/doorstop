@@ -376,18 +376,28 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         logging.info("checking document {}...".format(self))
-        items = list(self)
+        items = self.items
         # Check for items
         if not items:
             yield DoorstopWarning("no items")
         # Check each item
+        prev = None
         for item in items:
+            # Check level
+            if prev:
+                if item.level == prev.level:
+                    msg = "duplicate level {}: {} & {}".format(prev.level,
+                                                               prev.id,
+                                                               item.id)
+                    yield DoorstopWarning(msg)
+            # Check item
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],
                                item.issues(document=self, tree=tree)):
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
+            prev = item
 
     def delete(self, path=None):
         """Delete the document and its items."""

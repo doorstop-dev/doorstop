@@ -266,6 +266,24 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(5, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues(self):
+        """Verify the correct number of issues are found in a document."""
+        issues = list(self.document.issues())
+        for issue in issues:
+            logging.info(repr(issue))
+        self.assertEqual(2, len(issues))
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_duplicate_level(self):
+        """Verify duplicate item levels are detected."""
+        expect = DoorstopWarning("duplicate level (2, 1): REQ002 & REQ004")
+        for issue in self.document.issues():
+            if type(issue) == type(expect) and issue.args == expect.args:
+                break
+        else:
+            self.fail("issue not found: {}".format(expect))
+
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 

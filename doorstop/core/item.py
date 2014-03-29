@@ -453,11 +453,12 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 msg = "invalid ID in links: {}".format(identifier)
                 yield DoorstopError(msg)
             else:
-                if prefix != document.parent:
+                if document.parent and prefix != document.parent:
                     # this is only 'info' because a document is allowed
                     # to contain items with a different prefix, but
                     # Doorstop will not create items like this
-                    msg = "linked to non-parent item: {}".format(identifier)
+                    msg = "parent is '{}', but linked to: {}".format(
+                        document.parent, identifier)
                     yield DoorstopInfo(msg)
 
     def _issues_tree(self, tree):
