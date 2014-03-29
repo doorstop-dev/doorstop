@@ -132,6 +132,11 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['add', 'TUT']))
         self.assertTrue(os.path.isfile(self.path))
 
+    def test_add_specific_level(self):
+        """Verify 'doorstop add' can be called with a specific level."""
+        self.assertIs(None, main(['add', 'TUT', '--level', '1.42']))
+        self.assertTrue(os.path.isfile(self.path))
+
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])

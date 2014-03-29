@@ -184,10 +184,11 @@ class Tree(object):  # pylint: disable=R0902
         return document
 
     @clear_item_cache
-    def add(self, prefix):
+    def add(self, prefix, level=None):
         """Add a new item to an existing document by prefix.
 
         @param prefix: document's prefix
+        @param level: desired item level
 
         @return: newly created Item
 
@@ -196,7 +197,7 @@ class Tree(object):  # pylint: disable=R0902
         """
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
-        item = document.add()
+        item = document.add(level=level)
         return item
 
     @clear_item_cache

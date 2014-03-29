@@ -54,6 +54,7 @@ def main(args=None):  # pylint: disable=R0915
                           **shared)
     sub.add_argument('prefix',
                      help="document prefix for the new item")
+    sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
 
     # Remove subparser
     sub = subs.add_parser('remove',
@@ -230,7 +231,7 @@ def _run_add(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        item = tree.add(args.prefix)
+        item = tree.add(args.prefix, level=args.level)
     except DoorstopError as error:
         logging.error(error)
         return False

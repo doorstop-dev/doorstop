@@ -194,7 +194,16 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_add(self, mock_add, mock_lock):
         """Verify an item can be added to a document."""
         self.tree.add('REQ')
-        mock_add.assert_called_once_with()
+        mock_add.assert_called_once_with(level=None)
+        path = os.path.join(FILES, '.doorstop.yml')
+        mock_lock.assert_called_once_with(path)
+
+    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
+    @patch('doorstop.core.document.Document.add')
+    def test_add_level(self, mock_add, mock_lock):
+        """Verify an item can be added to a document with a level."""
+        self.tree.add('REQ', level='1.2.3')
+        mock_add.assert_called_once_with(level='1.2.3')
         path = os.path.join(FILES, '.doorstop.yml')
         mock_lock.assert_called_once_with(path)
 

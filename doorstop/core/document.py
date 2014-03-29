@@ -283,8 +283,12 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    def add(self):
-        """Create a new item for the document and return it."""
+    def add(self, level=None):
+        """Create a new item for the document and return it.
+
+        @param level: desired item level
+
+        """
         number = self.next
         logging.debug("next number: {}".format(number))
         try:
@@ -292,7 +296,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         except IndexError:
             level = None
         else:
-            level = last.level[:-1] + (last.level[-1] + 1,)
+            level = level or last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
         item = Item.new(self.path, self.root,
                         self.prefix, self.sep, self.digits,
