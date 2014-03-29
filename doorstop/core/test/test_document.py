@@ -257,11 +257,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.valid(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
 
-    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
-    def test_issues(self):
-        """Verify an document's issues convenience property can be accessed."""
-        self.assertEqual(0, len(self.document.issues))
-
     @patch('doorstop.core.item.Item.delete')
     @patch('os.remove')
     def test_delete(self, mock_remove, mock_delete):
@@ -271,11 +266,16 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(5, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
-    @unittest.skipUnless(os.getenv(ENV), REASON)
+    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):
+        """Verify an document's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.document.issues))
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_count(self):
         """Verify the correct number of issues are found in a document."""
-        issues = list(self.document.issues())
-        for issue in issues:
+        issues = self.document.issues
+        for issue in self.document.issues:
             logging.info(repr(issue))
         self.assertEqual(2, len(issues))
 
@@ -283,7 +283,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
         expect = DoorstopWarning("duplicate level (2, 1): REQ002 & REQ004")
-        for issue in self.document.issues():
+        for issue in self.document.issues:
             if type(issue) == type(expect) and issue.args == expect.args:
                 break
         else:
