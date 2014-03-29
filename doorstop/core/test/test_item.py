@@ -545,6 +545,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.item.valid(document=mock_document,
                                         tree=mock_tree))
 
+    @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
+    def test_issues(self):
+        """Verify an item's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.item.issues))
+
     @patch('os.remove')
     def test_delete(self, mock_remove):
         """Verify an item can be deleted."""
