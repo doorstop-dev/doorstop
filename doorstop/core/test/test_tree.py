@@ -178,6 +178,11 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.tree.valid(document_hook=mock_hook)
         self.assertEqual(2, mock_hook.call_count)
 
+    @patch('doorstop.core.tree.Tree.get_issues', Mock(return_value=[]))
+    def test_issues(self):
+        """Verify an tree's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.tree.issues))
+
     def test_new(self):
         """Verify a new document can be created on a tree."""
         self.tree.new(EMPTY, '_TEST', parent='REQ')

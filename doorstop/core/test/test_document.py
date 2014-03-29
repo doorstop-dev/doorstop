@@ -257,6 +257,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.valid(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
 
+    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
+    def test_issues(self):
+        """Verify an document's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.document.issues))
+
     @patch('doorstop.core.item.Item.delete')
     @patch('os.remove')
     def test_delete(self, mock_remove, mock_delete):

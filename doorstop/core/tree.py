@@ -396,6 +396,11 @@ class Tree(object):  # pylint: disable=R0902
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
+    @property
+    def issues(self):
+        """Get a list of just the tree's issues."""
+        return list(self.get_issues())
+
     @clear_document_cache
     @clear_item_cache
     def load(self, reload=False):

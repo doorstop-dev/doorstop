@@ -4,7 +4,7 @@ Changelog
 0.5 (dev)
 ------------------
 
-- Renamed Item.issues() to Item.get_issues() for consistency
+- Converted Item.issues() to a property and added Item.get_issues()
 
 0.4.3 (2014/03/18)
 ------------------

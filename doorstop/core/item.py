@@ -433,6 +433,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if settings.REFORMAT:
             self.save()
 
+    @property
+    def issues(self):
+        """Get a list of just the item's issues."""
+        return list(self.get_issues())
+
     def _issues_document(self, document):
         """Yield all the item's issues against its document."""
         # Verify an item's ID matches its document's prefix

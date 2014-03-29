@@ -389,6 +389,11 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
 
+    @property
+    def issues(self):
+        """Get a list of just the document's issues."""
+        return list(self.get_issues())
+
     def delete(self, path=None):
         """Delete the document and its items."""
         for item in self:
