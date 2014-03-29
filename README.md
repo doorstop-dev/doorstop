@@ -15,7 +15,10 @@ hierarchy. Doorstop provides mechanisms for modifying this hierarchy,
 checking the tree for consistency, and publishing documents in several
 formats.
 
+Additional reading:
 
+- publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
+- conference: [GRDevDay Talk](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control)
 
 Getting Started
 ===============
