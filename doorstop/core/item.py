@@ -377,7 +377,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # TODO: refactor: this could be common code with Item/Document/Tree
         valid = True
         # Display all issues
-        for issue in self.issues(document=document, tree=tree):
+        for issue in self.get_issues(document=document, tree=tree):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -389,7 +389,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Return the result
         return valid
 
-    def issues(self, document=None, tree=None):
+    def get_issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
         @param document: Document containing the item

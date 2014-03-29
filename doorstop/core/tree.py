@@ -360,8 +360,8 @@ class Tree(object):  # pylint: disable=R0902
         valid = True
         logging.info("checking tree...")
         # Display all issues
-        for issue in self.issues(document_hook=document_hook,
-                                 item_hook=item_hook):
+        for issue in self.get_issues(document_hook=document_hook,
+                                     item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
                 logging.info(issue)
             elif isinstance(issue, DoorstopWarning):
@@ -373,7 +373,7 @@ class Tree(object):  # pylint: disable=R0902
         # Return the result
         return valid
 
-    def issues(self, document_hook=None, item_hook=None):
+    def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
         @param document_hook: function to call for custom document validation
@@ -390,8 +390,8 @@ class Tree(object):  # pylint: disable=R0902
         for document in documents:
             for issue in chain(document_hook(document=document, tree=self)
                                if document_hook else [],
-                               document.issues(tree=self,
-                                               item_hook=item_hook)):
+                               document.get_issues(tree=self,
+                                                   item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))

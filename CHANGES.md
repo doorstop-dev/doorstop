@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.5 (dev)
+------------------
+
+- Renamed Item.issues() to Item.get_issues() for consistency
+
 0.4.3 (2014/03/18)
 ------------------
 
