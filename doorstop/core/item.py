@@ -392,8 +392,8 @@ class Item(BaseFileObject):  # pylint: disable=R0904
     def get_issues(self, document=None, tree=None):
         """Yield all the item's issues.
 
-        @param document: Document containing the item
-        @param tree: Tree containing the item
+        @param document: Document containing the item (document-level issues)
+        @param tree: Tree containing the item (tree-level issues)
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
@@ -435,7 +435,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @property
     def issues(self):
-        """Get a list of just the item's issues."""
+        """Get a list of the item's issues."""
         return list(self.get_issues())
 
     def _issues_document(self, document):

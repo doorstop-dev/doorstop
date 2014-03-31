@@ -369,7 +369,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, tree=None, item_hook=None):
         """Yield all the document's issues.
 
-        @param tree: Tree containing the document
+        @param tree: Tree containing the document (tree-level issues)
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
@@ -401,7 +401,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     def issues(self):
-        """Get a list of just the document's issues."""
+        """Get a list of the document's issues."""
         return list(self.get_issues())
 
     def delete(self, path=None):
