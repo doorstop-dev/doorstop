@@ -385,11 +385,25 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items:
             # Check level
             if prev:
+                logging.debug("checking level {} to {}...".format(prev.level,
+                                                                  item.level))
+                # Duplicate level
                 if item.level == prev.level:
-                    msg = "duplicate level {}: {} & {}".format(prev.level,
-                                                               prev.id,
-                                                               item.id)
+                    level = '.'.join(str(n) for n in prev.level)
+                    msg = "duplicate level: {} ({}, {})".format(level,
+                                                                prev.id,
+                                                                item.id)
                     yield DoorstopWarning(msg)
+                # Skipped level
+                elif item.level[:-1] == prev.level[:-1]:
+                    if item.level[-1] - prev.level[-1] > 1:
+                        p_lev = '.'.join(str(n) for n in prev.level)
+                        i_lev = '.'.join(str(n) for n in item.level)
+                        msg = "skipped level: {} ({}), {} ({})".format(p_lev,
+                                                                       prev.id,
+                                                                       i_lev,
+                                                                       item.id)
+                        yield DoorstopWarning(msg)
             # Check item
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],

@@ -277,13 +277,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(2, len(issues))
+        self.assertEqual(3, len(issues))
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
-        expect = DoorstopWarning("duplicate level (2, 1): REQ002 & REQ004")
+        expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
         for issue in self.document.issues:
+            logging.info(repr(issue))
+            if type(issue) == type(expect) and issue.args == expect.args:
+                break
+        else:
+            self.fail("issue not found: {}".format(expect))
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_skipped_level(self):
+        """Verify skipped item levels are detected."""
+        expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
+        for issue in self.document.issues:
+            logging.info(repr(issue))
             if type(issue) == type(expect) and issue.args == expect.args:
                 break
         else:
