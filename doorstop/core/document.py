@@ -369,19 +369,18 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, tree=None, item_hook=None):
         """Yield all the document's issues.
 
-        @param tree: Tree containing the document
+        @param tree: Tree containing the document (tree-level issues)
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
         logging.info("checking document {}...".format(self))
-        items = list(self)
-        # Check for items
-        if not items:
-            yield DoorstopWarning("no items")
+        # Check levels
+        yield from self._get_issues_level()
         # Check each item
-        for item in items:
+        for item in self:
+            # Check item
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],
                                item.get_issues(document=self, tree=tree)):
@@ -391,8 +390,45 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     def issues(self):
-        """Get a list of just the document's issues."""
+        """Get a list of the document's issues."""
         return list(self.get_issues())
+
+    def _get_issues_level(self, items=None):
+        """Yield all the document's issues related to item level."""
+        items = items or self.items
+        # Check for items
+        if not items:
+            return DoorstopWarning("no items")
+        # Check item levels
+        prev = items[0]
+        for item in items[1:]:
+            pid = prev.id
+            plev = prev.level
+            pslev = '.'.join(str(n) for n in plev)
+            nid = item.id
+            nlev = item.level
+            nslev = '.'.join(str(n) for n in nlev)
+            logging.debug("checking level {} to {}...".format(plev, nlev))
+            # Duplicate level
+            if plev == nlev:
+                msg = "duplicate level: {} ({}, {})".format(pslev, pid, nid)
+                yield DoorstopWarning(msg)
+            # Skipped level
+            length = min(len(plev), len(nlev))
+            for index in range(length):
+                # Types of skipped levels:
+                #   over: 1.0 --> 1.1
+                #   out: 1.1 --> 3.0
+                #   over and out: 1.1 --> 2.2
+                if (nlev[index] - plev[index] > 1 or  # over or out
+                    (plev[index] != nlev[index] and
+                     index + 1 < length and
+                     nlev[index + 1] not in (0, 1))):  # over and out
+                    msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
+                                                                   nslev, nid)
+                    yield DoorstopWarning(msg)
+                    break
+            prev = item
 
     def delete(self, path=None):
         """Delete the document and its items."""

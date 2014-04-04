@@ -242,13 +242,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be validated (long)."""
         self.assertTrue(self.document.valid())
 
+    @patch('doorstop.core.item.Item.get_issues',
+           Mock(return_value=[DoorstopError('error'),
+                              DoorstopWarning('warning'),
+                              DoorstopInfo('info')]))
     def test_valid_item(self):
         """Verify an item error fails the document check."""
-        mock_get_issues = Mock(return_value=[DoorstopError('e'),
-                                             DoorstopWarning('w'),
-                                             DoorstopInfo('i')])
-        with patch.object(self.document, 'get_issues', mock_get_issues):
-            self.assertFalse(self.document.valid())
+        self.assertFalse(self.document.valid())
 
     @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
     def test_valid_hook(self):
@@ -256,11 +256,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_hook = MagicMock()
         self.document.valid(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
-
-    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
-    def test_issues(self):
-        """Verify an document's issues convenience property can be accessed."""
-        self.assertEqual(0, len(self.document.issues))
 
     @patch('doorstop.core.item.Item.delete')
     @patch('os.remove')
@@ -270,6 +265,100 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_remove.assert_called_once_with(self.document.config)
         self.assertEqual(5, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
+
+    @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
+    def test_issues(self):
+        """Verify an document's issues convenience property can be accessed."""
+        self.assertEqual(0, len(self.document.issues))
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_count_long(self):
+        """Verify a number of issues are found in a document (long)."""
+        issues = self.document.issues
+        for issue in self.document.issues:
+            logging.info(repr(issue))
+        self.assertEqual(4, len(issues))
+
+    def test_issues_duplicate_level(self):
+        """Verify duplicate item levels are detected."""
+        mock_item1 = Mock()
+        mock_item1.id = 'HLT001'
+        mock_item1.level = (4, 2)
+        mock_item2 = Mock()
+        mock_item2.id = 'HLT002'
+        mock_item2.level = (4, 2)
+        mock_items = [mock_item1, mock_item2]
+        expected = DoorstopWarning("duplicate level: 4.2 (HLT001, HLT002)")
+        issue = list(self.document._get_issues_level(mock_items))[0]
+        self.assertIsInstance(issue, type(expected))
+        self.assertEqual(expected.args, issue.args)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_duplicate_level_long(self):
+        """Verify duplicate item levels are detected (long)."""
+        expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
+        for issue in self.document.issues:
+            logging.info(repr(issue))
+            if type(issue) == type(expect) and issue.args == expect.args:
+                break
+        else:
+            self.fail("issue not found: {}".format(expect))
+
+    def test_issues_skipped_level_over(self):
+        """Verify skipped (over) item levels are detected."""
+        mock_item1 = Mock()
+        mock_item1.id = 'HLT001'
+        mock_item1.level = (1, 1)
+        mock_item2 = Mock()
+        mock_item2.id = 'HLT002'
+        mock_item2.level = (1, 3)
+        mock_items = [mock_item1, mock_item2]
+        expected = DoorstopWarning("skipped level: 1.1 (HLT001), 1.3 (HLT002)")
+        issues = list(self.document._get_issues_level(mock_items))
+        self.assertEqual(1, len(issues))
+        self.assertIsInstance(issues[0], type(expected))
+        self.assertEqual(expected.args, issues[0].args)
+
+    def test_issues_skipped_level_out(self):
+        """Verify skipped (out) item levels are detected."""
+        mock_item1 = Mock()
+        mock_item1.id = 'HLT001'
+        mock_item1.level = (1, 1)
+        mock_item2 = Mock()
+        mock_item2.id = 'HLT002'
+        mock_item2.level = (3, 0)
+        mock_items = [mock_item1, mock_item2]
+        expected = DoorstopWarning("skipped level: 1.1 (HLT001), 3.0 (HLT002)")
+        issues = list(self.document._get_issues_level(mock_items))
+        self.assertEqual(1, len(issues))
+        self.assertIsInstance(issues[0], type(expected))
+        self.assertEqual(expected.args, issues[0].args)
+
+    def test_issues_skipped_level_out_over(self):
+        """Verify skipped (out and over) item levels are detected."""
+        mock_item1 = Mock()
+        mock_item1.id = 'HLT001'
+        mock_item1.level = (1, 1)
+        mock_item2 = Mock()
+        mock_item2.id = 'HLT002'
+        mock_item2.level = (2, 2)
+        mock_items = [mock_item1, mock_item2]
+        expected = DoorstopWarning("skipped level: 1.1 (HLT001), 2.2 (HLT002)")
+        issues = list(self.document._get_issues_level(mock_items))
+        self.assertEqual(1, len(issues))
+        self.assertIsInstance(issues[0], type(expected))
+        self.assertEqual(expected.args, issues[0].args)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_issues_skipped_level_long(self):
+        """Verify skipped item levels are detected (long)."""
+        expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
+        for issue in self.document.issues:
+            logging.info(repr(issue))
+            if type(issue) == type(expect) and issue.args == expect.args:
+                break
+        else:
+            self.fail("issue not found: {}".format(expect))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
