@@ -411,7 +411,8 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
             logging.debug("checking level {} to {}...".format(plev, nlev))
             # Duplicate level
             if plev == nlev:
-                msg = "duplicate level: {} ({}, {})".format(pslev, pid, nid)
+                ids = sorted((pid, nid))
+                msg = "duplicate level: {} ({}, {})".format(pslev, *ids)
                 yield DoorstopWarning(msg)
             # Skipped level
             length = min(len(plev), len(nlev))
