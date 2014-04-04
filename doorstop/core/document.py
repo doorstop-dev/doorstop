@@ -414,11 +414,12 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "duplicate level: {} ({}, {})".format(pslev, pid, nid)
                 yield DoorstopWarning(msg)
             # Skipped level
-            elif plev[:-1] == nlev[:-1]:
-                if nlev[-1] - plev[-1] > 1:
+            for index in range(min(len(plev), len(nlev))):
+                if nlev[index] - plev[index] > 1:
                     msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
                                                                    nslev, nid)
                     yield DoorstopWarning(msg)
+                    break
             prev = item
 
     def delete(self, path=None):
