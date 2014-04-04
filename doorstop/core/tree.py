@@ -398,7 +398,7 @@ class Tree(object):  # pylint: disable=R0902
 
     @property
     def issues(self):
-        """Get a list of just the tree's issues."""
+        """Get a list of the tree's issues."""
         return list(self.get_issues())
 
     @clear_document_cache

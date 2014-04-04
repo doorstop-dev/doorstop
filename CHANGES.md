@@ -5,6 +5,9 @@ Changelog
 ------------------
 
 - Converted Item.issues() to a property and added Item.get_issues()
+- Added '--level' option to 'doorstop add' to force an Item level
+- Added warnings for duplicate Item levels in a Document
+- Added warnings for skipped Item levels in a Document
 
 0.4.3 (2014/03/18)
 ------------------
