@@ -277,7 +277,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(3, len(issues))
+        self.assertEqual(4, len(issues))
 
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
