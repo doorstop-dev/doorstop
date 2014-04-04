@@ -376,34 +376,10 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         logging.info("checking document {}...".format(self))
-        items = self.items
-        # Check for items
-        if not items:
-            yield DoorstopWarning("no items")
+        # Check levels
+        yield from self._get_issues_level()
         # Check each item
-        prev = None
-        for item in items:
-            # Check level
-            if prev:
-                logging.debug("checking level {} to {}...".format(prev.level,
-                                                                  item.level))
-                # Duplicate level
-                if item.level == prev.level:
-                    level = '.'.join(str(n) for n in prev.level)
-                    msg = "duplicate level: {} ({}, {})".format(level,
-                                                                prev.id,
-                                                                item.id)
-                    yield DoorstopWarning(msg)
-                # Skipped level
-                elif item.level[:-1] == prev.level[:-1]:
-                    if item.level[-1] - prev.level[-1] > 1:
-                        p_lev = '.'.join(str(n) for n in prev.level)
-                        i_lev = '.'.join(str(n) for n in item.level)
-                        msg = "skipped level: {} ({}), {} ({})".format(p_lev,
-                                                                       prev.id,
-                                                                       i_lev,
-                                                                       item.id)
-                        yield DoorstopWarning(msg)
+        for item in self:
             # Check item
             for issue in chain(item_hook(item=item, document=self, tree=tree)
                                if item_hook else [],
@@ -411,12 +387,39 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
-            prev = item
 
     @property
     def issues(self):
         """Get a list of the document's issues."""
         return list(self.get_issues())
+
+    def _get_issues_level(self):
+        """Yield all the document's issues related to item level."""
+        items = self.items
+        # Check for items
+        if not items:
+            return DoorstopWarning("no items")
+        # Check item levels
+        prev = items[0]
+        for item in items[1:]:
+            pid = prev.id
+            plev = prev.level
+            pslev = '.'.join(str(n) for n in plev)
+            nid = item.id
+            nlev = item.level
+            nslev = '.'.join(str(n) for n in nlev)
+            logging.debug("checking level {} to {}...".format(plev, nlev))
+            # Duplicate level
+            if plev == nlev:
+                msg = "duplicate level: {} ({}, {})".format(pslev, pid, nid)
+                yield DoorstopWarning(msg)
+            # Skipped level
+            elif plev[:-1] == nlev[:-1]:
+                if nlev[-1] - plev[-1] > 1:
+                    msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
+                                                                   nslev, nid)
+                    yield DoorstopWarning(msg)
+            prev = item
 
     def delete(self, path=None):
         """Delete the document and its items."""

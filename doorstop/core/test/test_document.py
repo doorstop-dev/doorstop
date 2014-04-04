@@ -242,13 +242,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be validated (long)."""
         self.assertTrue(self.document.valid())
 
+    @patch('doorstop.core.item.Item.get_issues',
+           Mock(return_value=[DoorstopError('error'),
+                              DoorstopWarning('warning'),
+                              DoorstopInfo('info')]))
     def test_valid_item(self):
         """Verify an item error fails the document check."""
-        mock_get_issues = Mock(return_value=[DoorstopError('e'),
-                                             DoorstopWarning('w'),
-                                             DoorstopInfo('i')])
-        with patch.object(self.document, 'get_issues', mock_get_issues):
-            self.assertFalse(self.document.valid())
+        self.assertFalse(self.document.valid())
 
     @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
     def test_valid_hook(self):

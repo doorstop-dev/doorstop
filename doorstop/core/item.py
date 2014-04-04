@@ -422,13 +422,13 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield DoorstopWarning("non-normative, but has links")
         # Check links against the document
         if document:
-            yield from self._issues_document(document)
+            yield from self._get_issues_document(document)
         # Check links against the tree
         if tree:
-            yield from self._issues_tree(tree)
+            yield from self._get_issues_tree(tree)
         # Check links against both document and tree
         if document and tree:
-            yield from self._issues_both(document, tree)
+            yield from self._get_issues_both(document, tree)
         # Reformat the file
         if settings.REFORMAT:
             self.save()
@@ -438,7 +438,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         """Get a list of the item's issues."""
         return list(self.get_issues())
 
-    def _issues_document(self, document):
+    def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
@@ -466,7 +466,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                         document.parent, identifier)
                     yield DoorstopInfo(msg)
 
-    def _issues_tree(self, tree):
+    def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
@@ -491,7 +491,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
-    def _issues_both(self, document, tree):
+    def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if settings.CHECK_RLINKS and self.normative:
