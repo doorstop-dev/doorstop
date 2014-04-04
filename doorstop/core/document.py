@@ -319,6 +319,15 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         self._items.remove(item)
         return item
 
+    def reorder(self, start=None, keep=None):
+        """Reorder a document's items.
+
+        @param start: level to start numbering (None = use current start)
+        @param keep: list of items or IDs keep over duplicates
+
+        """
+        raise NotImplementedError()
+
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
 
