@@ -164,9 +164,9 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(tree.valid())
 
     @patch('doorstop.core.item.Item.get_issues',
-       Mock(return_value=[DoorstopError('error'),
-                          DoorstopWarning('warning'),
-                          DoorstopInfo('info')]))
+           Mock(return_value=[DoorstopError('error'),
+                              DoorstopWarning('warning'),
+                              DoorstopInfo('info')]))
     def test_valid_document(self):
         """Verify an document error fails the tree valid."""
         self.assertFalse(self.tree.valid())

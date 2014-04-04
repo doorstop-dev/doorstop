@@ -393,9 +393,9 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         """Get a list of the document's issues."""
         return list(self.get_issues())
 
-    def _get_issues_level(self):
+    def _get_issues_level(self, items=None):
         """Yield all the document's issues related to item level."""
-        items = self.items
+        items = items or self.items
         # Check for items
         if not items:
             return DoorstopWarning("no items")
