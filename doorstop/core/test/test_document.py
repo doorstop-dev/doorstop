@@ -334,6 +334,21 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
 
+    def test_issues_skipped_level_out_over(self):
+        """Verify skipped (out and over) item levels are detected."""
+        mock_item1 = Mock()
+        mock_item1.id = 'HLT001'
+        mock_item1.level = (1, 1)
+        mock_item2 = Mock()
+        mock_item2.id = 'HLT002'
+        mock_item2.level = (2, 2)
+        mock_items = [mock_item1, mock_item2]
+        expected = DoorstopWarning("skipped level: 1.1 (HLT001), 2.2 (HLT002)")
+        issues = list(self.document._get_issues_level(mock_items))
+        self.assertEqual(1, len(issues))
+        self.assertIsInstance(issues[0], type(expected))
+        self.assertEqual(expected.args, issues[0].args)
+
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_issues_skipped_level_long(self):
         """Verify skipped item levels are detected (long)."""

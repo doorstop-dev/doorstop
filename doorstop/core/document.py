@@ -414,8 +414,16 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "duplicate level: {} ({}, {})".format(pslev, pid, nid)
                 yield DoorstopWarning(msg)
             # Skipped level
-            for index in range(min(len(plev), len(nlev))):
-                if nlev[index] - plev[index] > 1:
+            length = min(len(plev), len(nlev))
+            for index in range(length):
+                # Types of skipped levels:
+                #   over: 1.0 --> 1.1
+                #   out: 1.1 --> 3.0
+                #   over and out: 1.1 --> 2.2
+                if (nlev[index] - plev[index] > 1 or  # over or out
+                    (plev[index] != nlev[index] and
+                     index + 1 < length and
+                     nlev[index + 1] not in (0, 1))):  # over and out
                     msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
                                                                    nslev, nid)
                     yield DoorstopWarning(msg)
