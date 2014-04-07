@@ -618,6 +618,9 @@ def join_id(prefix, sep, number, digits):
     >>> join_id('REQ.H', '-', 42, 4)
     'REQ.H-0042'
 
+    >>> join_id('ABC', '-', 123, 0)
+    'ABC-123'
+
     """
     return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
