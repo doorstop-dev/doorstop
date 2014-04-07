@@ -312,6 +312,17 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImport(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop import' command."""
+
+    def test_import_with_attrs(self):
+        """Verify 'doorstop import' can be called."""
+        self.assertIs(None, main(['import', 'REQ', 'REQ099',
+                                  '--attrs', "{'text': 'The item text.}"]))
+
+
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
