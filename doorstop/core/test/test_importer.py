@@ -21,31 +21,27 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for new_document function."""  # pylint: disable=C0103
 
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-        os.chdir(self.temp)
+    PREFIX = 'PREFIX'
+    PATH = os.path.join(tempfile.gettempdir(), 'DIRECTORY')
 
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
-
-    def test_create_document(self):
+    @patch('doorstop.core.tree.Tree.new')
+    def test_create_document(self, mock_new):
         """Verify a new document can be created to import items."""
-        prefix = 'PREFIX'
-        path = os.path.join(self.temp, 'DIRECTORY')
-        document = importer.new_document(prefix, path)
-        self.assertEqual(prefix, document.prefix)
-        self.assertEqual(path, document.path)
+        importer.new_document(self.PREFIX, self.PATH)
+        mock_new.assert_called_once_with(self.PATH, self.PREFIX, parent=None)
+
+    def test_create_document_long(self):
+        """Verify a new document can be created to import items (long)."""
+        document = importer.new_document(self.PREFIX, self.PATH)
+        self.assertEqual(self.PREFIX, document.prefix)
+        self.assertEqual(self.PATH, document.path)
 
     def test_create_document_with_parent(self):
         """Verify a new document can be created with a parent."""
-        prefix = 'PREFIX'
-        parent = 'PARENT_PREFIX'
-        path = os.path.join(self.temp, 'DIRECTORY')
-        document = importer.new_document(prefix, path, parent=parent)
-        self.assertEqual(prefix, document.prefix)
-        self.assertEqual(path, document.path)
+        parent = 'PARENT_' + self.PREFIX
+        document = importer.new_document(self.PREFIX, self.PATH, parent=parent)
+        self.assertEqual(self.PREFIX, document.prefix)
+        self.assertEqual(self.PATH, document.path)
         self.assertEqual(parent, document.parent)
 
     @patch('doorstop.core.tree.Tree.new', Mock(side_effect=DoorstopError))
@@ -63,15 +59,6 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
 
     PREFIX = 'PREFIX'
     PATH = os.path.join(tempfile.gettempdir(), 'DIRECTORY')
-
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-        os.chdir(self.temp)
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
 
     def mock_find_document(self, prefix):
         """Mock Tree.find_document()."""
