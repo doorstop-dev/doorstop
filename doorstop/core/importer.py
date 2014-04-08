@@ -44,6 +44,8 @@ def new_document(prefix, path, parent=None):
         logging.warning(exc)
         _DOCUMENTS.append(document)
 
+    # TODO: attempt to place unplaced documents?
+
     return document
 
 
