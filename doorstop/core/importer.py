@@ -1,11 +1,6 @@
 """Functions to import exiting documents and items to the Doorstop format."""
 
-import os
-import sys
-import shutil
-import subprocess
 import logging
-from itertools import chain
 
 from doorstop.core.tree import build
 from doorstop.core.document import Document
