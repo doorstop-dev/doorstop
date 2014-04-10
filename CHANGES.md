@@ -8,6 +8,7 @@ Changelog
 - Added '--level' option to 'doorstop add' to force an Item level
 - Added warnings for duplicate Item levels in a Document
 - Added warnings for skipped Item levels in a Document
+- Added doorstop.importer functions to add exiting Documents and Items
 
 0.4.3 (2014/03/18)
 ------------------
