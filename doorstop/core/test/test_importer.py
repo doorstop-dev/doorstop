@@ -9,7 +9,6 @@ from doorstop.core import importer
 from doorstop.core.tree import Tree
 from doorstop.common import DoorstopError
 
-from doorstop.core.test.test_tree import MockDocument
 from doorstop.core.test.test_document import MockItem
 
 
