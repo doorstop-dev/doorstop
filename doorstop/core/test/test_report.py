@@ -23,9 +23,9 @@ from doorstop.core.test.test_item import MockItem
 ASSERT_CONTENTS = True
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.report module."""  # pylint: disable=C0103
+    """Base test class for the doorstop.core.report module."""  # pylint: disable=C0103
 
     @classmethod
     def setUpClass(cls):
@@ -50,6 +50,11 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         ]
         cls.work = WorkingCopy(None)
 
+
+class TestModule(BaseTestCase):  # pylint: disable=R0904
+
+    """Unit tests for the doorstop.core.report module."""  # pylint: disable=C0103
+
     @patch('os.makedirs')
     @patch('builtins.open')
     @patch('doorstop.core.report.lines')
@@ -62,17 +67,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         mock_open.assert_called_once_with(path, 'w')
         mock_lines.assert_called_once_with(self.document, '.html',
                                            ignored=None)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_publish_html_long(self):
-        """Verify an HTML file can be created (long)."""
-        temp = tempfile.mkdtemp()
-        try:
-            path = os.path.join(temp, 'report.html')
-            report.publish(self.document, path, '.html')
-            self.assertTrue(os.path.isfile(path))
-        finally:
-            shutil.rmtree(temp)
 
     def test_publish_unknown(self):
         """Verify publishing to an unknown format raises an exception."""
@@ -111,6 +105,41 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             settings.CHECK_REF = _check_ref
         self.assertIn("Reference: 'abc123'", text)
 
+    def test_lines_markdown_item(self):
+        """Verify a Markdown report can be created from an item."""
+        expected = "# 1.0 Heading\n\n"
+        lines = report.lines(self.item, '.md', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_lines_html_item(self):
+        """Verify an HTML report can be created from an item."""
+        expected = "<h1>1.0 Heading</h1>\n"
+        lines = report.lines(self.item, '.html', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_lines_unknown(self):
+        """Verify iterating an unknown format raises."""
+        gen = report.lines(self.document, '.a')
+        self.assertRaises(DoorstopError, list, gen)
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
+
+    """Integration tests for the doorstop.core.report module."""  # pylint: disable=C0103
+
+    def test_publish_html(self):
+        """Verify an HTML file can be created."""
+        temp = tempfile.mkdtemp()
+        try:
+            path = os.path.join(temp, 'report.html')
+            report.publish(self.document, path, '.html')
+            self.assertTrue(os.path.isfile(path))
+        finally:
+            shutil.rmtree(temp)
+
     def test_lines_text_document(self):
         """Verify a text report can be created from a document."""
         path = os.path.join(FILES, 'report.txt')
@@ -121,13 +150,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
-
-    def test_lines_markdown_item(self):
-        """Verify a Markdown report can be created from an item."""
-        expected = "# 1.0 Heading\n\n"
-        lines = report.lines(self.item, '.md', ignored=self.work.ignored)
-        text = ''.join(line + '\n' for line in lines)
-        self.assertEqual(expected, text)
 
     def test_lines_markdown_document(self):
         """Verify a Markdown report can be created from a document."""
@@ -140,13 +162,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
-    def test_lines_html_item(self):
-        """Verify an HTML report can be created from an item."""
-        expected = "<h1>1.0 Heading</h1>\n"
-        lines = report.lines(self.item, '.html', ignored=self.work.ignored)
-        text = ''.join(line + '\n' for line in lines)
-        self.assertEqual(expected, text)
-
     def test_lines_html_document(self):
         """Verify an HTML report can be created from a document."""
         path = os.path.join(FILES, 'report.html')
@@ -157,8 +172,3 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
-
-    def test_lines_unknown(self):
-        """Verify iterating an unknown format raises."""
-        gen = report.lines(self.document, '.a')
-        self.assertRaises(DoorstopError, list, gen)

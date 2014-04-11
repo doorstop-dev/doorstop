@@ -237,11 +237,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.document.valid())
         self.assertEqual(5, mock_get_issues.call_count)
 
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_valid_long(self):
-        """Verify a document can be validated (long)."""
-        self.assertTrue(self.document.valid())
-
     @patch('doorstop.core.item.Item.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
@@ -271,14 +266,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an document's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.document.issues))
 
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_issues_count_long(self):
-        """Verify a number of issues are found in a document (long)."""
-        issues = self.document.issues
-        for issue in self.document.issues:
-            logging.info(repr(issue))
-        self.assertEqual(4, len(issues))
-
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
         mock_item1 = Mock()
@@ -292,17 +279,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issue = list(self.document._get_issues_level(mock_items))[0]
         self.assertIsInstance(issue, type(expected))
         self.assertEqual(expected.args, issue.args)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_issues_duplicate_level_long(self):
-        """Verify duplicate item levels are detected (long)."""
-        expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
-        for issue in self.document.issues:
-            logging.info(repr(issue))
-            if type(issue) == type(expect) and issue.args == expect.args:
-                break
-        else:
-            self.fail("issue not found: {}".format(expect))
 
     def test_issues_skipped_level_over(self):
         """Verify skipped (over) item levels are detected."""
@@ -348,17 +324,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_issues_skipped_level_long(self):
-        """Verify skipped item levels are detected (long)."""
-        expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
-        for issue in self.document.issues:
-            logging.info(repr(issue))
-            if type(issue) == type(expect) and issue.args == expect.args:
-                break
-        else:
-            self.fail("issue not found: {}".format(expect))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

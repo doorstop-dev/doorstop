@@ -141,7 +141,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: doorstop pep8 pep257 test tests
+ci: doorstop pep8 pep257 test tests tutorial
 
 # Cleanup ####################################################################
 

@@ -152,12 +152,6 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.valid())
         self.assertEqual(2, mock_get_issues.call_count)
 
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_valid_long(self):
-        """Verify trees can be checked (long)."""
-        logging.info("tree: {}".format(self.tree))
-        self.assertTrue(self.tree.valid())
-
     def test_valid_no_documents(self):
         """Verify an empty tree can be checked."""
         tree = Tree(None, root='.')
