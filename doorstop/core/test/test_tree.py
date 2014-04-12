@@ -9,10 +9,10 @@ import operator
 import logging
 
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.tree import Tree, build
+from doorstop.core.tree import Tree, build, find_document, find_item
 from doorstop.core.document import Document
 
-from doorstop.core.test import ENV, REASON, FILES, SYS, EMPTY
+from doorstop.core.test import FILES, SYS, EMPTY
 from doorstop.core.test.test_document import MockDocument as _MockDocment
 
 
@@ -342,3 +342,23 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify documents can be skipped while building a tree."""
         tree = build(FILES)
         self.assertEqual(0, len(tree))
+
+    @patch('doorstop.core.tree.build', Mock(return_value=Tree(Mock())))
+    @patch('doorstop.core.tree.Tree.find_document')
+    def test_find_document(self, mock_find_document):  # pylint: disable=R0201
+        """Verify documents can be found using a convenience function."""
+        from doorstop.core import tree
+        tree._TREE = None  # pylint: disable=W0212
+        prefix = 'req'
+        find_document(prefix)
+        mock_find_document.assert_called_once_with(prefix)
+
+    @patch('doorstop.core.tree.build', Mock(return_value=Tree(Mock())))
+    @patch('doorstop.core.tree.Tree.find_item')
+    def test_find_item(self, mock_find_item):  # pylint: disable=R0201
+        """Verify items can be found using a convenience function."""
+        from doorstop.core import tree
+        tree._TREE = None  # pylint: disable=W0212
+        identifier = 'req1'
+        find_item(identifier)
+        mock_find_item.assert_called_once_with(identifier)
