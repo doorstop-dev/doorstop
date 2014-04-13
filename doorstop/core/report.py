@@ -251,7 +251,7 @@ def lines_html(obj, ignored=None):
         yield '<style type="text/css">'
         yield ''
         with open(CSS) as infile:
-            for line in infile:
+            for line in infile:  # pragma: no cover, integration test
                 yield line
         yield '</style>'
         yield '</head>'

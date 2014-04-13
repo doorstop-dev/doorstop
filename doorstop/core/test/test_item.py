@@ -9,7 +9,6 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import ENV, REASON
 from doorstop.core.test import FILES, EMPTY, EXTERNAL, MockFileObject
 
 
@@ -355,12 +354,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an error occurs when no external reference found."""
         self.item.ref = "not found".replace(' ', '')  # avoids self match
         self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_find_ref_error_long(self):
-        """Verify an error occurs when no external reference found (long)."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
-        self.assertRaises(DoorstopError, self.item.find_ref)
 
     def test_find_ref_none(self):
         """Verify nothing returned when no external reference is specified."""

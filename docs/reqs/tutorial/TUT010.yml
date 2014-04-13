@@ -1,0 +1,17 @@
+active: true
+derived: false
+level: 2.2
+links:
+- REQ007
+normative: true
+ref: ''
+text: |
+  **Creating an HTML directory.**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Create an HTML directory for all documents:
+
+      doorstop publish all path/to/htmldir
