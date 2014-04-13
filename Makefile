@@ -92,11 +92,13 @@ apidocs/$(PACKAGE)/index.html: $(SOURCES)
 .PHONY: html
 html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml')
+	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: doorstop
+doorstop: env
 	$(BIN)/doorstop
 
 .PHONY: read
@@ -141,7 +143,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: doorstop pep8 pep257 test tests
+ci: doorstop pep8 pep257 test tests tutorial
 
 # Cleanup ####################################################################
 

@@ -4,12 +4,21 @@ import unittest
 from unittest.mock import patch
 
 import os
+<<<<<<< HEAD
 import tempfile
 import shutil
+||||||| merged common ancestors
+=======
 import logging
+>>>>>>> master
 
 from doorstop import core
+<<<<<<< HEAD
+from doorstop.common import DoorstopError
+||||||| merged common ancestors
+=======
 from doorstop.common import DoorstopWarning, DoorstopError
+>>>>>>> master
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 
@@ -152,6 +161,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.valid())
 
 
+<<<<<<< HEAD
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
@@ -228,7 +238,12 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
+# TODO: uncomment the following line when unit tests are in place for coverage
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+||||||| merged common ancestors
+=======
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+>>>>>>> master
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core module."""  # pylint: disable=C0103
