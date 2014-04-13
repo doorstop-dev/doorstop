@@ -92,11 +92,13 @@ apidocs/$(PACKAGE)/index.html: $(SOURCES)
 .PHONY: html
 html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml')
+	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: doorstop
+doorstop:
 	$(BIN)/doorstop
 
 .PHONY: read

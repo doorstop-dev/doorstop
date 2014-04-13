@@ -116,6 +116,10 @@ class TestSection1(TestBase):  # pylint: disable=R0904
         self.doorstop("publish REQ")
         self.doorstop("publish TST")
 
+        # 2.2
+
+        self.doorstop("publish all path/to/htmldir")
+
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
