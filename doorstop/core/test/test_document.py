@@ -10,7 +10,6 @@ from doorstop.core.document import Document
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
-from doorstop.core.test import ENV, REASON
 from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
 from doorstop.core.test.test_item import MockItem
 

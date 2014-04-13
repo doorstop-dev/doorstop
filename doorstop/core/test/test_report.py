@@ -30,8 +30,10 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
     @classmethod
     def setUpClass(cls):
         cls.item = MockItem('path/to/req3.yml',
-                            _file="links: [sys3]\ntext: 'Heading'\n"
-                            "level: 1.0\nnormative: false")
+                            _file=("links: [sys3]" + '\n'
+                                   "text: 'Heading'" + '\n'
+                                   "level: 1.1.0" + '\n'
+                                   "normative: false"))
         cls.document = MagicMock()
         cls.document.items = [
             cls.item,
@@ -48,6 +50,12 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                      "normative: false"),
         ]
+        cls.item2 = MockItem('path/to/req4.yml', _file=(
+            "links: [sys4]" + '\n'
+            "text: 'This shall...'" + '\n'
+            "ref: Doorstop.sublime-project" + '\n'
+            "level: 1.2" + '\n'
+            "normative: true"))
         cls.work = WorkingCopy(None)
 
 
@@ -73,6 +81,18 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           report.publish, self.document, 'a.a', '.a')
 
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_publish_document(self, mock_open, mock_makedirs):
+        """Verify a document can be published."""
+        path = os.path.join('mock', 'directory', 'report.html')
+        mock_document = MagicMock()
+        mock_document.items = []
+        report.publish(mock_document, path)
+        mock_makedirs.assert_called_once_with(os.path.join('mock',
+                                                           'directory'))
+        self.assertEqual(2, mock_open.call_count)
+
     def test_index(self):
         """Verify an HTML index can be created."""
         path = os.path.join(FILES, 'index.html')
@@ -85,10 +105,21 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         report.index(EMPTY)
         self.assertFalse(os.path.isfile(path))
 
-    def test_lines_text_item(self):
-        """Verify a text report can be created from an item."""
-        expected = "1.0     Heading\n\n"
+    def test_lines_text_item_heading(self):
+        """Verify a text report can be created from an item (heading)."""
+        expected = "1.1     Heading\n\n"
         lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_lines_text_item_normative(self):
+        """Verify a text report can be created from an item (normative)."""
+        expected = ("1.2     req4" + '\n\n'
+                    "        This shall..." + '\n\n'
+                    "        Reference: Doorstop.sublime-project (line None)"
+                    + '\n\n'
+                    "        Links: sys4" + '\n\n')
+        lines = report.lines(self.item2, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
@@ -105,16 +136,26 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
             settings.CHECK_REF = _check_ref
         self.assertIn("Reference: 'abc123'", text)
 
-    def test_lines_markdown_item(self):
-        """Verify a Markdown report can be created from an item."""
-        expected = "# 1.0 Heading\n\n"
+    def test_lines_markdown_item_heading(self):
+        """Verify a Markdown report can be created from an item (heading)."""
+        expected = "## 1.1 Heading\n\n"
         lines = report.lines(self.item, '.md', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertEqual(expected, text)
+
+    def test_lines_markdown_item_normative(self):
+        """Verify a Markdown report can be created from an item (normative)."""
+        expected = ("## 1.2 req4" + '\n\n'
+                    "This shall..." + '\n\n'
+                    "Reference: Doorstop.sublime-project (line None)" + '\n\n'
+                    "*Links: sys4*" + '\n\n')
+        lines = report.lines(self.item2, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
     def test_lines_html_item(self):
         """Verify an HTML report can be created from an item."""
-        expected = "<h1>1.0 Heading</h1>\n"
+        expected = "<h2>1.1 Heading</h2>\n"
         lines = report.lines(self.item, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)

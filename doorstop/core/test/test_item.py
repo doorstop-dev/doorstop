@@ -9,7 +9,6 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import ENV, REASON
 from doorstop.core.test import FILES, EMPTY, EXTERNAL, MockFileObject
 
 
