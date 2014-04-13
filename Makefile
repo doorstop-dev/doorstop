@@ -98,7 +98,7 @@ docs/gen/*.html: $(shell find . -name '*.yml')
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: doorstop
-doorstop:
+doorstop: env
 	$(BIN)/doorstop
 
 .PHONY: read
