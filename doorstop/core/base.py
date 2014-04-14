@@ -264,7 +264,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     @abc.abstractmethod
     def get_issues(self, document=None, tree=None,
-                   document_hook=None, item_hook=None):  # pragma: no cover, abstract method
+                   document_hook=None, item_hook=None):
         """Yield all the objects's issues.
 
         @param document: Document containing the object (document-level issues)
@@ -275,7 +275,6 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
-        yield
 
     @property
     def issues(self):

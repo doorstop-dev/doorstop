@@ -275,8 +275,10 @@ def _run_link(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("linked items: {} ({}) -> {} ({})".format(child.id, child.relpath,
-                                                        parent.id, parent.relpath))
+        print("linked items: {} ({}) -> {} ({})".format(child.id,
+                                                        child.relpath,
+                                                        parent.id,
+                                                        parent.relpath))
         return True
 
 
@@ -295,8 +297,10 @@ def _run_unlink(args, cwd, _):
         logging.error(error)
         return False
     else:
-        print("unlinked items: {} ({}) -> {} ({})".format(child.id, child.relpath,
-                                                          parent.id, parent.relpath))
+        print("unlinked items: {} ({}) -> {} ({})".format(child.id,
+                                                          child.relpath,
+                                                          parent.id,
+                                                          parent.relpath))
         return True
 
 

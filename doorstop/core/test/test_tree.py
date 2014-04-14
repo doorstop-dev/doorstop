@@ -231,19 +231,23 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError, self.tree.link_items, 'unknown1', 'req2')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'unknown1', 'req2')
 
     def test_link_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError, self.tree.link_items, 'req9999', 'req2')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req9999', 'req2')
 
     def test_link_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.link_items, 'req1', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req1', 'unknown1')
 
     def test_link_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.link_items, 'req1', 'req9999')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req1', 'req9999')
 
     @patch('doorstop.core.item.Item.unlink')
     def test_unlink_items(self, mock_unlink):
@@ -253,22 +257,27 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_unlink_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError, self.tree.unlink_items, 'unknown1', 'req1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'unknown1', 'req1')
 
     def test_unlink_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req9999', 'req1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req9999', 'req1')
 
     def test_unlink_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
         # Cache miss
-        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'unknown1')
         # Cache hit
-        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'unknown1')
 
     def test_unlink_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'req9999')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'req9999')
 
     @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.tree._open')
