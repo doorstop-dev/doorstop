@@ -98,11 +98,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
 
-    def test_id_relpath(self):
-        """Verify an item's ID and relative path string can be read."""
-        text = "{} (@{}{})".format(self.item.id, os.sep, self.item.path)
-        self.assertEqual(text, self.item.id_relpath)
-
     def test_prefix(self):
         """Verify an item's prefix can be read but not set."""
         self.assertEqual('RQ', self.item.prefix)

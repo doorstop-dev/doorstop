@@ -146,12 +146,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         text = "@{}{}".format(os.sep, relpath)
         self.assertEqual(text, self.document.relpath)
 
-    def test_prefix_relpath(self):
-        """Verify the document's prefix and relpath can be determined."""
-        relpath = os.path.relpath(self.document.path, self.document.root)
-        text = "{} (@{}{})".format(self.document.prefix, os.sep, relpath)
-        self.assertEqual(text, self.document.prefix_relpath)
-
     def test_sep(self):
         """Verify an documents's separator can be set and read."""
         self.document.sep = '_'

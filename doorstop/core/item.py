@@ -66,7 +66,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if common.VERBOSITY < common.STR_VERBOSITY:
             return self.id
         else:
-            return self.id_relpath
+            return "{} ({})".format(self.id, self.relpath)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
@@ -182,12 +182,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         """Get the item's relative path string."""
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
-
-    # TODO: think of a better name for this property
-    @property
-    def id_relpath(self):
-        """Get the item's ID + relative path string."""
-        return "{} ({})".format(self.id, self.relpath)
 
     @property
     def prefix(self):

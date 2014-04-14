@@ -53,7 +53,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         if common.VERBOSITY < common.STR_VERBOSITY:
             return self.prefix
         else:
-            return self.prefix_relpath
+            return "{} ({})".format(self.prefix, self.relpath)
 
     def __iter__(self):
         yield from self._iter()
@@ -207,13 +207,6 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         """Get the document's relative path string."""
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
-
-    # TODO: think of a better name for this property
-    @property
-    @auto_load
-    def prefix_relpath(self):
-        """Get the document's prefix + relative path string."""
-        return "{} ({})".format(self.prefix, self.relpath)
 
     @property
     @auto_load
