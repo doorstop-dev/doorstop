@@ -6,12 +6,13 @@ import logging
 
 from doorstop.core import base
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import BaseValidatable
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Item(BaseFileObject):  # pylint: disable=R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     """Represents an item file with linkable text."""
 
@@ -346,44 +347,20 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @auto_save
     @auto_load
-    def add_link(self, item):
+    def link(self, item):
         """Add a new link to another item ID."""
         self._data['links'].add(item)
 
     @auto_save
     @auto_load
-    def remove_link(self, item):
+    def unlink(self, item):
         """Remove an existing link by item ID."""
         try:
             self._data['links'].remove(item)
         except KeyError:
             logging.warning("link to {0} does not exist".format(item))
 
-    def valid(self, document=None, tree=None):
-        """Check the item for validity.
-
-        @param document: Document containing the item
-        @param tree: Tree containing the item
-
-        @return: indication that the item is valid
-
-        """
-        # TODO: refactor: this could be common code with Item/Document/Tree
-        valid = True
-        # Display all issues
-        for issue in self.get_issues(document=document, tree=tree):
-            if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
-            elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
-            else:
-                assert isinstance(issue, DoorstopError)
-                logging.error(issue)
-                valid = False
-        # Return the result
-        return valid
-
-    def get_issues(self, document=None, tree=None):
+    def get_issues(self, document=None, tree=None, **_):
         """Yield all the item's issues.
 
         @param document: Document containing the item (document-level issues)
@@ -426,11 +403,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         # Reformat the file
         if settings.REFORMAT:
             self.save()
-
-    @property
-    def issues(self):
-        """Get a list of the item's issues."""
-        return list(self.get_issues())
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""

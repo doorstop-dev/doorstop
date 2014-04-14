@@ -171,9 +171,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(5, self.document.next)
 
     @patch('doorstop.core.item.Item.new')
-    def test_add(self, mock_new):
+    def test_add_item(self, mock_new):
         """Verify an item can be added to a document."""
-        self.document.add()
+        self.document.add_item()
         mock_new.assert_called_once_with(FILES, ROOT,
                                          'REQ', '', 3,
                                          5, level=(2, 2))
@@ -183,7 +183,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
-        self.assertIsNot(None, document.add())
+        self.assertIsNot(None, document.add_item())
         mock_new.assert_called_once_with(NEW, ROOT,
                                          'NEW', '', 3,
                                          1, level=None)
@@ -192,15 +192,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an added item is contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        item2 = self.document.add()
+        item2 = self.document.add_item()
         self.assertIn(item2, self.document)
 
     @patch('os.remove')
-    def test_remove_contains(self, mock_remove):
+    def test_remove_item_contains(self, mock_remove):
         """Verify a removed item is not contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        removed_item = self.document.remove(item.id)
+        removed_item = self.document.remove_item(item.id)
         self.assertEqual(item, removed_item)
         self.assertNotIn(item, self.document)
         mock_remove.assert_called_once_with(item.path)
@@ -224,25 +224,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
     @patch('doorstop.core.item.Item.get_issues')
-    def test_valid(self, mock_get_issues):
+    def test_validate(self, mock_get_issues):
         """Verify a document can be validated."""
         mock_get_issues.return_value = [DoorstopInfo('i')]
-        self.assertTrue(self.document.valid())
+        self.assertTrue(self.document.validate())
         self.assertEqual(5, mock_get_issues.call_count)
 
     @patch('doorstop.core.item.Item.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
                               DoorstopInfo('info')]))
-    def test_valid_item(self):
+    def test_validate_item(self):
         """Verify an item error fails the document check."""
-        self.assertFalse(self.document.valid())
+        self.assertFalse(self.document.validate())
 
     @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
-    def test_valid_hook(self):
+    def test_validate_hook(self):
         """Verify an item hook can be called."""
         mock_hook = MagicMock()
-        self.document.valid(item_hook=mock_hook)
+        self.document.validate(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
