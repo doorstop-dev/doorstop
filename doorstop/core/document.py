@@ -358,6 +358,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         logging.info("checking document {}...".format(self))
+        # Reorder levels
+        if settings.REORDER:
+            self.reorder()
         # Check levels
         yield from self._get_issues_level()
         # Check each item
