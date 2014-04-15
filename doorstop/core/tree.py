@@ -8,12 +8,13 @@ import logging
 from itertools import chain
 
 from doorstop.core.base import clear_document_cache, clear_item_cache
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop.core.base import BaseValidatable
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core import vcs
 
 
-class Tree(object):  # pylint: disable=R0902
+class Tree(BaseValidatable):  # pylint: disable=R0902
 
     """A bidirectional tree structure to store the hierarchy of documents.
 
@@ -156,7 +157,7 @@ class Tree(object):  # pylint: disable=R0902
 
     @clear_document_cache
     @clear_item_cache
-    def new(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def new_document(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
@@ -184,10 +185,11 @@ class Tree(object):  # pylint: disable=R0902
         return document
 
     @clear_item_cache
-    def add(self, prefix):
+    def add_item(self, prefix, level=None):
         """Add a new item to an existing document by prefix.
 
         @param prefix: document's prefix
+        @param level: desired item level
 
         @return: newly created Item
 
@@ -196,11 +198,11 @@ class Tree(object):  # pylint: disable=R0902
         """
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
-        item = document.add()
+        item = document.add_item(level=level)
         return item
 
     @clear_item_cache
-    def remove(self, identifier):
+    def remove_item(self, identifier):
         """Remove an item from a document by ID.
 
         @param identifier: item's ID
@@ -216,12 +218,12 @@ class Tree(object):  # pylint: disable=R0902
             except DoorstopError:
                 pass  # item not found in that document
             else:
-                item = document.remove(identifier)
+                item = document.remove_item(identifier)
                 return item
 
         raise DoorstopError("no matching ID: {}".format(identifier))
 
-    def link(self, cid, pid):
+    def link_items(self, cid, pid):
         """Add a new link between two items by IDs.
 
         @param cid: child item's ID
@@ -238,10 +240,10 @@ class Tree(object):  # pylint: disable=R0902
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
         # Add link
-        child.add_link(parent.id)
+        child.link(parent.id)
         return child, parent
 
-    def unlink(self, cid, pid):
+    def unlink_items(self, cid, pid):
         """Remove a link between two items by IDs.
 
         @param cid: child item's ID
@@ -258,10 +260,10 @@ class Tree(object):  # pylint: disable=R0902
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
         # Remove link
-        child.remove_link(parent.id)
+        child.unlink(parent.id)
         return child, parent
 
-    def edit(self, identifier, tool=None, launch=False):
+    def edit_item(self, identifier, tool=None, launch=False):
         """Open an item for editing by ID.
 
         @param identifier: ID of item to edit
@@ -347,32 +349,7 @@ class Tree(object):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, document_hook=None, item_hook=None):
-        """Check the tree (and its documents) for validity.
-
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
-
-        @return: indication that the tree is valid
-
-        """
-        valid = True
-        logging.info("checking tree...")
-        # Display all issues
-        for issue in self.issues(document_hook=document_hook,
-                                 item_hook=item_hook):
-            if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
-            elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
-            else:
-                assert isinstance(issue, DoorstopError)
-                logging.error(issue)
-                valid = False
-        # Return the result
-        return valid
-
-    def issues(self, document_hook=None, item_hook=None):
+    def get_issues(self, document_hook=None, item_hook=None, **_):
         """Yield all the tree's issues.
 
         @param document_hook: function to call for custom document validation
@@ -389,8 +366,8 @@ class Tree(object):  # pylint: disable=R0902
         for document in documents:
             for issue in chain(document_hook(document=document, tree=self)
                                if document_hook else [],
-                               document.issues(tree=self,
-                                               item_hook=item_hook)):
+                               document.get_issues(tree=self,
+                                                   item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))

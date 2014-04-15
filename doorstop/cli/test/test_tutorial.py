@@ -10,7 +10,10 @@ import tempfile
 import subprocess
 import logging
 
-from doorstop.cli.test import ENV, REASON, ROOT
+from doorstop.cli.test import ROOT
+
+ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
+REASON = "'{0}' variable not set".format(ENV)
 
 if os.name == 'nt':
     PATH = os.path.join(ROOT, 'env', 'Scripts', 'doorstop.exe')
@@ -112,6 +115,10 @@ class TestSection1(TestBase):  # pylint: disable=R0904
 
         self.doorstop("publish REQ")
         self.doorstop("publish TST")
+
+        # 2.2
+
+        self.doorstop("publish all path/to/htmldir")
 
 
 if __name__ == '__main__':

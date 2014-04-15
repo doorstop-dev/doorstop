@@ -6,12 +6,13 @@ import logging
 
 from doorstop.core import base
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import BaseValidatable
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Item(BaseFileObject):  # pylint: disable=R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     """Represents an item file with linkable text."""
 
@@ -66,7 +67,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if common.VERBOSITY < common.STR_VERBOSITY:
             return self.id
         else:
-            return self.id_relpath
+            return "{} ({})".format(self.id, self.relpath)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
@@ -183,12 +184,6 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 
-    # TODO: think of a better name for this property
-    @property
-    def id_relpath(self):
-        """Get the item's ID + relative path string."""
-        return "{} ({})".format(self.id, self.relpath)
-
     @property
     def prefix(self):
         """Get the item ID's prefix."""
@@ -207,6 +202,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @level.setter
     @auto_save
+    @auto_load
     def level(self, value):
         """Set the item's level."""
         self._data['level'] = load_level(value)
@@ -236,6 +232,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @active.setter
     @auto_save
+    @auto_load
     def active(self, value):
         """Set the item's active status."""
         self._data['active'] = bool(value)
@@ -254,6 +251,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @derived.setter
     @auto_save
+    @auto_load
     def derived(self, value):
         """Set the item's derived status."""
         self._data['derived'] = bool(value)
@@ -274,6 +272,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @normative.setter
     @auto_save
+    @auto_load
     def normative(self, value):
         """Set the item's normative status."""
         self._data['normative'] = bool(value)
@@ -289,6 +288,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @heading.setter
     @auto_save
+    @auto_load
     def heading(self, value):
         """Set the item's heading status."""
         heading = bool(value)
@@ -307,6 +307,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @text.setter
     @auto_save
+    @auto_load
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = str(value) if value else ""
@@ -324,6 +325,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @ref.setter
     @auto_save
+    @auto_load
     def ref(self, value):
         """Set the item's external file reference."""
         self._data['ref'] = str(value) if value else ""
@@ -336,22 +338,23 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @links.setter
     @auto_save
+    @auto_load
     def links(self, value):
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
 
     # actions ################################################################
 
-    @auto_load
     @auto_save
-    def add_link(self, value):
+    @auto_load
+    def link(self, value):
         """Add a new link to another item ID."""
         identifier = get_id(value)
         self._data['links'].add(identifier)
 
-    @auto_load
     @auto_save
-    def remove_link(self, value):
+    @auto_load
+    def unlink(self, value):
         """Remove an existing link by item ID."""
         identifier = get_id(value)
         try:
@@ -359,35 +362,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         except KeyError:
             logging.warning("link to {0} does not exist".format(identifier))
 
-    def valid(self, document=None, tree=None):
-        """Check the item for validity.
-
-        @param document: Document containing the item
-        @param tree: Tree containing the item
-
-        @return: indication that the item is valid
-
-        """
-        # TODO: refactor: this could be common code with Item/Document/Tree
-        valid = True
-        # Display all issues
-        for issue in self.issues(document=document, tree=tree):
-            if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
-            elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
-            else:
-                assert isinstance(issue, DoorstopError)
-                logging.error(issue)
-                valid = False
-        # Return the result
-        return valid
-
-    def issues(self, document=None, tree=None):
+    def get_issues(self, document=None, tree=None, **_):
         """Yield all the item's issues.
 
-        @param document: Document containing the item
-        @param tree: Tree containing the item
+        @param document: Document containing the item (document-level issues)
+        @param tree: Tree containing the item (tree-level issues)
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
@@ -416,18 +395,18 @@ class Item(BaseFileObject):  # pylint: disable=R0904
             yield DoorstopWarning("non-normative, but has links")
         # Check links against the document
         if document:
-            yield from self._issues_document(document)
+            yield from self._get_issues_document(document)
         # Check links against the tree
         if tree:
-            yield from self._issues_tree(tree)
+            yield from self._get_issues_tree(tree)
         # Check links against both document and tree
         if document and tree:
-            yield from self._issues_both(document, tree)
+            yield from self._get_issues_both(document, tree)
         # Reformat the file
         if settings.REFORMAT:
             self.save()
 
-    def _issues_document(self, document):
+    def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
@@ -447,14 +426,15 @@ class Item(BaseFileObject):  # pylint: disable=R0904
                 msg = "invalid ID in links: {}".format(identifier)
                 yield DoorstopError(msg)
             else:
-                if prefix != document.parent:
+                if document.parent and prefix != document.parent:
                     # this is only 'info' because a document is allowed
                     # to contain items with a different prefix, but
                     # Doorstop will not create items like this
-                    msg = "linked to non-parent item: {}".format(identifier)
+                    msg = "parent is '{}', but linked to: {}".format(
+                        document.parent, identifier)
                     yield DoorstopInfo(msg)
 
-    def _issues_tree(self, tree):
+    def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         # Verify an item's links are valid
         identifiers = set()
@@ -479,7 +459,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
-    def _issues_both(self, document, tree):
+    def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
         # Verify an item is being linked to (reverse links)
         if settings.CHECK_RLINKS and self.normative:
@@ -510,6 +490,7 @@ class Item(BaseFileObject):  # pylint: disable=R0904
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
         logging.debug("regex: {}".format(pattern))
         regex = re.compile(pattern)
+        logging.debug("search path: {}".format(root or self.root))
         for root, _, filenames in os.walk(root or self.root):
             for filename in filenames:  # pragma: no cover, integration test
                 path = os.path.join(root, filename)
@@ -575,9 +556,9 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
 # attribute formatters #######################################################
 
-def get_id(item):
+def get_id(value):
     """Get an ID from an item or string."""
-    return str(item).split(' ')[0]
+    return str(value).split(' ')[0]
 
 
 def split_id(text):
@@ -609,6 +590,9 @@ def join_id(prefix, sep, number, digits):
 
     >>> join_id('REQ.H', '-', 42, 4)
     'REQ.H-0042'
+
+    >>> join_id('ABC', '-', 123, 0)
+    'ABC-123'
 
     """
     return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
@@ -691,7 +675,7 @@ def save_level(parts):
     # Convert formats to cleaner YAML formats
     if len(parts) == 1:
         level = int(level)
-    elif len(parts) == 2:
+    elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
         level = float(level)
 
     return level

@@ -13,7 +13,6 @@ ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_PYTHON := C:\\Python33\\python.exe
 	SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
 	BIN := $(ENV)/Scripts
-	EXE := .exe
 	OPEN := cmd /c start
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python33\\tcl\\tcl8.5
@@ -31,16 +30,16 @@ endif
 MAN := man
 SHARE := share
 
-PYTHON := $(BIN)/python$(EXE)
-PIP := $(BIN)/pip$(EXE)
+PYTHON := $(BIN)/python
+PIP := $(BIN)/pip
 RST2HTML := $(BIN)/rst2html.py
 PDOC := $(BIN)/pdoc
-PEP8 := $(BIN)/pep8$(EXE)
+PEP8 := $(BIN)/pep8
 PEP257 := $(BIN)/pep257
-PYLINT := $(BIN)/pylint$(EXE)
-NOSE := $(BIN)/nosetests$(EXE)
+PYLINT := $(BIN)/pylint
+NOSE := $(BIN)/nosetests
 
-# Installation ###############################################################
+# Development Installation ###################################################
 
 .PHONY: all
 all: env
@@ -74,10 +73,10 @@ $(DEPENDS_DEV): Makefile
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme apidocs req
+doc: readme apidocs html doorstop
 
 .PHONY: readme
-readme: .depends-ci docs/README-github.html docs/README-pypi.html
+readme: .depends-dev docs/README-github.html docs/README-pypi.html
 docs/README-github.html: README.md
 	pandoc -f markdown_github -t html -o docs/README-github.html README.md
 docs/README-pypi.html: README.rst
@@ -90,26 +89,21 @@ apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
-.PHONY: req
-req: env docs/gen/*.gen.*
-docs/gen/*.gen.*: */*/*.yml */*/*/*.yml */*/*/*/*.yml
+.PHONY: html
+html: env docs/gen/*.html
+docs/gen/*.html: $(shell find . -name '*.yml')
+	- $(MAKE) doorstop
+	$(BIN)/doorstop publish all docs/gen --text
+	$(BIN)/doorstop publish all docs/gen --markdown
+	$(BIN)/doorstop publish all docs/gen --html
+
+.PHONY: doorstop
+doorstop: env
 	$(BIN)/doorstop
-	- mkdir docs/gen
-	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.txt
-	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.txt
-	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.txt
-	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.txt
-	$(BIN)/doorstop publish REQ docs/gen/Requirements.gen.html
-	$(BIN)/doorstop publish TUT docs/gen/Tutorials.gen.html
-	$(BIN)/doorstop publish HLT docs/gen/HighLevelTests.gen.html
-	$(BIN)/doorstop publish LLT docs/gen/LowLevelTests.gen.html
 
 .PHONY: read
-read: doc
-	$(OPEN) docs/gen/LowLevelTests.gen.html
-	$(OPEN) docs/gen/HighLevelTests.gen.html
-	$(OPEN) docs/gen/Tutorials.gen.html
-	$(OPEN) docs/gen/Requirements.gen.html
+read: readme apidocs html
+	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 	$(OPEN) docs/README-pypi.html
 	$(OPEN) docs/README-github.html
@@ -149,7 +143,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: req pep8 pep257 test tests
+ci: doorstop pep8 pep257 test tests tutorial
 
 # Cleanup ####################################################################
 
@@ -204,14 +198,17 @@ dist: .git-no-changes env depends check test tests doc
 upload: .git-no-changes env depends doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
-	$(MAKE) dev  # restore the development environment
 
-.PHONY: dev
-dev:
+# System Installation ########################################################
+
+.PHONY: develop
+develop:
 	python setup.py develop
 
-# Execution ##################################################################
+.PHONY: install
+install:
+	python setup.py install
 
-.PHONY: gui
-gui: env
-	$(BIN)/$(PACKAGE)-gui$(EXE)
+.PHONY: download
+download:
+	pip install $(PROJECT)

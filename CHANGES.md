@@ -1,10 +1,50 @@
 Changelog
 =========
 
-0.4 (dev)
----------
+0.5 (dev)
+------------------
+
+- Converted Item.issues() to a property and added Item.get_issues()
+- Added '--level' option to 'doorstop add' to force an Item level
+- Added warnings for duplicate Item levels in a Document
+- Added warnings for skipped Item levels in a Document
+- Renamed Item methods:
+    + add_link -> link
+    + remove_link -> unlink
+    + valid -> validate
+- Renamed Document methods:
+    + add -> add_item
+    + remove -> remove_item
+    + valid -> validate
+- Renamed Tree methods:
+    + new -> new_document
+    + add -> add_item
+    + remove -> remove_item
+    + link -> link_items
+    + unlink -> unlink_items
+    + edit -> edit_item
+    + valid -> validate
+
+0.4.3 (2014/03/18)
+------------------
+
+- Fixed storage of 2-part levels ending in a multiple of 10
+
+0.4.2 (2014/03/17)
+------------------
+
+- Fixed a case where Item.root was not set
+
+0.4.1 (2014/03/16)
+------------------
+
+- Fixed auto save/load decorator order
+
+0.4 (2014/03/16)
+----------------
 
 - Added Tree.delete() to delete all Documents and Items
+- Added 'doorstop publish all <directory>' to publish Trees and index.html
 
 0.3 (2014/03/12)
 ----------------

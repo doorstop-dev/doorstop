@@ -413,7 +413,8 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         logging.info("displaying tree...")
 
         # Display the documents in the tree
-        values = [document.prefix_relpath for document in self.tree]
+        values = ["{} ({})".format(document.prefix, document.relpath)
+                  for document in self.tree]
         self.combobox_documents['values'] = values
 
         # Select the first document

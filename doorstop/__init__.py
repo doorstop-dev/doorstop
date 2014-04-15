@@ -1,7 +1,7 @@
 """Package for doorstop."""
 
 __project__ = 'Doorstop'
-__version__ = '0.4-dev'
+__version__ = '0.5-dev'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'

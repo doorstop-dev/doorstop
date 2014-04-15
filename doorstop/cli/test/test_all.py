@@ -132,6 +132,11 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['add', 'TUT']))
         self.assertTrue(os.path.isfile(self.path))
 
+    def test_add_specific_level(self):
+        """Verify 'doorstop add' can be called with a specific level."""
+        self.assertIs(None, main(['add', 'TUT', '--level', '1.42']))
+        self.assertTrue(os.path.isfile(self.path))
+
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
@@ -253,6 +258,11 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_publish_error(self):
+        """Verify 'doorstop publish' returns an error in an empty folder."""
+        os.chdir(self.temp)
+        self.assertRaises(SystemExit, main, ['publish', 'req'])
+
     def test_publish_text(self):
         """Verify 'doorstop publish' can create text output."""
         self.assertIs(None, main(['publish', 'tut', '--width', '75']))
@@ -283,10 +293,23 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['publish', 'req', path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_report_error(self):
-        """Verify 'doorstop publish' returns an error in an empty folder."""
-        os.chdir(self.temp)
-        self.assertRaises(SystemExit, main, ['publish', 'req'])
+    def test_publish_tree_html(self):
+        """Verify 'doorstop publish' can create an HTML directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', 'all', path]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
+
+    def test_publish_tree_text(self):
+        """Verify 'doorstop publish' can create a text directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', 'all', path, '--text']))
+        self.assertTrue(os.path.isdir(path))
+        self.assertFalse(os.path.isfile(os.path.join(path, 'index.html')))
+
+    def test_publish_tree_no_path(self):
+        """Verify 'doorstop publish' returns an error with no path."""
+        self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
