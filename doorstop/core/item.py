@@ -344,18 +344,20 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
     @auto_load
     @auto_save
-    def add_link(self, item):
+    def add_link(self, value):
         """Add a new link to another item ID."""
-        self._data['links'].add(item)
+        identifier = get_id(value)
+        self._data['links'].add(identifier)
 
     @auto_load
     @auto_save
-    def remove_link(self, item):
+    def remove_link(self, value):
         """Remove an existing link by item ID."""
+        identifier = get_id(value)
         try:
-            self._data['links'].remove(item)
+            self._data['links'].remove(identifier)
         except KeyError:
-            logging.warning("link to {0} does not exist".format(item))
+            logging.warning("link to {0} does not exist".format(identifier))
 
     def valid(self, document=None, tree=None):
         """Check the item for validity.
@@ -572,6 +574,11 @@ class Item(BaseFileObject):  # pylint: disable=R0904
 
 
 # attribute formatters #######################################################
+
+def get_id(item):
+    """Get an ID from an item or string."""
+    return str(item).split(' ')[0]
+
 
 def split_id(text):
     """Split an item's ID into a prefix and number.

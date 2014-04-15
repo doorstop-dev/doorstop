@@ -307,6 +307,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.add_link(item)
         self.assertEqual(['ABC123'], self.item.links)
 
+    def test_link_remove_by_item(self):
+        """Verify links can be removed (by item)."""
+        path = os.path.join('path', 'to', 'ABC123.yml')
+        item = MockItem(path)
+        self.item.links = ['ABC123']
+        self.item.remove_link(item)
+        self.assertEqual([], self.item.links)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
