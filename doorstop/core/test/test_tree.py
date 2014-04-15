@@ -82,7 +82,7 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         docs = [a, b, c]
         tree = Tree.from_list(docs)
         self.assertEqual(3, len(tree))
-        self.assertTrue(tree.valid())
+        self.assertTrue(tree.validate())
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
@@ -146,30 +146,30 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
     @patch('doorstop.core.document.Document.get_issues')
-    def test_valid(self, mock_get_issues):
+    def test_validate(self, mock_get_issues):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
-        self.assertTrue(self.tree.valid())
+        self.assertTrue(self.tree.validate())
         self.assertEqual(2, mock_get_issues.call_count)
 
-    def test_valid_no_documents(self):
+    def test_validate_no_documents(self):
         """Verify an empty tree can be checked."""
         tree = Tree(None, root='.')
-        self.assertTrue(tree.valid())
+        self.assertTrue(tree.validate())
 
     @patch('doorstop.core.item.Item.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
                               DoorstopInfo('info')]))
-    def test_valid_document(self):
-        """Verify an document error fails the tree valid."""
-        self.assertFalse(self.tree.valid())
+    def test_validate_document(self):
+        """Verify an document error fails the tree validation."""
+        self.assertFalse(self.tree.validate())
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
-    def test_valid_hook(self):
+    def test_validate_hook(self):
         """Verify a document hook can be called."""
         mock_hook = MagicMock()
-        self.tree.valid(document_hook=mock_hook)
+        self.tree.validate(document_hook=mock_hook)
         self.assertEqual(2, mock_hook.call_count)
 
     @patch('doorstop.core.tree.Tree.get_issues', Mock(return_value=[]))
@@ -177,115 +177,124 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         """Verify an tree's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.tree.issues))
 
-    def test_new(self):
+    def test_new_document(self):
         """Verify a new document can be created on a tree."""
-        self.tree.new(EMPTY, '_TEST', parent='REQ')
+        self.tree.new_document(EMPTY, '_TEST', parent='REQ')
 
-    def test_new_unknown_parent(self):
+    def test_new_document_unknown_parent(self):
         """Verify an exception is raised for an unknown parent."""
         temp = tempfile.mkdtemp()
-        self.assertRaises(DoorstopError, self.tree.new,
+        self.assertRaises(DoorstopError, self.tree.new_document,
                           temp, '_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 
     @patch('doorstop.core.vcs.git.WorkingCopy.lock')
-    @patch('doorstop.core.document.Document.add')
-    def test_add(self, mock_add, mock_lock):
+    @patch('doorstop.core.document.Document.add_item')
+    def test_add_item(self, mock_add_item, mock_lock):
         """Verify an item can be added to a document."""
-        self.tree.add('REQ')
-        mock_add.assert_called_once_with(level=None)
+        self.tree.add_item('REQ')
+        mock_add_item.assert_called_once_with(level=None)
         path = os.path.join(FILES, '.doorstop.yml')
         mock_lock.assert_called_once_with(path)
 
     @patch('doorstop.core.vcs.git.WorkingCopy.lock')
-    @patch('doorstop.core.document.Document.add')
-    def test_add_level(self, mock_add, mock_lock):
+    @patch('doorstop.core.document.Document.add_item')
+    def test_add_item_level(self, mock_add, mock_lock):
         """Verify an item can be added to a document with a level."""
-        self.tree.add('REQ', level='1.2.3')
+        self.tree.add_item('REQ', level='1.2.3')
         mock_add.assert_called_once_with(level='1.2.3')
         path = os.path.join(FILES, '.doorstop.yml')
         mock_lock.assert_called_once_with(path)
 
-    def test_add_unknown_prefix(self):
+    def test_add_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (item)."""
         # Cache miss
-        self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
+        self.assertRaises(DoorstopError, self.tree.add_item, 'UNKNOWN')
         # Cache hit
-        self.assertRaises(DoorstopError, self.tree.add, 'UNKNOWN')
+        self.assertRaises(DoorstopError, self.tree.add_item, 'UNKNOWN')
 
     @patch('doorstop.core.item.Item.delete')
-    def test_remove(self, mock_delete):
+    def test_remove_item(self, mock_delete):
         """Verify an item can be removed from a document."""
-        self.tree.remove('req1')
+        self.tree.remove_item('req1')
         mock_delete.assert_called_once_with()
 
-    def test_remove_unknown_item(self):
+    def test_remove_item_unknown_item(self):
         """Verify an exception is raised removing an unknown item."""
-        self.assertRaises(DoorstopError, self.tree.remove, 'req9999')
+        self.assertRaises(DoorstopError, self.tree.remove_item, 'req9999')
 
-    @patch('doorstop.core.item.Item.add_link')
-    def test_link(self, mock_add_link):
+    @patch('doorstop.core.item.Item.link')
+    def test_link_items(self, mock_link):
         """Verify two items can be linked."""
-        self.tree.link('req1', 'req2')
-        mock_add_link.assert_called_once_with('REQ002')
+        self.tree.link_items('req1', 'req2')
+        mock_link.assert_called_once_with('REQ002')
 
-    def test_link_unknown_child_prefix(self):
+    def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError, self.tree.link, 'unknown1', 'req2')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'unknown1', 'req2')
 
-    def test_link_unknown_child_number(self):
+    def test_link_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError, self.tree.link, 'req9999', 'req2')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req9999', 'req2')
 
-    def test_link_unknown_parent_prefix(self):
+    def test_link_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.link, 'req1', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req1', 'unknown1')
 
-    def test_link_unknown_parent_number(self):
+    def test_link_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.link, 'req1', 'req9999')
+        self.assertRaises(DoorstopError,
+                          self.tree.link_items, 'req1', 'req9999')
 
-    @patch('doorstop.core.item.Item.remove_link')
-    def test_unlink(self, mock_add_link):
+    @patch('doorstop.core.item.Item.unlink')
+    def test_unlink_items(self, mock_unlink):
         """Verify two items can be unlinked."""
-        self.tree.unlink('req3', 'req1')
-        mock_add_link.assert_called_once_with('REQ001')
+        self.tree.unlink_items('req3', 'req1')
+        mock_unlink.assert_called_once_with('REQ001')
 
-    def test_unlink_unknown_child_prefix(self):
+    def test_unlink_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError, self.tree.unlink, 'unknown1', 'req1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'unknown1', 'req1')
 
-    def test_unlink_unknown_child_number(self):
+    def test_unlink_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError, self.tree.unlink, 'req9999', 'req1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req9999', 'req1')
 
-    def test_unlink_unknown_parent_prefix(self):
+    def test_unlink_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
         # Cache miss
-        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'unknown1')
         # Cache hit
-        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'unknown1')
 
-    def test_unlink_unknown_parent_number(self):
+    def test_unlink_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError, self.tree.unlink, 'req3', 'req9999')
+        self.assertRaises(DoorstopError,
+                          self.tree.unlink_items, 'req3', 'req9999')
 
     @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.tree._open')
-    def test_edit(self, mock_open, mock_lock):
+    def test_edit_item(self, mock_open, mock_lock):
         """Verify an item can be edited in a tree."""
-        self.tree.edit('req2', launch=True)
+        self.tree.edit_item('req2', launch=True)
         path = os.path.join(FILES, 'REQ002.yml')
         mock_open.assert_called_once_with(path, tool=None)
         mock_lock.assert_called_once_with(path)
 
-    def test_edit_unknown_prefix(self):
+    def test_edit_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (document)."""
-        self.assertRaises(DoorstopError, self.tree.edit, 'unknown1')
+        self.assertRaises(DoorstopError, self.tree.edit_item, 'unknown1')
 
-    def test_edit_unknown_number(self):
+    def test_edit_item_unknown_number(self):
         """Verify an exception is raised for an unknown number."""
-        self.assertRaises(DoorstopError, self.tree.edit, 'req9999')
+        self.assertRaises(DoorstopError, self.tree.edit_item, 'req9999')
 
     def test_find_item(self):
         """Verify an item can be found by exact ID."""

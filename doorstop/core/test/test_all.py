@@ -87,9 +87,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(4, doc.digits)
         self.assertEqual(0, len(doc.items))
 
-    def test_valid(self):
+    def test_validate(self):
         """Verify a document can be validated."""
-        self.assertTrue(self.document.valid())
+        self.assertTrue(self.document.validate())
 
     def test_issues_count(self):
         """Verify a number of issues are found in a document."""
@@ -137,17 +137,17 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
             item.write(self.backup)
 
     @patch('doorstop.core.document.Document', DocumentNoSkip)
-    def test_valid_invalid_link(self):
+    def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
-        self.item.add_link('SYS003')
+        self.item.link('SYS003')
         tree = core.build(FILES, root=FILES)
         self.assertIsInstance(tree, core.Tree)
-        self.assertFalse(tree.valid())
+        self.assertFalse(tree.validate())
 
-    def test_valid_long(self):
+    def test_validate_long(self):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
-        self.assertTrue(self.tree.valid())
+        self.assertTrue(self.tree.validate())
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
