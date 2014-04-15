@@ -10,7 +10,6 @@ from doorstop.core.document import Document
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
-from doorstop.core.test import ENV, REASON
 from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
 from doorstop.core.test.test_item import MockItem
 
@@ -147,12 +146,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         text = "@{}{}".format(os.sep, relpath)
         self.assertEqual(text, self.document.relpath)
 
-    def test_prefix_relpath(self):
-        """Verify the document's prefix and relpath can be determined."""
-        relpath = os.path.relpath(self.document.path, self.document.root)
-        text = "{} (@{}{})".format(self.document.prefix, os.sep, relpath)
-        self.assertEqual(text, self.document.prefix_relpath)
-
     def test_sep(self):
         """Verify an documents's separator can be set and read."""
         self.document.sep = '_'
@@ -178,9 +171,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(5, self.document.next)
 
     @patch('doorstop.core.item.Item.new')
-    def test_add(self, mock_new):
+    def test_add_item(self, mock_new):
         """Verify an item can be added to a document."""
-        self.document.add()
+        self.document.add_item()
         mock_new.assert_called_once_with(FILES, ROOT,
                                          'REQ', '', 3,
                                          5, level=(2, 2))
@@ -190,7 +183,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
-        self.assertIsNot(None, document.add())
+        self.assertIsNot(None, document.add_item())
         mock_new.assert_called_once_with(NEW, ROOT,
                                          'NEW', '', 3,
                                          1, level=None)
@@ -199,18 +192,26 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an added item is contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        item2 = self.document.add()
+        item2 = self.document.add_item()
         self.assertIn(item2, self.document)
 
     @patch('os.remove')
-    def test_remove_contains(self, mock_remove):
+    def test_remove_item_contains(self, mock_remove):
         """Verify a removed item is not contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        removed_item = self.document.remove(item.id)
+        removed_item = self.document.remove_item(item.id)
         self.assertEqual(item, removed_item)
         self.assertNotIn(item, self.document)
         mock_remove.assert_called_once_with(item.path)
+
+    @patch('os.remove')
+    def test_remove_item_by_item(self, mock_remove):
+        """Verify an item can be removed (by item)."""
+        item = self.document.items[0]
+        self.assertIn(item, self.document)
+        removed_item = self.document.remove_item(item)
+        self.assertEqual(item, removed_item)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""
@@ -231,30 +232,25 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
     @patch('doorstop.core.item.Item.get_issues')
-    def test_valid(self, mock_get_issues):
+    def test_validate(self, mock_get_issues):
         """Verify a document can be validated."""
         mock_get_issues.return_value = [DoorstopInfo('i')]
-        self.assertTrue(self.document.valid())
+        self.assertTrue(self.document.validate())
         self.assertEqual(5, mock_get_issues.call_count)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_valid_long(self):
-        """Verify a document can be validated (long)."""
-        self.assertTrue(self.document.valid())
 
     @patch('doorstop.core.item.Item.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
                               DoorstopInfo('info')]))
-    def test_valid_item(self):
+    def test_validate_item(self):
         """Verify an item error fails the document check."""
-        self.assertFalse(self.document.valid())
+        self.assertFalse(self.document.validate())
 
     @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
-    def test_valid_hook(self):
+    def test_validate_hook(self):
         """Verify an item hook can be called."""
         mock_hook = MagicMock()
-        self.document.valid(item_hook=mock_hook)
+        self.document.validate(item_hook=mock_hook)
         self.assertEqual(5, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
@@ -270,14 +266,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_issues(self):
         """Verify an document's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.document.issues))
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_issues_count_long(self):
-        """Verify a number of issues are found in a document (long)."""
-        issues = self.document.issues
-        for issue in self.document.issues:
-            logging.info(repr(issue))
-        self.assertEqual(4, len(issues))
 
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
@@ -337,17 +325,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
-
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_issues_skipped_level_long(self):
-        """Verify skipped item levels are detected (long)."""
-        expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
-        for issue in self.document.issues:
-            logging.info(repr(issue))
-            if type(issue) == type(expect) and issue.args == expect.args:
-                break
-        else:
-            self.fail("issue not found: {}".format(expect))
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

@@ -191,7 +191,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     try:
         tree = build(cwd, root=args.project)
         tree.load()
-        valid = tree.valid()
+        valid = tree.validate()
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -211,13 +211,14 @@ def _run_new(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        document = tree.new(args.root, args.prefix,
-                            parent=args.parent, digits=args.digits)
+        document = tree.new_document(args.root, args.prefix,
+                                     parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("created document: {}".format(document.prefix_relpath))
+        print("created document: {} ({})".format(document.prefix,
+                                                 document.relpath))
         return True
 
 
@@ -231,12 +232,12 @@ def _run_add(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        item = tree.add(args.prefix, level=args.level)
+        item = tree.add_item(args.prefix, level=args.level)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("added item: {}".format(item.id_relpath))
+        print("added item: {} ({})".format(item.id, item.relpath))
         return True
 
 
@@ -250,12 +251,12 @@ def _run_remove(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        item = tree.remove(args.id)
+        item = tree.remove_item(args.id)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("removed item: {}".format(item.id_relpath))
+        print("removed item: {} ({})".format(item.id, item.relpath))
         return True
 
 
@@ -269,13 +270,15 @@ def _run_link(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        child, parent = tree.link(args.child, args.parent)
+        child, parent = tree.link_items(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("linked item: {} -> {}".format(child.id_relpath,
-                                             parent.id_relpath))
+        print("linked items: {} ({}) -> {} ({})".format(child.id,
+                                                        child.relpath,
+                                                        parent.id,
+                                                        parent.relpath))
         return True
 
 
@@ -289,13 +292,15 @@ def _run_unlink(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        child, parent = tree.unlink(args.child, args.parent)
+        child, parent = tree.unlink_items(args.child, args.parent)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("unlinked item: {} -> {}".format(child.id_relpath,
-                                               parent.id_relpath))
+        print("unlinked items: {} ({}) -> {} ({})".format(child.id,
+                                                          child.relpath,
+                                                          parent.id,
+                                                          parent.relpath))
         return True
 
 
@@ -309,12 +314,12 @@ def _run_edit(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        item = tree.edit(args.id, tool=args.tool, launch=True)
+        item = tree.edit_item(args.id, tool=args.tool, launch=True)
     except DoorstopError as error:
         logging.error(error)
         return False
     else:
-        print("opened item: {}".format(item.id_relpath))
+        print("opened item: {} ({})".format(item.id, item.relpath))
         return True
 
 
