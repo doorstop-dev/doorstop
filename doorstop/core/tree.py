@@ -10,7 +10,7 @@ from itertools import chain
 from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.base import BaseValidatable
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.document import Document
+from doorstop.core.document import Document, get_prefix
 from doorstop.core import vcs
 
 
@@ -161,7 +161,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
-        @param prefix: document's prefix
+        @param prefix: document's prefix (or document)
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the document's numbers
         @param parent: parent document's prefix
@@ -171,6 +171,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @raise DoorstopError: if the document cannot be created
 
         """
+        prefix = get_prefix(prefix)
         document = Document.new(path, self.root, prefix,
                                 sep=sep, digits=digits,
                                 parent=parent)
@@ -188,7 +189,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def add_item(self, prefix, level=None):
         """Add a new item to an existing document by prefix.
 
-        @param prefix: document's prefix
+        @param prefix: document's prefix (or document)
         @param level: desired item level
 
         @return: newly created Item
@@ -196,6 +197,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @raise DoorstopError: if the item cannot be created
 
         """
+        prefix = get_prefix(prefix)
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
         item = document.add_item(level=level)
@@ -205,7 +207,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def remove_item(self, identifier):
         """Remove an item from a document by ID.
 
-        @param identifier: item's ID
+        @param identifier: item's ID (or item)
 
         @return: removed Item
 
@@ -226,8 +228,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def link_items(self, cid, pid):
         """Add a new link between two items by IDs.
 
-        @param cid: child item's ID
-        @param pid: parent item's ID
+        @param cid: child item's ID (or child item)
+        @param pid: parent item's ID (or parent item)
 
         @return: child Item, parent Item
 
@@ -246,8 +248,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def unlink_items(self, cid, pid):
         """Remove a link between two items by IDs.
 
-        @param cid: child item's ID
-        @param pid: parent item's ID
+        @param cid: child item's ID (or child item)
+        @param pid: parent item's ID (or parent item)
 
         @return: child Item, parent Item
 
@@ -266,9 +268,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def edit_item(self, identifier, tool=None, launch=False):
         """Open an item for editing by ID.
 
-        @param identifier: ID of item to edit
+        @param identifier: item's ID (or item)
         @param tool: alternative text editor to open the item
-        @param launch: open the default text editor
+        @param launch: open the text editor
 
         @raise DoorstopError: if the item cannot be found
 
@@ -289,13 +291,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def find_document(self, prefix):
         """Get a document by its prefix.
 
-        @param prefix: document's prefix
+        @param prefix: document's prefix (or document)
 
         @return: matching Document
 
         @raise DoorstopError: if the document cannot be found
 
         """
+        prefix = get_prefix(prefix)
         logging.debug("looking for document '{}'...".format(prefix))
         try:
             document = self._document_cache[prefix]
@@ -318,7 +321,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def find_item(self, identifier, _kind=''):
         """Get an item by its ID.
 
-        @param identifier: item ID
+        @param identifier: item's ID (or item)
 
         @return: matching Item
 

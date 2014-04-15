@@ -347,16 +347,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     @auto_save
     @auto_load
-    def link(self, value):
-        """Add a new link to another item ID."""
-        identifier = get_id(value)
+    def link(self, identifier):
+        """Add a new link to another item ID.
+
+        @param identifier: item's ID (or item)
+
+        """
+        identifier = get_id(identifier)
         self._data['links'].add(identifier)
 
     @auto_save
     @auto_load
-    def unlink(self, value):
-        """Remove an existing link by item ID."""
-        identifier = get_id(value)
+    def unlink(self, identifier):
+        """Remove an existing link by item ID.
+
+        @param identifier: item's ID (or item)
+
+        """
+        identifier = get_id(identifier)
         try:
             self._data['links'].remove(identifier)
         except KeyError:

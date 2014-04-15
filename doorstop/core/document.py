@@ -298,33 +298,33 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._items.append(item)
         return item
 
-    def remove_item(self, value):
+    def remove_item(self, identifier):
         """Remove an item by its ID.
 
-        @param value: item or its ID
+        @param identifier: item's ID (or item)
 
         @return: removed Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
-        identifier = get_id(value)
+        identifier = get_id(identifier)
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
         return item
 
-    def find_item(self, value, _kind=''):
+    def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
 
-        @param value: item or its ID
+        @param identifier: item's ID (or item)
 
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
-        identifier = get_id(value)
+        identifier = get_id(identifier)
         # Search using the exact ID
         for item in self:
             if item.id.lower() == identifier.lower():
