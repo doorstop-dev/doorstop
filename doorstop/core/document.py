@@ -6,7 +6,7 @@ import logging
 
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
-from doorstop.core.item import Item, split_id
+from doorstop.core.item import Item, get_id, split_id
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
@@ -301,13 +301,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def remove_item(self, identifier):
         """Remove an item by its ID.
 
-        @param identifier: item ID
+        @param identifier: item's ID (or item)
 
         @return: removed Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
+        identifier = get_id(identifier)
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
@@ -316,13 +317,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
 
-        @param identifier: item ID
+        @param identifier: item's ID (or item)
 
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
+        identifier = get_id(identifier)
         # Search using the exact ID
         for item in self:
             if item.id.lower() == identifier.lower():
@@ -402,3 +404,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in self:
             item.delete()
         super().delete(self.config)
+
+
+# attribute formatters #######################################################
+
+def get_prefix(value):
+    """Get a prefix from a document or string."""
+    return str(value).split(' ')[0]

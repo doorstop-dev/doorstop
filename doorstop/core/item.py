@@ -347,18 +347,28 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     @auto_save
     @auto_load
-    def link(self, item):
-        """Add a new link to another item ID."""
-        self._data['links'].add(item)
+    def link(self, identifier):
+        """Add a new link to another item ID.
+
+        @param identifier: item's ID (or item)
+
+        """
+        identifier = get_id(identifier)
+        self._data['links'].add(identifier)
 
     @auto_save
     @auto_load
-    def unlink(self, item):
-        """Remove an existing link by item ID."""
+    def unlink(self, identifier):
+        """Remove an existing link by item ID.
+
+        @param identifier: item's ID (or item)
+
+        """
+        identifier = get_id(identifier)
         try:
-            self._data['links'].remove(item)
+            self._data['links'].remove(identifier)
         except KeyError:
-            logging.warning("link to {0} does not exist".format(item))
+            logging.warning("link to {0} does not exist".format(identifier))
 
     def get_issues(self, document=None, tree=None, **_):
         """Yield all the item's issues.
@@ -553,6 +563,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
 
 # attribute formatters #######################################################
+
+def get_id(value):
+    """Get an ID from an item or string."""
+    return str(value).split(' ')[0]
+
 
 def split_id(text):
     """Split an item's ID into a prefix and number.

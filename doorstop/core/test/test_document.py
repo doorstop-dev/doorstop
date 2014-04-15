@@ -205,6 +205,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertNotIn(item, self.document)
         mock_remove.assert_called_once_with(item.path)
 
+    @patch('os.remove')
+    def test_remove_item_by_item(self, mock_remove):
+        """Verify an item can be removed (by item)."""
+        item = self.document.items[0]
+        self.assertIn(item, self.document)
+        removed_item = self.document.remove_item(item)
+        self.assertEqual(item, removed_item)
+
     def test_find_item(self):
         """Verify an item can be found by ID."""
         item = self.document.find_item('req2')
