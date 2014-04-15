@@ -20,7 +20,7 @@ Getting Started
 Requirements
 ------------
 
--   Python 3.3
+-   Python 3.3+
 -   A version control system for requirements storage
 
 
