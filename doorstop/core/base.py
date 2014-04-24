@@ -35,28 +35,6 @@ def auto_save(func):
     return wrapped
 
 
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._document_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
-
-
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._item_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
-
-
 class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     """Abstract Base Class for objects whose attributes save to a file.

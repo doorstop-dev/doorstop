@@ -3,15 +3,37 @@
 import os
 import sys
 import shutil
+import functools
+from itertools import chain
 import subprocess
 import logging
-from itertools import chain
 
-from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.base import BaseValidatable
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.document import Document, get_prefix
 from doorstop.core import vcs
+
+
+def clear_document_cache(func):
+    """Decorator for methods that should clear the document cache."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear document cache after execution."""
+        result = func(self, *args, **kwargs)
+        self._document_cache.clear()  # pylint: disable=W0212
+        return result
+    return wrapped
+
+
+def clear_item_cache(func):
+    """Decorator for methods that should clear the item cache."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear item cache after execution."""
+        result = func(self, *args, **kwargs)
+        self._item_cache.clear()  # pylint: disable=W0212
+        return result
+    return wrapped
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
