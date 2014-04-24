@@ -2,6 +2,7 @@
 
 import os
 from itertools import chain
+from collections import OrderedDict
 import logging
 
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
@@ -277,10 +278,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    def add_item(self, level=None):
+    def add_item(self, level=None, reorder=True):
         """Create a new item for the document and return it.
 
         @param level: desired item level
+        @param reorder: update levels of document items
 
         """
         number = self.next
@@ -288,20 +290,23 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         try:
             last = self.items[-1]
         except IndexError:
-            level = None
+            nlevel = level
         else:
-            level = level or last.level[:-1] + (last.level[-1] + 1,)
-        logging.debug("next level: {}".format(level))
+            nlevel = level or last.level[:-1] + (last.level[-1] + 1,)
+        logging.debug("next level: {}".format(nlevel))
         item = Item.new(self.path, self.root,
                         self.prefix, self.sep, self.digits,
-                        number, level=level)
+                        number, level=nlevel)
         self._items.append(item)
+        if settings.REORDER and level and reorder:
+            self.reorder(keep=item)
         return item
 
-    def remove_item(self, identifier):
+    def remove_item(self, identifier, reorder=True):
         """Remove an item by its ID.
 
         @param identifier: item's ID (or item)
+        @param reorder: update levels of document items
 
         @return: removed Item
 
@@ -312,16 +317,68 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
+        if settings.REORDER and reorder:
+            self.reorder()
         return item
 
     def reorder(self, start=None, keep=None):
         """Reorder a document's items.
 
         @param start: level to start numbering (None = use current start)
-        @param keep: list of items or IDs keep over duplicates
+        @param keep: item's ID (or item) to keep over duplicates
 
         """
-        raise NotImplementedError()
+        keep = self.find_item(keep) if keep else None
+        logging.info("reordering {}...".format(self))
+        # Collect levels
+        levels = OrderedDict()
+        for item in self.items:
+            if item.level in levels:
+                levels[item.level].append(item)
+            else:
+                levels[item.level] = [item]
+        # Reorder levels
+        nlevel = plevel = None
+        for level, items in levels.items():
+            clevel = list(level)
+            logging.debug("current level: {} ({})".format(clevel, len(items)))
+            # Determine the next level
+            if not nlevel:
+                # Use the specified or current starting level
+                nlevel = list(start) if start else clevel
+                logging.debug("next level (start): {}".format(nlevel))
+            elif len(clevel) > len(nlevel):
+                # Indent for the next level
+                nlevel[-1] -= 1
+                while len(clevel) > len(nlevel):
+                    nlevel += [0]
+                logging.debug("next level (indent): {}".format(nlevel))
+            else:
+                # Increment for the next level
+                for index in range(max(len(clevel), len(nlevel)) - 1):
+                    if clevel[index] > plevel[index]:
+                        logging.debug("{} > {}".format(clevel[:index + 1],
+                                                       plevel[:index + 1]))
+                        nlevel = (nlevel[:index] + [nlevel[index] + 1] + [0])
+                        logging.debug("next level (shift): {}".format(nlevel))
+                        break
+                else:
+                    logging.debug("next level (increment): {}".format(nlevel))
+            # Reorder items at this level
+            if keep in items:
+                # move the kept item to the front of the list
+                items = [items.pop(items.index(keep))] + items
+            for item in items:
+                sclevel = '.'.join(str(n) for n in clevel)
+                snlevel = '.'.join(str(n) for n in nlevel)
+                if clevel == nlevel:
+                    logging.info("{}: {}".format(item, sclevel))
+                else:
+                    logging.info("{}: {} to {}".format(item, sclevel, snlevel))
+                item.level = nlevel
+                nlevel[-1] += 1
+            # Save the current level as the previous level
+            plevel = clevel
 
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
