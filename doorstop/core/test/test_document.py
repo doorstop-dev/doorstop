@@ -171,13 +171,27 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify the next item number can be determined."""
         self.assertEqual(5, self.document.next)
 
+    @patch('doorstop.core.document.Document._reorder')
     @patch('doorstop.core.item.Item.new')
-    def test_add_item(self, mock_new):
+    def test_add_item(self, mock_new, mock_reorder):
         """Verify an item can be added to a document."""
-        self.document.add_item()
+        with patch('doorstop.settings.REORDER', True):
+            self.document.add_item()
         mock_new.assert_called_once_with(FILES, ROOT,
                                          'REQ', '', 3,
                                          5, level=(2, 2))
+        self.assertEqual(0, mock_reorder.call_count)
+
+    @patch('doorstop.core.document.Document.reorder')
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_level(self, mock_new, mock_reorder):
+        """Verify an item can be added to a document."""
+        with patch('doorstop.settings.REORDER', True):
+            item = self.document.add_item(level='4.2')
+        mock_new.assert_called_once_with(FILES, ROOT,
+                                         'REQ', '', 3,
+                                         5, level='4.2')
+        mock_reorder.assert_called_once_with(keep=item)
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
@@ -196,6 +210,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         item2 = self.document.add_item()
         self.assertIn(item2, self.document)
 
+    @patch('doorstop.core.document.Document._reorder')
+    @patch('os.remove')
+    def test_remove(self, mock_remove, mock_reorder):
+        """Verify an item can be removed."""
+        with patch('doorstop.settings.REORDER', True):
+            self.document.remove_item('REQ001')
+        mock_reorder.assert_called_once_with(self.document.items,
+                                             keep=None, start=None)
+
     @patch('os.remove')
     def test_remove_item_contains(self, mock_remove):
         """Verify a removed item is not contained in the document."""
@@ -205,6 +228,35 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(item, removed_item)
         self.assertNotIn(item, self.document)
         mock_remove.assert_called_once_with(item.path)
+
+    def test_reorder(self):
+        mock_item = Mock(level=(2, 3))
+        mock_items = [Mock(level=(2, 2)),
+                      mock_item,
+                      Mock(level=(2, 3)),
+                      Mock(level=(2, 7)),
+                      Mock(level=(3, 2, 2)),
+                      Mock(level=(3, 4, 2)),
+                      Mock(level=(3, 5, 0)),
+                      Mock(level=(3, 5, 0)),
+                      Mock(level=(3, 6)),
+                      Mock(level=(5, 0)),
+                      Mock(level=(5, 9))]
+        expected = [(1, 2),
+                    (1, 3),
+                    (1, 4),
+                    (1, 5),
+                    (2, 1, 1),
+                    (2, 2, 1),
+                    (2, 3, 0),
+                    (2, 4, 0),
+                    (2, 3),
+                    (4, 0),
+                    (4, 1)]
+        Document._reorder(mock_items, start=(1, 2), keep=mock_item)
+
+        actual = [item.level for item in mock_items]
+        self.assertListEqual(expected, actual)
 
     @patch('os.remove')
     def test_remove_item_by_item(self, mock_remove):
@@ -233,10 +285,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
     @patch('doorstop.core.item.Item.get_issues')
-    def test_validate(self, mock_get_issues):
+    @patch('doorstop.core.document.Document.reorder')
+    def test_validate(self, mock_reorder, mock_get_issues):
         """Verify a document can be validated."""
         mock_get_issues.return_value = [DoorstopInfo('i')]
-        self.assertTrue(self.document.validate())
+        with patch('doorstop.settings.REORDER', True):
+            self.assertTrue(self.document.validate())
+        mock_reorder.assert_called_once_with()
         self.assertEqual(5, mock_get_issues.call_count)
 
     @patch('doorstop.core.item.Item.get_issues',

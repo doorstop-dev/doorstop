@@ -321,7 +321,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
-    # TODO: refactor this method; it's way to complicated
     def reorder(self, start=None, keep=None):
         """Reorder a document's items.
 
@@ -331,9 +330,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         keep = self.find_item(keep) if keep else None
         logging.info("reordering {}...".format(self))
+        self._reorder(self.items, start=start, keep=keep)
+
+    # TODO: refactor this method; it's way to complicated
+    @staticmethod
+    def _reorder(items, start=None, keep=None):
+        """Reorder a document's items.
+
+        @param start: level to start numbering (None = use current start)
+        @param keep: item's ID (or item) to keep over duplicates
+
+        """
         # Collect levels
         levels = OrderedDict()
-        for item in self.items:
+        for item in items:
             if item.level in levels:
                 levels[item.level].append(item)
             else:
@@ -380,7 +390,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     logging.info("{}: {}".format(item, sclevel))
                 else:
                     logging.info("{}: {} to {}".format(item, sclevel, snlevel))
-                item.level = nlevel
+                item.level = tuple(nlevel)
                 nlevel[-1] += 1
 
             # Save the current level as the previous level

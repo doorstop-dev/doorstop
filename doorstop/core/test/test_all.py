@@ -8,7 +8,6 @@ import logging
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError
-from doorstop import settings
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 
@@ -60,8 +59,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-# TODO: uncomment following line and implement unit tests for coverage
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the Document class."""  # pylint: disable=C0103
