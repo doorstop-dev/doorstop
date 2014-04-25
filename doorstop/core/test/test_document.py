@@ -265,6 +265,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn(item, self.document)
         removed_item = self.document.remove_item(item)
         self.assertEqual(item, removed_item)
+        mock_remove.assert_called_once_with(item.path)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""
