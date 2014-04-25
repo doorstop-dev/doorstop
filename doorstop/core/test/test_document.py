@@ -7,7 +7,6 @@ import os
 import logging
 
 from doorstop.core.document import Document
-from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject

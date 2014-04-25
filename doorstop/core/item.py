@@ -4,9 +4,10 @@ import os
 import re
 import logging
 
-from doorstop.core import base, types
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.types import get_id, split_id, join_id, load_text, \
+                                save_text, load_level, save_level
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -560,130 +561,3 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     def delete(self, path=None):
         """Delete the item."""
         super().delete(self.path)
-
-
-# attribute formatters #######################################################
-
-def get_id(value):
-    """Get an ID from an item or string."""
-    return str(value).split(' ')[0]
-
-
-def split_id(text):
-    """Split an item's ID into a prefix and number.
-
-    >>> split_id('ABC00123')
-    ('ABC', 123)
-
-    >>> split_id('ABC.HLR_01-00123')
-    ('ABC.HLR_01', 123)
-
-    >>> split_id('REQ2-001')
-    ('REQ2', 1)
-
-    """
-    match = re.match(r"([\w.-]*\D)(\d+)", text)
-    if not match:
-        raise DoorstopError("invalid ID: {}".format(text))
-    prefix = match.group(1).rstrip(settings.SEP_CHARS)
-    number = int(match.group(2))
-    return prefix, number
-
-
-def join_id(prefix, sep, number, digits):
-    """Join the parts of an item's ID into an ID.
-
-    >>> join_id('ABC', '', 123, 5)
-    'ABC00123'
-
-    >>> join_id('REQ.H', '-', 42, 4)
-    'REQ.H-0042'
-
-    >>> join_id('ABC', '-', 123, 0)
-    'ABC-123'
-
-    """
-    return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
-
-
-def load_text(value):
-    r"""Convert dumped text to the original string.
-
-    >>> load_text("abc\ndef")
-    'abc def'
-
-    >>> load_text("list:\n\n- a\n- b\n")
-    'list:\n\n- a\n- b'
-
-    """
-    return types.join(value)
-
-
-def save_text(text, end='\n'):
-    """Break a string at sentences and dump as literal YAML with wrapping."""
-    return types.Literal(types.wrap(types.sbd(text, end=end)))
-
-
-def load_level(value):
-    """Convert an iterable, number, or level string to a tuple.
-
-    >>> load_level("1.2.3")
-    (1, 2, 3)
-
-    >>> load_level(['4', '5'])
-    (4, 5)
-
-    >>> load_level(4.2)
-    (4, 2)
-
-    >>> load_level([7, 0, 0])
-    (7, 0)
-
-    >>> load_level(1)
-    (1,)
-
-    """
-    # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
-    if isinstance(value, (int, float)):
-        value = str(value)
-
-    # Split strings by periods
-    if isinstance(value, str):
-        nums = value.split('.')
-    else:  # assume an iterable
-        nums = value
-
-    # Clean up multiple trailing zeros
-    parts = [int(n) for n in nums]
-    if parts[-1] == 0:
-        while parts[-1] == 0:
-            del parts[-1]
-        parts.append(0)
-
-    # Convert the level to a tuple
-    return tuple(parts)
-
-
-def save_level(parts):
-    """Convert a level's part into non-quoted YAML value.
-
-    >>> save_level((1,))
-    1
-
-    >>> save_level((1,0))
-    1.0
-
-    >>> save_level((1,0,0))
-    '1.0.0'
-
-    """
-    # Join the level's parts
-    level = '.'.join(str(n) for n in parts)
-
-    # Convert formats to cleaner YAML formats
-    if len(parts) == 1:
-        level = int(level)
-    elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-        level = float(level)
-
-    return level

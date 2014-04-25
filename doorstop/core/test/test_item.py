@@ -5,7 +5,6 @@ from unittest.mock import patch, Mock, MagicMock
 
 import os
 
-from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
