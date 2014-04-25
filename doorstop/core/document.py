@@ -321,6 +321,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
+    # TODO: refactor this method; it's way to complicated
     def reorder(self, start=None, keep=None):
         """Reorder a document's items.
 
@@ -341,7 +342,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         nlevel = plevel = None
         for level, items in levels.items():
             clevel = list(level)
-            logging.debug("current level: {} ({})".format(clevel, len(items)))
+            logging.debug("current level: {} (x{})".format(clevel, len(items)))
             # Determine the next level
             if not nlevel:
                 # Use the specified or current starting level
@@ -359,7 +360,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     if clevel[index] > plevel[index]:
                         logging.debug("{} > {}".format(clevel[:index + 1],
                                                        plevel[:index + 1]))
-                        nlevel = (nlevel[:index] + [nlevel[index] + 1] + [0])
+                        nlevel = (nlevel[:index] + [nlevel[index] + 1] +
+                                  ([1] if clevel[-1] else [0]))
                         logging.debug("next level (shift): {}".format(nlevel))
                         break
                 else:
@@ -369,6 +371,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 # move the kept item to the front of the list
                 items = [items.pop(items.index(keep))] + items
             for item in items:
+                if not item.level[-1] and nlevel[-1] != 0:
+                    nlevel[-1] = 0
+                    nlevel[-2] += 1
                 sclevel = '.'.join(str(n) for n in clevel)
                 snlevel = '.'.join(str(n) for n in nlevel)
                 if clevel == nlevel:
@@ -377,6 +382,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     logging.info("{}: {} to {}".format(item, sclevel, snlevel))
                 item.level = nlevel
                 nlevel[-1] += 1
+
             # Save the current level as the previous level
             plevel = clevel
 

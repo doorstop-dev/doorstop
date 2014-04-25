@@ -154,18 +154,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document.add_item(level='4.5', reorder=False)
         document.add_item(level='4.7', reorder=False)
         document.reorder()
-        expected = [(2, 0), (2, 1), (2, 2), (2, 3), (3, 0), (3, 1)]
+        expected = [(2, 0), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
 
-    def test_reorder_with_kept(self):
+    def test_reorder_with_keep(self):
         """Verify a document's order can be corrected with a kept level."""
         document = core.Document.new(EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
         document.reorder(keep=item)
-        expected = [(1, 0), (1, 1), (1, 2)]
+        expected = [(1, 0), (2, 0), (3, 0)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
         self.assertEqual((1, 0), item.level)
@@ -177,10 +177,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.5', reorder=False)
-        document.add_item(level='4.5', reorder=False)
+        document.add_item(level='4.0', reorder=False)
         document.add_item(level='4.7', reorder=False)
-        document.reorder(start=(1, 1))
-        expected = [(1, 1), (1, 2), (1, 3), (1, 4), (2, 0), (2, 1)]
+        document.reorder(start=(1, 0))
+        expected = [(1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
 
@@ -189,12 +189,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document = core.Document.new(EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
-        document.add_item(level='1.2.3', reorder=False)
+        document.add_item(level='1.2.0', reorder=False)
         document.add_item(level='1.2.5', reorder=False)
         document.add_item(level='3.2.1', reorder=False)
         document.add_item(level='3.3', reorder=False)
         self.assertTrue(document.validate())
-        expected = [(1, 0), (1, 1), (1, 1, 0), (1, 1, 1), (2, 0), (2, 1)]
+        expected = [(1, 0), (1, 1), (1, 1, 0), (1, 1, 1), (2, 1), (2, 2)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
 
