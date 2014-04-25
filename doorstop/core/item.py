@@ -4,7 +4,7 @@ import os
 import re
 import logging
 
-from doorstop.core import base
+from doorstop.core import base, types
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
 from doorstop import common
@@ -616,12 +616,12 @@ def load_text(value):
     'list:\n\n- a\n- b'
 
     """
-    return base.join(value)
+    return types.join(value)
 
 
 def save_text(text, end='\n'):
     """Break a string at sentences and dump as literal YAML with wrapping."""
-    return base.Literal(base.wrap(base.sbd(text, end=end)))
+    return types.Literal(types.wrap(types.sbd(text, end=end)))
 
 
 def load_level(value):

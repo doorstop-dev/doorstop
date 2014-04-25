@@ -100,14 +100,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("custom: this", self.document._file)
 
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify documents can be converted to strings."""
-        common.VERBOSITY = 2
         self.assertEqual("REQ", str(self.document))
 
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify documents can be converted to strings in verbose mode."""
-        common.VERBOSITY = 3
         relpath = os.path.relpath(self.document.path, self.document.root)
         text = "REQ (@{}{})".format(os.sep, relpath)
         self.assertEqual(text, str(self.document))
