@@ -8,6 +8,22 @@ Changelog
 - Added '--level' option to 'doorstop add' to force an Item level
 - Added warnings for duplicate Item levels in a Document
 - Added warnings for skipped Item levels in a Document
+- Renamed Item methods:
+    + add_link -> link
+    + remove_link -> unlink
+    + valid -> validate
+- Renamed Document methods:
+    + add -> add_item
+    + remove -> remove_item
+    + valid -> validate
+- Renamed Tree methods:
+    + new -> new_document
+    + add -> add_item
+    + remove -> remove_item
+    + link -> link_items
+    + unlink -> unlink_items
+    + edit -> edit_item
+    + valid -> validate
 - Added doorstop.importer functions to add exiting Documents and Items
 
 0.4.3 (2014/03/18)

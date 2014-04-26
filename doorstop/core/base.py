@@ -9,7 +9,7 @@ import logging
 
 import yaml
 
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
@@ -31,28 +31,6 @@ def auto_save(func):
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
-        return result
-    return wrapped
-
-
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._document_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
-
-
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._item_cache.clear()  # pylint: disable=W0212
         return result
     return wrapped
 
@@ -228,6 +206,58 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
+
+
+class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+
+    """Abstract Base Class for objects that can be validated."""
+
+    def validate(self, document=None, tree=None,
+                 document_hook=None, item_hook=None):
+        """Check the object for validity.
+
+        @param document: containing Document for project-wide checks
+        @param tree: containing Tree for project-wide checks
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
+
+        @return: indication that the object is valid
+
+        """
+        valid = True
+        # Display all issues
+        for issue in self.get_issues(document=document, tree=tree,
+                                     document_hook=document_hook,
+                                     item_hook=item_hook):
+            if isinstance(issue, DoorstopInfo):
+                logging.info(issue)
+            elif isinstance(issue, DoorstopWarning):
+                logging.warning(issue)
+            else:
+                assert isinstance(issue, DoorstopError)
+                logging.error(issue)
+                valid = False
+        # Return the result
+        return valid
+
+    @abc.abstractmethod
+    def get_issues(self, document=None, tree=None,
+                   document_hook=None, item_hook=None):
+        """Yield all the objects's issues.
+
+        @param document: Document containing the object (document-level issues)
+        @param tree: Tree containing the object (tree-level issues)
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
+
+        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+
+        """
+
+    @property
+    def issues(self):
+        """Get a list of the item's issues."""
+        return list(self.get_issues())
 
 
 class Literal(str):  # pylint: disable=R0904

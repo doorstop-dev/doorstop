@@ -29,7 +29,7 @@ def new_document(prefix, path, parent=None):
 
     # Attempt to create a document with the given parent
     try:
-        document = _TREE.new(path, prefix, parent=parent)
+        document = _TREE.new_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None

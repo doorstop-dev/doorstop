@@ -29,33 +29,33 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
         importer._TREE = self.mock_tree  # pylint: disable=W0212
 
     @patch('doorstop.core.importer.build')
-    @patch('doorstop.core.tree.Tree.new', Mock())
+    @patch('doorstop.core.tree.Tree.new_document', Mock())
     def test_build(self, mock_build):
         """Verify the tree is built (if needed) before creating documents."""
         importer._TREE = None  # pylint: disable=W0212
         importer.new_document(self.prefix, self.path)
         mock_build.assert_called_once_with()
 
-    @patch('doorstop.core.tree.Tree.new')
+    @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document(self, mock_new):
         """Verify a new document can be created to import items."""
         importer.new_document(self.prefix, self.path)
         mock_new.assert_called_once_with(self.path, self.prefix, parent=None)
 
-    @patch('doorstop.core.tree.Tree.new')
+    @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document_with_parent(self, mock_new):
         """Verify a new document can be created with a parent."""
         importer.new_document(self.prefix, self.path, parent=self.parent)
         mock_new.assert_called_once_with(self.path, self.prefix,
                                          parent=self.parent)
 
-    @patch('doorstop.core.tree.Tree.new', Mock(side_effect=DoorstopError))
+    @patch('doorstop.core.tree.Tree.new_document', Mock(side_effect=DoorstopError))
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         self.assertRaises(DoorstopError,
                           importer.new_document, self.prefix, self.path)
 
-    @patch('doorstop.core.tree.Tree.new', Mock(side_effect=DoorstopError))
+    @patch('doorstop.core.tree.Tree.new_document', Mock(side_effect=DoorstopError))
     @patch('doorstop.core.document.Document.new')
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created with unknown parents."""

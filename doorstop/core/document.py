@@ -4,14 +4,15 @@ import os
 from itertools import chain
 import logging
 
+from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.item import Item, join_id, split_id
+from doorstop.core.item import Item, get_id, split_id, join_id
 from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
 
 
-class Document(BaseFileObject):  # pylint: disable=R0902,R0904
+class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     """Represents a document directory containing an outline of items."""
 
@@ -53,7 +54,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         if common.VERBOSITY < common.STR_VERBOSITY:
             return self.prefix
         else:
-            return self.prefix_relpath
+            return "{} ({})".format(self.prefix, self.relpath)
 
     def __iter__(self):
         yield from self._iter()
@@ -208,13 +209,6 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 
-    # TODO: think of a better name for this property
-    @property
-    @auto_load
-    def prefix_relpath(self):
-        """Get the document's prefix + relative path string."""
-        return "{} ({})".format(self.prefix, self.relpath)
-
     @property
     @auto_load
     def sep(self):
@@ -283,7 +277,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    def add(self, level=None):
+    def add_item(self, level=None):
         """Create a new item for the document and return it.
 
         @param level: desired item level
@@ -303,16 +297,17 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         self._items.append(item)
         return item
 
-    def remove(self, identifier):
+    def remove_item(self, identifier):
         """Remove an item by its ID.
 
-        @param identifier: item ID
+        @param identifier: item's ID (or item)
 
         @return: removed Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
+        identifier = get_id(identifier)
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
@@ -321,13 +316,14 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
 
-        @param identifier: item ID
+        @param identifier: item's ID (or item)
 
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
+        identifier = get_id(identifier)
         # Search using the exact ID
         for item in self:
             if item.id.lower() == identifier.lower():
@@ -342,30 +338,7 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def valid(self, tree=None, item_hook=None):
-        """Check the document (and its items) for validity.
-
-        @param tree: Tree containing the document
-        @param item_hook: function to call for custom item validation
-
-        @return: indication that document is valid
-
-        """
-        valid = True
-        # Display all issues
-        for issue in self.get_issues(tree=tree, item_hook=item_hook):
-            if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
-            elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
-            else:
-                assert isinstance(issue, DoorstopError)
-                logging.error(issue)
-                valid = False
-        # Return the result
-        return valid
-
-    def get_issues(self, tree=None, item_hook=None):
+    def get_issues(self, tree=None, item_hook=None, **_):
         """Yield all the document's issues.
 
         @param tree: Tree containing the document (tree-level issues)
@@ -386,11 +359,6 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
-
-    @property
-    def issues(self):
-        """Get a list of the document's issues."""
-        return list(self.get_issues())
 
     def _get_issues_level(self, items=None):
         """Yield all the document's issues related to item level."""
@@ -435,3 +403,10 @@ class Document(BaseFileObject):  # pylint: disable=R0902,R0904
         for item in self:
             item.delete()
         super().delete(self.config)
+
+
+# attribute formatters #######################################################
+
+def get_prefix(value):
+    """Get a prefix from a document or string."""
+    return str(value).split(' ')[0]
