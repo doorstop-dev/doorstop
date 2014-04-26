@@ -189,7 +189,7 @@ clean-all: clean .clean-env
 	fi;
 
 .PHONY: dist
-dist: .git-no-changes env depends check test tests doc
+dist: env depends test tests doc
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
 	$(MAKE) read
