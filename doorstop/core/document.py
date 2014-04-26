@@ -4,9 +4,9 @@ import os
 from itertools import chain
 import logging
 
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
-from doorstop.core.item import Item, get_id, split_id
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.item import Item, get_id, split_id, join_id
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
@@ -292,9 +292,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             level = level or last.level[:-1] + (last.level[-1] + 1,)
         logging.debug("next level: {}".format(level))
-        item = Item.new(self.path, self.root,
-                        self.prefix, self.sep, self.digits,
-                        number, level=level)
+        identifier = join_id(self.prefix, self.sep, number, self.digits)
+        item = Item.new(self.path, self.root, identifier, level=level)
         self._items.append(item)
         return item
 

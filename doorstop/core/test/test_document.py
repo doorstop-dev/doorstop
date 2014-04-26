@@ -174,9 +174,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item(self, mock_new):
         """Verify an item can be added to a document."""
         self.document.add_item()
-        mock_new.assert_called_once_with(FILES, ROOT,
-                                         'REQ', '', 3,
-                                         5, level=(2, 2))
+        mock_new.assert_called_once_with(FILES, ROOT, 'REQ005', level=(2, 2))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
@@ -184,9 +182,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item())
-        mock_new.assert_called_once_with(NEW, ROOT,
-                                         'NEW', '', 3,
-                                         1, level=None)
+        mock_new.assert_called_once_with(NEW, ROOT, 'NEW001', level=None)
 
     def test_add_contains(self):
         """Verify an added item is contained in the document."""

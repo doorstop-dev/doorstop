@@ -118,6 +118,16 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         docs = [a, b, c]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
+    def test_place_no_parent(self):
+        """Verify an error occurs when a node is missing a parent."""
+
+        a = MockDocument(EMPTY)
+        a.prefix = 'A'
+        b = MockDocument(EMPTY)
+        b.prefix = 'B'
+        tree = Tree(a)
+        self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
+
 
 @patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
 @patch('doorstop.core.tree.Document', MockDocument)  # pylint: disable=R0904

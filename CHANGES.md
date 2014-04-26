@@ -24,6 +24,7 @@ Changelog
     + unlink -> unlink_items
     + edit -> edit_item
     + valid -> validate
+- Added doorstop.importer functions to add exiting Documents and Items
 
 0.4.3 (2014/03/18)
 ------------------
