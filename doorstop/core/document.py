@@ -382,6 +382,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "duplicate level: {} ({}, {})".format(plev, *ids)
                 yield DoorstopWarning(msg)
             # Skipped level
+            # TODO: can this be done without Level.value?
             length = min(len(plev.value), len(nlev.value))
             for index in range(length):
                 # Types of skipped levels:

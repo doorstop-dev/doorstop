@@ -176,7 +176,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.add_item()
         mock_new.assert_called_once_with(FILES, ROOT,
                                          'REQ', '', 3,
-                                         5, level=(2, 2))
+                                         5, level=Level('2.2'))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):
@@ -212,6 +212,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertIn(item, self.document)
         removed_item = self.document.remove_item(item)
         self.assertEqual(item, removed_item)
+        mock_remove.assert_called_once_with(item.path)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""
