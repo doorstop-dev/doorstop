@@ -113,7 +113,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
     @return: iterator of lines of text
 
     """
-    for item in _items(obj):
+    for item in _get_items(obj):
 
         level = _format_level(item.level)
 
@@ -167,7 +167,7 @@ def lines_markdown(obj, ignored=None):
     @return: iterator of lines of text
 
     """
-    for item in _items(obj):
+    for item in _get_items(obj):
 
         heading = '#' * item.depth
         level = _format_level(item.level)
@@ -201,7 +201,7 @@ def lines_markdown(obj, ignored=None):
         yield ""  # break between items
 
 
-def _items(obj):
+def _get_items(obj):
     """Get an iterator of items from from an item, list, or document."""
     if hasattr(obj, 'items'):
         # a document
