@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from doorstop.core.types import Level
 from doorstop.core.document import Document
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
@@ -270,10 +271,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify duplicate item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (4, 2)
+        mock_item1.level = Level('4.2')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (4, 2)
+        mock_item2.level = Level('4.2')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("duplicate level: 4.2 (HLT001, HLT002)")
         issue = list(self.document._get_issues_level(mock_items))[0]
@@ -284,10 +285,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (over) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (1, 3)
+        mock_item2.level = Level('1.3')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 1.3 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))
@@ -299,10 +300,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (out) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (3, 0)
+        mock_item2.level = Level('3.0')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 3.0 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))
@@ -314,10 +315,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (out and over) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (2, 2)
+        mock_item2.level = Level('2.2')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 2.2 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))

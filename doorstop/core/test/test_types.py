@@ -22,6 +22,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('1.2.0', str(self.level_1_2_heading))
         self.assertEqual('1.2.3', str(self.level_1_2_3))
 
+    def test_len(self):
+        """Verify a level length is equal to number of non-heading parts."""
+        self.assertEqual(1, len(self.level_1))
+        self.assertEqual(2, len(self.level_1_2))
+        self.assertEqual(2, len(self.level_1_2_heading))
+        self.assertEqual(3, len(self.level_1_2_3))
+
     def test_eq(self):
         """Verify levels can be equated."""
         self.assertNotEqual(self.level_1, self.level_1_2)
@@ -35,61 +42,65 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertLess(self.level_1_2, [1, 3])
         self.assertGreater(self.level_1_2_3, self.level_1_2)
 
-    def test_iadd(self):
+    def test_add(self):
         """Verify levels can be incremented."""
         level = self.level_1_2
         level += 1
         self.assertEqual(Level('1.3'), level)
+        self.assertEqual(Level('1.5'), level + 2)
 
-    def test_iadd_heading(self):
+    def test_add_heading(self):
         """Verify (heading) levels can be incremented."""
         level = self.level_1_2_heading
         level += 2
         self.assertEqual(Level('1.4.0'), level)
 
-    def test_isub(self):
+    def test_sub(self):
         """Verify levels can be decremented."""
         level = self.level_1_2_3
-        level -= 2
-        self.assertEqual(Level('1.2.1'), level)
+        level -= 1
+        self.assertEqual(Level('1.2.2'), level)
+        self.assertEqual(Level('1.2.1'), level - 1)
 
-    def test_isub_heading(self):
+    def test_sub_heading(self):
         """Verify (heading) levels can be decremented."""
         level = self.level_1_2_heading
         level -= 1
         self.assertEqual(Level('1.1.0'), level)
 
-    def test_isub_zero(self):
+    def test_sub_zero(self):
         """Verify levels cannot be decremented to zero."""
         level = self.level_1_2
         level -= 2
         self.assertEqual(Level('1.1'), level)
 
-    def test_irshift(self):
+    def test_rshift(self):
         """Verify levels can be indented."""
         level = self.level_1_2
         level >>= 1
         self.assertEqual(Level('1.2.1'), level)
+        self.assertEqual(Level('1.2.1.1'), level >> 1)
 
-    def test_irshift_heading(self):
+    def test_rshift_heading(self):
         """Verify (heading) levels can be indented."""
         level = self.level_1_2_heading
         level >>= 2
         self.assertEqual(Level('1.2.1.1.0'), level)
 
-    def test_ilshift(self):
+    def test_lshift(self):
         """Verify levels can be dedented."""
         level = self.level_1_2_3
-        level <<= 2
-        self.assertEqual(Level('1'), level)
+        level <<= 1
+        self.assertEqual(Level('1.2'), level)
+        self.assertEqual(Level('1'), level << 1)
 
-    def test_ilshift_heading(self):
+    def test_lshift_heading(self):
         """Verify (heading) levels can be dedented."""
         level = self.level_1_2_heading
         level <<= 1
         self.assertEqual(Level('1.0'), level)
 
-    def test_ilshift_empty(self):
+    def test_lshift_empty(self):
         """Verify levels can be dedented."""
         level = self.level_1_2_3
         level <<= 4

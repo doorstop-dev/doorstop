@@ -6,8 +6,8 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import (get_id, split_id, join_id, load_text,
-                                 save_text, load_level, save_level)
+from doorstop.core.types import Level
+from doorstop.core.types import get_id, split_id, join_id, load_text, save_text
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -19,7 +19,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     EXTENSIONS = '.yml', '.yaml'
 
-    DEFAULT_LEVEL = (1, 0)
+    DEFAULT_LEVEL = Level('1.0')
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
@@ -122,7 +122,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                self._data['level'] = load_level(value)
+                self._data['level'] = Level(value)
             elif key == 'active':
                 self._data['active'] = bool(value)
             elif key == 'normative':
@@ -149,7 +149,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                data['level'] = save_level(value)
+                data['level'] = value.yaml
             elif key == 'text':
                 data['text'] = save_text(self._data['text'])
             elif key == 'ref':
@@ -206,15 +206,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @auto_load
     def level(self, value):
         """Set the item's level."""
-        self._data['level'] = load_level(value)
+        self._data['level'] = Level(value)
 
     @property
     def depth(self):
         """Get the item's heading order based on it's level."""
-        level = list(self.level)
-        while level[-1] == 0:
-            del level[-1]
-        return len(level)
+        return len(self.level)
 
     @property
     @auto_load
@@ -285,7 +282,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         Headings have a level that ends in zero and are non-normative.
 
         """
-        return self.level[-1] == 0 and not self.normative
+        return self.level.heading and not self.normative
 
     @heading.setter
     @auto_save
@@ -294,10 +291,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Set the item's heading status."""
         heading = bool(value)
         if heading and not self.heading:
-            self.level = list(self.level) + [0]
+            self.level.heading = True
             self.normative = False
         elif not heading and self.heading:
-            self.level = list(self.level)[:-1]
+            self.level.heading = False
             self.normative = True
 
     @property

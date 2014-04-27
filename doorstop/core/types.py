@@ -189,71 +189,6 @@ def join(text):
 # level #####################################################################
 
 
-def load_level(value):
-    """Convert an iterable, number, or level string to a tuple.
-
-    >>> load_level("1.2.3")
-    (1, 2, 3)
-
-    >>> load_level(['4', '5'])
-    (4, 5)
-
-    >>> load_level(4.2)
-    (4, 2)
-
-    >>> load_level([7, 0, 0])
-    (7, 0)
-
-    >>> load_level(1)
-    (1,)
-
-    """
-    # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
-    if isinstance(value, (int, float)):
-        value = str(value)
-
-    # Split strings by periods
-    if isinstance(value, str):
-        nums = value.split('.')
-    else:  # assume an iterable
-        nums = value
-
-    # Clean up multiple trailing zeros
-    parts = [int(n) for n in nums]
-    if parts[-1] == 0:
-        while parts[-1] == 0:
-            del parts[-1]
-        parts.append(0)
-
-    # Convert the level to a tuple
-    return tuple(parts)
-
-
-def save_level(parts):
-    """Convert a level's part into non-quoted YAML value.
-
-    >>> save_level((1,))
-    1
-
-    >>> save_level((1,0))
-    1.0
-
-    >>> save_level((1,0,0))
-    '1.0.0'
-
-    """
-    # Join the level's parts
-    level = '.'.join(str(n) for n in parts)
-
-    # Convert formats to cleaner YAML formats
-    if len(parts) == 1:
-        level = int(level)
-    elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-        level = float(level)
-
-    return level
-
-
 # TODO: use the Level class
 class Level:  # pragma: no cover
 
@@ -264,13 +199,14 @@ class Level:  # pragma: no cover
     """
 
     def __init__(self, value):
-        parts = list(load_level(value))
+        parts = self.load_level(value)
         if parts[-1] == 0:
             self._parts = parts[:-1]
             self.heading = True
         else:
             self._parts = parts
             self.heading = False
+        self._adjust()
 
     def __repr__(self):
         return "Level('{}')".format(str(self))
@@ -281,6 +217,9 @@ class Level:  # pragma: no cover
     def __iter__(self):
         return iter(self._parts)
 
+    def __len__(self):
+        return len(self._parts)
+
     def __eq__(self, other):
         return self._parts == list(other)
 
@@ -290,20 +229,38 @@ class Level:  # pragma: no cover
     def __lt__(self, other):
         return self._parts < list(other)
 
+    def __add__(self, value):
+        parts = list(self._parts)
+        parts[-1] += value
+        return Level(parts)
+
     def __iadd__(self, value):
         self._parts[-1] += value
         self._adjust()
         return self
+
+    def __sub__(self, value):
+        parts = list(self._parts)
+        parts[-1] -= value
+        return Level(parts)
 
     def __isub__(self, value):
         self._parts[-1] -= value
         self._adjust()
         return self
 
+    def __rshift__(self, value):
+        parts = list(self._parts) + [1] * value
+        return Level(parts)
+
     def __irshift__(self, value):
         self._parts += [1] * value
         self._adjust()
         return self
+
+    def __lshift__(self, value):
+        parts = list(self._parts)[:-value]
+        return Level(parts)
 
     def __ilshift__(self, value):
         self._parts = self._parts[:-value]
@@ -319,7 +276,7 @@ class Level:  # pragma: no cover
     @property
     def yaml(self):
         """Get the value to be used in YAML dumping."""
-        return save_level(self.value)
+        return self.save_level(self.value)
 
     def _adjust(self):
         """Force all non-zero values."""
@@ -333,3 +290,67 @@ class Level:  # pragma: no cover
             msg = "minimum level reached, reseting: {} -> {}".format(old, new)
             logging.warning(msg)
             self._parts = list(new.value)
+
+    @staticmethod
+    def load_level(value):
+        """Convert an iterable, number, or level string to a tuple.
+
+        >>> Level.load_level("1.2.3")
+        [1, 2, 3]
+
+        >>> Level.load_level(['4', '5'])
+        [4, 5]
+
+        >>> Level.load_level(4.2)
+        [4, 2]
+
+        >>> Level.load_level([7, 0, 0])
+        [7, 0]
+
+        >>> Level.load_level(1)
+        [1]
+
+        """
+        # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
+        if isinstance(value, (int, float)):
+            value = str(value)
+
+        # Split strings by periods
+        if isinstance(value, str):
+            nums = value.split('.')
+        else:  # assume an iterable
+            nums = value
+
+        # Clean up multiple trailing zeros
+        parts = [int(n) for n in nums]
+        if parts[-1] == 0:
+            while parts[-1] == 0:
+                del parts[-1]
+            parts.append(0)
+
+        return parts
+
+    @staticmethod
+    def save_level(parts):
+        """Convert a level's part into non-quoted YAML value.
+
+        >>> Level.save_level((1,))
+        1
+
+        >>> Level.save_level((1,0))
+        1.0
+
+        >>> Level.save_level((1,0,0))
+        '1.0.0'
+
+        """
+        # Join the level's parts
+        level = '.'.join(str(n) for n in parts)
+
+        # Convert formats to cleaner YAML formats
+        if len(parts) == 1:
+            level = int(level)
+        elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
+            level = float(level)
+
+        return level
