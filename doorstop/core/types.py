@@ -253,7 +253,8 @@ def save_level(parts):
     return level
 
 
-class Level:
+# TODO: implement and use the Level class
+class Level:  # pragma: no cover
 
     """Variable-length numerical outline prefixes."""
 
