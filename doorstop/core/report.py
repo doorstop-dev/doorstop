@@ -113,11 +113,9 @@ def lines_text(obj, ignored=None, indent=8, width=79):
     @return: iterator of lines of text
 
     """
-    for item in _items(obj):
+    for item in _get_items(obj):
 
-        level = '.'.join(str(l) for l in item.level)
-        if level.endswith('.0') and len(level) > 3:
-            level = level[:-2]
+        level = _format_level(item.level)
 
         if item.heading:
 
@@ -169,12 +167,10 @@ def lines_markdown(obj, ignored=None):
     @return: iterator of lines of text
 
     """
-    for item in _items(obj):
+    for item in _get_items(obj):
 
         heading = '#' * item.depth
-        level = '.'.join(str(l) for l in item.level)
-        if level.endswith('.0') and len(level) > 3:
-            level = level[:-2]
+        level = _format_level(item.level)
 
         if item.heading:
 
@@ -205,7 +201,7 @@ def lines_markdown(obj, ignored=None):
         yield ""  # break between items
 
 
-def _items(obj):
+def _get_items(obj):
     """Get an iterator of items from from an item, list, or document."""
     if hasattr(obj, 'items'):
         # a document
@@ -216,6 +212,14 @@ def _items(obj):
     except TypeError:
         # an item
         return [obj]  # an item
+
+
+def _format_level(level):
+    """Convert a level to a string and keep zeros if not a top level."""
+    text = str(level)
+    if text.endswith('.0') and len(text) > 3:
+        text = text[:-2]
+    return text
 
 
 def _ref(item, ignored=None):
