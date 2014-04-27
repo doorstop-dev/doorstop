@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.6 (dev)
+---------
+
+- Refactored Item levels into a Level class
+
 0.5 (2014/04/25)
 ----------------
 
