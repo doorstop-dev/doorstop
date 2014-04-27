@@ -3,6 +3,7 @@
 
 import re
 import textwrap
+import logging
 
 import yaml
 
@@ -253,10 +254,82 @@ def save_level(parts):
     return level
 
 
-# TODO: implement and use the Level class
+# TODO: use the Level class
 class Level:  # pragma: no cover
 
-    """Variable-length numerical outline prefixes."""
+    """Variable-length numerical outline level values.
+
+    Level values cannot contain zeros. Zeros are reserved for
+    identifying "heading" levels when written to file.
+    """
 
     def __init__(self, value):
-        pass
+        parts = list(load_level(value))
+        if parts[-1] == 0:
+            self._parts = parts[:-1]
+            self.heading = True
+        else:
+            self._parts = parts
+            self.heading = False
+
+    def __repr__(self):
+        return "Level('{}')".format(str(self))
+
+    def __str__(self):
+        return '.'.join(str(n) for n in self.value)
+
+    def __iter__(self):
+        return iter(self._parts)
+
+    def __eq__(self, other):
+        return self._parts == list(other)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return self._parts < list(other)
+
+    def __iadd__(self, value):
+        self._parts[-1] += value
+        self._adjust()
+        return self
+
+    def __isub__(self, value):
+        self._parts[-1] -= value
+        self._adjust()
+        return self
+
+    def __irshift__(self, value):
+        self._parts += [1] * value
+        self._adjust()
+        return self
+
+    def __ilshift__(self, value):
+        self._parts = self._parts[:-value]
+        self._adjust()
+        return self
+
+    @property
+    def value(self):
+        """Get a tuple for the level's value with heading indications."""
+        parts = self._parts + ([0] if self.heading else [])
+        return tuple(parts)
+
+    @property
+    def yaml(self):
+        """Get the value to be used in YAML dumping."""
+        return save_level(self.value)
+
+    def _adjust(self):
+        """Force all non-zero values."""
+        old = self
+        new = None
+        if not self._parts:
+            new = Level(1)
+        elif 0 in self._parts:
+            new = Level(1 if not n else n for n in self._parts)
+        if new:
+            msg = "minimum level reached, reseting: {} -> {}".format(old, new)
+            logging.warning(msg)
+            self._parts = list(new.value)
