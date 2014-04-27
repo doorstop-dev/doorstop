@@ -6,8 +6,8 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from doorstop.core.types import Level
 from doorstop.core.document import Document
-from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
@@ -101,14 +101,14 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("custom: this", self.document._file)
 
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify documents can be converted to strings."""
-        common.VERBOSITY = 2
         self.assertEqual("REQ", str(self.document))
 
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify documents can be converted to strings in verbose mode."""
-        common.VERBOSITY = 3
         relpath = os.path.relpath(self.document.path, self.document.root)
         text = "REQ (@{}{})".format(os.sep, relpath)
         self.assertEqual(text, str(self.document))
@@ -177,9 +177,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
-        mock_new.assert_called_once_with(FILES, ROOT,
-                                         'REQ', '', 3,
-                                         5, level=(2, 2))
+        mock_new.assert_called_once_with(FILES, ROOT, 'REQ005',
+                                         level=Level('2.2'))
         self.assertEqual(0, mock_reorder.call_count)
 
     @patch('doorstop.core.document.Document.reorder')
@@ -188,9 +187,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
-        mock_new.assert_called_once_with(FILES, ROOT,
-                                         'REQ', '', 3,
-                                         5, level='4.2')
+        mock_new.assert_called_once_with(FILES, ROOT, 'REQ005', level='4.2')
         mock_reorder.assert_called_once_with(keep=item)
 
     @patch('doorstop.core.item.Item.new')
@@ -199,9 +196,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item())
-        mock_new.assert_called_once_with(NEW, ROOT,
-                                         'NEW', '', 3,
-                                         1, level=None)
+        mock_new.assert_called_once_with(NEW, ROOT, 'NEW001', level=None)
 
     def test_add_contains(self):
         """Verify an added item is contained in the document."""
@@ -215,9 +210,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_remove(self, mock_remove, mock_reorder):
         """Verify an item can be removed."""
         with patch('doorstop.settings.REORDER', True):
-            self.document.remove_item('REQ001')
+            item = self.document.remove_item('REQ001')
         mock_reorder.assert_called_once_with(self.document.items,
                                              keep=None, start=None)
+        mock_remove.assert_called_once_with(item.path)
 
     @patch('os.remove')
     def test_remove_item_contains(self, mock_remove):
@@ -328,10 +324,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify duplicate item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (4, 2)
+        mock_item1.level = Level('4.2')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (4, 2)
+        mock_item2.level = Level('4.2')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("duplicate level: 4.2 (HLT001, HLT002)")
         issue = list(self.document._get_issues_level(mock_items))[0]
@@ -342,10 +338,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (over) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (1, 3)
+        mock_item2.level = Level('1.3')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 1.3 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))
@@ -357,10 +353,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (out) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (3, 0)
+        mock_item2.level = Level('3.0')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 3.0 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))
@@ -372,10 +368,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify skipped (out and over) item levels are detected."""
         mock_item1 = Mock()
         mock_item1.id = 'HLT001'
-        mock_item1.level = (1, 1)
+        mock_item1.level = Level('1.1')
         mock_item2 = Mock()
         mock_item2.id = 'HLT002'
-        mock_item2.level = (2, 2)
+        mock_item2.level = Level('2.2')
         mock_items = [mock_item1, mock_item2]
         expected = DoorstopWarning("skipped level: 1.1 (HLT001), 2.2 (HLT002)")
         issues = list(self.document._get_issues_level(mock_items))

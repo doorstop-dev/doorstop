@@ -5,7 +5,6 @@ from unittest.mock import patch, Mock, MagicMock
 
 import os
 
-from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
@@ -60,14 +59,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
 
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify an item can be converted to strings."""
-        common.VERBOSITY = 2
         self.assertEqual("RQ001", str(self.item))
 
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify an item can be converted to strings in verbose mode."""
-        common.VERBOSITY = 3
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 
@@ -135,7 +134,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's level can be set from text and read."""
         self.item.level = "4.2.0 "
         self.assertIn("level: 4.2.0\n", self.item._write.call_args[0][0])
-        self.assertEqual((4, 2, 0), self.item.level)
+        self.assertEqual((4, 2), self.item.level)
 
     def test_level_from_float(self):
         """Verify an item's level can be set from a float and read."""
@@ -171,11 +170,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's heading status can be set and read."""
         self.item.level = '1.1.1'
         self.item.heading = 1  # converted to True
-        self.assertEqual(0, self.item.level[-1])
         self.assertFalse(self.item.normative)
         self.assertTrue(self.item.heading)
         self.item.heading = 0  # converted to False
-        self.assertNotEqual(0, self.item.level[-1])
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
@@ -383,7 +380,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new(self):
         """Verify items can be created."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'TEST', '', 5, 42, (1, 2, 3))
+        item = MockItem.new(EMPTY, FILES, 'TEST00042', (1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
@@ -393,16 +390,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002', '-', 3, 42, (1, 0))
+        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002-042', (1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
-        self.assertEqual((1, 0), item.level)
+        self.assertEqual((1,), item.level)
         MockItem._new.assert_called_once_with(path, name='item')
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
         self.assertRaises(DoorstopError,
-                          Item.new, FILES, FILES, 'REQ', '', 3, 2, (1, 2, 3))
+                          Item.new, FILES, FILES, 'REQ002', (1, 2, 3))
 
     def test_validate_invalid_ref(self):
         """Verify an invalid reference fails validity."""

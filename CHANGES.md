@@ -1,8 +1,13 @@
 Changelog
 =========
 
-0.5 (dev)
-------------------
+0.6 (dev)
+---------
+
+- Refactored Item levels into a Level class
+
+0.5 (2014/04/25)
+----------------
 
 - Converted Item.issues() to a property and added Item.get_issues()
 - Added '--level' option to 'doorstop add' to force an Item level
@@ -24,6 +29,7 @@ Changelog
     + unlink -> unlink_items
     + edit -> edit_item
     + valid -> validate
+- Added doorstop.importer functions to add exiting Documents and Items
 
 0.4.3 (2014/03/18)
 ------------------

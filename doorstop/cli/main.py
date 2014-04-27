@@ -44,6 +44,7 @@ def main(args=None):  # pylint: disable=R0915
                           help="create a new document directory",
                           **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
+    # TODO: should 'root' be 'path'?
     sub.add_argument('root', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")

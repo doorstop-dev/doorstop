@@ -5,9 +5,10 @@ from itertools import chain
 from collections import OrderedDict
 import logging
 
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
-from doorstop.core.item import Item, get_id, split_id
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.types import get_id, split_id, join_id
+from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
@@ -292,11 +293,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         except IndexError:
             nlevel = level
         else:
-            nlevel = level or last.level[:-1] + (last.level[-1] + 1,)
+            nlevel = level or last.level + 1
         logging.debug("next level: {}".format(nlevel))
-        item = Item.new(self.path, self.root,
-                        self.prefix, self.sep, self.digits,
-                        number, level=nlevel)
+        identifier = join_id(self.prefix, self.sep, number, self.digits)
+        item = Item.new(self.path, self.root, identifier, level=nlevel)
         self._items.append(item)
         if settings.REORDER and level and reorder:
             self.reorder(keep=item)
@@ -457,29 +457,28 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items[1:]:
             pid = prev.id
             plev = prev.level
-            pslev = '.'.join(str(n) for n in plev)
             nid = item.id
             nlev = item.level
-            nslev = '.'.join(str(n) for n in nlev)
             logging.debug("checking level {} to {}...".format(plev, nlev))
             # Duplicate level
             if plev == nlev:
                 ids = sorted((pid, nid))
-                msg = "duplicate level: {} ({}, {})".format(pslev, *ids)
+                msg = "duplicate level: {} ({}, {})".format(plev, *ids)
                 yield DoorstopWarning(msg)
             # Skipped level
-            length = min(len(plev), len(nlev))
+            # TODO: can this be done without Level.value?
+            length = min(len(plev.value), len(nlev.value))
             for index in range(length):
                 # Types of skipped levels:
-                #   over: 1.0 --> 1.1
+                #   over: 1.0 --> 1.2
                 #   out: 1.1 --> 3.0
                 #   over and out: 1.1 --> 2.2
-                if (nlev[index] - plev[index] > 1 or  # over or out
-                    (plev[index] != nlev[index] and
+                if (nlev.value[index] - plev.value[index] > 1 or  # over or out
+                    (plev.value[index] != nlev.value[index] and
                      index + 1 < length and
-                     nlev[index + 1] not in (0, 1))):  # over and out
-                    msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
-                                                                   nslev, nid)
+                     nlev.value[index + 1] not in (0, 1))):  # over and out
+                    msg = "skipped level: {} ({}), {} ({})".format(plev, pid,
+                                                                   nlev, nid)
                     yield DoorstopWarning(msg)
                     break
             prev = item
