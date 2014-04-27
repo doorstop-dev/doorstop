@@ -135,36 +135,44 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         logging.debug("trying to add '{}'...".format(document))
-        if not self.document:
+        if not self.document:  # tree is empty
 
-            # Tree is empty
             if document.parent:
                 msg = "unknown parent for {}: {}".format(document,
                                                          document.parent)
                 raise DoorstopError(msg)
             self.document = document
 
-        elif (document.parent and
-              document.parent.lower() == self.document.prefix.lower()):
+        elif document.parent:  # tree has documents, document has parent
 
-            # Current document is the parent
-            node = Tree(document, self)
-            self.children.append(node)
+            if document.parent.lower() == self.document.prefix.lower():
 
-        else:
+                # Current document is the parent
+                node = Tree(document, self)
+                self.children.append(node)
 
-            # Search for the parent
-            for child in self.children:
-                try:
-                    child._place(document)  # pylint: disable=W0212
-                except DoorstopError:
-                    pass  # the error is raised later
-                else:
-                    break
             else:
-                msg = "unknown parent for {}: {}".format(document,
-                                                         document.parent)
-                raise DoorstopError(msg)
+
+                # Search for the parent
+                for child in self.children:
+                    try:
+                        child._place(document)  # pylint: disable=W0212
+                    except DoorstopError:
+                        pass  # the error is raised later
+                    else:
+                        break
+                else:
+                    msg = "unknown parent for {}: {}".format(document,
+                                                             document.parent)
+                    raise DoorstopError(msg)
+
+        else:  # tree has documents, but no parent specified for document
+
+            msg = "no parent specified for {}".format(document)
+            logging.warning(msg)
+            prefixes = ', '.join(document.prefix for document in self)
+            logging.info("parent options: {}".format(document, prefixes))
+            raise DoorstopError(msg)
 
     # attributes #############################################################
 

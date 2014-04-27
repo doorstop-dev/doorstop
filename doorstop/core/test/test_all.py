@@ -4,6 +4,8 @@ import unittest
 from unittest.mock import patch
 
 import os
+import tempfile
+import shutil
 import logging
 
 from doorstop import core
@@ -122,7 +124,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the Tree class."""
+    """Integration tests for the core.Tree class."""
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
@@ -148,6 +150,82 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
         self.assertTrue(self.tree.validate())
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImporter(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integrations tests for the importer module."""  # pylint: disable=C0103
+
+    def setUp(self):
+        # Create a temporary mock working copy
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+        os.chdir(self.temp)
+        open(".mockvcs", 'w').close()
+        # Create default document attributes
+        self.prefix = 'PREFIX'
+        self.root = self.temp
+        self.path = os.path.join(self.root, 'DIRECTORY')
+        self.parent = 'PARENT_PREFIX'
+        # Create default item attributes
+        self.identifier = 'PREFIX-00042'
+        # Ensure the tree is reloaded
+        core.importer._TREE = None  # pylint: disable=W0212
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_create_document(self):
+        """Verify a new document can be created to import items."""
+        document = core.importer.new_document(self.prefix, self.path)
+        self.assertEqual(self.prefix, document.prefix)
+        self.assertEqual(self.path, document.path)
+
+    def test_create_document_with_unknown_parent(self):
+        """Verify a new document can be created with an unknown parent."""
+        document = core.importer.new_document(self.prefix, self.path,
+                                              parent=self.parent)
+        self.assertEqual(self.prefix, document.prefix)
+        self.assertEqual(self.path, document.path)
+        self.assertEqual(self.parent, document.parent)
+
+    def test_create_document_already_exists(self):
+        """Verify non-parent exceptions are re-raised."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Attempt to create the same document
+        self.assertRaises(DoorstopError,
+                          core.importer.new_document, self.prefix, self.path)
+
+    def test_add_item(self):
+        """Verify an item can be imported into a document."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Force a rebuild of the tree
+        core.importer._TREE = None  # pylint: disable=W0212
+        # Import an item
+        item = core.importer.add_item(self.prefix, self.identifier)
+        # Verify the item is correct
+        self.assertEqual(self.identifier, item.id)
+        document = core.find_document(self.prefix)
+        self.assertIn(item, document.items)
+
+    def test_add_item_with_attrs(self):
+        """Verify an item with attributes can be imported into a document."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Force a rebuild of the tree
+        core.importer._TREE = None  # pylint: disable=W0212
+        # Import an item
+        attrs = {'text': "Item text", 'ext1': "Extended 1"}
+        item = core.importer.add_item(self.prefix, self.identifier,
+                                      attrs=attrs)
+        # Verify the item is correct
+        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(attrs['text'], item.text)
+        self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
