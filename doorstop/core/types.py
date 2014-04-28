@@ -26,6 +26,36 @@ yaml.add_representer(Literal, Literal.representer)
 
 # ID #########################################################################
 
+# TODO: use ID class
+class ID(object):
+
+    """Unique item identifier."""
+
+    def __init__(self, *values):
+        if len(values) == 1:
+            self.value = str(values[0])
+        elif len(values) == 4:
+            self.value = join_id(*values)
+        else:
+            raise TypeError("__init__() takes 1 or 4 positional arguments")
+        try:
+            self.prefix, self.number = split_id(self.value)
+        except DoorstopError:
+            raise ValueError
+
+    def __repr__(self):
+        return "ID('{}')".format(self.value)
+
+    def __str__(self):
+        return self.value
+
+    def __eq__(self, other):
+        return all((self.prefix.lower() == other.prefix.lower(),
+                    self.number == other.number))
+
+    def __ne__(self, other):
+        return not self == other
+
 
 def get_id(value):
     """Get an ID from an item or string."""
