@@ -61,8 +61,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-# TODO: uncomment the following line when reordering is working
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the Document class."""  # pylint: disable=C0103
@@ -129,21 +128,21 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be inserted into a document."""
         document = core.Document.new(EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
-        item_1_2 = document.add_item()  # will get displaced
-        item_1_1 = document.add_item(level='1.1')
+        item_3_0 = document.add_item()  # will get displaced
+        item_2_0 = document.add_item(level='2.0')
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((1, 1), item_1_1.level)
-        self.assertEqual((1, 2), item_1_2.level)
+        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((3, 0), item_3_0.level)
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed fraom a document."""
         document = core.Document.new(EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
-        item_1_2 = document.add_item()  # to be removed
-        item_1_1 = document.add_item()  # will get relocated
-        document.remove_item(item_1_2)
+        item_3_0 = document.add_item()  # to be removed
+        item_2_0 = document.add_item()  # will get relocated
+        document.remove_item(item_3_0)
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((1, 1), item_1_1.level)
+        self.assertEqual((2, 0), item_2_0.level)
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
@@ -195,7 +194,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document.add_item(level='3.2.1', reorder=False)
         document.add_item(level='3.3', reorder=False)
         self.assertTrue(document.validate())
-        expected = [(1, 0), (1, 1), (1, 1, 0), (1, 1, 1), (2, 1), (2, 2)]
+        expected = [(1, 0), (1, 1), (1, 2, 0), (1, 2, 1), (2, 1, 1), (2, 2)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
 

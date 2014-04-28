@@ -226,31 +226,57 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_remove.assert_called_once_with(item.path)
 
     def test_reorder(self):
-        mock_item = Mock(level=(2, 3))
-        mock_items = [Mock(level=(2, 2)),
-                      mock_item,
-                      Mock(level=(2, 3)),
-                      Mock(level=(2, 7)),
-                      Mock(level=(3, 2, 2)),
-                      Mock(level=(3, 4, 2)),
-                      Mock(level=(3, 5, 0)),
-                      Mock(level=(3, 5, 0)),
-                      Mock(level=(3, 6)),
-                      Mock(level=(5, 0)),
-                      Mock(level=(5, 9))]
-        expected = [(1, 2),
-                    (1, 3),
-                    (1, 4),
-                    (1, 5),
-                    (2, 1, 1),
-                    (2, 2, 1),
-                    (2, 3, 0),
-                    (2, 4, 0),
-                    (2, 3),
-                    (4, 0),
-                    (4, 1)]
-        Document._reorder(mock_items, start=(1, 2), keep=mock_item)
+        """Verify items can be reordered."""
+        mock_items = [Mock(level=Level('2.3')),
+                      Mock(level=Level('2.3')),
+                      Mock(level=Level('2.7')),
+                      Mock(level=Level('3.2.2')),
+                      Mock(level=Level('3.4.2')),
+                      Mock(level=Level('3.5.0')),
+                      Mock(level=Level('3.5.0')),
+                      Mock(level=Level('3.6')),
+                      Mock(level=Level('5.0')),
+                      Mock(level=Level('5.9'))]
+        expected = [Level('2.3'),
+                    Level('2.4'),
+                    Level('2.5'),
+                    Level('3.1.1'),
+                    Level('3.2.1'),
+                    Level('3.3.0'),
+                    Level('3.4.0'),
+                    Level('3.5'),
+                    Level('4.0'),
+                    Level('4.1')]
+        Document._reorder(mock_items)
+        actual = [item.level for item in mock_items]
+        self.assertListEqual(expected, actual)
 
+    def test_reorder_with_start(self):
+        """Verify items can be reordered with a given start."""
+        mock_item = Mock(level=Level('2.3'))
+        mock_items = [Mock(level=Level('2.2')),
+                      mock_item,
+                      Mock(level=Level('2.3')),
+                      Mock(level=Level('2.7')),
+                      Mock(level=Level('3.2.2')),
+                      Mock(level=Level('3.4.2')),
+                      Mock(level=Level('3.5.0')),
+                      Mock(level=Level('3.5.0')),
+                      Mock(level=Level('3.6')),
+                      Mock(level=Level('5.0')),
+                      Mock(level=Level('5.9'))]
+        expected = [Level('1.2'),
+                    Level('1.3'),
+                    Level('1.4'),
+                    Level('1.5'),
+                    Level('2.1.1'),
+                    Level('2.2.1'),
+                    Level('2.3.0'),
+                    Level('2.4.0'),
+                    Level('2.5'),
+                    Level('3.0'),
+                    Level('3.1')]
+        Document._reorder(mock_items, start=(1, 2), keep=mock_item)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 

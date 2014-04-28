@@ -15,6 +15,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.level_1_2_heading = Level('1.2.0')
         self.level_1_2_3 = Level('1.2.3')
 
+    def test_init(self):
+        """Verify levels can be parsed."""
+        self.assertEqual((1, 0), Level((1, 0)).value)
+        self.assertEqual((1,), Level((1)).value)
+        self.assertEqual((1,), Level(()).value)
+        self.assertEqual((1, 0), Level(Level('1.0')).value)
+
     def test_str(self):
         """Verify levels can be converted to strings."""
         self.assertEqual('1', str(self.level_1))
@@ -35,7 +42,12 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(self.level_1_2, Level([1, 2]))
         self.assertEqual(self.level_1_2, (1, 2))
         self.assertEqual(self.level_1_2, self.level_1_2_heading)
+
+    def test_eq_other(self):
+        """Verify levels can be equated with non-levels."""
         self.assertNotEqual(self.level_1, None)
+        self.assertEqual((1, 2, 0), self.level_1_2_heading)
+        self.assertEqual((1, 2), self.level_1_2_heading)
 
     def test_lt(self):
         """Verify levels can be compared."""
@@ -45,7 +57,7 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
 
     def test_hash(self):
         """Verify level's can be hashed."""
-        levels = {Level('1.2'):1, Level('1.2.3'):2}
+        levels = {Level('1.2'): 1, Level('1.2.3'): 2}
         self.assertIn(self.level_1_2, levels)
         self.assertNotIn(self.level_1_2_heading, levels)
 
@@ -126,6 +138,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1.2, self.level_1_2.yaml)
         self.assertEqual('1.2.0', self.level_1_2_heading.yaml)
         self.assertEqual('1.2.3', self.level_1_2_3.yaml)
+
+    def test_copy(self):
+        """Verify levels can be copied."""
+        level = self.level_1_2.copy()
+        self.assertEqual(level, self.level_1_2)
+        level += 1
+        self.assertNotEqual(level, self.level_1_2)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

@@ -198,14 +198,19 @@ class Level:  # pragma: no cover
     identifying "heading" levels when written to file.
     """
 
-    def __init__(self, value):
-        parts = self.load_level(value)
-        if parts[-1] == 0:
-            self._parts = parts[:-1]
-            self.heading = True
+    def __init__(self, value, heading=None):
+        if isinstance(value, Level):
+            self._parts = list(value)
+            self.heading = value.heading
         else:
-            self._parts = parts
-            self.heading = False
+            parts = self.load_level(value)
+            if parts and parts[-1] == 0:
+                self._parts = parts[:-1]
+                self.heading = True
+            else:
+                self._parts = parts
+                self.heading = False
+        self.heading = self.heading if heading is None else heading
         self._adjust()
 
     def __repr__(self):
@@ -221,7 +226,13 @@ class Level:  # pragma: no cover
         return len(self._parts)
 
     def __eq__(self, other):
-        return self._parts == list(other) if other else False
+        if other:
+            parts = list(other)
+            if parts and not parts[-1]:
+                parts.pop(-1)
+            return self._parts == parts
+        else:
+            return False
 
     def __ne__(self, other):
         return not self == other
@@ -229,13 +240,22 @@ class Level:  # pragma: no cover
     def __lt__(self, other):
         return self._parts < list(other)
 
+    def __gt__(self, other):
+        return self._parts > list(other)
+
+    def __le__(self, other):
+        return self._parts <= list(other)
+
+    def __ge__(self, other):
+        return self._parts >= list(other)
+
     def __hash__(self):
         return hash(self.value)
 
     def __add__(self, value):
         parts = list(self._parts)
         parts[-1] += value
-        return Level(parts)
+        return Level(parts, heading=self.heading)
 
     def __iadd__(self, value):
         self._parts[-1] += value
@@ -245,7 +265,7 @@ class Level:  # pragma: no cover
     def __sub__(self, value):
         parts = list(self._parts)
         parts[-1] -= value
-        return Level(parts)
+        return Level(parts, heading=self.heading)
 
     def __isub__(self, value):
         self._parts[-1] -= value
@@ -254,7 +274,7 @@ class Level:  # pragma: no cover
 
     def __rshift__(self, value):
         parts = list(self._parts) + [1] * value
-        return Level(parts)
+        return Level(parts, heading=self.heading)
 
     def __irshift__(self, value):
         self._parts += [1] * value
@@ -263,7 +283,7 @@ class Level:  # pragma: no cover
 
     def __lshift__(self, value):
         parts = list(self._parts)[:-value]
-        return Level(parts)
+        return Level(parts, heading=self.heading)
 
     def __ilshift__(self, value):
         self._parts = self._parts[:-value]
@@ -326,7 +346,7 @@ class Level:  # pragma: no cover
 
         # Clean up multiple trailing zeros
         parts = [int(n) for n in nums]
-        if parts[-1] == 0:
+        if parts and parts[-1] == 0:
             while parts[-1] == 0:
                 del parts[-1]
             parts.append(0)
@@ -357,3 +377,7 @@ class Level:  # pragma: no cover
             level = float(level)
 
         return level
+
+    def copy(self):
+        """Return a copy of the level."""
+        return Level(self.value)

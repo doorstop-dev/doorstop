@@ -7,7 +7,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import get_id, split_id, join_id
+from doorstop.core.types import get_id, split_id, join_id, Level
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -351,50 +351,55 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Reorder levels
         nlevel = plevel = None
         for level, items in levels.items():
-            clevel = list(level)
+            clevel = level
             logging.debug("current level: {} (x{})".format(clevel, len(items)))
-            # Determine the next level
-            if not nlevel:
-                # Use the specified or current starting level
-                nlevel = list(start) if start else clevel
-                logging.debug("next level (start): {}".format(nlevel))
-            elif len(clevel) > len(nlevel):
-                # Indent for the next level
-                nlevel[-1] -= 1
-                while len(clevel) > len(nlevel):
-                    nlevel += [0]
-                logging.debug("next level (indent): {}".format(nlevel))
-            else:
-                # Increment for the next level
-                for index in range(max(len(clevel), len(nlevel)) - 1):
-                    if clevel[index] > plevel[index]:
-                        logging.debug("{} > {}".format(clevel[:index + 1],
-                                                       plevel[:index + 1]))
-                        nlevel = (nlevel[:index] + [nlevel[index] + 1] +
-                                  ([1] if clevel[-1] else [0]))
-                        logging.debug("next level (shift): {}".format(nlevel))
-                        break
-                else:
-                    logging.debug("next level (increment): {}".format(nlevel))
             # Reorder items at this level
             if keep in items:
                 # move the kept item to the front of the list
+                logging.debug("keeping {} level over duplicates".format(keep))
                 items = [items.pop(items.index(keep))] + items
             for item in items:
-                if not item.level[-1] and nlevel[-1] != 0:
-                    nlevel[-1] = 0
-                    nlevel[-2] += 1
-                sclevel = '.'.join(str(n) for n in clevel)
-                snlevel = '.'.join(str(n) for n in nlevel)
-                if clevel == nlevel:
-                    logging.info("{}: {}".format(item, sclevel))
-                else:
-                    logging.info("{}: {} to {}".format(item, sclevel, snlevel))
-                item.level = tuple(nlevel)
-                nlevel[-1] += 1
+                # Determine the next level
+                if not nlevel:
+                    # Use the specified or current starting level
+                    if start:
+                        nlevel = Level(start)
+                    else:
+                        nlevel = clevel
+                    nlevel.heading = clevel.heading
+                    logging.debug("next level (start): {}".format(nlevel))
 
-            # Save the current level as the previous level
-            plevel = clevel
+                else:
+                    nlevel.heading = clevel.heading
+                    # Adjust the next level to be the same depth
+                    if len(clevel) != len(nlevel):
+                        nlevel >>= len(clevel) - len(nlevel)
+                    # Check for a level jump
+                    for index in range(max(len(clevel), len(plevel)) - 1):
+                        if clevel.value[index] > plevel.value[index]:
+                            nlevel <<= len(nlevel) - 1 - index
+                            nlevel += 1
+                            nlevel >>= len(clevel) - len(nlevel)
+                            msg = "next level (jump): {}".format(nlevel)
+                            logging.debug(msg)
+                            break
+                    # Check for a normal increment
+                    else:
+                        if len(nlevel) == len(plevel):
+                            nlevel += 1
+                            msg = "next level (increment): {}".format(nlevel)
+                            logging.debug(msg)
+                        else:
+                            msg = "next level (indent): {}".format(nlevel)
+                            logging.debug(msg)
+                # Apply the next level
+                if clevel == nlevel:
+                    logging.info("{}: {}".format(item, clevel))
+                else:
+                    logging.info("{}: {} to {}".format(item, clevel, nlevel))
+                item.level = nlevel.copy()
+                # Save the current level as the previous level
+                plevel = clevel.copy()
 
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
