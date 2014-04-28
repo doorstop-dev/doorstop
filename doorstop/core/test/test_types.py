@@ -2,7 +2,15 @@
 
 import unittest
 
-from doorstop.core.types import Level
+from doorstop.core.types import ID, Level
+
+
+class TestID(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the ID class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.id = ID('REQ001')
 
 
 class TestLevel(unittest.TestCase):  # pylint: disable=R0904
