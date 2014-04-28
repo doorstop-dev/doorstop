@@ -2,7 +2,15 @@
 
 import unittest
 
-from doorstop.core.types import Level
+from doorstop.core.types import Text, Level
+
+
+class TestText(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Text class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.text = Text("Hello, world!")
 
 
 class TestLevel(unittest.TestCase):  # pylint: disable=R0904
