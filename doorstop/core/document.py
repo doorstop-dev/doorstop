@@ -7,7 +7,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import get_id, split_id, join_id, Level
+from doorstop.core.types import get_id, join_id, Level
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -412,16 +412,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         identifier = get_id(identifier)
-        # Search using the exact ID
         for item in self:
-            if item.id.lower() == identifier.lower():
-                return item
-        logging.debug("no exactly matching ID: {}".format(identifier))
-
-        # Search using the prefix and number
-        prefix, number = split_id(identifier)
-        for item in self:
-            if item.prefix.lower() == prefix.lower() and item.number == number:
+            if item.id == identifier:
                 return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))

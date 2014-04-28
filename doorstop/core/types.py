@@ -26,7 +26,7 @@ yaml.add_representer(Literal, Literal.representer)
 
 # ID #########################################################################
 
-# TODO: use ID class
+# TODO: move functions to static methods, use the ID class
 class ID(object):
 
     """Unique item identifier."""
@@ -38,10 +38,6 @@ class ID(object):
             self.value = join_id(*values)
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
-        try:
-            self.prefix, self.number = split_id(self.value)
-        except DoorstopError:
-            raise ValueError
 
     def __repr__(self):
         return "ID('{}')".format(self.value)
@@ -49,12 +45,44 @@ class ID(object):
     def __str__(self):
         return self.value
 
+    def __hash__(self):
+        try:
+            return hash((self.prefix, self.number))
+        except DoorstopError:
+            return hash(self.value)
+
     def __eq__(self, other):
-        return all((self.prefix.lower() == other.prefix.lower(),
-                    self.number == other.number))
+        if not other:
+            return False
+        if not isinstance(other, ID):
+            other = ID(str(other))
+        try:
+            return all((self.prefix.lower() == other.prefix.lower(),
+                        self.number == other.number))
+        except DoorstopError:
+            return self.value.lower() == other.value.lower()
 
     def __ne__(self, other):
         return not self == other
+
+    def __lt__(self, other):
+        try:
+            if self.prefix.lower() == other.prefix.lower():
+                return self.number < other.number
+            else:
+                return self.prefix.lower() < other.prefix.lower()
+        except DoorstopError:
+            return self.value < other.value
+
+    @property
+    def prefix(self):
+        """Get the ID's prefix."""
+        return split_id(self.value)[0]
+
+    @property
+    def number(self):
+        """Get the ID's number."""
+        return split_id(self.value)[1]
 
 
 def get_id(value):

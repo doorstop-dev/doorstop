@@ -3,6 +3,7 @@
 import unittest
 
 from doorstop.core.types import ID, Level
+from doorstop.common import DoorstopError
 
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
@@ -16,8 +17,10 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
 
     def test_init(self):
         """Verify IDs parse errors are correct."""
-        self.assertRaises(ValueError, ID, 'REQ')
-        self.assertRaises(ValueError, ID, 'REQ-?')
+        identifier = ID('REQ')
+        self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
+        identifier = ID('REQ-?')
+        self.assertRaises(DoorstopError, getattr, identifier, 'number')
         self.assertRaises(TypeError, ID, 'REQ', '-')
         self.assertRaises(TypeError, ID, 'REQ', '-', 42)
         self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
@@ -40,6 +43,13 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(ID('REQ1'), ID('REQ', '', 1, 3))
         self.assertNotEqual(ID('REQ.2'), ID('REQ', '-', 1, 3))
         self.assertEqual(ID('REQ1'), ID('REQ001 (@/req1.yml)'))
+        self.assertEqual('req1', ID('REQ001'))
+        self.assertNotEqual(None, ID('REQ001'))
+
+    def test_sort(self):
+        """Verify IDs can be sorted."""
+        ids = [ID('a'), ID('a1'), ID('a2'), ID('b')]
+        self.assertListEqual(ids, sorted(ids))
 
     def test_prefix(self):
         """Verify IDs have prefixes."""

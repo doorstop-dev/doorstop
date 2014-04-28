@@ -145,7 +145,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
             # Links
             if item.links:
                 yield ""  # break before links
-                links = "Links: " + ', '.join(item.links)
+                links = "Links: " + ', '.join(str(l) for l in item.links)
                 yield from _chunks(links, width, indent)
 
         yield ""  # break between items
@@ -195,8 +195,8 @@ def lines_markdown(obj, ignored=None):
             # Links
             if item.links:
                 yield ""  # break before links
-                links = '*' + "Links: " + ', '.join(item.links) + '*'
-                yield links
+                links = "Links: " + ', '.join(str(l) for l in item.links)
+                yield '*' + links + '*'
 
         yield ""  # break between items
 

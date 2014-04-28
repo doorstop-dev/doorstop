@@ -6,8 +6,8 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Level
-from doorstop.core.types import get_id, split_id, load_text, save_text
+from doorstop.core.types import ID, Level
+from doorstop.core.types import load_text, save_text
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -41,7 +41,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
-            split_id(name)
+            ID(name).number
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
@@ -66,7 +66,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     def __str__(self):
         if common.VERBOSITY < common.STR_VERBOSITY:
-            return self.id
+            return str(self.id)
         else:
             return "{} ({})".format(self.id, self.relpath)
 
@@ -130,7 +130,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
-                self._data['links'] = set(value)
+                self._data['links'] = set(ID(v) for v in value)
             else:
                 if isinstance(value, str):
                     value = load_text(value)
@@ -151,7 +151,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
-                data['links'] = sorted(value)
+                data['links'] = sorted(str(v) for v in value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
@@ -173,7 +173,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @property
     def id(self):  # pylint: disable=C0103
         """Get the item's ID."""
-        return os.path.splitext(os.path.basename(self.path))[0]
+        filename = os.path.basename(self.path)
+        return ID(os.path.splitext(filename)[0])
 
     @property
     def relpath(self):
@@ -184,12 +185,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @property
     def prefix(self):
         """Get the item ID's prefix."""
-        return split_id(self.id)[0]
+        return self.id.prefix
 
     @property
     def number(self):
         """Get the item ID's number."""
-        return split_id(self.id)[1]
+        return self.id.number
 
     @property
     @auto_load
@@ -341,24 +342,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     @auto_save
     @auto_load
-    def link(self, identifier):
+    def link(self, value):
         """Add a new link to another item ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         self._data['links'].add(identifier)
 
     @auto_save
     @auto_load
-    def unlink(self, identifier):
+    def unlink(self, value):
         """Remove an existing link by item ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         try:
             self._data['links'].remove(identifier)
         except KeyError:
@@ -423,7 +424,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Verify an item's links are to the correct parent
         for identifier in self.links:
             try:
-                prefix = split_id(identifier)[0]
+                prefix = identifier.prefix
             except DoorstopError:
                 msg = "invalid ID in links: {}".format(identifier)
                 yield DoorstopError(msg)
