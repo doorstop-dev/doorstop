@@ -189,8 +189,7 @@ def join(text):
 # level #####################################################################
 
 
-# TODO: use the Level class
-class Level:  # pragma: no cover
+class Level(object):  # pragma: no cover
 
     """Variable-length numerical outline level values.
 

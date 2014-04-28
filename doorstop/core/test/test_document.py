@@ -41,7 +41,7 @@ class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902,R09
     """Mock Document class with stubbed file IO."""
 
 
-@patch('doorstop.settings.REORDER', False)
+@patch('doorstop.settings.REORDER', False)  # pylint: disable=R0904
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 

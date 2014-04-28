@@ -317,7 +317,7 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
-@unittest.skip("TODO: implement 'doorstop import' command")
+@unittest.skip("TODO: implement 'doorstop import' command")  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
