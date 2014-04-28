@@ -82,7 +82,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @raise DoorstopError: if the document already exists
 
         """
-        # TODO: raise a specific exception for invalid separator characters
+        # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
@@ -222,7 +222,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
-        # TODO: raise a specific exception for invalid separator characters
+        # TODO: raise a specific exception for invalid separator characters?
         assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
@@ -332,7 +332,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         logging.info("reordering {}...".format(self))
         self._reorder(self.items, start=start, keep=keep)
 
-    # TODO: refactor this method; it's way to complicated
     @staticmethod
     def _reorder(items, start=None, keep=None):
         """Reorder a document's items.
@@ -341,6 +340,50 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @param keep: item's ID (or item) to keep over duplicates
 
         """
+        nlevel = plevel = None
+        for clevel, item in Document._items_by_level(items, keep=keep):
+            logging.debug("current level: {} (x{})".format(clevel, len(items)))
+            # Determine the next level
+            if not nlevel:
+                # Use the specified or current starting level
+                nlevel = Level(start) if start else clevel
+                nlevel.heading = clevel.heading
+                logging.debug("next level (start): {}".format(nlevel))
+            else:
+                # Adjust the next level to be the same depth
+                if len(clevel) != len(nlevel):
+                    nlevel >>= len(clevel) - len(nlevel)
+                nlevel.heading = clevel.heading
+                # Check for a level jump
+                for index in range(max(len(clevel), len(plevel)) - 1):
+                    if clevel.value[index] > plevel.value[index]:
+                        nlevel <<= len(nlevel) - 1 - index
+                        nlevel += 1
+                        nlevel >>= len(clevel) - len(nlevel)
+                        msg = "next level (jump): {}".format(nlevel)
+                        logging.debug(msg)
+                        break
+                # Check for a normal increment
+                else:
+                    if len(nlevel) == len(plevel):
+                        nlevel += 1
+                        msg = "next level (increment): {}".format(nlevel)
+                        logging.debug(msg)
+                    else:
+                        msg = "next level (indent/dedent): {}".format(nlevel)
+                        logging.debug(msg)
+            # Apply the next level
+            if clevel == nlevel:
+                logging.info("{}: {}".format(item, clevel))
+            else:
+                logging.info("{}: {} to {}".format(item, clevel, nlevel))
+            item.level = nlevel.copy()
+            # Save the current level as the previous level
+            plevel = clevel.copy()
+
+    @staticmethod
+    def _items_by_level(items, keep=None):
+        """Iterate through items by level with a kept item first."""
         # Collect levels
         levels = OrderedDict()
         for item in items:
@@ -349,57 +392,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             else:
                 levels[item.level] = [item]
         # Reorder levels
-        nlevel = plevel = None
         for level, items in levels.items():
-            clevel = level
-            logging.debug("current level: {} (x{})".format(clevel, len(items)))
             # Reorder items at this level
             if keep in items:
                 # move the kept item to the front of the list
                 logging.debug("keeping {} level over duplicates".format(keep))
                 items = [items.pop(items.index(keep))] + items
             for item in items:
-                # Determine the next level
-                if not nlevel:
-                    # Use the specified or current starting level
-                    if start:
-                        nlevel = Level(start)
-                    else:
-                        nlevel = clevel
-                    nlevel.heading = clevel.heading
-                    logging.debug("next level (start): {}".format(nlevel))
-
-                else:
-                    nlevel.heading = clevel.heading
-                    # Adjust the next level to be the same depth
-                    if len(clevel) != len(nlevel):
-                        nlevel >>= len(clevel) - len(nlevel)
-                    # Check for a level jump
-                    for index in range(max(len(clevel), len(plevel)) - 1):
-                        if clevel.value[index] > plevel.value[index]:
-                            nlevel <<= len(nlevel) - 1 - index
-                            nlevel += 1
-                            nlevel >>= len(clevel) - len(nlevel)
-                            msg = "next level (jump): {}".format(nlevel)
-                            logging.debug(msg)
-                            break
-                    # Check for a normal increment
-                    else:
-                        if len(nlevel) == len(plevel):
-                            nlevel += 1
-                            msg = "next level (increment): {}".format(nlevel)
-                            logging.debug(msg)
-                        else:
-                            msg = "next level (indent): {}".format(nlevel)
-                            logging.debug(msg)
-                # Apply the next level
-                if clevel == nlevel:
-                    logging.info("{}: {}".format(item, clevel))
-                else:
-                    logging.info("{}: {} to {}".format(item, clevel, nlevel))
-                item.level = nlevel.copy()
-                # Save the current level as the previous level
-                plevel = clevel.copy()
+                yield level, item
 
     def find_item(self, identifier, _kind=''):
         """Return an item by its ID.
@@ -471,7 +471,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "duplicate level: {} ({}, {})".format(plev, *ids)
                 yield DoorstopWarning(msg)
             # Skipped level
-            # TODO: can this be done without Level.value?
             length = min(len(plev.value), len(nlev.value))
             for index in range(length):
                 # Types of skipped levels:

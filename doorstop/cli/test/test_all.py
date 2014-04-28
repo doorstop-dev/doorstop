@@ -24,14 +24,16 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.temp = tempfile.mkdtemp()
         self.backup = (settings.REFORMAT,
                        settings.CHECK_REF,
-                       settings.CHECK_RLINKS)
+                       settings.CHECK_RLINKS,
+                       settings.REORDER)
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
         (settings.REFORMAT,
          settings.CHECK_REF,
-         settings.CHECK_RLINKS) = self.backup
+         settings.CHECK_RLINKS,
+         settings.REORDER) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -69,6 +71,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.REFORMAT)
         self.assertTrue(settings.CHECK_REF)
         self.assertTrue(settings.CHECK_RLINKS)
+        self.assertTrue(settings.REORDER)
 
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
@@ -76,10 +79,12 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.temp)
         self.assertIs(None, main(['--no-reformat',
                                   '--no-ref-check',
-                                  '--no-rlinks-check']))
+                                  '--no-rlinks-check',
+                                  '--no-reorder']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_RLINKS)
+        self.assertFalse(settings.REORDER)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))
     def test_gui(self):
