@@ -169,12 +169,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(tree.validate())
 
     @patch('doorstop.settings.REORDER', False)
-    @patch('doorstop.core.item.Item.get_issues',
+    @patch('doorstop.core.document.Document.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
                               DoorstopInfo('info')]))
     def test_validate_document(self):
-        """Verify an document error fails the tree validation."""
+        """Verify a document error fails the tree validation."""
         self.assertFalse(self.tree.validate())
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
