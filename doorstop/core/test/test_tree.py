@@ -69,6 +69,7 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
 
+    @patch('doorstop.settings.REORDER', False)
     def test_from_list(self):
         """Verify a tree can be created from a list."""
         a = MockDocument(EMPTY)
@@ -167,12 +168,13 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         tree = Tree(None, root='.')
         self.assertTrue(tree.validate())
 
-    @patch('doorstop.core.item.Item.get_issues',
+    @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.core.document.Document.get_issues',
            Mock(return_value=[DoorstopError('error'),
                               DoorstopWarning('warning'),
                               DoorstopInfo('info')]))
     def test_validate_document(self):
-        """Verify an document error fails the tree validation."""
+        """Verify a document error fails the tree validation."""
         self.assertFalse(self.tree.validate())
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
@@ -223,6 +225,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         # Cache hit
         self.assertRaises(DoorstopError, self.tree.add_item, 'UNKNOWN')
 
+    @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.core.item.Item.delete')
     def test_remove_item(self, mock_delete):
         """Verify an item can be removed from a document."""

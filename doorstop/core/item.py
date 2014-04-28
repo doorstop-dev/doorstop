@@ -7,7 +7,7 @@ import logging
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Level
-from doorstop.core.types import get_id, split_id, join_id, load_text, save_text
+from doorstop.core.types import get_id, split_id, load_text, save_text
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings

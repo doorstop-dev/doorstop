@@ -31,6 +31,8 @@ def main(args=None):  # pylint: disable=R0915
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
     parser.add_argument('-F', '--no-reformat', action='store_true',
                         help="do not reformat item files during validation")
+    parser.add_argument('-O', '--no-reorder', action='store_true',
+                        help="do not reorder levels files during validation")
     parser.add_argument('-R', '--no-ref-check', action='store_true',
                         help="do not validate external file references")
     parser.add_argument('-L', '--no-rlinks-check', action='store_true',
@@ -183,6 +185,8 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     # Configure validation settings
     if args.no_reformat is not None:
         settings.REFORMAT = not args.no_reformat
+    if args.no_reorder is not None:
+        settings.REORDER = not args.no_reorder
     if args.no_ref_check is not None:
         settings.CHECK_REF = not args.no_ref_check
     if args.no_rlinks_check is not None:

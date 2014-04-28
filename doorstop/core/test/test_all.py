@@ -84,15 +84,17 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new(self):
         """Verify a new document can be created."""
-        doc = core.Document.new(EMPTY, FILES, prefix='SYS', digits=4)
-        self.assertEqual('SYS', doc.prefix)
-        self.assertEqual(4, doc.digits)
-        self.assertEqual(0, len(doc.items))
+        document = core.Document.new(EMPTY, FILES, prefix='SYS', digits=4)
+        self.assertEqual('SYS', document.prefix)
+        self.assertEqual(4, document.digits)
+        self.assertEqual(0, len(document.items))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_validate(self):
         """Verify a document can be validated."""
         self.assertTrue(self.document.validate())
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_count(self):
         """Verify a number of issues are found in a document."""
         issues = self.document.issues
@@ -100,6 +102,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             logging.info(repr(issue))
         self.assertEqual(8, len(issues))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
         expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
@@ -110,6 +113,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         else:
             self.fail("issue not found: {}".format(expect))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_skipped_level(self):
         """Verify skipped item levels are detected."""
         expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
@@ -119,6 +123,80 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                 break
         else:
             self.fail("issue not found: {}".format(expect))
+
+    def test_add_item_with_reordering(self):
+        """Verify an item can be inserted into a document."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        item_1_0 = document.add_item()
+        item_3_0 = document.add_item()  # will get displaced
+        item_2_0 = document.add_item(level='2.0')
+        self.assertEqual((1, 0), item_1_0.level)
+        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((3, 0), item_3_0.level)
+
+    def test_remove_item_with_reordering(self):
+        """Verify an item can be removed fraom a document."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        item_1_0 = document.add_item()
+        item_3_0 = document.add_item()  # to be removed
+        item_2_0 = document.add_item()  # will get relocated
+        document.remove_item(item_3_0)
+        self.assertEqual((1, 0), item_1_0.level)
+        self.assertEqual((2, 0), item_2_0.level)
+
+    def test_reorder(self):
+        """Verify a document's order can be corrected."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='2.0', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.5', reorder=False)
+        document.add_item(level='4.5', reorder=False)
+        document.add_item(level='4.7', reorder=False)
+        document.reorder()
+        expected = [(2, 0), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+
+    def test_reorder_with_keep(self):
+        """Verify a document's order can be corrected with a kept level."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='1.0', reorder=False)
+        item = document.add_item(level='1.0', reorder=False)
+        document.add_item(level='1.0', reorder=False)
+        document.reorder(keep=item)
+        expected = [(1, 0), (2, 0), (3, 0)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+        self.assertEqual((1, 0), item.level)
+
+    def test_reorder_with_start(self):
+        """Verify a document's order can be corrected with a given start."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='2.0', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.5', reorder=False)
+        document.add_item(level='4.0', reorder=False)
+        document.add_item(level='4.7', reorder=False)
+        document.reorder(start=(1, 0))
+        expected = [(1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+
+    def test_validate_with_reordering(self):
+        """Verify a document's order is corrected during validation."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='1.0', reorder=False)
+        document.add_item(level='1.1', reorder=False)
+        document.add_item(level='1.2.0', reorder=False)
+        document.add_item(level='1.2.5', reorder=False)
+        document.add_item(level='3.2.1', reorder=False)
+        document.add_item(level='3.3', reorder=False)
+        self.assertTrue(document.validate())
+        expected = [(1, 0), (1, 1), (1, 2, 0), (1, 2, 1), (2, 1, 1), (2, 2)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -138,6 +216,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         with open(self.path, 'w') as item:
             item.write(self.backup)
 
+    @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
@@ -146,6 +225,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsInstance(tree, core.Tree)
         self.assertFalse(tree.validate())
 
+    @patch('doorstop.settings.REORDER', False)
     def test_validate_long(self):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))

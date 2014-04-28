@@ -49,13 +49,15 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_new.assert_called_once_with(self.path, self.prefix,
                                          parent=self.parent)
 
-    @patch('doorstop.core.tree.Tree.new_document', Mock(side_effect=DoorstopError))
+    @patch('doorstop.core.tree.Tree.new_document',
+           Mock(side_effect=DoorstopError))
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         self.assertRaises(DoorstopError,
                           importer.new_document, self.prefix, self.path)
 
-    @patch('doorstop.core.tree.Tree.new_document', Mock(side_effect=DoorstopError))
+    @patch('doorstop.core.tree.Tree.new_document',
+           Mock(side_effect=DoorstopError))
     @patch('doorstop.core.document.Document.new')
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created with unknown parents."""
