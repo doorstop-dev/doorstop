@@ -11,21 +11,6 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
-class Literal(str):  # pylint: disable=R0904
-
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-
-
-# ID #########################################################################
-
 class ID(object):
 
     """Unique item identifier."""
@@ -132,124 +117,143 @@ class ID(object):
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-# text #######################################################################
+class Literal(str):  # pylint: disable=R0904
+
+    """Custom type for text which should be dumped in the literal style."""
+
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the literal style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|' if data else '')
+
+yaml.add_representer(Literal, Literal.representer)
 
 
-def load_text(value):
-    r"""Convert dumped text to the original string.
+class Text(str):  # pylint: disable=R0904
 
-    >>> load_text("abc\ndef")
-    'abc def'
+    """Markdown text paragraph."""
 
-    >>> load_text("list:\n\n- a\n- b\n")
-    'list:\n\n- a\n- b'
+    def __new__(cls, value):
+        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        return obj
 
-    """
-    return join(value)
+    @property
+    def yaml(self):
+        """Get the value to be used in YAML dumping."""
+        return Text.save_text(self)
 
+    @staticmethod
+    def load_text(value):
+        r"""Convert dumped text to the original string.
 
-def save_text(text, end='\n'):
-    """Break a string at sentences and dump as literal YAML with wrapping."""
-    return Literal(wrap(sbd(text, end=end)))
+        >>> Text.load_text("abc\ndef")
+        'abc def'
 
+        >>> Text.load_text("list:\n\n- a\n- b\n")
+        'list:\n\n- a\n- b'
 
-# Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-RE_SENTENCE_BOUNDARIES = re.compile(r"""
+        """
+        return Text.join(value)
 
-(            # one of the following:
+    @staticmethod
+    def save_text(text, end='\n'):
+        """Break a string at sentences and dump as wrapped literal YAML."""
+        return Literal(Text.wrap(Text.sbd(text, end=end)))
 
-  (?<=[a-z)][.?!])      # lowercase letter + punctuation
-  |
-  (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
+    # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+    RE_SENTENCE_BOUNDARIES = re.compile(r"""
 
-)
+    (            # one of the following:
 
-(\s)          # any whitespace
+      (?<=[a-z)][.?!])      # lowercase letter + punctuation
+      |
+      (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
 
-(?=\"?[A-Z])  # optional quote + an upppercase letter
+    )
 
-""", re.VERBOSE)
+    (\s)          # any whitespace
 
+    (?=\"?[A-Z])  # optional quote + an upppercase letter
 
-def sbd(text, end='\n'):
-    r"""Replace sentence boundaries with newlines and append a newline.
+    """, re.VERBOSE)
 
-    @param text: string to line break at sentences
-    @param end: appended to the end of the update text
+    @staticmethod
+    def sbd(text, end='\n'):
+        r"""Replace sentence boundaries with newlines and append a newline.
 
-    >>> sbd("Hello, world!", end='')
-    'Hello, world!'
+        @param text: string to line break at sentences
+        @param end: appended to the end of the update text
 
-    >>> sbd("Hello, world! How are you? I'm fine. Good.")
-    "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
+        >>> Text.sbd("Hello, world!", end='')
+        'Hello, world!'
 
-    """
-    stripped = text.strip()
-    if stripped:
-        return RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
-    else:
-        return ''
+        >>> Text.sbd("Hello, world! How are you? I'm fine. Good.")
+        "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
 
+        """
+        stripped = text.strip()
+        if stripped:
+            return Text.RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
+        else:
+            return ''
 
-def wrap(text, width=settings.MAX_LINE_LENTH):
-    r"""Wrap lines of text to the maximum line length.
+    @staticmethod
+    def wrap(text, width=settings.MAX_LINE_LENTH):
+        r"""Wrap lines of text to the maximum line length.
 
-    >>> wrap("Hello, world!", 9)
-    'Hello,\nworld!'
+        >>> Text.wrap("Hello, world!", 9)
+        'Hello,\nworld!'
 
-    >>> wrap("How are you?\nI'm fine.\n", 14)
-    "How are you?\nI'm fine.\n"
+        >>> Text.wrap("How are you?\nI'm fine.\n", 14)
+        "How are you?\nI'm fine.\n"
 
-    """
-    end = '\n' if '\n' in text else ''
-    lines = []
-    for line in text.splitlines():
-        # wrap longs lines of text compensating for the 2-space indent
-        lines.extend(textwrap.wrap(line, width=width - 2,
-                                   replace_whitespace=True))
-        if not line.strip():
-            lines.append('')
-    return '\n'.join(lines) + end
+        """
+        end = '\n' if '\n' in text else ''
+        lines = []
+        for line in text.splitlines():
+            # wrap longs lines of text compensating for the 2-space indent
+            lines.extend(textwrap.wrap(line, width=width - 2,
+                                       replace_whitespace=True))
+            if not line.strip():
+                lines.append('')
+        return '\n'.join(lines) + end
 
+    RE_MARKDOWN_SPACES = re.compile(r"""
 
-RE_MARKDOWN_SPACES = re.compile(r"""
+    ([^\n ])  # any character but a newline or space
 
-([^\n ])  # any character but a newline or space
+    (\ ?\n)     # optional space + single newline
 
-(\ ?\n)     # optional space + single newline
+    (?!      # none of the following:
 
-(?!      # none of the following:
+      (?:\s)       # whitespace
+      |
+      (?:[-+*]\s)  # unordered list separator + whitespace
+      |
+      (?:\d+\.\s)  # number + period + whitespace
 
-  (?:\s)       # whitespace
-  |
-  (?:[-+*]\s)  # unordered list separator + whitespace
-  |
-  (?:\d+\.\s)  # number + period + whitespace
+    )
 
-)
+    ([^\n])  # any character but a newline
 
-([^\n])  # any character but a newline
+    """, re.VERBOSE | re.IGNORECASE)
 
-""", re.VERBOSE | re.IGNORECASE)
+    @staticmethod
+    def join(text):
+        r"""Convert single newlines (ignored by Markdown) to spaces.
 
+        >>> Text.join("abc\n123")
+        'abc 123'
 
-def join(text):
-    r"""Convert single newlines (ignored by Markdown) to spaces.
+        >>> Text.join("abc\n\n123")
+        'abc\n\n123'
 
-    >>> join("abc\n123")
-    'abc 123'
+        >>> Text.join("abc \n123")
+        'abc 123'
 
-    >>> join("abc\n\n123")
-    'abc\n\n123'
-
-    >>> join("abc \n123")
-    'abc 123'
-
-    """
-    return RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
-
-
-# level #####################################################################
+        """
+        return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
 class Level(object):  # pragma: no cover

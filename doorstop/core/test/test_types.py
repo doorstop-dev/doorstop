@@ -2,7 +2,7 @@
 
 import unittest
 
-from doorstop.core.types import ID, Level
+from doorstop.core.types import ID, Text, Level
 from doorstop.common import DoorstopError
 
 
@@ -62,6 +62,30 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, self.id1.number)
         self.assertEqual(2, self.id2.number)
         self.assertEqual(3, self.id3.number)
+
+
+class TestText(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Text class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.text = Text("Hello, \nworld! ")
+
+    def test_repr(self):
+        """Verify text can be represented."""
+        self.assertEqual("'Hello, world!'", repr(self.text))
+
+    def test_str(self):
+        """Verify text can be converted to strings."""
+        self.assertEqual("Hello, world!", str(self.text))
+
+    def test_eq(self):
+        """Verify text can be equated."""
+        self.assertEqual(Text("Hello, world!"), self.text)
+
+    def test_yaml(self):
+        """Verify levels can be converted to their YAML representation."""
+        self.assertEqual("Hello, world!\n", self.text.yaml)
 
 
 class TestLevel(unittest.TestCase):  # pylint: disable=R0904
