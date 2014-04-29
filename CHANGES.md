@@ -4,8 +4,9 @@ Changelog
 0.6 (dev)
 ---------
 
-- Refactored Item levels into a Level class
 - Added '--no-reorder' option to 'doorstop' to disable reording
+- Refactored Item levels into a Level class
+- Refactored Item identifiers into an ID class
 
 0.5 (2014/04/25)
 ----------------
