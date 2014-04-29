@@ -2,7 +2,66 @@
 
 import unittest
 
-from doorstop.core.types import Text, Level
+from doorstop.core.types import ID, Text, Level
+from doorstop.common import DoorstopError
+
+
+class TestID(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the ID class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.id1 = ID('REQ001')
+        self.id2 = ID('TST-02')
+        self.id3 = ID('SYS', '-', 3, 5)
+
+    def test_init(self):
+        """Verify IDs parse errors are correct."""
+        identifier = ID('REQ')
+        self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
+        identifier = ID('REQ-?')
+        self.assertRaises(DoorstopError, getattr, identifier, 'number')
+        self.assertRaises(TypeError, ID, 'REQ', '-')
+        self.assertRaises(TypeError, ID, 'REQ', '-', 42)
+        self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
+
+    def test_repr(self):
+        """Verify IDs can be represented."""
+        self.assertEqual("ID('REQ001')", repr(self.id1))
+        self.assertEqual("ID('TST-02')", repr(self.id2))
+        self.assertEqual("ID('SYS-00003')", repr(self.id3))
+
+    def test_str(self):
+        """Verify IDs can be converted to strings."""
+        self.assertEqual('REQ001', str(self.id1))
+        self.assertEqual('TST-02', str(self.id2))
+        self.assertEqual('SYS-00003', str(self.id3))
+
+    def test_eq(self):
+        """Verify IDs can be equated."""
+        self.assertEqual(ID('REQ.001'), ID('req', '', 1, 3))
+        self.assertEqual(ID('REQ1'), ID('REQ', '', 1, 3))
+        self.assertNotEqual(ID('REQ.2'), ID('REQ', '-', 1, 3))
+        self.assertEqual(ID('REQ1'), ID('REQ001 (@/req1.yml)'))
+        self.assertEqual('req1', ID('REQ001'))
+        self.assertNotEqual(None, ID('REQ001'))
+
+    def test_sort(self):
+        """Verify IDs can be sorted."""
+        ids = [ID('a'), ID('a1'), ID('a2'), ID('b')]
+        self.assertListEqual(ids, sorted(ids))
+
+    def test_prefix(self):
+        """Verify IDs have prefixes."""
+        self.assertEqual('REQ', self.id1.prefix)
+        self.assertEqual('TST', self.id2.prefix)
+        self.assertEqual('SYS', self.id3.prefix)
+
+    def test_number(self):
+        """Verify IDs have numbers."""
+        self.assertEqual(1, self.id1.number)
+        self.assertEqual(2, self.id2.number)
+        self.assertEqual(3, self.id3.number)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904
@@ -29,6 +88,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual((1,), Level((1)).value)
         self.assertEqual((1,), Level(()).value)
         self.assertEqual((1, 0), Level(Level('1.0')).value)
+
+    def test_repr(self):
+        """Verify levels can be represented."""
+        self.assertEqual("Level('1')", repr(self.level_1))
+        self.assertEqual("Level('1.2')", repr(self.level_1_2))
+        self.assertEqual("Level('1.2.0')", repr(self.level_1_2_heading))
+        self.assertEqual("Level('1.2.3')", repr(self.level_1_2_3))
 
     def test_str(self):
         """Verify levels can be converted to strings."""

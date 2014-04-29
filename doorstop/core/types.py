@@ -26,47 +26,110 @@ yaml.add_representer(Literal, Literal.representer)
 
 # ID #########################################################################
 
+class ID(object):
 
-def get_id(value):
-    """Get an ID from an item or string."""
-    return str(value).split(' ')[0]
+    """Unique item identifier."""
 
+    def __init__(self, *values):
+        """Initialize an ID using a string or set of parts.
 
-def split_id(text):
-    """Split an item's ID into a prefix and number.
+        Option 1:
 
-    >>> split_id('ABC00123')
-    ('ABC', 123)
+        @param *values: string representation of ID
 
-    >>> split_id('ABC.HLR_01-00123')
-    ('ABC.HLR_01', 123)
+        Option 2:
 
-    >>> split_id('REQ2-001')
-    ('REQ2', 1)
+        @param *values: prefix, separator, number, digit count
 
-    """
-    match = re.match(r"([\w.-]*\D)(\d+)", text)
-    if not match:
-        raise DoorstopError("invalid ID: {}".format(text))
-    prefix = match.group(1).rstrip(settings.SEP_CHARS)
-    number = int(match.group(2))
-    return prefix, number
+        """
+        if len(values) == 1:
+            self.value = str(values[0])
+        elif len(values) == 4:
+            self.value = ID.join_id(*values)
+        else:
+            raise TypeError("__init__() takes 1 or 4 positional arguments")
 
+    def __repr__(self):
+        return "ID('{}')".format(self.value)
 
-def join_id(prefix, sep, number, digits):
-    """Join the parts of an item's ID into an ID.
+    def __str__(self):
+        return self.value
 
-    >>> join_id('ABC', '', 123, 5)
-    'ABC00123'
+    def __hash__(self):
+        try:
+            return hash((self.prefix, self.number))
+        except DoorstopError:
+            return hash(self.value)
 
-    >>> join_id('REQ.H', '-', 42, 4)
-    'REQ.H-0042'
+    def __eq__(self, other):
+        if not other:
+            return False
+        if not isinstance(other, ID):
+            other = ID(str(other))
+        try:
+            return all((self.prefix.lower() == other.prefix.lower(),
+                        self.number == other.number))
+        except DoorstopError:
+            return self.value.lower() == other.value.lower()
 
-    >>> join_id('ABC', '-', 123, 0)
-    'ABC-123'
+    def __ne__(self, other):
+        return not self == other
 
-    """
-    return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
+    def __lt__(self, other):
+        try:
+            if self.prefix.lower() == other.prefix.lower():
+                return self.number < other.number
+            else:
+                return self.prefix.lower() < other.prefix.lower()
+        except DoorstopError:
+            return self.value < other.value
+
+    @property
+    def prefix(self):
+        """Get the ID's prefix."""
+        return ID.split_id(self.value)[0]
+
+    @property
+    def number(self):
+        """Get the ID's number."""
+        return ID.split_id(self.value)[1]
+
+    @staticmethod
+    def split_id(text):
+        """Split an item's ID string into a prefix and number.
+
+        >>> ID.split_id('ABC00123')
+        ('ABC', 123)
+
+        >>> ID.split_id('ABC.HLR_01-00123')
+        ('ABC.HLR_01', 123)
+
+        >>> ID.split_id('REQ2-001')
+        ('REQ2', 1)
+
+        """
+        match = re.match(r"([\w.-]*\D)(\d+)", text)
+        if not match:
+            raise DoorstopError("invalid ID: {}".format(text))
+        prefix = match.group(1).rstrip(settings.SEP_CHARS)
+        number = int(match.group(2))
+        return prefix, number
+
+    @staticmethod
+    def join_id(prefix, sep, number, digits):
+        """Join the parts of an item's ID into a string.
+
+        >>> ID.join_id('ABC', '', 123, 5)
+        'ABC00123'
+
+        >>> ID.join_id('REQ.H', '-', 42, 4)
+        'REQ.H-0042'
+
+        >>> ID.join_id('ABC', '-', 123, 0)
+        'ABC-123'
+
+        """
+        return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
 # text #######################################################################
@@ -198,6 +261,12 @@ class Level(object):  # pragma: no cover
     """
 
     def __init__(self, value, heading=None):
+        """Initialize an item level from a sequence of numbers.
+
+        @param value: sequence of int, float, or period-delimited string
+        @param heading: force a heading value (or inferred from trailing zero)
+
+        """
         if isinstance(value, Level):
             self._parts = list(value)
             self.heading = value.heading
