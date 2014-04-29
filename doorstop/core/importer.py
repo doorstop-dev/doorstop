@@ -28,6 +28,7 @@ def new_document(prefix, path, parent=None):
         _TREE = build()
 
     # Attempt to create a document with the given parent
+    logging.info("importing document '{}'...".format(prefix))
     try:
         document = _TREE.new_document(path, prefix, parent=parent)
     except DoorstopError as exc:
@@ -41,6 +42,7 @@ def new_document(prefix, path, parent=None):
 
     # TODO: attempt to place unplaced documents?
 
+    logging.info("imported: {}".format(document))
     return document
 
 
@@ -62,9 +64,11 @@ def add_item(prefix, identifier, attrs=None):
     # Get the specified document
     document = _TREE.find_document(prefix)
 
+    logging.info("importing item '{}'...".format(identifier))
     item = Item.new(document.path, document.root, identifier, auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
 
+    logging.info("imported: {}".format(item))
     return item
