@@ -1,2 +1,5 @@
-* text
+* text=auto
+
+*.yml text
+*.html text
 

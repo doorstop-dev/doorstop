@@ -2,11 +2,13 @@
 
 import os
 from itertools import chain
+from collections import OrderedDict
 import logging
 
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
-from doorstop.core.item import Item, get_id, split_id
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.types import ID, Level
+from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
@@ -24,7 +26,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, root=os.getcwd()):
-        """Load a document from an exiting directory.
+        """Initialize a document from an exiting directory.
 
         @param path: path to document directory
         @param root: path to root of project
@@ -43,12 +45,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._itered = False
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
-        self._data['sep'] = ''
+        self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
 
     def __repr__(self):
-        return "Document({})".format(repr(self.path))
+        return "Document('{}')".format(self.path)
 
     def __str__(self):
         if common.VERBOSITY < common.STR_VERBOSITY:
@@ -79,8 +81,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         @raise DoorstopError: if the document already exists
 
+        @return: new Document
+
         """
-        # TODO: raise a specific exception for invalid separator characters
+        # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
         # Check for an existing document
@@ -220,7 +224,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def sep(self, value):
         """Set the prefix-number separator to use for new item IDs."""
-        # TODO: raise a specific exception for invalid separator characters
+        # TODO: raise a specific exception for invalid separator characters?
         assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
@@ -277,10 +281,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    def add_item(self, level=None):
+    def add_item(self, level=None, reorder=True):
         """Create a new item for the document and return it.
 
         @param level: desired item level
+        @param reorder: update levels of document items
+
+        @return: added Item
 
         """
         number = self.next
@@ -288,53 +295,129 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         try:
             last = self.items[-1]
         except IndexError:
-            level = None
+            nlevel = level
         else:
-            level = level or last.level[:-1] + (last.level[-1] + 1,)
-        logging.debug("next level: {}".format(level))
-        item = Item.new(self.path, self.root,
-                        self.prefix, self.sep, self.digits,
-                        number, level=level)
+            nlevel = level or last.level + 1
+        logging.debug("next level: {}".format(nlevel))
+        identifier = ID(self.prefix, self.sep, number, self.digits)
+        item = Item.new(self.path, self.root, identifier, level=nlevel)
         self._items.append(item)
+        if settings.REORDER and level and reorder:
+            self.reorder(keep=item)
         return item
 
-    def remove_item(self, identifier):
+    def remove_item(self, value, reorder=True):
         """Remove an item by its ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
+        @param reorder: update levels of document items
+
+        @raise DoorstopError: if the item cannot be found
 
         @return: removed Item
 
-        @raise DoorstopError: if the item cannot be found
-
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
+        if settings.REORDER and reorder:
+            self.reorder()
         return item
 
-    def find_item(self, identifier, _kind=''):
+    def reorder(self, start=None, keep=None):
+        """Reorder a document's items.
+
+        @param start: level to start numbering (None = use current start)
+        @param keep: item or ID to keep over duplicates
+
+        """
+        keep = self.find_item(keep) if keep else None
+        logging.info("reordering {}...".format(self))
+        self._reorder(self.items, start=start, keep=keep)
+
+    @staticmethod
+    def _reorder(items, start=None, keep=None):
+        """Reorder a document's items.
+
+        @param start: level to start numbering (None = use current start)
+        @param keep: item to keep over duplicates
+
+        """
+        nlevel = plevel = None
+        for clevel, item in Document._items_by_level(items, keep=keep):
+            logging.debug("current level: {} (x{})".format(clevel, len(items)))
+            # Determine the next level
+            if not nlevel:
+                # Use the specified or current starting level
+                nlevel = Level(start) if start else clevel
+                nlevel.heading = clevel.heading
+                logging.debug("next level (start): {}".format(nlevel))
+            else:
+                # Adjust the next level to be the same depth
+                if len(clevel) != len(nlevel):
+                    nlevel >>= len(clevel) - len(nlevel)
+                nlevel.heading = clevel.heading
+                # Check for a level jump
+                for index in range(max(len(clevel), len(plevel)) - 1):
+                    if clevel.value[index] > plevel.value[index]:
+                        nlevel <<= len(nlevel) - 1 - index
+                        nlevel += 1
+                        nlevel >>= len(clevel) - len(nlevel)
+                        msg = "next level (jump): {}".format(nlevel)
+                        logging.debug(msg)
+                        break
+                # Check for a normal increment
+                else:
+                    if len(nlevel) == len(plevel):
+                        nlevel += 1
+                        msg = "next level (increment): {}".format(nlevel)
+                        logging.debug(msg)
+                    else:
+                        msg = "next level (indent/dedent): {}".format(nlevel)
+                        logging.debug(msg)
+            # Apply the next level
+            if clevel == nlevel:
+                logging.info("{}: {}".format(item, clevel))
+            else:
+                logging.info("{}: {} to {}".format(item, clevel, nlevel))
+            item.level = nlevel.copy()
+            # Save the current level as the previous level
+            plevel = clevel.copy()
+
+    @staticmethod
+    def _items_by_level(items, keep=None):
+        """Iterate through items by level with the kept item first."""
+        # Collect levels
+        levels = OrderedDict()
+        for item in items:
+            if item.level in levels:
+                levels[item.level].append(item)
+            else:
+                levels[item.level] = [item]
+        # Reorder levels
+        for level, items in levels.items():
+            # Reorder items at this level
+            if keep in items:
+                # move the kept item to the front of the list
+                logging.debug("keeping {} level over duplicates".format(keep))
+                items = [items.pop(items.index(keep))] + items
+            for item in items:
+                yield level, item
+
+    def find_item(self, value, _kind=''):
         """Return an item by its ID.
 
-        @param identifier: item's ID (or item)
-
-        @return: matching Item
+        @param value: item or ID
 
         @raise DoorstopError: if the item cannot be found
 
-        """
-        identifier = get_id(identifier)
-        # Search using the exact ID
-        for item in self:
-            if item.id.lower() == identifier.lower():
-                return item
-        logging.debug("no exactly matching ID: {}".format(identifier))
+        @return: matching Item
 
-        # Search using the prefix and number
-        prefix, number = split_id(identifier)
+        """
+        identifier = ID(value)
         for item in self:
-            if item.prefix.lower() == prefix.lower() and item.number == number:
+            if item.id == identifier:
                 return item
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
@@ -349,6 +432,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         logging.info("checking document {}...".format(self))
+        # Reorder levels
+        if settings.REORDER:
+            self.reorder()
         # Check levels
         yield from self._get_issues_level()
         # Check each item
@@ -372,29 +458,27 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items[1:]:
             pid = prev.id
             plev = prev.level
-            pslev = '.'.join(str(n) for n in plev)
             nid = item.id
             nlev = item.level
-            nslev = '.'.join(str(n) for n in nlev)
             logging.debug("checking level {} to {}...".format(plev, nlev))
             # Duplicate level
             if plev == nlev:
                 ids = sorted((pid, nid))
-                msg = "duplicate level: {} ({}, {})".format(pslev, *ids)
+                msg = "duplicate level: {} ({}, {})".format(plev, *ids)
                 yield DoorstopWarning(msg)
             # Skipped level
-            length = min(len(plev), len(nlev))
+            length = min(len(plev.value), len(nlev.value))
             for index in range(length):
                 # Types of skipped levels:
-                #   over: 1.0 --> 1.1
+                #   over: 1.0 --> 1.2
                 #   out: 1.1 --> 3.0
                 #   over and out: 1.1 --> 2.2
-                if (nlev[index] - plev[index] > 1 or  # over or out
-                    (plev[index] != nlev[index] and
+                if (nlev.value[index] - plev.value[index] > 1 or  # over or out
+                    (plev.value[index] != nlev.value[index] and
                      index + 1 < length and
-                     nlev[index + 1] not in (0, 1))):  # over and out
-                    msg = "skipped level: {} ({}), {} ({})".format(pslev, pid,
-                                                                   nslev, nid)
+                     nlev.value[index + 1] not in (0, 1))):  # over and out
+                    msg = "skipped level: {} ({}), {} ({})".format(plev, pid,
+                                                                   nlev, nid)
                     yield DoorstopWarning(msg)
                     break
             prev = item
@@ -408,6 +492,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
 # attribute formatters #######################################################
 
+# TODO: move this code to calling locations
 def get_prefix(value):
     """Get a prefix from a document or string."""
     return str(value).split(' ')[0]

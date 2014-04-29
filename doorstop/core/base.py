@@ -1,16 +1,65 @@
-"""Classes and functions for objects whose attributes save to a file."""
+"""Base classes and decorators for the doorstop.core package."""
 
 import os
-import re
 import abc
 import functools
-import textwrap
 import logging
 
 import yaml
 
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import settings
+
+
+class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+
+    """Abstract Base Class for objects that can be validated."""
+
+    def validate(self, document=None, tree=None,
+                 document_hook=None, item_hook=None):
+        """Check the object for validity.
+
+        @param document: containing Document for project-wide checks
+        @param tree: containing Tree for project-wide checks
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
+
+        @return: indication that the object is valid
+
+        """
+        valid = True
+        # Display all issues
+        for issue in self.get_issues(document=document, tree=tree,
+                                     document_hook=document_hook,
+                                     item_hook=item_hook):
+            if isinstance(issue, DoorstopInfo):
+                logging.info(issue)
+            elif isinstance(issue, DoorstopWarning):
+                logging.warning(issue)
+            else:
+                assert isinstance(issue, DoorstopError)
+                logging.error(issue)
+                valid = False
+        # Return the result
+        return valid
+
+    @abc.abstractmethod
+    def get_issues(self, document=None, tree=None,
+                   document_hook=None, item_hook=None):
+        """Yield all the objects's issues.
+
+        @param document: Document containing the object (document-level issues)
+        @param tree: Tree containing the object (tree-level issues)
+        @param document_hook: function to call for custom document validation
+        @param item_hook: function to call for custom item validation
+
+        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+
+        """
+
+    @property
+    def issues(self):
+        """Get a list of the item's issues."""
+        return list(self.get_issues())
 
 
 def auto_load(func):
@@ -31,28 +80,6 @@ def auto_save(func):
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
-        return result
-    return wrapped
-
-
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._document_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
-
-
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._item_cache.clear()  # pylint: disable=W0212
         return result
     return wrapped
 
@@ -228,163 +255,3 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
-
-
-class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
-
-    """Abstract Base Class for objects that can be validated."""
-
-    def validate(self, document=None, tree=None,
-                 document_hook=None, item_hook=None):
-        """Check the object for validity.
-
-        @param document: containing Document for project-wide checks
-        @param tree: containing Tree for project-wide checks
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
-
-        @return: indication that the object is valid
-
-        """
-        valid = True
-        # Display all issues
-        for issue in self.get_issues(document=document, tree=tree,
-                                     document_hook=document_hook,
-                                     item_hook=item_hook):
-            if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
-            elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
-            else:
-                assert isinstance(issue, DoorstopError)
-                logging.error(issue)
-                valid = False
-        # Return the result
-        return valid
-
-    @abc.abstractmethod
-    def get_issues(self, document=None, tree=None,
-                   document_hook=None, item_hook=None):
-        """Yield all the objects's issues.
-
-        @param document: Document containing the object (document-level issues)
-        @param tree: Tree containing the object (tree-level issues)
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
-
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
-
-        """
-
-    @property
-    def issues(self):
-        """Get a list of the item's issues."""
-        return list(self.get_issues())
-
-
-class Literal(str):  # pylint: disable=R0904
-
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-
-# Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-RE_SENTENCE_BOUNDARIES = re.compile(r"""
-
-(            # one of the following:
-
-  (?<=[a-z)][.?!])      # lowercase letter + punctuation
-  |
-  (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
-
-)
-
-(\s)          # any whitespace
-
-(?=\"?[A-Z])  # optional quote + an upppercase letter
-
-""", re.VERBOSE)
-
-
-def sbd(text, end='\n'):
-    r"""Replace sentence boundaries with newlines and append a newline.
-
-    @param text: string to line break at sentences
-    @param end: appended to the end of the update text
-
-    >>> sbd("Hello, world!", end='')
-    'Hello, world!'
-
-    >>> sbd("Hello, world! How are you? I'm fine. Good.")
-    "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
-
-    """
-    stripped = text.strip()
-    if stripped:
-        return RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
-    else:
-        return ''
-
-
-def wrap(text, width=settings.MAX_LINE_LENTH):
-    r"""Wrap lines of text to the maximum line length.
-
-    >>> wrap("Hello, world!", 9)
-    'Hello,\nworld!'
-
-    >>> wrap("How are you?\nI'm fine.\n", 14)
-    "How are you?\nI'm fine.\n"
-
-    """
-    end = '\n' if '\n' in text else ''
-    lines = []
-    for line in text.splitlines():
-        # wrap longs lines of text compensating for the 2-space indent
-        lines.extend(textwrap.wrap(line, width=width - 2,
-                                   replace_whitespace=True))
-        if not line.strip():
-            lines.append('')
-    return '\n'.join(lines) + end
-
-
-RE_MARKDOWN_SPACES = re.compile(r"""
-
-([^\n ])  # any character but a newline or space
-
-(\ ?\n)     # optional space + single newline
-
-(?!      # none of the following:
-
-  (?:\s)       # whitespace
-  |
-  (?:[-+*]\s)  # unordered list separator + whitespace
-  |
-  (?:\d+\.\s)  # number + period + whitespace
-
-)
-
-([^\n])  # any character but a newline
-
-""", re.VERBOSE | re.IGNORECASE)
-
-
-def join(text):
-    r"""Convert single newlines (ignored by Markdown) to spaces.
-
-    >>> join("abc\n123")
-    'abc 123'
-
-    >>> join("abc\n\n123")
-    'abc\n\n123'
-
-    >>> join("abc \n123")
-    'abc 123'
-
-    """
-    return RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()

@@ -4,6 +4,8 @@ import unittest
 from unittest.mock import patch
 
 import os
+import tempfile
+import shutil
 import logging
 
 from doorstop import core
@@ -82,15 +84,17 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new(self):
         """Verify a new document can be created."""
-        doc = core.Document.new(EMPTY, FILES, prefix='SYS', digits=4)
-        self.assertEqual('SYS', doc.prefix)
-        self.assertEqual(4, doc.digits)
-        self.assertEqual(0, len(doc.items))
+        document = core.Document.new(EMPTY, FILES, prefix='SYS', digits=4)
+        self.assertEqual('SYS', document.prefix)
+        self.assertEqual(4, document.digits)
+        self.assertEqual(0, len(document.items))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_validate(self):
         """Verify a document can be validated."""
         self.assertTrue(self.document.validate())
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_count(self):
         """Verify a number of issues are found in a document."""
         issues = self.document.issues
@@ -98,6 +102,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             logging.info(repr(issue))
         self.assertEqual(8, len(issues))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
         expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
@@ -108,6 +113,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         else:
             self.fail("issue not found: {}".format(expect))
 
+    @patch('doorstop.settings.REORDER', False)
     def test_issues_skipped_level(self):
         """Verify skipped item levels are detected."""
         expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
@@ -118,11 +124,85 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         else:
             self.fail("issue not found: {}".format(expect))
 
+    def test_add_item_with_reordering(self):
+        """Verify an item can be inserted into a document."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        item_1_0 = document.add_item()
+        item_3_0 = document.add_item()  # will get displaced
+        item_2_0 = document.add_item(level='2.0')
+        self.assertEqual((1, 0), item_1_0.level)
+        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((3, 0), item_3_0.level)
+
+    def test_remove_item_with_reordering(self):
+        """Verify an item can be removed fraom a document."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        item_1_0 = document.add_item()
+        item_3_0 = document.add_item()  # to be removed
+        item_2_0 = document.add_item()  # will get relocated
+        document.remove_item(item_3_0)
+        self.assertEqual((1, 0), item_1_0.level)
+        self.assertEqual((2, 0), item_2_0.level)
+
+    def test_reorder(self):
+        """Verify a document's order can be corrected."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='2.0', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.5', reorder=False)
+        document.add_item(level='4.5', reorder=False)
+        document.add_item(level='4.7', reorder=False)
+        document.reorder()
+        expected = [(2, 0), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+
+    def test_reorder_with_keep(self):
+        """Verify a document's order can be corrected with a kept level."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='1.0', reorder=False)
+        item = document.add_item(level='1.0', reorder=False)
+        document.add_item(level='1.0', reorder=False)
+        document.reorder(keep=item)
+        expected = [(1, 0), (2, 0), (3, 0)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+        self.assertEqual((1, 0), item.level)
+
+    def test_reorder_with_start(self):
+        """Verify a document's order can be corrected with a given start."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='2.0', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.1', reorder=False)
+        document.add_item(level='2.5', reorder=False)
+        document.add_item(level='4.0', reorder=False)
+        document.add_item(level='4.7', reorder=False)
+        document.reorder(start=(1, 0))
+        expected = [(1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+
+    def test_validate_with_reordering(self):
+        """Verify a document's order is corrected during validation."""
+        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document.add_item(level='1.0', reorder=False)
+        document.add_item(level='1.1', reorder=False)
+        document.add_item(level='1.2.0', reorder=False)
+        document.add_item(level='1.2.5', reorder=False)
+        document.add_item(level='3.2.1', reorder=False)
+        document.add_item(level='3.3', reorder=False)
+        self.assertTrue(document.validate())
+        expected = [(1, 0), (1, 1), (1, 2, 0), (1, 2, 1), (2, 1, 1), (2, 2)]
+        actual = [item.level for item in document.items]
+        self.assertListEqual(expected, actual)
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the Tree class."""
+    """Integration tests for the core.Tree class."""
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
@@ -136,6 +216,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         with open(self.path, 'w') as item:
             item.write(self.backup)
 
+    @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
@@ -144,10 +225,87 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsInstance(tree, core.Tree)
         self.assertFalse(tree.validate())
 
+    @patch('doorstop.settings.REORDER', False)
     def test_validate_long(self):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
         self.assertTrue(self.tree.validate())
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImporter(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integrations tests for the importer module."""  # pylint: disable=C0103
+
+    def setUp(self):
+        # Create a temporary mock working copy
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+        os.chdir(self.temp)
+        open(".mockvcs", 'w').close()
+        # Create default document attributes
+        self.prefix = 'PREFIX'
+        self.root = self.temp
+        self.path = os.path.join(self.root, 'DIRECTORY')
+        self.parent = 'PARENT_PREFIX'
+        # Create default item attributes
+        self.identifier = 'PREFIX-00042'
+        # Ensure the tree is reloaded
+        core.importer._TREE = None  # pylint: disable=W0212
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_create_document(self):
+        """Verify a new document can be created to import items."""
+        document = core.importer.new_document(self.prefix, self.path)
+        self.assertEqual(self.prefix, document.prefix)
+        self.assertEqual(self.path, document.path)
+
+    def test_create_document_with_unknown_parent(self):
+        """Verify a new document can be created with an unknown parent."""
+        document = core.importer.new_document(self.prefix, self.path,
+                                              parent=self.parent)
+        self.assertEqual(self.prefix, document.prefix)
+        self.assertEqual(self.path, document.path)
+        self.assertEqual(self.parent, document.parent)
+
+    def test_create_document_already_exists(self):
+        """Verify non-parent exceptions are re-raised."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Attempt to create the same document
+        self.assertRaises(DoorstopError,
+                          core.importer.new_document, self.prefix, self.path)
+
+    def test_add_item(self):
+        """Verify an item can be imported into a document."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Force a rebuild of the tree
+        core.importer._TREE = None  # pylint: disable=W0212
+        # Import an item
+        item = core.importer.add_item(self.prefix, self.identifier)
+        # Verify the item is correct
+        self.assertEqual(self.identifier, item.id)
+        document = core.find_document(self.prefix)
+        self.assertIn(item, document.items)
+
+    def test_add_item_with_attrs(self):
+        """Verify an item with attributes can be imported into a document."""
+        # Create a document
+        core.importer.new_document(self.prefix, self.path)
+        # Force a rebuild of the tree
+        core.importer._TREE = None  # pylint: disable=W0212
+        # Import an item
+        attrs = {'text': "Item text", 'ext1': "Extended 1"}
+        item = core.importer.add_item(self.prefix, self.identifier,
+                                      attrs=attrs)
+        # Verify the item is correct
+        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(attrs['text'], item.text)
+        self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

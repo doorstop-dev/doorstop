@@ -4,9 +4,9 @@ import os
 import re
 import logging
 
-from doorstop.core import base
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.base import BaseValidatable
+from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.types import ID, Text, Level
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -18,15 +18,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     EXTENSIONS = '.yml', '.yaml'
 
-    DEFAULT_LEVEL = (1, 0)
+    DEFAULT_LEVEL = Level('1.0')
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
-    DEFAULT_TEXT = ""
+    DEFAULT_TEXT = Text("")
     DEFAULT_REF = ""
 
     def __init__(self, path, root=os.getcwd()):
-        """Load an item from an existing file.
+        """Initialize an item from an existing file.
 
         @param path: path to Item file
         @param root: path to root of project
@@ -40,7 +40,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
-            split_id(name)
+            ID(name).number
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
@@ -61,11 +61,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         self._data['links'] = set()
 
     def __repr__(self):
-        return "Item({})".format(repr(self.path))
+        return "Item('{}')".format(self.path)
 
     def __str__(self):
         if common.VERBOSITY < common.STR_VERBOSITY:
-            return self.id
+            return str(self.id)
         else:
             return "{} ({})".format(self.id, self.relpath)
 
@@ -79,23 +79,21 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, prefix, sep, digits, number, level=None, auto=None):  # pylint: disable=R0913
+    def new(path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
         @param root: path to root of the project
-        @param prefix: prefix for the new item
-        @param sep: separator between prefix and number
-        @param digits: number of digits for the new document
-        @param number: number for the new item
+        @param identifier: ID for the new item
         @param level: level for the new item
         @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
 
+        @return: new Item
+
         """
-        identifier = join_id(prefix, sep, number, digits)
-        filename = identifier + Item.EXTENSIONS[0]
+        filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
@@ -121,7 +119,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                self._data['level'] = load_level(value)
+                self._data['level'] = Level(value)
             elif key == 'active':
                 self._data['active'] = bool(value)
             elif key == 'normative':
@@ -129,14 +127,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             elif key == 'derived':
                 self._data['derived'] = bool(value)
             elif key == 'text':
-                self._data['text'] = load_text(value)
+                self._data['text'] = Text(value)
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
-                self._data['links'] = set(value)
+                self._data['links'] = set(ID(v) for v in value)
             else:
                 if isinstance(value, str):
-                    value = load_text(value)
+                    value = Text(value)
                 self._data[key] = value
         # Set meta attributes
         self._loaded = True
@@ -148,20 +146,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                data['level'] = save_level(value)
+                data['level'] = value.yaml
             elif key == 'text':
-                data['text'] = save_text(self._data['text'])
+                data['text'] = value.yaml
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
-                data['links'] = sorted(value)
+                data['links'] = sorted(str(v) for v in value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
                     lenth = len(key) + 2 + len(value)
                     if lenth > settings.MAX_LINE_LENTH or '\n' in value:
                         end = '\n' if value.endswith('\n') else ''
-                        value = save_text(value, end=end)
+                        value = Text.save_text(value, end=end)
                 data[key] = value
         # Dump the data to YAML
         text = self._dump(data)
@@ -176,7 +174,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @property
     def id(self):  # pylint: disable=C0103
         """Get the item's ID."""
-        return os.path.splitext(os.path.basename(self.path))[0]
+        filename = os.path.basename(self.path)
+        return ID(os.path.splitext(filename)[0])
 
     @property
     def relpath(self):
@@ -187,12 +186,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @property
     def prefix(self):
         """Get the item ID's prefix."""
-        return split_id(self.id)[0]
+        return self.id.prefix
 
     @property
     def number(self):
         """Get the item ID's number."""
-        return split_id(self.id)[1]
+        return self.id.number
 
     @property
     @auto_load
@@ -205,15 +204,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @auto_load
     def level(self, value):
         """Set the item's level."""
-        self._data['level'] = load_level(value)
+        self._data['level'] = Level(value)
 
     @property
     def depth(self):
         """Get the item's heading order based on it's level."""
-        level = list(self.level)
-        while level[-1] == 0:
-            del level[-1]
-        return len(level)
+        return len(self.level)
 
     @property
     @auto_load
@@ -284,7 +280,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         Headings have a level that ends in zero and are non-normative.
 
         """
-        return self.level[-1] == 0 and not self.normative
+        return self.level.heading and not self.normative
 
     @heading.setter
     @auto_save
@@ -293,10 +289,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Set the item's heading status."""
         heading = bool(value)
         if heading and not self.heading:
-            self.level = list(self.level) + [0]
+            self.level.heading = True
             self.normative = False
         elif not heading and self.heading:
-            self.level = list(self.level)[:-1]
+            self.level.heading = False
             self.normative = True
 
     @property
@@ -310,7 +306,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @auto_load
     def text(self, value):
         """Set the item's text."""
-        self._data['text'] = str(value) if value else ""
+        self._data['text'] = Text(value)
 
     @property
     @auto_load
@@ -347,24 +343,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     @auto_save
     @auto_load
-    def link(self, identifier):
+    def link(self, value):
         """Add a new link to another item ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         self._data['links'].add(identifier)
 
     @auto_save
     @auto_load
-    def unlink(self, identifier):
+    def unlink(self, value):
         """Remove an existing link by item ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         try:
             self._data['links'].remove(identifier)
         except KeyError:
@@ -429,7 +425,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Verify an item's links are to the correct parent
         for identifier in self.links:
             try:
-                prefix = split_id(identifier)[0]
+                prefix = identifier.prefix
             except DoorstopError:
                 msg = "invalid ID in links: {}".format(identifier)
                 yield DoorstopError(msg)
@@ -483,11 +479,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         @param root: override the path to the working copy (for testing)
         @param ignored: function to determine if a path should be skipped
 
+        @raise DoorstopError: when no reference is found
+
         @return: relative path to file, line number (when found in file)
                  relative path to file, None (when found as filename)
-                 None, None (when no ref)
-
-        @raise DoorstopError: when no ref is found
+                 None, None (when no reference set)
 
         """
         if not self.ref:
@@ -551,7 +547,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
                                 break
         if rlinks:
             if find_all:
-                msg = "reverse links: {}".format(', '.join(rlinks))
+                msg = "reverse links: {}".format(', '.join(str(l)
+                                                           for l in rlinks))
             else:
                 msg = "first reverse link: {}".format(rlinks[0])
             logging.debug(msg)
@@ -560,130 +557,3 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     def delete(self, path=None):
         """Delete the item."""
         super().delete(self.path)
-
-
-# attribute formatters #######################################################
-
-def get_id(value):
-    """Get an ID from an item or string."""
-    return str(value).split(' ')[0]
-
-
-def split_id(text):
-    """Split an item's ID into a prefix and number.
-
-    >>> split_id('ABC00123')
-    ('ABC', 123)
-
-    >>> split_id('ABC.HLR_01-00123')
-    ('ABC.HLR_01', 123)
-
-    >>> split_id('REQ2-001')
-    ('REQ2', 1)
-
-    """
-    match = re.match(r"([\w.-]*\D)(\d+)", text)
-    if not match:
-        raise DoorstopError("invalid ID: {}".format(text))
-    prefix = match.group(1).rstrip(settings.SEP_CHARS)
-    number = int(match.group(2))
-    return prefix, number
-
-
-def join_id(prefix, sep, number, digits):
-    """Join the parts of an item's ID into an ID.
-
-    >>> join_id('ABC', '', 123, 5)
-    'ABC00123'
-
-    >>> join_id('REQ.H', '-', 42, 4)
-    'REQ.H-0042'
-
-    >>> join_id('ABC', '-', 123, 0)
-    'ABC-123'
-
-    """
-    return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
-
-
-def load_text(value):
-    r"""Convert dumped text to the original string.
-
-    >>> load_text("abc\ndef")
-    'abc def'
-
-    >>> load_text("list:\n\n- a\n- b\n")
-    'list:\n\n- a\n- b'
-
-    """
-    return base.join(value)
-
-
-def save_text(text, end='\n'):
-    """Break a string at sentences and dump as literal YAML with wrapping."""
-    return base.Literal(base.wrap(base.sbd(text, end=end)))
-
-
-def load_level(value):
-    """Convert an iterable, number, or level string to a tuple.
-
-    >>> load_level("1.2.3")
-    (1, 2, 3)
-
-    >>> load_level(['4', '5'])
-    (4, 5)
-
-    >>> load_level(4.2)
-    (4, 2)
-
-    >>> load_level([7, 0, 0])
-    (7, 0)
-
-    >>> load_level(1)
-    (1,)
-
-    """
-    # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
-    if isinstance(value, (int, float)):
-        value = str(value)
-
-    # Split strings by periods
-    if isinstance(value, str):
-        nums = value.split('.')
-    else:  # assume an iterable
-        nums = value
-
-    # Clean up multiple trailing zeros
-    parts = [int(n) for n in nums]
-    if parts[-1] == 0:
-        while parts[-1] == 0:
-            del parts[-1]
-        parts.append(0)
-
-    # Convert the level to a tuple
-    return tuple(parts)
-
-
-def save_level(parts):
-    """Convert a level's part into non-quoted YAML value.
-
-    >>> save_level((1,))
-    1
-
-    >>> save_level((1,0))
-    1.0
-
-    >>> save_level((1,0,0))
-    '1.0.0'
-
-    """
-    # Join the level's parts
-    level = '.'.join(str(n) for n in parts)
-
-    # Convert formats to cleaner YAML formats
-    if len(parts) == 1:
-        level = int(level)
-    elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-        level = float(level)
-
-    return level
