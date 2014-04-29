@@ -11,21 +11,6 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
-class Literal(str):  # pylint: disable=R0904
-
-    """Custom type for text which should be dumped in the literal style."""
-
-    @staticmethod
-    def representer(dumper, data):
-        """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
-
-yaml.add_representer(Literal, Literal.representer)
-
-
-# ID #########################################################################
-
 class ID(object):
 
     """Unique item identifier."""
@@ -132,39 +117,40 @@ class ID(object):
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-# text #######################################################################
+class Literal(str):  # pylint: disable=R0904
 
-class Text(object):
+    """Custom type for text which should be dumped in the literal style."""
+
+    @staticmethod
+    def representer(dumper, data):
+        """Return a custom dumper that formats str in the literal style."""
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|' if data else '')
+
+yaml.add_representer(Literal, Literal.representer)
+
+
+class Text(str):  # pylint: disable=R0904
 
     """Markdown text paragraph."""
 
-    def __init__(self, value):
-        """Initialize a Text paragraph from a string.
-
-        @param value: string containing Markdown text
-
-        """
-        self.value = Text.load_text(value)
-
-    def __repr__(self):
-        return "Text('{}')".format(self)
-
-    def __str__(self):
-        return self.value
+    def __new__(cls, value):
+        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        return obj
 
     @property
     def yaml(self):
         """Get the value to be used in YAML dumping."""
-        return Text.save_text(self.value)
+        return Text.save_text(self)
 
     @staticmethod
     def load_text(value):
         r"""Convert dumped text to the original string.
 
-        >>> load_text("abc\ndef")
+        >>> Text.load_text("abc\ndef")
         'abc def'
 
-        >>> load_text("list:\n\n- a\n- b\n")
+        >>> Text.load_text("list:\n\n- a\n- b\n")
         'list:\n\n- a\n- b'
 
         """
@@ -268,9 +254,6 @@ class Text(object):
 
         """
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
-
-
-# level #####################################################################
 
 
 class Level(object):  # pragma: no cover

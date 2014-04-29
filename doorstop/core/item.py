@@ -22,7 +22,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
-    DEFAULT_TEXT = ""
+    DEFAULT_TEXT = Text("")
     DEFAULT_REF = ""
 
     def __init__(self, path, root=os.getcwd()):
@@ -148,7 +148,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             if key == 'level':
                 data['level'] = value.yaml
             elif key == 'text':
-                data['text'] = self._data['text'].yaml
+                data['text'] = value.yaml
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
@@ -306,7 +306,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     @auto_load
     def text(self, value):
         """Set the item's text."""
-        self._data['text'] = str(value) if value else ""
+        self._data['text'] = Text(value)
 
     @property
     @auto_load

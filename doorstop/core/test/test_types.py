@@ -73,11 +73,15 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
 
     def test_repr(self):
         """Verify text can be represented."""
-        self.assertEqual("Text('Hello, world!')", repr(self.text))
+        self.assertEqual("'Hello, world!'", repr(self.text))
 
     def test_str(self):
         """Verify text can be converted to strings."""
         self.assertEqual("Hello, world!", str(self.text))
+
+    def test_eq(self):
+        """Verify text can be equated."""
+        self.assertEqual(Text("Hello, world!"), self.text)
 
     def test_yaml(self):
         """Verify levels can be converted to their YAML representation."""
