@@ -359,7 +359,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     nlevel >>= len(clevel) - len(nlevel)
                 nlevel.heading = clevel.heading
                 # Check for a level jump
-                for index in range(max(len(clevel), len(plevel)) - 1):
+                for index in range(min(len(clevel.value),
+                                       len(plevel.value)) - 1):
                     if clevel.value[index] > plevel.value[index]:
                         nlevel <<= len(nlevel) - 1 - index
                         nlevel += 1
