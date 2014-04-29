@@ -215,6 +215,12 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         level <<= 4
         self.assertEqual(Level('1'), level)
 
+    def test_lshift_zero(self):
+        """Verify detenting levels by zero has no effect.."""
+        level = self.level_1_2_3
+        level <<= 0
+        self.assertEqual(Level('1.2.3'), level)
+
     def test_value(self):
         """Verify levels can be converted to their values."""
         self.assertEqual((1,), self.level_1.value)

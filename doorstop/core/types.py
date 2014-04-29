@@ -354,11 +354,14 @@ class Level(object):  # pragma: no cover
         return self
 
     def __lshift__(self, value):
-        parts = list(self._parts)[:-value]
+        parts = list(self._parts)
+        if value:
+            parts = parts[:-value]
         return Level(parts, heading=self.heading)
 
     def __ilshift__(self, value):
-        self._parts = self._parts[:-value]
+        if value:
+            self._parts = self._parts[:-value]
         self._adjust()
         return self
 

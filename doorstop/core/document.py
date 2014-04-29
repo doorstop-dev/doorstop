@@ -346,7 +346,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         nlevel = plevel = None
         for clevel, item in Document._items_by_level(items, keep=keep):
-            logging.debug("current level: {} (x{})".format(clevel, len(items)))
+            logging.debug("current level: {}".format(clevel))
             # Determine the next level
             if not nlevel:
                 # Use the specified or current starting level
@@ -356,13 +356,16 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             else:
                 # Adjust the next level to be the same depth
                 if len(clevel) != len(nlevel):
+                    logging.debug("indenting/dedenting the next level...")
                     nlevel >>= len(clevel) - len(nlevel)
                 nlevel.heading = clevel.heading
                 # Check for a level jump
-                for index in range(min(len(clevel.value),
-                                       len(plevel.value)) - 1):
+                _size = min(len(clevel.value), len(plevel.value))
+                for index in range(max(_size - 1, 1)):
                     if clevel.value[index] > plevel.value[index]:
+                        logging.critical((len(nlevel), index))
                         nlevel <<= len(nlevel) - 1 - index
+                        logging.critical("shifted: {}".format(nlevel))
                         nlevel += 1
                         nlevel >>= len(clevel) - len(nlevel)
                         msg = "next level (jump): {}".format(nlevel)
