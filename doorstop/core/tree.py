@@ -45,51 +45,16 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     """
 
-    def __init__(self, document, parent=None, root=None):
-        self.document = document
-        self.root = root or document.root  # allows non-documents in tests
-        self.parent = parent
-        self.children = []
-        self._vcs = None
-        self._loaded = False
-        self._item_cache = {}
-        self._document_cache = {}
-
-    def __str__(self):
-        # Build parent prefix string (getattr to support testing)
-        prefix = getattr(self.document, 'prefix', self.document)
-        # Build children prefix strings
-        children = ", ".join(str(c) for c in self.children)
-        # Format the tree
-        if children:
-            return "{} <- [ {} ]".format(prefix, children)
-        else:
-            return "{}".format(prefix)
-
-    def __len__(self):
-        if self.document:
-            return 1 + sum(len(child) for child in self.children)
-        else:
-            return 0
-
-    def __getitem__(self, key):
-        raise IndexError("{} cannot be indexed by key".format(self.__class__))
-
-    def __iter__(self):
-        if self.document:
-            yield self.document
-        yield from chain(*(iter(c) for c in self.children))
-
     @staticmethod
     def from_list(documents, root=None):
-        """Get a new tree from a list of documents.
+        """Initialize a new tree from a list of documents.
 
         @param documents: list of Documents
         @param root: path to root of the project
 
-        @return: new Tree
-
         @raise DoorstopError: when the tree cannot be built
+
+        @return: new Tree
 
         """
         if not documents:
@@ -125,6 +90,44 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 raise DoorstopError(msg)
 
         return tree
+
+    def __init__(self, document, parent=None, root=None):
+        self.document = document
+        self.root = root or document.root  # allows non-documents in tests
+        self.parent = parent
+        self.children = []
+        self._vcs = None
+        self._loaded = False
+        self._item_cache = {}
+        self._document_cache = {}
+
+    def __repr__(self):
+        return "<Tree {}>".format(self)
+
+    def __str__(self):
+        # Build parent prefix string (getattr to support testing)
+        prefix = getattr(self.document, 'prefix', self.document)
+        # Build children prefix strings
+        children = ", ".join(str(c) for c in self.children)
+        # Format the tree
+        if children:
+            return "{} <- [ {} ]".format(prefix, children)
+        else:
+            return "{}".format(prefix)
+
+    def __len__(self):
+        if self.document:
+            return 1 + sum(len(child) for child in self.children)
+        else:
+            return 0
+
+    def __getitem__(self, key):
+        raise IndexError("{} cannot be indexed by key".format(self.__class__))
+
+    def __iter__(self):
+        if self.document:
+            yield self.document
+        yield from chain(*(iter(c) for c in self.children))
 
     def _place(self, document):
         """Attempt to place the document in the current tree.
@@ -196,9 +199,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @param digits: number of digits for the document's numbers
         @param parent: parent document's prefix
 
-        @return: newly created and placed Document
-
         @raise DoorstopError: if the document cannot be created
+
+        @return: newly created and placed Document
 
         """
         prefix = get_prefix(prefix)
@@ -222,9 +225,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @param prefix: document's prefix (or document)
         @param level: desired item level
 
-        @return: newly created Item
-
         @raise DoorstopError: if the item cannot be created
+
+        @return: newly created Item
 
         """
         prefix = get_prefix(prefix)
@@ -239,9 +242,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @param identifier: item's ID (or item)
 
-        @return: removed Item
-
         @raise DoorstopError: if the item cannot be removed
+
+        @return: removed Item
 
         """
         for document in self:
@@ -261,9 +264,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @param cid: child item's ID (or child item)
         @param pid: parent item's ID (or parent item)
 
-        @return: child Item, parent Item
-
         @raise DoorstopError: if the link cannot be created
+
+        @return: child Item, parent Item
 
         """
         logging.info("linking {} to {}...".format(cid, pid))
@@ -281,9 +284,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @param cid: child item's ID (or child item)
         @param pid: parent item's ID (or parent item)
 
-        @return: child Item, parent Item
-
         @raise DoorstopError: if the link cannot be removed
+
+        @return: child Item, parent Item
 
         """
         logging.info("unlinking '{}' from '{}'...".format(cid, pid))
@@ -304,6 +307,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the item cannot be found
 
+        @return: edited Item
+
         """
         logging.debug("looking for {}...".format(identifier))
         # Find item
@@ -323,9 +328,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @param prefix: document's prefix (or document)
 
-        @return: matching Document
-
         @raise DoorstopError: if the document cannot be found
+
+        @return: matching Document
 
         """
         prefix = get_prefix(prefix)
@@ -353,9 +358,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @param identifier: item's ID (or item)
 
-        @return: matching Item
-
         @raise DoorstopError: if the item cannot be found
+
+        @return: matching Item
 
         """
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
@@ -456,9 +461,9 @@ def build(cwd=None, root=None):
     @param cwd: current working directory
     @param root: path to root of the working copy
 
-    @return: new Tree
-
     @raise DoorstopError: when the tree cannot be built
+
+    @return: new Tree
 
     """
     documents = []

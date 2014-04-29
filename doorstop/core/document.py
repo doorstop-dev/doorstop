@@ -410,9 +410,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         @param value: item or ID
 
-        @return: matching Item
-
         @raise DoorstopError: if the item cannot be found
+
+        @return: matching Item
 
         """
         identifier = ID(value)

@@ -19,9 +19,9 @@ def find_root(cwd):
 
     @param cwd: current working directory
 
-    @return: path to root of working copy
-
     @raise DoorstopError: if the root cannot be found
+
+    @return: path to root of working copy
 
     """
     path = cwd

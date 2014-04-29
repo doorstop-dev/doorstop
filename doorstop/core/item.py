@@ -27,7 +27,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     DEFAULT_REF = ""
 
     def __init__(self, path, root=os.getcwd()):
-        """Load an item from an existing file.
+        """Initialize an item from an existing file.
 
         @param path: path to Item file
         @param root: path to root of project
@@ -62,7 +62,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         self._data['links'] = set()
 
     def __repr__(self):
-        return "Item({})".format(repr(self.path))
+        return "Item('{}')".format(self.path)
 
     def __str__(self):
         if common.VERBOSITY < common.STR_VERBOSITY:
@@ -90,6 +90,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
+
+        @return: new Item
 
         """
         filename = str(identifier) + Item.EXTENSIONS[0]
@@ -478,11 +480,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         @param root: override the path to the working copy (for testing)
         @param ignored: function to determine if a path should be skipped
 
+        @raise DoorstopError: when no reference is found
+
         @return: relative path to file, line number (when found in file)
                  relative path to file, None (when found as filename)
-                 None, None (when no ref)
-
-        @raise DoorstopError: when no ref is found
+                 None, None (when no reference set)
 
         """
         if not self.ref:
