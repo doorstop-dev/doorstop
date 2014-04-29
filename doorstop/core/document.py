@@ -346,7 +346,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         nlevel = plevel = None
         for clevel, item in Document._items_by_level(items, keep=keep):
-            logging.debug("current level: {} (x{})".format(clevel, len(items)))
+            logging.debug("current level: {}".format(clevel))
             # Determine the next level
             if not nlevel:
                 # Use the specified or current starting level
@@ -355,11 +355,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 logging.debug("next level (start): {}".format(nlevel))
             else:
                 # Adjust the next level to be the same depth
-                if len(clevel) != len(nlevel):
+                if len(clevel) > len(nlevel):
                     nlevel >>= len(clevel) - len(nlevel)
+                    logging.debug("matched current indent: {}".format(nlevel))
+                elif len(clevel) < len(nlevel):
+                    nlevel <<= len(nlevel) - len(clevel)
+                    # nlevel += 1
+                    logging.debug("matched current dedent: {}".format(nlevel))
                 nlevel.heading = clevel.heading
                 # Check for a level jump
-                for index in range(max(len(clevel), len(plevel)) - 1):
+                _size = min(len(clevel.value), len(plevel.value))
+                for index in range(max(_size - 1, 1)):
                     if clevel.value[index] > plevel.value[index]:
                         nlevel <<= len(nlevel) - 1 - index
                         nlevel += 1
@@ -369,7 +375,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         break
                 # Check for a normal increment
                 else:
-                    if len(nlevel) == len(plevel):
+                    if len(nlevel) <= len(plevel):
                         nlevel += 1
                         msg = "next level (increment): {}".format(nlevel)
                         logging.debug(msg)

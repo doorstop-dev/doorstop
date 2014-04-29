@@ -9,6 +9,8 @@ import subprocess
 import logging
 
 from doorstop.core.base import BaseValidatable
+from doorstop.core.types import ID
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.document import Document, get_prefix
 from doorstop.core import vcs
@@ -237,16 +239,17 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return item
 
     @clear_item_cache
-    def remove_item(self, identifier):
+    def remove_item(self, value):
         """Remove an item from a document by ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         @raise DoorstopError: if the item cannot be removed
 
         @return: removed Item
 
         """
+        identifier = ID(value)
         for document in self:
             try:
                 document.find_item(identifier)
@@ -353,16 +356,17 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError("no matching prefix: {}".format(prefix))
 
-    def find_item(self, identifier, _kind=''):
+    def find_item(self, value, _kind=''):
         """Get an item by its ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         @raise DoorstopError: if the item cannot be found
 
         @return: matching Item
 
         """
+        identifier = ID(value)
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
         logging.debug("looking for{} item '{}'...".format(_kind, identifier))
         try:
@@ -508,24 +512,29 @@ def _document_from_path(path, root, documents):
             logging.info("found document: {}".format(document))
             documents.append(document)
 
-# convenience functions ######################################################
 
-_TREE = None  # implicitly created tree created for convenience functions
+# convenience functions ######################################################
 
 
 def find_document(prefix):
     """Find a document without an explicitly building a tree."""
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
-    document = _TREE.find_document(prefix)
+    #  Load the current tree, pylint: disable=W0212
+    if common._tree is None:
+        common._tree = build()
+
+    # Find the document
+    document = common._tree.find_document(prefix)
+
     return document
 
 
 def find_item(identifier):
     """Find an item without an explicitly building a tree."""
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
-    item = _TREE.find_item(identifier)
+    # Load the current tree, pylint: disable=W0212
+    if common._tree is None:
+        common._tree = build()
+
+    # Find the item
+    item = common._tree.find_item(identifier)
+
     return item

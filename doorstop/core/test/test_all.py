@@ -9,6 +9,7 @@ import shutil
 import logging
 
 from doorstop import core
+from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
@@ -251,7 +252,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
         # Ensure the tree is reloaded
-        core.importer._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -265,11 +266,18 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     def test_create_document_with_unknown_parent(self):
         """Verify a new document can be created with an unknown parent."""
+        # Verify the document does not already exist
+        self.assertRaises(DoorstopError, core.find_document, self.prefix)
+        # Import a document
         document = core.importer.new_document(self.prefix, self.path,
                                               parent=self.parent)
+        # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
         self.assertEqual(self.parent, document.parent)
+        # Verify the imported document can be found
+        document2 = core.find_document(self.prefix)
+        self.assertIs(document, document2)
 
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
@@ -283,12 +291,16 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be imported into a document."""
         # Create a document
         core.importer.new_document(self.prefix, self.path)
-        # Force a rebuild of the tree
-        core.importer._TREE = None  # pylint: disable=W0212
+        # Verify the item does not already exist
+        self.assertRaises(DoorstopError, core.find_item, self.identifier)
         # Import an item
         item = core.importer.add_item(self.prefix, self.identifier)
-        # Verify the item is correct
+        # Verify the item's attributes are correct
         self.assertEqual(self.identifier, item.id)
+        # Verify the item can be found
+        item2 = core.find_item(self.identifier)
+        self.assertIs(item, item2)
+        # Verify the item is contained in the document
         document = core.find_document(self.prefix)
         self.assertIn(item, document.items)
 
@@ -296,8 +308,6 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item with attributes can be imported into a document."""
         # Create a document
         core.importer.new_document(self.prefix, self.path)
-        # Force a rebuild of the tree
-        core.importer._TREE = None  # pylint: disable=W0212
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
         item = core.importer.add_item(self.prefix, self.identifier,
@@ -315,7 +325,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         """Reset the internal tree."""
-        core.tree._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
 
     def test_find_document(self):
         """Verify documents can be found using a convenience function."""

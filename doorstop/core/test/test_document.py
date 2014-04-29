@@ -251,6 +251,22 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
+    def test_reorder_no_change(self):
+        """Verify already ordered items can be reordered."""
+        mock_items = [Mock(level=Level('1.1')),
+                      Mock(level=Level('1.1.1.1')),
+                      Mock(level=Level('2')),
+                      Mock(level=Level('3')),
+                      Mock(level=Level('4.1.1'))]
+        expected = [Level('1.1'),
+                    Level('1.1.1.1'),
+                    Level('2'),
+                    Level('3'),
+                    Level('4.1.1')]
+        Document._reorder(mock_items)
+        actual = [item.level for item in mock_items]
+        self.assertListEqual(expected, actual)
+
     def test_reorder_with_start(self):
         """Verify items can be reordered with a given start."""
         mock_item = Mock(level=Level('2.3'))
