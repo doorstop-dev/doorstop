@@ -548,7 +548,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
                                 break
         if rlinks:
             if find_all:
-                msg = "reverse links: {}".format(', '.join(rlinks))
+                msg = "reverse links: {}".format(', '.join(str(l)
+                                                           for l in rlinks))
             else:
                 msg = "first reverse link: {}".format(rlinks[0])
             logging.debug(msg)
