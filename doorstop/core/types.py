@@ -134,119 +134,140 @@ class ID(object):
 
 # text #######################################################################
 
+class Text(object):
 
-def load_text(value):
-    r"""Convert dumped text to the original string.
+    """Markdown text paragraph."""
 
-    >>> load_text("abc\ndef")
-    'abc def'
+    def __init__(self, value):
+        """Initialize a Text paragraph from a string.
 
-    >>> load_text("list:\n\n- a\n- b\n")
-    'list:\n\n- a\n- b'
+        @param value: string containing Markdown text
 
-    """
-    return join(value)
+        """
+        self.value = Text.load_text(value)
 
+    def __repr__(self):
+        return "Text('{}')".format(self)
 
-def save_text(text, end='\n'):
-    """Break a string at sentences and dump as literal YAML with wrapping."""
-    return Literal(wrap(sbd(text, end=end)))
+    def __str__(self):
+        return self.value
 
+    @property
+    def yaml(self):
+        """Get the value to be used in YAML dumping."""
+        return Text.save_text(self.value)
 
-# Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
-RE_SENTENCE_BOUNDARIES = re.compile(r"""
+    @staticmethod
+    def load_text(value):
+        r"""Convert dumped text to the original string.
 
-(            # one of the following:
+        >>> load_text("abc\ndef")
+        'abc def'
 
-  (?<=[a-z)][.?!])      # lowercase letter + punctuation
-  |
-  (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
+        >>> load_text("list:\n\n- a\n- b\n")
+        'list:\n\n- a\n- b'
 
-)
+        """
+        return Text.join(value)
 
-(\s)          # any whitespace
+    @staticmethod
+    def save_text(text, end='\n'):
+        """Break a string at sentences and dump as wrapped literal YAML."""
+        return Literal(Text.wrap(Text.sbd(text, end=end)))
 
-(?=\"?[A-Z])  # optional quote + an upppercase letter
+    # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+    RE_SENTENCE_BOUNDARIES = re.compile(r"""
 
-""", re.VERBOSE)
+    (            # one of the following:
 
+      (?<=[a-z)][.?!])      # lowercase letter + punctuation
+      |
+      (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
 
-def sbd(text, end='\n'):
-    r"""Replace sentence boundaries with newlines and append a newline.
+    )
 
-    @param text: string to line break at sentences
-    @param end: appended to the end of the update text
+    (\s)          # any whitespace
 
-    >>> sbd("Hello, world!", end='')
-    'Hello, world!'
+    (?=\"?[A-Z])  # optional quote + an upppercase letter
 
-    >>> sbd("Hello, world! How are you? I'm fine. Good.")
-    "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
+    """, re.VERBOSE)
 
-    """
-    stripped = text.strip()
-    if stripped:
-        return RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
-    else:
-        return ''
+    @staticmethod
+    def sbd(text, end='\n'):
+        r"""Replace sentence boundaries with newlines and append a newline.
 
+        @param text: string to line break at sentences
+        @param end: appended to the end of the update text
 
-def wrap(text, width=settings.MAX_LINE_LENTH):
-    r"""Wrap lines of text to the maximum line length.
+        >>> Text.sbd("Hello, world!", end='')
+        'Hello, world!'
 
-    >>> wrap("Hello, world!", 9)
-    'Hello,\nworld!'
+        >>> Text.sbd("Hello, world! How are you? I'm fine. Good.")
+        "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
 
-    >>> wrap("How are you?\nI'm fine.\n", 14)
-    "How are you?\nI'm fine.\n"
+        """
+        stripped = text.strip()
+        if stripped:
+            return Text.RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
+        else:
+            return ''
 
-    """
-    end = '\n' if '\n' in text else ''
-    lines = []
-    for line in text.splitlines():
-        # wrap longs lines of text compensating for the 2-space indent
-        lines.extend(textwrap.wrap(line, width=width - 2,
-                                   replace_whitespace=True))
-        if not line.strip():
-            lines.append('')
-    return '\n'.join(lines) + end
+    @staticmethod
+    def wrap(text, width=settings.MAX_LINE_LENTH):
+        r"""Wrap lines of text to the maximum line length.
 
+        >>> Text.wrap("Hello, world!", 9)
+        'Hello,\nworld!'
 
-RE_MARKDOWN_SPACES = re.compile(r"""
+        >>> Text.wrap("How are you?\nI'm fine.\n", 14)
+        "How are you?\nI'm fine.\n"
 
-([^\n ])  # any character but a newline or space
+        """
+        end = '\n' if '\n' in text else ''
+        lines = []
+        for line in text.splitlines():
+            # wrap longs lines of text compensating for the 2-space indent
+            lines.extend(textwrap.wrap(line, width=width - 2,
+                                       replace_whitespace=True))
+            if not line.strip():
+                lines.append('')
+        return '\n'.join(lines) + end
 
-(\ ?\n)     # optional space + single newline
+    RE_MARKDOWN_SPACES = re.compile(r"""
 
-(?!      # none of the following:
+    ([^\n ])  # any character but a newline or space
 
-  (?:\s)       # whitespace
-  |
-  (?:[-+*]\s)  # unordered list separator + whitespace
-  |
-  (?:\d+\.\s)  # number + period + whitespace
+    (\ ?\n)     # optional space + single newline
 
-)
+    (?!      # none of the following:
 
-([^\n])  # any character but a newline
+      (?:\s)       # whitespace
+      |
+      (?:[-+*]\s)  # unordered list separator + whitespace
+      |
+      (?:\d+\.\s)  # number + period + whitespace
 
-""", re.VERBOSE | re.IGNORECASE)
+    )
 
+    ([^\n])  # any character but a newline
 
-def join(text):
-    r"""Convert single newlines (ignored by Markdown) to spaces.
+    """, re.VERBOSE | re.IGNORECASE)
 
-    >>> join("abc\n123")
-    'abc 123'
+    @staticmethod
+    def join(text):
+        r"""Convert single newlines (ignored by Markdown) to spaces.
 
-    >>> join("abc\n\n123")
-    'abc\n\n123'
+        >>> Text.join("abc\n123")
+        'abc 123'
 
-    >>> join("abc \n123")
-    'abc 123'
+        >>> Text.join("abc\n\n123")
+        'abc\n\n123'
 
-    """
-    return RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
+        >>> Text.join("abc \n123")
+        'abc 123'
+
+        """
+        return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
 # level #####################################################################

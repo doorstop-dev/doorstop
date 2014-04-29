@@ -6,8 +6,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import ID, Level
-from doorstop.core.types import load_text, save_text
+from doorstop.core.types import ID, Text, Level
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
@@ -128,14 +127,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             elif key == 'derived':
                 self._data['derived'] = bool(value)
             elif key == 'text':
-                self._data['text'] = load_text(value)
+                self._data['text'] = Text(value)
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
                 self._data['links'] = set(ID(v) for v in value)
             else:
                 if isinstance(value, str):
-                    value = load_text(value)
+                    value = Text(value)
                 self._data[key] = value
         # Set meta attributes
         self._loaded = True
@@ -149,7 +148,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
             if key == 'level':
                 data['level'] = value.yaml
             elif key == 'text':
-                data['text'] = save_text(self._data['text'])
+                data['text'] = self._data['text'].yaml
             elif key == 'ref':
                 data['ref'] = value.strip()
             elif key == 'links':
@@ -160,7 +159,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
                     lenth = len(key) + 2 + len(value)
                     if lenth > settings.MAX_LINE_LENTH or '\n' in value:
                         end = '\n' if value.endswith('\n') else ''
-                        value = save_text(value, end=end)
+                        value = Text.save_text(value, end=end)
                 data[key] = value
         # Dump the data to YAML
         text = self._dump(data)
