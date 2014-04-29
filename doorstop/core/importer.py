@@ -9,7 +9,7 @@ from doorstop import common
 from doorstop.common import DoorstopError
 
 
-_documents = []  # cache of unpalced documents, pylint: disable=C0103
+_documents = []  # cache of unplaced documents, pylint: disable=C0103
 
 
 def new_document(prefix, path, parent=None):

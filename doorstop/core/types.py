@@ -286,7 +286,11 @@ class Level(object):  # pragma: no cover
         self._adjust()
 
     def __repr__(self):
-        return "Level('{}')".format(str(self))
+        if self.heading:
+            level = '.'.join(str(n) for n in self._parts)
+            return "Level('{}', heading=True)".format(level, self.heading)
+        else:
+            return "Level('{}')".format(str(self))
 
     def __str__(self):
         return '.'.join(str(n) for n in self.value)
