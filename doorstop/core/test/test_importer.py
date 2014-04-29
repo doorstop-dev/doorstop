@@ -7,6 +7,7 @@ import os
 
 from doorstop.core import importer
 from doorstop.core.tree import Tree
+from doorstop import common
 from doorstop.common import DoorstopError
 
 from doorstop.core.test.test_document import MockItem
@@ -26,13 +27,13 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         mock_document.root = self.root
         self.mock_tree = Tree(mock_document)
-        importer._TREE = self.mock_tree  # pylint: disable=W0212
+        common._tree = self.mock_tree  # pylint: disable=W0212
 
     @patch('doorstop.core.importer.build')
     @patch('doorstop.core.tree.Tree.new_document', Mock())
     def test_build(self, mock_build):
         """Verify the tree is built (if needed) before creating documents."""
-        importer._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
         importer.new_document(self.prefix, self.path)
         mock_build.assert_called_once_with()
 
@@ -83,7 +84,7 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         mock_document.root = self.root
         self.mock_tree = Tree(mock_document)
-        importer._TREE = self.mock_tree  # pylint: disable=W0212
+        common._tree = self.mock_tree  # pylint: disable=W0212
 
     def mock_find_document(self, prefix):
         """Mock Tree.find_document() to return a mock document."""
@@ -99,7 +100,7 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item.new', Mock())
     def test_build(self, mock_build):
         """Verify the tree is built (if needed) before adding items."""
-        importer._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
         importer.add_item(self.prefix, self.identifier)
         mock_build.assert_called_once_with()
 

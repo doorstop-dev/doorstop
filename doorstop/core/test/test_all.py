@@ -9,6 +9,7 @@ import shutil
 import logging
 
 from doorstop import core
+from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
@@ -232,8 +233,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.validate())
 
 
-# TODO: uncomment this lines when tests are passing
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -252,7 +252,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
         # Ensure the tree is reloaded
-        core.importer._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -325,7 +325,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         """Reset the internal tree."""
-        core.tree._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
 
     def test_find_document(self):
         """Verify documents can be found using a convenience function."""

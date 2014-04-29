@@ -9,6 +9,8 @@ VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
 MAX_VERBOSITY = 4
 
+_tree = None  # implicit tree for convenience functions, pylint:disable=C0103
+
 
 class DoorstopError(Exception):
 

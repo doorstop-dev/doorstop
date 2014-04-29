@@ -8,6 +8,7 @@ import tempfile
 import operator
 import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.tree import Tree, build, find_document, find_item
 from doorstop.core.document import Document
@@ -374,8 +375,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.tree.Tree.find_document')
     def test_find_document(self, mock_find_document):  # pylint: disable=R0201
         """Verify documents can be found using a convenience function."""
-        from doorstop.core import tree
-        tree._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
         prefix = 'req'
         find_document(prefix)
         mock_find_document.assert_called_once_with(prefix)
@@ -384,8 +384,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.tree.Tree.find_item')
     def test_find_item(self, mock_find_item):  # pylint: disable=R0201
         """Verify items can be found using a convenience function."""
-        from doorstop.core import tree
-        tree._TREE = None  # pylint: disable=W0212
+        common._tree = None  # pylint: disable=W0212
         identifier = 'req1'
         find_item(identifier)
         mock_find_item.assert_called_once_with(identifier)

@@ -355,17 +355,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 logging.debug("next level (start): {}".format(nlevel))
             else:
                 # Adjust the next level to be the same depth
-                if len(clevel) != len(nlevel):
-                    logging.debug("indenting/dedenting the next level...")
+                if len(clevel) > len(nlevel):
                     nlevel >>= len(clevel) - len(nlevel)
+                    logging.debug("matched current indent: {}".format(nlevel))
+                elif len(clevel) < len(nlevel):
+                    nlevel <<= len(nlevel) - len(clevel)
+                    # nlevel += 1
+                    logging.debug("matched current dedent: {}".format(nlevel))
                 nlevel.heading = clevel.heading
                 # Check for a level jump
                 _size = min(len(clevel.value), len(plevel.value))
                 for index in range(max(_size - 1, 1)):
                     if clevel.value[index] > plevel.value[index]:
-                        logging.critical((len(nlevel), index))
                         nlevel <<= len(nlevel) - 1 - index
-                        logging.critical("shifted: {}".format(nlevel))
                         nlevel += 1
                         nlevel >>= len(clevel) - len(nlevel)
                         msg = "next level (jump): {}".format(nlevel)
@@ -373,7 +375,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         break
                 # Check for a normal increment
                 else:
-                    if len(nlevel) == len(plevel):
+                    if len(nlevel) <= len(plevel):
                         nlevel += 1
                         msg = "next level (increment): {}".format(nlevel)
                         logging.debug(msg)

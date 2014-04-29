@@ -5,11 +5,11 @@ import logging
 from doorstop.core.tree import build
 from doorstop.core.document import Document
 from doorstop.core.item import Item
+from doorstop import common
 from doorstop.common import DoorstopError
 
 
-_TREE = None  # implicitly created tree created for convenience functions
-_DOCUMENTS = []  # documents that could not be added to the tree
+_documents = []  # cache of unpalced documents, pylint: disable=C0103
 
 
 def new_document(prefix, path, parent=None):
@@ -22,27 +22,27 @@ def new_document(prefix, path, parent=None):
     @return: imported Document
 
     """
-    # Load the current tree
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
+    # Load the current tree, pylint: disable=W0212
+    if common._tree is None:
+        common._tree = build()
 
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
     try:
-        document = _TREE.new_document(path, prefix, parent=parent)
+        document = common._tree.new_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None
 
         # Create the document despite an unavailable parent
-        document = Document.new(path, _TREE.root, prefix, parent=parent)
+        document = Document.new(path, common._tree.root, prefix, parent=parent)
         logging.warning(exc)
-        _DOCUMENTS.append(document)
+        _documents.append(document)
 
     # TODO: attempt to place unplaced documents?
 
     logging.info("imported: {}".format(document))
+    common._tree._document_cache[document.prefix] = document
     return document
 
 
@@ -56,13 +56,12 @@ def add_item(prefix, identifier, attrs=None):
     @return: imported Item
 
     """
-    # Load the current tree
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
+    # Load the current tree, pylint: disable=W0212
+    if common._tree is None:
+        common._tree = build()
 
     # Get the specified document
-    document = _TREE.find_document(prefix)
+    document = common._tree.find_document(prefix)
 
     logging.info("importing item '{}'...".format(identifier))
     item = Item.new(document.path, document.root, identifier, auto=False)
@@ -71,4 +70,7 @@ def add_item(prefix, identifier, attrs=None):
     item.save()
 
     logging.info("imported: {}".format(item))
+    document._items.append(item)
+    common._tree._item_cache[item.id] = item
+
     return item
