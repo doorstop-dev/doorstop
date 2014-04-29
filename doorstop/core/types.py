@@ -32,6 +32,17 @@ class ID(object):
     """Unique item identifier."""
 
     def __init__(self, *values):
+        """Initialize an ID using a string or set of parts.
+
+        Option 1:
+
+        @param *values: string representation of ID
+
+        Option 2:
+
+        @param *values: prefix, separator, number, digit count
+
+        """
         if len(values) == 1:
             self.value = str(values[0])
         elif len(values) == 4:
@@ -83,11 +94,6 @@ class ID(object):
     def number(self):
         """Get the ID's number."""
         return split_id(self.value)[1]
-
-
-def get_id(value):
-    """Get an ID from an item or string."""
-    return str(value).split(' ')[0]
 
 
 def split_id(text):

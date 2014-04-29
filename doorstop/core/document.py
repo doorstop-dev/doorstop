@@ -7,7 +7,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import get_id, join_id, Level
+from doorstop.core.types import ID, Level
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -26,7 +26,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, root=os.getcwd()):
-        """Load a document from an exiting directory.
+        """Initialize a document from an exiting directory.
 
         @param path: path to document directory
         @param root: path to root of project
@@ -45,12 +45,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._itered = False
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
-        self._data['sep'] = ''
+        self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
 
     def __repr__(self):
-        return "Document({})".format(repr(self.path))
+        return "Document('{}')".format(self.path)
 
     def __str__(self):
         if common.VERBOSITY < common.STR_VERBOSITY:
@@ -80,6 +80,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @param auto: enables automatic save
 
         @raise DoorstopError: if the document already exists
+
+        @return: new Document
 
         """
         # TODO: raise a specific exception for invalid separator characters?
@@ -285,6 +287,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @param level: desired item level
         @param reorder: update levels of document items
 
+        @return: added Item
+
         """
         number = self.next
         logging.debug("next number: {}".format(number))
@@ -295,25 +299,25 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             nlevel = level or last.level + 1
         logging.debug("next level: {}".format(nlevel))
-        identifier = join_id(self.prefix, self.sep, number, self.digits)
+        identifier = ID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.path, self.root, identifier, level=nlevel)
         self._items.append(item)
         if settings.REORDER and level and reorder:
             self.reorder(keep=item)
         return item
 
-    def remove_item(self, identifier, reorder=True):
+    def remove_item(self, value, reorder=True):
         """Remove an item by its ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
         @param reorder: update levels of document items
-
-        @return: removed Item
 
         @raise DoorstopError: if the item cannot be found
 
+        @return: removed Item
+
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
@@ -325,7 +329,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Reorder a document's items.
 
         @param start: level to start numbering (None = use current start)
-        @param keep: item's ID (or item) to keep over duplicates
+        @param keep: item or ID to keep over duplicates
 
         """
         keep = self.find_item(keep) if keep else None
@@ -337,7 +341,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Reorder a document's items.
 
         @param start: level to start numbering (None = use current start)
-        @param keep: item's ID (or item) to keep over duplicates
+        @param keep: item to keep over duplicates
 
         """
         nlevel = plevel = None
@@ -383,7 +387,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @staticmethod
     def _items_by_level(items, keep=None):
-        """Iterate through items by level with a kept item first."""
+        """Iterate through items by level with the kept item first."""
         # Collect levels
         levels = OrderedDict()
         for item in items:
@@ -401,17 +405,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             for item in items:
                 yield level, item
 
-    def find_item(self, identifier, _kind=''):
+    def find_item(self, value, _kind=''):
         """Return an item by its ID.
 
-        @param identifier: item's ID (or item)
+        @param value: item or ID
 
         @return: matching Item
 
         @raise DoorstopError: if the item cannot be found
 
         """
-        identifier = get_id(identifier)
+        identifier = ID(value)
         for item in self:
             if item.id == identifier:
                 return item
@@ -488,6 +492,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
 # attribute formatters #######################################################
 
+# TODO: move this code to calling locations
 def get_prefix(value):
     """Get a prefix from a document or string."""
     return str(value).split(' ')[0]

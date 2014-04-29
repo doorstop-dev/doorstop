@@ -92,7 +92,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         @raise DoorstopError: if the item already exists
 
         """
-        filename = identifier + Item.EXTENSIONS[0]
+        filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
