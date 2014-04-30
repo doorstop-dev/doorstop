@@ -549,18 +549,30 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     @_log
     def left(self):
         """Dedent the current item's level."""
+        self.item.level <<= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def down(self):
         """Increment the current item's level."""
+        self.item.level += 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def up(self):  # pylint: disable=C0103
         """Decrement the current item's level."""
+        self.item.level -= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def right(self):
         """Indent the current item's level."""
+        self.item.level >>= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def add(self):
