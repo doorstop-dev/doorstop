@@ -7,17 +7,17 @@ import sys
 import argparse
 import logging
 
-from doorstop import CLI, VERSION
 from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
 from doorstop.core import report
 from doorstop import common
-from doorstop.common import DoorstopError, HelpFormatter, WarningFormatter
+from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
 
 
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
+    from doorstop import CLI, VERSION
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',

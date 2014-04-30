@@ -104,12 +104,15 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual((1,), Level((1)).value)
         self.assertEqual((1,), Level(()).value)
         self.assertEqual((1, 0), Level(Level('1.0')).value)
+        self.assertEqual((1, 0), Level(1, heading=True).value)
+        self.assertEqual((1,), Level((1, 0), heading=False).value)
 
     def test_repr(self):
         """Verify levels can be represented."""
         self.assertEqual("Level('1')", repr(self.level_1))
         self.assertEqual("Level('1.2')", repr(self.level_1_2))
-        self.assertEqual("Level('1.2.0')", repr(self.level_1_2_heading))
+        self.assertEqual("Level('1.2', heading=True)",
+                         repr(self.level_1_2_heading))
         self.assertEqual("Level('1.2.3')", repr(self.level_1_2_3))
 
     def test_str(self):
@@ -214,6 +217,12 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         level = self.level_1_2_3
         level <<= 4
         self.assertEqual(Level('1'), level)
+
+    def test_lshift_zero(self):
+        """Verify detenting levels by zero has no effect.."""
+        level = self.level_1_2_3
+        level <<= 0
+        self.assertEqual(Level('1.2.3'), level)
 
     def test_value(self):
         """Verify levels can be converted to their values."""

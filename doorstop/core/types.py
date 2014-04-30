@@ -286,7 +286,11 @@ class Level(object):  # pragma: no cover
         self._adjust()
 
     def __repr__(self):
-        return "Level('{}')".format(str(self))
+        if self.heading:
+            level = '.'.join(str(n) for n in self._parts)
+            return "Level('{}', heading=True)".format(level, self.heading)
+        else:
+            return "Level('{}')".format(str(self))
 
     def __str__(self):
         return '.'.join(str(n) for n in self.value)
@@ -345,20 +349,29 @@ class Level(object):  # pragma: no cover
         return self
 
     def __rshift__(self, value):
-        parts = list(self._parts) + [1] * value
-        return Level(parts, heading=self.heading)
+        if value > 0:
+            parts = list(self._parts) + [1] * value
+            return Level(parts, heading=self.heading)
+        else:
+            return self.__lshift__(abs(value))
 
     def __irshift__(self, value):
-        self._parts += [1] * value
-        self._adjust()
-        return self
+        if value > 0:
+            self._parts += [1] * value
+            self._adjust()
+            return self
+        else:
+            return self.__ilshift__(abs(value))
 
     def __lshift__(self, value):
-        parts = list(self._parts)[:-value]
+        parts = list(self._parts)
+        if value:
+            parts = parts[:-value]
         return Level(parts, heading=self.heading)
 
     def __ilshift__(self, value):
-        self._parts = self._parts[:-value]
+        if value:
+            self._parts = self._parts[:-value]
         self._adjust()
         return self
 

@@ -70,6 +70,16 @@ $(DEPENDS_DEV): Makefile
 	$(PIP) install docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
+# Development Usage ##########################################################
+
+.PHONY: doorstop
+doorstop: env
+	$(BIN)/doorstop
+
+.PHONY: gui
+gui: env
+	$(BIN)/doorstop-gui
+
 # Documentation ##############################################################
 
 .PHONY: doc
@@ -96,10 +106,6 @@ docs/gen/*.html: $(shell find . -name '*.yml')
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
-
-.PHONY: doorstop
-doorstop: env
-	$(BIN)/doorstop
 
 .PHONY: read
 read: readme apidocs html
