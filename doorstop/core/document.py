@@ -25,7 +25,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, root=os.getcwd()):
+    def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
 
         @param path: path to document directory
@@ -41,13 +41,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Initialize the document
         self.path = path
         self.root = root
-        self._items = []
-        self._itered = False
+        self.tree = kwargs.get('tree')
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._items = []
+        self._itered = False
 
     def __repr__(self):
         return "Document('{}')".format(self.path)

@@ -25,7 +25,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     DEFAULT_TEXT = Text("")
     DEFAULT_REF = ""
 
-    def __init__(self, path, root=os.getcwd()):
+    def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
 
         @param path: path to Item file
@@ -51,6 +51,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Initialize the item
         self.path = path
         self.root = root
+        self.document = kwargs.get('document')
+        self.tree = kwargs.get('tree')
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
