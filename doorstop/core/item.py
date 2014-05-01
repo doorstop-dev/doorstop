@@ -533,6 +533,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         @return: list of found item IDs, list of all child Documents
 
         """
+        document = document or getattr(self, 'document', None)
+        tree = tree or getattr(self, 'tree', None)
+        if not (document and tree):
+            logging.warning("document and tree required to find links")
+            return [], []
         rlinks = []
         children = []
         for document2 in tree:
@@ -553,6 +558,18 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
                 msg = "first reverse link: {}".format(rlinks[0])
             logging.debug(msg)
         return rlinks, children
+
+    def find_child_links(self, document=None, tree=None, find_all=True):
+        """Get a list of item IDs that link to this item (reverse links).
+
+        @param document: Document containing the item
+        @param tree: Tree containing the item
+        @param find_all: find all items (not just the first) before returning
+
+        @return: list of found item IDs
+
+        """
+        return self.find_rlinks(document, tree, find_all=find_all)[0]
 
     def delete(self, path=None):
         """Delete the item."""

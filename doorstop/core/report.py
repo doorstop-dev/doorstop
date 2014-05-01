@@ -145,8 +145,18 @@ def lines_text(obj, ignored=None, indent=8, width=79):
             # Links
             if item.links:
                 yield ""  # break before links
-                links = "Links: " + ', '.join(str(l) for l in item.links)
-                yield from _chunks(links, width, indent)
+                if settings.PUBLISH_CHILD_LINKS:
+                    label = "Parent links: "
+                else:
+                    label = "Links: "
+                slinks = label + ', '.join(str(l) for l in item.links)
+                yield from _chunks(slinks, width, indent)
+            if settings.PUBLISH_CHILD_LINKS:
+                links = item.find_child_links()
+                if links:
+                    yield ""  # break before links
+                    slinks = "Child links: " + ', '.join(str(l) for l in links)
+                    yield from _chunks(slinks, width, indent)
 
         yield ""  # break between items
 
@@ -195,8 +205,18 @@ def lines_markdown(obj, ignored=None):
             # Links
             if item.links:
                 yield ""  # break before links
-                links = "Links: " + ', '.join(str(l) for l in item.links)
-                yield '*' + links + '*'
+                if settings.PUBLISH_CHILD_LINKS:
+                    label = "Parent links: "
+                else:
+                    label = "Links: "
+                slinks = label + ', '.join(str(l) for l in item.links)
+                yield '*' + slinks + '*'
+            if settings.PUBLISH_CHILD_LINKS:
+                links = item.find_child_links()
+                if links:
+                    yield ""  # break before links
+                    slinks = "Child links: " + ', '.join(str(l) for l in links)
+                    yield '*' + slinks + '*'
 
         yield ""  # break between items
 

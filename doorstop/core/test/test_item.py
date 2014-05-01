@@ -319,6 +319,22 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
+    def test_find_ref_filename(self):
+        """Verify an item's reference can also be a filename."""
+        self.item.ref = "text.txt"
+        relpath, line = self.item.find_ref(FILES)
+        self.assertEqual('text.txt', os.path.basename(relpath))
+        self.assertEqual(None, line)
+
+    def test_find_ref_error(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.ref = "not found".replace(' ', '')  # avoids self match
+        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
+
+    def test_find_ref_none(self):
+        """Verify nothing returned when no external reference is specified."""
+        self.assertEqual((None, None), self.item.find_ref())
+
     def test_find_rlinks(self):
         """Verify an item's reverse links can be found."""
 
@@ -350,21 +366,35 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(['TST001'], rlinks)
         self.assertEqual([mock_document_c], childrem)
 
-    def test_find_ref_filename(self):
-        """Verify an item's reference can also be a filename."""
-        self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(FILES)
-        self.assertEqual('text.txt', os.path.basename(relpath))
-        self.assertEqual(None, line)
+    def test_find_child_links(self):
+        """Verify an item's child links can be found."""
 
-    def test_find_ref_error(self):
-        """Verify an error occurs when no external reference found."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
-        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
+        mock_document_p = Mock()
+        mock_document_p.prefix = 'RQ'
 
-    def test_find_ref_none(self):
-        """Verify nothing returned when no external reference is specified."""
-        self.assertEqual((None, None), self.item.find_ref())
+        mock_document_c = Mock()
+        mock_document_c.parent = 'RQ'
+
+        mock_item = Mock()
+        mock_item.id = 'TST001'
+        mock_item.links = ['RQ001']
+
+        def mock_iter(self):  # pylint: disable=W0613
+            """Mock Tree.__iter__ to yield a mock Document."""
+
+            def mock_iter2(self):  # pylint: disable=W0613
+                """Mock Document.__iter__ to yield a mock Item."""
+                yield mock_item
+
+            mock_document_c.__iter__ = mock_iter2
+            yield mock_document_c
+
+        self.item.link('fake1')
+        mock_tree = Mock()
+        mock_tree.__iter__ = mock_iter
+        mock_tree.find_item = lambda identifier: Mock(id='fake1')
+        links = self.item.find_child_links(mock_document_p, mock_tree)
+        self.assertEqual(['TST001'], links)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
