@@ -53,6 +53,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         self.root = root
         self.document = kwargs.get('document')
         self.tree = kwargs.get('tree')
+        self.auto = kwargs.get('auto', Item.auto)
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -81,28 +82,29 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
+    def new(path, root, identifier, level=None, **kwargs):  # pylint: disable=R0913
         """Create a new item.
 
         @param path: path to directory for the new item
         @param root: path to root of the project
         @param identifier: ID for the new item
         @param level: level for the new item
-        @param auto: enables automatic save
 
         @raise DoorstopError: if the item already exists
 
         @return: new Item
 
         """
+        auto = kwargs.get('auto')
+        document = kwargs.get('document')
+        tree = kwargs.get('tree')
         filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
         Item._new(path2, name='item')
         # Initialize the item
-        item = Item(path2, root=root)
-        item.auto = False
+        item = Item(path2, root=root, document=document, tree=tree, auto=False)
         item.level = level if level is not None else item.level
         if auto or (auto is None and Item.auto):
             item.save()
@@ -368,15 +370,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         except KeyError:
             logging.warning("link to {0} does not exist".format(identifier))
 
-    def get_issues(self, document=None, tree=None, **_):
+    def get_issues(self, **kwargs):
         """Yield all the item's issues.
-
-        @param document: Document containing the item (document-level issues)
-        @param tree: Tree containing the item (tree-level issues)
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
+        assert kwargs.get('document_hook') is None
+        assert kwargs.get('item_hook') is None
         logging.info("checking item {}...".format(self))
         # Verify the file can be parsed
         self.load()
@@ -393,27 +394,30 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Check external references
         if settings.CHECK_REF:
             try:
-                self.find_ref(ignored=tree.vcs.ignored if tree else None)
+                # TODO: find_ref shouldn't get 'ignored' internally
+                self.find_ref(ignored=self.tree.vcs.ignored
+                              if self.tree else None)
             except DoorstopError as exc:
                 yield exc
         # Check links
         if not self.normative and self.links:
             yield DoorstopWarning("non-normative, but has links")
         # Check links against the document
-        if document:
-            yield from self._get_issues_document(document)
+        if self.document:
+            yield from self._get_issues_document(self.document)
         # Check links against the tree
-        if tree:
-            yield from self._get_issues_tree(tree)
+        if self.tree:
+            yield from self._get_issues_tree(self.tree)
         # Check links against both document and tree
-        if document and tree:
-            yield from self._get_issues_both(document, tree)
+        if self.document and self.tree:
+            yield from self._get_issues_both(self.document, self.tree)
         # Reformat the file
         if settings.REFORMAT:
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
+        logging.debug("getting issues against document: {}".format(document))
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
@@ -442,6 +446,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
+        logging.debug("getting issues against tree: {}".format(tree))
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -467,9 +472,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
 
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
+        logging.debug("getting issues against both: {} & {}".format(document,
+                                                                    tree))
         # Verify an item is being linked to (reverse links)
         if settings.CHECK_RLINKS and self.normative:
-            rlinks, children = self.find_rlinks(document, tree, find_all=False)
+            rlinks, children = self.find_rlinks(find_all=False)
             if not rlinks:
                 for child in children:
                     msg = "no links from child document: {}".format(child)
@@ -525,11 +532,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         raise DoorstopError(msg)
 
     # TODO: should this only return IDs and add a find_children method?
-    def find_rlinks(self, document, tree, find_all=True):
+    def find_rlinks(self, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
-        @param document: Document containing the item
-        @param tree: Tree containing the item
         @param find_all: find all items (not just the first) before returning
 
         @return: list of found item IDs, list of all child Documents
@@ -537,8 +542,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """
         rlinks = []
         children = []
-        for document2 in tree:
-            if document2.parent == document.prefix:
+        if not self.document or not self.tree:
+            return rlinks, children
+        for document2 in self.tree:
+            if document2.parent == self.document.prefix:
                 children.append(document2)
                 # Search for reverse links unless we only need to find one
                 if not rlinks or find_all:

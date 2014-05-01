@@ -66,6 +66,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if document.parent is None:
                 logging.debug("added root of tree: {}".format(document))
                 tree = Tree(document)
+                document.tree = tree
                 logging.info("root of the tree: {}".format(document))
                 unplaced.remove(document)
                 break
@@ -84,6 +85,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     logging.debug(error)
                 else:
                     logging.info("added to tree: {}".format(document))
+                    document.tree = tree
                     unplaced.remove(document)
 
             if len(unplaced) == count:  # no more documents could be placed
@@ -95,7 +97,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     def __init__(self, document, parent=None, root=None):
         self.document = document
-        self.root = root or document.root  # allows non-documents in tests
+        self.root = root or document.root  # enables testing
         self.parent = parent
         self.children = []
         self._vcs = None
@@ -182,6 +184,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     # attributes #############################################################
 
     @property
+    def documents(self):
+        """Get an list of documents in the tree."""
+        return list(self)
+
+    @property
     def vcs(self):
         """Get the working copy."""
         if self._vcs is None:
@@ -209,7 +216,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         prefix = get_prefix(prefix)
         document = Document.new(path, self.root, prefix,
                                 sep=sep, digits=digits,
-                                parent=parent)
+                                parent=parent, tree=self)
         try:
             self._place(document)
         except DoorstopError:
@@ -218,6 +225,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if os.path.exists(document.path):
                 shutil.rmtree(document.path)
             raise
+        else:
+            logging.info("added to tree: {}".format(document))
         return document
 
     @clear_item_cache
@@ -391,7 +400,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def get_issues(self, document_hook=None, item_hook=None, **_):
+    def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
         @param document_hook: function to call for custom document validation
@@ -400,16 +409,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
+        hook = document_hook if document_hook else lambda **kwargs: []
         documents = list(self)
         # Check for documents
         if not documents:
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            for issue in chain(document_hook(document=document, tree=self)
-                               if document_hook else [],
-                               document.get_issues(tree=self,
-                                                   item_hook=item_hook)):
+            for issue in chain(hook(document=document, tree=self),
+                               document.get_issues(item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))

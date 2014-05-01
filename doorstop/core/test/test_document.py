@@ -120,8 +120,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
-        logging.debug("items: {}".format(items))
         self.assertEqual(5, len(items))
+        for item in self.document:
+            logging.debug("item: {}".format(item))
+            self.assertIs(self.document, item.document)
+            self.assertIs(self.document.tree, item.tree)
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -170,6 +173,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_next(self):
         """Verify the next item number can be determined."""
         self.assertEqual(5, self.document.next)
+
+    def test_object_references(self):
+        """Verify a standalone document does not have object references."""
+        self.assertIs(None, self.document.tree)
 
     @patch('doorstop.core.document.Document._reorder')
     @patch('doorstop.core.item.Item.new')

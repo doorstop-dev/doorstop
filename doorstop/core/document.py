@@ -42,6 +42,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self.path = path
         self.root = root
         self.tree = kwargs.get('tree')
+        self.auto = kwargs.get('auto', Document.auto)
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
@@ -69,7 +70,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913
+    def new(path, root, prefix, sep=None, digits=None, parent=None, **kwargs):  # pylint: disable=R0913
         """Create a new document.
 
         @param path: path to directory for the new document
@@ -78,13 +79,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the new document
         @param parent: parent ID for the new document
-        @param auto: enables automatic save
 
         @raise DoorstopError: if the document already exists
 
         @return: new Document
 
         """
+        auto = kwargs.get('auto')
+        tree = kwargs.get('tree')
         # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
@@ -94,8 +96,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Create the document directory
         Document._new(config, name='document')
         # Initialize the document
-        document = Document(path, root=root)
-        document.auto = False
+        document = Document(path, root=root, tree=tree, auto=False)
         document.prefix = prefix if prefix is not None else document.prefix
         document.sep = sep if sep is not None else document.sep
         document.digits = digits if digits is not None else document.digits
@@ -177,7 +178,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root)
+                    item = Item(path, root=self.root,
+                                document=self, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
@@ -429,15 +431,16 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def get_issues(self, tree=None, item_hook=None, **_):
+    def get_issues(self, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
-        @param tree: Tree containing the document (tree-level issues)
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
+        assert kwargs.get('document_hook') is None
+        hook = item_hook if item_hook else lambda **kwargs: []
         logging.info("checking document {}...".format(self))
         # Reorder levels
         if settings.REORDER:
@@ -447,9 +450,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check each item
         for item in self:
             # Check item
-            for issue in chain(item_hook(item=item, document=self, tree=tree)
-                               if item_hook else [],
-                               item.get_issues(document=self, tree=tree)):
+            for issue in chain(hook(item=item, document=self, tree=self.tree),
+                               item.get_issues()):
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
