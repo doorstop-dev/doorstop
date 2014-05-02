@@ -16,7 +16,7 @@ abc 123
 
 ### 2.1.1 req4
 
-Reference: doorstop/core/test/test_report.py (line 51)
+Reference: doorstop/core/test/test_report.py (line 18)
 
 *Links: sys2*
 
