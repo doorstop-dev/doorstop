@@ -1,9 +1,28 @@
 language: python
 python:
-  - 3.3
-  - 3.4
+- 3.3
+- 3.4
 install:
-  - pip install coveralls
+- pip install coveralls
 script: make ci
 after_success:
-  - coveralls
+- coveralls
+after_script:
+# Generate HTML pages
+- make html
+# Configure Git with Travis CI information
+- git config --global user.email "travis@travis-ci.org"
+- git config --global user.name "travis-ci"
+# Delete the current repository
+- rm -rf .git
+# Rebuild the repository from the generated files and push to GitHub pages
+- > 
+  cd docs/gen ;
+  git init ;
+  git add . ;
+  git commit -m "Deployed Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages." ;
+  git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
+env:
+  global:
+    # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci
+    secure: JfVl6zxzhRIEG1VvLqMEPMGOecrzDyb2U0HPyQ4Z4pfKJgFJOdQ1orT9Aztpfr4edXqbCZnEy4WH8+FLBQagkXjT3Ladopv+9j1IkP8v1Gu1O8H2tHQc7wfGxnkQF+h0pFFS6adNAsMliQ5dxTojFYVoWebvZQbiVGYkew+QZ0c=
