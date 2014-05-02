@@ -16,11 +16,12 @@ after_script:
 # Delete the current repository
 - rm -rf .git
 # Rebuild the repository from the generated files and push to GitHub pages
-- > cd docs/gen ;
-    git init ;
-    git add . ;
-    git commit -m "Deployed Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages." ;
-    git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
+- > 
+  cd docs/gen ;
+  git init ;
+  git add . ;
+  git commit -m "Deployed Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages." ;
+  git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
 env:
   global:
     # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci
