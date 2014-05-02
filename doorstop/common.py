@@ -3,13 +3,20 @@
 import argparse
 import logging
 
-from doorstop import VERSION
-
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
 MAX_VERBOSITY = 4
 
 _tree = None  # implicit tree for convenience functions, pylint:disable=C0103
+
+
+def get_tree():
+    """Get a shared tree for convenience functions."""
+    global _tree  # pylint: disable=W0603,C0103
+    if _tree is None:
+        from doorstop import build
+        _tree = build()
+    return _tree
 
 
 class DoorstopError(Exception):
@@ -51,10 +58,3 @@ class WarningFormatter(logging.Formatter, object):
         else:
             self._style._fmt = self.default_format  # pylint: disable=W0212
         return super().format(record)
-
-# Shared command-line arguments
-DEBUG = argparse.ArgumentParser(add_help=False)
-DEBUG.add_argument('-V', '--version', action='version', version=VERSION)
-DEBUG.add_argument('-v', '--verbose', action='count', default=0,
-                   help="enable verbose logging")
-SHARED = {'formatter_class': HelpFormatter, 'parents': [DEBUG]}

@@ -2,11 +2,9 @@
 
 import logging
 
-from doorstop.core.tree import build
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop import common
-from doorstop.common import DoorstopError
+from doorstop.common import get_tree, DoorstopError
 
 
 _documents = []  # cache of unplaced documents, pylint: disable=C0103
@@ -22,27 +20,29 @@ def new_document(prefix, path, parent=None):
     @return: imported Document
 
     """
-    # Load the current tree, pylint: disable=W0212
-    if common._tree is None:
-        common._tree = build()
+    # Load the current tree
+    tree = get_tree()
 
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
     try:
-        document = common._tree.new_document(path, prefix, parent=parent)
+        document = tree.new_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None
 
         # Create the document despite an unavailable parent
-        document = Document.new(path, common._tree.root, prefix, parent=parent)
+        document = Document.new(tree,
+                                path, tree.root, prefix,
+                                parent=parent)
         logging.warning(exc)
         _documents.append(document)
 
     # TODO: attempt to place unplaced documents?
 
+    # Cache and return the document
     logging.info("imported: {}".format(document))
-    common._tree._document_cache[document.prefix] = document
+    tree._document_cache[document.prefix] = document  # pylint: disable=W0212
     return document
 
 
@@ -56,21 +56,22 @@ def add_item(prefix, identifier, attrs=None):
     @return: imported Item
 
     """
-    # Load the current tree, pylint: disable=W0212
-    if common._tree is None:
-        common._tree = build()
+    # Load the current tree
+    tree = get_tree()
 
     # Get the specified document
-    document = common._tree.find_document(prefix)
+    document = tree.find_document(prefix)
 
     logging.info("importing item '{}'...".format(identifier))
-    item = Item.new(document.path, document.root, identifier, auto=False)
+    item = Item.new(tree, document,
+                    document.path, document.root, identifier,
+                    auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
 
+    # Cache and return the item
     logging.info("imported: {}".format(item))
-    document._items.append(item)
-    common._tree._item_cache[item.id] = item
-
+    document._items.append(item)  # pylint: disable=W0212
+    tree._item_cache[item.id] = item  # pylint: disable=W0212
     return item

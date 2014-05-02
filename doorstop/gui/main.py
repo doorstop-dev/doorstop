@@ -18,9 +18,7 @@ import functools
 from itertools import chain
 import logging
 
-
-from doorstop import GUI, __project__, __version__
-from doorstop.common import SHARED, WarningFormatter, DoorstopError
+from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop.core import vcs
 from doorstop.core import tree
 from doorstop import settings
@@ -28,8 +26,14 @@ from doorstop import settings
 
 def main(args=None):
     """Process command-line arguments and run the program."""
+    from doorstop import GUI, VERSION
     # Main parser
-    parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **SHARED)
+    debug = argparse.ArgumentParser(add_help=False)
+    debug.add_argument('-V', '--version', action='version', version=VERSION)
+    debug.add_argument('-v', '--verbose', action='count', default=0,
+                       help="enable verbose logging")
+    shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
+    parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **shared)
     # Hidden argument to override the root sharing directory path
     parser.add_argument('-j', '--project', metavar="PATH",
                         help="path to the root of the project")
@@ -79,6 +83,7 @@ def _run(args, cwd, error):
     @param error: function to call for CLI errors
 
     """
+    from doorstop import __project__, __version__
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
         return error("tkinter is not available")

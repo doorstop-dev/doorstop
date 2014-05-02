@@ -25,7 +25,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, root=os.getcwd()):
+    def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
 
         @param path: path to document directory
@@ -41,13 +41,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Initialize the document
         self.path = path
         self.root = root
-        self._items = []
-        self._itered = False
+        self.tree = kwargs.get('tree')
+        self.auto = kwargs.get('auto', Document.auto)
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._items = []
+        self._itered = False
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -68,16 +70,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913
-        """Create a new document.
+    def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
+        """Internal method to create a new document.
+
+        @param tree: reference to tree that contains this document
 
         @param path: path to directory for the new document
         @param root: path to root of the project
         @param prefix: prefix for the new document
+
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the new document
         @param parent: parent ID for the new document
-        @param auto: enables automatic save
+        @param auto: automatically save the document
 
         @raise DoorstopError: if the document already exists
 
@@ -93,8 +98,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Create the document directory
         Document._new(config, name='document')
         # Initialize the document
-        document = Document(path, root=root)
-        document.auto = False
+        document = Document(path, root=root, tree=tree, auto=False)
         document.prefix = prefix if prefix is not None else document.prefix
         document.sep = sep if sep is not None else document.sep
         document.digits = digits if digits is not None else document.digits
@@ -176,7 +180,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root)
+                    item = Item(path, root=self.root,
+                                document=self, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
@@ -300,7 +305,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             nlevel = level or last.level + 1
         logging.debug("next level: {}".format(nlevel))
         identifier = ID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.path, self.root, identifier, level=nlevel)
+        item = Item.new(self.tree, self,
+                        self.path, self.root, identifier,
+                        level=nlevel)
         self._items.append(item)
         if settings.REORDER and level and reorder:
             self.reorder(keep=item)
@@ -428,15 +435,16 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
 
-    def get_issues(self, tree=None, item_hook=None, **_):
+    def get_issues(self, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
-        @param tree: Tree containing the document (tree-level issues)
         @param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
+        assert kwargs.get('document_hook') is None
+        hook = item_hook if item_hook else lambda **kwargs: []
         logging.info("checking document {}...".format(self))
         # Reorder levels
         if settings.REORDER:
@@ -446,9 +454,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check each item
         for item in self:
             # Check item
-            for issue in chain(item_hook(item=item, document=self, tree=tree)
-                               if item_hook else [],
-                               item.get_issues(document=self, tree=tree)):
+            for issue in chain(hook(item=item, document=self, tree=self.tree),
+                               item.get_issues()):
                 # Prepend the item's ID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))

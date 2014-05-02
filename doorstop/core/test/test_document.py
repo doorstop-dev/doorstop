@@ -120,22 +120,29 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
-        logging.debug("items: {}".format(items))
         self.assertEqual(5, len(items))
+        for item in self.document:
+            logging.debug("item: {}".format(item))
+            self.assertIs(self.document, item.document)
+            self.assertIs(self.document.tree, item.tree)
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
         """Verify a new document can be created with defaults."""
         MockDocument._new.reset_mock()
         path = os.path.join(EMPTY, '.doorstop.yml')
-        document = MockDocument.new(EMPTY, root=FILES, prefix='NEW', digits=2)
+        document = MockDocument.new(None,
+                                    EMPTY, root=FILES, prefix='NEW', digits=2)
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
         MockDocument._new.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
-        self.assertRaises(DoorstopError, Document.new, FILES, ROOT, 'DUPL')
+        self.assertRaises(DoorstopError, Document.new,
+                          None,
+                          FILES, ROOT,
+                          prefix='DUPL')
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
@@ -171,13 +178,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify the next item number can be determined."""
         self.assertEqual(5, self.document.next)
 
+    def test_object_references(self):
+        """Verify a standalone document does not have object references."""
+        self.assertIs(None, self.document.tree)
+
     @patch('doorstop.core.document.Document._reorder')
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new, mock_reorder):
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
-        mock_new.assert_called_once_with(FILES, ROOT, 'REQ005',
+        mock_new.assert_called_once_with(None, self.document,
+                                         FILES, ROOT, 'REQ005',
                                          level=Level('2.2'))
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -187,7 +199,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
-        mock_new.assert_called_once_with(FILES, ROOT, 'REQ005', level='4.2')
+        mock_new.assert_called_once_with(None, self.document,
+                                         FILES, ROOT, 'REQ005',
+                                         level='4.2')
         mock_reorder.assert_called_once_with(keep=item)
 
     @patch('doorstop.core.item.Item.new')
@@ -196,7 +210,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item())
-        mock_new.assert_called_once_with(NEW, ROOT, 'NEW001', level=None)
+        mock_new.assert_called_once_with(None, document,
+                                         NEW, ROOT, 'NEW001',
+                                         level=None)
 
     def test_add_contains(self):
         """Verify an added item is contained in the document."""

@@ -11,13 +11,13 @@ PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
 
 ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_PYTHON := C:\\Python34\\python.exe
-	SYS_VIRTUALENV := C:\\Python33\\Scripts\\virtualenv.exe
+	SYS_VIRTUALENV := C:\\Python34\\Scripts\\virtualenv.exe
 	BIN := $(ENV)/Scripts
 	OPEN := cmd /c start
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python34\\tcl\\tcl8.5
 else
-	SYS_PYTHON := python3.3
+	SYS_PYTHON := python3
 	SYS_VIRTUALENV := virtualenv
 	BIN := $(ENV)/bin
 	ifneq ($(findstring cygwin, $(PLATFORM)), )
@@ -70,6 +70,16 @@ $(DEPENDS_DEV): Makefile
 	$(PIP) install docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
+# Development Usage ##########################################################
+
+.PHONY: doorstop
+doorstop: env
+	$(BIN)/doorstop
+
+.PHONY: gui
+gui: env
+	$(BIN)/doorstop-gui
+
 # Documentation ##############################################################
 
 .PHONY: doc
@@ -96,10 +106,6 @@ docs/gen/*.html: $(shell find . -name '*.yml')
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
-
-.PHONY: doorstop
-doorstop: env
-	$(BIN)/doorstop
 
 .PHONY: read
 read: readme apidocs html
