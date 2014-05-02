@@ -29,14 +29,6 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
         self.mock_tree = Tree(mock_document)
         common._tree = self.mock_tree  # pylint: disable=W0212
 
-    @patch('doorstop.core.importer.build')
-    @patch('doorstop.core.tree.Tree.new_document', Mock())
-    def test_build(self, mock_build):
-        """Verify the tree is built (if needed) before creating documents."""
-        common._tree = None  # pylint: disable=W0212
-        importer.new_document(self.prefix, self.path)
-        mock_build.assert_called_once_with()
-
     @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document(self, mock_new):
         """Verify a new document can be created to import items."""
@@ -63,7 +55,8 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created with unknown parents."""
         importer.new_document(self.prefix, self.path, parent=self.parent)
-        mock_new.assert_called_once_with(self.path, self.root, self.prefix,
+        mock_new.assert_called_once_with(self.mock_tree,
+                                         self.path, self.root, self.prefix,
                                          parent=self.parent)
 
 
@@ -77,12 +70,15 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
     path = os.path.join(root, 'DIRECTORY')
     parent = 'PARENT_PREFIX'
 
+    mock_document = Mock()
+
     def setUp(self):
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
         # Ensure the tree is reloaded
         mock_document = Mock()
         mock_document.root = self.root
+        mock_document.prefix = self.prefix
         self.mock_tree = Tree(mock_document)
         common._tree = self.mock_tree  # pylint: disable=W0212
 
@@ -90,26 +86,18 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
         """Mock Tree.find_document() to return a mock document."""
         assert isinstance(self, Tree)
         assert prefix == TestAddItem.prefix
-        mock_document = Mock()
-        mock_document.prefix = prefix
-        mock_document.path = TestAddItem.path
-        mock_document.root = TestAddItem.root
-        return mock_document
-
-    @patch('doorstop.core.importer.build')
-    @patch('doorstop.core.item.Item.new', Mock())
-    def test_build(self, mock_build):
-        """Verify the tree is built (if needed) before adding items."""
-        common._tree = None  # pylint: disable=W0212
-        importer.add_item(self.prefix, self.identifier)
-        mock_build.assert_called_once_with()
+        TestAddItem.mock_document.prefix = prefix
+        TestAddItem.mock_document.path = TestAddItem.path
+        TestAddItem.mock_document.root = TestAddItem.root
+        return TestAddItem.mock_document
 
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new):
         """Verify an item can be imported into an existing document."""
         importer.add_item(self.prefix, self.identifier)
-        mock_new.assert_called_once_with(self.path, self.root, self.identifier,
+        mock_new.assert_called_once_with(self.mock_tree, self.mock_document,
+                                         self.path, self.root, self.identifier,
                                          auto=False)
 
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)

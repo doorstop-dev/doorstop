@@ -35,9 +35,9 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
                                    "level: 1.1.0" + '\n'
                                    "normative: false"))
         cls.item2 = MockItem('path/to/req3.yml',
-                             _file="links: [sys3]\ntext: '" +
+                             _file=("links: [sys3]\ntext: '" +
                                     ("Hello, world! " * 10) +
-                                    "'\nlevel: 1.2")
+                                    "'\nlevel: 1.2"))
         cls.item2.find_child_links = lambda *args, **kwargs: ['tst1']
         cls.document = MagicMock()
         cls.document.items = [

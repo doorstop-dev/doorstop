@@ -143,14 +143,19 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     """Unit tests for the Tree class."""  # pylint: disable=C0103
 
     def setUp(self):
-        self.tree = Tree(Document(SYS))
-        self.tree._place(Document(FILES))  # pylint: disable=W0212
+        document = Document(SYS)
+        self.tree = Tree(document)
+        document.tree = self.tree
+        document = Document(FILES)
+        self.tree._place(document)  # pylint: disable=W0212
+        document.tree = self.tree
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        doc = MockDocument.new(tree,
+                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
         tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
@@ -158,9 +163,18 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
+        doc = MockDocument.new(tree,
+                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
                                parent='REQ')
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
+
+    def test_documents(self):
+        """Verify the documents in a tree can be accessed."""
+        documents = self.tree.documents
+        self.assertEqual(2, len(documents))
+        for document in self.tree:
+            logging.debug("document: {}".format(document))
+            self.assertIs(self.tree, document.tree)
 
     @patch('doorstop.core.document.Document.get_issues')
     def test_validate(self, mock_get_issues):

@@ -278,6 +278,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.set('text', "extended access")
         self.assertEqual("extended access", self.item.text)
 
+    def test_object_references_standalone(self):
+        """Verify a standalone item does not have object references."""
+        self.assertIs(None, self.item.document)
+        self.assertIs(None, self.item.tree)
+
     def test_link(self):
         """Verify links can be added to an item."""
         self.item.link('abc')
@@ -362,9 +367,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
-        rlinks, childrem = self.item.find_rlinks(mock_document_p, mock_tree)
+        self.item.document = mock_document_p
+        self.item.tree = mock_tree
+        rlinks, childrem = self.item.find_rlinks()
         self.assertEqual(['TST001'], rlinks)
         self.assertEqual([mock_document_c], childrem)
+
+    def test_find_rlinks_standalone(self):
+        """Verify a standalone item has no reverse links."""
+        rlinks, childrem = self.item.find_rlinks()
+        self.assertEqual([], rlinks)
+        self.assertEqual([], childrem)
 
     def test_find_child_links(self):
         """Verify an item's child links can be found."""
@@ -393,7 +406,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
-        links = self.item.find_child_links(mock_document_p, mock_tree)
+        self.item.tree = mock_tree
+        self.item.document = mock_document_p
+        links = self.item.find_child_links()
         self.assertEqual(['TST001'], links)
 
     def test_invalid_file_name(self):
@@ -410,7 +425,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new(self):
         """Verify items can be created."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'TEST00042', (1, 2, 3))
+        item = MockItem.new(None, None,
+                            EMPTY, FILES, 'TEST00042',
+                            level=(1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
@@ -420,7 +437,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._new.reset_mock()
-        item = MockItem.new(EMPTY, FILES, 'VSM.HLR_01-002-042', (1, 0))
+        item = MockItem.new(None, None,
+                            EMPTY, FILES, 'VSM.HLR_01-002-042',
+                            level=(1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1,), item.level)
@@ -428,8 +447,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
-        self.assertRaises(DoorstopError,
-                          Item.new, FILES, FILES, 'REQ002', (1, 2, 3))
+        self.assertRaises(DoorstopError, Item.new,
+                          None, None,
+                          FILES, FILES, 'REQ002',
+                          level=(1, 2, 3))
 
     def test_validate_invalid_ref(self):
         """Verify an invalid reference fails validity."""
@@ -457,7 +478,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
-        self.assertTrue(self.item.validate(tree=mock_tree))
+        self.item.tree = mock_tree
+        self.assertTrue(self.item.validate())
 
     def test_validate_link_to_nonnormative(self):
         """Verify a link to an non-normative item can be checked."""
@@ -466,27 +488,31 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
-        self.assertTrue(self.item.validate(tree=mock_tree))
+        self.item.tree = mock_tree
+        self.assertTrue(self.item.validate())
 
     def test_validate_document(self):
         """Verify an item can be checked against a document."""
         mock_document = Mock()
         mock_document.parent = 'fake'
-        self.assertTrue(self.item.validate(document=mock_document))
+        self.item.document = mock_document
+        self.assertTrue(self.item.validate())
 
     def test_validate_document_with_links(self):
         """Verify an item can be checked against a document with links."""
         self.item.link('unknown1')
         mock_document = Mock()
         mock_document.parent = 'fake'
-        self.assertTrue(self.item.validate(document=mock_document))
+        self.item.document = mock_document
+        self.assertTrue(self.item.validate())
 
     def test_validate_document_with_bad_link_IDs(self):
         """Verify an item can be checked against a document w/ bad link IDs."""
         self.item.link('invalid')
         mock_document = Mock()
         mock_document.parent = 'fake'
-        self.assertFalse(self.item.validate(document=mock_document))
+        self.item.document = mock_document
+        self.assertFalse(self.item.validate())
 
     def test_validate_tree(self):
         """Verify an item can be checked against a tree."""
@@ -512,14 +538,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
 
-        self.assertTrue(self.item.validate(tree=mock_tree))
+        self.item.tree = mock_tree
+
+        self.assertTrue(self.item.validate())
 
     def test_validate_tree_error(self):
         """Verify an item can be checked against a tree with errors."""
         self.item.link('fake1')
-        tree = MagicMock()
-        tree.find_item = Mock(side_effect=DoorstopError)
-        self.assertFalse(self.item.validate(tree=tree))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(side_effect=DoorstopError)
+        self.item.tree = mock_tree
+        self.assertFalse(self.item.validate())
 
     def test_validate_both(self):
         """Verify an item can be checked against both."""
@@ -542,8 +571,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter([mock_document])
 
-        self.assertTrue(self.item.validate(document=mock_document,
-                                           tree=mock_tree))
+        self.item.document = mock_document
+        self.item.tree = mock_tree
+
+        self.assertTrue(self.item.validate())
 
     def test_validate_both_no_reverse_links(self):
         """Verify an item can be checked against both (no reverse links)."""
@@ -572,8 +603,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
 
-        self.assertTrue(self.item.validate(document=mock_document,
-                                           tree=mock_tree))
+        self.item.document = mock_document
+        self.item.tree = mock_tree
+
+        self.assertTrue(self.item.validate())
 
     @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
     def test_issues(self):
