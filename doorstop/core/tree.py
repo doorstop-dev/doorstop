@@ -10,8 +10,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.types import ID
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning
+from doorstop.common import get_tree, DoorstopError, DoorstopWarning
 from doorstop.core.document import Document, get_prefix
 from doorstop.core import vcs
 
@@ -525,25 +524,13 @@ def _document_from_path(path, root, documents):
 
 def find_document(prefix):
     """Find a document without an explicitly building a tree."""
-    #  Load the current tree, pylint: disable=W0212
-    if common._tree is None:
-        common._tree = build()
-    tree = common._tree
-
-    # Find the document
+    tree = get_tree()
     document = tree.find_document(prefix)
-
     return document
 
 
 def find_item(identifier):
     """Find an item without an explicitly building a tree."""
-    # Load the current tree, pylint: disable=W0212
-    if common._tree is None:
-        common._tree = build()
-    tree = common._tree
-
-    # Find the item
+    tree = get_tree()
     item = tree.find_item(identifier)
-
     return item
