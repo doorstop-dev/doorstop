@@ -317,6 +317,15 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.unlink(item)
         self.assertEqual([], self.item.links)
 
+    def test_links_alias(self):
+        """Verify 'parent_links' is an alias for links."""
+        links1 = ['alias1']
+        links2 = ['alias2']
+        self.item.parent_links = links1
+        self.assertEqual(links1, self.item.links)
+        self.item.links = links2
+        self.assertEqual(links2, self.item.parent_links)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
@@ -324,8 +333,24 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
-    def test_find_rlinks(self):
-        """Verify an item's reverse links can be found."""
+    def test_find_ref_filename(self):
+        """Verify an item's reference can also be a filename."""
+        self.item.ref = "text.txt"
+        relpath, line = self.item.find_ref(FILES)
+        self.assertEqual('text.txt', os.path.basename(relpath))
+        self.assertEqual(None, line)
+
+    def test_find_ref_error(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.ref = "not found".replace(' ', '')  # avoids self match
+        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
+
+    def test_find_ref_none(self):
+        """Verify nothing returned when no external reference is specified."""
+        self.assertEqual((None, None), self.item.find_ref())
+
+    def test_find_child_objects(self):
+        """Verify an item's child objects can be found."""
 
         mock_document_p = Mock()
         mock_document_p.prefix = 'RQ'
@@ -351,33 +376,21 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
-        self.item.document = mock_document_p
         self.item.tree = mock_tree
-        rlinks, childrem = self.item.find_rlinks()
-        self.assertEqual(['TST001'], rlinks)
-        self.assertEqual([mock_document_c], childrem)
+        self.item.document = mock_document_p
 
-    def test_find_rlinks_standalone(self):
-        """Verify a standalone item has no reverse links."""
-        rlinks, childrem = self.item.find_rlinks()
-        self.assertEqual([], rlinks)
-        self.assertEqual([], childrem)
+        links = self.item.find_child_links()
+        items = self.item.find_child_items()
+        documents = self.item.find_child_documents()
+        self.assertEqual(['TST001'], links)
+        self.assertEqual([mock_item], items)
+        self.assertEqual([mock_document_c], documents)
 
-    def test_find_ref_filename(self):
-        """Verify an item's reference can also be a filename."""
-        self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(FILES)
-        self.assertEqual('text.txt', os.path.basename(relpath))
-        self.assertEqual(None, line)
-
-    def test_find_ref_error(self):
-        """Verify an error occurs when no external reference found."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
-        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
-
-    def test_find_ref_none(self):
-        """Verify nothing returned when no external reference is specified."""
-        self.assertEqual((None, None), self.item.find_ref())
+    def test_find_child_objects_standalone(self):
+        """Verify a standalone item has no child objects."""
+        self.assertEqual([], self.item.child_links)
+        self.assertEqual([], self.item.child_items)
+        self.assertEqual([], self.item.child_documents)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""

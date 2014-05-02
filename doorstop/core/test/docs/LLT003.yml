@@ -4,5 +4,5 @@ level: 3
 links:
 - REQ007
 normative: true
-ref: Verify a text report can be created from a document.
+ref: Verify text can be published from a document.
 text: ''

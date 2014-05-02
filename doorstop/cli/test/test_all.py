@@ -24,7 +24,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.temp = tempfile.mkdtemp()
         self.backup = (settings.REFORMAT,
                        settings.CHECK_REF,
-                       settings.CHECK_RLINKS,
+                       settings.CHECK_CHILD_LINKS,
                        settings.REORDER)
 
     def tearDown(self):
@@ -32,7 +32,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         shutil.rmtree(self.temp)
         (settings.REFORMAT,
          settings.CHECK_REF,
-         settings.CHECK_RLINKS,
+         settings.CHECK_CHILD_LINKS,
          settings.REORDER) = self.backup
 
     def test_main(self):
@@ -70,7 +70,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main([]))
         self.assertTrue(settings.REFORMAT)
         self.assertTrue(settings.CHECK_REF)
-        self.assertTrue(settings.CHECK_RLINKS)
+        self.assertTrue(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
 
     def test_options(self):
@@ -79,11 +79,11 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.temp)
         self.assertIs(None, main(['--no-reformat',
                                   '--no-ref-check',
-                                  '--no-rlinks-check',
+                                  '--no-child-check',
                                   '--no-reorder']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
-        self.assertFalse(settings.CHECK_RLINKS)
+        self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.REORDER)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))
@@ -258,10 +258,22 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
+        self.backup = (settings.PUBLISH_CHILD_LINKS,)
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+        (settings.PUBLISH_CHILD_LINKS,) = self.backup
+
+    def test_publish(self):
+        """Verify 'doorstop publish' can create output."""
+        self.assertIs(None, main(['publish', 'tut']))
+        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_with_child_links(self):
+        """Verify 'doorstop publish' can create output with child links."""
+        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
+        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_error(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

@@ -10,7 +10,6 @@ import shutil
 from doorstop.core import report
 from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.common import DoorstopError
-from doorstop import settings
 
 from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_item import MockItem
@@ -34,28 +33,33 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
                                    "text: 'Heading'" + '\n'
                                    "level: 1.1.0" + '\n'
                                    "normative: false"))
+        cls.item2 = MockItem('path/to/req3.yml',
+                             _file=("links: [sys3]\ntext: '" +
+                                    ("Hello, world! " * 10) +
+                                    "'\nlevel: 1.2"))
+        cls.item2.find_child_links = lambda: ['tst1']
         cls.document = MagicMock()
         cls.document.items = [
             cls.item,
-            MockItem('path/to/req3.yml',
-                     _file="links: [sys3]\ntext: '" + ("Hello, world! " * 10)
-                     + "'\nlevel: 1.2"),
+            cls.item2,
             MockItem('path/to/req1.yml',
                      _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: '123456789'\nlevel: 2.1.1"),
+                     _file="links: [sys2]\nref: 'ASSERT_CONTENTS'\n"
+                     "level: 2.1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                      "normative: false"),
         ]
-        cls.item2 = MockItem('path/to/req4.yml', _file=(
+        cls.item3 = MockItem('path/to/req4.yml', _file=(
             "links: [sys4]" + '\n'
             "text: 'This shall...'" + '\n'
             "ref: Doorstop.sublime-project" + '\n'
             "level: 1.2" + '\n'
             "normative: true"))
+
         cls.work = WorkingCopy(None)
 
 
@@ -119,22 +123,25 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
                     "        Reference: Doorstop.sublime-project (line None)"
                     + '\n\n'
                     "        Links: sys4" + '\n\n')
-        lines = report.lines(self.item2, '.txt', ignored=self.work.ignored)
+        lines = report.lines(self.item3, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.CHECK_REF', False)
     def test_lines_text_item_no_ref(self):
         """Verify a text report can be created without checking references."""
         self.item.ref = 'abc123'
         self.item.heading = False
-        _check_ref = bool(settings.CHECK_REF)
-        try:
-            settings.CHECK_REF = False
-            lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
-            text = ''.join(line + '\n' for line in lines)
-        finally:
-            settings.CHECK_REF = _check_ref
+        lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: 'abc123'", text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_text_item_with_child_links(self):
+        """Verify a text report can be created with child links."""
+        lines = report.lines(self.item2, '.txt', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("Child links: tst1", text)
 
     def test_lines_markdown_item_heading(self):
         """Verify a Markdown report can be created from an item (heading)."""
@@ -149,7 +156,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')
-        lines = report.lines(self.item2, '.md', ignored=self.work.ignored)
+        lines = report.lines(self.item3, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
@@ -159,6 +166,13 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         lines = report.lines(self.item, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_html_item_with_child_links(self):
+        """Verify an HTML report can be created from an item w/ child links."""
+        lines = report.lines(self.item2, '.html', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("Child links: tst1", text)
 
     def test_lines_unknown(self):
         """Verify iterating an unknown format raises."""
@@ -182,7 +196,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
             shutil.rmtree(temp)
 
     def test_lines_text_document(self):
-        """Verify a text report can be created from a document."""
+        """Verify text can be published from a document."""
         path = os.path.join(FILES, 'report.txt')
         expected = open(path).read()
         lines = report.lines(self.document, '.txt', ignored=self.work.ignored)
@@ -192,8 +206,20 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_text_document_with_child_links(self):
+        """Verify text can be published from a document with child links."""
+        path = os.path.join(FILES, 'report2.txt')
+        expected = open(path).read()
+        lines = report.lines(self.document, '.txt', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        if ASSERT_CONTENTS:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
     def test_lines_markdown_document(self):
-        """Verify a Markdown report can be created from a document."""
+        """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'report.md')
         expected = open(path).read()
         lines = report.lines(self.document, '.md', ignored=self.work.ignored)
@@ -203,9 +229,33 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_markdown_document_with_child_links(self):
+        """Verify Markdown can be published from a document w/ child links."""
+        path = os.path.join(FILES, 'report2.md')
+        expected = open(path).read()
+        lines = report.lines(self.document, '.md', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        if ASSERT_CONTENTS:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
     def test_lines_html_document(self):
-        """Verify an HTML report can be created from a document."""
+        """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'report.html')
+        expected = open(path).read()
+        lines = report.lines(self.document, '.html', ignored=self.work.ignored)
+        text = ''.join(line + '\n' for line in lines)
+        if ASSERT_CONTENTS:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_html_document_with_child_links(self):
+        """Verify HTML can be published from a document with child links."""
+        path = os.path.join(FILES, 'report2.html')
         expected = open(path).read()
         lines = report.lines(self.document, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)

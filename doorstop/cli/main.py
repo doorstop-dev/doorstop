@@ -35,8 +35,8 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not reorder levels files during validation")
     parser.add_argument('-R', '--no-ref-check', action='store_true',
                         help="do not validate external file references")
-    parser.add_argument('-L', '--no-rlinks-check', action='store_true',
-                        help="do not validate reverse links")
+    parser.add_argument('-C', '--no-child-check', action='store_true',
+                        help="do not validate child (reverse) links")
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the graphical user interface")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -107,6 +107,8 @@ def main(args=None):  # pylint: disable=R0915
                      help="output HTML (default for 'all')")
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
+    sub.add_argument('-C', '--with-child-links', action='store_true',
+                     help="include child links in published documents")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -189,8 +191,8 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         settings.REORDER = not args.no_reorder
     if args.no_ref_check is not None:
         settings.CHECK_REF = not args.no_ref_check
-    if args.no_rlinks_check is not None:
-        settings.CHECK_RLINKS = not args.no_rlinks_check
+    if args.no_child_check is not None:
+        settings.CHECK_CHILD_LINKS = not args.no_child_check
 
     # Validate the tree
     try:
@@ -336,6 +338,11 @@ def _run_publish(args, cwd, err):
     @param err: function to call for CLI errors
 
     """
+    # Configure publishing settings
+    if args.with_child_links is not None:
+        settings.PUBLISH_CHILD_LINKS = args.with_child_links
+
+    # Build the tree to publish
     publish_tree = args.prefix == 'all'
     try:
         tree = build(cwd, root=args.project)
