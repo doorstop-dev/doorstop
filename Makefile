@@ -14,6 +14,7 @@ ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_VIRTUALENV := C:\\Python34\\Scripts\\virtualenv.exe
 	BIN := $(ENV)/Scripts
 	OPEN := cmd /c start
+	BAT := .bat
 	# https://bugs.launchpad.net/virtualenv/+bug/449537
 	export TCL_LIBRARY=C:\\Python34\\tcl\\tcl8.5
 else
@@ -37,6 +38,7 @@ PDOC := $(BIN)/pdoc
 PEP8 := $(BIN)/pep8
 PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint
+PYREVERSE := $(BIN)/pyreverse$(BAT)
 NOSE := $(BIN)/nosetests
 
 # Development Installation ###################################################
@@ -59,13 +61,13 @@ $(PIP):
 depends: .depends-ci .depends-dev
 
 .PHONY: .depends-ci
-.depends-ci: .virtualenv Makefile $(DEPENDS_CI)
+.depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
 	$(PIP) install pep8 pep257 nose coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
-.depends-dev: .virtualenv Makefile $(DEPENDS_DEV)
+.depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
 	$(PIP) install docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
@@ -83,7 +85,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme apidocs html doorstop
+doc: readme apidocs uml html
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -99,6 +101,13 @@ apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
+.PHONY: uml
+uml: .depends-dev docs/*.png $(SOURCES)
+docs/*.png:
+	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
+	- mv -f classes_$(PACKAGE).png docs/classes.png
+	- mv -f packages_$(PACKAGE).png docs/packages.png
+
 .PHONY: html
 html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml')
@@ -108,7 +117,7 @@ docs/gen/*.html: $(shell find . -name '*.yml')
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: read
-read: readme apidocs html
+read: doc
 	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 	$(OPEN) docs/README-pypi.html
@@ -117,15 +126,15 @@ read: readme apidocs html
 # Static Analysis ############################################################
 
 .PHONY: pep8
-pep8: env .depends-ci
+pep8: .depends-ci
 	$(PEP8) $(PACKAGE) --ignore=E501
 
 .PHONY: pep257
-pep257: env .depends-ci
+pep257: .depends-ci
 	$(PEP257) $(PACKAGE) --ignore=E501,D102
 
 .PHONY: pylint
-pylint: env .depends-dev
+pylint: .depends-dev
 	$(PYLINT) $(PACKAGE) --reports no \
 	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
 	                     --max-line-length=79 \
@@ -137,11 +146,11 @@ check: pep8 pep257 pylint
 # Testing ####################################################################
 
 .PHONY: test
-test: env .depends-ci
+test: .depends-ci
 	$(NOSE)
 
 .PHONY: tests
-tests: env .depends-ci
+tests: .depends-ci
 	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
@@ -171,7 +180,7 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html README.rst
+	rm -rf apidocs docs/README*.html README.rst docs/*.png
 
 .PHONY: .clean-test
 .clean-test:
@@ -195,13 +204,13 @@ clean-all: clean .clean-env
 	fi;
 
 .PHONY: dist
-dist: env depends test tests doc
+dist: check doc test tests
 	$(PYTHON) setup.py sdist
 	$(PYTHON) setup.py bdist_wheel
 	$(MAKE) read
 
 .PHONY: upload
-upload: .git-no-changes env depends doc
+upload: .git-no-changes doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
 

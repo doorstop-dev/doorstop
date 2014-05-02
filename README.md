@@ -20,8 +20,8 @@ Getting Started
 Requirements
 ------------
 
--   Python 3.3+
--   A version control system for requirements storage
+* Python 3.3+
+* A version control system for requirements storage
 
 
 Installation
@@ -131,3 +131,47 @@ Supported formats:
 -   Text: **.txt**
 -   Markdown: **.md**
 -   HTML: **.html**
+
+
+
+For Contributors
+================
+
+Requirements
+------------
+
+* GNU Make:
+    * Windows: http://cygwin.com/install.html
+    * Mac: https://developer.apple.com/xcode
+    * Linux: http://www.gnu.org/software/make (likely already installed)
+* virtualenv: https://pypi.python.org/pypi/virtualenv#installation
+* Pandoc: http://johnmacfarlane.net/pandoc/installing.html
+* Graphviz: http://www.graphviz.org/Download.php
+
+
+Installation
+------------
+
+Create a virtualenv:
+
+    make env
+
+Run the tests:
+
+    make test
+    make tests  # includes integration tests
+
+Build the documentation:
+
+    make doc
+
+Run static analysis:
+
+    make pep8
+    make pylint
+    make check  # pep8 and pylint
+
+Prepare a release:
+
+    make dist  # dry run
+    make upload
