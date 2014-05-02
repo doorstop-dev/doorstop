@@ -44,7 +44,7 @@ NOSE := $(BIN)/nosetests
 # Development Installation ###################################################
 
 .PHONY: all
-all: env
+all: doc check
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
