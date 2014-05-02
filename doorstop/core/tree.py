@@ -95,7 +95,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     def __init__(self, document, parent=None, root=None):
         self.document = document
-        self.root = root or document.root  # enables testing
+        self.root = root or document.root  # enables mock testing
         self.parent = parent
         self.children = []
         self._vcs = None
@@ -107,7 +107,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return "<Tree {}>".format(self)
 
     def __str__(self):
-        # Build parent prefix string (getattr to support testing)
+        # Build parent prefix string (enables mock testing)
         prefix = getattr(self.document, 'prefix', self.document)
         # Build children prefix strings
         children = ", ".join(str(c) for c in self.children)

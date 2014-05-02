@@ -396,7 +396,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         # Check external references
         if settings.CHECK_REF:
             try:
-                # TODO: find_ref shouldn't get 'ignored' internally
+                # TODO: find_ref should get 'self.tree.vcs.ignored' internally
                 self.find_ref(ignored=self.tree.vcs.ignored
                               if self.tree else None)
             except DoorstopError as exc:
