@@ -103,9 +103,9 @@ apidocs/$(PACKAGE)/index.html: $(SOURCES)
 html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml')
 	- $(MAKE) doorstop
-	$(BIN)/doorstop publish all docs/gen --text --with-child-links
-	$(BIN)/doorstop publish all docs/gen --markdown --with-child-links
-	$(BIN)/doorstop publish all docs/gen --html --with-child-links
+	$(BIN)/doorstop publish all docs/gen --text
+	$(BIN)/doorstop publish all docs/gen --markdown
+	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: read
 read: readme apidocs html

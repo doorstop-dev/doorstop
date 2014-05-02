@@ -107,6 +107,8 @@ def main(args=None):  # pylint: disable=R0915
                      help="output HTML (default for 'all')")
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
+    sub.add_argument('-C', '--with-child-links', action='store_true',
+                     help="include child links in published documents")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -336,6 +338,11 @@ def _run_publish(args, cwd, err):
     @param err: function to call for CLI errors
 
     """
+    # Configure publishing settings
+    if args.with_child_links is not None:
+        settings.PUBLISH_CHILD_LINKS = args.with_child_links
+
+    # Build the tree to publish
     publish_tree = args.prefix == 'all'
     try:
         tree = build(cwd, root=args.project)

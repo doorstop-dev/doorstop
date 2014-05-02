@@ -258,10 +258,22 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
+        self.backup = (settings.PUBLISH_CHILD_LINKS,)
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+        (settings.PUBLISH_CHILD_LINKS,) = self.backup
+
+    def test_publish(self):
+        """Verify 'doorstop publish' can create output."""
+        self.assertIs(None, main(['publish', 'tut']))
+        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_with_child_links(self):
+        """Verify 'doorstop publish' can create output with child links."""
+        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
+        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_error(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

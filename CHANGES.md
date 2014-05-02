@@ -13,6 +13,7 @@ Changelog
 - Changed '--no-rlink-check' to '--no-child-check'
 - Added Item.find_child_items() and Item.find_child_documents()
 - Added aliases to Item: parent_links, child_links/items/documents
+- Added '--with-child-links' to 'doorstop publish' to publish child links
 
 0.5 (2014/04/25)
 ----------------
