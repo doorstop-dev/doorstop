@@ -545,6 +545,26 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         identifiers = [item.id for item in items]
         return identifiers
 
+    def find_child_items(self, find_all=True):
+        """Get a list of items that link to this item.
+
+        @param find_all: find all items (not just the first) before returning
+
+        @return: list of found items
+
+        """
+        items, _ = self._find_child_objects(find_all=find_all)
+        return items
+
+    def find_child_documents(self):
+        """Get a list of documents that should link to this item's document.
+
+        @return: list of found documents
+
+        """
+        _, documents = self._find_child_objects(find_all=False)
+        return documents
+
     def _find_child_objects(self, find_all=True):
         """Get lists of child items and child documents.
 

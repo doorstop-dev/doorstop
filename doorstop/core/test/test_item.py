@@ -340,8 +340,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify nothing returned when no external reference is specified."""
         self.assertEqual((None, None), self.item.find_ref())
 
-    def test_find_child_links(self):
-        """Verify an item's child links can be found."""
+    def test_find_child_objects(self):
+        """Verify an item's child objects can be found."""
 
         mock_document_p = Mock()
         mock_document_p.prefix = 'RQ'
@@ -369,13 +369,22 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree.find_item = lambda identifier: Mock(id='fake1')
         self.item.tree = mock_tree
         self.item.document = mock_document_p
-        links = self.item.find_child_links()
-        self.assertEqual(['TST001'], links)
 
-    def test_find_child_links_standalone(self):
-        """Verify a standalone item has no child links."""
         links = self.item.find_child_links()
+        items = self.item.find_child_items()
+        documents = self.item.find_child_documents()
+        self.assertEqual(['TST001'], links)
+        self.assertEqual([mock_item], items)
+        self.assertEqual([mock_document_c], documents)
+
+    def test_find_child_objects_standalone(self):
+        """Verify a standalone item has no child objects."""
+        links = self.item.find_child_links()
+        items = self.item.find_child_items()
+        documents = self.item.find_child_documents()
         self.assertEqual([], links)
+        self.assertEqual([], items)
+        self.assertEqual([], documents)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
