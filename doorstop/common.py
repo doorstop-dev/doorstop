@@ -14,7 +14,7 @@ def get_tree():
     """Get a shared tree for convenience functions."""
     global _tree  # pylint: disable=W0603,C0103
     if _tree is None:
-        from doorstop import build
+        from doorstop.core.tree import build
         _tree = build()
     return _tree
 

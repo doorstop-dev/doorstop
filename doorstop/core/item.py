@@ -345,6 +345,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
 
+    @property
+    def parent_links(self):
+        """Get a list of the item IDs this item links to."""
+        return self.links  # alias
+
+    @parent_links.setter
+    def parent_links(self, value):
+        """Set the list of item IDs this item links to."""
+        self.links = value  # alias
+
     # actions ################################################################
 
     @auto_save
@@ -476,12 +486,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Yield all the item's issues against its document and tree."""
         logging.debug("getting issues against both: {} & {}".format(document,
                                                                     tree))
-        # Verify an item is being linked to (reverse links)
-        if settings.CHECK_RLINKS and self.normative:
-            rlinks, children = self.find_rlinks(find_all=False)
-            if not rlinks:
-                for child in children:
-                    msg = "no links from child document: {}".format(child)
+        # Verify an item is being linked to (child links)
+        if settings.CHECK_CHILD_LINKS and self.normative:
+            items, documents = self._find_child_objects(find_all=False)
+            if not items:
+                for document in documents:
+                    msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
     def find_ref(self, root=None, ignored=None):
@@ -533,37 +543,80 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
-    # TODO: should this only return IDs and add a find_children method?
-    def find_rlinks(self, find_all=True):
+    def find_child_links(self, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
         @param find_all: find all items (not just the first) before returning
 
-        @return: list of found item IDs, list of all child Documents
+        @return: list of found item IDs
 
         """
-        rlinks = []
-        children = []
+        items, _ = self._find_child_objects(find_all=find_all)
+        identifiers = [item.id for item in items]
+        return identifiers
+
+    child_links = property(find_child_links)
+
+    def find_child_items(self, find_all=True):
+        """Get a list of items that link to this item.
+
+        @param find_all: find all items (not just the first) before returning
+
+        @return: list of found items
+
+        """
+        items, _ = self._find_child_objects(find_all=find_all)
+        return items
+
+    child_items = property(find_child_items)
+
+    def find_child_documents(self):
+        """Get a list of documents that should link to this item's document.
+
+        @return: list of found documents
+
+        """
+        _, documents = self._find_child_objects(find_all=False)
+        return documents
+
+    child_documents = property(find_child_documents)
+
+    def _find_child_objects(self, find_all=True):
+        """Get lists of child items and child documents.
+
+        @param find_all: find all items (not just the first) before returning
+
+        @return: list of found items, list of all child Documents
+
+        """
+        child_items = []
+        child_documents = []
+        # Check for parent references
         if not self.document or not self.tree:
-            return rlinks, children
+            logging.warning("document and tree required to find children")
+            return child_items, child_documents
+        # Find child objects
         for document2 in self.tree:
             if document2.parent == self.document.prefix:
-                children.append(document2)
-                # Search for reverse links unless we only need to find one
-                if not rlinks or find_all:
+                child_documents.append(document2)
+                # Search for child items unless we only need to find one
+                if not child_items or find_all:
                     for item in document2:
                         if self.id in item.links:
-                            rlinks.append(item.id)
+                            child_items.append(item)
                             if not find_all:
                                 break
-        if rlinks:
+        # Display found links
+        if child_items:
             if find_all:
-                msg = "reverse links: {}".format(', '.join(str(l)
-                                                           for l in rlinks))
+                joined = ', '.join(str(i) for i in child_items)
+                msg = "child items: {}".format(joined)
             else:
-                msg = "first reverse link: {}".format(rlinks[0])
+                msg = "first child item: {}".format(child_items[0])
             logging.debug(msg)
-        return rlinks, children
+            joined = ', '.join(str(d) for d in child_documents)
+            logging.debug("child documents: {}".format(joined))
+        return child_items, child_documents
 
     def delete(self, path=None):
         """Delete the item."""

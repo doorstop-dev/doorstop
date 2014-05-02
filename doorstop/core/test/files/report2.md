@@ -4,7 +4,9 @@
 
 Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
 
-*Links: sys3*
+*Parent links: sys3*
+
+*Child links: tst1*
 
 ## 1.1 req1
 
@@ -12,13 +14,13 @@ abc 123
 
 # 2 req2
 
-*Links: sys1, sys2*
+*Parent links: sys1, sys2*
 
 ### 2.1.1 req4
 
 Reference: doorstop/core/test/test_report.py (line 18)
 
-*Links: sys2*
+*Parent links: sys2*
 
 ## 2.1 Heading 2
 
