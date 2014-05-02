@@ -317,6 +317,15 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.unlink(item)
         self.assertEqual([], self.item.links)
 
+    def test_links_alias(self):
+        """Verify 'parent_links' is an alias for links."""
+        links1 = ['alias1']
+        links2 = ['alias2']
+        self.item.parent_links = links1
+        self.assertEqual(links1, self.item.links)
+        self.item.links = links2
+        self.assertEqual(links2, self.item.parent_links)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
@@ -379,12 +388,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_child_objects_standalone(self):
         """Verify a standalone item has no child objects."""
-        links = self.item.find_child_links()
-        items = self.item.find_child_items()
-        documents = self.item.find_child_documents()
-        self.assertEqual([], links)
-        self.assertEqual([], items)
-        self.assertEqual([], documents)
+        self.assertEqual([], self.item.child_links)
+        self.assertEqual([], self.item.child_items)
+        self.assertEqual([], self.item.child_documents)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""

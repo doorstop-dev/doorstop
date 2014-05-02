@@ -345,6 +345,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Set the list of item IDs this item links to."""
         self._data['links'] = set(value)
 
+    @property
+    def parent_links(self):
+        """Get a list of the item IDs this item links to."""
+        return self.links  # alias
+
+    @parent_links.setter
+    def parent_links(self, value):
+        """Set the list of item IDs this item links to."""
+        self.links = value  # alias
+
     # actions ################################################################
 
     @auto_save
@@ -545,6 +555,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         identifiers = [item.id for item in items]
         return identifiers
 
+    child_links = property(find_child_links)
+
     def find_child_items(self, find_all=True):
         """Get a list of items that link to this item.
 
@@ -556,6 +568,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         items, _ = self._find_child_objects(find_all=find_all)
         return items
 
+    child_items = property(find_child_items)
+
     def find_child_documents(self):
         """Get a list of documents that should link to this item's document.
 
@@ -564,6 +578,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """
         _, documents = self._find_child_objects(find_all=False)
         return documents
+
+    child_documents = property(find_child_documents)
 
     def _find_child_objects(self, find_all=True):
         """Get lists of child items and child documents.

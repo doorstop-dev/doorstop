@@ -12,6 +12,7 @@ Changelog
 - Renamed Item.find_rlinks() to Item.find_child_links()
 - Changed '--no-rlink-check' to '--no-child-check'
 - Added Item.find_child_items() and Item.find_child_documents()
+- Added aliases to Item: parent_links, child_links/items/documents
 
 0.5 (2014/04/25)
 ----------------
