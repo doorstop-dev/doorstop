@@ -63,7 +63,8 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created with unknown parents."""
         importer.new_document(self.prefix, self.path, parent=self.parent)
-        mock_new.assert_called_once_with(self.path, self.root, self.prefix,
+        mock_new.assert_called_once_with(self.mock_tree,
+                                         self.path, self.root, self.prefix,
                                          parent=self.parent)
 
 
@@ -76,6 +77,8 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
     root = 'ROOT'
     path = os.path.join(root, 'DIRECTORY')
     parent = 'PARENT_PREFIX'
+
+    mock_document = Mock()
 
     def setUp(self):
         # Create default item attributes
@@ -90,11 +93,10 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
         """Mock Tree.find_document() to return a mock document."""
         assert isinstance(self, Tree)
         assert prefix == TestAddItem.prefix
-        mock_document = Mock()
-        mock_document.prefix = prefix
-        mock_document.path = TestAddItem.path
-        mock_document.root = TestAddItem.root
-        return mock_document
+        TestAddItem.mock_document.prefix = prefix
+        TestAddItem.mock_document.path = TestAddItem.path
+        TestAddItem.mock_document.root = TestAddItem.root
+        return TestAddItem.mock_document
 
     @patch('doorstop.core.importer.build')
     @patch('doorstop.core.item.Item.new', Mock())
@@ -109,7 +111,8 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item(self, mock_new):
         """Verify an item can be imported into an existing document."""
         importer.add_item(self.prefix, self.identifier)
-        mock_new.assert_called_once_with(self.path, self.root, self.identifier,
+        mock_new.assert_called_once_with(self.mock_tree, self.mock_document,
+                                         self.path, self.root, self.identifier,
                                          auto=False)
 
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)

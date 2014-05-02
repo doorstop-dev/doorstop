@@ -85,7 +85,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new(self):
         """Verify a new document can be created."""
-        document = core.Document.new(EMPTY, FILES, prefix='SYS', digits=4)
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='SYS', digits=4)
         self.assertEqual('SYS', document.prefix)
         self.assertEqual(4, document.digits)
         self.assertEqual(0, len(document.items))
@@ -127,7 +129,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_add_item_with_reordering(self):
         """Verify an item can be inserted into a document."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         item_1_0 = document.add_item()
         item_3_0 = document.add_item()  # will get displaced
         item_2_0 = document.add_item(level='2.0')
@@ -137,7 +141,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed fraom a document."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         item_1_0 = document.add_item()
         item_3_0 = document.add_item()  # to be removed
         item_2_0 = document.add_item()  # will get relocated
@@ -147,7 +153,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -161,7 +169,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_reorder_with_keep(self):
         """Verify a document's order can be corrected with a kept level."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
@@ -173,7 +183,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_reorder_with_start(self):
         """Verify a document's order can be corrected with a given start."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -187,7 +199,9 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
-        document = core.Document.new(EMPTY, FILES, prefix='TMP')
+        document = core.Document.new(None,
+                                     EMPTY, FILES,
+                                     prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
         document.add_item(level='1.2.0', reorder=False)

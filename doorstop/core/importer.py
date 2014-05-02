@@ -25,17 +25,20 @@ def new_document(prefix, path, parent=None):
     # Load the current tree, pylint: disable=W0212
     if common._tree is None:
         common._tree = build()
+    tree = common._tree
 
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
     try:
-        document = common._tree.new_document(path, prefix, parent=parent)
+        document = tree.new_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None
 
         # Create the document despite an unavailable parent
-        document = Document.new(path, common._tree.root, prefix, parent=parent)
+        document = Document.new(tree,
+                                path, tree.root, prefix,
+                                parent=parent)
         logging.warning(exc)
         _documents.append(document)
 
@@ -59,12 +62,15 @@ def add_item(prefix, identifier, attrs=None):
     # Load the current tree, pylint: disable=W0212
     if common._tree is None:
         common._tree = build()
+    tree = common._tree
 
     # Get the specified document
     document = common._tree.find_document(prefix)
 
     logging.info("importing item '{}'...".format(identifier))
-    item = Item.new(document.path, document.root, identifier, auto=False)
+    item = Item.new(tree, document,
+                    document.path, document.root, identifier,
+                    auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()

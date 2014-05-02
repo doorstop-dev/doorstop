@@ -64,10 +64,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         unplaced = list(documents)
         for document in list(unplaced):
             if document.parent is None:
-                logging.debug("added root of tree: {}".format(document))
+                logging.info("root of the tree: {}".format(document))
                 tree = Tree(document)
                 document.tree = tree
-                logging.info("root of the tree: {}".format(document))
                 unplaced.remove(document)
                 break
         else:
@@ -214,9 +213,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = get_prefix(prefix)
-        document = Document.new(path, self.root, prefix,
-                                sep=sep, digits=digits,
-                                parent=parent, tree=self)
+        document = Document.new(self,
+                                path, self.root, prefix, sep=sep,
+                                digits=digits, parent=parent)
         try:
             self._place(document)
         except DoorstopError:
@@ -510,7 +509,7 @@ def _document_from_path(path, root, documents):
 
     """
     try:
-        document = Document(path, root)
+        document = Document(path, root, tree=None)  # tree attached later
     except DoorstopError:
         pass  # no document in directory
     else:
@@ -529,9 +528,10 @@ def find_document(prefix):
     #  Load the current tree, pylint: disable=W0212
     if common._tree is None:
         common._tree = build()
+    tree = common._tree
 
     # Find the document
-    document = common._tree.find_document(prefix)
+    document = tree.find_document(prefix)
 
     return document
 
@@ -541,8 +541,9 @@ def find_item(identifier):
     # Load the current tree, pylint: disable=W0212
     if common._tree is None:
         common._tree = build()
+    tree = common._tree
 
     # Find the item
-    item = common._tree.find_item(identifier)
+    item = tree.find_item(identifier)
 
     return item

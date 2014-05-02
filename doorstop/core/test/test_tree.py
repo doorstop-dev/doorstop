@@ -154,7 +154,8 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        doc = MockDocument.new(tree,
+                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
         tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
@@ -162,7 +163,8 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
+        doc = MockDocument.new(tree,
+                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
                                parent='REQ')
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 

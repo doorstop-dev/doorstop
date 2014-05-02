@@ -82,22 +82,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         return self.level < other.level
 
     @staticmethod
-    def new(path, root, identifier, level=None, **kwargs):  # pylint: disable=R0913
-        """Create a new item.
+    def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
+        """Internal method to create a new item.
+
+        @param tree: reference to the tree that contains this item
+        @param document: reference to document that contains this item
 
         @param path: path to directory for the new item
         @param root: path to root of the project
         @param identifier: ID for the new item
+
         @param level: level for the new item
+        @param auto: automatically save the item
 
         @raise DoorstopError: if the item already exists
 
         @return: new Item
 
         """
-        auto = kwargs.get('auto')
-        document = kwargs.get('document')
-        tree = kwargs.get('tree')
         filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file

@@ -70,23 +70,25 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return not self == other
 
     @staticmethod
-    def new(path, root, prefix, sep=None, digits=None, parent=None, **kwargs):  # pylint: disable=R0913
-        """Create a new document.
+    def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
+        """Internal method to create a new document.
+
+        @param tree: reference to tree that contains this document
 
         @param path: path to directory for the new document
         @param root: path to root of the project
         @param prefix: prefix for the new document
+
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the new document
         @param parent: parent ID for the new document
+        @param auto: automatically save the document
 
         @raise DoorstopError: if the document already exists
 
         @return: new Document
 
         """
-        auto = kwargs.get('auto')
-        tree = kwargs.get('tree')
         # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
@@ -303,7 +305,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             nlevel = level or last.level + 1
         logging.debug("next level: {}".format(nlevel))
         identifier = ID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.path, self.root, identifier, level=nlevel)
+        item = Item.new(self.tree, self,
+                        self.path, self.root, identifier,
+                        level=nlevel)
         self._items.append(item)
         if settings.REORDER and level and reorder:
             self.reorder(keep=item)
