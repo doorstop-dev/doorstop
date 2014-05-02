@@ -503,7 +503,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         # Display the items this item has links from
         self.text_children.delete('1.0', 'end')
-        identifiers = self.item.find_rlinks(self.document, self.tree)[0]
+        identifiers = self.item.find_child_links()
         for identifier in identifiers:
             item = self.tree.find_item(identifier)
             text = item.text or item.ref or '???'

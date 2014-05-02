@@ -9,6 +9,8 @@ Changelog
 - Refactored Item identifiers into an ID class
 - Refactored Item text into a Text class (behaves like str)
 - Methods no longer require nore accept 'document' and 'tree' arguments
+- Renamed Item.find_rlinks() to find_child_links()
+- Changed '--no-rlink-check' to '--no-child-check'
 
 0.5 (2014/04/25)
 ----------------

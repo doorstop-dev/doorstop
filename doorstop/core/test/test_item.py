@@ -340,45 +340,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify nothing returned when no external reference is specified."""
         self.assertEqual((None, None), self.item.find_ref())
 
-    def test_find_rlinks(self):
-        """Verify an item's reverse links can be found."""
-
-        mock_document_p = Mock()
-        mock_document_p.prefix = 'RQ'
-
-        mock_document_c = Mock()
-        mock_document_c.parent = 'RQ'
-
-        mock_item = Mock()
-        mock_item.id = 'TST001'
-        mock_item.links = ['RQ001']
-
-        def mock_iter(self):  # pylint: disable=W0613
-            """Mock Tree.__iter__ to yield a mock Document."""
-
-            def mock_iter2(self):  # pylint: disable=W0613
-                """Mock Document.__iter__ to yield a mock Item."""
-                yield mock_item
-
-            mock_document_c.__iter__ = mock_iter2
-            yield mock_document_c
-
-        self.item.link('fake1')
-        mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda identifier: Mock(id='fake1')
-        self.item.document = mock_document_p
-        self.item.tree = mock_tree
-        rlinks, childrem = self.item.find_rlinks()
-        self.assertEqual(['TST001'], rlinks)
-        self.assertEqual([mock_document_c], childrem)
-
-    def test_find_rlinks_standalone(self):
-        """Verify a standalone item has no reverse links."""
-        rlinks, childrem = self.item.find_rlinks()
-        self.assertEqual([], rlinks)
-        self.assertEqual([], childrem)
-
     def test_find_child_links(self):
         """Verify an item's child links can be found."""
 
@@ -410,6 +371,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.document = mock_document_p
         links = self.item.find_child_links()
         self.assertEqual(['TST001'], links)
+
+    def test_find_child_links_standalone(self):
+        """Verify a standalone item has no child links."""
+        links = self.item.find_child_links()
+        self.assertEqual([], links)
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
