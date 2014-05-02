@@ -49,11 +49,13 @@ And the package is available under the name 'doorstop':
 
 
 
-Document Creation
-=================
+Basic Usage
+===========
 
-Parent Document
----------------
+Document Creation
+-----------------
+
+**Parent Document**
 
 After configuring version control, a new parent document can be created:
 
@@ -68,9 +70,7 @@ Items can be added to the document and edited:
     $ doorstop edit REQ1
     opened item: REQ001 (@/reqs/REQ001.yml)
 
-
-Child Documents
----------------
+**Child Documents**
 
 Additional documents can be created that link to other documents:
 
@@ -86,9 +86,8 @@ Items can be added and linked to parent items:
     linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
 
-
 Document Validation
-===================
+-------------------
 
 To check a document hierarchy for consistency, run the main command:
 
@@ -96,9 +95,8 @@ To check a document hierarchy for consistency, run the main command:
     valid tree: REQ <- [ TST ]
 
 
-
 Document Publishing
-===================
+-------------------
 
 A text report of a document can be displayed:
 
