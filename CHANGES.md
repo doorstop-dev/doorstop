@@ -8,6 +8,7 @@ Changelog
 - Refactored Item levels into a Level class
 - Refactored Item identifiers into an ID class
 - Refactored Item text into a Text class (behaves like str)
+- Methods no longer require nore accept 'document' and 'tree' arguments
 
 0.5 (2014/04/25)
 ----------------
