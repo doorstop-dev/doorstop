@@ -130,6 +130,9 @@ def main(args=None):  # pylint: disable=R0915
     # Configure logging
     _configure_logging(args.verbose)
 
+    # Configure settings
+    _configure_settings(args)
+
     # Run the program
     if args.gui:
         logging.debug("launching GUI...")
@@ -190,15 +193,8 @@ def _configure_logging(verbosity=0):
         common.VERBOSITY = verbosity
 
 
-def _run(args, cwd, err):  # pylint: disable=W0613
-    """Process arguments and run the `doorstop` subcommand.
-
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
-
-    """
-    # Configure validation settings
+def _configure_settings(args):
+    """Update settings based on the command-line options."""
     if args.no_reformat is not None:
         settings.REFORMAT = not args.no_reformat
     if args.no_reorder is not None:
@@ -207,8 +203,18 @@ def _run(args, cwd, err):  # pylint: disable=W0613
         settings.CHECK_REF = not args.no_ref_check
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
+    if 'with_child_links' in args and args.with_child_links is not None:
+        settings.PUBLISH_CHILD_LINKS = args.with_child_links
 
-    # Validate the tree
+
+def _run(args, cwd, err):  # pylint: disable=W0613
+    """Process arguments and run the `doorstop` subcommand.
+
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+
+    """
     try:
         tree = build(cwd, root=args.project)
         tree.load()
@@ -386,11 +392,6 @@ def _run_publish(args, cwd, err):
     @param err: function to call for CLI errors
 
     """
-    # Configure publishing settings
-    if args.with_child_links is not None:
-        settings.PUBLISH_CHILD_LINKS = args.with_child_links
-
-    # Build the tree to publish
     publish_tree = args.prefix == 'all'
     try:
         tree = build(cwd, root=args.project)
