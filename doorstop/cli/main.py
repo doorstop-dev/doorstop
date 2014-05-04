@@ -4,12 +4,13 @@
 
 import os
 import sys
+import ast
 import argparse
 import logging
 
 from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
-from doorstop.core import report
+from doorstop.core import report, importer
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
@@ -18,6 +19,7 @@ from doorstop import settings
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
     from doorstop import CLI, VERSION
+
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
@@ -91,6 +93,19 @@ def main(args=None):  # pylint: disable=R0915
     sub.add_argument('id', metavar='ID', help="item ID to open for editing")
     sub.add_argument('-t', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
+
+    # Import subparser
+    sub = subs.add_parser('import',
+                          help="import an existing document or item",
+                          **shared)
+    sub.add_argument('-d', '--document', nargs=2, metavar='ARG',
+                     help="import an existing document by: PREFIX PATH")
+    sub.add_argument('-i', '--item', nargs=2, metavar='ARG',
+                     help="import an existing item by: PREFIX ID")
+    sub.add_argument('-p', '--parent', metavar='PREFIX',
+                     help="parent document prefix for imported document")
+    sub.add_argument('-a', '--attrs', metavar='DICT',
+                     help="dictionary of item attributes to import")
 
     # Publish subparser
     sub = subs.add_parser('publish',
@@ -327,6 +342,40 @@ def _run_edit(args, cwd, _):
         return False
     else:
         print("opened item: {} ({})".format(item.id, item.relpath))
+        return True
+
+
+def _run_import(args, _, err):
+    """Process arguments and run the `doorstop import` subcommand.
+
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+
+    """
+    document = item = None
+    try:
+        if args.document:
+            prefix, path = args.document
+            document = importer.new_document(prefix, path, parent=args.parent)
+        elif args.item:
+            prefix, identifier = args.item
+            attrs = ast.literal_eval(args.attrs) if args.attrs else None
+            item = importer.add_item(prefix, identifier, attrs=attrs)
+        else:
+            err("specify '--document' or '--item' to import")
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        if document:
+            name = document.prefix
+            relpath = document.relpath
+        else:
+            assert item
+            name = item.id
+            relpath = item.relpath
+        print("imported: {} ({})".format(name, relpath))
         return True
 
 

@@ -14,6 +14,7 @@ Changelog
 - Added Item.find_child_items() and Item.find_child_documents()
 - Added aliases to Item: parent_links, child_links/items/documents
 - Added '--with-child-links' to 'doorstop publish' to publish child links
+- Added 'doorstop import' CLI to import documents and items.
 
 0.5 (2014/04/25)
 ----------------
