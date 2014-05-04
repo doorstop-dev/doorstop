@@ -48,8 +48,7 @@ def main(args=None):  # pylint: disable=R0915
                           help="create a new document directory",
                           **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
-    # TODO: should 'root' be 'path'?
-    sub.add_argument('root', help="path to a directory for item files")
+    sub.add_argument('path', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
@@ -233,7 +232,7 @@ def _run_new(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        document = tree.new_document(args.root, args.prefix,
+        document = tree.new_document(args.path, args.prefix,
                                      parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
