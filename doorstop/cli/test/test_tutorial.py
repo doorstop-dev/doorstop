@@ -120,6 +120,19 @@ class TestSection1(TestBase):  # pylint: disable=R0904
 
         self.doorstop("publish all path/to/htmldir")
 
+    def test_tutorial_section_3(self):
+        """Verify tutorial section 3.0 is working."""
+
+        # 3.1
+
+        self.doorstop("import --document HLR reqs/hlr")
+        self.doorstop("import --document LLR reqs/llr --parent HLR")
+
+        # 3.2
+
+        self.doorstop("import --item HLR HLR001")
+        self.doorstop("import --item LLR LLR001 "
+                      "--attr \"{'text': 'The item text.'}\"")
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)

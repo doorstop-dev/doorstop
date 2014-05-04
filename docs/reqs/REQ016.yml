@@ -1,0 +1,9 @@
+active: true
+derived: false
+level: 1.4
+links: []
+normative: true
+ref: ''
+text: |
+  Doorstop **shall** be able to import content from other requirments
+  management tools.
