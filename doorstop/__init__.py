@@ -11,5 +11,5 @@ try:
     from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
     from doorstop.core import Item, Document, Tree
     from doorstop.core import importer, build, report, find_document, find_item
-except ImportError:  # pragma: no cover, manual test
-    pass
+except ImportError as error:  # pragma: no cover, manual test
+    print("WARNING: {}".format(error))
