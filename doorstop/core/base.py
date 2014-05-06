@@ -9,6 +9,8 @@ import yaml
 
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
+from profilehooks import profile
+
 
 class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
@@ -50,6 +52,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
 
     @property
+    @profile
     def issues(self):
         """Get a list of the item's issues."""
         return list(self.get_issues())
