@@ -49,6 +49,7 @@ all: doc check
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): Makefile setup.py
+	$(PIP) install profilehooks
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
@@ -81,6 +82,10 @@ doorstop: env
 .PHONY: gui
 gui: env
 	$(BIN)/doorstop-gui
+
+.PHONY: profile 
+profile: env
+	$(PYTHON) profile.py
 
 # Documentation ##############################################################
 
@@ -158,7 +163,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: doorstop pep8 pep257 test tests tutorial
+ci: doorstop pep8 pep257 profile test tests tutorials
 
 # Cleanup ####################################################################
 
