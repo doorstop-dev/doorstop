@@ -11,6 +11,27 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
+class Prefix(str):
+
+    """Unique document prefixes."""
+
+    def __new__(cls, value):
+        obj = super(Prefix, cls).__new__(cls, Prefix.load_prefix(value))
+        return obj
+
+    def __repr__(self):
+        return "Prefix('{}')".format(self)
+
+    @staticmethod
+    def load_prefix(value):
+        r"""Convert a value to a prefix.
+
+        >>> Prefix.load_prefix("abc 123")
+        'abc'
+        """
+        return str(value).split(' ')[0]
+
+
 class ID(object):
 
     """Unique item identifier."""

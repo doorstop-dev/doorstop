@@ -2,8 +2,27 @@
 
 import unittest
 
-from doorstop.core.types import ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level
 from doorstop.common import DoorstopError
+
+
+class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Prefix class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.prefix1 = Prefix('REQ')
+        self.prefix2 = Prefix('TST (@/tst)')
+
+    def test_repr(self):
+        """Verify prefixes can be represented."""
+        self.assertEqual("Prefix('REQ')", repr(self.prefix1))
+        self.assertEqual("Prefix('TST')", repr(self.prefix2))
+
+    def test_str(self):
+        """Verify prefixes can be converted to strings."""
+        self.assertEqual('REQ', str(self.prefix1))
+        self.assertEqual('TST', str(self.prefix2))
 
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
