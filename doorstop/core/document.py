@@ -456,7 +456,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Reorder or check item levels
         if settings.REORDER:
             self.reorder(items=items)
-        else:
+        elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
         # Check each item
         for item in self:

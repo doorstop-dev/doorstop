@@ -34,7 +34,9 @@ def main(args=None):  # pylint: disable=R0915
     parser.add_argument('-F', '--no-reformat', action='store_true',
                         help="do not reformat item files during validation")
     parser.add_argument('-O', '--no-reorder', action='store_true',
-                        help="do not reorder levels files during validation")
+                        help="do not reorder levels during validation")
+    parser.add_argument('-L', '--no-level-check', action='store_true',
+                        help="do not validate document levels")
     parser.add_argument('-R', '--no-ref-check', action='store_true',
                         help="do not validate external file references")
     parser.add_argument('-C', '--no-child-check', action='store_true',
@@ -195,14 +197,18 @@ def _configure_logging(verbosity=0):
 
 def _configure_settings(args):
     """Update settings based on the command-line options."""
+    # Parse common settings
     if args.no_reformat is not None:
         settings.REFORMAT = not args.no_reformat
     if args.no_reorder is not None:
         settings.REORDER = not args.no_reorder
+    if args.no_level_check is not None:
+        settings.CHECK_LEVELS = not args.no_level_check
     if args.no_ref_check is not None:
         settings.CHECK_REF = not args.no_ref_check
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
+    # Parse subcommand settings
     if 'with_child_links' in args and args.with_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.with_child_links
 
