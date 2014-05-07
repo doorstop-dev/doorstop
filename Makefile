@@ -85,7 +85,7 @@ gui: env
 
 .PHONY: profile 
 profile: env
-	$(PYTHON) profile.py
+	$(PYTHON) profiling.py
 
 # Documentation ##############################################################
 

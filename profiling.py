@@ -9,7 +9,7 @@ from profilehooks import profile
 
 def main():
     """Profile tree validation."""
-    print("profiling issues")
+    print("profiling issues...")
     tree = doorstop.build()
     print(profile(tree.issues))
 
