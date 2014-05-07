@@ -332,21 +332,24 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
-    def reorder(self, start=None, keep=None):
+    def reorder(self, items=None, start=None, keep=None):
         """Reorder a document's items.
 
+        @param items: items to reorder (None = reorder instance items)
         @param start: level to start numbering (None = use current start)
         @param keep: item or ID to keep over duplicates
 
         """
+        items = items or self.items
         keep = self.find_item(keep) if keep else None
         logging.info("reordering {}...".format(self))
-        self._reorder(self.items, start=start, keep=keep)
+        self._reorder(items, start=start, keep=keep)
 
     @staticmethod
     def _reorder(items, start=None, keep=None):
         """Reorder a document's items.
 
+        @param items: items to reorder
         @param start: level to start numbering (None = use current start)
         @param keep: item to keep over duplicates
 
@@ -446,11 +449,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         assert kwargs.get('document_hook') is None
         hook = item_hook if item_hook else lambda **kwargs: []
         logging.info("checking document {}...".format(self))
-        # Reorder levels
+        # Check for items
+        items = self.items
+        if not items:
+            return DoorstopWarning("no items")
+        # Reorder or check item levels
         if settings.REORDER:
-            self.reorder()
-        # Check levels
-        yield from self._get_issues_level()
+            self.reorder(items=items)
+        else:
+            yield from self._get_issues_level(items)
         # Check each item
         for item in self:
             # Check item
@@ -460,14 +467,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.id, issue))
 
-    def _get_issues_level(self, items=None):
+    @staticmethod
+    def _get_issues_level(items):
         """Yield all the document's issues related to item level."""
-        items = items or self.items
-        # Check for items
-        if not items:
-            return DoorstopWarning("no items")
-        # Check item levels
-        prev = items[0]
+        prev = items[0] if items else None
         for item in items[1:]:
             pid = prev.id
             plev = prev.level
