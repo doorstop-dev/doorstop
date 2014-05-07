@@ -22,6 +22,16 @@ class Prefix(str):
     def __repr__(self):
         return "Prefix('{}')".format(self)
 
+    def __eq__(self, other):
+        if not other:
+            return False
+        if not isinstance(other, Prefix):
+            other = Prefix(other)
+        return self.lower() == other.lower()
+
+    def __ne__(self, other):
+        return not self == other
+
     @staticmethod
     def load_prefix(value):
         r"""Convert a value to a prefix.

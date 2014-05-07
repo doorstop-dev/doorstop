@@ -24,6 +24,14 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('REQ', str(self.prefix1))
         self.assertEqual('TST', str(self.prefix2))
 
+    def test_eq(self):
+        """Verify prefixes can be equated."""
+        self.assertEqual(Prefix('REQ'), self.prefix1)
+        self.assertNotEqual(self.prefix1, self.prefix2)
+        self.assertEqual(Prefix('req'), self.prefix1)
+        self.assertEqual('Req', self.prefix1)
+        self.assertNotEqual(None, self.prefix1)
+
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
 
