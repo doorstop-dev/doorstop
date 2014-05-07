@@ -14,6 +14,10 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.prefix1 = Prefix('REQ')
         self.prefix2 = Prefix('TST (@/tst)')
 
+    def test_init(self):
+        """Verify prefixes are parsed correctly."""
+        self.assertIs(self.prefix1, Prefix(self.prefix1))
+
     def test_repr(self):
         """Verify prefixes can be represented."""
         self.assertEqual("Prefix('REQ')", repr(self.prefix1))
@@ -48,7 +52,8 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.id3 = ID('SYS', '-', 3, 5)
 
     def test_init(self):
-        """Verify IDs parse errors are correct."""
+        """Verify IDs are parsed correctly."""
+        self.assertIs(self.id1, ID(self.id1))
         identifier = ID('REQ')
         self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
         identifier = ID('REQ-?')

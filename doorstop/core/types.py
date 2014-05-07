@@ -16,8 +16,11 @@ class Prefix(str):
     """Unique document prefixes."""
 
     def __new__(cls, value):
-        obj = super(Prefix, cls).__new__(cls, Prefix.load_prefix(value))
-        return obj
+        if isinstance(value, Prefix):
+            return value
+        else:
+            obj = super(Prefix, cls).__new__(cls, Prefix.load_prefix(value))
+            return obj
 
     def __repr__(self):
         return "Prefix('{}')".format(self)
@@ -51,6 +54,12 @@ class Prefix(str):
 class ID(object):
 
     """Unique item identifier."""
+
+    def __new__(cls, *values):
+        if isinstance(values[0], ID):
+            return values[0]
+        else:
+            return super().__new__(cls)
 
     def __init__(self, *values):
         """Initialize an ID using a string or set of parts.
