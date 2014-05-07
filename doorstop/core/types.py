@@ -19,7 +19,7 @@ class Prefix(str):
         if isinstance(value, Prefix):
             return value
         else:
-            obj = super(Prefix, cls).__new__(cls, Prefix.load_prefix(value))
+            obj = super().__new__(cls, Prefix.load_prefix(value))
             return obj
 
     def __repr__(self):
@@ -85,8 +85,7 @@ class ID(object):
             parts = ID.split_id(self.value)
             self._prefix = Prefix(parts[0])
             self._number = parts[1]
-        except ValueError as exc:
-            logging.warning(exc)
+        except ValueError:
             self._prefix = self._number = None
             self._exc = DoorstopError("invalid ID: {}".format(self.value))
         else:
