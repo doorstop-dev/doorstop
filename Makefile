@@ -85,7 +85,7 @@ gui: env
 
 .PHONY: profile 
 profile: env
-	$(PYTHON) profiling.py
+	$(PYTHON) profiling.py ../DoorstopDemo
 
 # Documentation ##############################################################
 
@@ -163,7 +163,7 @@ tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 .PHONY: ci
-ci: doorstop pep8 pep257 profile test tests tutorials
+ci: doorstop pep8 pep257 test tests tutorials
 
 # Cleanup ####################################################################
 
