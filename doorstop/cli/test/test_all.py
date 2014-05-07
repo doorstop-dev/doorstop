@@ -25,7 +25,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.backup = (settings.REFORMAT,
                        settings.CHECK_REF,
                        settings.CHECK_CHILD_LINKS,
-                       settings.REORDER)
+                       settings.REORDER,
+                       settings.CHECK_LEVELS)
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -33,7 +34,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         (settings.REFORMAT,
          settings.CHECK_REF,
          settings.CHECK_CHILD_LINKS,
-         settings.REORDER) = self.backup
+         settings.REORDER,
+         settings.CHECK_LEVELS) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -72,6 +74,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.CHECK_REF)
         self.assertTrue(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
+        self.assertTrue(settings.CHECK_LEVELS)
 
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
@@ -80,11 +83,13 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['--no-reformat',
                                   '--no-ref-check',
                                   '--no-child-check',
-                                  '--no-reorder']))
+                                  '--no-reorder',
+                                  '--no-level-check']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.REORDER)
+        self.assertFalse(settings.CHECK_LEVELS)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))
     def test_gui(self):

@@ -15,6 +15,8 @@ Changelog
 - Added aliases to Item: parent_links, child_links/items/documents
 - Added '--with-child-links' to 'doorstop publish' to publish child links
 - Added 'doorstop import' CLI to import documents and items.
+- Refactored Document prefixes in a Prefix class (also used in the ID class)
+- Added '--no-level-check' to disable document level validation
 
 0.5 (2014/04/25)
 ----------------

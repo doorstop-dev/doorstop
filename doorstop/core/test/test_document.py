@@ -346,7 +346,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_get_issues.return_value = [DoorstopInfo('i')]
         with patch('doorstop.settings.REORDER', True):
             self.assertTrue(self.document.validate())
-        mock_reorder.assert_called_once_with()
+        mock_reorder.assert_called_once_with(items=self.document.items)
         self.assertEqual(5, mock_get_issues.call_count)
 
     @patch('doorstop.core.item.Item.get_issues',

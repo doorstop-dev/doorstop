@@ -19,6 +19,7 @@ MAX_LINE_LENTH = 79  # line length to trigger multiline on extended attributes
 # Validation settings
 REFORMAT = True  # reformat item files during validation
 REORDER = True  # reorder document levels during validation
+CHECK_LEVELS = True  # validate document levels during validation
 CHECK_REF = True  # validate external file references
 CHECK_CHILD_LINKS = True  # validate reverse links
 
