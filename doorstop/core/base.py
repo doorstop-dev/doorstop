@@ -52,7 +52,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
 
     @property
-    @profile
+    @profile(sort=['time', 'calls'])
     def issues(self):
         """Get a list of the item's issues."""
         return list(self.get_issues())
