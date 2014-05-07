@@ -22,6 +22,9 @@ class Prefix(str):
     def __repr__(self):
         return "Prefix('{}')".format(self)
 
+    def __hash__(self):
+        return super().__hash__()
+
     def __eq__(self, other):
         if not other:
             return False
@@ -33,10 +36,6 @@ class Prefix(str):
         return not self == other
 
     def __lt__(self, other):
-        if not other:
-            return False
-        if not isinstance(other, Prefix):
-            other = Prefix(other)
         return self.lower() < other.lower()
 
     @staticmethod
@@ -65,12 +64,24 @@ class ID(object):
         @param *values: prefix, separator, number, digit count
 
         """
+        # Join values
         if len(values) == 1:
             self.value = str(values[0])
         elif len(values) == 4:
             self.value = ID.join_id(*values)
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
+        # Split values
+        try:
+            parts = ID.split_id(self.value)
+            self._prefix = Prefix(parts[0])
+            self._number = parts[1]
+        except ValueError as exc:
+            logging.warning(exc)
+            self._prefix = self._number = None
+            self._exc = DoorstopError("invalid ID: {}".format(self.value))
+        else:
+            self._exc = None
 
     def __repr__(self):
         return "ID('{}')".format(self.value)
@@ -79,18 +90,15 @@ class ID(object):
         return self.value
 
     def __hash__(self):
-        try:
-            return hash((self.prefix, self.number))
-        except DoorstopError:
-            return hash(self.value)
+        return hash((self._prefix, self._number))
 
     def __eq__(self, other):
         if not other:
             return False
         if not isinstance(other, ID):
-            other = ID(str(other))
+            other = ID(other)
         try:
-            return all((self.prefix.lower() == other.prefix.lower(),
+            return all((self.prefix == other.prefix,
                         self.number == other.number))
         except DoorstopError:
             return self.value.lower() == other.value.lower()
@@ -100,22 +108,26 @@ class ID(object):
 
     def __lt__(self, other):
         try:
-            if self.prefix.lower() == other.prefix.lower():
+            if self.prefix == other.prefix:
                 return self.number < other.number
             else:
-                return self.prefix.lower() < other.prefix.lower()
+                return self.prefix < other.prefix
         except DoorstopError:
             return self.value < other.value
 
     @property
     def prefix(self):
         """Get the ID's prefix."""
-        return ID.split_id(self.value)[0]
+        if self._exc:
+            raise self._exc
+        return self._prefix
 
     @property
     def number(self):
         """Get the ID's number."""
-        return ID.split_id(self.value)[1]
+        if self._exc:
+            raise self._exc
+        return self._number
 
     @staticmethod
     def split_id(text):
@@ -133,7 +145,7 @@ class ID(object):
         """
         match = re.match(r"([\w.-]*\D)(\d+)", text)
         if not match:
-            raise DoorstopError("invalid ID: {}".format(text))
+            raise ValueError("unable to parse ID: {}".format(text))
         prefix = match.group(1).rstrip(settings.SEP_CHARS)
         number = int(match.group(2))
         return prefix, number
