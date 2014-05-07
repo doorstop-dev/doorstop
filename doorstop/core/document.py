@@ -7,7 +7,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import ID, Level
+from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -21,7 +21,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
 
-    DEFAULT_PREFIX = 'REQ'
+    DEFAULT_PREFIX = Prefix('REQ')
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
@@ -121,7 +121,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         sets = data.get('settings', {})
         for key, value in sets.items():
             if key == 'prefix':
-                self._data['prefix'] = value.strip()
+                self._data['prefix'] = Prefix(value)
             elif key == 'sep':
                 self._data['sep'] = value.strip()
             elif key == 'parent':
@@ -141,7 +141,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         sets = {}
         for key, value in self._data.items():
             if key == 'prefix':
-                sets['prefix'] = value
+                sets['prefix'] = str(value)
             elif key == 'sep':
                 sets['sep'] = value
             elif key == 'digits':
@@ -209,7 +209,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def prefix(self, value):
         """Set the document's prefix."""
-        self._data['prefix'] = value.strip()
+        self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
 
     @property
@@ -501,11 +501,3 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in self:
             item.delete()
         super().delete(self.config)
-
-
-# attribute formatters #######################################################
-
-# TODO: move this code to calling locations
-def get_prefix(value):
-    """Get a prefix from a document or string."""
-    return str(value).split(' ')[0]

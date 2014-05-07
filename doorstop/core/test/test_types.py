@@ -2,8 +2,44 @@
 
 import unittest
 
-from doorstop.core.types import ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level
 from doorstop.common import DoorstopError
+
+
+class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Prefix class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.prefix1 = Prefix('REQ')
+        self.prefix2 = Prefix('TST (@/tst)')
+
+    def test_init(self):
+        """Verify prefixes are parsed correctly."""
+        self.assertIs(self.prefix1, Prefix(self.prefix1))
+
+    def test_repr(self):
+        """Verify prefixes can be represented."""
+        self.assertEqual("Prefix('REQ')", repr(self.prefix1))
+        self.assertEqual("Prefix('TST')", repr(self.prefix2))
+
+    def test_str(self):
+        """Verify prefixes can be converted to strings."""
+        self.assertEqual('REQ', str(self.prefix1))
+        self.assertEqual('TST', str(self.prefix2))
+
+    def test_eq(self):
+        """Verify prefixes can be equated."""
+        self.assertEqual(Prefix('REQ'), self.prefix1)
+        self.assertNotEqual(self.prefix1, self.prefix2)
+        self.assertEqual(Prefix('req'), self.prefix1)
+        self.assertEqual('Req', self.prefix1)
+        self.assertNotEqual(None, self.prefix1)
+
+    def test_sort(self):
+        """Verify prefixes can be sorted."""
+        prefixes = [Prefix('a'), Prefix('B'), Prefix('c')]
+        self.assertListEqual(prefixes, sorted(prefixes))
 
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
@@ -16,7 +52,8 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.id3 = ID('SYS', '-', 3, 5)
 
     def test_init(self):
-        """Verify IDs parse errors are correct."""
+        """Verify IDs are parsed correctly."""
+        self.assertIs(self.id1, ID(self.id1))
         identifier = ID('REQ')
         self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
         identifier = ID('REQ-?')
