@@ -73,7 +73,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.REFORMAT)
         self.assertTrue(settings.CHECK_REF)
         self.assertTrue(settings.CHECK_CHILD_LINKS)
-        self.assertTrue(settings.REORDER)
+        self.assertFalse(settings.REORDER)
         self.assertTrue(settings.CHECK_LEVELS)
 
     def test_options(self):
@@ -83,12 +83,12 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['--no-reformat',
                                   '--no-ref-check',
                                   '--no-child-check',
-                                  '--no-reorder',
+                                  '--reorder',
                                   '--no-level-check']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
-        self.assertFalse(settings.REORDER)
+        self.assertTrue(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))

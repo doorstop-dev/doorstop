@@ -309,7 +309,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         self.path, self.root, identifier,
                         level=nlevel)
         self._items.append(item)
-        if settings.REORDER and level and reorder:
+        if level and reorder:
             self.reorder(keep=item)
         return item
 
@@ -328,7 +328,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         item = self.find_item(identifier)
         item.delete()
         self._items.remove(item)
-        if settings.REORDER and reorder:
+        if reorder:
             self.reorder()
         return item
 

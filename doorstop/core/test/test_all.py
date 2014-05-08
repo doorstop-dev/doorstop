@@ -197,6 +197,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
 
+    @patch('doorstop.settings.REORDER', True)
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
         document = core.Document.new(None,

@@ -33,8 +33,8 @@ def main(args=None):  # pylint: disable=R0915
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
     parser.add_argument('-F', '--no-reformat', action='store_true',
                         help="do not reformat item files during validation")
-    parser.add_argument('-O', '--no-reorder', action='store_true',
-                        help="do not reorder levels during validation")
+    parser.add_argument('-r', '--reorder', action='store_true',
+                        help="reorder document levels during validation")
     parser.add_argument('-L', '--no-level-check', action='store_true',
                         help="do not validate document levels")
     parser.add_argument('-R', '--no-ref-check', action='store_true',
@@ -200,8 +200,8 @@ def _configure_settings(args):
     # Parse common settings
     if args.no_reformat is not None:
         settings.REFORMAT = not args.no_reformat
-    if args.no_reorder is not None:
-        settings.REORDER = not args.no_reorder
+    if args.reorder is not None:
+        settings.REORDER = args.reorder
     if args.no_level_check is not None:
         settings.CHECK_LEVELS = not args.no_level_check
     if args.no_ref_check is not None:
