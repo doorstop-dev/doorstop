@@ -228,11 +228,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return document
 
     @clear_item_cache
-    def add_item(self, value, level=None):
+    def add_item(self, value, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
         @param value: document or prefix
         @param level: desired item level
+        @param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be created
 
@@ -242,14 +243,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         prefix = Prefix(value)
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
-        item = document.add_item(level=level)
+        item = document.add_item(level=level, reorder=reorder)
         return item
 
     @clear_item_cache
-    def remove_item(self, value):
+    def remove_item(self, value, reorder=True):
         """Remove an item from a document by ID.
 
         @param value: item or ID
+        @param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be removed
 
@@ -263,7 +265,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             except DoorstopError:
                 pass  # item not found in that document
             else:
-                item = document.remove_item(identifier)
+                item = document.remove_item(identifier, reorder=reorder)
                 return item
 
         raise DoorstopError("no matching ID: {}".format(identifier))

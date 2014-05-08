@@ -209,7 +209,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
-        self.assertIsNot(None, document.add_item())
+        self.assertIsNot(None, document.add_item(reorder=False))
         mock_new.assert_called_once_with(None, document,
                                          NEW, ROOT, 'NEW001',
                                          level=None)
@@ -218,7 +218,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify an added item is contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        item2 = self.document.add_item()
+        item2 = self.document.add_item(reorder=False)
         self.assertIn(item2, self.document)
 
     @patch('doorstop.core.document.Document._reorder')
@@ -236,9 +236,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a removed item is not contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
-        removed_item = self.document.remove_item(item.id)
+        removed_item = self.document.remove_item(item.id, reorder=False)
         self.assertEqual(item, removed_item)
         self.assertNotIn(item, self.document)
+        mock_remove.assert_called_once_with(item.path)
+
+    @patch('os.remove')
+    def test_remove_item_by_item(self, mock_remove):
+        """Verify an item can be removed (by item)."""
+        item = self.document.items[0]
+        self.assertIn(item, self.document)
+        removed_item = self.document.remove_item(item, reorder=False)
+        self.assertEqual(item, removed_item)
         mock_remove.assert_called_once_with(item.path)
 
     def test_reorder(self):
@@ -311,15 +320,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         Document._reorder(mock_items, start=(1, 2), keep=mock_item)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
-
-    @patch('os.remove')
-    def test_remove_item_by_item(self, mock_remove):
-        """Verify an item can be removed (by item)."""
-        item = self.document.items[0]
-        self.assertIn(item, self.document)
-        removed_item = self.document.remove_item(item)
-        self.assertEqual(item, removed_item)
-        mock_remove.assert_called_once_with(item.path)
 
     def test_find_item(self):
         """Verify an item can be found by ID."""

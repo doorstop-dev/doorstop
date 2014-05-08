@@ -11,7 +11,7 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
-class Prefix(str):
+class Prefix(str):  # pylint: disable=R0904
 
     """Unique document prefixes."""
 
