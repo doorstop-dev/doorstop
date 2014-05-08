@@ -174,7 +174,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:  # tree has documents, but no parent specified for document
 
             msg = "no parent specified for {}".format(document)
-            logging.warning(msg)
+            logging.info(msg)
             prefixes = ', '.join(document.prefix for document in self)
             logging.info("parent options: {}".format(document, prefixes))
             raise DoorstopError(msg)
