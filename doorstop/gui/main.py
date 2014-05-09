@@ -462,7 +462,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Set the current item
         identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
-        self.index = self.listbox_outline.curselection()[0]
+        self.index = int(self.listbox_outline.curselection()[0])
         logging.info("displaying item {}...".format(self.item))
 
         # Display the item's text
@@ -595,9 +595,14 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.index = self.document.items.index(item)
         self.display_document()
 
-    @_log
     def remove(self):
         """Remove the selected item from the document."""
+        logging.info("removing item {}...".format(self.item))
+        item = self.tree.remove_item(self.item)
+        logging.info("removed item: {}".format(item))
+        self.item = None
+        self.index = max(0, self.index - 1)
+        self.display_document()
 
     def link(self):
         """Add the specified link to the current item."""
