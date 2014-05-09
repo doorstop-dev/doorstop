@@ -22,7 +22,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
-    DEFAULT_TEXT = Text("")
+    DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
 
     def __init__(self, path, root=os.getcwd(), **kwargs):

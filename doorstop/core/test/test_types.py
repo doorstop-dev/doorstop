@@ -17,6 +17,7 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
     def test_init(self):
         """Verify prefixes are parsed correctly."""
         self.assertIs(self.prefix1, Prefix(self.prefix1))
+        self.assertEqual(Prefix(''), Prefix())
 
     def test_repr(self):
         """Verify prefixes can be represented."""
@@ -61,6 +62,7 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(TypeError, ID, 'REQ', '-')
         self.assertRaises(TypeError, ID, 'REQ', '-', 42)
         self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
+        self.assertEqual(ID(""), ID())
 
     def test_repr(self):
         """Verify IDs can be represented."""
@@ -107,6 +109,10 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.text = Text("Hello, \nworld! ")
+
+    def test_init(self):
+        """Verify Text is parsed correctly."""
+        self.assertEqual(Text(""), Text())
 
     def test_repr(self):
         """Verify text can be represented."""

@@ -15,7 +15,7 @@ class Prefix(str):  # pylint: disable=R0904
 
     """Unique document prefixes."""
 
-    def __new__(cls, value):
+    def __new__(cls, value=""):
         if isinstance(value, Prefix):
             return value
         else:
@@ -29,8 +29,6 @@ class Prefix(str):  # pylint: disable=R0904
         return super().__hash__()
 
     def __eq__(self, other):
-        if not other:
-            return False
         if not isinstance(other, Prefix):
             other = Prefix(other)
         return self.lower() == other.lower()
@@ -56,7 +54,7 @@ class ID(object):
     """Unique item identifier."""
 
     def __new__(cls, *values):
-        if isinstance(values[0], ID):
+        if values and isinstance(values[0], ID):
             return values[0]
         else:
             return super().__new__(cls)
@@ -74,7 +72,9 @@ class ID(object):
 
         """
         # Join values
-        if len(values) == 1:
+        if len(values) == 0:
+            self.value = ""
+        elif len(values) == 1:
             self.value = str(values[0])
         elif len(values) == 4:
             self.value = ID.join_id(*values)
@@ -192,7 +192,7 @@ class Text(str):  # pylint: disable=R0904
 
     """Markdown text paragraph."""
 
-    def __new__(cls, value):
+    def __new__(cls, value=""):
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
