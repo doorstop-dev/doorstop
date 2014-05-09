@@ -63,6 +63,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def __iter__(self):
         yield from self._iter()
 
+    def __len__(self):
+        return len(list(self._iter()))
+
+    def __bool__(self):
+        return self._exists
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
 

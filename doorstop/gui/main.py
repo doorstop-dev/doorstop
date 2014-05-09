@@ -584,9 +584,13 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.document.reorder(keep=self.item)
         self.display_document()
 
-    @_log
     def add(self):
         """Add a new item to the document."""
+        logging.info("adding item to {}...".format(self.document))
+        item = self.document.add_item()
+        logging.info("added item: {}".format(item))
+        self.index = len(self.document) - 1
+        self.display_document()
 
     @_log
     def remove(self):

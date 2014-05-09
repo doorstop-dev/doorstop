@@ -117,6 +117,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify document non-equality is correct."""
         self.assertNotEqual(self.document, None)
 
+    def test_len(self):
+        """Verify a document has a length."""
+        self.assertEqual(5, len(self.document))
+
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
