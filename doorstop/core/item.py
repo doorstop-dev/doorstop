@@ -286,7 +286,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         Headings have a level that ends in zero and are non-normative.
 
         """
-        return self.level.heading and not self.normative
+        return self.level.heading
 
     @heading.setter
     @auto_save

@@ -441,8 +441,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
-            level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {i}".format(s=indent, l=level, i=item.id)
+            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.id)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
@@ -587,9 +586,13 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     def add(self):
         """Add a new item to the document."""
         logging.info("adding item to {}...".format(self.document))
-        item = self.document.add_item()
+        if self.item:
+            level = self.item.level + 1
+        else:
+            level = None
+        item = self.document.add_item(level=level)
         logging.info("added item: {}".format(item))
-        self.index = len(self.document) - 1
+        self.index = self.document.items.index(item)
         self.display_document()
 
     @_log
