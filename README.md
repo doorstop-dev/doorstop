@@ -11,8 +11,10 @@ Each linkable item (requirement, test case, etc.) is stored as a YAML file in a 
 
 Additional reading:
 
+- sample: [Generated HTML](http://jacebrowning.github.io/doorstop)
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - conference: [GRDevDay Talk](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control)
+
 
 Getting Started
 ===============
@@ -20,8 +22,8 @@ Getting Started
 Requirements
 ------------
 
--   Python 3.3+
--   A version control system for requirements storage
+* Python 3.3+
+* A version control system for requirements storage
 
 
 Installation
@@ -49,11 +51,13 @@ And the package is available under the name 'doorstop':
 
 
 
-Document Creation
-=================
+Basic Usage
+===========
 
-Parent Document
----------------
+Document Creation
+-----------------
+
+**Parent Document**
 
 After configuring version control, a new parent document can be created:
 
@@ -68,9 +72,7 @@ Items can be added to the document and edited:
     $ doorstop edit REQ1
     opened item: REQ001 (@/reqs/REQ001.yml)
 
-
-Child Documents
----------------
+**Child Documents**
 
 Additional documents can be created that link to other documents:
 
@@ -86,9 +88,8 @@ Items can be added and linked to parent items:
     linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
 
-
 Document Validation
-===================
+-------------------
 
 To check a document hierarchy for consistency, run the main command:
 
@@ -96,9 +97,8 @@ To check a document hierarchy for consistency, run the main command:
     valid tree: REQ <- [ TST ]
 
 
-
 Document Publishing
-===================
+-------------------
 
 A text report of a document can be displayed:
 
@@ -131,3 +131,47 @@ Supported formats:
 -   Text: **.txt**
 -   Markdown: **.md**
 -   HTML: **.html**
+
+
+
+For Contributors
+================
+
+Requirements
+------------
+
+* GNU Make:
+    * Windows: http://cygwin.com/install.html
+    * Mac: https://developer.apple.com/xcode
+    * Linux: http://www.gnu.org/software/make (likely already installed)
+* virtualenv: https://pypi.python.org/pypi/virtualenv#installation
+* Pandoc: http://johnmacfarlane.net/pandoc/installing.html
+* Graphviz: http://www.graphviz.org/Download.php
+
+
+Installation
+------------
+
+Create a virtualenv:
+
+    make env
+
+Run the tests:
+
+    make test
+    make tests  # includes integration tests
+
+Build the documentation:
+
+    make doc
+
+Run static analysis:
+
+    make pep8
+    make pylint
+    make check  # pep8 and pylint
+
+Prepare a release:
+
+    make dist  # dry run
+    make upload

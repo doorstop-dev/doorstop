@@ -11,7 +11,7 @@ from doorstop.cli.main import main
 from doorstop import common
 from doorstop import settings
 
-from doorstop.cli.test import ENV, REASON, TUTORIAL
+from doorstop.cli.test import ENV, REASON, ROOT, REQS, TUTORIAL
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -25,7 +25,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.backup = (settings.REFORMAT,
                        settings.CHECK_REF,
                        settings.CHECK_CHILD_LINKS,
-                       settings.REORDER)
+                       settings.REORDER,
+                       settings.CHECK_LEVELS)
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -33,7 +34,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         (settings.REFORMAT,
          settings.CHECK_REF,
          settings.CHECK_CHILD_LINKS,
-         settings.REORDER) = self.backup
+         settings.REORDER,
+         settings.CHECK_LEVELS) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -71,7 +73,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.REFORMAT)
         self.assertTrue(settings.CHECK_REF)
         self.assertTrue(settings.CHECK_CHILD_LINKS)
-        self.assertTrue(settings.REORDER)
+        self.assertFalse(settings.REORDER)
+        self.assertTrue(settings.CHECK_LEVELS)
 
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
@@ -80,11 +83,13 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['--no-reformat',
                                   '--no-ref-check',
                                   '--no-child-check',
-                                  '--no-reorder']))
+                                  '--reorder',
+                                  '--no-level-check']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
-        self.assertFalse(settings.REORDER)
+        self.assertTrue(settings.REORDER)
+        self.assertFalse(settings.CHECK_LEVELS)
 
     @patch('doorstop.cli.main.gui', Mock(return_value=True))
     def test_gui(self):
@@ -329,16 +334,43 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
-@unittest.skip("TODO: implement 'doorstop import' command")  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop import' command."""
+    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
 
-    def test_import_with_attrs(self):
-        """Verify 'doorstop import' can be called."""
-        self.assertIs(None, main(['import', 'REQ', 'REQ099',
-                                  '--attrs', "{'text': 'The item text.}"]))
+    def tearDown(self):
+        try:
+            shutil.rmtree(os.path.join(ROOT, 'tmp'))
+        except IOError:
+            pass
+        try:
+            os.remove(os.path.join(REQS, 'REQ099.yml'))
+        except IOError:
+            pass
+
+    def test_import_document(self):
+        """Verify 'doorstop import' can import a document."""
+        self.assertRaises(SystemExit,
+                          main, ['import', '--document', 'TMP', 'tmp'])
+
+    def test_import_document_with_parent(self):
+        """Verify 'doorstop import' can import a document with a parent."""
+        self.assertIs(None, main(['import', '--document', 'TMP', 'tmp',
+                                  '--parent', 'REQ']))
+
+    def test_import_item(self):
+        """Verify 'doorstop import' can import an item.."""
+        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099']))
+
+    def test_import_item_with_attrs(self):
+        """Verify 'doorstop import' can import an item with attributes."""
+        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099',
+                                  '--attrs', "{'text': 'The item text.'}"]))
+
+    def test_import_error(self):
+        """Verify 'doorstop import' requires a document or item."""
+        self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

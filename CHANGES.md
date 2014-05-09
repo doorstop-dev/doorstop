@@ -4,7 +4,6 @@ Changelog
 0.6 (dev)
 ---------
 
-- Added '--no-reorder' option to 'doorstop' to disable reording
 - Refactored Item levels into a Level class
 - Refactored Item identifiers into an ID class
 - Refactored Item text into a Text class (behaves like str)
@@ -14,6 +13,10 @@ Changelog
 - Added Item.find_child_items() and Item.find_child_documents()
 - Added aliases to Item: parent_links, child_links/items/documents
 - Added '--with-child-links' to 'doorstop publish' to publish child links
+- Added 'doorstop import' CLI to import documents and items.
+- Refactored Document prefixes in a Prefix class (also used in the ID class)
+- Added '--no-level-check' to disable document level validation
+- Added '--reorder' option to 'doorstop' to enable reording
 
 0.5 (2014/04/25)
 ----------------

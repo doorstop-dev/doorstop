@@ -11,9 +11,53 @@ from doorstop.common import DoorstopError
 from doorstop import settings
 
 
+class Prefix(str):  # pylint: disable=R0904
+
+    """Unique document prefixes."""
+
+    def __new__(cls, value=""):
+        if isinstance(value, Prefix):
+            return value
+        else:
+            obj = super().__new__(cls, Prefix.load_prefix(value))
+            return obj
+
+    def __repr__(self):
+        return "Prefix('{}')".format(self)
+
+    def __hash__(self):
+        return super().__hash__()
+
+    def __eq__(self, other):
+        if not isinstance(other, Prefix):
+            other = Prefix(other)
+        return self.lower() == other.lower()
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return self.lower() < other.lower()
+
+    @staticmethod
+    def load_prefix(value):
+        """Convert a value to a prefix.
+
+        >>> Prefix.load_prefix("abc 123")
+        'abc'
+        """
+        return str(value).split(' ')[0]
+
+
 class ID(object):
 
     """Unique item identifier."""
+
+    def __new__(cls, *values):
+        if values and isinstance(values[0], ID):
+            return values[0]
+        else:
+            return super().__new__(cls)
 
     def __init__(self, *values):
         """Initialize an ID using a string or set of parts.
@@ -27,12 +71,25 @@ class ID(object):
         @param *values: prefix, separator, number, digit count
 
         """
-        if len(values) == 1:
+        # Join values
+        if len(values) == 0:
+            self.value = ""
+        elif len(values) == 1:
             self.value = str(values[0])
         elif len(values) == 4:
             self.value = ID.join_id(*values)
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
+        # Split values
+        try:
+            parts = ID.split_id(self.value)
+            self._prefix = Prefix(parts[0])
+            self._number = parts[1]
+        except ValueError:
+            self._prefix = self._number = None
+            self._exc = DoorstopError("invalid ID: {}".format(self.value))
+        else:
+            self._exc = None
 
     def __repr__(self):
         return "ID('{}')".format(self.value)
@@ -41,18 +98,15 @@ class ID(object):
         return self.value
 
     def __hash__(self):
-        try:
-            return hash((self.prefix, self.number))
-        except DoorstopError:
-            return hash(self.value)
+        return hash((self._prefix, self._number))
 
     def __eq__(self, other):
         if not other:
             return False
         if not isinstance(other, ID):
-            other = ID(str(other))
+            other = ID(other)
         try:
-            return all((self.prefix.lower() == other.prefix.lower(),
+            return all((self.prefix == other.prefix,
                         self.number == other.number))
         except DoorstopError:
             return self.value.lower() == other.value.lower()
@@ -62,22 +116,26 @@ class ID(object):
 
     def __lt__(self, other):
         try:
-            if self.prefix.lower() == other.prefix.lower():
+            if self.prefix == other.prefix:
                 return self.number < other.number
             else:
-                return self.prefix.lower() < other.prefix.lower()
+                return self.prefix < other.prefix
         except DoorstopError:
             return self.value < other.value
 
     @property
     def prefix(self):
         """Get the ID's prefix."""
-        return ID.split_id(self.value)[0]
+        if self._exc:
+            raise self._exc
+        return self._prefix
 
     @property
     def number(self):
         """Get the ID's number."""
-        return ID.split_id(self.value)[1]
+        if self._exc:
+            raise self._exc
+        return self._number
 
     @staticmethod
     def split_id(text):
@@ -95,7 +153,7 @@ class ID(object):
         """
         match = re.match(r"([\w.-]*\D)(\d+)", text)
         if not match:
-            raise DoorstopError("invalid ID: {}".format(text))
+            raise ValueError("unable to parse ID: {}".format(text))
         prefix = match.group(1).rstrip(settings.SEP_CHARS)
         number = int(match.group(2))
         return prefix, number
@@ -134,7 +192,7 @@ class Text(str):  # pylint: disable=R0904
 
     """Markdown text paragraph."""
 
-    def __new__(cls, value):
+    def __new__(cls, value=""):
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 

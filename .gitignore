@@ -15,6 +15,7 @@ docs/gen
 apidocs
 docs/*.html
 *.rst
+docs/*.png
 
 # Google Drive
 *.gdoc

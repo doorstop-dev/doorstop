@@ -1,0 +1,21 @@
+active: true
+derived: false
+level: 3.1
+links:
+- REQ016
+normative: true
+ref: ''
+text: |
+  **Importing a Document**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Import a document:
+
+      doorstop import --document HLR reqs/hlr
+
+  Import a document with a parent:
+
+      doorstop import --document LLR reqs/llr --parent HLR

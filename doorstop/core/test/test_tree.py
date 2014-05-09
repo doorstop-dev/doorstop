@@ -225,7 +225,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item(self, mock_add_item, mock_lock):
         """Verify an item can be added to a document."""
         self.tree.add_item('REQ')
-        mock_add_item.assert_called_once_with(level=None)
+        mock_add_item.assert_called_once_with(level=None, reorder=True)
         path = os.path.join(FILES, '.doorstop.yml')
         mock_lock.assert_called_once_with(path)
 
@@ -234,7 +234,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item_level(self, mock_add, mock_lock):
         """Verify an item can be added to a document with a level."""
         self.tree.add_item('REQ', level='1.2.3')
-        mock_add.assert_called_once_with(level='1.2.3')
+        mock_add.assert_called_once_with(level='1.2.3', reorder=True)
         path = os.path.join(FILES, '.doorstop.yml')
         mock_lock.assert_called_once_with(path)
 
@@ -249,7 +249,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item.delete')
     def test_remove_item(self, mock_delete):
         """Verify an item can be removed from a document."""
-        self.tree.remove_item('req1')
+        self.tree.remove_item('req1', reorder=False)
         mock_delete.assert_called_once_with()
 
     def test_remove_item_unknown_item(self):

@@ -9,9 +9,9 @@ import subprocess
 import logging
 
 from doorstop.core.base import BaseValidatable
-from doorstop.core.types import ID
+from doorstop.core.types import Prefix, ID
 from doorstop.common import get_tree, DoorstopError, DoorstopWarning
-from doorstop.core.document import Document, get_prefix
+from doorstop.core.document import Document
 from doorstop.core import vcs
 
 
@@ -174,7 +174,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:  # tree has documents, but no parent specified for document
 
             msg = "no parent specified for {}".format(document)
-            logging.warning(msg)
+            logging.info(msg)
             prefixes = ', '.join(document.prefix for document in self)
             logging.info("parent options: {}".format(document, prefixes))
             raise DoorstopError(msg)
@@ -197,11 +197,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     @clear_document_cache
     @clear_item_cache
-    def new_document(self, path, prefix, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def new_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document
-        @param prefix: document's prefix (or document)
+        @param value: document or prefix
         @param sep: separator between prefix and numbers
         @param digits: number of digits for the document's numbers
         @param parent: parent document's prefix
@@ -211,7 +211,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         @return: newly created and placed Document
 
         """
-        prefix = get_prefix(prefix)
+        prefix = Prefix(value)
         document = Document.new(self,
                                 path, self.root, prefix, sep=sep,
                                 digits=digits, parent=parent)
@@ -228,28 +228,30 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return document
 
     @clear_item_cache
-    def add_item(self, prefix, level=None):
+    def add_item(self, value, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
-        @param prefix: document's prefix (or document)
+        @param value: document or prefix
         @param level: desired item level
+        @param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be created
 
         @return: newly created Item
 
         """
-        prefix = get_prefix(prefix)
+        prefix = Prefix(value)
         document = self.find_document(prefix)
         self.vcs.lock(document.config)  # prevents duplicate item IDs
-        item = document.add_item(level=level)
+        item = document.add_item(level=level, reorder=reorder)
         return item
 
     @clear_item_cache
-    def remove_item(self, value):
+    def remove_item(self, value, reorder=True):
         """Remove an item from a document by ID.
 
         @param value: item or ID
+        @param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be removed
 
@@ -263,7 +265,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             except DoorstopError:
                 pass  # item not found in that document
             else:
-                item = document.remove_item(identifier)
+                item = document.remove_item(identifier, reorder=reorder)
                 return item
 
         raise DoorstopError("no matching ID: {}".format(identifier))
@@ -333,17 +335,17 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Return the item
         return item
 
-    def find_document(self, prefix):
+    def find_document(self, value):
         """Get a document by its prefix.
 
-        @param prefix: document's prefix (or document)
+        @param value: document or prefix
 
         @raise DoorstopError: if the document cannot be found
 
         @return: matching Document
 
         """
-        prefix = get_prefix(prefix)
+        prefix = Prefix(value)
         logging.debug("looking for document '{}'...".format(prefix))
         try:
             document = self._document_cache[prefix]

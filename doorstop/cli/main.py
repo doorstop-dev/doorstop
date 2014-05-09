@@ -4,12 +4,13 @@
 
 import os
 import sys
+import ast
 import argparse
 import logging
 
 from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
-from doorstop.core import report
+from doorstop.core import report, importer
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
@@ -18,6 +19,7 @@ from doorstop import settings
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
     from doorstop import CLI, VERSION
+
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
@@ -31,8 +33,10 @@ def main(args=None):  # pylint: disable=R0915
     parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
     parser.add_argument('-F', '--no-reformat', action='store_true',
                         help="do not reformat item files during validation")
-    parser.add_argument('-O', '--no-reorder', action='store_true',
-                        help="do not reorder levels files during validation")
+    parser.add_argument('-r', '--reorder', action='store_true',
+                        help="reorder document levels during validation")
+    parser.add_argument('-L', '--no-level-check', action='store_true',
+                        help="do not validate document levels")
     parser.add_argument('-R', '--no-ref-check', action='store_true',
                         help="do not validate external file references")
     parser.add_argument('-C', '--no-child-check', action='store_true',
@@ -46,8 +50,7 @@ def main(args=None):  # pylint: disable=R0915
                           help="create a new document directory",
                           **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
-    # TODO: should 'root' be 'path'?
-    sub.add_argument('root', help="path to a directory for item files")
+    sub.add_argument('path', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
@@ -92,6 +95,19 @@ def main(args=None):  # pylint: disable=R0915
     sub.add_argument('-t', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
 
+    # Import subparser
+    sub = subs.add_parser('import',
+                          help="import an existing document or item",
+                          **shared)
+    sub.add_argument('-d', '--document', nargs=2, metavar='ARG',
+                     help="import an existing document by: PREFIX PATH")
+    sub.add_argument('-i', '--item', nargs=2, metavar='ARG',
+                     help="import an existing item by: PREFIX ID")
+    sub.add_argument('-p', '--parent', metavar='PREFIX',
+                     help="parent document prefix for imported document")
+    sub.add_argument('-a', '--attrs', metavar='DICT',
+                     help="dictionary of item attributes to import")
+
     # Publish subparser
     sub = subs.add_parser('publish',
                           help="publish a document as text or another format",
@@ -115,6 +131,9 @@ def main(args=None):  # pylint: disable=R0915
 
     # Configure logging
     _configure_logging(args.verbose)
+
+    # Configure settings
+    _configure_settings(args)
 
     # Run the program
     if args.gui:
@@ -176,6 +195,24 @@ def _configure_logging(verbosity=0):
         common.VERBOSITY = verbosity
 
 
+def _configure_settings(args):
+    """Update settings based on the command-line options."""
+    # Parse common settings
+    if args.no_reformat is not None:
+        settings.REFORMAT = not args.no_reformat
+    if args.reorder is not None:
+        settings.REORDER = args.reorder
+    if args.no_level_check is not None:
+        settings.CHECK_LEVELS = not args.no_level_check
+    if args.no_ref_check is not None:
+        settings.CHECK_REF = not args.no_ref_check
+    if args.no_child_check is not None:
+        settings.CHECK_CHILD_LINKS = not args.no_child_check
+    # Parse subcommand settings
+    if 'with_child_links' in args and args.with_child_links is not None:
+        settings.PUBLISH_CHILD_LINKS = args.with_child_links
+
+
 def _run(args, cwd, err):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
 
@@ -184,17 +221,6 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     @param err: function to call for CLI errors
 
     """
-    # Configure validation settings
-    if args.no_reformat is not None:
-        settings.REFORMAT = not args.no_reformat
-    if args.no_reorder is not None:
-        settings.REORDER = not args.no_reorder
-    if args.no_ref_check is not None:
-        settings.CHECK_REF = not args.no_ref_check
-    if args.no_child_check is not None:
-        settings.CHECK_CHILD_LINKS = not args.no_child_check
-
-    # Validate the tree
     try:
         tree = build(cwd, root=args.project)
         tree.load()
@@ -218,7 +244,7 @@ def _run_new(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        document = tree.new_document(args.root, args.prefix,
+        document = tree.new_document(args.path, args.prefix,
                                      parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
@@ -330,6 +356,40 @@ def _run_edit(args, cwd, _):
         return True
 
 
+def _run_import(args, _, err):
+    """Process arguments and run the `doorstop import` subcommand.
+
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+
+    """
+    document = item = None
+    try:
+        if args.document:
+            prefix, path = args.document
+            document = importer.new_document(prefix, path, parent=args.parent)
+        elif args.item:
+            prefix, identifier = args.item
+            attrs = ast.literal_eval(args.attrs) if args.attrs else None
+            item = importer.add_item(prefix, identifier, attrs=attrs)
+        else:
+            err("specify '--document' or '--item' to import")
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+    else:
+        if document:
+            name = document.prefix
+            relpath = document.relpath
+        else:
+            assert item
+            name = item.id
+            relpath = item.relpath
+        print("imported: {} ({})".format(name, relpath))
+        return True
+
+
 def _run_publish(args, cwd, err):
     """Process arguments and run the `doorstop report` subcommand.
 
@@ -338,11 +398,6 @@ def _run_publish(args, cwd, err):
     @param err: function to call for CLI errors
 
     """
-    # Configure publishing settings
-    if args.with_child_links is not None:
-        settings.PUBLISH_CHILD_LINKS = args.with_child_links
-
-    # Build the tree to publish
     publish_tree = args.prefix == 'all'
     try:
         tree = build(cwd, root=args.project)
