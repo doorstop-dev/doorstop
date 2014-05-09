@@ -282,9 +282,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             def listbox_outline_listboxselect(event):
                 """Callback for selecting an item."""
                 widget = event.widget
-                index = int(widget.curselection()[0])
-                value = widget.get(index)
-                self.stringvar_item.set(value)
+                curselection = widget.curselection()
+                if curselection:
+                    index = int(curselection[0])
+                    value = widget.get(index)
+                    self.stringvar_item.set(value)
 
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
@@ -527,6 +529,9 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
     def update_item(self, *_):
         """Update the current item from the fields."""
         if self.ignore:
+            return
+        if not self.item:
+            logging.warning("no item selected")
             return
 
         # Update the current item
