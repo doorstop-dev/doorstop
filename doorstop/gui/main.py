@@ -237,12 +237,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             frame.rowconfigure(0, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=0)
 
             # Place widgets
             ttk.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
             ttk.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
-            ttk.Button(frame, text="...", command=self.browse).grid(row=0, column=2, **kw_gp)
 
             return frame
 
@@ -253,13 +251,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             frame.rowconfigure(0, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=0)
 
             # Place widgets
             ttk.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
             self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
-            ttk.Button(frame, text="New...", command=self.new).grid(row=0, column=2, **kw_gp)
 
             return frame
 
@@ -425,7 +421,10 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.combobox_documents['values'] = values
 
         # Select the first document
-        self.combobox_documents.current(0)
+        if len(self.tree):
+            self.combobox_documents.current(0)
+        else:
+            logging.warning("no documents to display")
 
     def display_document(self, *_):
         """Display the currently selected document."""
@@ -550,10 +549,6 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         # Re-select this item
         self.display_document()
-
-    @_log
-    def new(self):
-        """Create a new document."""
 
     @_log
     def left(self):
