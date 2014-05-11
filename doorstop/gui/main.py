@@ -450,9 +450,12 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.listbox_outline.autowidth()
 
         # Select the first item
-        self.listbox_outline.selection_set(self.index or 0)
-        identifier = self.listbox_outline.selection_get()
-        self.stringvar_item.set(identifier)  # manual call
+        if len(self.document):
+            self.listbox_outline.selection_set(self.index or 0)
+            identifier = self.listbox_outline.selection_get()
+            self.stringvar_item.set(identifier)  # manual call
+        else:
+            logging.warning("no items to display")
 
     def display_item(self, *_):
         """Display the currently selected item."""
