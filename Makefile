@@ -82,6 +82,10 @@ doorstop: env
 gui: env
 	$(BIN)/doorstop-gui
 
+.PHONY: profile 
+profile: env
+	$(PYTHON) profiling.py ../DoorstopDemo
+
 # Documentation ##############################################################
 
 .PHONY: doc
