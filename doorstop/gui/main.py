@@ -96,17 +96,14 @@ def _run(args, cwd, error):
 
         root = tk.Tk()
         root.title("{} ({})".format(__project__, __version__))
-        # TODO: set a minimum window size
-        # root.minsize(1000, 600)
-
-        # Start the application
         app = Application(root, cwd, args.project)
+        root.update()
+        root.minsize(root.winfo_width(), root.winfo_height())
         app.mainloop()
 
         return True
 
 
-# TODO: cleanup: remove this logging decorator when no longer used
 def _log(func):  # pragma: no cover, manual test
     """Decorator for methods that should log calls."""
     @functools.wraps(func)
@@ -115,9 +112,9 @@ def _log(func):  # pragma: no cover, manual test
         sargs = "{}, {}".format(', '.join(repr(a) for a in args),
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
-        msg = "{}: {}".format(func.__name__, sargs.strip(", "))
+        msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
         if not isinstance(self, ttk.Frame) or not self.ignore:
-            logging.critical(msg.strip())
+            logging.debug(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
 
@@ -203,7 +200,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         """Initialize and return the main frame."""  # pylint: disable=C0301
         # Shared arguments
         width_outline = 20
-        width_text = 40
+        width_text = 30
         width_code = 30
         width_id = 10
         height_text = 10
@@ -409,6 +406,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         return frame
 
+    @_log
     def find(self):
         """Find the root of the project."""
         if not self.stringvar_project.get():
@@ -427,6 +425,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         if path:
             self.stringvar_project.set(path)
 
+    @_log
     def display_tree(self, *_):
         """Display the currently selected tree."""
         # Set the current tree
@@ -444,6 +443,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         else:
             logging.warning("no documents to display")
 
+    @_log
     def display_document(self, *_):
         """Display the currently selected document."""
         # Set the current document
@@ -475,6 +475,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         else:
             logging.warning("no items to display")
 
+    @_log
     def display_item(self, *_):
         """Display the currently selected item."""
         self.ignore = True
@@ -545,6 +546,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
 
         self.ignore = False
 
+    @_log
     def update_item(self, *_):
         """Update the current item from the fields."""
         if self.ignore:
@@ -599,6 +601,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.document.reorder(keep=self.item)
         self.display_document()
 
+    @_log
     def add(self):
         """Add a new item to the document."""
         logging.info("adding item to {}...".format(self.document))
@@ -611,6 +614,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.index = self.document.items.index(item)
         self.display_document()
 
+    @_log
     def remove(self):
         """Remove the selected item from the document."""
         logging.info("removing item {}...".format(self.item))
@@ -620,6 +624,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.index = max(0, self.index - 1)
         self.display_document()
 
+    @_log
     def link(self):
         """Add the specified link to the current item."""
         # Add the specified link to the list
@@ -631,6 +636,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Update the current item
             self.update_item()
 
+    @_log
     def unlink(self):
         """Remove the currently selected link from the current item."""
         # Remove the selected link from the list
