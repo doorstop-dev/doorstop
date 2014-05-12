@@ -64,10 +64,14 @@ def _configure_logging(verbosity=0):
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = settings.VERBOSE_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    else:
+    elif verbosity == 1:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = settings.VERBOSE_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    else:
+        level = settings.VERBOSE2_LOGGING_LEVEL
+        default_format = settings.LOGGING_FORMAT_TIME
+        verbose_format = settings.LOGGING_FORMAT_TIME
 
     # Set a custom formatter
     logging.basicConfig(level=level)
@@ -112,7 +116,7 @@ def _log(func):  # pragma: no cover, manual test
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
         msg = "{}: {}".format(func.__name__, sargs.strip(", "))
-        if not self.ignore:
+        if not isinstance(self, ttk.Frame) or not self.ignore:
             logging.critical(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
@@ -275,8 +279,11 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             frame.columnconfigure(4, weight=1)
             frame.columnconfigure(5, weight=1)
 
+            @_log
             def listbox_outline_listboxselect(event):
                 """Callback for selecting an item."""
+                if self.ignore:
+                    return
                 widget = event.widget
                 curselection = widget.curselection()
                 if curselection:
@@ -323,14 +330,23 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             frame.columnconfigure(1, weight=1)
             frame.columnconfigure(2, weight=1)
 
+            @_log
+            def text_focusin(_):
+                """Callback for entering a text field."""
+                self.ignore = True
+
+            @_log
             def text_item_focusout(event):
                 """Callback for updating text."""
+                self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
 
+            @_log
             def text_extendedvalue_focusout(event):
                 """Callback for updating extended attributes."""
+                self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_extendedvalue.set(value)
@@ -338,6 +354,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
+            self.text_item.bind('<FocusIn>', text_focusin)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -357,6 +374,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
             self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey, font=fixed)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
             self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
+            self.text_extendedvalue.bind('<FocusIn>', text_focusin)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
             self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
