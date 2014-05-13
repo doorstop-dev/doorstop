@@ -1,14 +1,20 @@
+# Project settings (detected automatically from files/directories)
 PROJECT := $(patsubst ./%.sublime-project,%, $(shell find . -type f -name '*.sublime-p*'))
 PACKAGE := $(patsubst ./%/__init__.py,%, $(shell find . -maxdepth 2 -name '__init__.py'))
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
-
-ENV := env
-DEPENDS_CI := $(ENV)/.depends.ci
-DEPENDS_DEV := $(ENV)/.depends.dev
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
-PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
+# virtualenv settings
+ENV := env
 
+# Common paths
+DEPENDS_CI := $(ENV)/.depends.ci
+DEPENDS_DEV := $(ENV)/.depends.dev
+MAN := man
+SHARE := share
+
+# OS-specific paths (detected automatically from the system Python)
+PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
 ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_PYTHON := C:\\Python34\\python.exe
 	SYS_VIRTUALENV := C:\\Python34\\Scripts\\virtualenv.exe
@@ -28,9 +34,7 @@ else
 	endif
 endif
 
-MAN := man
-SHARE := share
-
+# virtualenv executables
 PYTHON := $(BIN)/python
 PIP := $(BIN)/pip
 RST2HTML := $(BIN)/rst2html.py
@@ -41,10 +45,15 @@ PYLINT := $(BIN)/pylint
 PYREVERSE := $(BIN)/pyreverse$(BAT)
 NOSE := $(BIN)/nosetests
 
-# Development Installation ###################################################
+# Main Targets ###############################################################
 
 .PHONY: all
 all: doc check
+
+.PHONY: ci
+ci: doorstop pep8 pep257 test tests tutorial
+
+# Development Installation ###################################################
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
@@ -125,6 +134,9 @@ read: doc
 
 # Static Analysis ############################################################
 
+.PHONY: check
+check: pep8 pep257 pylint
+
 .PHONY: pep8
 pep8: .depends-ci
 	$(PEP8) $(PACKAGE) --ignore=E501
@@ -140,9 +152,6 @@ pylint: .depends-dev
 	                     --max-line-length=79 \
 	                     --disable=I0011,W0142,W0511,R0801
 
-.PHONY: check
-check: pep8 pep257 pylint
-
 # Testing ####################################################################
 
 .PHONY: test
@@ -156,9 +165,6 @@ tests: .depends-ci
 .PHONY: tutorial
 tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
-
-.PHONY: ci
-ci: doorstop pep8 pep257 test tests tutorial
 
 # Cleanup ####################################################################
 
