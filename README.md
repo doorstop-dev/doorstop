@@ -169,8 +169,9 @@ Build the documentation:
 Run static analysis:
 
     make pep8
+    make pep257
     make pylint
-    make check  # pep8 and pylint
+    make check  # includes all checks
 
 Prepare a release:
 
