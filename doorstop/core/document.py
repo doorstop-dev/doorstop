@@ -213,12 +213,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # TODO: should the new prefix be applied to all items?
 
     @property
-    def relpath(self):
-        """Get the document's relative path string."""
-        relpath = os.path.relpath(self.path, self.root)
-        return "@{}{}".format(os.sep, relpath)
-
-    @property
     @auto_load
     def sep(self):
         """Get the prefix-number separator to use for new item IDs."""
@@ -486,13 +480,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             length = min(len(plev.value), len(nlev.value))
             for index in range(length):
                 # Types of skipped levels:
-                #   over: 1.0 --> 1.2
-                #   out: 1.1 --> 3.0
-                #   over and out: 1.1 --> 2.2
-                if (nlev.value[index] - plev.value[index] > 1 or  # over or out
-                    (plev.value[index] != nlev.value[index] and
-                     index + 1 < length and
-                     nlev.value[index + 1] not in (0, 1))):  # over and out
+                #         1. over: 1.0 --> 1.2
+                #         2. out: 1.1 --> 3.0
+                if (nlev.value[index] - plev.value[index] > 1 or
+                        # 3. over and out: 1.1 --> 2.2
+                        (plev.value[index] != nlev.value[index] and
+                         index + 1 < length and
+                         nlev.value[index + 1] not in (0, 1))):
                     msg = "skipped level: {} ({}), {} ({})".format(plev, pid,
                                                                    nlev, nid)
                     yield DoorstopWarning(msg)

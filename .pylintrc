@@ -16,3 +16,5 @@ msg-template={msg_id}:{line:3d},{column}:{msg}
 [FORMAT]
 
 max-line-length=79
+
+ignore-long-lines=^(\s*(# )?(<?https?://\S+>?))|(.* pragma: \S+.*)$

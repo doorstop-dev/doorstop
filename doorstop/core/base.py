@@ -89,6 +89,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     auto = True  # set to False to delay automatic save until explicit save
 
     def __init__(self):
+        self.path = None
+        self.root = None
         self._data = {}
         self._exists = True
         self._loaded = False
@@ -188,6 +190,14 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         """
         return yaml.dump(data, default_flow_style=False)
+
+    # properties #############################################################
+
+    @property
+    def relpath(self):
+        """Get the item's relative path string."""
+        relpath = os.path.relpath(self.path, self.root)
+        return "@{}{}".format(os.sep, relpath)
 
     # extended attributes ####################################################
 

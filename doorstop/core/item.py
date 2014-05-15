@@ -184,12 +184,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         return ID(os.path.splitext(filename)[0])
 
     @property
-    def relpath(self):
-        """Get the item's relative path string."""
-        relpath = os.path.relpath(self.path, self.root)
-        return "@{}{}".format(os.sep, relpath)
-
-    @property
     def prefix(self):
         """Get the item ID's prefix."""
         return self.id.prefix
