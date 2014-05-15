@@ -72,13 +72,13 @@ depends: .depends-ci .depends-dev
 .PHONY: .depends-ci
 .depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install pep8 pep257 nose coverage
+	$(PIP) install --upgrade pep8 pep257 nose coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install docutils pdoc pylint wheel
+	$(PIP) install --upgrade docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -147,10 +147,7 @@ pep257: .depends-ci
 
 .PHONY: pylint
 pylint: .depends-dev
-	$(PYLINT) $(PACKAGE) --reports no \
-	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
-	                     --max-line-length=79 \
-	                     --disable=I0011,W0142,W0511,R0801
+	$(PYLINT) $(PACKAGE) --rcfile .pylintrc
 
 # Testing ####################################################################
 
@@ -186,7 +183,7 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html README.rst docs/*.png
+	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
 
 .PHONY: .clean-test
 .clean-test:
