@@ -10,7 +10,7 @@ import logging
 
 from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, ID
-from doorstop.common import get_tree, DoorstopError, DoorstopWarning
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core import vcs
 
@@ -523,16 +523,38 @@ def _document_from_path(path, root, documents):
 
 # convenience functions ######################################################
 
+_tree = None  # implicit tree for convenience functions, pylint:disable=C0103
+
+
+def _get_tree():
+    """Get a shared tree for convenience functions."""
+    global _tree  # pylint: disable=W0603,C0103
+    if _tree is None:
+        _tree = build()
+    return _tree
+
+
+def _set_tree(value):
+    """Set the shared tree to a specific value (for testing)."""
+    global _tree  # pylint: disable=W0603,C0103
+    _tree = value
+
+
+def _clear_tree():
+    """Force the shared tree to be rebuilt."""
+    global _tree  # pylint: disable=W0603,C0103
+    _tree = None
+
 
 def find_document(prefix):
     """Find a document without an explicitly building a tree."""
-    tree = get_tree()
+    tree = _get_tree()
     document = tree.find_document(prefix)
     return document
 
 
 def find_item(identifier):
     """Find an item without an explicitly building a tree."""
-    tree = get_tree()
+    tree = _get_tree()
     item = tree.find_item(identifier)
     return item

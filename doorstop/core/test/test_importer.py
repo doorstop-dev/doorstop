@@ -6,8 +6,7 @@ from unittest.mock import patch, Mock
 import os
 
 from doorstop.core import importer
-from doorstop.core.tree import Tree
-from doorstop import common
+from doorstop.core.tree import Tree, _set_tree
 from doorstop.common import DoorstopError
 
 from doorstop.core.test.test_document import MockItem
@@ -27,7 +26,7 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         mock_document.root = self.root
         self.mock_tree = Tree(mock_document)
-        common._tree = self.mock_tree  # pylint: disable=W0212
+        _set_tree(self.mock_tree)
 
     @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document(self, mock_new):
@@ -80,7 +79,7 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
         mock_document.root = self.root
         mock_document.prefix = self.prefix
         self.mock_tree = Tree(mock_document)
-        common._tree = self.mock_tree  # pylint: disable=W0212
+        _set_tree(self.mock_tree)
 
     def mock_find_document(self, prefix):
         """Mock Tree.find_document() to return a mock document."""

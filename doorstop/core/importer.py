@@ -2,9 +2,10 @@
 
 import logging
 
+from doorstop.core.tree import _get_tree
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.common import get_tree, DoorstopError
+from doorstop.common import DoorstopError
 
 
 _documents = []  # cache of unplaced documents, pylint: disable=C0103
@@ -21,7 +22,7 @@ def new_document(prefix, path, parent=None):
 
     """
     # Load the current tree
-    tree = get_tree()
+    tree = _get_tree()
 
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
@@ -57,7 +58,7 @@ def add_item(prefix, identifier, attrs=None):
 
     """
     # Load the current tree
-    tree = get_tree()
+    tree = _get_tree()
 
     # Get the specified document
     document = tree.find_document(prefix)

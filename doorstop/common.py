@@ -7,17 +7,6 @@ VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
 MAX_VERBOSITY = 4
 
-_tree = None  # implicit tree for convenience functions, pylint:disable=C0103
-
-
-def get_tree():
-    """Get a shared tree for convenience functions."""
-    global _tree  # pylint: disable=W0603,C0103
-    if _tree is None:
-        from doorstop.core.tree import build
-        _tree = build()
-    return _tree
-
 
 class DoorstopError(Exception):
 
