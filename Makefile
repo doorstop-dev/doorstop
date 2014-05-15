@@ -7,11 +7,10 @@ EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 # virtualenv settings
 ENV := env
 
-# Common paths
-DEPENDS_CI := $(ENV)/.depends.ci
-DEPENDS_DEV := $(ENV)/.depends.dev
-MAN := man
-SHARE := share
+# Flags for PHONY targets
+DEPENDS_CI := $(ENV)/.depends-ci
+DEPENDS_DEV := $(ENV)/.depends-dev
+ALL := $(ENV)/.all
 
 # OS-specific paths (detected automatically from the system Python)
 PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
@@ -48,7 +47,10 @@ NOSE := $(BIN)/nosetests
 # Main Targets ###############################################################
 
 .PHONY: all
-all: doc check
+all: $(ALL)
+$(ALL): $(SOURCES) doc
+	$(MAKE) check
+	touch $(ALL)  # flag to indicate all setup steps were succesful
 
 .PHONY: ci
 ci: doorstop pep8 pep257 test tests tutorial
@@ -167,6 +169,7 @@ tutorial: env
 
 .PHONY: clean
 clean: .clean-dist .clean-test .clean-doc .clean-build
+	rm -rf $(ALL)
 
 .PHONY: clean-all
 clean-all: clean .clean-env
