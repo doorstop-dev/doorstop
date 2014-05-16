@@ -4,11 +4,11 @@
 
 import sys
 from unittest.mock import Mock
-try:  # pragma: no cover - not measurable
+try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
     from tkinter import font, filedialog
-except ImportError as _exc:  # pragma: no cover, not measurable
+except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()  # pylint: disable=C0103
     ttk = Mock()  # pylint: disable=C0103
@@ -92,7 +92,7 @@ def _run(args, cwd, error):
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
         return error("tkinter is not available")
 
-    else:  # pragma: no cover, manual test
+    else:  # pragma: no cover (manual test)
 
         root = tk.Tk()
         root.title("{} ({})".format(__project__, __version__))
@@ -104,7 +104,7 @@ def _run(args, cwd, error):
         return True
 
 
-def _log(func):  # pragma: no cover, manual test
+def _log(func):  # pragma: no cover (manual test)
     """Decorator for methods that should log calls."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
@@ -119,7 +119,7 @@ def _log(func):  # pragma: no cover, manual test
     return wrapped
 
 
-class Listbox2(tk.Listbox):  # pragma: no cover, manual test, pylint: disable=R0901,R0904
+class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901,R0904
 
     """Listbox class with automatic width adjustment."""
 
@@ -138,7 +138,7 @@ class Listbox2(tk.Listbox):  # pragma: no cover, manual test, pylint: disable=R0
             self.config(width=width + shift)
 
 
-class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=R0901,R0902,R0904
+class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902,R0904
 
     """Graphical application for Doorstop."""
 
@@ -196,7 +196,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Start the application
         root.after(500, self.find)
 
-    def init(self, root):  # pylint: disable=R0914
+    def init(self, root):  # pylint: disable=R0912,R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
         # Shared arguments
         width_outline = 20
@@ -647,5 +647,5 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         self.update_item()
 
 
-if __name__ == '__main__':  # pragma: no cover - manual test
+if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

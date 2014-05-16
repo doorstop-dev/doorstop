@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.6 (dev)
----------
+0.6 (2014/5/15)
+---------------
 
 - Refactored Item levels into a Level class
 - Refactored Item identifiers into an ID class

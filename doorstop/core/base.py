@@ -89,12 +89,14 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     auto = True  # set to False to delay automatic save until explicit save
 
     def __init__(self):
+        self.path = None
+        self.root = None
         self._data = {}
         self._exists = True
         self._loaded = False
 
     @staticmethod
-    def _new(path, name):  # pragma: no cover, integration test
+    def _new(path, name):  # pragma: no cover (integration test)
         """Create a new file for the object.
 
         @param path: path to new file
@@ -112,7 +114,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             pass  # just touch the file
 
     @abc.abstractmethod
-    def load(self, reload=False):  # pragma: no cover, abstract method
+    def load(self, reload=False):  # pragma: no cover (abstract method)
         """Load the object's properties from its file."""
         # Start implementations of this method with:
         if self._loaded and not reload:
@@ -122,7 +124,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         # End implementations of this method with:
         self._loaded = True
 
-    def _read(self, path):  # pragma: no cover, integration test
+    def _read(self, path):  # pragma: no cover (integration test)
         """Read text from the object's file.
 
         @param path: path to a text file
@@ -158,7 +160,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return data
 
     @abc.abstractmethod
-    def save(self):  # pragma: no cover, abstract method
+    def save(self):  # pragma: no cover (abstract method)
         """Format and save the object's properties to its file."""
         # Call self._write() with the current properties here:
         pass  # pylint: disable=W0107
@@ -166,7 +168,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self._loaded = False
         self.auto = True
 
-    def _write(self, text, path):  # pragma: no cover, integration test
+    def _write(self, text, path):  # pragma: no cover (integration test)
         """Write text to the object's file.
 
         @param text: text to write to a file
@@ -188,6 +190,14 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         """
         return yaml.dump(data, default_flow_style=False)
+
+    # properties #############################################################
+
+    @property
+    def relpath(self):
+        """Get the item's relative path string."""
+        relpath = os.path.relpath(self.path, self.root)
+        return "@{}{}".format(os.sep, relpath)
 
     # extended attributes ####################################################
 

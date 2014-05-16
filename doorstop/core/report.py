@@ -35,7 +35,7 @@ def publish(obj, path, ext=None, ignored=None, **kwargs):
 
         # Publish report
         logging.info("publishing {}...".format(path))
-        with open(path, 'w') as outfile:  # pragma: no cover, integration test
+        with open(path, 'w') as outfile:  # pragma: no cover (integration test)
             for line in lines(obj, ext, ignored=ignored, **kwargs):
                 outfile.write(line + '\n')
     else:
@@ -133,7 +133,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
                 for line in item.text.splitlines():
                     yield from _chunks(line, width, indent)
 
-                    if not line:  # pragma: no cover - integration test
+                    if not line:  # pragma: no cover (integration test)
                         yield ""  # break between paragraphs
 
             # Reference
@@ -275,7 +275,7 @@ def lines_html(obj, ignored=None):
         yield '<style type="text/css">'
         yield ''
         with open(CSS) as infile:
-            for line in infile:  # pragma: no cover, integration test
+            for line in infile:  # pragma: no cover (integration test)
                 yield line
         yield '</style>'
         yield '</head>'

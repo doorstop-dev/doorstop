@@ -12,7 +12,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     """Represents an item file with linkable text."""
 
@@ -182,12 +182,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         """Get the item's ID."""
         filename = os.path.basename(self.path)
         return ID(os.path.splitext(filename)[0])
-
-    @property
-    def relpath(self):
-        """Get the item's relative path string."""
-        relpath = os.path.relpath(self.path, self.root)
-        return "@{}{}".format(os.sep, relpath)
 
     @property
     def prefix(self):
@@ -517,7 +511,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
         regex = re.compile(pattern)
         logging.debug("search path: {}".format(root or self.root))
         for root, _, filenames in os.walk(root or self.root):
-            for filename in filenames:  # pragma: no cover, integration test
+            for filename in filenames:  # pragma: no cover (integration test)
                 path = os.path.join(root, filename)
                 relpath = os.path.relpath(path, self.root)
                 # Skip the item's file while searching

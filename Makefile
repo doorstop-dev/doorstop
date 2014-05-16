@@ -1,14 +1,19 @@
+# Project settings (detected automatically from files/directories)
 PROJECT := $(patsubst ./%.sublime-project,%, $(shell find . -type f -name '*.sublime-p*'))
 PACKAGE := $(patsubst ./%/__init__.py,%, $(shell find . -maxdepth 2 -name '__init__.py'))
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
-
-ENV := env
-DEPENDS_CI := $(ENV)/.depends.ci
-DEPENDS_DEV := $(ENV)/.depends.dev
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
-PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
+# virtualenv settings
+ENV := env
 
+# Flags for PHONY targets
+DEPENDS_CI := $(ENV)/.depends-ci
+DEPENDS_DEV := $(ENV)/.depends-dev
+CHECKED := $(ENV)/.checked
+
+# OS-specific paths (detected automatically from the system Python)
+PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
 ifneq ($(findstring win32, $(PLATFORM)), )
 	SYS_PYTHON := C:\\Python34\\python.exe
 	SYS_VIRTUALENV := C:\\Python34\\Scripts\\virtualenv.exe
@@ -28,9 +33,7 @@ else
 	endif
 endif
 
-MAN := man
-SHARE := share
-
+# virtualenv executables
 PYTHON := $(BIN)/python
 PIP := $(BIN)/pip
 RST2HTML := $(BIN)/rst2html.py
@@ -41,10 +44,18 @@ PYLINT := $(BIN)/pylint
 PYREVERSE := $(BIN)/pyreverse$(BAT)
 NOSE := $(BIN)/nosetests
 
-# Development Installation ###################################################
+# Main Targets ###############################################################
 
 .PHONY: all
-all: doc check
+all: doc $(ALL)
+$(ALL): $(SOURCES)
+	$(MAKE) check
+	touch $(ALL)  # flag to indicate all setup steps were succesful
+
+.PHONY: ci
+ci: doorstop pep8 pep257 test tests tutorial
+
+# Development Installation ###################################################
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
@@ -63,13 +74,13 @@ depends: .depends-ci .depends-dev
 .PHONY: .depends-ci
 .depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install pep8 pep257 nose coverage
+	$(PIP) install --upgrade pep8 pep257 nose coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install docutils pdoc pylint wheel
+	$(PIP) install --upgrade docutils pdoc pylint wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -110,7 +121,7 @@ docs/*.png:
 
 .PHONY: html
 html: env docs/gen/*.html
-docs/gen/*.html: $(shell find . -name '*.yml')
+docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
 	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
@@ -125,6 +136,9 @@ read: doc
 
 # Static Analysis ############################################################
 
+.PHONY: check
+check: pep8 pep257 pylint
+
 .PHONY: pep8
 pep8: .depends-ci
 	$(PEP8) $(PACKAGE) --ignore=E501
@@ -135,13 +149,7 @@ pep257: .depends-ci
 
 .PHONY: pylint
 pylint: .depends-dev
-	$(PYLINT) $(PACKAGE) --reports no \
-	                     --msg-template="{msg_id}:{line:3d},{column}:{msg}" \
-	                     --max-line-length=79 \
-	                     --disable=I0011,W0142,W0511,R0801
-
-.PHONY: check
-check: pep8 pep257 pylint
+	$(PYLINT) $(PACKAGE) --rcfile .pylintrc
 
 # Testing ####################################################################
 
@@ -157,13 +165,11 @@ tests: .depends-ci
 tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
-.PHONY: ci
-ci: doorstop pep8 pep257 test tests tutorial
-
 # Cleanup ####################################################################
 
 .PHONY: clean
 clean: .clean-dist .clean-test .clean-doc .clean-build
+	rm -rf $(ALL)
 
 .PHONY: clean-all
 clean-all: clean .clean-env
@@ -180,7 +186,7 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html README.rst docs/*.png
+	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
 
 .PHONY: .clean-test
 .clean-test:

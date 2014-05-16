@@ -1,7 +1,7 @@
 """Package for doorstop."""
 
 __project__ = 'Doorstop'
-__version__ = '0.6-dev'
+__version__ = '0.6'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
@@ -11,5 +11,5 @@ try:
     from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
     from doorstop.core import Item, Document, Tree
     from doorstop.core import importer, build, report, find_document, find_item
-except ImportError:  # pragma: no cover, manual test
+except ImportError:  # pragma: no cover (manual test)
     pass

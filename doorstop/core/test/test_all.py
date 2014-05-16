@@ -9,8 +9,8 @@ import shutil
 import logging
 
 from doorstop import core
-from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
+from doorstop.core.tree import _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 
@@ -267,7 +267,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
         # Ensure the tree is reloaded
-        common._tree = None  # pylint: disable=W0212
+        _clear_tree()
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -340,7 +340,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         """Reset the internal tree."""
-        common._tree = None  # pylint: disable=W0212
+        _clear_tree()
 
     def test_find_document(self):
         """Verify documents can be found using a convenience function."""

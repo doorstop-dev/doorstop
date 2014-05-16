@@ -1,9 +1,10 @@
 Doorstop
 ========
 
-[![Build Status](https://travis-ci.org/jacebrowning/doorstop.png?branch=master)](https://travis-ci.org/jacebrowning/doorstop)
-[![Coverage Status](https://coveralls.io/repos/jacebrowning/doorstop/badge.png?branch=master)](https://coveralls.io/r/jacebrowning/doorstop?branch=master)
-[![PyPI Version](https://badge.fury.io/py/Doorstop.png)](http://badge.fury.io/py/Doorstop)
+[![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
+[![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
+[![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
+[![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 
 Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.
 
@@ -168,8 +169,9 @@ Build the documentation:
 Run static analysis:
 
     make pep8
+    make pep257
     make pylint
-    make check  # pep8 and pylint
+    make check  # includes all checks
 
 Prepare a release:
 
