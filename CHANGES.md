@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.60-dev (2014/5/15)
+0.6 (2014/5/15)
 ---------------
 
 - Refactored Item levels into a Level class
