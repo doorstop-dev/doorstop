@@ -10,7 +10,7 @@ ENV := env
 # Flags for PHONY targets
 DEPENDS_CI := $(ENV)/.depends-ci
 DEPENDS_DEV := $(ENV)/.depends-dev
-CHECKED := $(ENV)/.checked
+ALL := $(ENV)/.all
 
 # OS-specific paths (detected automatically from the system Python)
 PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
