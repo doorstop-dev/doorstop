@@ -185,11 +185,15 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual((1, 2, 0), self.level_1_2_heading)
         self.assertEqual((1, 2), self.level_1_2_heading)
 
-    def test_lt(self):
+    def test_compare(self):
         """Verify levels can be compared."""
         self.assertLess(self.level_1, self.level_1_2)
+        self.assertLessEqual(self.level_1, self.level_1)
+        self.assertLessEqual(self.level_1, self.level_1_2)
         self.assertLess(self.level_1_2, [1, 3])
         self.assertGreater(self.level_1_2_3, self.level_1_2)
+        self.assertGreaterEqual(self.level_1_2_3, self.level_1_2)
+        self.assertGreaterEqual(self.level_1_2_3, self.level_1_2_3)
 
     def test_hash(self):
         """Verify level's can be hashed."""
@@ -242,6 +246,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         level >>= 2
         self.assertEqual(Level('1.2.1.1.0'), level)
 
+    def test_rshift_negative(self):
+        """Verify levels can be indented negatively."""
+        level = self.level_1_2_3
+        level >>= -1
+        self.assertEqual(Level('1.2'), level)
+        self.assertEqual(Level('1'), level >> -1)
+
     def test_lshift(self):
         """Verify levels can be dedented."""
         level = self.level_1_2_3
@@ -254,6 +265,13 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         level = self.level_1_2_heading
         level <<= 1
         self.assertEqual(Level('1.0'), level)
+
+    def test_lshift_negative(self):
+        """Verify levels can be dedented negatively."""
+        level = self.level_1_2_3
+        level <<= -1
+        self.assertEqual(Level('1.2.3.1'), level)
+        self.assertEqual(Level('1.2.3.1.1'), level << -1)
 
     def test_lshift_empty(self):
         """Verify levels can be dedented."""

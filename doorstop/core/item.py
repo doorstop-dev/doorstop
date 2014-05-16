@@ -511,7 +511,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         regex = re.compile(pattern)
         logging.debug("search path: {}".format(root or self.root))
         for root, _, filenames in os.walk(root or self.root):
-            for filename in filenames:  # pragma: no cover, integration test
+            for filename in filenames:  # pragma: no cover (integration test)
                 path = os.path.join(root, filename)
                 relpath = os.path.relpath(path, self.root)
                 # Skip the item's file while searching

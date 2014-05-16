@@ -314,7 +314,7 @@ class Text(str):  # pylint: disable=R0904
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
-class Level(object):  # pragma: no cover
+class Level(object):
 
     """Variable-length numerical outline level values.
 
@@ -422,16 +422,22 @@ class Level(object):  # pragma: no cover
             return self.__ilshift__(abs(value))
 
     def __lshift__(self, value):
-        parts = list(self._parts)
-        if value:
-            parts = parts[:-value]
-        return Level(parts, heading=self.heading)
+        if value >= 0:
+            parts = list(self._parts)
+            if value:
+                parts = parts[:-value]
+            return Level(parts, heading=self.heading)
+        else:
+            return self.__rshift__(abs(value))
 
     def __ilshift__(self, value):
-        if value:
-            self._parts = self._parts[:-value]
-        self._adjust()
-        return self
+        if value >= 0:
+            if value:
+                self._parts = self._parts[:-value]
+            self._adjust()
+            return self
+        else:
+            return self.__irshift__(abs(value))
 
     @property
     def value(self):

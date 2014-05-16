@@ -448,7 +448,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self.children = []
 
 
-def _open(path, tool=None):  # pragma: no cover, integration test
+def _open(path, tool=None):  # pragma: no cover (integration test)
     """Open the text file using the default editor."""
     if tool:
         args = [tool, path]

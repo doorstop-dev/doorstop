@@ -461,5 +461,5 @@ def _get_extension(args, tree=False):
     return ext
 
 
-if __name__ == '__main__':  # pragma: no cover, manual test
+if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

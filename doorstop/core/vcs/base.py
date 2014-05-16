@@ -19,7 +19,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         self._ignores = []
 
     @staticmethod
-    def call(*args, return_stdout=False):  # pragma: no cover, abstract method
+    def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
         """Call a command with string arguments."""
         logging.debug("$ {}".format(' '.join(args)))
         if return_stdout:
@@ -28,17 +28,17 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
             return subprocess.call(args)
 
     @abstractmethod
-    def lock(self, path):  # pragma: no cover - abstract method
+    def lock(self, path):  # pragma: no cover (abstract method)
         """Pull, update, and lock a file for editing."""
         raise NotImplementedError()
 
     @abstractmethod
-    def save(self, message=None):  # pragma: no cover - abstract method
+    def save(self, message=None):  # pragma: no cover (abstract method)
         """Unlock files, commit, and push."""
         raise NotImplementedError()
 
     @property
-    def ignores(self):  # pragma: no cover - abstract method
+    def ignores(self):  # pragma: no cover (abstract method)
         """Get a list of glob expressions to ignore."""
         if not self._ignores:
             for filename in self.IGNORES:
@@ -47,7 +47,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
                     self._update_ignores_from_file(path)
         return self._ignores
 
-    def _update_ignores_from_file(self, path):  # pragma: no cover - integration test
+    def _update_ignores_from_file(self, path):  # pragma: no cover (integration test)
         """Parse and append patterns from a standard ignores file."""
         with open(path, 'r') as infile:
             for line in infile:

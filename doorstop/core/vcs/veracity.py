@@ -5,7 +5,7 @@ import logging
 from doorstop.core.vcs.base import BaseWorkingCopy
 
 
-class WorkingCopy(BaseWorkingCopy):  # pragma: no cover - integration test
+class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
 
     """Veracity working copy."""
 
