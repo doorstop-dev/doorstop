@@ -228,10 +228,10 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        if tree and valid:
-            print("valid tree: {}".format(tree))
-        return valid
+
+    if tree and valid:
+        print("valid tree: {}".format(tree))
+    return valid
 
 
 def _run_new(args, cwd, _):
@@ -249,10 +249,10 @@ def _run_new(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("created document: {} ({})".format(document.prefix,
-                                                 document.relpath))
-        return True
+
+    print("created document: {} ({})".format(document.prefix,
+                                             document.relpath))
+    return True
 
 
 def _run_add(args, cwd, _):
@@ -269,9 +269,9 @@ def _run_add(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("added item: {} ({})".format(item.id, item.relpath))
-        return True
+
+    print("added item: {} ({})".format(item.id, item.relpath))
+    return True
 
 
 def _run_remove(args, cwd, _):
@@ -288,9 +288,9 @@ def _run_remove(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("removed item: {} ({})".format(item.id, item.relpath))
-        return True
+
+    print("removed item: {} ({})".format(item.id, item.relpath))
+    return True
 
 
 def _run_link(args, cwd, _):
@@ -307,12 +307,10 @@ def _run_link(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("linked items: {} ({}) -> {} ({})".format(child.id,
-                                                        child.relpath,
-                                                        parent.id,
-                                                        parent.relpath))
-        return True
+
+    msg = "linked items: {} ({}) -> {} ({})"
+    print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    return True
 
 
 def _run_unlink(args, cwd, _):
@@ -329,12 +327,10 @@ def _run_unlink(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("unlinked items: {} ({}) -> {} ({})".format(child.id,
-                                                          child.relpath,
-                                                          parent.id,
-                                                          parent.relpath))
-        return True
+
+    msg = "unlinked items: {} ({}) -> {} ({})"
+    print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    return True
 
 
 def _run_edit(args, cwd, _):
@@ -351,9 +347,9 @@ def _run_edit(args, cwd, _):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
-        print("opened item: {} ({})".format(item.id, item.relpath))
-        return True
+
+    print("opened item: {} ({})".format(item.id, item.relpath))
+    return True
 
 
 def _run_import(args, _, err):
@@ -365,6 +361,7 @@ def _run_import(args, _, err):
 
     """
     document = item = None
+
     try:
         if args.document:
             prefix, path = args.document
@@ -378,16 +375,16 @@ def _run_import(args, _, err):
     except DoorstopError as error:
         logging.error(error)
         return False
+
+    if document:
+        name = document.prefix
+        relpath = document.relpath
     else:
-        if document:
-            name = document.prefix
-            relpath = document.relpath
-        else:
-            assert item
-            name = item.id
-            relpath = item.relpath
-        print("imported: {} ({})".format(name, relpath))
-        return True
+        assert item
+        name = item.id
+        relpath = item.relpath
+    print("imported: {} ({})".format(name, relpath))
+    return True
 
 
 def _run_publish(args, cwd, err):
@@ -398,7 +395,12 @@ def _run_publish(args, cwd, err):
     @param err: function to call for CLI errors
 
     """
+    # Parse arguments
     publish_tree = args.prefix == 'all'
+    ext = _get_extension(args, tree=publish_tree)
+    html = ext == '.html'
+
+    # Publish documents
     try:
         tree = build(cwd, root=args.project)
         if publish_tree:
@@ -408,48 +410,55 @@ def _run_publish(args, cwd, err):
     except DoorstopError as error:
         logging.error(error)
         return False
-    else:
 
-        # Set base arguments
-        kwargs = {'ignored': tree.vcs.ignored}
-        if args.width:
-            kwargs['width'] = args.width
+    # Set publishing arguments
+    kwargs = {'ignored': tree.vcs.ignored}
+    if args.width:
+        kwargs['width'] = args.width
 
-        # Set file extension
-        if args.path:
-            if publish_tree:
-                ext = '.html'
-            else:
-                ext = os.path.splitext(args.path)[-1]
-        if args.text:
-            ext = '.txt'
-        elif args.markdown:
-            ext = '.md'
-        elif args.html:
-            ext = '.html'
-        elif not args.path:
-            ext = '.txt'
-
-        # Publish documents
-        if args.path:
-            if publish_tree:
-                print("publishing tree to {}...".format(args.path))
-                for document in documents:
-                    path = os.path.join(args.path, document.prefix + ext)
-                    print("publishing {} to {}...".format(document, path))
-                    report.publish(document, path, ext, **kwargs)
-                if ext == '.html':
-                    report.index(args.path)
-            else:
-                print("publishing {} to {}...".format(documents[0], args.path))
-                report.publish(documents[0], args.path, ext, **kwargs)
+    # Write to output file(s)
+    if args.path:
+        if publish_tree:
+            print("publishing tree to {}...".format(args.path))
+            for document in documents:
+                path = os.path.join(args.path, document.prefix + ext)
+                print("publishing {} to {}...".format(document, path))
+                report.publish(document, path, ext, **kwargs)
+            if html:
+                report.index(args.path)
         else:
-            if publish_tree:
-                err("only single documents can be displayed")
-            for line in report.lines(documents[0], ext, **kwargs):
-                print(line)
+            print("publishing {} to {}...".format(documents[0], args.path))
+            report.publish(documents[0], args.path, ext, **kwargs)
 
-        return True
+    # Display to standard output
+    else:
+        if publish_tree:
+            err("only single documents can be displayed")
+        for line in report.lines(documents[0], ext, **kwargs):
+            print(line)
+
+    return True
+
+
+def _get_extension(args, tree=False):
+    """Determine the output file extensions from input arguments."""
+    # Get the argument from a provided output path
+    if args.path:
+        if tree:
+            ext = '.html'
+        else:
+            ext = os.path.splitext(args.path)[-1]
+    # Override the extension if a format is specified
+    if args.text:
+        ext = '.txt'
+    elif args.markdown:
+        ext = '.md'
+    elif args.html:
+        ext = '.html'
+    elif not args.path:
+        ext = '.txt'
+
+    return ext
 
 
 if __name__ == '__main__':  # pragma: no cover, manual test

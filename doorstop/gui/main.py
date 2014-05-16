@@ -195,7 +195,7 @@ class Application(ttk.Frame):  # pragma: no cover, manual test, pylint: disable=
         # Start the application
         root.after(500, self.find)
 
-    def init(self, root):  # pylint: disable=R0914
+    def init(self, root):  # pylint: disable=R0912,R0914
         """Initialize and return the main frame."""  # pylint: disable=C0301
         # Shared arguments
         width_outline = 20

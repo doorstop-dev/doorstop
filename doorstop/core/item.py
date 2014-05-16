@@ -12,7 +12,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
-class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     """Represents an item file with linkable text."""
 
