@@ -10,7 +10,7 @@ ENV := env
 # Flags for PHONY targets
 DEPENDS_CI := $(ENV)/.depends-ci
 DEPENDS_DEV := $(ENV)/.depends-dev
-ALL := $(ENV)/.all
+CHECKED := $(ENV)/.checked
 
 # OS-specific paths (detected automatically from the system Python)
 PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
@@ -47,8 +47,8 @@ NOSE := $(BIN)/nosetests
 # Main Targets ###############################################################
 
 .PHONY: all
-all: $(ALL)
-$(ALL): $(SOURCES) doc
+all: doc $(ALL)
+$(ALL): $(SOURCES)
 	$(MAKE) check
 	touch $(ALL)  # flag to indicate all setup steps were succesful
 
@@ -121,7 +121,7 @@ docs/*.png:
 
 .PHONY: html
 html: env docs/gen/*.html
-docs/gen/*.html: $(shell find . -name '*.yml')
+docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
 	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
