@@ -2,13 +2,13 @@
 
 import logging
 
-from doorstop.core.tree import _get_tree
+from doorstop.common import DoorstopError
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.common import DoorstopError
+from doorstop.core.builder import _get_tree
 
 
-_documents = []  # cache of unplaced documents, pylint: disable=C0103
+_DOCUMENTS = []  # cache of unplaced documents
 
 
 def new_document(prefix, path, parent=None):
@@ -37,7 +37,7 @@ def new_document(prefix, path, parent=None):
                                 path, tree.root, prefix,
                                 parent=parent)
         logging.warning(exc)
-        _documents.append(document)
+        _DOCUMENTS.append(document)
 
     # TODO: attempt to place unplaced documents?
 

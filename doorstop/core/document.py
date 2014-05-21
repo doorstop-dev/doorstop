@@ -5,12 +5,12 @@ from itertools import chain
 from collections import OrderedDict
 import logging
 
+from doorstop import common
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop import settings
 
 

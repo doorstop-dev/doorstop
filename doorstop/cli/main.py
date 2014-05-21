@@ -9,7 +9,7 @@ import argparse
 import logging
 
 from doorstop.gui.main import _run as gui
-from doorstop.core.tree import build
+from doorstop.core.builder import build
 from doorstop.core import publisher, importer
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError

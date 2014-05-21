@@ -7,9 +7,9 @@ import os
 import tempfile
 import shutil
 
+from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.vcs.mockvcs import WorkingCopy
-from doorstop.common import DoorstopError
 
 from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_item import MockItem

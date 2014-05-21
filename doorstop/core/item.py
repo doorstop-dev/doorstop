@@ -4,11 +4,11 @@ import os
 import re
 import logging
 
+from doorstop import common
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import ID, Text, Level
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
