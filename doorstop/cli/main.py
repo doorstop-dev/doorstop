@@ -412,7 +412,7 @@ def _run_publish(args, cwd, err):
         return False
 
     # Set publishing arguments
-    kwargs = {'ignored': tree.vcs.ignored}
+    kwargs = {}
     if args.width:
         kwargs['width'] = args.width
 

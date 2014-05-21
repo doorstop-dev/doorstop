@@ -13,13 +13,12 @@ CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
 
-def publish(obj, path, ext=None, ignored=None, **kwargs):
+def publish(obj, path, ext=None, **kwargs):
     """Publish a document to a given format.
 
     @param obj: Item, list of Items, or Document to publish
     @param path: output file location with desired extension
     @param ext: file extension to override output path's extension
-    @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
 
@@ -36,7 +35,7 @@ def publish(obj, path, ext=None, ignored=None, **kwargs):
         # Publish report
         logging.info("publishing {}...".format(path))
         with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj, ext, ignored=ignored, **kwargs):
+            for line in lines(obj, ext, **kwargs):
                 outfile.write(line + '\n')
     else:
         raise DoorstopError("unknown format: {}".format(ext))
@@ -85,28 +84,26 @@ def _lines_index(filenames):
     yield '</html>'
 
 
-def lines(obj, ext='.txt', ignored=None, **kwargs):
+def lines(obj, ext='.txt', **kwargs):
     """Yield lines for a report in the specified format.
 
     @param obj: Item, list of Items, or Document to publish
     @param ext: file extension to specify the output format
-    @param ignored: function to determine if a path should be skipped
 
     @raise DoorstopError: for unknown file formats
 
     """
     if ext in FORMAT:
         logging.debug("yielding {} as lines of {}...".format(obj, ext))
-        yield from FORMAT[ext](obj, ignored=ignored, **kwargs)
+        yield from FORMAT[ext](obj, **kwargs)
     else:
         raise DoorstopError("unknown format: {}".format(ext))
 
 
-def lines_text(obj, ignored=None, indent=8, width=79):
+def lines_text(obj, indent=8, width=79):
     """Yield lines for a text report.
 
     @param obj: Item, list of Items, or Document to publish
-    @param ignored: function to determine if a path should be skipped
     @param indent: number of spaces to indent text
     @param width: maximum line length
 
@@ -139,7 +136,7 @@ def lines_text(obj, ignored=None, indent=8, width=79):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                ref = _ref(item, ignored=ignored)
+                ref = _ref(item)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -168,11 +165,10 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj, ignored=None):
+def lines_markdown(obj):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
-    @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
 
@@ -200,7 +196,7 @@ def lines_markdown(obj, ignored=None):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _ref(item, ignored=ignored)
+                yield _ref(item)
 
             # Links
             if item.links:
@@ -242,21 +238,20 @@ def _format_level(level):
     return text
 
 
-def _ref(item, ignored=None):
+def _ref(item):
     """Format an external reference for publishing."""
     if settings.CHECK_REF:
-        path, line = item.find_ref(ignored=ignored)
+        path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
         return "Reference: {p} (line {l})".format(p=path, l=line)
     else:
         return "Reference: '{r}'".format(r=item.ref)
 
 
-def lines_html(obj, ignored=None):
+def lines_html(obj):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
-    @param ignored: function to determine if a path should be skipped
 
     @return: iterator of lines of text
 
@@ -280,7 +275,7 @@ def lines_html(obj, ignored=None):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    html = markdown.markdown('\n'.join(lines_markdown(obj, ignored=ignored)))
+    html = markdown.markdown('\n'.join(lines_markdown(obj)))
     yield from html.splitlines()
     if document:
         yield '</body>'
