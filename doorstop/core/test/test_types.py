@@ -2,8 +2,8 @@
 
 import unittest
 
-from doorstop.core.types import Prefix, ID, Text, Level
 from doorstop.common import DoorstopError
+from doorstop.core.types import Prefix, ID, Text, Level
 
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904

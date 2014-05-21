@@ -10,7 +10,7 @@ import logging
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError
-from doorstop.core.tree import _clear_tree
+from doorstop.core.builder import _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 

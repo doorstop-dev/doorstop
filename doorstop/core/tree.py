@@ -1,18 +1,17 @@
-"""Compiles the Doorstop document hierarchy."""
+"""Representation of a hierarchy of documents."""
 
 import os
-import sys
 import shutil
 import functools
 from itertools import chain
-import subprocess
 import logging
 
+from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, ID
-from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core import vcs
+from doorstop.core import editor
 
 
 def clear_document_cache(func):
@@ -329,7 +328,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self.vcs.lock(item.path)
         # Open item
         if launch:
-            _open(item.path, tool=tool)
+            editor.launch(item.path, tool=tool)
             # TODO: force an item reload without touching a private attribute
             item._loaded = False  # pylint: disable=W0212
         # Return the item
@@ -446,115 +445,3 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             document.delete()
         self.document = None
         self.children = []
-
-
-def _open(path, tool=None):  # pragma: no cover (integration test)
-    """Open the text file using the default editor."""
-    if tool:
-        args = [tool, path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-    elif sys.platform.startswith('darwin'):
-        args = ['open', path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-    elif os.name == 'nt':
-        logging.debug("$ (start) {}".format(path))
-        os.startfile(path)  # pylint: disable=E1101
-    elif os.name == 'posix':
-        args = ['xdg-open', path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-
-
-def build(cwd=None, root=None):
-    """Build a tree from the current working directory or explicit root.
-
-    @param cwd: current working directory
-    @param root: path to root of the working copy
-
-    @raise DoorstopError: when the tree cannot be built
-
-    @return: new Tree
-
-    """
-    documents = []
-
-    # Find the root of the working copy
-    cwd = cwd or os.getcwd()
-    root = root or vcs.find_root(cwd)
-
-    # Find all documents in the working copy
-    logging.info("looking for documents in {}...".format(root))
-    _document_from_path(root, root, documents)
-    for dirpath, dirnames, _ in os.walk(root):
-        for dirname in dirnames:
-            path = os.path.join(dirpath, dirname)
-            _document_from_path(path, root, documents)
-
-    # Build the tree
-    if not documents:
-        logging.info("no documents found in: {}".format(root))
-    logging.info("building tree...")
-    tree = Tree.from_list(documents, root=root)
-    logging.info("built tree: {}".format(tree))
-    return tree
-
-
-def _document_from_path(path, root, documents):
-    """Attempt to create and append a document from the specified path.
-
-    @param path: path to a potential document
-    @param root: path to root of working copy
-    @param documents: list of Documents to append results
-
-    """
-    try:
-        document = Document(path, root, tree=None)  # tree attached later
-    except DoorstopError:
-        pass  # no document in directory
-    else:
-        if document.skip:
-            logging.debug("skipping document: {}".format(document))
-        else:
-            logging.info("found document: {}".format(document))
-            documents.append(document)
-
-
-# convenience functions ######################################################
-
-_tree = None  # implicit tree for convenience functions, pylint:disable=C0103
-
-
-def _get_tree():
-    """Get a shared tree for convenience functions."""
-    global _tree  # pylint: disable=W0603,C0103
-    if _tree is None:
-        _tree = build()
-    return _tree
-
-
-def _set_tree(value):
-    """Set the shared tree to a specific value (for testing)."""
-    global _tree  # pylint: disable=W0603,C0103
-    _tree = value
-
-
-def _clear_tree():
-    """Force the shared tree to be rebuilt."""
-    global _tree  # pylint: disable=W0603,C0103
-    _tree = None
-
-
-def find_document(prefix):
-    """Find a document without an explicitly building a tree."""
-    tree = _get_tree()
-    document = tree.find_document(prefix)
-    return document
-
-
-def find_item(identifier):
-    """Find an item without an explicitly building a tree."""
-    tree = _get_tree()
-    item = tree.find_item(identifier)
-    return item

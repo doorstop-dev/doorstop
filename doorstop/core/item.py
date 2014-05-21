@@ -1,14 +1,14 @@
-"""Representation of items in a Doorstop document."""
+"""Representation of an item in a document."""
 
 import os
 import re
 import logging
 
+from doorstop import common
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import ID, Text, Level
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import settings
 
 
@@ -491,8 +491,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_ref(self, root=None, ignored=None):
         """Get the external file reference and line number.
 
-        @param root: override the path to the working copy (for testing)
-        @param ignored: function to determine if a path should be skipped
+        @param root: override path to the working copy (for testing)
+        @param ignored: override function to determine ignores (for testing)
 
         @raise DoorstopError: when no reference is found
 
@@ -501,16 +501,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                  None, None (when no reference set)
 
         """
+        root = root or self.root
+        ignored = ignored or \
+            self.tree.vcs.ignored if self.tree else (lambda _: False)
+        # Return immediately if no external reference
         if not self.ref:
             logging.debug("no external reference to search for")
             return None, None
-        ignored = ignored or (lambda _: False)
+        # Search for the external reference
         logging.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
         logging.debug("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        logging.debug("search path: {}".format(root or self.root))
-        for root, _, filenames in os.walk(root or self.root):
+        logging.debug("search path: {}".format(root))
+        for root, _, filenames in os.walk(root):
             for filename in filenames:  # pragma: no cover (integration test)
                 path = os.path.join(root, filename)
                 relpath = os.path.relpath(path, self.root)

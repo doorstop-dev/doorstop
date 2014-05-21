@@ -5,9 +5,10 @@ from unittest.mock import patch, Mock
 
 import os
 
-from doorstop.core import importer
-from doorstop.core.tree import Tree, _set_tree
 from doorstop.common import DoorstopError
+from doorstop.core.tree import Tree
+from doorstop.core import importer
+from doorstop.core.builder import _set_tree
 
 from doorstop.core.test.test_document import MockItem
 
