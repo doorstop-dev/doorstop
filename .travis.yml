@@ -21,7 +21,7 @@ after_script:
   echo "[${TRAVIS_REPO_SLUG}](~${TRAVIS_REPO_SLUG})" | sed -e 's/\//.github.io\//g' | sed -e 's/~/http:\/\//g' > README.md ;
   git init ;
   git add . ;
-  git commit -m "Deploy Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages." ;
+  git commit -m "Deployed Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages." ;
   git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
 env:
   global:
