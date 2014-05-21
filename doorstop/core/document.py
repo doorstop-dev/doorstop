@@ -1,4 +1,4 @@
-"""Representation of a collection of Doorstop items."""
+"""Representation of a collection of items."""
 
 import os
 from itertools import chain

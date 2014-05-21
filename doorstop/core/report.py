@@ -1,4 +1,4 @@
-"""Doorstop reporting functionality."""
+"""Functions to publish documents and items."""
 
 import os
 import textwrap

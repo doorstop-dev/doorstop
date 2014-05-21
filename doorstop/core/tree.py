@@ -1,4 +1,4 @@
-"""Compiles the Doorstop document hierarchy."""
+"""Representation of a hierarchy of documents."""
 
 import os
 import sys

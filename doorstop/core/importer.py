@@ -1,4 +1,4 @@
-"""Functions to import exiting documents and items to the Doorstop format."""
+"""Functions to import exiting documents and items."""
 
 import logging
 

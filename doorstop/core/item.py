@@ -1,4 +1,4 @@
-"""Representation of items in a Doorstop document."""
+"""Representation of an item in a document."""
 
 import os
 import re
