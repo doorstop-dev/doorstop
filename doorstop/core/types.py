@@ -1,4 +1,4 @@
-"""Common classes and functions for the doorstop.core package."""
+"""Common classes for the doorstop.core package."""
 
 
 import re

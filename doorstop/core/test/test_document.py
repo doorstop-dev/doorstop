@@ -6,9 +6,9 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.types import Level
 from doorstop.core.document import Document
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
 from doorstop.core.test.test_item import MockItem

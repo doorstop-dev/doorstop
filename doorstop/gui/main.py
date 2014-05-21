@@ -20,7 +20,7 @@ import logging
 
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop.core import vcs
-from doorstop.core import tree
+from doorstop.core import builder
 from doorstop import settings
 
 
@@ -429,7 +429,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     def display_tree(self, *_):
         """Display the currently selected tree."""
         # Set the current tree
-        self.tree = tree.build(root=self.stringvar_project.get())
+        self.tree = builder.build(root=self.stringvar_project.get())
         logging.info("displaying tree...")
 
         # Display the documents in the tree
