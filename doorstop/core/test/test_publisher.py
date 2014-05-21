@@ -7,7 +7,7 @@ import os
 import tempfile
 import shutil
 
-from doorstop.core import report
+from doorstop.core import publisher
 from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.common import DoorstopError
 
@@ -24,7 +24,7 @@ ASSERT_CONTENTS = True
 
 class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
-    """Base test class for the doorstop.core.report module."""  # pylint: disable=C0103
+    """Base test class for the doorstop.core.publisher module."""  # pylint: disable=C0103
 
     @classmethod
     def setUpClass(cls):
@@ -65,15 +65,15 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(BaseTestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.report module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
 
     @patch('os.makedirs')
     @patch('builtins.open')
-    @patch('doorstop.core.report.lines')
+    @patch('doorstop.core.publisher.lines')
     def test_publish_html(self, mock_lines, mock_open, mock_makedirs):
         """Verify an HTML file can be created."""
         path = os.path.join('mock', 'directory', 'report.html')
-        report.publish(self.document, path, '.html')
+        publisher.publish(self.document, path, '.html')
         mock_makedirs.assert_called_once_with(os.path.join('mock',
                                                            'directory'))
         mock_open.assert_called_once_with(path, 'w')
@@ -83,7 +83,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
     def test_publish_unknown(self):
         """Verify publishing to an unknown format raises an exception."""
         self.assertRaises(DoorstopError,
-                          report.publish, self.document, 'a.a', '.a')
+                          publisher.publish, self.document, 'a.a', '.a')
 
     @patch('os.makedirs')
     @patch('builtins.open')
@@ -92,7 +92,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         path = os.path.join('mock', 'directory', 'report.html')
         mock_document = MagicMock()
         mock_document.items = []
-        report.publish(mock_document, path)
+        publisher.publish(mock_document, path)
         mock_makedirs.assert_called_once_with(os.path.join('mock',
                                                            'directory'))
         self.assertEqual(2, mock_open.call_count)
@@ -100,19 +100,19 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
     def test_index(self):
         """Verify an HTML index can be created."""
         path = os.path.join(FILES, 'index.html')
-        report.index(FILES)
+        publisher.index(FILES)
         self.assertTrue(os.path.isfile(path))
 
     def test_index_no_files(self):
         """Verify an HTML index is only created when files exist."""
         path = os.path.join(EMPTY, 'index.html')
-        report.index(EMPTY)
+        publisher.index(EMPTY)
         self.assertFalse(os.path.isfile(path))
 
     def test_lines_text_item_heading(self):
         """Verify a text report can be created from an item (heading)."""
         expected = "1.1     Heading\n\n"
-        lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.item, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
@@ -123,7 +123,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
                     "        Reference: Doorstop.sublime-project (line None)"
                     + '\n\n'
                     "        Links: sys4" + '\n\n')
-        lines = report.lines(self.item3, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.item3, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
@@ -132,21 +132,21 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         """Verify a text report can be created without checking references."""
         self.item.ref = 'abc123'
         self.item.heading = False
-        lines = report.lines(self.item, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.item, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: 'abc123'", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_text_item_with_child_links(self):
         """Verify a text report can be created with child links."""
-        lines = report.lines(self.item2, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.item2, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("Child links: tst1", text)
 
     def test_lines_markdown_item_heading(self):
         """Verify a Markdown report can be created from an item (heading)."""
         expected = "## 1.1 Heading\n\n"
-        lines = report.lines(self.item, '.md', ignored=self.work.ignored)
+        lines = publisher.lines(self.item, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
@@ -156,41 +156,41 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')
-        lines = report.lines(self.item3, '.md', ignored=self.work.ignored)
+        lines = publisher.lines(self.item3, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
     def test_lines_html_item(self):
         """Verify an HTML report can be created from an item."""
         expected = "<h2>1.1 Heading</h2>\n"
-        lines = report.lines(self.item, '.html', ignored=self.work.ignored)
+        lines = publisher.lines(self.item, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertEqual(expected, text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_html_item_with_child_links(self):
         """Verify an HTML report can be created from an item w/ child links."""
-        lines = report.lines(self.item2, '.html', ignored=self.work.ignored)
+        lines = publisher.lines(self.item2, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("Child links: tst1", text)
 
     def test_lines_unknown(self):
         """Verify iterating an unknown format raises."""
-        gen = report.lines(self.document, '.a')
+        gen = publisher.lines(self.document, '.a')
         self.assertRaises(DoorstopError, list, gen)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not ASSERT_CONTENTS, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the doorstop.core.report module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""
         temp = tempfile.mkdtemp()
         try:
             path = os.path.join(temp, 'report.html')
-            report.publish(self.document, path, '.html')
+            publisher.publish(self.document, path, '.html')
             self.assertTrue(os.path.isfile(path))
         finally:
             shutil.rmtree(temp)
@@ -199,7 +199,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'report.txt')
         expected = open(path).read()
-        lines = report.lines(self.document, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
@@ -211,7 +211,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify text can be published from a document with child links."""
         path = os.path.join(FILES, 'report2.txt')
         expected = open(path).read()
-        lines = report.lines(self.document, '.txt', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.txt', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
@@ -222,7 +222,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'report.md')
         expected = open(path).read()
-        lines = report.lines(self.document, '.md', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
@@ -234,7 +234,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify Markdown can be published from a document w/ child links."""
         path = os.path.join(FILES, 'report2.md')
         expected = open(path).read()
-        lines = report.lines(self.document, '.md', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.md', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
@@ -245,7 +245,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'report.html')
         expected = open(path).read()
-        lines = report.lines(self.document, '.html', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)
@@ -257,7 +257,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify HTML can be published from a document with child links."""
         path = os.path.join(FILES, 'report2.html')
         expected = open(path).read()
-        lines = report.lines(self.document, '.html', ignored=self.work.ignored)
+        lines = publisher.lines(self.document, '.html', ignored=self.work.ignored)
         text = ''.join(line + '\n' for line in lines)
         if ASSERT_CONTENTS:
             self.assertEqual(expected, text)

@@ -10,7 +10,7 @@ import logging
 
 from doorstop.gui.main import _run as gui
 from doorstop.core.tree import build
-from doorstop.core import report, importer
+from doorstop.core import publisher, importer
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
@@ -388,7 +388,7 @@ def _run_import(args, _, err):
 
 
 def _run_publish(args, cwd, err):
-    """Process arguments and run the `doorstop report` subcommand.
+    """Process arguments and run the `doorstop publish` subcommand.
 
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
@@ -423,18 +423,18 @@ def _run_publish(args, cwd, err):
             for document in documents:
                 path = os.path.join(args.path, document.prefix + ext)
                 print("publishing {} to {}...".format(document, path))
-                report.publish(document, path, ext, **kwargs)
+                publisher.publish(document, path, ext, **kwargs)
             if html:
-                report.index(args.path)
+                publisher.index(args.path)
         else:
             print("publishing {} to {}...".format(documents[0], args.path))
-            report.publish(documents[0], args.path, ext, **kwargs)
+            publisher.publish(documents[0], args.path, ext, **kwargs)
 
     # Display to standard output
     else:
         if publish_tree:
             err("only single documents can be displayed")
-        for line in report.lines(documents[0], ext, **kwargs):
+        for line in publisher.lines(documents[0], ext, **kwargs):
             print(line)
 
     return True
