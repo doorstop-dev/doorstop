@@ -313,12 +313,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
                           self.tree.unlink_items, 'req3', 'req9999')
 
     @patch('doorstop.core.vcs.git.WorkingCopy.lock')
-    @patch('doorstop.core.tree._open')
-    def test_edit_item(self, mock_open, mock_lock):
+    @patch('doorstop.core.editor.launch')
+    def test_edit_item(self, mock_launch, mock_lock):
         """Verify an item can be edited in a tree."""
         self.tree.edit_item('req2', launch=True)
         path = os.path.join(FILES, 'REQ002.yml')
-        mock_open.assert_called_once_with(path, tool=None)
+        mock_launch.assert_called_once_with(path, tool=None)
         mock_lock.assert_called_once_with(path)
 
     def test_edit_item_unknown_prefix(self):

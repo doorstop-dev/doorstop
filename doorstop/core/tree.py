@@ -1,11 +1,9 @@
 """Representation of a hierarchy of documents."""
 
 import os
-import sys
 import shutil
 import functools
 from itertools import chain
-import subprocess
 import logging
 
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -13,6 +11,7 @@ from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
+from doorstop.core import editor
 
 
 def clear_document_cache(func):
@@ -329,7 +328,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self.vcs.lock(item.path)
         # Open item
         if launch:
-            _open(item.path, tool=tool)
+            editor.launch(item.path, tool=tool)
             # TODO: force an item reload without touching a private attribute
             item._loaded = False  # pylint: disable=W0212
         # Return the item
@@ -446,22 +445,3 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             document.delete()
         self.document = None
         self.children = []
-
-
-def _open(path, tool=None):  # pragma: no cover (integration test)
-    """Open the text file using the default editor."""
-    if tool:
-        args = [tool, path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-    elif sys.platform.startswith('darwin'):
-        args = ['open', path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
-    elif os.name == 'nt':
-        logging.debug("$ (start) {}".format(path))
-        os.startfile(path)  # pylint: disable=E1101
-    elif os.name == 'posix':
-        args = ['xdg-open', path]
-        logging.debug("$ {}".format(' '.join(args)))
-        subprocess.call(args)
