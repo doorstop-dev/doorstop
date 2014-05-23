@@ -39,6 +39,7 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Documentation',
         'Topic :: Text Editors :: Documentation',
         'Topic :: Text Processing :: Markup',
