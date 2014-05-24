@@ -48,6 +48,6 @@ setuptools.setup(
     install_requires=[
         "PyYAML >= 3.10, < 4",
         "Markdown >= 2, < 3",
-        "openpyxl >= 1.8, < 2",
+        "openpyxl >= 2, < 3",
     ],
 )
