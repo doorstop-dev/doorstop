@@ -45,5 +45,9 @@ setuptools.setup(
         'Topic :: Text Processing :: Markup',
     ],
 
-    install_requires=["PyYAML == 3.10", "Markdown >= 2, < 3"],
+    install_requires=[
+        "PyYAML >= 3.10, < 4",
+        "Markdown >= 2, < 3",
+        "openpyxl >= 1.8, < 2",
+    ],
 )
