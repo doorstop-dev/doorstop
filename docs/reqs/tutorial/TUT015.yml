@@ -1,0 +1,16 @@
+active: true
+derived: false
+level: 4.1
+links: []
+normative: true
+ref: ''
+text: |
+  **Exporting a Document**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Export a document as XLSX:
+
+      doorstop export HLR out/hlr.xlsx
