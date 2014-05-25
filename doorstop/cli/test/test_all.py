@@ -373,6 +373,32 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
 
 
+# TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestExport(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_export(self):
+        """Verify 'doorstop export' can create output."""
+        self.skipTest("TODO: implement feature")
+        self.assertIs(None, main(['export', 'tut']))
+
+    def test_export_xlsx(self):
+        """Verify 'doorstop publish' can create text output."""
+        path = os.path.join(self.temp, 'tut.xlsx')
+        self.assertIs(None, main(['export', 'tut', path]))
+        self.assertTrue(os.path.isfile(path))
+
+
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
