@@ -11,6 +11,14 @@ text: |
 
       cd /tmp/doorstop
 
-  Export a document as XLSX:
+  Export a document to standard outout:
 
-      doorstop export HLR out/hlr.xlsx
+      doorstop export LLR
+
+  Export all documents to a directory:
+
+      doorstop export all dirpath/to/exports
+
+  Export documents using specific formats:
+
+      doorstop export REQ path/to/req.xlsx
