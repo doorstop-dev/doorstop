@@ -149,6 +149,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Format and save the item's properties to its file."""
         logging.debug("saving {}...".format(repr(self)))
         # Format the data items
+        data = self.data
+        # Dump the data to YAML
+        text = self._dump(data)
+        # Save the YAML to file
+        self._write(text, self.path)
+        # Set meta attributes
+        self._loaded = False
+        self.auto = True
+
+    # properties #############################################################
+
+    @property
+    def data(self):
+        """Get all the item's data formatted for dumping."""
         data = {}
         for key, value in self._data.items():
             if key == 'level':
@@ -167,15 +181,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         end = '\n' if value.endswith('\n') else ''
                         value = Text.save_text(value, end=end)
                 data[key] = value
-        # Dump the data to YAML
-        text = self._dump(data)
-        # Save the YAML to file
-        self._write(text, self.path)
-        # Set meta attributes
-        self._loaded = False
-        self.auto = True
-
-    # properties #############################################################
+        return data
 
     @property
     def id(self):  # pylint: disable=C0103

@@ -402,6 +402,7 @@ def _run_import(args, _, err):
     print("imported: {} ({})".format(name, relpath))
     return True
 
+
 def _run_export(args, cwd, err):
     """Process arguments and run the `doorstop export` subcommand.
 
