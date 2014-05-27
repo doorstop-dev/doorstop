@@ -125,7 +125,14 @@ def file_csv(obj, path):
             writer.writerow(row)
 
 
-def file_xlsx(*args, **kwargs):  # pragma: no cover (not implemented)
+def file_xlsx(obj, path):  # pragma: no cover (not implemented)
+    """Create an XLSX file at the given path.
+
+    @param obj: Item, list of Items, or Document to export
+
+    @return: path of created file
+
+    """
     raise NotImplementedError
 
 

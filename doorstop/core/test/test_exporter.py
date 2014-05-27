@@ -13,12 +13,12 @@ from doorstop.core import exporter
 from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_publisher import BaseTestCase
 
-# Whenever the report format is changed:
-#  1. set ASSERT_CONTENTS to False
+# Whenever the export format is changed:
+#  1. set CHECK_EXPORTED_CONTENT to False
 #  2. re-run all tests
 #  3. manually verify the newly generated reports are correct
-#  4. set ASSERT_CONTENTS to True
-ASSERT_CONTENTS = True
+#  4. set CHECK_EXPORTED_CONTENT to True
+CHECK_EXPORTED_CONTENT = True
 
 
 class TestModule(BaseTestCase):  # pylint: disable=R0904
@@ -62,7 +62,9 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_unknown(self):
         """Verify an exception is raised when iterating an unknown format."""
+        # Act
         gen = exporter.lines(self.document, '.a')
+        # Assert
         self.assertRaises(DoorstopError, list, gen)
 
     def test_create(self):
@@ -82,7 +84,8 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
                           exporter.create, self.document, 'a.csv', '.a')
 
 
-@unittest.skipUnless(os.getenv(ENV) or not ASSERT_CONTENTS, REASON)  # pylint: disable=R0904
+@unittest.skip("TODO: implement tests")
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
@@ -103,7 +106,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -115,7 +118,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -126,7 +129,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -138,7 +141,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -149,7 +152,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -161,7 +164,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         expected = open(path).read()
         lines = publisher.lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
-        if ASSERT_CONTENTS:
+        if CHECK_EXPORTED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)

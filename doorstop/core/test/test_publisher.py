@@ -15,11 +15,11 @@ from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_item import MockItem as _MockItem
 
 # Whenever the report format is changed:
-#  1. set ASSERT_CONTENTS to False
+#  1. set CHECK_PUBLISHED_CONTENT to False
 #  2. re-run all tests
 #  3. manually verify the newly generated reports are correct
-#  4. set ASSERT_CONTENTS to True
-ASSERT_CONTENTS = True
+#  4. set CHECK_PUBLISHED_CONTENT to True
+CHECK_PUBLISHED_CONTENT = True
 
 
 class MockItem(_MockItem):  # pylint: disable=W0223,R0902,R0904
@@ -57,7 +57,7 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req2.yml',
                      _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: 'ASSERT_CONTENTS'\n"
+                     _file="links: [sys2]\nref: 'CHECK_PUBLISHED_CONTENT'\n"
                      "level: 2.1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
@@ -218,7 +218,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, list, gen)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not ASSERT_CONTENTS, REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
@@ -243,7 +243,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -257,7 +257,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -270,7 +270,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -284,7 +284,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -297,7 +297,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)
@@ -311,7 +311,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        if ASSERT_CONTENTS:
+        if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
         with open(path, 'w') as outfile:
             outfile.write(text)

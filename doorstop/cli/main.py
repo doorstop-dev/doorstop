@@ -403,7 +403,8 @@ def _run_import(args, _, err):
     return True
 
 
-def _run_export(args, cwd, err):
+# TODO: add tests for coverage, remove pragma
+def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
     """Process arguments and run the `doorstop export` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -508,29 +509,43 @@ def _run_publish(args, cwd, err):
 
 
 def _get_extension(args, ext_stdout, ext_file, whole_tree):
-    """Determine the output file extensions from input arguments."""
+    """Determine the output file extensions from input arguments.
+
+    @param args: Namespace of CLI arguments
+    @param ext_stdout: default extension for standard output
+    @param ext_file: default extension for file output
+    @param: whole_tree: indicates the path is a directory for the whole tree
+
+    @return: chosen extension
+
+    """
+    ext = None
     # Get the argument from a provided output path
     if args.path:
         if whole_tree:
             ext = ext_file
         else:
             ext = os.path.splitext(args.path)[-1]
+        logging.debug("extension based on path: {}".format(ext))
+
     # Override the extension if a format is specified
-    for ext, option in {'.txt': 'text',
-                        '.md': 'markdown',
-                        '.html': 'html',
-                        '.yml': 'yaml',
-                        '.csv': '.csv',
-                        '.xlsx': '.xlsx'}.items():
+    for _ext, option in {'.txt': 'text',
+                         '.md': 'markdown',
+                         '.html': 'html',
+                         '.yml': 'yaml',
+                         '.csv': 'csv',
+                         '.xlsx': 'xlsx'}.items():
         try:
-            getattr(args, option)
+            if getattr(args, option):
+                ext = _ext
+                logging.debug("extension based on override: {}".format(ext))
+                break
         except AttributeError:
             continue
-        else:
-            ext = ext
-            break
     else:
-        ext = ext_stdout
+        if not ext:
+            ext = ext_stdout
+        logging.debug("extension based on default: {}".format(ext))
 
     return ext
 
