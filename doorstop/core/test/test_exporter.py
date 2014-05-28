@@ -9,6 +9,8 @@ import tempfile
 import shutil
 import logging
 
+import openpyxl
+
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
 
@@ -96,15 +98,28 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         mock_file_csv.assert_called_once_with(self.item, path, delimiter='\t')
 
 
-def read_csv(path):
+def read_csv(path, delimiter=','):
     """Return a list of rows from a CSV file."""
     rows = []
     try:
         with open(path, 'r', newline='') as stream:
-            reader = csv.reader(stream)
+            reader = csv.reader(stream, delimiter=delimiter)
             for row in reader:
                 rows.append(row)
     except FileNotFoundError:
+        logging.warning("file not found: {}".format(path))
+    return rows
+
+
+def read_xlsx(path):
+    """Return a list of rows from a CSV file."""
+    rows = []
+    try:
+        workbook = openpyxl.load_workbook(path)
+        worksheet = workbook.active
+        for data in worksheet.rows:
+            rows.append([cell.value for cell in data])
+    except openpyxl.exceptions.InvalidFileException:
         logging.warning("file not found: {}".format(path))
     return rows
 
@@ -140,11 +155,24 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify a document can be exported as a TSV file."""
         path = os.path.join(FILES, 'exported.tsv')
         temp = os.path.join(FILES, 'exported.temp.tsv')
-        expected = read_csv(path)
+        expected = read_csv(path, delimiter='\t')
         # Act
         exporter.export(self.document, temp)
         # Assert
         if CHECK_EXPORTED_CONTENT:
-            actual = read_csv(temp)
+            actual = read_csv(temp, delimiter='\t')
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+
+    def test_export_xlsx(self):
+        """Verify a document can be exported as an XLSX file."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        temp = os.path.join(FILES, 'exported.temp.xlsx')
+        expected = read_xlsx(path)
+        # Act
+        exporter.export(self.document, temp)
+        # Assert
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_xlsx(temp)
             self.assertEqual(expected, actual)
         move_file(temp, path)

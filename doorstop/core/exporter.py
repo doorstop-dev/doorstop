@@ -1,10 +1,12 @@
 """Functions to export documents and items."""
 
 import os
+import csv
+import datetime
 import logging
 
 import yaml
-import csv
+import openpyxl
 
 from doorstop.common import DoorstopError
 from doorstop.core.publisher import _get_items  # TODO: move to common.py
@@ -159,7 +161,23 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     @return: path of created file
 
     """
-    raise NotImplementedError
+    # Create a new workbook
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Populate cells
+    for row, data in enumerate(tabulate(obj), start=1):
+        for col_idx, value in enumerate(data, start=1):
+            col = openpyxl.cell.get_column_letter(col_idx)
+            # compatible Excel types:
+            # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
+            if not isinstance(value, (int, float, str, datetime.datetime)):
+                value = str(value)
+            worksheet.cell('%s%s' % (col, row)).value = value
+
+    # Save the workbook
+    workbook.save(path)
+    return path
 
 
 # Mapping from file extension to lines generator
