@@ -32,13 +32,13 @@ def publish(obj, path, ext=None, **kwargs):
             logging.info("creating directory {}...".format(dirpath))
             os.makedirs(dirpath)
 
-        # Publish report
+        # Create output file
         logging.info("creating file {}...".format(path))
         with open(path, 'w') as outfile:  # pragma: no cover (integration test)
             for line in lines(obj, ext, **kwargs):
                 outfile.write(line + '\n')
     else:
-        raise DoorstopError("unknown format: {}".format(ext))
+        raise DoorstopError("unknown publish format: {}".format(ext))
 
 
 def index(directory, extensions=('.html',)):
@@ -97,7 +97,7 @@ def lines(obj, ext='.txt', **kwargs):
         logging.debug("yielding {} as lines of {}...".format(obj, ext))
         yield from FORMAT[ext](obj, **kwargs)
     else:
-        raise DoorstopError("unknown format: {}".format(ext))
+        raise DoorstopError("unknown publish format: {}".format(ext))
 
 
 def lines_text(obj, indent=8, width=79):

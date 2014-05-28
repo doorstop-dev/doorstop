@@ -7,7 +7,7 @@ import yaml
 import csv
 
 from doorstop.common import DoorstopError
-from doorstop.core.publisher import _get_items
+from doorstop.core.publisher import _get_items  # TODO: move to common.py
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -29,7 +29,7 @@ def export(obj, path, ext=None, **kwargs):
             logging.info("creating directory {}...".format(dirpath))
             os.makedirs(dirpath)
 
-        # Export content
+        # Create output file
         logging.info("creating file {}...".format(path))
         if ext in FORMAT_LINES:
             with open(path, 'w') as outfile:  # pragma: no cover (integration test)
@@ -38,13 +38,13 @@ def export(obj, path, ext=None, **kwargs):
         else:
             create(obj, path, ext, **kwargs)
     else:
-        raise DoorstopError("unknown format: {}".format(ext))
+        raise DoorstopError("unknown export format: {}".format(ext))
 
 
 def lines(obj, ext='.yml', **kwargs):
     """Yield lines for an export in the specified format.
 
-    @param obj: Item, list of Items, or Document to publish
+    @param obj: Item, list of Items, or Document to export
     @param ext: file extension to specify the output format
 
     @raise DoorstopError: for unknown file formats
@@ -54,13 +54,13 @@ def lines(obj, ext='.yml', **kwargs):
         logging.debug("yielding {} as lines of {}...".format(obj, ext))
         yield from FORMAT_LINES[ext](obj, **kwargs)
     else:
-        raise DoorstopError("unknown format: {}".format(ext))
+        raise DoorstopError("unknown export format: {}".format(ext))
 
 
 def create(obj, path, ext=None, **kwargs):
     """Create a file object for an export in the specified format.
 
-    @param obj: Item, list of Items, or Document to publish
+    @param obj: Item, list of Items, or Document to export
     @param path: output file location with desired extension
     @param ext: file extension to override output path's extension
 
@@ -72,7 +72,7 @@ def create(obj, path, ext=None, **kwargs):
         logging.debug("converting {} to file format {}...".format(obj, ext))
         return FORMAT_FILE[ext](obj, path, **kwargs)
     else:
-        raise DoorstopError("unknown format: {}".format(ext))
+        raise DoorstopError("unknown export format: {}".format(ext))
 
 
 def lines_yaml(obj):
@@ -118,7 +118,7 @@ def tabulate(obj):
         for key in header:
             value = data.get(key)
             if isinstance(value, list):
-                # comma-separate lists
+                # separate lists with commas
                 row.append(', '.join(str(p) for p in value))
             else:
                 row.append(value)

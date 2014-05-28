@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.exporter module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch
 
 import os
 import csv
@@ -12,7 +12,7 @@ import logging
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
 
-from doorstop.core.test import FILES, EMPTY, ENV, REASON
+from doorstop.core.test import FILES, ENV, REASON
 from doorstop.core.test.test_publisher import BaseTestCase
 
 # Whenever the export format is changed:
