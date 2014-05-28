@@ -1,0 +1,20 @@
+id,level,text,ref,links,active,derived,normative
+req3,1.1.0,"Heading
+",,sys3,True,False,False
+req3,1.2,"Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+Hello, world!
+",,sys3,True,False,True
+req1,1.1,"abc 123
+",,,True,False,True
+req2,2,,,"sys1, sys2",True,False,True
+req4,2.1.1,,CHECK_PUBLISHED_CONTENT,sys2,True,False,True
+req2,2.1.0,"Heading 2
+",,sys1,True,False,False

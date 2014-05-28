@@ -25,12 +25,12 @@ def export(obj, path, ext=None, **kwargs):
 
         # Create output directory
         dirpath = os.path.dirname(path)
-        if not os.path.isdir(dirpath):
-            logging.info("creating {}...".format(dirpath))
+        if dirpath and not os.path.isdir(dirpath):
+            logging.info("creating directory {}...".format(dirpath))
             os.makedirs(dirpath)
 
-        # Publish report
-        logging.info("publishing {}...".format(path))
+        # Export content
+        logging.info("creating file {}...".format(path))
         if ext in FORMAT_LINES:
             with open(path, 'w') as outfile:  # pragma: no cover (integration test)
                 for line in lines(obj, ext, **kwargs):
@@ -104,11 +104,25 @@ def tabulate(obj):
 
         data = item.data
 
+        # Yield header
         if yield_header:
-            yield list(data.keys())
+            header = ['level', 'text', 'ref', 'links']
+            for value in sorted(data.keys()):
+                if value not in header:
+                    header.append(value)
+            yield ['id'] + header
             yield_header = False
 
-        yield list(data.values())
+        # Yield row
+        row = [item.id]
+        for key in header:
+            value = data.get(key)
+            if isinstance(value, list):
+                # comma-separate lists
+                row.append(', '.join(str(p) for p in value))
+            else:
+                row.append(value)
+        yield row
 
 
 def file_csv(obj, path):
@@ -119,7 +133,7 @@ def file_csv(obj, path):
     @return: path of created file
 
     """
-    with open(path, 'w') as stream:
+    with open(path, 'w', newline='') as stream:
         writer = csv.writer(stream)
         for row in tabulate(obj):
             writer.writerow(row)

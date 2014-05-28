@@ -29,11 +29,11 @@ def publish(obj, path, ext=None, **kwargs):
         # Create output directory
         dirpath = os.path.dirname(path)
         if not os.path.isdir(dirpath):
-            logging.info("creating {}...".format(dirpath))
+            logging.info("creating directory {}...".format(dirpath))
             os.makedirs(dirpath)
 
         # Publish report
-        logging.info("publishing {}...".format(path))
+        logging.info("creating file {}...".format(path))
         with open(path, 'w') as outfile:  # pragma: no cover (integration test)
             for line in lines(obj, ext, **kwargs):
                 outfile.write(line + '\n')
@@ -217,6 +217,7 @@ def lines_markdown(obj):
         yield ""  # break between items
 
 
+# TODO: change to _iter_items and use `yield from ...` in calls?
 def _get_items(obj):
     """Get an iterator of items from from an item, list, or document."""
     if hasattr(obj, 'items'):

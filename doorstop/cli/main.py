@@ -112,9 +112,9 @@ def main(args=None):  # pylint: disable=R0915
     sub = subs.add_parser('export',
                           help="export a document as YAML or another format",
                           **shared)
-    sub.add_argument('prefix', help="prefix of document to publish or 'all'")
+    sub.add_argument('prefix', help="prefix of document to export or 'all'")
     sub.add_argument('path', nargs='?',
-                     help="path to published file or directory for 'all'")
+                     help="path to exported file or directory for 'all'")
     sub.add_argument('-y', '--yaml', action='store_true',
                      help="output YAML (default when no path)")
     sub.add_argument('-c', '--csv', action='store_true',
