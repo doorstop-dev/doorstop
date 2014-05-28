@@ -85,6 +85,16 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           exporter.create, self.document, 'a.csv', '.a')
 
+    @patch('doorstop.core.exporter.file_csv')
+    def test_file_tsv(self, mock_file_csv):
+        """Verify a (mock) TSV file can be created."""
+        temp = tempfile.mkdtemp()
+        path = os.path.join(temp, 'exported.tsv')
+        # Act
+        exporter.file_tsv(self.item, path)
+        # Assert
+        mock_file_csv.assert_called_once_with(self.item, path, delimiter='\t')
+
 
 def read_csv(path):
     """Return a list of rows from a CSV file."""
