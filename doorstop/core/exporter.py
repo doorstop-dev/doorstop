@@ -125,7 +125,7 @@ def tabulate(obj):
         yield row
 
 
-def file_csv(obj, path):
+def file_csv(obj, path, delimiter=','):
     """Create a CSV file at the given path.
 
     @param obj: Item, list of Items, or Document to export
@@ -134,9 +134,21 @@ def file_csv(obj, path):
 
     """
     with open(path, 'w', newline='') as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, delimiter=delimiter)
         for row in tabulate(obj):
             writer.writerow(row)
+    return path
+
+
+def file_tsv(obj, path):
+    """Create a TSV file at the given path.
+
+    @param obj: Item, list of Items, or Document to export
+
+    @return: path of created file
+
+    """
+    return file_csv(obj, path, delimiter='\t')
 
 
 def file_xlsx(obj, path):  # pragma: no cover (not implemented)
@@ -154,6 +166,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 FORMAT_LINES = {'.yml': lines_yaml}
 # Mapping from file extension to file generator
 FORMAT_FILE = {'.csv': file_csv,
+               '.tsv': file_tsv,
                '.xlsx': file_xlsx}
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))

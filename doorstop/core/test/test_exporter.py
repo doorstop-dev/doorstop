@@ -125,3 +125,16 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
             actual = read_csv(temp)
             self.assertEqual(expected, actual)
         move_file(temp, path)
+
+    def test_export_tsv(self):
+        """Verify a document can be exported as a TSV file."""
+        path = os.path.join(FILES, 'exported.tsv')
+        temp = os.path.join(FILES, 'exported.temp.tsv')
+        expected = read_csv(path)
+        # Act
+        exporter.export(self.document, temp)
+        # Assert
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_csv(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
