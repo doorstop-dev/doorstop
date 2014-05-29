@@ -174,12 +174,16 @@ def lines_markdown(obj):
         if item.heading:
 
             # Level and Text
-            yield "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            attr_list = " {{: #{i} }}".format(i=item.id)
+            yield standard + attr_list
 
         else:
 
             # Level and ID
-            yield "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            attr_list = " {{: #{i} }}".format(i=item.id)
+            yield standard + attr_list
 
             # Text
             if item.text:
@@ -255,7 +259,8 @@ def lines_html(obj):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    html = markdown.markdown('\n'.join(lines_markdown(obj)))
+    text = '\n'.join(lines_markdown(obj))
+    html = markdown.markdown(text, extensions=['attr_list'])
     yield from html.splitlines()
     if document:
         yield '</body>'

@@ -1,6 +1,6 @@
-## 1.1 Heading
+## 1.1 Heading {: #req3 }
 
-## 1.2 req3
+## 1.2 req3 {: #req3 }
 
 Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
 
@@ -8,19 +8,19 @@ Hello, world! Hello, world! Hello, world! Hello, world! Hello, world! Hello, wor
 
 *Child links: tst1*
 
-## 1.1 req1
+## 1.1 req1 {: #req1 }
 
 abc 123
 
-# 2 req2
+# 2 req2 {: #req2 }
 
 *Parent links: sys1, sys2*
 
-### 2.1.1 req4
+### 2.1.1 req4 {: #req4 }
 
 Reference: doorstop/core/test/test_publisher.py (line 18)
 
 *Parent links: sys2*
 
-## 2.1 Heading 2
+## 2.1 Heading 2 {: #req2 }
 

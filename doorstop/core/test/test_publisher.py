@@ -171,7 +171,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
-        expected = "## 1.1 Heading\n\n"
+        expected = "## 1.1 Heading {: #req3 }\n\n"
         # Act
         lines = publisher.lines(self.item, '.md')
         text = ''.join(line + '\n' for line in lines)
@@ -180,7 +180,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4" + '\n\n'
+        expected = ("## 1.2 req4 {: #req4 }" + '\n\n'
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')
@@ -192,7 +192,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = "<h2>1.1 Heading</h2>\n"
+        expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
         lines = publisher.lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
