@@ -1,5 +1,6 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
+import os
 import argparse
 import logging
 
@@ -47,3 +48,11 @@ class WarningFormatter(logging.Formatter, object):
         else:
             self._style._fmt = self.default_format  # pylint: disable=W0212
         return super().format(record)
+
+
+def create_dirname(path):
+    """Ensure a parent directory exists for a path."""
+    dirpath = os.path.dirname(path)
+    if dirpath and not os.path.isdir(dirpath):
+        logging.info("creating directory {}...".format(dirpath))
+        os.makedirs(dirpath)

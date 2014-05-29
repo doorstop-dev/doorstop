@@ -8,7 +8,7 @@ import logging
 import yaml
 import openpyxl
 
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_items
 
 
@@ -22,16 +22,12 @@ def export(obj, path, ext=None, **kwargs):
     @raise DoorstopError: for unknown file formats
 
     """
+    # Determine the output format
     ext = ext or os.path.splitext(path)[-1]
     check(ext)
 
-    # Create output directory
-    dirpath = os.path.dirname(path)
-    if dirpath and not os.path.isdir(dirpath):
-        logging.info("creating directory {}...".format(dirpath))
-        os.makedirs(dirpath)
-
-    # Create output file
+    # Export content to the specified path
+    create_dirname(path)
     logging.info("creating file {}...".format(path))
     if ext in FORMAT_LINES:
         with open(path, 'w') as outfile:  # pragma: no cover (integration test)

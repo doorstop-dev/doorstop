@@ -6,7 +6,7 @@ import logging
 
 import markdown
 
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_items
 from doorstop import settings
 
@@ -24,16 +24,12 @@ def publish(obj, path, ext=None, **kwargs):
     @raise DoorstopError: for unknown file formats
 
     """
+    # Determine the output format
     ext = ext or os.path.splitext(path)[-1]
     check(ext)
 
-    # Create output directory
-    dirpath = os.path.dirname(path)
-    if dirpath and not os.path.isdir(dirpath):
-        logging.info("creating directory {}...".format(dirpath))
-        os.makedirs(dirpath)
-
-    # Create output file
+    # Publish content to the specified path
+    create_dirname(path)
     logging.info("creating file {}...".format(path))
     with open(path, 'w') as outfile:  # pragma: no cover (integration test)
         for line in lines(obj, ext, **kwargs):
