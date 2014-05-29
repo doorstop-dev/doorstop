@@ -96,7 +96,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme txt md html uml apidocs
+doc: readme html uml apidocs
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -107,22 +107,12 @@ docs/README-pypi.html: README.rst
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
-.PHONY: txt
-txt: env docs/gen/*.txt
-docs/gen/*.txt: $(shell find . -name '*.yml' -not -path '*/test/files/*')
-	- $(MAKE) doorstop
-	$(BIN)/doorstop publish all docs/gen --text
-
-.PHONY: md
-md: env docs/gen/*.md
-docs/gen/*.md: $(shell find . -name '*.yml' -not -path '*/test/files/*')
-	- $(MAKE) doorstop
-	$(BIN)/doorstop publish all docs/gen --markdown
-
 .PHONY: html
 html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
 	- $(MAKE) doorstop
+	$(BIN)/doorstop publish all docs/gen --text
+	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: uml
