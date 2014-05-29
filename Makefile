@@ -41,7 +41,7 @@ PDOC := $(BIN)/pdoc
 PEP8 := $(BIN)/pep8
 PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint
-PYREVERSE := $(BIN)/pyreverse$(BAT)
+PYREVERSE := $(BIN)/pyreverse
 NOSE := $(BIN)/nosetests
 
 # Main Targets ###############################################################
