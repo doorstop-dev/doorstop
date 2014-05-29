@@ -7,6 +7,8 @@ import subprocess
 import time
 import logging
 
+from doorstop.common import DoorstopError
+
 
 # TODO: add edit_document
 # TODO: add edit_item, refactor code from Tree.edit_item
@@ -50,21 +52,28 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     @return: launched process
 
     """
-    relpath = os.path.relpath(path)
     if tool:
-        args = [tool, relpath]
+        args = [tool, path]
     elif sys.platform.startswith('darwin'):
-        args = ['open', relpath]
+        args = ['open', path]
     elif os.name == 'nt':
         cygstart = find_executable('cygstart')
         if cygstart:
-            args = [cygstart, relpath]
+            args = [cygstart, path]
         else:
-            args = ['start', relpath]
+            args = ['start', path]
     elif os.name == 'posix':
-        args = ['xdg-open', relpath]
+        args = ['xdg-open', path]
 
-    return _call(args)
+    try:
+        process = _call(args)
+    except FileNotFoundError:
+        raise DoorstopError("editor not found: {}".format(args[0]))
+
+    if process.returncode not in (0, None):
+        raise DoorstopError("unable to open: {}".format(path))
+
+    return process
 
 
 def _call(args):  # pragma: no cover (integration test)
