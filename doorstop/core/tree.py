@@ -1,7 +1,5 @@
 """Representation of a hierarchy of documents."""
 
-import os
-import shutil
 import functools
 from itertools import chain
 import logging
