@@ -3,3 +3,9 @@
 *.yml text
 *.md text
 *.html text
+*.txt text
+
+*.csv -text
+*.tsv -text
+
+*.xlsx binary

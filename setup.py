@@ -39,10 +39,15 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Documentation',
         'Topic :: Text Editors :: Documentation',
         'Topic :: Text Processing :: Markup',
     ],
 
-    install_requires=["PyYAML == 3.10", "Markdown >= 2, < 3"],
+    install_requires=[
+        "PyYAML >= 3.10, < 4",
+        "Markdown >= 2, < 3",
+        "openpyxl >= 2, < 3",
+    ],
 )

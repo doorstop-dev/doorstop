@@ -504,3 +504,4 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in self:
             item.delete()
         super().delete(self.config)
+        common.delete(self.path)

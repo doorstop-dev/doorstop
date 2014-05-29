@@ -1,7 +1,5 @@
 """Representation of a hierarchy of documents."""
 
-import os
-import shutil
 import functools
 from itertools import chain
 import logging
@@ -219,8 +217,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         except DoorstopError:
             msg = "deleting unplaced directory {}...".format(document.path)
             logging.debug(msg)
-            if os.path.exists(document.path):
-                shutil.rmtree(document.path)
+            document.delete()
             raise
         else:
             logging.info("added to tree: {}".format(document))

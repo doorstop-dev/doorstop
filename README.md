@@ -12,9 +12,9 @@ Each linkable item (requirement, test case, etc.) is stored as a YAML file in a 
 
 Additional reading:
 
-- sample: [Generated HTML](http://jacebrowning.github.io/doorstop)
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - conference: [GRDevDay Talk](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control)
+- sample: [Generated HTML](http://jacebrowning.github.io/doorstop)
 
 
 Getting Started
