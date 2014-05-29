@@ -14,10 +14,10 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 from doorstop.core.test import FILES, EMPTY, ENV, REASON
 from doorstop.core.test.test_item import MockItem as _MockItem
 
-# Whenever the report format is changed:
+# Whenever the publish format is changed:
 #  1. set CHECK_PUBLISHED_CONTENT to False
 #  2. re-run all tests
-#  3. manually verify the newly generated reports are correct
+#  3. manually verify the newly published content is correct
 #  4. set CHECK_PUBLISHED_CONTENT to True
 CHECK_PUBLISHED_CONTENT = True
 
@@ -81,7 +81,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
     def test_publish_html(self, mock_lines, mock_open, mock_makedirs):
         """Verify a (mock) HTML file can be created."""
         dirpath = os.path.join('mock', 'directory')
-        path = os.path.join(dirpath, 'report.html')
+        path = os.path.join(dirpath, 'published.html')
         # Act
         publisher.publish(self.document, path, '.html')
         # Assert
@@ -103,7 +103,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
     def test_publish_document(self, mock_open, mock_makedirs):
         """Verify a document can be published."""
         dirpath = os.path.join('mock', 'directory')
-        path = os.path.join(dirpath, 'report.html')
+        path = os.path.join(dirpath, 'published.html')
         mock_document = MagicMock()
         mock_document.items = []
         # Act
@@ -130,7 +130,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertFalse(os.path.isfile(path))
 
     def test_lines_text_item_heading(self):
-        """Verify a text report can be created from an item (heading)."""
+        """Verify text can be published from an item (heading)."""
         expected = "1.1     Heading\n\n"
         lines = publisher.lines(self.item, '.txt')
         # Act
@@ -139,7 +139,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertEqual(expected, text)
 
     def test_lines_text_item_normative(self):
-        """Verify a text report can be created from an item (normative)."""
+        """Verify text can be published from an item (normative)."""
         expected = ("1.2     req4" + '\n\n'
                     "        This shall..." + '\n\n'
                     "        Reference: Doorstop.sublime-project (line None)"
@@ -153,7 +153,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     @patch('doorstop.settings.CHECK_REF', False)
     def test_lines_text_item_no_ref(self):
-        """Verify a text report can be created without checking references."""
+        """Verify text can be published without checking references."""
         self.item.ref = 'abc123'
         self.item.heading = False
         # Act
@@ -164,7 +164,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_text_item_with_child_links(self):
-        """Verify a text report can be created with child links."""
+        """Verify text can be published with child links."""
         # Act
         lines = publisher.lines(self.item2, '.txt')
         text = ''.join(line + '\n' for line in lines)
@@ -172,7 +172,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertIn("Child links: tst1", text)
 
     def test_lines_markdown_item_heading(self):
-        """Verify a Markdown report can be created from an item (heading)."""
+        """Verify Markdown can be published from an item (heading)."""
         expected = "## 1.1 Heading\n\n"
         # Act
         lines = publisher.lines(self.item, '.md')
@@ -181,7 +181,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertEqual(expected, text)
 
     def test_lines_markdown_item_normative(self):
-        """Verify a Markdown report can be created from an item (normative)."""
+        """Verify Markdown can be published from an item (normative)."""
         expected = ("## 1.2 req4" + '\n\n'
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
@@ -193,7 +193,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertEqual(expected, text)
 
     def test_lines_html_item(self):
-        """Verify an HTML report can be created from an item."""
+        """Verify HTML can be published from an item."""
         expected = "<h2>1.1 Heading</h2>\n"
         # Act
         lines = publisher.lines(self.item, '.html')
@@ -203,7 +203,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_html_item_with_child_links(self):
-        """Verify an HTML report can be created from an item w/ child links."""
+        """Verify HTML can be published from an item w/ child links."""
         # Act
         lines = publisher.lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -227,7 +227,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         """Verify an HTML file can be created."""
         temp = tempfile.mkdtemp()
         try:
-            path = os.path.join(temp, 'report.html')
+            path = os.path.join(temp, 'published.html')
             # Act
             publisher.publish(self.document, path, '.html')
             # Assert
@@ -237,7 +237,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
-        path = os.path.join(FILES, 'report.txt')
+        path = os.path.join(FILES, 'published.txt')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.txt')
@@ -251,7 +251,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_text_document_with_child_links(self):
         """Verify text can be published from a document with child links."""
-        path = os.path.join(FILES, 'report2.txt')
+        path = os.path.join(FILES, 'published2.txt')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.txt')
@@ -264,7 +264,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
-        path = os.path.join(FILES, 'report.md')
+        path = os.path.join(FILES, 'published.md')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.md')
@@ -278,7 +278,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_markdown_document_with_child_links(self):
         """Verify Markdown can be published from a document w/ child links."""
-        path = os.path.join(FILES, 'report2.md')
+        path = os.path.join(FILES, 'published2.md')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.md')
@@ -291,7 +291,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     def test_lines_html_document(self):
         """Verify HTML can be published from a document."""
-        path = os.path.join(FILES, 'report.html')
+        path = os.path.join(FILES, 'published.html')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.html')
@@ -305,7 +305,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_html_document_with_child_links(self):
         """Verify HTML can be published from a document with child links."""
-        path = os.path.join(FILES, 'report2.html')
+        path = os.path.join(FILES, 'published2.html')
         expected = open(path).read()
         # Act
         lines = publisher.lines(self.document, '.html')

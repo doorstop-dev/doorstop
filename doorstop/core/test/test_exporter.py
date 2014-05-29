@@ -20,7 +20,7 @@ from doorstop.core.test.test_publisher import BaseTestCase
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False
 #  2. re-run all tests
-#  3. manually verify the newly generated reports are correct
+#  3. manually verify the newly exported content is correct
 #  4. set CHECK_EXPORTED_CONTENT to True
 CHECK_EXPORTED_CONTENT = True
 
