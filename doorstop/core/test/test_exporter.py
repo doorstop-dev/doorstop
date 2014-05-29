@@ -133,7 +133,7 @@ def move_file(src, dst):
     shutil.move(src, dst)
 
 
-# @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
