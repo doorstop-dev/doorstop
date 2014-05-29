@@ -13,7 +13,7 @@ from doorstop.common import DoorstopError
 # TODO: add edit_document
 # TODO: add edit_item, refactor code from Tree.edit_item
 
-LAUNCH_DELAY = 1.0  # number of seconds to let a program try to launch
+LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
 
 
 def edit(path, tool=None):  # pragma: no cover (integration test)
@@ -26,21 +26,16 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
 
     """
     process = launch(path, tool=tool)
-    try:
-        time.sleep(LAUNCH_DELAY)
-        if process.poll() is None:
-            logging.debug("process is running")
+    if process:
+        try:
             process.wait()
-        else:
-            logging.debug("process exited immediately")
-    except KeyboardInterrupt:
-        logging.warning("force closed editor")
-    else:
-        logging.debug("process is not running")
-    finally:
-        if process.returncode is None:
-            process.terminate()
-    logging.debug("returncode: {}".format(process.returncode))
+        except KeyboardInterrupt:
+            pass
+        finally:
+            if process.returncode is None:
+                process.terminate()
+                logging.warning("force closed editor")
+        logging.debug("process exited: {}".format(process.returncode))
 
 
 def launch(path, tool=None):  # pragma: no cover (integration test)
@@ -49,9 +44,10 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     @param path: path of file to open
     @param tool: path of alternate editor
 
-    @return: launched process
+    @return: launched process if long-running, else None
 
     """
+    # Determine how to launch the editor
     if tool:
         args = [tool, path]
     elif sys.platform.startswith('darwin'):
@@ -65,15 +61,21 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     elif os.name == 'posix':
         args = ['xdg-open', path]
 
+    # Launch the editor
     try:
         process = _call(args)
     except FileNotFoundError:
         raise DoorstopError("editor not found: {}".format(args[0]))
 
-    if process.returncode not in (0, None):
-        raise DoorstopError("unable to open: {}".format(path))
-
-    return process
+    # Determine if the editor is long-running
+    time.sleep(LAUNCH_DELAY)
+    if process.poll() is None:
+        logging.debug("process is running...")
+        return process
+    else:
+        logging.debug("process exited: {}".format(process.returncode))
+        if process.returncode != 0:
+            raise DoorstopError("unable to open: {}".format(path))
 
 
 def _call(args):  # pragma: no cover (integration test)
