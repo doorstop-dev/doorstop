@@ -270,6 +270,10 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         shutil.rmtree(self.temp)
         (settings.PUBLISH_CHILD_LINKS,) = self.backup
 
+    def test_publish_unknown(self):
+        """Verify 'doorstop publish' returns an error for an unknown format."""
+        self.assertRaises(SystemExit, main, ['publish', 'req', 'req.fake'])
+
     def test_publish_document(self):
         """Verify 'doorstop publish' can create output."""
         self.assertIs(None, main(['publish', 'tut']))
@@ -385,6 +389,10 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+
+    def test_export_unknown(self):
+        """Verify 'doorstop export' returns an error for an unknown format."""
+        self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
 
     def test_export_document_stdout(self):
         """Verify 'doorstop export' can create output."""

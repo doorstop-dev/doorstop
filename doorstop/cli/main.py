@@ -417,6 +417,7 @@ def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
 
     # Publish documents
     try:
+        exporter.check(ext)
         tree = build(cwd, root=args.project)
         if whole_tree:
             documents = [document for document in tree]
@@ -464,6 +465,7 @@ def _run_publish(args, cwd, err):
 
     # Publish documents
     try:
+        publisher.check(ext)
         tree = build(cwd, root=args.project)
         if whole_tree:
             documents = [document for document in tree]

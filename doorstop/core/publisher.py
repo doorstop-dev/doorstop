@@ -25,21 +25,19 @@ def publish(obj, path, ext=None, **kwargs):
 
     """
     ext = ext or os.path.splitext(path)[-1]
-    if ext in FORMAT_LINES:
+    check(ext)
 
-        # Create output directory
-        dirpath = os.path.dirname(path)
-        if not os.path.isdir(dirpath):
-            logging.info("creating directory {}...".format(dirpath))
-            os.makedirs(dirpath)
+    # Create output directory
+    dirpath = os.path.dirname(path)
+    if dirpath and not os.path.isdir(dirpath):
+        logging.info("creating directory {}...".format(dirpath))
+        os.makedirs(dirpath)
 
-        # Create output file
-        logging.info("creating file {}...".format(path))
-        with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj, ext, **kwargs):
-                outfile.write(line + '\n')
-    else:
-        raise DoorstopError("unknown publish format: {}".format(ext))
+    # Create output file
+    logging.info("creating file {}...".format(path))
+    with open(path, 'w') as outfile:  # pragma: no cover (integration test)
+        for line in lines(obj, ext, **kwargs):
+            outfile.write(line + '\n')
 
 
 def index(directory, extensions=('.html',)):
@@ -94,11 +92,9 @@ def lines(obj, ext='.txt', **kwargs):
     @raise DoorstopError: for unknown file formats
 
     """
-    if ext in FORMAT_LINES:
-        logging.debug("yielding {} as lines of {}...".format(obj, ext))
-        yield from FORMAT_LINES[ext](obj, **kwargs)
-    else:
-        raise DoorstopError("unknown publish format: {}".format(ext))
+    gen = check(ext)
+    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    yield from gen(obj, **kwargs)
 
 
 def lines_text(obj, indent=8, width=79):
@@ -274,3 +270,20 @@ def lines_html(obj):
 FORMAT_LINES = {'.txt': lines_text,
                 '.md': lines_markdown,
                 '.html': lines_html}
+
+
+def check(ext):
+    """Confirm an extension is supported for publish.
+
+    @raise DoorstopError: for unknown formats
+
+    @return: lines generator if available
+
+    """
+    try:
+        return FORMAT_LINES[ext]
+    except KeyError:
+        exts = ', '.join(ext for ext in FORMAT_LINES)
+        msg = "unknown publish format: {} (options: {})".format(ext, exts)
+        exc = DoorstopError(msg)
+        raise exc from None

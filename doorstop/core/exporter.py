@@ -23,24 +23,22 @@ def export(obj, path, ext=None, **kwargs):
 
     """
     ext = ext or os.path.splitext(path)[-1]
-    if ext in FORMAT:
+    check(ext)
 
-        # Create output directory
-        dirpath = os.path.dirname(path)
-        if dirpath and not os.path.isdir(dirpath):
-            logging.info("creating directory {}...".format(dirpath))
-            os.makedirs(dirpath)
+    # Create output directory
+    dirpath = os.path.dirname(path)
+    if dirpath and not os.path.isdir(dirpath):
+        logging.info("creating directory {}...".format(dirpath))
+        os.makedirs(dirpath)
 
-        # Create output file
-        logging.info("creating file {}...".format(path))
-        if ext in FORMAT_LINES:
-            with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-                for line in lines(obj, ext, **kwargs):
-                    outfile.write(line + '\n')
-        else:
-            create(obj, path, ext, **kwargs)
+    # Create output file
+    logging.info("creating file {}...".format(path))
+    if ext in FORMAT_LINES:
+        with open(path, 'w') as outfile:  # pragma: no cover (integration test)
+            for line in lines(obj, ext, **kwargs):
+                outfile.write(line + '\n')
     else:
-        raise DoorstopError("unknown export format: {}".format(ext))
+        create(obj, path, ext, **kwargs)
 
 
 def lines(obj, ext='.yml', **kwargs):
@@ -52,11 +50,9 @@ def lines(obj, ext='.yml', **kwargs):
     @raise DoorstopError: for unknown file formats
 
     """
-    if ext in FORMAT_LINES:
-        logging.debug("yielding {} as lines of {}...".format(obj, ext))
-        yield from FORMAT_LINES[ext](obj, **kwargs)
-    else:
-        raise DoorstopError("unknown export format: {}".format(ext))
+    gen = check(ext, get_lines_gen=True)
+    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    yield from gen(obj, **kwargs)
 
 
 def create(obj, path, ext=None, **kwargs):
@@ -70,11 +66,9 @@ def create(obj, path, ext=None, **kwargs):
 
     """
     ext = ext or os.path.splitext(path)[-1]
-    if ext in FORMAT_FILE:
-        logging.debug("converting {} to file format {}...".format(obj, ext))
-        return FORMAT_FILE[ext](obj, path, **kwargs)
-    else:
-        raise DoorstopError("unknown export format: {}".format(ext))
+    func = check(ext, get_file_func=True)
+    logging.debug("converting {} to file format {}...".format(obj, ext))
+    return func(obj, path, **kwargs)
 
 
 def lines_yaml(obj):
@@ -188,3 +182,34 @@ FORMAT_FILE = {'.csv': file_csv,
                '.xlsx': file_xlsx}
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))
+
+
+def check(ext, get_lines_gen=False, get_file_func=False):
+    """Confirm an extension is supported for export.
+
+    @param get_lines_func: return a lines generator if available
+    @param get_file_func: return a file creator if available
+
+    @raise DoorstopError: for unknown formats
+
+    @return: function requested if available
+
+    """
+    exts = ', '.join(ext for ext in FORMAT)
+    msg = "unknown publish format: {} (options: {})".format(ext, exts)
+    exc = DoorstopError(msg)
+
+    if get_lines_gen:
+        try:
+            return FORMAT_LINES[ext]
+        except KeyError:
+            raise exc from None
+
+    if get_file_func:
+        try:
+            return FORMAT_FILE[ext]
+        except KeyError:
+            raise exc from None
+
+    if ext not in FORMAT:
+        raise exc
