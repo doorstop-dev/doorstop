@@ -258,7 +258,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop publish' command."""
+    """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
 
     def setUp(self):
         self.cwd = os.getcwd()
@@ -270,46 +270,46 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         shutil.rmtree(self.temp)
         (settings.PUBLISH_CHILD_LINKS,) = self.backup
 
-    def test_publish(self):
+    def test_publish_document(self):
         """Verify 'doorstop publish' can create output."""
         self.assertIs(None, main(['publish', 'tut']))
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_with_child_links(self):
+    def test_publish_document_with_child_links(self):
         """Verify 'doorstop publish' can create output with child links."""
         self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
         self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_error(self):
+    def test_publish_document_error(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""
         os.chdir(self.temp)
         self.assertRaises(SystemExit, main, ['publish', 'req'])
 
-    def test_publish_text(self):
+    def test_publish_document_text(self):
         """Verify 'doorstop publish' can create text output."""
         self.assertIs(None, main(['publish', 'tut', '--width', '75']))
 
-    def test_publish_text_file(self):
+    def test_publish_document_text_file(self):
         """Verify 'doorstop publish' can create a text file."""
         path = os.path.join(self.temp, 'req.txt')
         self.assertIs(None, main(['publish', 'req', path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_publish_markdown(self):
+    def test_publish_document_markdown(self):
         """Verify 'doorstop publish' can create Markdown output."""
         self.assertIs(None, main(['publish', 'req', '--markdown']))
 
-    def test_publish_markdown_file(self):
+    def test_publish_document_markdown_file(self):
         """Verify 'doorstop publish' can create a Markdown file."""
         path = os.path.join(self.temp, 'req.md')
         self.assertIs(None, main(['publish', 'req', path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_publish_html(self):
+    def test_publish_document_html(self):
         """Verify 'doorstop publish' can create HTML output."""
         self.assertIs(None, main(['publish', 'hlt', '--html']))
 
-    def test_publish_html_file(self):
+    def test_publish_document_html_file(self):
         """Verify 'doorstop publish' can create an HTML file."""
         path = os.path.join(self.temp, 'req.html')
         self.assertIs(None, main(['publish', 'req', path]))
@@ -373,8 +373,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
 
 
-# TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestExport(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
@@ -387,17 +386,29 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
-    def test_export(self):
+    def test_export_document_stdout(self):
         """Verify 'doorstop export' can create output."""
-        self.skipTest("TODO: implement test")
         self.assertIs(None, main(['export', 'tut']))
 
-    def test_export_xlsx(self):
-        """Verify 'doorstop publish' can create text output."""
-        self.skipTest("TODO: implement test")
+    def test_export_document_stdout_width(self):
+        """Verify 'doorstop export' can create output."""
+        self.assertIs(None, main(['export', 'tut', '--width', '72']))
+
+    def test_export_document_yaml(self):
+        """Verify 'doorstop export' can create a YAML file."""
+        path = os.path.join(self.temp, 'tut.yml')
+        self.assertIs(None, main(['export', 'tut', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_export_document_xlsx(self):
+        """Verify 'doorstop export' can create an XLSX file."""
         path = os.path.join(self.temp, 'tut.xlsx')
         self.assertIs(None, main(['export', 'tut', path]))
         self.assertTrue(os.path.isfile(path))
+
+    def test_export_tree_no_path(self):
+        """Verify 'doorstop export' returns an error with no path."""
+        self.assertRaises(SystemExit, main, ['export', 'all'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

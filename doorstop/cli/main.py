@@ -403,7 +403,6 @@ def _run_import(args, _, err):
     return True
 
 
-# TODO: add tests for coverage, remove pragma
 def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
     """Process arguments and run the `doorstop export` subcommand.
 
@@ -427,11 +426,6 @@ def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
         logging.error(error)
         return False
 
-    # Set publishing arguments
-    kwargs = {}
-    if args.width:
-        kwargs['width'] = args.width
-
     # Write to output file(s)
     if args.path:
         if whole_tree:
@@ -439,17 +433,17 @@ def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
             for document in documents:
                 path = os.path.join(args.path, document.prefix + ext)
                 print("exporting {} to {}...".format(document, path))
-                exporter.export(document, path, ext, **kwargs)
+                exporter.export(document, path, ext)
 
         else:
             print("exporting {} to {}...".format(documents[0], args.path))
-            exporter.export(documents[0], args.path, ext, **kwargs)
+            exporter.export(documents[0], args.path, ext)
 
     # Display to standard output
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in exporter.lines(documents[0], ext, **kwargs):
+        for line in exporter.lines(documents[0], ext):
             print(line)
 
     return True
