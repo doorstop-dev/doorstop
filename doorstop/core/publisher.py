@@ -7,6 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError
+from doorstop.core.types import iter_items
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
@@ -24,7 +25,7 @@ def publish(obj, path, ext=None, **kwargs):
 
     """
     ext = ext or os.path.splitext(path)[-1]
-    if ext in FORMAT:
+    if ext in FORMAT_LINES:
 
         # Create output directory
         dirpath = os.path.dirname(path)
@@ -93,9 +94,9 @@ def lines(obj, ext='.txt', **kwargs):
     @raise DoorstopError: for unknown file formats
 
     """
-    if ext in FORMAT:
+    if ext in FORMAT_LINES:
         logging.debug("yielding {} as lines of {}...".format(obj, ext))
-        yield from FORMAT[ext](obj, **kwargs)
+        yield from FORMAT_LINES[ext](obj, **kwargs)
     else:
         raise DoorstopError("unknown publish format: {}".format(ext))
 
@@ -110,7 +111,7 @@ def lines_text(obj, indent=8, width=79):
     @return: iterator of lines of text
 
     """
-    for item in _get_items(obj):
+    for item in iter_items(obj):
 
         level = _format_level(item.level)
 
@@ -173,7 +174,7 @@ def lines_markdown(obj):
     @return: iterator of lines of text
 
     """
-    for item in _get_items(obj):
+    for item in iter_items(obj):
 
         heading = '#' * item.depth
         level = _format_level(item.level)
@@ -215,20 +216,6 @@ def lines_markdown(obj):
                     yield '*' + slinks + '*'
 
         yield ""  # break between items
-
-
-# TODO: change to _iter_items and use `yield from ...` in calls?
-def _get_items(obj):
-    """Get an iterator of items from from an item, list, or document."""
-    if hasattr(obj, 'items'):
-        # a document
-        return (i for i in obj.items if i.active)
-    try:
-        # an iterable
-        return iter(obj)
-    except TypeError:
-        # an item
-        return [obj]  # an item
 
 
 def _format_level(level):
@@ -284,6 +271,6 @@ def lines_html(obj):
 
 
 # Mapping from file extension to lines generator
-FORMAT = {'.txt': lines_text,
-          '.md': lines_markdown,
-          '.html': lines_html}
+FORMAT_LINES = {'.txt': lines_text,
+                '.md': lines_markdown,
+                '.html': lines_html}

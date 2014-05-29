@@ -1,4 +1,4 @@
-"""Common classes for the doorstop.core package."""
+"""Common classes and functions for the doorstop.core package."""
 
 
 import re
@@ -530,3 +530,16 @@ class Level(object):
     def copy(self):
         """Return a copy of the level."""
         return Level(self.value)
+
+
+def iter_items(obj):
+    """Get an iterator of items from from an item, list, or document."""
+    if hasattr(obj, 'items'):
+        # a document
+        yield from (i for i in obj.items if i.active)
+    try:
+        # an iterable
+        yield from iter(obj)
+    except TypeError:
+        # an item
+        yield from [obj]

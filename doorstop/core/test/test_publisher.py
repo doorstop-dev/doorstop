@@ -96,8 +96,6 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           publisher.publish, self.document, 'a.txt', '.a')
 
-    # TODO: change to published.*
-
     @patch('os.makedirs')
     @patch('builtins.open')
     def test_publish_document(self, mock_open, mock_makedirs):

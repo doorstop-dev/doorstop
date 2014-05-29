@@ -9,7 +9,7 @@ import yaml
 import openpyxl
 
 from doorstop.common import DoorstopError
-from doorstop.core.publisher import _get_items  # TODO: move to common.py
+from doorstop.core.types import iter_items
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -85,7 +85,7 @@ def lines_yaml(obj):
     @return: iterator of lines of text
 
     """
-    for item in _get_items(obj):
+    for item in iter_items(obj):
 
         data = {str(item.id): item.data}
         text = yaml.dump(data)
@@ -102,7 +102,7 @@ def tabulate(obj):
     """
     yield_header = True
 
-    for item in _get_items(obj):
+    for item in iter_items(obj):
 
         data = item.data
 
