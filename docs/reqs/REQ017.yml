@@ -1,0 +1,9 @@
+active: true
+derived: false
+level: 1.5
+links: []
+normative: true
+ref: ''
+text: |
+  Doorstop **shall** be able to export content to interact with common
+  text/document tools.

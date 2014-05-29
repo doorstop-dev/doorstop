@@ -162,13 +162,13 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     """
     # Create a new workbook
-    workbook = openpyxl.Workbook()
+    workbook = openpyxl.Workbook()  # pylint: disable=E1102
     worksheet = workbook.active
 
     # Populate cells
     for row, data in enumerate(tabulate(obj), start=1):
         for col_idx, value in enumerate(data, start=1):
-            col = openpyxl.cell.get_column_letter(col_idx)
+            col = openpyxl.cell.get_column_letter(col_idx)  # pylint: disable=E1101
             # compatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
             if not isinstance(value, (int, float, str, datetime.datetime)):

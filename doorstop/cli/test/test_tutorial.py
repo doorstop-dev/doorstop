@@ -151,9 +151,8 @@ class TestSection1(TestBase):  # pylint: disable=R0904
         # 4.1
 
         self.doorstop("export TST")
-        # TODO: implement test
-        # self.doorstop("export all dirpath/to/exports")
-        # self.doorstop("export REQ path/to/req.xlsx")
+        self.doorstop("export all dirpath/to/exports")
+        self.doorstop("export REQ path/to/req.xlsx")
 
 
 if __name__ == '__main__':
