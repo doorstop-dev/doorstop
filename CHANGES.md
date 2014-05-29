@@ -4,7 +4,8 @@ Changelog
 0.7 (dev)
 ---------
 
-- TBD
+- Added `doorstop export ...` to export content for external tools.
+- Fixed `doorstop publish ...` handling of unknown formats.
 
 0.6 (2014/5/15)
 ---------------

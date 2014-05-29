@@ -365,12 +365,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(5, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
-    @patch('os.remove')
-    def test_delete(self, mock_remove, mock_delete):
+    @patch('doorstop.common.delete')
+    def test_delete(self, mock_common_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        mock_remove.assert_called_once_with(self.document.config)
-        self.assertEqual(5, mock_delete.call_count)
+        self.assertEqual(2, mock_common_delete.call_count)
+        self.assertEqual(5, mock_item_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))

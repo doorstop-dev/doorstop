@@ -10,7 +10,7 @@ import logging
 
 from doorstop.gui.main import _run as gui
 from doorstop.core.builder import build
-from doorstop.core import publisher, importer
+from doorstop.core import importer, exporter, publisher
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
@@ -107,6 +107,22 @@ def main(args=None):  # pylint: disable=R0915
                      help="parent document prefix for imported document")
     sub.add_argument('-a', '--attrs', metavar='DICT',
                      help="dictionary of item attributes to import")
+
+    # Export subparser
+    sub = subs.add_parser('export',
+                          help="export a document as YAML or another format",
+                          **shared)
+    sub.add_argument('prefix', help="prefix of document to export or 'all'")
+    sub.add_argument('path', nargs='?',
+                     help="path to exported file or directory for 'all'")
+    sub.add_argument('-y', '--yaml', action='store_true',
+                     help="output YAML (default when no path)")
+    sub.add_argument('-c', '--csv', action='store_true',
+                     help="output CSV (default for 'all')")
+    sub.add_argument('-x', '--xlsx', action='store_true',
+                     help="output XLSX")
+    sub.add_argument('-w', '--width', type=int,
+                     help="limit line width on text output")
 
     # Publish subparser
     sub = subs.add_parser('publish',
@@ -387,6 +403,53 @@ def _run_import(args, _, err):
     return True
 
 
+def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
+    """Process arguments and run the `doorstop export` subcommand.
+
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+
+    """
+    # Parse arguments
+    whole_tree = args.prefix == 'all'
+    ext = _get_extension(args, '.yml', '.xlsx', whole_tree)
+
+    # Publish documents
+    try:
+        exporter.check(ext)
+        tree = build(cwd, root=args.project)
+        if whole_tree:
+            documents = [document for document in tree]
+        else:
+            documents = [tree.find_document(args.prefix)]
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+
+    # Write to output file(s)
+    if args.path:
+        if whole_tree:
+            print("exporting tree to {}...".format(args.path))
+            for document in documents:
+                path = os.path.join(args.path, document.prefix + ext)
+                print("exporting {} to {}...".format(document, path))
+                exporter.export(document, path, ext)
+
+        else:
+            print("exporting {} to {}...".format(documents[0], args.path))
+            exporter.export(documents[0], args.path, ext)
+
+    # Display to standard output
+    else:
+        if whole_tree:
+            err("only single documents can be displayed")
+        for line in exporter.lines(documents[0], ext):
+            print(line)
+
+    return True
+
+
 def _run_publish(args, cwd, err):
     """Process arguments and run the `doorstop publish` subcommand.
 
@@ -396,14 +459,15 @@ def _run_publish(args, cwd, err):
 
     """
     # Parse arguments
-    publish_tree = args.prefix == 'all'
-    ext = _get_extension(args, tree=publish_tree)
+    whole_tree = args.prefix == 'all'
+    ext = _get_extension(args, '.txt', '.html', whole_tree)
     html = ext == '.html'
 
     # Publish documents
     try:
+        publisher.check(ext)
         tree = build(cwd, root=args.project)
-        if publish_tree:
+        if whole_tree:
             documents = [document for document in tree]
         else:
             documents = [tree.find_document(args.prefix)]
@@ -418,7 +482,7 @@ def _run_publish(args, cwd, err):
 
     # Write to output file(s)
     if args.path:
-        if publish_tree:
+        if whole_tree:
             print("publishing tree to {}...".format(args.path))
             for document in documents:
                 path = os.path.join(args.path, document.prefix + ext)
@@ -432,7 +496,7 @@ def _run_publish(args, cwd, err):
 
     # Display to standard output
     else:
-        if publish_tree:
+        if whole_tree:
             err("only single documents can be displayed")
         for line in publisher.lines(documents[0], ext, **kwargs):
             print(line)
@@ -440,23 +504,44 @@ def _run_publish(args, cwd, err):
     return True
 
 
-def _get_extension(args, tree=False):
-    """Determine the output file extensions from input arguments."""
+def _get_extension(args, ext_stdout, ext_file, whole_tree):
+    """Determine the output file extensions from input arguments.
+
+    @param args: Namespace of CLI arguments
+    @param ext_stdout: default extension for standard output
+    @param ext_file: default extension for file output
+    @param: whole_tree: indicates the path is a directory for the whole tree
+
+    @return: chosen extension
+
+    """
+    ext = None
     # Get the argument from a provided output path
     if args.path:
-        if tree:
-            ext = '.html'
+        if whole_tree:
+            ext = ext_file
         else:
             ext = os.path.splitext(args.path)[-1]
+        logging.debug("extension based on path: {}".format(ext))
+
     # Override the extension if a format is specified
-    if args.text:
-        ext = '.txt'
-    elif args.markdown:
-        ext = '.md'
-    elif args.html:
-        ext = '.html'
-    elif not args.path:
-        ext = '.txt'
+    for _ext, option in {'.txt': 'text',
+                         '.md': 'markdown',
+                         '.html': 'html',
+                         '.yml': 'yaml',
+                         '.csv': 'csv',
+                         '.xlsx': 'xlsx'}.items():
+        try:
+            if getattr(args, option):
+                ext = _ext
+                logging.debug("extension based on override: {}".format(ext))
+                break
+        except AttributeError:
+            continue
+    else:
+        if not ext:
+            ext = ext_stdout
+        logging.debug("extension based on default: {}".format(ext))
 
     return ext
 

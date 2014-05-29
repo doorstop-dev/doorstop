@@ -7,6 +7,7 @@ import logging
 
 import yaml
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 
@@ -253,7 +254,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if self._exists:
             logging.info("deleting {}...".format(self))
             logging.debug("deleting file {}...".format(path))
-            os.remove(path)
+            common.delete(path)
             self._loaded = False  # force the object to reload
             self._exists = False  # but, prevent future access
         else:

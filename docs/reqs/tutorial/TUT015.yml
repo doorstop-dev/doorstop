@@ -1,0 +1,25 @@
+active: true
+derived: false
+level: 4.1
+links:
+- REQ017
+normative: true
+ref: ''
+text: |
+  **Exporting a Document**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Export a document to standard outout:
+
+      doorstop export LLR
+
+  Export all documents to a directory:
+
+      doorstop export all dirpath/to/exports
+
+  Export documents using specific formats:
+
+      doorstop export REQ path/to/req.xlsx

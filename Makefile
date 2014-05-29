@@ -96,7 +96,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme apidocs uml html
+doc: readme html uml apidocs
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -107,10 +107,13 @@ docs/README-pypi.html: README.rst
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
-.PHONY: apidocs
-apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+.PHONY: html
+html: env docs/gen/*.html
+docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+	- $(MAKE) doorstop
+	$(BIN)/doorstop publish all docs/gen --text
+	$(BIN)/doorstop publish all docs/gen --markdown
+	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: uml
 uml: .depends-dev docs/*.png $(SOURCES)
@@ -119,13 +122,10 @@ docs/*.png:
 	- mv -f classes_$(PACKAGE).png docs/classes.png
 	- mv -f packages_$(PACKAGE).png docs/packages.png
 
-.PHONY: html
-html: env docs/gen/*.html
-docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
-	- $(MAKE) doorstop
-	$(BIN)/doorstop publish all docs/gen --text
-	$(BIN)/doorstop publish all docs/gen --markdown
-	$(BIN)/doorstop publish all docs/gen --html
+.PHONY: apidocs
+apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
+apidocs/$(PACKAGE)/index.html: $(SOURCES)
+	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: read
 read: doc

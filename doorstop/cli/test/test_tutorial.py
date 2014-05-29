@@ -134,6 +134,27 @@ class TestSection1(TestBase):  # pylint: disable=R0904
         self.doorstop("import --item LLR LLR001 "
                       "--attr \"{'text': 'The item text.'}\"")
 
+    def test_tutorial_section_4(self):
+        """Verify tutorial section 4.0 is working."""
+
+        # Create a basic document
+        self.doorstop("new REQ ./reqs")
+        self.doorstop("add REQ")
+        self.doorstop("add REQ")
+        self.doorstop("new TST ./reqs/tests --parent REQ")
+        self.doorstop("add TST")
+        self.doorstop("add TST")
+        self.doorstop("link TST1 REQ1")
+        self.doorstop("link TST2 REQ1")
+        self.doorstop("link TST2 REQ2")
+
+        # 4.1
+
+        self.doorstop("export TST")
+        self.doorstop("export all dirpath/to/exports")
+        self.doorstop("export REQ path/to/req.xlsx")
+
+
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
     unittest.main()
