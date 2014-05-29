@@ -600,11 +600,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.item.issues))
 
-    @patch('os.remove')
-    def test_delete(self, mock_remove):
+    @patch('doorstop.common.delete')
+    def test_delete(self, mock_delete):
         """Verify an item can be deleted."""
         self.item.delete()
-        mock_remove.assert_called_once_with(self.item.path)
+        mock_delete.assert_called_once_with(self.item.path)
         self.item.delete()  # ensure a second delete is ignored
 
 
