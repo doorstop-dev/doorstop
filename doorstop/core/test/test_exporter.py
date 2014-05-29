@@ -133,15 +133,21 @@ def move_file(src, dst):
     shutil.move(src, dst)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
+# @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
 
+    def setUp(self):
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp)
+
     def test_export_csv(self):
         """Verify a document can be exported as a CSV file."""
         path = os.path.join(FILES, 'exported.csv')
-        temp = os.path.join(FILES, 'exported.temp.csv')
+        temp = os.path.join(self.temp, 'exported.csv')
         expected = read_csv(path)
         # Act
         exporter.export(self.document, temp)
@@ -154,7 +160,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
     def test_export_tsv(self):
         """Verify a document can be exported as a TSV file."""
         path = os.path.join(FILES, 'exported.tsv')
-        temp = os.path.join(FILES, 'exported.temp.tsv')
+        temp = os.path.join(self.temp, 'exported.tsv')
         expected = read_csv(path, delimiter='\t')
         # Act
         exporter.export(self.document, temp)
@@ -167,7 +173,7 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
     def test_export_xlsx(self):
         """Verify a document can be exported as an XLSX file."""
         path = os.path.join(FILES, 'exported.xlsx')
-        temp = os.path.join(FILES, 'exported.temp.xlsx')
+        temp = os.path.join(self.temp, 'exported.xlsx')
         expected = read_xlsx(path)
         # Act
         exporter.export(self.document, temp)
@@ -175,4 +181,5 @@ class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
         if CHECK_EXPORTED_CONTENT:
             actual = read_xlsx(temp)
             self.assertEqual(expected, actual)
-        move_file(temp, path)
+        else:  # binary file always changes, only copy when not checking
+            move_file(temp, path)
