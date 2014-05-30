@@ -360,6 +360,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Get a list of items that this item links to."""
         return [self.tree.find_item(i) for i in self.links]
 
+    @property
+    def parent_documents(self):
+        """Get a list of documents that this item's document should link to.
+
+        Note: a document only has one parent.
+
+        """
+        return [self.tree.find_document(self.document.prefix)]
+
     # actions ################################################################
 
     @auto_save
