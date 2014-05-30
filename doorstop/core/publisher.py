@@ -260,7 +260,7 @@ def lines_html(obj):
         yield '</head>'
         yield '<body>'
     text = '\n'.join(lines_markdown(obj))
-    html = markdown.markdown(text, extensions=['attr_list'])
+    html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
         yield '</body>'
