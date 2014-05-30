@@ -38,16 +38,30 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
+
+        # TODO: fix mock junk in published*.html
+
         cls.item = MockItem('path/to/req3.yml',
                             _file=("links: [sys3]" + '\n'
                                    "text: 'Heading'" + '\n'
                                    "level: 1.1.0" + '\n'
                                    "normative: false"))
+
         cls.item2 = MockItem('path/to/req3.yml',
                              _file=("links: [sys3]\ntext: '" +
                                     ("Hello, world! " * 10) +
                                     "'\nlevel: 1.2"))
-        cls.item2.find_child_links = lambda: ['tst1']
+        mock_item = Mock()
+        mock_item.id = 'sys3'
+        mock_item.document.prefix = 'sys'
+        cls.item2.tree = Mock()
+        cls.item2.tree.find_item = Mock(return_value=mock_item)
+        mock_item2 = Mock()
+        mock_item2.id = 'tst1'
+        mock_item2.document.prefix = 'tst'
+        cls.item2.find_child_links = lambda: [mock_item2.id]
+        cls.item2.find_child_items = lambda: [mock_item2]
+
         cls.document = MagicMock()
         cls.document.items = [
             cls.item,
@@ -55,14 +69,15 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
             MockItem('path/to/req1.yml',
                      _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
             MockItem('path/to/req2.yml',
-                     _file="links: [sys1, sys2]\ntext: ''\nlevel: 2"),
+                     _file="links: []\ntext: ''\nlevel: 2"),
             MockItem('path/to/req4.yml',
-                     _file="links: [sys2]\nref: 'CHECK_PUBLISHED_CONTENT'\n"
+                     _file="links: []\nref: 'CHECK_PUBLISHED_CONTENT'\n"
                      "level: 2.1.1"),
             MockItem('path/to/req2.yml',
                      _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                      "normative: false"),
         ]
+
         cls.item3 = MockItem('path/to/req4.yml', _file=(
             "links: [sys4]" + '\n'
             "text: 'This shall...'" + '\n'
@@ -173,19 +188,28 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         """Verify Markdown can be published from an item (heading)."""
         expected = "## 1.1 Heading {: #req3 }\n\n"
         # Act
-        lines = publisher.lines(self.item, '.md')
+        lines = publisher.lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_markdown_item_with_child_links(self):
+        """Verify Markdown can be published from an item (heading)."""
+        # Act
+        lines = publisher.lines(self.item2, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertIn("Child links: tst1", text)
+
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4 {: #req4 }" + '\n\n'
+        expected = ("## 1.2 req4" + '\n\n'
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')
         # Act
-        lines = publisher.lines(self.item3, '.md')
+        lines = publisher.lines(self.item3, '.md', linkify=False)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -206,7 +230,8 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertIn("Child links: tst1", text)
+        self.assertIn("Child links:", text)
+        self.assertIn(">tst1</a>", text)
 
     def test_lines_unknown(self):
         """Verify an exception is raised when iterating an unknown format."""
@@ -216,6 +241,7 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, list, gen)
 
 
+# TODO: move this to test_all.py and use real objects
 @unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 

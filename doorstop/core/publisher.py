@@ -158,7 +158,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj):
+def lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -175,14 +175,14 @@ def lines_markdown(obj):
 
             # Level and Text
             standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
-            attr_list = " {{: #{i} }}".format(i=item.id)
+            attr_list = " {{: #{i} }}".format(i=item.id) if linkify else ''
             yield standard + attr_list
 
         else:
 
             # Level and ID
             standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
-            attr_list = " {{: #{i} }}".format(i=item.id)
+            attr_list = " {{: #{i} }}".format(i=item.id) if linkify else ''
             yield standard + attr_list
 
             # Text
@@ -199,17 +199,29 @@ def lines_markdown(obj):
             if item.links:
                 yield ""  # break before links
                 if settings.PUBLISH_CHILD_LINKS:
-                    label = "Parent links: "
+                    label = "Parent links:"
                 else:
-                    label = "Links: "
-                slinks = label + ', '.join(str(l) for l in item.links)
-                yield '*' + slinks + '*'
-            if settings.PUBLISH_CHILD_LINKS:
-                links = item.find_child_links()
-                if links:
-                    yield ""  # break before links
-                    slinks = "Child links: " + ', '.join(str(l) for l in links)
+                    label = "Links:"
+                if linkify:
+                    links = []
+                    for item2 in item.parent_items:
+                        links.append("[{i}]({p}.html#{i})".format(i=item2.id, p=item2.document.prefix))
+                    yield '*' + label + '*' + ' ' + ', '.join(links)
+                else:
+                    slinks = label + ' ' + ', '.join(str(l) for l in item.links)
                     yield '*' + slinks + '*'
+            if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
+                if items2:
+                    yield ""  # break before links
+                    if linkify:
+                        links = []
+                        for item2 in items2:
+                            links.append("[{i}]({p}.html#{i})".format(i=item2.id, p=item2.document.prefix))
+                        yield'*' + "Child links:" + '*' + ' ' + ', '.join(links)
+                    else:
+                        slinks = "Child links: " + ', '.join(str(i.id) for i in items2)
+                        yield '*' + slinks + '*'
 
         yield ""  # break between items
 
@@ -259,7 +271,7 @@ def lines_html(obj):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    text = '\n'.join(lines_markdown(obj))
+    text = '\n'.join(lines_markdown(obj, linkify=True))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:

@@ -15,13 +15,9 @@
 
 2       req2
 
-        Parent links: sys1, sys2
-
 2.1.1   req4
 
         Reference: doorstop/core/test/test_publisher.py (line 18)
-
-        Parent links: sys2
 
 2.1     Heading 2
 

@@ -355,6 +355,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Set the list of item IDs this item links to."""
         self.links = value  # alias
 
+    @property
+    def parent_items(self):
+        """Get a list of items that this item links to."""
+        return [self.tree.find_item(i) for i in self.links]
+
     # actions ################################################################
 
     @auto_save

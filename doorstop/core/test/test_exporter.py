@@ -133,6 +133,7 @@ def move_file(src, dst):
     shutil.move(src, dst)
 
 
+# TODO: move this to test_all.py and use real objects
 @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
 
