@@ -4,12 +4,6 @@
 Setup script for Doorstop.
 """
 
-MIN_PYTHON_VERSION = 3, 3
-
-import sys
-if not sys.version_info >= MIN_PYTHON_VERSION:
-    exit("Python {}.{}+ is required.".format(*MIN_PYTHON_VERSION))
-
 import setuptools
 
 from doorstop import __project__, __version__, CLI, GUI
