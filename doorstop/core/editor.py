@@ -44,6 +44,8 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     @param path: path of file to open
     @param tool: path of alternate editor
 
+    @raise: DoorstopError: no default editor or editor unavailable
+
     @return: launched process if long-running, else None
 
     """
@@ -67,15 +69,18 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     except FileNotFoundError:
         raise DoorstopError("editor not found: {}".format(args[0]))
 
-    # Determine if the editor is long-running
+    # Wait for the editor to launch
     time.sleep(LAUNCH_DELAY)
     if process.poll() is None:
         logging.debug("process is running...")
-        return process
     else:
         logging.debug("process exited: {}".format(process.returncode))
         if process.returncode != 0:
-            raise DoorstopError("unable to open: {}".format(path))
+            raise DoorstopError("no default editor for: {}".format(path))
+
+    # Return the process if it's still running
+    if process.returncode is None:
+        return process
 
 
 def _call(args):  # pragma: no cover (integration test)
