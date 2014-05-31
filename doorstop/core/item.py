@@ -79,7 +79,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return not self == other
 
     def __lt__(self, other):
-        return self.level < other.level
+        if self.level == other.level:
+            return self.id < other.id
+        else:
+            return self.level < other.level
 
     @staticmethod
     def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
