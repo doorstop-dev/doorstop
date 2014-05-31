@@ -16,6 +16,7 @@ from doorstop.common import DoorstopWarning, DoorstopError
 from doorstop.core.builder import _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
+from doorstop.core.test import DocumentNoSkip
 
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False
@@ -30,13 +31,6 @@ CHECK_EXPORTED_CONTENT = True
 #  3. manually verify the newly published content is correct
 #  4. set CHECK_PUBLISHED_CONTENT to True
 CHECK_PUBLISHED_CONTENT = True
-
-
-class DocumentNoSkip(core.Document):  # pylint: disable=R0904
-
-    """Document class that is never skipped."""
-
-    SKIP = '__disabled__'  # never skip test Documents
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

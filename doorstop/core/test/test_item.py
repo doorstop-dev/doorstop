@@ -8,7 +8,8 @@ import os
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import FILES, EMPTY, EXTERNAL, MockFileObject
+from doorstop.core.test import FILES, EMPTY, EXTERNAL
+from doorstop.core.test import MockItem
 
 
 YAML_DEFAULT = """
@@ -20,11 +21,6 @@ normative: true
 ref: ''
 text: ''
 """.lstrip()
-
-
-class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock Item class with stubbed file IO."""
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904

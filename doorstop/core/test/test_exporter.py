@@ -9,10 +9,10 @@ import tempfile
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
 
-from doorstop.core.test.test_publisher import BaseTestCase
+from doorstop.core.test import MockDataMixIn
 
 
-class TestModule(BaseTestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
 

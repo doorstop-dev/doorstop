@@ -1,81 +1,17 @@
 """Unit tests for the doorstop.core.publisher module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, MagicMock
 
 import os
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.vcs.mockvcs import WorkingCopy
 
-from doorstop.core.test import FILES, EMPTY
-from doorstop.core.test.test_item import MockItem as _MockItem
+from doorstop.core.test import FILES, EMPTY, MockDataMixIn
 
 
-class MockItem(_MockItem):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock item class with stubbed IO and a mock VCS reference."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tree = Mock()
-        self.tree.vcs = WorkingCopy(None)
-
-
-class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
-
-    """Base test class for the doorstop.core.publisher module."""  # pylint: disable=C0103
-
-    @classmethod
-    def setUpClass(cls):
-
-        cls.item = MockItem('path/to/req3.yml',
-                            _file=("links: [sys3]" + '\n'
-                                   "text: 'Heading'" + '\n'
-                                   "level: 1.1.0" + '\n'
-                                   "normative: false"))
-
-        cls.item2 = MockItem('path/to/req3.yml',
-                             _file=("links: [sys3]\ntext: '" +
-                                    ("Hello, world! " * 10) +
-                                    "'\nlevel: 1.2"))
-        mock_item = Mock()
-        mock_item.id = 'sys3'
-        mock_item.document.prefix = 'sys'
-        cls.item2.tree = Mock()
-        cls.item2.tree.find_item = Mock(return_value=mock_item)
-        mock_item2 = Mock()
-        mock_item2.id = 'tst1'
-        mock_item2.document.prefix = 'tst'
-        cls.item2.find_child_links = lambda: [mock_item2.id]
-        cls.item2.find_child_items = lambda: [mock_item2]
-
-        cls.document = MagicMock()
-        cls.document.items = [
-            cls.item,
-            cls.item2,
-            MockItem('path/to/req1.yml',
-                     _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
-            MockItem('path/to/req2.yml',
-                     _file="links: []\ntext: ''\nlevel: 2"),
-            MockItem('path/to/req4.yml',
-                     _file="links: []\nref: 'CHECK_PUBLISHED_CONTENT'\n"
-                     "level: 2.1.1"),
-            MockItem('path/to/req2.yml',
-                     _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
-                     "normative: false"),
-        ]
-
-        cls.item3 = MockItem('path/to/req4.yml', _file=(
-            "links: [sys4]" + '\n'
-            "text: 'This shall...'" + '\n'
-            "ref: Doorstop.sublime-project" + '\n'
-            "level: 1.2" + '\n'
-            "normative: true"))
-
-
-class TestModule(BaseTestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
 
