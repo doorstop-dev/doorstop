@@ -13,7 +13,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '..', '..', '..'))
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
-SYS = os.path.join(FILES, 'sys')
+SYS = os.path.join(FILES, 'parent')
+TST = os.path.join(FILES, 'child')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory
 EXTERNAL = os.path.join(FILES, 'external')  # external files to reference
 NEW = os.path.join(FILES, 'new')  # new document with no items

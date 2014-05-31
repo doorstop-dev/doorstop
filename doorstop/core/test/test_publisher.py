@@ -4,22 +4,13 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 import os
-import tempfile
-import shutil
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
-from doorstop.core.test import FILES, EMPTY, ENV, REASON
+from doorstop.core.test import FILES, EMPTY
 from doorstop.core.test.test_item import MockItem as _MockItem
-
-# Whenever the publish format is changed:
-#  1. set CHECK_PUBLISHED_CONTENT to False
-#  2. re-run all tests
-#  3. manually verify the newly published content is correct
-#  4. set CHECK_PUBLISHED_CONTENT to True
-CHECK_PUBLISHED_CONTENT = True
 
 
 class MockItem(_MockItem):  # pylint: disable=W0223,R0902,R0904
@@ -38,8 +29,6 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-
-        # TODO: fix mock junk in published*.html
 
         cls.item = MockItem('path/to/req3.yml',
                             _file=("links: [sys3]" + '\n'
@@ -239,103 +228,3 @@ class TestModule(BaseTestCase):  # pylint: disable=R0904
         gen = publisher.lines(self.document, '.a')
         # Assert
         self.assertRaises(DoorstopError, list, gen)
-
-
-# TODO: move this to test_all.py and use real objects
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
-class TestModuleIntegration(BaseTestCase):  # pylint: disable=R0904
-
-    """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
-
-    def test_publish_html(self):
-        """Verify an HTML file can be created."""
-        temp = tempfile.mkdtemp()
-        try:
-            path = os.path.join(temp, 'published.html')
-            # Act
-            publisher.publish(self.document, path, '.html')
-            # Assert
-            self.assertTrue(os.path.isfile(path))
-        finally:
-            shutil.rmtree(temp)
-
-    def test_lines_text_document(self):
-        """Verify text can be published from a document."""
-        path = os.path.join(FILES, 'published.txt')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.txt')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)
-
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_text_document_with_child_links(self):
-        """Verify text can be published from a document with child links."""
-        path = os.path.join(FILES, 'published2.txt')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.txt')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)
-
-    def test_lines_markdown_document(self):
-        """Verify Markdown can be published from a document."""
-        path = os.path.join(FILES, 'published.md')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.md')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)
-
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_markdown_document_with_child_links(self):
-        """Verify Markdown can be published from a document w/ child links."""
-        path = os.path.join(FILES, 'published2.md')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.md')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)
-
-    def test_lines_html_document(self):
-        """Verify HTML can be published from a document."""
-        path = os.path.join(FILES, 'published.html')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.html')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)
-
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_html_document_with_child_links(self):
-        """Verify HTML can be published from a document with child links."""
-        path = os.path.join(FILES, 'published2.html')
-        expected = open(path).read()
-        # Act
-        lines = publisher.lines(self.document, '.html')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
-            outfile.write(text)

@@ -508,11 +508,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
-    def find_ref(self, root=None, ignored=None):
+    def find_ref(self, skip=None, root=None, ignored=None):
         """Get the external file reference and line number.
 
+        @param skip: function to determine if a path is ignored
         @param root: override path to the working copy (for testing)
-        @param ignored: override function to determine ignores (for testing)
+        @param ignored: override VCS ignore function (for testing)
 
         @raise DoorstopError: when no reference is found
 
@@ -545,7 +546,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if os.path.sep + '.' in path:
                     continue
                 # Skip ignored paths
-                if ignored(path):
+                if ignored(path) or (skip and skip(path)):
                     continue
                 # Search for the reference in the file
                 if filename == self.ref:

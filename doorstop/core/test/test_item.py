@@ -361,14 +361,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
-        relpath, line = self.item.find_ref(EXTERNAL)
+        relpath, line = self.item.find_ref(root=EXTERNAL)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""
         self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(FILES)
+        relpath, line = self.item.find_ref(root=FILES)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(None, line)
 

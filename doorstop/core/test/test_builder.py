@@ -25,7 +25,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_build(self):
         """Verify a tree can be built."""
         tree = build(FILES)
-        self.assertEqual(3, len(tree))
+        self.assertEqual(4, len(tree))
 
     @patch('doorstop.core.document.Document', MockDocument)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
