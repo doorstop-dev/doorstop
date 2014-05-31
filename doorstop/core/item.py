@@ -639,7 +639,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             logging.debug(msg)
             joined = ', '.join(str(d) for d in child_documents)
             logging.debug("child documents: {}".format(joined))
-        return sorted(child_items), sorted(child_documents)
+        return sorted(child_items), child_documents
 
     def delete(self, path=None):
         """Delete the item."""
