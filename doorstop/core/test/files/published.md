@@ -26,31 +26,3 @@ Hello, world!
 
 *Links: REQ001*
 
-### 1.2.3 REQ001
-
-Hello, world!
-
-*Links: SYS001, SYS002*
-
-## 2.1 REQ002
-
-Hello, world!
-
-## 1.4 REQ003
-
-Hello, world!
-
-Reference: exported.csv (line 5)
-
-*Links: REQ001*
-
-## 2.1 REQ2-001
-
-Hello, world!
-
-*Links: REQ001*
-
-## 1.6 REQ004
-
-Hello, world!
-
