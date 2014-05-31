@@ -60,14 +60,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             return "{} ({})".format(self.prefix, self.relpath)
 
-    def __iter__(self):
-        yield from self._iter()
-
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
 
     def __ne__(self, other):
         return not self == other
+
+    def __iter__(self):
+        yield from self._iter()
+
+    def __len__(self):
+        return len(list(self._iter()))
 
     @staticmethod
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
