@@ -552,7 +552,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if filename == self.ref:
                     return relpath, None
                 # Skip extensions that should not be considered text
-                if os.path.splitext(filename)[-1] in ['.csv', '.tsv']:
+                if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
                     continue
                 # Search for the reference in the file
                 try:

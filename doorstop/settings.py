@@ -12,6 +12,7 @@ VERBOSE2_LOGGING_LEVEL = logging.DEBUG
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators
+SKIP_EXTS = ['.csv', '.tsv']  # extensions to skip during reference search
 
 # Formatting settings
 MAX_LINE_LENTH = 79  # line length to trigger multiline on extended attributes
