@@ -354,6 +354,8 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
 
+    maxDiff = None
+
     def setUp(self):
         self.document = core.Document(FILES, root=ROOT)
         self.temp = tempfile.mkdtemp()
@@ -406,6 +408,8 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+
+    maxDiff = None
 
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def setUp(self):
