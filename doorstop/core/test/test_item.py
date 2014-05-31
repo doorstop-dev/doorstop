@@ -363,8 +363,13 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""
+
+        def skip(path):
+            """Skip generated files."""
+            return "published" in path
+
         self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(root=FILES)
+        relpath, line = self.item.find_ref(root=FILES, skip=skip)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(None, line)
 

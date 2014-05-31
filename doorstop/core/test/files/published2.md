@@ -8,7 +8,7 @@ Hello, world!
 
 Hello, world!
 
-Reference: exported.csv (line 5)
+Reference: external/text.txt (line 3)
 
 *Parent links: REQ001*
 

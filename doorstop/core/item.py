@@ -548,9 +548,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 # Skip ignored paths
                 if ignored(path) or (skip and skip(path)):
                     continue
-                # Search for the reference in the file
+                # Check for a matching filename
                 if filename == self.ref:
                     return relpath, None
+                # Skip extensions that should not be considered text
+                if os.path.splitext(filename)[-1] in ['.csv', '.tsv']:
+                    continue
+                # Search for the reference in the file
                 try:
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
