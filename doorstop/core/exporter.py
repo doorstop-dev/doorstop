@@ -197,15 +197,21 @@ def check(ext, get_lines_gen=False, get_file_func=False):
 
     if get_lines_gen:
         try:
-            return FORMAT_LINES[ext]
+            gen = FORMAT_LINES[ext]
         except KeyError:
             raise exc from None
+        else:
+            logging.debug("found lines generator for: {}".format(ext))
+            return gen
 
     if get_file_func:
         try:
-            return FORMAT_FILE[ext]
+            func = FORMAT_FILE[ext]
         except KeyError:
             raise exc from None
+        else:
+            logging.debug("found file creator for: {}".format(ext))
+            return func
 
     if ext not in FORMAT:
         raise exc

@@ -1,6 +1,6 @@
 """Common classes and functions for the doorstop.core package."""
 
-
+import os
 import re
 import textwrap
 import logging
@@ -532,14 +532,42 @@ class Level(object):
         return Level(self.value)
 
 
+def is_document(obj):
+    """Determine if the object is a document."""
+    return hasattr(obj, 'items')
+
+
+def is_tree(obj):
+    """Determine if the object is a tree."""
+    return hasattr(obj, 'documents')
+
+
 def iter_items(obj):
     """Get an iterator of items from from an item, list, or document."""
-    if hasattr(obj, 'items'):
+    if is_document(obj):
         # a document
+        logging.debug("iterating over document...")
         return (i for i in obj.items if i.active)
     try:
         # an iterable
+        logging.debug("iterating over document-like object...")
         return iter(obj)
     except TypeError:
         # an item
+        logging.debug("iterating over an item (in a container)...")
         return [obj]
+
+
+def iter_documents(obj, path, ext):
+    """Get an iterator if documents from a tree or document-like object."""
+    if is_tree(obj):
+        # a tree
+        logging.debug("iterating over tree...")
+        for document in obj.documents:
+            path2 = os.path.join(path, document.prefix + ext)
+
+            yield document, path2
+    else:
+        # assume a document-like object
+        logging.debug("iterating over document-like object...")
+        yield obj, path

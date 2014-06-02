@@ -42,13 +42,47 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be published."""
         dirpath = os.path.join('mock', 'directory')
         path = os.path.join(dirpath, 'published.html')
-        mock_document = MagicMock()
+        mock_document = MagicMock(spec=['items'])
         mock_document.items = []
         # Act
         publisher.publish(mock_document, path)
         # Assert
         mock_makedirs.assert_called_once_with(dirpath)
+        mock_open.assert_called_once_with(path, 'w')
+
+    @patch('doorstop.core.publisher.index')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_publish_tree(self, mock_open, mock_makedirs, mock_index):
+        """Verify a tree can be published."""
+        dirpath = os.path.join('mock', 'directory')
+        mock_document = MagicMock()
+        mock_document.items = []
+        mock_tree = MagicMock()
+        mock_tree.documents = [mock_document]
+        # Act
+        publisher.publish(mock_tree, dirpath)
+        # Assert
+        self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
+        mock_index.assert_called_once_with(dirpath)
+
+    @patch('doorstop.core.publisher.index')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_publish_tree_no_index(self, mock_open, mock_makedirs, mock_index):
+        """Verify a tree can be published."""
+        dirpath = os.path.join('mock', 'directory')
+        mock_document = MagicMock()
+        mock_document.items = []
+        mock_tree = MagicMock()
+        mock_tree.documents = [mock_document]
+        # Act
+        publisher.publish(mock_tree, dirpath, create_index=False)
+        # Assert
+        self.assertEqual(1, mock_makedirs.call_count)
+        self.assertEqual(2, mock_open.call_count)
+        self.assertEqual(0, mock_index.call_count)
 
     def test_index(self):
         """Verify an HTML index can be created."""

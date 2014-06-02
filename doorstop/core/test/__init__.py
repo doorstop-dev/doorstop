@@ -130,7 +130,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     item2.find_child_links = lambda: [MockDataMixIn._mock_item2.id]
     item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
 
-    document = MagicMock()
+    document = MagicMock(spec=['items'])
     document.items = [
         item,
         item2,

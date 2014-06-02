@@ -7,33 +7,41 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.types import iter_items
+from doorstop.core.types import iter_documents, iter_items, is_tree
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
 
-def publish(obj, path, ext=None, **kwargs):
+def publish(obj, path, ext=None, create_index=None, **kwargs):
     """Publish a document to a given format.
 
-    @param obj: Item, list of Items, or Document to publish
+    @param obj: Item, list of Items, Document, or Tree to publish
     @param path: output file location with desired extension
     @param ext: file extension to override output path's extension
+    @param create_index: indicates an HTML index should be created
 
     @raise DoorstopError: for unknown file formats
 
     """
     # Determine the output format
-    ext = ext or os.path.splitext(path)[-1]
+    ext = ext or os.path.splitext(path)[-1] or '.html'
     check(ext)
 
-    # Publish content to the specified path
-    create_dirname(path)
-    logging.info("creating file {}...".format(path))
-    with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-        for line in lines(obj, ext, **kwargs):
-            outfile.write(line + '\n')
+    # Publish documents
+    for obj2, path2 in iter_documents(obj, path, ext):
+
+        # Publish content to the specified path
+        create_dirname(path2)
+        logging.info("creating file {}...".format(path2))
+        with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
+            for line in lines(obj2, ext, **kwargs):
+                outfile.write(line + '\n')
+
+    # Create index
+    if create_index or (create_index is None and is_tree(obj)):
+        index(path)
 
 
 def index(directory, extensions=('.html',)):
@@ -294,9 +302,12 @@ def check(ext):
 
     """
     try:
-        return FORMAT_LINES[ext]
+        gen = FORMAT_LINES[ext]
     except KeyError:
         exts = ', '.join(ext for ext in FORMAT_LINES)
         msg = "unknown publish format: {} (options: {})".format(ext, exts)
         exc = DoorstopError(msg)
         raise exc from None
+    else:
+        logging.debug("found lines generator for: {}".format(ext))
+        return gen
