@@ -565,7 +565,6 @@ def iter_documents(obj, path, ext):
         logging.debug("iterating over tree...")
         for document in obj.documents:
             path2 = os.path.join(path, document.prefix + ext)
-
             yield document, path2
     else:
         # assume a document-like object

@@ -57,6 +57,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         mock_document = MagicMock()
+        mock_document.prefix = 'MOCK'
         mock_document.items = []
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
@@ -74,6 +75,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         mock_document = MagicMock()
+        mock_document.prefix = 'MOCK'
         mock_document.items = []
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
