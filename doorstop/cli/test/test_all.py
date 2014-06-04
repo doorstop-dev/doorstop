@@ -254,8 +254,8 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' returns an error with an unknown ID."""
         self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
@@ -284,10 +284,19 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
         self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_document_error(self):
+    def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""
         os.chdir(self.temp)
         self.assertRaises(SystemExit, main, ['publish', 'req'])
+
+    def test_publish_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['publish', 'req', self.temp])
+
+    def test_publish_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['publish', 'req', path])
 
     def test_publish_document_text(self):
         """Verify 'doorstop publish' can create text output."""
