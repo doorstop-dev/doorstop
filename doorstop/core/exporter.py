@@ -8,6 +8,7 @@ import logging
 import yaml
 import openpyxl
 
+from openpyxl.styles import Style, Alignment, Font
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
 
@@ -159,35 +160,41 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     @return: path of created file
 
     """
+    col_widths = {}
+    max_width = 65
+
     # Create a new workbook
     workbook = openpyxl.Workbook()  # pylint: disable=E1102
     worksheet = workbook.active
-
-    col_widths = {}
-    max_width = 70
 
     # Populate cells
     for row, data in enumerate(tabulate(obj), start=1):
         for col_idx, value in enumerate(data, start=1):
             col = openpyxl.cell.get_column_letter(col_idx)  # pylint: disable=E1101
+            cell = worksheet.cell('%s%s' % (col, row))
+
+            # make every cell wrap text
+            cell.style = cell.style.copy(alignment=Alignment(wrap_text=True))
+
             # compatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
             if not isinstance(value, (int, float, str, datetime.datetime)):
                 value = str(value)
-            worksheet.cell('%s%s' % (col, row)).value = value
+            cell.value = value
+
+            # track cell width
             if col in col_widths.keys():
                 if len(str(value)) > col_widths[col]:
-                    col_widths[col] = len((value))
+                    col_widths[col] = len(str(value))
             else:
-                col_widths[col] = len((value))
+                col_widths[col] = len(str(value))
 
+    # set column width based on column contents
     for col in col_widths.keys():
         if col_widths[col] > max_width:
             worksheet.column_dimensions[col].width = max_width
         else:
-            worksheet.column_dimensions[col].width = col_widths[col]
-
-        print("Size for %s is %d." % (col, col_widths[col]))
+            worksheet.column_dimensions[col].width = col_widths[col] + 1
 
     # Save the workbook
     workbook.save(path)
