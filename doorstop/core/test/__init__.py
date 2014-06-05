@@ -111,14 +111,6 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                            _file=("links: [sys3]\ntext: '" +
                                   ("Hello, world! " * 10) +
                                   "'\nlevel: 1.2"))
-
-    item3 = MockItem('path/to/req4.yml', _file=(
-        "links: [sys4]" + '\n'
-        "text: 'This shall...'" + '\n'
-        "ref: Doorstop.sublime-project" + '\n'
-        "level: 1.2" + '\n'
-        "normative: true"))
-
     _mock_item = Mock()
     _mock_item.id = 'sys3'
     _mock_item.document.prefix = 'sys'
@@ -129,6 +121,19 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     _mock_item2.document.prefix = 'tst'
     item2.find_child_links = lambda: [MockDataMixIn._mock_item2.id]
     item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
+
+    item3 = MockItem('path/to/req4.yml', _file=(
+        "links: [sys4]" + '\n'
+        "text: 'This shall...'" + '\n'
+        "ref: Doorstop.sublime-project" + '\n'
+        "level: 1.2" + '\n'
+        "normative: true"))
+    _mock_item3 = Mock()
+    _mock_item3.id = 'sys4'
+    _mock_item3.document.prefix = 'sys'
+    item3.tree = Mock()
+    item3.tree.find_item = Mock(return_value=_mock_item3)
+    item3.tree.vcs.ignored = (lambda _: False)
 
     document = MagicMock(spec=['items'])
     document.items = [

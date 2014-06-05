@@ -142,7 +142,7 @@ def lines_text(obj, indent=8, width=79):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                ref = _ref(item)
+                ref = _format_ref(item)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -175,6 +175,7 @@ def lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
+    @param linkify: turn links into hyperlinks (for HTML generation)
 
     @return: iterator of lines of text
 
@@ -188,14 +189,14 @@ def lines_markdown(obj, linkify=False):
 
             # Level and Text
             standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
-            attr_list = " {{: #{i} }}".format(i=item.id) if linkify else ''
+            attr_list = _format_attr_list(item, linkify)
             yield standard + attr_list
 
         else:
 
             # Level and ID
             standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
-            attr_list = " {{: #{i} }}".format(i=item.id) if linkify else ''
+            attr_list = _format_attr_list(item, linkify)
             yield standard + attr_list
 
             # Text
@@ -206,35 +207,29 @@ def lines_markdown(obj, linkify=False):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _ref(item)
+                yield _format_ref(item)
 
-            # Links
+            # Parent links
             if item.links:
                 yield ""  # break before links
+                items2 = item.parent_items
                 if settings.PUBLISH_CHILD_LINKS:
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                if linkify:
-                    links = []
-                    for item2 in item.parent_items:
-                        links.append("[{i}]({p}.html#{i})".format(i=item2.id, p=item2.document.prefix))
-                    yield '*' + label + '*' + ' ' + ', '.join(links)
-                else:
-                    slinks = label + ' ' + ', '.join(str(l) for l in item.links)
-                    yield '*' + slinks + '*'
+                links = _format_links(items2, linkify)
+                label_links = _format_label_links(label, links, linkify)
+                yield label_links
+
+            # Child links
             if settings.PUBLISH_CHILD_LINKS:
                 items2 = item.find_child_items()
                 if items2:
                     yield ""  # break before links
-                    if linkify:
-                        links = []
-                        for item2 in items2:
-                            links.append("[{i}]({p}.html#{i})".format(i=item2.id, p=item2.document.prefix))
-                        yield'*' + "Child links:" + '*' + ' ' + ', '.join(links)
-                    else:
-                        slinks = "Child links: " + ', '.join(str(i.id) for i in items2)
-                        yield '*' + slinks + '*'
+                    label = "Child links:"
+                    links = _format_links(items2, linkify)
+                    label_links = _format_label_links(label, links, linkify)
+                    yield label_links
 
         yield ""  # break between items
 
@@ -247,7 +242,12 @@ def _format_level(level):
     return text
 
 
-def _ref(item):
+def _format_attr_list(item, linkify):
+    """Create a Markdown attribute list for a heading."""
+    return " {{: #{i} }}".format(i=item.id) if linkify else ''
+
+
+def _format_ref(item):
     """Format an external reference for publishing."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
@@ -255,6 +255,26 @@ def _ref(item):
         return "Reference: {p} (line {l})".format(p=path, l=line)
     else:
         return "Reference: '{r}'".format(r=item.ref)
+
+
+def _format_links(items, linkify):
+    """Format a list of linked items."""
+    if linkify:
+        links = []
+        for item in items:
+            links.append("[{i}]({p}.html#{i})".format(i=item.id,
+                                                      p=item.document.prefix))
+        return ', '.join(links)
+    else:
+        return ', '.join(str(item.id) for item in items)
+
+
+def _format_label_links(label, links, linkify):
+    """Join a string of label and links with formatting."""
+    if linkify:
+        return "*{lb}* {ls}".format(lb=label, ls=links)
+    else:
+        return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
 def lines_html(obj):
