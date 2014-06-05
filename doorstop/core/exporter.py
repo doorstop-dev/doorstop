@@ -7,8 +7,8 @@ import logging
 
 import yaml
 import openpyxl
-
 from openpyxl.styles import Style, Alignment, Font
+
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
 
@@ -195,6 +195,10 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             worksheet.column_dimensions[col].width = max_width
         else:
             worksheet.column_dimensions[col].width = col_widths[col] + 1
+
+
+    # freeze top row
+    worksheet.freeze_panes = worksheet.cell('A2')
 
     # Save the workbook
     workbook.save(path)
