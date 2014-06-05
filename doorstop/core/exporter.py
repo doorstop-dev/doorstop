@@ -11,6 +11,7 @@ from openpyxl.styles import Style, Alignment, Font
 
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
+from doorstop import settings
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -161,7 +162,6 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     """
     col_widths = {}
-    max_width = 65
 
     # Create a new workbook
     workbook = openpyxl.Workbook()  # pylint: disable=E1102
@@ -194,8 +194,8 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     # set column width based on column contents
     for col in col_widths.keys():
-        if col_widths[col] > max_width:
-            worksheet.column_dimensions[col].width = max_width
+        if col_widths[col] > settings.PUBLISH_XLSX_MAX_WIDTH:
+            worksheet.column_dimensions[col].width = settings.PUBLISH_XLSX_MAX_WIDTH
         else:
             worksheet.column_dimensions[col].width = col_widths[col] + 1
 
