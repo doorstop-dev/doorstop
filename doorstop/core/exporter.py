@@ -175,9 +175,9 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
             # make every cell wrap text
             if row is 1:
-                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True))
+                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True, vertical='top', horizontal='left'))
             else:
-                cell.style = cell.style.copy(alignment=Alignment(wrap_text=True))
+                cell.style = cell.style.copy(alignment=Alignment(wrap_text=True, vertical='top', horizontal='left'))
 
             # compatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
@@ -201,6 +201,10 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     # freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')
+
+    # add filters to first row
+    #print(worksheet.auto_filter)
+    #worksheet.auto_filter = True
 
     # Save the workbook
     workbook.save(path)
