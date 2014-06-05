@@ -174,7 +174,10 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             cell = worksheet.cell('%s%s' % (col, row))
 
             # make every cell wrap text
-            cell.style = cell.style.copy(alignment=Alignment(wrap_text=True))
+            if row is 1:
+                cell.style = cell.style.copy(font=Font(bold=True),alignment=Alignment(wrap_text=True))
+            else:
+                cell.style = cell.style.copy(alignment=Alignment(wrap_text=True))
 
             # compatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
