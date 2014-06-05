@@ -17,27 +17,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     @patch('os.makedirs')
     @patch('builtins.open')
-    @patch('doorstop.core.publisher.lines')
-    def test_publish_html(self, mock_lines, mock_open, mock_makedirs):
-        """Verify a (mock) HTML file can be created."""
-        dirpath = os.path.join('mock', 'directory')
-        path = os.path.join(dirpath, 'published.html')
-        # Act
-        publisher.publish(self.document, path, '.html')
-        # Assert
-        mock_makedirs.assert_called_once_with(dirpath)
-        mock_open.assert_called_once_with(path, 'w')
-        mock_lines.assert_called_once_with(self.document, '.html')
-
-    def test_publish_unknown(self):
-        """Verify an exception is raised when publishing unknown formats."""
-        self.assertRaises(DoorstopError,
-                          publisher.publish, self.document, 'a.a')
-        self.assertRaises(DoorstopError,
-                          publisher.publish, self.document, 'a.txt', '.a')
-
-    @patch('os.makedirs')
-    @patch('builtins.open')
     def test_publish_document(self, mock_open, mock_makedirs):
         """Verify a document can be published."""
         dirpath = os.path.join('mock', 'directory')
@@ -49,6 +28,27 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, 'w')
+
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    @patch('doorstop.core.publisher.lines')
+    def test_publish_document_html(self, mock_lines, mock_open, mock_makedirs):
+        """Verify a (mock) HTML file can be created."""
+        dirpath = os.path.join('mock', 'directory')
+        path = os.path.join(dirpath, 'published.custom')
+        # Act
+        publisher.publish(self.document, path, '.html')
+        # Assert
+        mock_makedirs.assert_called_once_with(dirpath)
+        mock_open.assert_called_once_with(path, 'w')
+        mock_lines.assert_called_once_with(self.document, '.html')
+
+    def test_publish_document_unknown(self):
+        """Verify an exception is raised when publishing unknown formats."""
+        self.assertRaises(DoorstopError,
+                          publisher.publish, self.document, 'a.a')
+        self.assertRaises(DoorstopError,
+                          publisher.publish, self.document, 'a.txt', '.a')
 
     @patch('doorstop.core.publisher.index')
     @patch('os.makedirs')

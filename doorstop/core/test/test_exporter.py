@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.exporter module."""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import os
 import tempfile
@@ -18,7 +18,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     @patch('os.makedirs')
     @patch('doorstop.core.exporter.create')
-    def test_export(self, mock_create, mock_makedirs):
+    def test_export_document(self, mock_create, mock_makedirs):
         """Verify a document can be exported."""
         dirpath = os.path.join('mock', 'directory')
         path = os.path.join(dirpath, 'exported.xlsx')
@@ -28,12 +28,28 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_makedirs.assert_called_once_with(dirpath)
         mock_create.assert_called_once_with(self.document, path, '.xlsx')
 
-    def test_export_unknown(self):
+    def test_export_document_unknown(self):
         """Verify an exception is raised when exporting unknown formats."""
         self.assertRaises(DoorstopError,
                           exporter.export, self.document, 'a.a')
         self.assertRaises(DoorstopError,
                           exporter.export, self.document, 'a.yml', '.a')
+
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_export_tree(self, mock_open, mock_makedirs):
+        """Verify a tree can be exported."""
+        dirpath = os.path.join('mock', 'directory')
+        mock_document = MagicMock()
+        mock_document.prefix = 'MOCK'
+        mock_document.items = []
+        mock_tree = MagicMock()
+        mock_tree.documents = [mock_document]
+        # Act
+        exporter.export(mock_tree, dirpath)
+        # Assert
+        self.assertEqual(1, mock_makedirs.call_count)
+        self.assertEqual(1, mock_open.call_count)
 
     def test_lines(self):
         """Verify an item can be exported as lines."""

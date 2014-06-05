@@ -256,6 +256,93 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImport(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(os.path.join(ROOT, 'tmp'))
+        except IOError:
+            pass
+        try:
+            os.remove(os.path.join(REQS, 'REQ099.yml'))
+        except IOError:
+            pass
+
+    def test_import_document(self):
+        """Verify 'doorstop import' can import a document."""
+        self.assertRaises(SystemExit,
+                          main, ['import', '--document', 'TMP', 'tmp'])
+
+    def test_import_document_with_parent(self):
+        """Verify 'doorstop import' can import a document with a parent."""
+        self.assertIs(None, main(['import', '--document', 'TMP', 'tmp',
+                                  '--parent', 'REQ']))
+
+    def test_import_item(self):
+        """Verify 'doorstop import' can import an item.."""
+        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099']))
+
+    def test_import_item_with_attrs(self):
+        """Verify 'doorstop import' can import an item with attributes."""
+        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099',
+                                  '--attrs', "{'text': 'The item text.'}"]))
+
+    def test_import_error(self):
+        """Verify 'doorstop import' requires a document or item."""
+        self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestExport(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_export_unknown(self):
+        """Verify 'doorstop export' returns an error for an unknown format."""
+        self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
+
+    def test_export_document_stdout(self):
+        """Verify 'doorstop export' can create output."""
+        self.assertIs(None, main(['export', 'tut']))
+
+    def test_export_document_stdout_width(self):
+        """Verify 'doorstop export' can create output."""
+        self.assertIs(None, main(['export', 'tut', '--width', '72']))
+
+    def test_export_document_yaml(self):
+        """Verify 'doorstop export' can create a YAML file."""
+        path = os.path.join(self.temp, 'tut.yml')
+        self.assertIs(None, main(['export', 'tut', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_export_document_xlsx(self):
+        """Verify 'doorstop export' can create an XLSX file."""
+        path = os.path.join(self.temp, 'tut.xlsx')
+        self.assertIs(None, main(['export', 'tut', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_export_tree_xlsx(self):
+        """Verify 'doorstop export' can create an XLSX directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['export', 'all', path, '--xlsx']))
+        self.assertTrue(os.path.isdir(path))
+
+    def test_export_tree_no_path(self):
+        """Verify 'doorstop export' returns an error with no path."""
+        self.assertRaises(SystemExit, main, ['export', 'all'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
@@ -336,87 +423,6 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
     def test_publish_tree_no_path(self):
         """Verify 'doorstop publish' returns an error with no path."""
         self.assertRaises(SystemExit, main, ['publish', 'all'])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestImport(unittest.TestCase):  # pylint: disable=R0904
-
-    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
-
-    def tearDown(self):
-        try:
-            shutil.rmtree(os.path.join(ROOT, 'tmp'))
-        except IOError:
-            pass
-        try:
-            os.remove(os.path.join(REQS, 'REQ099.yml'))
-        except IOError:
-            pass
-
-    def test_import_document(self):
-        """Verify 'doorstop import' can import a document."""
-        self.assertRaises(SystemExit,
-                          main, ['import', '--document', 'TMP', 'tmp'])
-
-    def test_import_document_with_parent(self):
-        """Verify 'doorstop import' can import a document with a parent."""
-        self.assertIs(None, main(['import', '--document', 'TMP', 'tmp',
-                                  '--parent', 'REQ']))
-
-    def test_import_item(self):
-        """Verify 'doorstop import' can import an item.."""
-        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099']))
-
-    def test_import_item_with_attrs(self):
-        """Verify 'doorstop import' can import an item with attributes."""
-        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099',
-                                  '--attrs', "{'text': 'The item text.'}"]))
-
-    def test_import_error(self):
-        """Verify 'doorstop import' requires a document or item."""
-        self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestExport(unittest.TestCase):  # pylint: disable=R0904
-
-    """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
-
-    def test_export_unknown(self):
-        """Verify 'doorstop export' returns an error for an unknown format."""
-        self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
-
-    def test_export_document_stdout(self):
-        """Verify 'doorstop export' can create output."""
-        self.assertIs(None, main(['export', 'tut']))
-
-    def test_export_document_stdout_width(self):
-        """Verify 'doorstop export' can create output."""
-        self.assertIs(None, main(['export', 'tut', '--width', '72']))
-
-    def test_export_document_yaml(self):
-        """Verify 'doorstop export' can create a YAML file."""
-        path = os.path.join(self.temp, 'tut.yml')
-        self.assertIs(None, main(['export', 'tut', path]))
-        self.assertTrue(os.path.isfile(path))
-
-    def test_export_document_xlsx(self):
-        """Verify 'doorstop export' can create an XLSX file."""
-        path = os.path.join(self.temp, 'tut.xlsx')
-        self.assertIs(None, main(['export', 'tut', path]))
-        self.assertTrue(os.path.isfile(path))
-
-    def test_export_tree_no_path(self):
-        """Verify 'doorstop export' returns an error with no path."""
-        self.assertRaises(SystemExit, main, ['export', 'all'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

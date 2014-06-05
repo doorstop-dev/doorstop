@@ -9,32 +9,40 @@ import yaml
 import openpyxl
 
 from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.types import iter_items
+from doorstop.core.types import iter_documents, iter_items
 
 
 def export(obj, path, ext=None, **kwargs):
     """Export a document to a given format.
 
-    @param obj: Item, list of Items, or Document to export
-    @param path: output file location with desired extension
-    @param ext: file extension to override output path's extension
+    The function can be called in two ways:
+
+    1. document or item-like object + output file path
+    2. tree-like object + output directory path
+
+    @param obj: (1) Item, list of Items, Document or (2) Tree
+    @param path: (1) output file path or (2) output directory path
+    @param ext: file extension to override output extension
 
     @raise DoorstopError: for unknown file formats
 
     """
     # Determine the output format
-    ext = ext or os.path.splitext(path)[-1]
+    ext = ext or os.path.splitext(path)[-1] or '.csv'
     check(ext)
 
-    # Export content to the specified path
-    create_dirname(path)
-    logging.info("creating file {}...".format(path))
-    if ext in FORMAT_LINES:
-        with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj, ext, **kwargs):
-                outfile.write(line + '\n')
-    else:
-        create(obj, path, ext, **kwargs)
+    # Export documents
+    for obj2, path2 in iter_documents(obj, path, ext):
+
+        # Export content to the specified path
+        create_dirname(path2)
+        logging.info("creating file {}...".format(path2))
+        if ext in FORMAT_LINES:
+            with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
+                for line in lines(obj2, ext, **kwargs):
+                    outfile.write(line + '\n')
+        else:
+            create(obj2, path2, ext, **kwargs)
 
 
 def lines(obj, ext='.yml', **kwargs):
@@ -192,7 +200,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
 
     """
     exts = ', '.join(ext for ext in FORMAT)
-    msg = "unknown publish format: {} (options: {})".format(ext, exts)
+    msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
 
     if get_lines_gen:

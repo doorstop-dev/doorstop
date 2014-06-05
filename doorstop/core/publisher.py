@@ -17,9 +17,14 @@ INDEX = 'index.html'
 def publish(obj, path, ext=None, create_index=None, **kwargs):
     """Publish a document to a given format.
 
-    @param obj: Item, list of Items, Document, or Tree to publish
-    @param path: output file location with desired extension
-    @param ext: file extension to override output path's extension
+    The function can be called in two ways:
+
+    1. document or item-like object + output file path
+    2. tree-like object + output directory path
+
+    @param obj: (1) Item, list of Items, Document or (2) Tree
+    @param path: (1) output file path or (2) output directory path
+    @param ext: file extension to override output extension
     @param create_index: indicates an HTML index should be created
 
     @raise DoorstopError: for unknown file formats
@@ -301,12 +306,13 @@ def check(ext):
     @return: lines generator if available
 
     """
+    exts = ', '.join(ext for ext in FORMAT_LINES)
+    msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
+    exc = DoorstopError(msg)
+
     try:
         gen = FORMAT_LINES[ext]
     except KeyError:
-        exts = ', '.join(ext for ext in FORMAT_LINES)
-        msg = "unknown publish format: {} (options: {})".format(ext, exts)
-        exc = DoorstopError(msg)
         raise exc from None
     else:
         logging.debug("found lines generator for: {}".format(ext))
