@@ -483,12 +483,12 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
-    def test_lines_html_document(self):
+    def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'published.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html')
+        lines = core.publisher.lines(self.document, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:

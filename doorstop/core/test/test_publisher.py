@@ -41,7 +41,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, 'w')
-        mock_lines.assert_called_once_with(self.document, '.html')
+        mock_lines.assert_called_once_with(self.document, '.html',
+                                           linkify=False)
 
     def test_publish_document_unknown(self):
         """Verify an exception is raised when publishing unknown formats."""
@@ -50,7 +51,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           publisher.publish, self.document, 'a.txt', '.a')
 
-    @patch('doorstop.core.publisher.index')
+    @patch('doorstop.core.publisher._index')
     @patch('os.makedirs')
     @patch('builtins.open')
     def test_publish_tree(self, mock_open, mock_makedirs, mock_index):
@@ -68,7 +69,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(2, mock_open.call_count)
         mock_index.assert_called_once_with(dirpath)
 
-    @patch('doorstop.core.publisher.index')
+    @patch('doorstop.core.publisher._index')
     @patch('os.makedirs')
     @patch('builtins.open')
     def test_publish_tree_no_index(self, mock_open, mock_makedirs, mock_index):
@@ -80,7 +81,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
         # Act
-        publisher.publish(mock_tree, dirpath, create_index=False)
+        publisher.publish(mock_tree, dirpath, index=False)
         # Assert
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
@@ -91,7 +92,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Arrange
         path = os.path.join(FILES, 'index.html')
         # Act
-        publisher.index(FILES)
+        publisher._index(FILES)  # pylint: disable=W0212
         # Assert
         self.assertTrue(os.path.isfile(path))
 
@@ -99,7 +100,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify an HTML index is only created when files exist."""
         path = os.path.join(EMPTY, 'index.html')
         # Act
-        publisher.index(EMPTY)
+        publisher._index(EMPTY)  # pylint: disable=W0212
         # Assert
         self.assertFalse(os.path.isfile(path))
 
@@ -177,9 +178,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = '<h2 id="req3">1.1 Heading</h2>\n'
+        expected = '<h2>1.1 Heading</h2>\n'
         # Act
         lines = publisher.lines(self.item, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    def test_lines_html_item_linkify(self):
+        """Verify HTML can be published from an item."""
+        expected = '<h2 id="req3">1.1 Heading</h2>\n'
+        # Act
+        lines = publisher.lines(self.item, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -191,8 +201,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         lines = publisher.lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertIn("Child links:", text)
-        self.assertIn(">tst1</a>", text)
+        self.assertIn("Child links: tst1", text)
 
     def test_lines_unknown(self):
         """Verify an exception is raised when iterating an unknown format."""

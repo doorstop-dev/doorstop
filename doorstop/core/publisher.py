@@ -14,7 +14,7 @@ CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
 
-def publish(obj, path, ext=None, create_index=None, **kwargs):
+def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     """Publish a document to a given format.
 
     The function can be called in two ways:
@@ -25,13 +25,16 @@ def publish(obj, path, ext=None, create_index=None, **kwargs):
     @param obj: (1) Item, list of Items, Document or (2) Tree
     @param path: (1) output file path or (2) output directory path
     @param ext: file extension to override output extension
-    @param create_index: indicates an HTML index should be created
+    @param linkify: turn links into hyperlinks (for Markdown or HTML)
+    @param index: create an index.html (for HTML)
 
     @raise DoorstopError: for unknown file formats
 
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.html'
+    linkify = linkify if linkify is not None else is_tree(obj)
+    index = index if index is not None else is_tree(obj)
     check(ext)
 
     # Publish documents
@@ -41,15 +44,15 @@ def publish(obj, path, ext=None, create_index=None, **kwargs):
         create_dirname(path2)
         logging.info("creating file {}...".format(path2))
         with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj2, ext, **kwargs):
+            for line in lines(obj2, ext, linkify=linkify, **kwargs):
                 outfile.write(line + '\n')
 
     # Create index
-    if create_index or (create_index is None and is_tree(obj)):
-        index(path)
+    if index:
+        _index(path)
 
 
-def index(directory, extensions=('.html',)):
+def _index(directory, extensions=('.html',)):
     """Create an HTML index of all files in a directory.
 
     @param directory: directory for index
@@ -106,7 +109,7 @@ def lines(obj, ext='.txt', **kwargs):
     yield from gen(obj, **kwargs)
 
 
-def lines_text(obj, indent=8, width=79):
+def lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -175,7 +178,7 @@ def lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
-    @param linkify: turn links into hyperlinks (for HTML generation)
+    @param linkify: turn links into hyperlinks (for conversion to HTML)
 
     @return: iterator of lines of text
 
@@ -277,10 +280,11 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def lines_html(obj):
+def lines_html(obj, linkify=False):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
+    @param linkify: turn links into hyperlinks
 
     @return: iterator of lines of text
 
@@ -304,7 +308,7 @@ def lines_html(obj):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    text = '\n'.join(lines_markdown(obj, linkify=True))
+    text = '\n'.join(lines_markdown(obj, linkify=linkify))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
