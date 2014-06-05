@@ -162,6 +162,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     """
     col_widths = {}
+    col = 'A'
 
     # Create a new workbook
     workbook = openpyxl.Workbook()  # pylint: disable=E1102
@@ -192,6 +193,9 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             else:
                 col_widths[col] = len(str(value))
 
+    # add filter - using previous for loop to get the last column
+    worksheet.auto_filter.ref = "A1:%s1" % col
+
     # set column width based on column contents
     for col in col_widths.keys():
         if col_widths[col] > settings.PUBLISH_XLSX_MAX_WIDTH:
@@ -201,10 +205,6 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     # freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')
-
-    # add filters to first row
-    #print(worksheet.auto_filter)
-    #worksheet.auto_filter = True
 
     # Save the workbook
     workbook.save(path)
