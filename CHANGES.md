@@ -6,6 +6,7 @@ Changelog
 
 - Added `doorstop export ...` to export content for external tools.
 - Fixed `doorstop publish ...` handling of unknown formats.
+- Added clickable links using Item IDs in HTML header tags.
 
 0.6 (2014/5/15)
 ---------------

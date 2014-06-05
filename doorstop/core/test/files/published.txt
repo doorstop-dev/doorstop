@@ -1,25 +1,28 @@
-1.1     Heading
+1.2.3   REQ001
 
-1.2     req3
+        Hello, world!
 
-        Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
-        Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
+        Links: SYS001, SYS002
 
-        Links: sys3
+1.4     REQ003
 
-1.1     req1
+        Hello, world!
 
-        abc 123
+        Reference: external/text.txt (line 3)
 
-2       req2
+        Links: REQ001
 
-        Links: sys1, sys2
+1.6     REQ004
 
-2.1.1   req4
+        Hello, world!
 
-        Reference: doorstop/core/test/test_publisher.py (line 18)
+2.1     REQ002
 
-        Links: sys2
+        Hello, world!
 
-2.1     Heading 2
+2.1     REQ2-001
+
+        Hello, world!
+
+        Links: REQ001
 
