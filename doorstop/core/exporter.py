@@ -163,6 +163,9 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     workbook = openpyxl.Workbook()  # pylint: disable=E1102
     worksheet = workbook.active
 
+    col_widths = {}
+    max_width = 70
+
     # Populate cells
     for row, data in enumerate(tabulate(obj), start=1):
         for col_idx, value in enumerate(data, start=1):
@@ -172,6 +175,19 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             if not isinstance(value, (int, float, str, datetime.datetime)):
                 value = str(value)
             worksheet.cell('%s%s' % (col, row)).value = value
+            if col in col_widths.keys():
+                if len(str(value)) > col_widths[col]:
+                    col_widths[col] = len((value))
+            else:
+                col_widths[col] = len((value))
+
+    for col in col_widths.keys():
+        if col_widths[col] > max_width:
+            worksheet.column_dimensions[col].width = max_width
+        else:
+            worksheet.column_dimensions[col].width = col_widths[col]
+
+        print("Size for %s is %d." % (col, col_widths[col]))
 
     # Save the workbook
     workbook.save(path)
