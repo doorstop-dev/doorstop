@@ -175,7 +175,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
             # make every cell wrap text
             if row is 1:
-                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True, vertical='top', horizontal='left'))
+                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True, vertical='top', horizontal='center'))
             else:
                 cell.style = cell.style.copy(alignment=Alignment(wrap_text=True, vertical='top', horizontal='left'))
 
