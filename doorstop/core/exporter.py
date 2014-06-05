@@ -175,7 +175,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
             # make every cell wrap text
             if row is 1:
-                cell.style = cell.style.copy(font=Font(bold=True),alignment=Alignment(wrap_text=True))
+                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True))
             else:
                 cell.style = cell.style.copy(alignment=Alignment(wrap_text=True))
 
@@ -198,7 +198,6 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             worksheet.column_dimensions[col].width = settings.PUBLISH_XLSX_MAX_WIDTH
         else:
             worksheet.column_dimensions[col].width = col_widths[col] + 1
-
 
     # freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')
