@@ -21,10 +21,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify a document can be published."""
         dirpath = os.path.join('mock', 'directory')
         path = os.path.join(dirpath, 'published.html')
-        mock_document = MagicMock(spec=['items'])
-        mock_document.items = []
+        self.document.items = []
         # Act
-        publisher.publish(mock_document, path)
+        publisher.publish(self.document, path)
         # Assert
         mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, 'w')
@@ -186,7 +185,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected, text)
 
     def test_lines_html_item_linkify(self):
-        """Verify HTML can be published from an item."""
+        """Verify HTML (hyper) can be published from an item."""
         expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
         lines = publisher.lines(self.item, '.html', linkify=True)
@@ -202,6 +201,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_html_item_with_child_links_linkify(self):
+        """Verify HTML (hyper) can be published from an item w/ child links."""
+        # Act
+        lines = publisher.lines(self.item2, '.html', linkify=True)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertIn("Child links:", text)
+        self.assertIn("tst.html#tst1", text)
 
     def test_lines_unknown(self):
         """Verify an exception is raised when iterating an unknown format."""
