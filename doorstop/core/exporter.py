@@ -8,11 +8,13 @@ import logging
 
 import yaml
 import openpyxl
-from openpyxl.styles import Style, Alignment, Font
+from openpyxl.styles import Alignment, Font
 
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
-from doorstop import settings
+
+XLSX_MAX_WIDTH = 65  # maximum width for a column
+XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -162,6 +164,9 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     @return: path of created file
 
     """
+    # TODO: openpyxl has false positives with pylint
+    # pylint: disable=E1101,E1120,E1123
+
     col_widths = defaultdict(int)
     col = 'A'
 
@@ -172,14 +177,17 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     # Populate cells
     for row, data in enumerate(tabulate(obj), start=1):
         for col_idx, value in enumerate(data, start=1):
-            col = openpyxl.cell.get_column_letter(col_idx)  # pylint: disable=E1101
+            col = openpyxl.cell.get_column_letter(col_idx)
             cell = worksheet.cell('%s%s' % (col, row))
 
-            # make every cell wrap text
+            # wrap text in every cell
+            alignment = Alignment(vertical='top', horizontal='left',
+                                  wrap_text=True)
+            style = cell.style.copy(alignment=alignment)
+            # and bold header rows
             if row == 1:
-                cell.style = cell.style.copy(font=Font(bold=True), alignment=Alignment(wrap_text=True, vertical='top', horizontal='center'))
-            else:
-                cell.style = cell.style.copy(alignment=Alignment(wrap_text=True, vertical='top', horizontal='left'))
+                style = style.copy(font=Font(bold=True))
+            cell.style = style
 
             # compatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
@@ -195,10 +203,11 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
 
     # set column width based on column contents
     for col in col_widths:
-        if col_widths[col] > settings.PUBLISH_XLSX_MAX_WIDTH:
-            worksheet.column_dimensions[col].width = settings.PUBLISH_XLSX_MAX_WIDTH
+        if col_widths[col] > XLSX_MAX_WIDTH:
+            width = XLSX_MAX_WIDTH
         else:
-            worksheet.column_dimensions[col].width = col_widths[col] + 1
+            width = col_widths[col] + XLSX_FILTER_PADDING
+        worksheet.column_dimensions[col].width = width
 
     # freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')

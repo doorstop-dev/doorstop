@@ -26,4 +26,3 @@ CHECK_CHILD_LINKS = True  # validate reverse links
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = False
-PUBLISH_XLSX_MAX_WIDTH = 65
