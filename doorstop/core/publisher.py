@@ -49,14 +49,15 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
     # Create index
     if index:
-        _index(path)
+        _index(path, tree=obj if is_tree(obj) else None)
 
 
-def _index(directory, extensions=('.html',)):
+def _index(directory, extensions=('.html',), tree=None):
     """Create an HTML index of all files in a directory.
 
     @param directory: directory for index
     @param extensions: file extensions to include
+    @param tree: optional tree to determine index structure
 
     """
     # Get paths for the index index
@@ -70,14 +71,19 @@ def _index(directory, extensions=('.html',)):
         path = os.path.join(directory, INDEX)
         logging.info("publishing {}...".format(path))
         with open(path, 'w') as outfile:
-            for line in _lines_index(filenames):
+            for line in _lines_index(filenames, tree=tree):
                 outfile.write(line + '\n')
     else:
         logging.warning("no files for {}".format(INDEX))
 
 
-def _lines_index(filenames):
-    """Yield lines of HTML for index.html."""
+def _lines_index(filenames, tree=None):
+    """Yield lines of HTML for index.html.
+
+    @param filesnames: list of filenames to add to the index
+    @param tree: optional tree to determine index structure
+
+    """
     yield '<!DOCTYPE html>'
     yield '<head>'
     yield '<style type="text/css">'
