@@ -408,12 +408,6 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
             self.assertEqual(expected, actual)
         else:  # binary file always changes, only copy when not checking
             move_file(temp, path)
-        # verifying that the style/formatting is correct. Found that freeze_panes is always none
-        # print("Expected: ")
-        # print(expected)
-        # print("Actual: ")
-        # print(actual)
-        # assert False
 
 
 @unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
@@ -576,7 +570,6 @@ def read_xlsx(path):
         for data in worksheet.rows:
             rows.append([(cell.value, cell.style, worksheet.column_dimensions[cell.column].width) for cell in data])
         rows.append(worksheet.auto_filter.ref)
-        # rows.append(worksheet.freeze_panes) - is always None
     except openpyxl.exceptions.InvalidFileException:
         logging.warning("file not found: {}".format(path))
     return rows
