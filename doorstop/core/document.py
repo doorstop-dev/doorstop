@@ -51,6 +51,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._items = []
         self._itered = False
 
+    def __bool__(self):
+        return True
+
     def __repr__(self):
         return "Document('{}')".format(self.path)
 
