@@ -3,6 +3,7 @@
 import os
 import csv
 import datetime
+from collections import defaultdict
 import logging
 
 import yaml
@@ -161,7 +162,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     @return: path of created file
 
     """
-    col_widths = {}
+    col_widths = defaultdict(int)
     col = 'A'
 
     # Create a new workbook
@@ -187,11 +188,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             cell.value = value
 
             # track cell width
-            if col in col_widths.keys():
-                if len(str(value)) > col_widths[col]:
-                    col_widths[col] = len(str(value))
-            else:
-                col_widths[col] = len(str(value))
+            col_widths[col] = max(col_widths[col], len(str(value)))
 
     # add filter - using previous for loop to get the last column
     worksheet.auto_filter.ref = "A1:%s1" % col
