@@ -194,7 +194,7 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     worksheet.auto_filter.ref = "A1:%s1" % col
 
     # set column width based on column contents
-    for col in col_widths.keys():
+    for col in col_widths:
         if col_widths[col] > settings.PUBLISH_XLSX_MAX_WIDTH:
             worksheet.column_dimensions[col].width = settings.PUBLISH_XLSX_MAX_WIDTH
         else:
