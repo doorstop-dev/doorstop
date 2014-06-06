@@ -288,12 +288,44 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.parent = 'PARENT_PREFIX'
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
+        # Load an actual document
+        self.document = core.Document(FILES, root=ROOT)
         # Ensure the tree is reloaded
         _clear_tree()
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+
+    def test_import_csv(self):
+        """Verify items can be imported from a CSV file."""
+        temp = os.path.join(self.temp, 'exported.csv')
+        core.exporter.export(self.document, temp)
+        # Act
+        core.importer.from_file(temp)
+        # Assert
+        document = core.find_document('REQ')
+        self.assertListEqual(self.document.items, document.items)
+
+    def test_import_tsv(self):
+        """Verify items can be imported from a TSV file."""
+        temp = os.path.join(self.temp, 'exported.csv')
+        core.exporter.export(self.document, temp)
+        # Act
+        core.importer.from_file(temp)
+        # Assert
+        document = core.find_document('REQ')
+        self.assertListEqual(self.document.items, document.items)
+
+    def test_import_xlsx(self):
+        """Verify items can be imported from an XLSX file."""
+        temp = os.path.join(self.temp, 'exported.xlsx')
+        core.exporter.export(self.document, temp)
+        # Act
+        core.importer.from_file(temp)
+        # Assert
+        document = core.find_document('REQ')
+        self.assertListEqual(self.document.items, document.items)
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
