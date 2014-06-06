@@ -562,16 +562,24 @@ def read_csv(path, delimiter=','):
 
 
 def read_xlsx(path):
-    """Return a list of rows from a CSV file."""
-    rows = []
+    """Return a list of workbook data from an XLSX file."""
+    data = []
+
     try:
         workbook = openpyxl.load_workbook(path)
-        worksheet = workbook.active
-        for data in worksheet.rows:
-            rows.append([cell.value for cell in data])
     except openpyxl.exceptions.InvalidFileException:
         logging.warning("file not found: {}".format(path))
-    return rows
+    else:
+        worksheet = workbook.active
+        for row in worksheet.rows:
+            for cell in row:
+                values = (cell.value,
+                          cell.style,
+                          worksheet.column_dimensions[cell.column].width)
+                data.append(values)
+        data.append(worksheet.auto_filter.ref)
+
+    return data
 
 
 def move_file(src, dst):

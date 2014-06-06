@@ -3,13 +3,18 @@
 import os
 import csv
 import datetime
+from collections import defaultdict
 import logging
 
 import yaml
 import openpyxl
+from openpyxl.styles import Alignment, Font
 
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
+
+XLSX_MAX_WIDTH = 65  # maximum width for a column
+XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -90,10 +95,11 @@ def lines_yaml(obj):
         yield text
 
 
-def tabulate(obj):
+def tabulate(obj, sep=',\n'):
     """Yield lines of header/data for tabular export.
 
     @param obj: Item, list of Items, or Document to export
+    @param sep: string separating list values when joined in a string
 
     @return: iterator of rows of data
 
@@ -119,7 +125,7 @@ def tabulate(obj):
             value = data.get(key)
             if isinstance(value, list):
                 # separate lists with commas
-                row.append(', '.join(str(p) for p in value))
+                row.append(sep.join(str(p) for p in value))
             else:
                 row.append(value)
         yield row
@@ -151,7 +157,7 @@ def file_tsv(obj, path):
     return file_csv(obj, path, delimiter='\t')
 
 
-def file_xlsx(obj, path):  # pragma: no cover (not implemented)
+def file_xlsx(obj, path):
     """Create an XLSX file at the given path.
 
     @param obj: Item, list of Items, or Document to export
@@ -159,6 +165,26 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     @return: path of created file
 
     """
+    workbook = _get_xlsx(obj)
+    workbook.save(path)
+
+    return path
+
+
+def _get_xlsx(obj):
+    """Create an XLSX workbook object.
+
+    @param obj: Item, list of Items, or Document to export
+
+    @return: new workbook
+
+    """
+    # TODO: openpyxl has false positives with pylint
+    # pylint: disable=E1101,E1120,E1123
+
+    col_widths = defaultdict(int)
+    col = 'A'
+
     # Create a new workbook
     workbook = openpyxl.Workbook()  # pylint: disable=E1102
     worksheet = workbook.active
@@ -166,16 +192,50 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
     # Populate cells
     for row, data in enumerate(tabulate(obj), start=1):
         for col_idx, value in enumerate(data, start=1):
-            col = openpyxl.cell.get_column_letter(col_idx)  # pylint: disable=E1101
-            # compatible Excel types:
+            col = openpyxl.cell.get_column_letter(col_idx)
+            cell = worksheet.cell('%s%s' % (col, row))
+
+            # wrap text in every cell
+            alignment = Alignment(vertical='top', horizontal='left',
+                                  wrap_text=True)
+            style = cell.style.copy(alignment=alignment)
+            # and bold header rows
+            if row == 1:
+                style = style.copy(font=Font(bold=True))
+            cell.style = style
+
+            # convert incompatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
             if not isinstance(value, (int, float, str, datetime.datetime)):
                 value = str(value)
-            worksheet.cell('%s%s' % (col, row)).value = value
+            cell.value = value
 
-    # Save the workbook
-    workbook.save(path)
-    return path
+            # track cell width
+            col_widths[col] = max(col_widths[col], _width(str(value)))
+
+    # Add filter up to the last column
+    worksheet.auto_filter.ref = "A1:%s1" % col
+
+    # Set column width based on column contents
+    for col in col_widths:
+        if col_widths[col] > XLSX_MAX_WIDTH:
+            width = XLSX_MAX_WIDTH
+        else:
+            width = col_widths[col] + XLSX_FILTER_PADDING
+        worksheet.column_dimensions[col].width = width
+
+    # Freeze top row
+    worksheet.freeze_panes = worksheet.cell('A2')
+
+    return workbook
+
+
+def _width(text):
+    """Get the maximum length in a multiline string."""
+    if text:
+        return max(len(line) for line in text.splitlines())
+    else:
+        return 0
 
 
 # Mapping from file extension to lines generator

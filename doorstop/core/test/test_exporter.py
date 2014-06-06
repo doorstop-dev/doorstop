@@ -56,11 +56,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         expected = ("req3:" + '\n'
                     "  active: true" + '\n'
                     "  derived: false" + '\n'
-                    "  level: 1.0" + '\n'
-                    "  links: []" + '\n'
-                    "  normative: true" + '\n'
+                    "  level: 1.1.0" + '\n'
+                    "  links: [sys3]" + '\n'
+                    "  normative: false" + '\n'
                     "  ref: ''" + '\n'
-                    "  text: ''" + '\n\n')
+                    "  text: |" + '\n' +
+                    "    Heading" + '\n\n')
         # Act
         lines = exporter.lines(self.item)
         text = ''.join(line + '\n' for line in lines)
@@ -93,9 +94,31 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.exporter.file_csv')
     def test_file_tsv(self, mock_file_csv):
         """Verify a (mock) TSV file can be created."""
-        temp = tempfile.mkdtemp()
+        temp = tempfile.gettempdir()
         path = os.path.join(temp, 'exported.tsv')
         # Act
         exporter.file_tsv(self.item, path)
         # Assert
         mock_file_csv.assert_called_once_with(self.item, path, delimiter='\t')
+
+    @patch('doorstop.core.exporter._get_xlsx')
+    def test_file_xlsx(self, mock_get_xlsx):
+        """Verify a (mock) XLSX file can be created."""
+        temp = tempfile.gettempdir()
+        path = os.path.join(temp, 'exported.xlsx')
+        # Act
+        exporter.file_xlsx(self.item, path)
+        # Assert
+        mock_get_xlsx.assert_called_once_with(self.item)
+
+    def test_get_xlsx(self):
+        """Verify an XLSX object can be created."""
+        # Act
+        workbook = exporter._get_xlsx(self.item4)  # pylint: disable=W0212
+        # Assert
+        rows = []
+        worksheet = workbook.active
+        for data in worksheet.rows:
+            rows.append([cell.value for cell in data])
+        self.assertIn('long', rows[0])
+        self.assertEqual('req3', rows[1][0])
