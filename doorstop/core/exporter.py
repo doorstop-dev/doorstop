@@ -99,7 +99,7 @@ def tabulate(obj, sep=',\n'):
     """Yield lines of header/data for tabular export.
 
     @param obj: Item, list of Items, or Document to export
-    @param sep: string separate list values when joined in a string
+    @param sep: string separating list values when joined in a string
 
     @return: iterator of rows of data
 
@@ -172,11 +172,11 @@ def file_xlsx(obj, path):
 
 
 def _get_xlsx(obj):
-    """Create an XLSX object.
+    """Create an XLSX workbook object.
 
     @param obj: Item, list of Items, or Document to export
 
-    @return: workbook
+    @return: new workbook
 
     """
     # TODO: openpyxl has false positives with pylint
