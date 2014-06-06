@@ -165,6 +165,20 @@ def file_xlsx(obj, path):
     @return: path of created file
 
     """
+    workbook = _get_xlsx(obj)
+    workbook.save(path)
+
+    return path
+
+
+def _get_xlsx(obj):
+    """Create an XLSX object.
+
+    @param obj: Item, list of Items, or Document to export
+
+    @return: workbook
+
+    """
     # TODO: openpyxl has false positives with pylint
     # pylint: disable=E1101,E1120,E1123
 
@@ -213,9 +227,7 @@ def file_xlsx(obj, path):
     # Freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')
 
-    # Save the workbook
-    workbook.save(path)
-    return path
+    return workbook
 
 
 def _width(text):
