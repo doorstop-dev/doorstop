@@ -10,8 +10,8 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.types import Level
 from doorstop.core.document import Document
 
-from doorstop.core.test import ROOT, FILES, EMPTY, NEW, MockFileObject
-from doorstop.core.test.test_item import MockItem
+from doorstop.core.test import ROOT, FILES, EMPTY, NEW
+from doorstop.core.test import MockItem, MockDocument
 
 YAML_DEFAULT = """
 settings:
@@ -34,11 +34,6 @@ settings:
   prefix: CUSTOM
   sep: '-'
 """.lstrip()
-
-
-class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock Document class with stubbed file IO."""
 
 
 @patch('doorstop.settings.REORDER', False)  # pylint: disable=R0904

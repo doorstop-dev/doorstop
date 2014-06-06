@@ -1,27 +1,32 @@
-1.1     Heading
+1.2.3   REQ001
 
-1.2     req3
+        Hello, world!
 
-        Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
-        Hello, world! Hello, world! Hello, world! Hello, world! Hello, world!
+        Parent links: SYS001, SYS002
 
-        Parent links: sys3
+1.4     REQ003
 
-        Child links: tst1
+        Hello, world!
 
-1.1     req1
+        Reference: external/text.txt (line 3)
 
-        abc 123
+        Parent links: REQ001
 
-2       req2
+1.6     REQ004
 
-        Parent links: sys1, sys2
+        Hello, world!
 
-2.1.1   req4
+2.1     REQ002
 
-        Reference: doorstop/core/test/test_publisher.py (line 18)
+        Hello, world!
 
-        Parent links: sys2
+        Child links: TST001, TST002
 
-2.1     Heading 2
+2.1     REQ2-001
+
+        Hello, world!
+
+        Parent links: REQ001
+
+        Child links: TST001
 

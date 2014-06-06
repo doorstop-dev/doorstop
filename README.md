@@ -32,7 +32,7 @@ Installation
 
 Doorstop can be installed with 'pip':
 
-    $ pip install Doorstop
+    $ pip install doorstop
 
 Or directly from source:
 
