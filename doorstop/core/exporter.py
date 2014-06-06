@@ -95,10 +95,11 @@ def lines_yaml(obj):
         yield text
 
 
-def tabulate(obj):
+def tabulate(obj, sep=',\n'):
     """Yield lines of header/data for tabular export.
 
     @param obj: Item, list of Items, or Document to export
+    @param sep: string separate list values when joined in a string
 
     @return: iterator of rows of data
 
@@ -124,7 +125,7 @@ def tabulate(obj):
             value = data.get(key)
             if isinstance(value, list):
                 # separate lists with commas
-                row.append(', '.join(str(p) for p in value))
+                row.append(sep.join(str(p) for p in value))
             else:
                 row.append(value)
         yield row
@@ -156,7 +157,7 @@ def file_tsv(obj, path):
     return file_csv(obj, path, delimiter='\t')
 
 
-def file_xlsx(obj, path):  # pragma: no cover (not implemented)
+def file_xlsx(obj, path):
     """Create an XLSX file at the given path.
 
     @param obj: Item, list of Items, or Document to export
@@ -189,19 +190,19 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
                 style = style.copy(font=Font(bold=True))
             cell.style = style
 
-            # compatible Excel types:
+            # convert incompatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
             if not isinstance(value, (int, float, str, datetime.datetime)):
                 value = str(value)
             cell.value = value
 
             # track cell width
-            col_widths[col] = max(col_widths[col], len(str(value)))
+            col_widths[col] = max(col_widths[col], _width(str(value)))
 
-    # add filter - using previous for loop to get the last column
+    # Add filter up to the last column
     worksheet.auto_filter.ref = "A1:%s1" % col
 
-    # set column width based on column contents
+    # Set column width based on column contents
     for col in col_widths:
         if col_widths[col] > XLSX_MAX_WIDTH:
             width = XLSX_MAX_WIDTH
@@ -209,12 +210,20 @@ def file_xlsx(obj, path):  # pragma: no cover (not implemented)
             width = col_widths[col] + XLSX_FILTER_PADDING
         worksheet.column_dimensions[col].width = width
 
-    # freeze top row
+    # Freeze top row
     worksheet.freeze_panes = worksheet.cell('A2')
 
     # Save the workbook
     workbook.save(path)
     return path
+
+
+def _width(text):
+    """Get the maximum length in a multiline string."""
+    if text:
+        return max(len(line) for line in text.splitlines())
+    else:
+        return 0
 
 
 # Mapping from file extension to lines generator
