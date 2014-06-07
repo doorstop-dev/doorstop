@@ -51,9 +51,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._items = []
         self._itered = False
 
-    def __bool__(self):
-        return True
-
     def __repr__(self):
         return "Document('{}')".format(self.path)
 
@@ -74,6 +71,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def __len__(self):
         return len(list(self._iter()))
+
+    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+        return True
 
     @staticmethod
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
