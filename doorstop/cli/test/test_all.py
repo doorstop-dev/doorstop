@@ -115,10 +115,15 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop new' can be called."""
         self.assertIs(None, main(['new', '_TEMP', self.temp, '-p', 'REQ']))
 
-    def test_new_error(self):
+    def test_new_error_unknwon_parent(self):
         """Verify 'doorstop new' returns an error with an unknown parent."""
         self.assertRaises(SystemExit, main,
                           ['new', '_TEMP', self.temp, '-p', 'UNKNOWN'])
+
+    def test_new_error_reserved_prefix(self):
+        """Verify 'doorstop new' returns an error with a reserved prefix."""
+        self.assertRaises(SystemExit, main,
+                          ['new', 'ALL', self.temp, '-p', 'REQ'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -256,89 +261,6 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestPublish(unittest.TestCase):  # pylint: disable=R0904
-
-    """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-        self.backup = (settings.PUBLISH_CHILD_LINKS,)
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
-        (settings.PUBLISH_CHILD_LINKS,) = self.backup
-
-    def test_publish_unknown(self):
-        """Verify 'doorstop publish' returns an error for an unknown format."""
-        self.assertRaises(SystemExit, main, ['publish', 'req', 'req.fake'])
-
-    def test_publish_document(self):
-        """Verify 'doorstop publish' can create output."""
-        self.assertIs(None, main(['publish', 'tut']))
-        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
-
-    def test_publish_document_with_child_links(self):
-        """Verify 'doorstop publish' can create output with child links."""
-        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
-        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
-
-    def test_publish_document_error(self):
-        """Verify 'doorstop publish' returns an error in an empty folder."""
-        os.chdir(self.temp)
-        self.assertRaises(SystemExit, main, ['publish', 'req'])
-
-    def test_publish_document_text(self):
-        """Verify 'doorstop publish' can create text output."""
-        self.assertIs(None, main(['publish', 'tut', '--width', '75']))
-
-    def test_publish_document_text_file(self):
-        """Verify 'doorstop publish' can create a text file."""
-        path = os.path.join(self.temp, 'req.txt')
-        self.assertIs(None, main(['publish', 'req', path]))
-        self.assertTrue(os.path.isfile(path))
-
-    def test_publish_document_markdown(self):
-        """Verify 'doorstop publish' can create Markdown output."""
-        self.assertIs(None, main(['publish', 'req', '--markdown']))
-
-    def test_publish_document_markdown_file(self):
-        """Verify 'doorstop publish' can create a Markdown file."""
-        path = os.path.join(self.temp, 'req.md')
-        self.assertIs(None, main(['publish', 'req', path]))
-        self.assertTrue(os.path.isfile(path))
-
-    def test_publish_document_html(self):
-        """Verify 'doorstop publish' can create HTML output."""
-        self.assertIs(None, main(['publish', 'hlt', '--html']))
-
-    def test_publish_document_html_file(self):
-        """Verify 'doorstop publish' can create an HTML file."""
-        path = os.path.join(self.temp, 'req.html')
-        self.assertIs(None, main(['publish', 'req', path]))
-        self.assertTrue(os.path.isfile(path))
-
-    def test_publish_tree_html(self):
-        """Verify 'doorstop publish' can create an HTML directory."""
-        path = os.path.join(self.temp, 'all')
-        self.assertIs(None, main(['publish', 'all', path]))
-        self.assertTrue(os.path.isdir(path))
-        self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
-
-    def test_publish_tree_text(self):
-        """Verify 'doorstop publish' can create a text directory."""
-        path = os.path.join(self.temp, 'all')
-        self.assertIs(None, main(['publish', 'all', path, '--text']))
-        self.assertTrue(os.path.isdir(path))
-        self.assertFalse(os.path.isfile(os.path.join(path, 'index.html')))
-
-    def test_publish_tree_no_path(self):
-        """Verify 'doorstop publish' returns an error with no path."""
-        self.assertRaises(SystemExit, main, ['publish', 'all'])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
@@ -390,9 +312,18 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
-    def test_export_unknown(self):
+    def test_export_document_error_unknown(self):
         """Verify 'doorstop export' returns an error for an unknown format."""
         self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
+
+    def test_export_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['export', 'req', self.temp])
+
+    def test_export_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['export', 'req', path])
 
     def test_export_document_stdout(self):
         """Verify 'doorstop export' can create output."""
@@ -414,9 +345,107 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['export', 'tut', path]))
         self.assertTrue(os.path.isfile(path))
 
+    def test_export_tree_xlsx(self):
+        """Verify 'doorstop export' can create an XLSX directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['export', 'all', path, '--xlsx']))
+        self.assertTrue(os.path.isdir(path))
+
     def test_export_tree_no_path(self):
         """Verify 'doorstop export' returns an error with no path."""
         self.assertRaises(SystemExit, main, ['export', 'all'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestPublish(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+        self.backup = (settings.PUBLISH_CHILD_LINKS,)
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+        (settings.PUBLISH_CHILD_LINKS,) = self.backup
+
+    def test_publish_unknown(self):
+        """Verify 'doorstop publish' returns an error for an unknown format."""
+        self.assertRaises(SystemExit, main, ['publish', 'req', 'req.fake'])
+
+    def test_publish_document(self):
+        """Verify 'doorstop publish' can create output."""
+        self.assertIs(None, main(['publish', 'tut']))
+        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_document_with_child_links(self):
+        """Verify 'doorstop publish' can create output with child links."""
+        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
+        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_document_error_empty(self):
+        """Verify 'doorstop publish' returns an error in an empty folder."""
+        os.chdir(self.temp)
+        self.assertRaises(SystemExit, main, ['publish', 'req'])
+
+    def test_publish_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['publish', 'req', self.temp])
+
+    def test_publish_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['publish', 'req', path])
+
+    def test_publish_document_text(self):
+        """Verify 'doorstop publish' can create text output."""
+        self.assertIs(None, main(['publish', 'tut', '--width', '75']))
+
+    def test_publish_document_text_file(self):
+        """Verify 'doorstop publish' can create a text file."""
+        path = os.path.join(self.temp, 'req.txt')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_publish_document_markdown(self):
+        """Verify 'doorstop publish' can create Markdown output."""
+        self.assertIs(None, main(['publish', 'req', '--markdown']))
+
+    def test_publish_document_markdown_file(self):
+        """Verify 'doorstop publish' can create a Markdown file."""
+        path = os.path.join(self.temp, 'req.md')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_publish_document_html(self):
+        """Verify 'doorstop publish' can create HTML output."""
+        self.assertIs(None, main(['publish', 'hlt', '--html']))
+
+    def test_publish_document_html_file(self):
+        """Verify 'doorstop publish' can create an HTML file."""
+        path = os.path.join(self.temp, 'req.html')
+        self.assertIs(None, main(['publish', 'req', path]))
+        self.assertTrue(os.path.isfile(path))
+
+    def test_publish_tree_html(self):
+        """Verify 'doorstop publish' can create an HTML directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', 'all', path]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'index.html')))
+
+    def test_publish_tree_text(self):
+        """Verify 'doorstop publish' can create a text directory."""
+        path = os.path.join(self.temp, 'all')
+        self.assertIs(None, main(['publish', 'all', path, '--text']))
+        self.assertTrue(os.path.isdir(path))
+        self.assertFalse(os.path.isfile(os.path.join(path, 'index.html')))
+
+    def test_publish_tree_no_path(self):
+        """Verify 'doorstop publish' returns an error with no path."""
+        self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
 @patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904

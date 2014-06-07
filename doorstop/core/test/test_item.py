@@ -8,7 +8,8 @@ import os
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item
 
-from doorstop.core.test import FILES, EMPTY, EXTERNAL, MockFileObject
+from doorstop.core.test import FILES, EMPTY, EXTERNAL
+from doorstop.core.test import MockItem
 
 
 YAML_DEFAULT = """
@@ -20,11 +21,6 @@ normative: true
 ref: ''
 text: ''
 """.lstrip()
-
-
-class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock Item class with stubbed file IO."""
 
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
@@ -332,17 +328,48 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.links = links2
         self.assertEqual(links2, self.item.parent_links)
 
+    def test_parent_items(self):
+        """Verify 'parent_items' exists to mirror the child behavior."""
+        # Arrange
+        mock_tree = Mock()
+        mock_tree.find_item = Mock(return_value='mock_item')
+        self.item.tree = mock_tree
+        self.item.links = ['mock_id']
+        # Act
+        items = self.item.parent_items
+        # Assert
+        self.assertEqual(['mock_item'], items)
+
+    def test_parent_documents(self):
+        """Verify 'parent_documents' exists to mirror the child behavior."""
+        # Arrange
+        mock_tree = Mock()
+        mock_tree.find_document = Mock(return_value='mock_document')
+        self.item.tree = mock_tree
+        self.item.links = ['mock_id']
+        self.item.document = Mock()
+        self.item.document.prefix = 'mock_prefix'
+        # Act
+        documents = self.item.parent_documents
+        # Assert
+        self.assertEqual(['mock_document'], documents)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
-        relpath, line = self.item.find_ref(EXTERNAL)
+        relpath, line = self.item.find_ref(root=EXTERNAL)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""
+
+        def skip(path):
+            """Skip generated files."""
+            return "published" in path
+
         self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(FILES)
+        relpath, line = self.item.find_ref(root=FILES, skip=skip)
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(None, line)
 

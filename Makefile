@@ -41,7 +41,7 @@ PDOC := $(BIN)/pdoc
 PEP8 := $(BIN)/pep8
 PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint
-PYREVERSE := $(BIN)/pyreverse$(BAT)
+PYREVERSE := $(BIN)/pyreverse
 NOSE := $(BIN)/nosetests
 
 # Main Targets ###############################################################
@@ -113,7 +113,7 @@ docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
 	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
-	$(BIN)/doorstop publish all docs/gen --html
+	$(BIN)/doorstop publish all docs/gen --html --with-child-links
 
 .PHONY: uml
 uml: .depends-dev docs/*.png $(SOURCES)

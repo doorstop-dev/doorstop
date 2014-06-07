@@ -4,22 +4,33 @@ import unittest
 from unittest.mock import patch
 
 import os
+import csv
 import tempfile
 import shutil
 import logging
+
+import openpyxl
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError
 from doorstop.core.builder import _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
+from doorstop.core.test import DocumentNoSkip
 
+# Whenever the export format is changed:
+#  1. set CHECK_EXPORTED_CONTENT to False
+#  2. re-run all tests
+#  3. manually verify the newly exported content is correct
+#  4. set CHECK_EXPORTED_CONTENT to True
+CHECK_EXPORTED_CONTENT = True
 
-class DocumentNoSkip(core.Document):  # pylint: disable=R0904
-
-    """Document class that is never skipped."""
-
-    SKIP = '__disabled__'  # never skip test Documents
+# Whenever the publish format is changed:
+#  1. set CHECK_PUBLISHED_CONTENT to False
+#  2. re-run all tests
+#  3. manually verify the newly published content is correct
+#  4. set CHECK_PUBLISHED_CONTENT to True
+CHECK_PUBLISHED_CONTENT = True
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -49,8 +60,13 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
+
+        def skip(path):
+            """Skip exported content."""
+            return path.endswith(".csv") or path.endswith(".tsv")
+
         item = core.Item(os.path.join(FILES, 'REQ003.yml'))
-        path, line = item.find_ref()
+        path, line = item.find_ref(skip=skip)
         relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
                                   ROOT)
         self.assertEqual(relpath, path)
@@ -249,6 +265,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestEditor(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integrations tests for the editor module."""  # pylint: disable=C0103
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -333,6 +355,168 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
+class TestExporter(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
+
+    maxDiff = None
+
+    def setUp(self):
+        self.document = core.Document(FILES, root=ROOT)
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp)
+
+    def test_export_csv(self):
+        """Verify a document can be exported as a CSV file."""
+        path = os.path.join(FILES, 'exported.csv')
+        temp = os.path.join(self.temp, 'exported.csv')
+        expected = read_csv(path)
+        # Act
+        core.exporter.export(self.document, temp)
+        # Assert
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_csv(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+
+    def test_export_tsv(self):
+        """Verify a document can be exported as a TSV file."""
+        path = os.path.join(FILES, 'exported.tsv')
+        temp = os.path.join(self.temp, 'exported.tsv')
+        expected = read_csv(path, delimiter='\t')
+        # Act
+        core.exporter.export(self.document, temp)
+        # Assert
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_csv(temp, delimiter='\t')
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+
+    def test_export_xlsx(self):
+        """Verify a document can be exported as an XLSX file."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        temp = os.path.join(self.temp, 'exported.xlsx')
+        expected = read_xlsx(path)
+        # Act
+        core.exporter.export(self.document, temp)
+        # Assert
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_xlsx(temp)
+            self.assertEqual(expected, actual)
+        else:  # binary file always changes, only copy when not checking
+            move_file(temp, path)
+
+
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
+class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+
+    maxDiff = None
+
+    @patch('doorstop.core.document.Document', DocumentNoSkip)
+    def setUp(self):
+        self.tree = core.build(cwd=FILES, root=FILES)
+        # self.document = core.Document(FILES, root=ROOT)
+        self.document = self.tree.find_document('REQ')
+
+    def test_publish_html(self):
+        """Verify an HTML file can be created."""
+        temp = tempfile.mkdtemp()
+        try:
+            path = os.path.join(temp, 'published.html')
+            # Act
+            core.publisher.publish(self.document, path, '.html')
+            # Assert
+            self.assertTrue(os.path.isfile(path))
+        finally:
+            shutil.rmtree(temp)
+
+    def test_lines_text_document(self):
+        """Verify text can be published from a document."""
+        path = os.path.join(FILES, 'published.txt')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.txt')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_text_document_with_child_links(self):
+        """Verify text can be published from a document with child links."""
+        path = os.path.join(FILES, 'published2.txt')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.txt')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    def test_lines_markdown_document(self):
+        """Verify Markdown can be published from a document."""
+        path = os.path.join(FILES, 'published.md')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_markdown_document_with_child_links(self):
+        """Verify Markdown can be published from a document w/ child links."""
+        path = os.path.join(FILES, 'published2.md')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    def test_lines_html_document_linkify(self):
+        """Verify HTML can be published from a document."""
+        path = os.path.join(FILES, 'published.html')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.html', linkify=True)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_html_document_with_child_links(self):
+        """Verify HTML can be published from a document with child links."""
+        path = os.path.join(FILES, 'published2.html')
+        expected = open(path).read()
+        # Act
+        lines = core.publisher.lines(self.document, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        with open(path, 'w') as outfile:
+            outfile.write(text)
+
+
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
@@ -359,3 +543,49 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         # Cache hit
         item2 = core.find_item('req1')
         self.assertIs(item2, item)
+
+
+# helper functions ###########################################################
+
+
+def read_csv(path, delimiter=','):
+    """Return a list of rows from a CSV file."""
+    rows = []
+    try:
+        with open(path, 'r', newline='') as stream:
+            reader = csv.reader(stream, delimiter=delimiter)
+            for row in reader:
+                rows.append(row)
+    except FileNotFoundError:
+        logging.warning("file not found: {}".format(path))
+    return rows
+
+
+def read_xlsx(path):
+    """Return a list of workbook data from an XLSX file."""
+    data = []
+
+    try:
+        workbook = openpyxl.load_workbook(path)
+    except openpyxl.exceptions.InvalidFileException:
+        logging.warning("file not found: {}".format(path))
+    else:
+        worksheet = workbook.active
+        for row in worksheet.rows:
+            for cell in row:
+                values = (cell.value,
+                          cell.style,
+                          worksheet.column_dimensions[cell.column].width)
+                data.append(values)
+        data.append(worksheet.auto_filter.ref)
+
+    return data
+
+
+def move_file(src, dst):
+    """Move a file from one path to another."""
+    try:
+        os.remove(dst)
+    except FileNotFoundError:
+        pass
+    shutil.move(src, dst)

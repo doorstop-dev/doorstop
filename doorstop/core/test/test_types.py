@@ -19,6 +19,10 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(self.prefix1, Prefix(self.prefix1))
         self.assertEqual(Prefix(''), Prefix())
 
+    def test_init_reseved(self):
+        """Verify an exception is raised for a reserved word."""
+        self.assertRaises(DoorstopError, Prefix, 'ALL')
+
     def test_repr(self):
         """Verify prefixes can be represented."""
         self.assertEqual("Prefix('REQ')", repr(self.prefix1))

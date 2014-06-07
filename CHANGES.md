@@ -6,6 +6,10 @@ Changelog
 
 - Added `doorstop export ...` to export content for external tools.
 - Fixed `doorstop publish ...` handling of unknown formats.
+- Added clickable links using Item IDs in HTML header tags.
+- Fixed bug publishing a document to a directory.
+- Fixed bug publishing a document without an extension or type specified.
+- Made 'all' a reserved word that cannot be used as a prefix.
 
 0.6 (2014/5/15)
 ---------------
