@@ -115,10 +115,15 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop new' can be called."""
         self.assertIs(None, main(['new', '_TEMP', self.temp, '-p', 'REQ']))
 
-    def test_new_error(self):
+    def test_new_error_unknwon_parent(self):
         """Verify 'doorstop new' returns an error with an unknown parent."""
         self.assertRaises(SystemExit, main,
                           ['new', '_TEMP', self.temp, '-p', 'UNKNOWN'])
+
+    def test_new_error_reserved_prefix(self):
+        """Verify 'doorstop new' returns an error with a reserved prefix."""
+        self.assertRaises(SystemExit, main,
+                          ['new', 'ALL', self.temp, '-p', 'REQ'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

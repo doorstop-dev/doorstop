@@ -12,6 +12,7 @@ VERBOSE2_LOGGING_LEVEL = logging.DEBUG
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators
+RESERVED_WORDS = 'all',  # keywords that cannot be used for prefixes
 
 # Formatting settings
 MAX_LINE_LENTH = 79  # line length to trigger multiline on extended attributes

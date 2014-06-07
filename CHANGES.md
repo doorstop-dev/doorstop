@@ -6,6 +6,7 @@ Changelog
 
 - Added `doorstop export ...` to export content for external tools.
 - Fixed `doorstop publish ...` handling of unknown formats.
+- Made 'all' a reserved word that cannot be used as a prefix.
 
 0.6 (2014/5/15)
 ---------------
