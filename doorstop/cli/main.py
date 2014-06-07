@@ -403,7 +403,7 @@ def _run_import(args, _, err):
     return True
 
 
-def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
+def _run_export(args, cwd, err):
     """Process arguments and run the `doorstop export` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -419,10 +419,8 @@ def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
     try:
         exporter.check(ext)
         tree = build(cwd, root=args.project)
-        if whole_tree:
-            documents = [document for document in tree]
-        else:
-            documents = [tree.find_document(args.prefix)]
+        if not whole_tree:
+            document = tree.find_document(args.prefix)
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -431,20 +429,16 @@ def _run_export(args, cwd, err):  # pragma: no cover (not implemented)
     if args.path:
         if whole_tree:
             print("exporting tree to {}...".format(args.path))
-            for document in documents:
-                path = os.path.join(args.path, document.prefix + ext)
-                print("exporting {} to {}...".format(document, path))
-                exporter.export(document, path, ext)
-
+            exporter.export(tree, args.path, ext)
         else:
-            print("exporting {} to {}...".format(documents[0], args.path))
-            exporter.export(documents[0], args.path, ext)
+            print("exporting {} to {}...".format(document, args.path))
+            exporter.export(document, args.path, ext)
 
     # Display to standard output
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in exporter.lines(documents[0], ext):
+        for line in exporter.lines(document, ext):
             print(line)
 
     return True
@@ -461,16 +455,13 @@ def _run_publish(args, cwd, err):
     # Parse arguments
     whole_tree = args.prefix == 'all'
     ext = _get_extension(args, '.txt', '.html', whole_tree, err)
-    html = ext == '.html'
 
     # Publish documents
     try:
         publisher.check(ext)
         tree = build(cwd, root=args.project)
-        if whole_tree:
-            documents = [document for document in tree]
-        else:
-            documents = [tree.find_document(args.prefix)]
+        if not whole_tree:
+            document = tree.find_document(args.prefix)
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -484,21 +475,16 @@ def _run_publish(args, cwd, err):
     if args.path:
         if whole_tree:
             print("publishing tree to {}...".format(args.path))
-            for document in documents:
-                path = os.path.join(args.path, document.prefix + ext)
-                print("publishing {} to {}...".format(document, path))
-                publisher.publish(document, path, ext, **kwargs)
-            if html:
-                publisher.index(args.path)
+            publisher.publish(tree, args.path, ext, **kwargs)
         else:
-            print("publishing {} to {}...".format(documents[0], args.path))
-            publisher.publish(documents[0], args.path, ext, **kwargs)
+            print("publishing {} to {}...".format(document, args.path))
+            publisher.publish(document, args.path, ext, **kwargs)
 
     # Display to standard output
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in publisher.lines(documents[0], ext, **kwargs):
+        for line in publisher.lines(document, ext, **kwargs):
             print(line)
 
     return True

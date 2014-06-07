@@ -7,36 +7,52 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.types import iter_items
+from doorstop.core.types import iter_documents, iter_items, is_tree
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
 
-def publish(obj, path, ext=None, **kwargs):
+def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     """Publish a document to a given format.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param path: output file location with desired extension
-    @param ext: file extension to override output path's extension
+    The function can be called in two ways:
+
+    1. document or item-like object + output file path
+    2. tree-like object + output directory path
+
+    @param obj: (1) Item, list of Items, Document or (2) Tree
+    @param path: (1) output file path or (2) output directory path
+    @param ext: file extension to override output extension
+    @param linkify: turn links into hyperlinks (for Markdown or HTML)
+    @param index: create an index.html (for HTML)
 
     @raise DoorstopError: for unknown file formats
 
     """
     # Determine the output format
-    ext = ext or os.path.splitext(path)[-1]
+    ext = ext or os.path.splitext(path)[-1] or '.html'
+    linkify = linkify if linkify is not None else is_tree(obj)
+    index = index if index is not None else is_tree(obj)
     check(ext)
 
-    # Publish content to the specified path
-    create_dirname(path)
-    logging.info("creating file {}...".format(path))
-    with open(path, 'w') as outfile:  # pragma: no cover (integration test)
-        for line in lines(obj, ext, **kwargs):
-            outfile.write(line + '\n')
+    # Publish documents
+    for obj2, path2 in iter_documents(obj, path, ext):
+
+        # Publish content to the specified path
+        create_dirname(path2)
+        logging.info("creating file {}...".format(path2))
+        with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
+            for line in lines(obj2, ext, linkify=linkify, **kwargs):
+                outfile.write(line + '\n')
+
+    # Create index
+    if index:
+        _index(path)
 
 
-def index(directory, extensions=('.html',)):
+def _index(directory, extensions=('.html',)):
     """Create an HTML index of all files in a directory.
 
     @param directory: directory for index
@@ -93,7 +109,7 @@ def lines(obj, ext='.txt', **kwargs):
     yield from gen(obj, **kwargs)
 
 
-def lines_text(obj, indent=8, width=79):
+def lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -129,7 +145,7 @@ def lines_text(obj, indent=8, width=79):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                ref = _ref(item)
+                ref = _format_ref(item)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -158,10 +174,11 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj):
+def lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
+    @param linkify: turn links into hyperlinks (for conversion to HTML)
 
     @return: iterator of lines of text
 
@@ -174,12 +191,16 @@ def lines_markdown(obj):
         if item.heading:
 
             # Level and Text
-            yield "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            attr_list = _format_attr_list(item, linkify)
+            yield standard + attr_list
 
         else:
 
             # Level and ID
-            yield "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            attr_list = _format_attr_list(item, linkify)
+            yield standard + attr_list
 
             # Text
             if item.text:
@@ -189,23 +210,29 @@ def lines_markdown(obj):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _ref(item)
+                yield _format_ref(item)
 
-            # Links
+            # Parent links
             if item.links:
                 yield ""  # break before links
+                items2 = item.parent_items
                 if settings.PUBLISH_CHILD_LINKS:
-                    label = "Parent links: "
+                    label = "Parent links:"
                 else:
-                    label = "Links: "
-                slinks = label + ', '.join(str(l) for l in item.links)
-                yield '*' + slinks + '*'
+                    label = "Links:"
+                links = _format_links(items2, linkify)
+                label_links = _format_label_links(label, links, linkify)
+                yield label_links
+
+            # Child links
             if settings.PUBLISH_CHILD_LINKS:
-                links = item.find_child_links()
-                if links:
+                items2 = item.find_child_items()
+                if items2:
                     yield ""  # break before links
-                    slinks = "Child links: " + ', '.join(str(l) for l in links)
-                    yield '*' + slinks + '*'
+                    label = "Child links:"
+                    links = _format_links(items2, linkify)
+                    label_links = _format_label_links(label, links, linkify)
+                    yield label_links
 
         yield ""  # break between items
 
@@ -218,7 +245,12 @@ def _format_level(level):
     return text
 
 
-def _ref(item):
+def _format_attr_list(item, linkify):
+    """Create a Markdown attribute list for a heading."""
+    return " {{: #{i} }}".format(i=item.id) if linkify else ''
+
+
+def _format_ref(item):
     """Format an external reference for publishing."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
@@ -228,10 +260,31 @@ def _ref(item):
         return "Reference: '{r}'".format(r=item.ref)
 
 
-def lines_html(obj):
+def _format_links(items, linkify):
+    """Format a list of linked items."""
+    if linkify:
+        links = []
+        for item in items:
+            links.append("[{i}]({p}.html#{i})".format(i=item.id,
+                                                      p=item.document.prefix))
+        return ', '.join(links)
+    else:
+        return ', '.join(str(item.id) for item in items)
+
+
+def _format_label_links(label, links, linkify):
+    """Join a string of label and links with formatting."""
+    if linkify:
+        return "*{lb}* {ls}".format(lb=label, ls=links)
+    else:
+        return "*{lb} {ls}*".format(lb=label, ls=links)
+
+
+def lines_html(obj, linkify=False):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
+    @param linkify: turn links into hyperlinks
 
     @return: iterator of lines of text
 
@@ -255,7 +308,8 @@ def lines_html(obj):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    html = markdown.markdown('\n'.join(lines_markdown(obj)))
+    text = '\n'.join(lines_markdown(obj, linkify=linkify))
+    html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
         yield '</body>'
@@ -276,10 +330,14 @@ def check(ext):
     @return: lines generator if available
 
     """
+    exts = ', '.join(ext for ext in FORMAT_LINES)
+    msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
+    exc = DoorstopError(msg)
+
     try:
-        return FORMAT_LINES[ext]
+        gen = FORMAT_LINES[ext]
     except KeyError:
-        exts = ', '.join(ext for ext in FORMAT_LINES)
-        msg = "unknown publish format: {} (options: {})".format(ext, exts)
-        exc = DoorstopError(msg)
         raise exc from None
+    else:
+        logging.debug("found lines generator for: {}".format(ext))
+        return gen

@@ -79,7 +79,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return not self == other
 
     def __lt__(self, other):
-        return self.level < other.level
+        if self.level == other.level:
+            return self.id < other.id
+        else:
+            return self.level < other.level
 
     @staticmethod
     def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
@@ -161,6 +164,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     # properties #############################################################
 
     @property
+    @auto_load
     def data(self):
         """Get all the item's data formatted for dumping."""
         data = {}
@@ -355,6 +359,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Set the list of item IDs this item links to."""
         self.links = value  # alias
 
+    @property
+    def parent_items(self):
+        """Get a list of items that this item links to."""
+        return [self.tree.find_item(i) for i in self.links]
+
+    @property
+    def parent_documents(self):
+        """Get a list of documents that this item's document should link to.
+
+        Note: a document only has one parent.
+
+        """
+        return [self.tree.find_document(self.document.prefix)]
+
     # actions ################################################################
 
     @auto_save
@@ -494,11 +512,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
-    def find_ref(self, root=None, ignored=None):
+    def find_ref(self, skip=None, root=None, ignored=None):
         """Get the external file reference and line number.
 
+        @param skip: function to determine if a path is ignored
         @param root: override path to the working copy (for testing)
-        @param ignored: override function to determine ignores (for testing)
+        @param ignored: override VCS ignore function (for testing)
 
         @raise DoorstopError: when no reference is found
 
@@ -531,11 +550,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if os.path.sep + '.' in path:
                     continue
                 # Skip ignored paths
-                if ignored(path):
+                if ignored(path) or (skip and skip(path)):
                     continue
-                # Search for the reference in the file
+                # Check for a matching filename
                 if filename == self.ref:
                     return relpath, None
+                # Skip extensions that should not be considered text
+                if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
+                    continue
+                # Search for the reference in the file
                 try:
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
@@ -620,7 +643,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             logging.debug(msg)
             joined = ', '.join(str(d) for d in child_documents)
             logging.debug("child documents: {}".format(joined))
-        return child_items, child_documents
+        return sorted(child_items), child_documents
 
     def delete(self, path=None):
         """Delete the item."""

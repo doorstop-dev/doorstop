@@ -12,6 +12,7 @@ VERBOSE2_LOGGING_LEVEL = logging.DEBUG
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators
+SKIP_EXTS = ['.csv', '.tsv']  # extensions to skip during reference search
 RESERVED_WORDS = 'all',  # keywords that cannot be used for prefixes
 
 # Formatting settings

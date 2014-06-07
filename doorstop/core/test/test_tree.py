@@ -14,24 +14,10 @@ from doorstop.core.document import Document
 from doorstop.core.builder import build
 
 from doorstop.core.test import FILES, SYS, EMPTY
-from doorstop.core.test.test_document import MockDocument as _MockDocment
+from doorstop.core.test import MockDocumentSkip
 
 
-class MockDocument(_MockDocment):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock Document class that is always skipped in tree placement."""
-
-    skip = True
-
-
-class MockDocumentNoSkip(MockDocument):  # pylint: disable=W0223,R0902,R0904
-
-    """Mock Document class that is never skipped in tree placement."""
-
-    SKIP = '__disabled__'  # never skip mock Documents
-
-
-@patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
 class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the Tree class using strings."""  # pylint: disable=C0103
@@ -78,12 +64,12 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.REORDER', False)
     def test_from_list(self):
         """Verify a tree can be created from a list."""
-        a = MockDocument(EMPTY)
+        a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'
-        b = MockDocument(EMPTY)
+        b = MockDocumentSkip(EMPTY)
         b.prefix = 'B'
         b.parent = 'A'
-        c = MockDocument(EMPTY)
+        c = MockDocumentSkip(EMPTY)
         c.prefix = 'C'
         c.parent = 'B'
         docs = [a, b, c]
@@ -93,10 +79,10 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
-        a = MockDocument(EMPTY)
+        a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'
         a.parent = 'B'
-        b = MockDocument(EMPTY)
+        b = MockDocumentSkip(EMPTY)
         b.prefix = 'B'
         b.parent = 'A'
         docs = [a, b]
@@ -104,9 +90,9 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
     def test_from_list_multiple_roots(self):
         """Verify an error occurs when the tree has multiple roots."""
-        a = MockDocument(EMPTY)
+        a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'
-        b = MockDocument(EMPTY)
+        b = MockDocumentSkip(EMPTY)
         b.prefix = 'B'
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
@@ -114,12 +100,12 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
 
-        a = MockDocument(EMPTY)
+        a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'
-        b = MockDocument(EMPTY)
+        b = MockDocumentSkip(EMPTY)
         b.prefix = 'B'
         b.parent = 'A'
-        c = MockDocument(EMPTY)
+        c = MockDocumentSkip(EMPTY)
         c.prefix = 'C'
         c.parent = '?'
         docs = [a, b, c]
@@ -128,16 +114,16 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def test_place_no_parent(self):
         """Verify an error occurs when a node is missing a parent."""
 
-        a = MockDocument(EMPTY)
+        a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'
-        b = MockDocument(EMPTY)
+        b = MockDocumentSkip(EMPTY)
         b.prefix = 'B'
         tree = Tree(a)
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
 
-@patch('doorstop.core.document.Document', MockDocument)  # pylint: disable=R0904
-@patch('doorstop.core.tree.Document', MockDocument)  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
+@patch('doorstop.core.tree.Document', MockDocumentSkip)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the Tree class."""  # pylint: disable=C0103
@@ -154,8 +140,8 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(tree,
-                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        doc = MockDocumentSkip.new(tree,
+                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
         tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
@@ -163,9 +149,9 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocument.new(tree,
-                               os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
-                               parent='REQ')
+        doc = MockDocumentSkip.new(tree,
+                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
+                                   parent='REQ')
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
     def test_documents(self):

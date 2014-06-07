@@ -7,7 +7,7 @@ from doorstop.core.tree import Tree
 from doorstop.core.builder import build, find_document, find_item, _clear_tree
 
 from doorstop.core.test import FILES, EMPTY
-from doorstop.core.test.test_tree import MockDocument, MockDocumentNoSkip
+from doorstop.core.test import MockDocumentSkip, MockDocumentNoSkip
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
@@ -25,9 +25,9 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_build(self):
         """Verify a tree can be built."""
         tree = build(FILES)
-        self.assertEqual(3, len(tree))
+        self.assertEqual(4, len(tree))
 
-    @patch('doorstop.core.document.Document', MockDocument)
+    @patch('doorstop.core.document.Document', MockDocumentSkip)
     @patch('doorstop.core.vcs.find_root', Mock(return_value=FILES))
     def test_build_with_skips(self):
         """Verify documents can be skipped while building a tree."""
