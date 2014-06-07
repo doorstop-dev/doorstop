@@ -19,6 +19,8 @@ class Prefix(str):  # pylint: disable=R0904
         if isinstance(value, Prefix):
             return value
         else:
+            if str(value).lower() in settings.RESERVED_WORDS:
+                raise DoorstopError("cannot use reserved word: %s" % value)
             obj = super().__new__(cls, Prefix.load_prefix(value))
             return obj
 
