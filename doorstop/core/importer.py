@@ -1,5 +1,6 @@
 """Functions to import exiting documents and items."""
 
+import os
 import logging
 
 from doorstop.common import DoorstopError
@@ -9,6 +10,20 @@ from doorstop.core.builder import _get_tree
 
 
 _DOCUMENTS = []  # cache of unplaced documents
+
+
+def from_file(path, ext=None, **kwargs):
+    """Import items from an exported file.
+
+    @param path: input file location
+    @param ext: file extension to override input path's extension
+
+    @raise DoorstopError: for unknown file formats
+
+    """
+    ext = ext or os.path.splitext(path)[-1]
+    func = check(ext)
+    func(path, **kwargs)
 
 
 def new_document(prefix, path, parent=None):
@@ -76,3 +91,27 @@ def add_item(prefix, identifier, attrs=None):
     document._items.append(item)  # pylint: disable=W0212
     tree._item_cache[item.id] = item  # pylint: disable=W0212
     return item
+
+# Mapping from file extension to file reader
+FORMAT_FILE = {}
+
+
+def check(ext):
+    """Confirm an extension is supported for import.
+
+    @raise DoorstopError: for unknown formats
+
+    @return: file importer if available
+
+    """
+    exts = ', '.join(ext for ext in FORMAT_FILE)
+    msg = "unknown import format: {} (options: {})".format(ext or None, exts)
+    exc = DoorstopError(msg)
+
+    try:
+        func = FORMAT_FILE[ext]
+    except KeyError:
+        raise exc from None
+    else:
+        logging.debug("found file reader for: {}".format(ext))
+        return func

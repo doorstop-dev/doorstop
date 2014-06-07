@@ -269,8 +269,8 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
