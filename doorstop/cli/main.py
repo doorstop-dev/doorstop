@@ -413,7 +413,7 @@ def _run_export(args, cwd, err):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = _get_extension(args, '.yml', '.xlsx', whole_tree)
+    ext = _get_extension(args, '.yml', '.xlsx', whole_tree, err)
 
     # Publish documents
     try:
@@ -454,7 +454,7 @@ def _run_publish(args, cwd, err):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = _get_extension(args, '.txt', '.html', whole_tree)
+    ext = _get_extension(args, '.txt', '.html', whole_tree, err)
 
     # Publish documents
     try:
@@ -490,25 +490,29 @@ def _run_publish(args, cwd, err):
     return True
 
 
-def _get_extension(args, ext_stdout, ext_file, whole_tree):
+def _get_extension(args, ext_stdout, ext_file, whole_tree, err):
     """Determine the output file extensions from input arguments.
 
     @param args: Namespace of CLI arguments
     @param ext_stdout: default extension for standard output
     @param ext_file: default extension for file output
-    @param: whole_tree: indicates the path is a directory for the whole tree
+    @param whole_tree: indicates the path is a directory for the whole tree
+    @param err: function to call for CLI errors
 
     @return: chosen extension
 
     """
     ext = None
-    # Get the argument from a provided output path
+
+    # Get the default argument from a provided output path
     if args.path:
         if whole_tree:
             ext = ext_file
         else:
+            if os.path.isdir(args.path):
+                err("given a prefix, [path] must be a file, not a directory")
             ext = os.path.splitext(args.path)[-1]
-        logging.debug("extension based on path: {}".format(ext))
+        logging.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
     for _ext, option in {'.txt': 'text',
@@ -526,7 +530,10 @@ def _get_extension(args, ext_stdout, ext_file, whole_tree):
             continue
     else:
         if not ext:
-            ext = ext_stdout
+            if args.path:
+                err("given a prefix, [path] must include an extension")
+            else:
+                ext = ext_stdout
         logging.debug("extension based on default: {}".format(ext))
 
     return ext

@@ -115,10 +115,15 @@ class TestNew(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop new' can be called."""
         self.assertIs(None, main(['new', '_TEMP', self.temp, '-p', 'REQ']))
 
-    def test_new_error(self):
+    def test_new_error_unknwon_parent(self):
         """Verify 'doorstop new' returns an error with an unknown parent."""
         self.assertRaises(SystemExit, main,
                           ['new', '_TEMP', self.temp, '-p', 'UNKNOWN'])
+
+    def test_new_error_reserved_prefix(self):
+        """Verify 'doorstop new' returns an error with a reserved prefix."""
+        self.assertRaises(SystemExit, main,
+                          ['new', 'ALL', self.temp, '-p', 'REQ'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -307,9 +312,18 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
-    def test_export_unknown(self):
+    def test_export_document_error_unknown(self):
         """Verify 'doorstop export' returns an error for an unknown format."""
         self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
+
+    def test_export_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['export', 'req', self.temp])
+
+    def test_export_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['export', 'req', path])
 
     def test_export_document_stdout(self):
         """Verify 'doorstop export' can create output."""
@@ -371,10 +385,19 @@ class TestPublish(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
         self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_document_error(self):
+    def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""
         os.chdir(self.temp)
         self.assertRaises(SystemExit, main, ['publish', 'req'])
+
+    def test_publish_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['publish', 'req', self.temp])
+
+    def test_publish_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['publish', 'req', path])
 
     def test_publish_document_text(self):
         """Verify 'doorstop publish' can create text output."""
