@@ -254,8 +254,8 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' returns an error with an unknown ID."""
         self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
@@ -399,9 +399,18 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
-    def test_export_unknown(self):
+    def test_export_document_error_unknown(self):
         """Verify 'doorstop export' returns an error for an unknown format."""
         self.assertRaises(SystemExit, main, ['export', 'req', 'req.fake'])
+
+    def test_export_document_error_directory(self):
+        """Verify 'doorstop publish' returns an error with a directory."""
+        self.assertRaises(SystemExit, main, ['export', 'req', self.temp])
+
+    def test_export_document_error_no_extension(self):
+        """Verify 'doorstop publish' returns an error with no extension."""
+        path = os.path.join(self.temp, 'req')
+        self.assertRaises(SystemExit, main, ['export', 'req', path])
 
     def test_export_document_stdout(self):
         """Verify 'doorstop export' can create output."""
