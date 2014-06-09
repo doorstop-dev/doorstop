@@ -134,7 +134,7 @@ def import_xlsx(file_path):
             req = row[id_col].value
             try:
                 # if the item exists, delete and re-create from excel data
-                item = doorstop.find_item(req)
+                item = tree.find_item(req)
                 item.delete()
                 add_item(prefix, req, attributes)
             except DoorstopError:
