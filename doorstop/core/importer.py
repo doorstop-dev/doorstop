@@ -146,6 +146,7 @@ def import_xlsx(file_path):
 
             try:
                 # if the item exists, delete and re-create from excel data
+                # todo: maybe compare data with attributes first to see if anything changed
                 item = tree.find_item(req)
                 item.delete()
                 add_item(prefix, req, attributes)

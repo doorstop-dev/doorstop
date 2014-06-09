@@ -327,8 +327,23 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         # Assert
         document = core.find_document('REQ')
-        # self.assertEqual()
-        # self.assertListEqual(self.document.items, document.items)
+        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
+
+        # verify changing excel document (removing data) and importing changes doorstop items
+        workbook = openpyxl.load_workbook(temp)
+        worksheet = workbook.active
+
+        # change stuff
+        worksheet['C4'].value = "Goodby, World"
+        worksheet['E2'].value = ""
+
+        # save workbook
+        workbook.save(temp)
+
+        # re-import
+        core.importer.from_file(temp)
+        document = core.find_document('REQ')
+        # todo: change expected list for changes
         self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
 
     def test_create_document(self):
