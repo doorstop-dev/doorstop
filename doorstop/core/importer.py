@@ -105,11 +105,10 @@ def import_xlsx(file_path):
     # Load the current tree
     tree = _get_tree()
 
-    attributes = []
-    # need to know which column is ID because it's the attribute we need to
-    # find/initialize the item.
-    id_attribute_col = 0
-    item = None
+    # basically the first row
+    col_headers = []
+    # which column is the id column
+    id_col = 0
 
     workbook = load_workbook(file_path)
     worksheet = workbook.active
@@ -117,33 +116,33 @@ def import_xlsx(file_path):
     last_cell = openpyxl.cell.get_column_letter(worksheet.get_highest_column()) + str(worksheet.get_highest_row())
 
     for i, row in enumerate(worksheet.range('A1:%s' % last_cell)):
-        item_attributes = {}
-        if i:
-            prefix = re.search("[a-zA-Z]+", str(row[id_attribute_col].value)).group(0)
-            req = row[id_attribute_col].value
+        attributes = {}
         for j, cell in enumerate(row):
             if not i:
                 # determine which column is the ID
-                attributes.append(cell.value)
+                col_headers.append(cell.value)
                 if cell.value.lower() == 'id':
-                    id_attribute_col = j
+                    id_col = j
             else:
-                # att = getattr(item, attributes[j])
-                if j != id_attribute_col and cell.value is not None:
-                    if 'links' == attributes[j]:
-                        item_attributes[attributes[j]] = re.findall('[a-zA-Z0-9\-]+', cell.value)
+                if j != id_col and cell.value is not None:
+                    if 'links' == col_headers[j]:
+                        attributes[col_headers[j]] = re.findall('[a-zA-Z0-9\-]+', cell.value)
                     else:
-                        item_attributes[attributes[j]] = cell.value
+                        attributes[col_headers[j]] = cell.value
         if i:
+            prefix = re.search("[a-zA-Z]+", str(row[id_col].value)).group(0)
+            req = row[id_col].value
             try:
-                # if the item exists, do we really want to overwrite it?
-                doorstop.find_item(req)
-            except:
+                # if the item exists, delete and re-create from excel data
+                item = doorstop.find_item(req)
+                item.delete()
+                add_item(prefix, req, attributes)
+            except DoorstopError:
                 if prefix in [doc.prefix for doc in tree.documents]:
-                    add_item(prefix, req, item_attributes)
+                    add_item(prefix, req, attributes)
                 else:
-                    new_document(prefix, tree.root + os.sep + prefix)  # create document in current directory
-                    add_item(prefix, req, item_attributes)
+                    new_document(prefix, tree.root + os.sep + prefix)
+                    add_item(prefix, req, attributes)
 
 
 # Mapping from file extension to file reader
