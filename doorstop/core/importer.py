@@ -111,33 +111,46 @@ def import_xlsx(file_path):
     id_col = 0
 
     workbook = load_workbook(file_path)
+    # assuming that the desired worksheet is the wanted one
     worksheet = workbook.active
 
+    # last cell is the last column with info combined with the last row with info
+    # last cell may actually have nothing in it
     last_cell = openpyxl.cell.get_column_letter(worksheet.get_highest_column()) + str(worksheet.get_highest_row())
 
     for i, row in enumerate(worksheet.range('A1:%s' % last_cell)):
         attributes = {}
         for j, cell in enumerate(row):
             if not i:
+                # first row. just header info
                 # determine which column is the ID
                 col_headers.append(cell.value)
                 if cell.value.lower() == 'id':
                     id_col = j
             else:
+                # not first row, this should be all the actual data
+                # gather all attribute data based on column headers
                 if j != id_col and cell.value is not None:
                     if 'links' == col_headers[j]:
-                        attributes[col_headers[j]] = re.findall('[a-zA-Z0-9\-]+', cell.value)
+                        # split links into a list
+                        # todo: this regex could change based on project req format
+                        attributes[col_headers[j]] = re.findall('[a-zA-Z0-9]+', cell.value)
                     else:
                         attributes[col_headers[j]] = cell.value
         if i:
+            # all columns parsed for a given row
+            # create the requirement based on accumulated attributes
+            # todo: this regex could change based on project req format
             prefix = re.search("[a-zA-Z]+", str(row[id_col].value)).group(0)
             req = row[id_col].value
+
             try:
                 # if the item exists, delete and re-create from excel data
                 item = tree.find_item(req)
                 item.delete()
                 add_item(prefix, req, attributes)
             except DoorstopError:
+                # item doesn't exist yet
                 if prefix in [doc.prefix for doc in tree.documents]:
                     add_item(prefix, req, attributes)
                 else:
