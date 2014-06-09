@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import logging
 
+import inspect
 import openpyxl
 
 from doorstop import core
@@ -269,6 +270,7 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
+
 # TODO: uncomment
 # @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
@@ -325,7 +327,9 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         # Assert
         document = core.find_document('REQ')
-        self.assertListEqual(self.document.items, document.items)
+        # self.assertEqual()
+        # self.assertListEqual(self.document.items, document.items)
+        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""

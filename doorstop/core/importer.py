@@ -2,6 +2,9 @@
 
 import os
 import logging
+import re
+import openpyxl
+from openpyxl import load_workbook
 
 from doorstop.common import DoorstopError
 from doorstop.core.document import Document
@@ -92,8 +95,57 @@ def add_item(prefix, identifier, attrs=None):
     tree._item_cache[item.id] = item  # pylint: disable=W0212
     return item
 
+
+def import_xlsx(file_path):
+    """Import an xlsx document to doorstop.
+
+    Excel format should be in the exported format
+    where the first row is the doorstop attributes, one of which is the ID
+    """
+    # Load the current tree
+    tree = _get_tree()
+    print(tree.root)
+
+    attributes = []
+    # need to know which column is ID because it's the attribute we need to
+    # find/initialize the item.
+    id_attribute_col = 0
+    item = None
+
+    workbook = load_workbook(file_path)
+    worksheet = workbook.active
+
+    last_cell = openpyxl.cell.get_column_letter(worksheet.get_highest_column()) + str(worksheet.get_highest_row())
+
+    for i, row in enumerate(worksheet.range('A1:%s' % last_cell)):
+        item_attributes = {}
+        if i:
+            prefix = re.search("[a-zA-Z]+", str(row[id_attribute_col].value)).group(0)
+            req = row[id_attribute_col].value
+        for j, cell in enumerate(row):
+            if not i:
+                # determine which columns are doorstop attributes
+                attributes.append(cell.value)
+                if cell.value.lower() == 'id':
+                    id_attribute_col = j
+            else:
+                # att = getattr(item, attributes[j])
+                if j != id_attribute_col and cell.value is not None:
+                    item_attributes[attributes[j]] = cell.value
+        if i:
+            try:
+                item = doorstop.find_item(req)
+            except:
+                print(tree.documents)
+                if prefix in [doc.prefix for doc in tree.documents]:
+                    item = add_item(prefix, req, item_attributes)
+                else:
+                    new_document(prefix, tree.root + os.sep + prefix)  # create document in current directory
+                    item = add_item(prefix, req, item_attributes)
+
+
 # Mapping from file extension to file reader
-FORMAT_FILE = {}
+FORMAT_FILE = {'.xlsx': import_xlsx}
 
 
 def check(ext):
@@ -107,7 +159,6 @@ def check(ext):
     exts = ', '.join(ext for ext in FORMAT_FILE)
     msg = "unknown import format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
-
     try:
         func = FORMAT_FILE[ext]
     except KeyError:
