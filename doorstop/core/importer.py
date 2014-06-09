@@ -104,7 +104,6 @@ def import_xlsx(file_path):
     """
     # Load the current tree
     tree = _get_tree()
-    print(tree.root)
 
     attributes = []
     # need to know which column is ID because it's the attribute we need to
@@ -124,24 +123,27 @@ def import_xlsx(file_path):
             req = row[id_attribute_col].value
         for j, cell in enumerate(row):
             if not i:
-                # determine which columns are doorstop attributes
+                # determine which column is the ID
                 attributes.append(cell.value)
                 if cell.value.lower() == 'id':
                     id_attribute_col = j
             else:
                 # att = getattr(item, attributes[j])
                 if j != id_attribute_col and cell.value is not None:
-                    item_attributes[attributes[j]] = cell.value
+                    if 'links' == attributes[j]:
+                        item_attributes[attributes[j]] = re.findall('[a-zA-Z0-9\-]+', cell.value)
+                    else:
+                        item_attributes[attributes[j]] = cell.value
         if i:
             try:
-                item = doorstop.find_item(req)
+                # if the item exists, do we really want to overwrite it?
+                doorstop.find_item(req)
             except:
-                print(tree.documents)
                 if prefix in [doc.prefix for doc in tree.documents]:
-                    item = add_item(prefix, req, item_attributes)
+                    add_item(prefix, req, item_attributes)
                 else:
                     new_document(prefix, tree.root + os.sep + prefix)  # create document in current directory
-                    item = add_item(prefix, req, item_attributes)
+                    add_item(prefix, req, item_attributes)
 
 
 # Mapping from file extension to file reader
