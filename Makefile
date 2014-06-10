@@ -187,13 +187,14 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-build
 .clean-build:
-	find $(PACKAGE) -name '*.pyc' -delete
-	find $(PACKAGE) -name '__pycache__' -delete
+	find . -name '*.pyc' -delete
+	find . -name '__pycache__' -delete
 	rm -rf *.egg-info
 
 .PHONY: .clean-doc
 .clean-doc:
 	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
+	rm -rf docs/sphinx/doorstop*.rst docs/sphinx/_build
 
 .PHONY: .clean-test
 .clean-test:
