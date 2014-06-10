@@ -80,7 +80,7 @@ $(DEPENDS_CI): Makefile
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade docutils pdoc pylint wheel
+	$(PIP) install --upgrade docutils pdoc pylint wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -96,7 +96,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme html uml apidocs
+doc: readme html uml apidocs sphinx-docs
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -126,6 +126,11 @@ docs/*.png:
 apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+
+.PHONY: sphinx-docs
+sphinx-docs: .depends-dev $(SOURCES)
+	env/bin/sphinx-apidoc -o docs/sphinx/ doorstop
+	env/bin/sphinx-build -b html docs/sphinx docs/sphinx/_build
 
 .PHONY: read
 read: doc
