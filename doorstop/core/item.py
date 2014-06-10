@@ -648,4 +648,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @clear_item_cache
     def delete(self, path=None):
         """Delete the item."""
+        # TODO: move this to a decorator
+        if self.document and self in self.document._items:
+            self.document._items.remove(self)
         super().delete(self.path)
