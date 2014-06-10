@@ -128,9 +128,11 @@ apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: sphinx-docs
-sphinx-docs: .depends-dev $(SOURCES)
+sphinx-docs: .depends-dev docs/sphinx/_build
+docs/sphinx/_build: $(SOURCES)
 	env/bin/sphinx-apidoc -o docs/sphinx/ doorstop
 	env/bin/sphinx-build -b html docs/sphinx docs/sphinx/_build
+	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
 
 .PHONY: read
 read: doc
