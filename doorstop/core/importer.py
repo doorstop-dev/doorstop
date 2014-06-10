@@ -11,6 +11,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
+from doorstop.core.types import ID
 
 
 _DOCUMENTS = []  # cache of unplaced documents
@@ -158,6 +159,7 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
     """
     # Load the current tree
     tree = _get_tree()
+    prefix = None
 
     for row in value_array:
         attributes = {}
@@ -165,13 +167,12 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
         for j, cell in enumerate(row):
             # not first row, this should be all the actual data
             # gather all attribute data based on column headers
-            if cell is not None:
+            if cell:
                 if header_array[j] == "id":
                     id_text = cell
                 elif 'links' == header_array[j]:
                     # split links into a list
-                    # TODO: this regex could change based on project req format
-                    attributes[header_array[j]] = re.findall('[^\s;,]+', cell)
+                    attributes[header_array[j]] = re.split('[\s;,]+', cell)
                 elif ('active' == header_array[j] or 'normative' == header_array[j] or 'derived' == header_array[j]) and all_strings:
                     # all cells are strings, but doorstop expects some things to be boolean. Convert those here.
                     # csv reader returns a list of strings
@@ -183,10 +184,13 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
         if row:
             # all columns parsed for a given row
             # create the requirement based on accumulated attributes
-            # TODO: this regex could change based on project req format
-            # identifier = ID(id_text)
-            # prefix = identifier.prefix
-            prefix = re.search("[a-zA-Z]+", id_text).group(0)
+            identifier = ID(id_text)
+
+            # TODO: figure out a better way to determine the item's document from an exported file
+            # TODO: get rid of the following if statement. Currently in place to show how deleting a req and re-adding it fails.
+            if not prefix:
+                prefix = identifier.prefix
+            # prefix = re.search("[a-zA-Z]+", id_text).group(0)
             req = id_text
 
             try:

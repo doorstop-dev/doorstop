@@ -344,7 +344,13 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         document = core.find_document('REQ')
         # todo: change expected list for changes
-        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
+        list_self = []
+        for item in self.document.items:
+            list_self.append(item.data)
+        list_read = []
+        for item in document.items:
+            list_read.append(item.data)
+        self.assertListEqual(list_self, list_read)
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
