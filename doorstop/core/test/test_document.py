@@ -195,13 +195,21 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.document.Document.reorder')
     @patch('doorstop.core.item.Item.new')
     def test_add_item_with_level(self, mock_new, mock_reorder):
-        """Verify an item can be added to a document."""
+        """Verify an item can be added to a document with a level."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
         mock_new.assert_called_once_with(None, self.document,
                                          FILES, ROOT, 'REQ005',
                                          level='4.2')
         mock_reorder.assert_called_once_with(keep=item)
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_number(self, mock_new):
+        """Verify an item can be added to a document with a number."""
+        self.document.add_item(number=999)
+        mock_new.assert_called_once_with(None, self.document,
+                                         FILES, ROOT, 'REQ999',
+                                         level=Level('2.2'))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_empty(self, mock_new):

@@ -286,16 +286,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    def add_item(self, level=None, reorder=True):
+    def add_item(self, number=None, level=None, reorder=True):
         """Create a new item for the document and return it.
 
+        @param number: desired item number
         @param level: desired item level
         @param reorder: update levels of document items
 
         @return: added Item
 
         """
-        number = self.next
+        number = number or self.next
         logging.debug("next number: {}".format(number))
         try:
             last = self.items[-1]
