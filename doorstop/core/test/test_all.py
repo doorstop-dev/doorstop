@@ -9,7 +9,6 @@ import tempfile
 import shutil
 import logging
 
-import inspect
 import openpyxl
 
 from doorstop import core

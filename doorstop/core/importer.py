@@ -4,6 +4,7 @@ import os
 import logging
 import re
 import csv
+
 import openpyxl
 from openpyxl import load_workbook
 
@@ -172,7 +173,7 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
                     id_text = cell
                 elif 'links' == header_array[j]:
                     # split links into a list
-                    attributes[header_array[j]] = re.split('[\s;,]+', cell)
+                    attributes[header_array[j]] = re.split(r'[\s;,]+', cell)
                 elif ('active' == header_array[j] or 'normative' == header_array[j] or 'derived' == header_array[j]) and all_strings:
                     # all cells are strings, but doorstop expects some things to be boolean. Convert those here.
                     # csv reader returns a list of strings
