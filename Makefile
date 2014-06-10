@@ -138,6 +138,7 @@ docs/sphinx/_build: $(SOURCES)
 read: doc
 	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
+	$(OPEN) docs/sphinx/_build/index.html
 	$(OPEN) docs/README-pypi.html
 	$(OPEN) docs/README-github.html
 
