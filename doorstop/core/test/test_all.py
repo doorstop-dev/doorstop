@@ -311,7 +311,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     def test_import_tsv(self):
         """Verify items can be imported from a TSV file."""
-        temp = os.path.join(self.temp, 'exported.csv')
+        temp = os.path.join(self.temp, 'exported.tsv')
         core.exporter.export(self.document, temp)
         # Act
         core.importer.from_file(temp)

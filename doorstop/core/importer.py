@@ -97,7 +97,7 @@ def add_item(prefix, identifier, attrs=None):
     return item
 
 
-def import_tsv(file_path, delimiter='/t'):
+def import_tsv(file_path, delimiter='\t'):
     """Import a tsv document to doorstop.
 
     @param file_path - the path to the .tsv file
