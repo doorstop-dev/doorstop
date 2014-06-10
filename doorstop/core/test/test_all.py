@@ -306,7 +306,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         # Assert
         document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
 
     def test_import_tsv(self):
         """Verify items can be imported from a TSV file."""
@@ -316,7 +317,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         # Assert
         document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
 
     def test_import_xlsx(self):
         """Verify items can be imported from an XLSX file."""
@@ -326,7 +328,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.from_file(temp)
         # Assert
         document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items], [item.data for item in document.items])
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
 
         # verify changing excel document (removing data) and importing changes doorstop items
         workbook = openpyxl.load_workbook(temp)
