@@ -330,7 +330,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         identifier = ID(value)
         item = self.find_item(identifier)
         item.delete()
-        self._items.remove(item)
         if reorder:
             self.reorder()
         return item
