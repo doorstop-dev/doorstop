@@ -342,7 +342,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # re-import
         core.importer.from_file(temp)
         document = core.find_document('REQ')
-        # todo: change expected list for changes
+        # TODO: change expected list for changes
         list_self = []
         for item in self.document.items:
             list_self.append(item.data)
