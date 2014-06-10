@@ -96,7 +96,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme html uml apidocs sphinx-docs
+doc: readme html uml apidocs sphinx
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -127,8 +127,8 @@ apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
-.PHONY: sphinx-docs
-sphinx-docs: .depends-dev docs/sphinx/_build
+.PHONY: sphinx
+sphinx: .depends-dev docs/sphinx/_build
 docs/sphinx/_build: $(SOURCES)
 	env/bin/sphinx-apidoc -o docs/sphinx/ doorstop
 	env/bin/sphinx-build -b html docs/sphinx docs/sphinx/_build
