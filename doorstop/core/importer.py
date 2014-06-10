@@ -127,8 +127,8 @@ def import_xlsx(file_path):
     where the first row is the doorstop attributes, one of which is the ID
     """
     # basically the first row
-    col_headers = []
-    val_array = []
+    header = []
+    data = []
 
     workbook = load_workbook(file_path)
     # assuming that the desired worksheet is the wanted one
@@ -139,15 +139,15 @@ def import_xlsx(file_path):
     last_cell = openpyxl.cell.get_column_letter(worksheet.get_highest_column()) + str(worksheet.get_highest_row())
 
     for i, row in enumerate(worksheet.range('A1:%s' % last_cell)):
-        val_array.append([])
+        data.append([])
         for j, cell in enumerate(row):
             if not i:
                 # first row. just header info
-                col_headers.append(cell.value)
+                header.append(cell.value)
             else:
                 # convert to text for processing
-                val_array[i].append(cell.value)
-    add_doorstop_items(val_array, col_headers)
+                data[i].append(cell.value)
+    add_doorstop_items(data, header)
 
 
 def add_doorstop_items(value_array, header_array, all_strings=False):
@@ -159,7 +159,7 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
     # Load the current tree
     tree = _get_tree()
 
-    for i, row in enumerate(value_array):
+    for row in value_array:
         attributes = {}
         id_text = ""
         for j, cell in enumerate(row):
@@ -170,27 +170,29 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
                     id_text = cell
                 elif 'links' == header_array[j]:
                     # split links into a list
-                    # todo: this regex could change based on project req format
-                    attributes[header_array[j]] = re.findall('[a-zA-Z0-9]+', cell)
+                    # TODO: this regex could change based on project req format
+                    attributes[header_array[j]] = re.findall('[^\s;,]+', cell)
                 elif ('active' == header_array[j] or 'normative' == header_array[j] or 'derived' == header_array[j]) and all_strings:
                     # all cells are strings, but doorstop expects some things to be boolean. Convert those here.
                     # csv reader returns a list of strings
-                    # todo: is there a better way of doing this?
+                    # TODO: is there a better way of doing this?
                     attributes[header_array[j]] = (cell == "True")
                 else:
                     attributes[header_array[j]] = cell
         # guard against empty rows
-        if len(row):
+        if row:
             # all columns parsed for a given row
             # create the requirement based on accumulated attributes
-            # todo: this regex could change based on project req format
+            # TODO: this regex could change based on project req format
+            # identifier = ID(id_text)
+            # prefix = identifier.prefix
             prefix = re.search("[a-zA-Z]+", id_text).group(0)
             req = id_text
 
             try:
                 # if the item exists, delete and re-create from excel data
                 item = tree.find_item(req)
-                # todo: maybe compare data with attributes first to see if anything changed,
+                # TODO: maybe compare data with attributes first to see if anything changed,
                 #       no point in deleting if nothing changed
                 item.delete()
                 add_item(prefix, req, attributes)
