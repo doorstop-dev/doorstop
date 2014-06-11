@@ -309,6 +309,29 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual([item.data for item in self.document.items],
                              [item.data for item in document.items])
 
+        # change values
+        item = self.document.find_item('REQ004')
+        REQ004_text = item.text
+        item.text = "Goodby, World"
+        item = self.document.find_item('REQ001')
+        REQ001_links = item.links
+        item.links = []
+        core.exporter.export(self.document, temp)
+
+        # Act
+        core.importer.from_file(temp)
+        # Assert
+        document = core.find_document('REQ')
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
+
+        # Revert changes
+        item = self.document.find_item('REQ004')
+        item.text = REQ004_text
+        item = self.document.find_item('REQ001')
+        item.links = REQ001_links
+        core.exporter.export(self.document, temp)
+
     def test_import_tsv(self):
         """Verify items can be imported from a TSV file."""
         temp = os.path.join(self.temp, 'exported.tsv')
@@ -319,6 +342,29 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         document = core.find_document('REQ')
         self.assertListEqual([item.data for item in self.document.items],
                              [item.data for item in document.items])
+
+        # change values
+        item = self.document.find_item('REQ004')
+        REQ004_text = item.text
+        item.text = "Goodby, World"
+        item = self.document.find_item('REQ001')
+        REQ001_links = item.links
+        item.links = []
+        core.exporter.export(self.document, temp)
+
+        # Act
+        core.importer.from_file(temp)
+        # Assert
+        document = core.find_document('REQ')
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
+
+        # Revert changes
+        item = self.document.find_item('REQ004')
+        item.text = REQ004_text
+        item = self.document.find_item('REQ001')
+        item.links = REQ001_links
+        core.exporter.export(self.document, temp)
 
     def test_import_xlsx(self):
         """Verify items can be imported from an XLSX file."""
@@ -331,28 +377,28 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual([item.data for item in self.document.items],
                              [item.data for item in document.items])
 
-        # verify changing excel document (removing data) and importing changes doorstop items
-        workbook = openpyxl.load_workbook(temp)
-        worksheet = workbook.active
-
-        # change stuff
-        worksheet['C4'].value = "Goodby, World"
-        worksheet['E2'].value = ""
-
-        # save workbook
-        workbook.save(temp)
+        # change values
+        item = self.document.find_item('REQ004')
+        REQ004_text = item.text
+        item.text = "Goodby, World"
+        item = self.document.find_item('REQ001')
+        REQ001_links = item.links
+        item.links = []
+        core.exporter.export(self.document, temp)
 
         # re-import
         core.importer.from_file(temp)
         document = core.find_document('REQ')
-        # TODO: change expected list for changes
-        list_self = []
-        for item in self.document.items:
-            list_self.append(item.data)
-        list_read = []
-        for item in document.items:
-            list_read.append(item.data)
-        self.assertListEqual(list_self, list_read)
+
+        self.assertListEqual([item.data for item in self.document.items],
+                             [item.data for item in document.items])
+
+        # Revert changes
+        item = self.document.find_item('REQ004')
+        item.text = REQ004_text
+        item = self.document.find_item('REQ001')
+        item.links = REQ001_links
+        core.exporter.export(self.document, temp)
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
