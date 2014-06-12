@@ -194,42 +194,43 @@ def _itemize(header_array, value_array, document, all_strings=False):
     logging.debug("header: {}".format(header_array))
     for row in value_array:
         logging.debug("datum: {}".format(row))
-        attributes = {}
-        id_text = ""
+        attrs = {}
+        identifier = ""
         for j, cell in enumerate(row):
             # not first row, this should be all the actual data
             # gather all attribute data based on column headers
             if cell:
                 if header_array[j] == "id":
-                    id_text = cell
+                    identifier = cell
                 elif 'links' == header_array[j]:
                     # split links into a list
-                    attributes[header_array[j]] = re.split(r'[\s;,]+', cell)
+                    attrs[header_array[j]] = re.split(r'[\s;,]+', cell)
                 elif ('active' == header_array[j] or 'normative' == header_array[j] or 'derived' == header_array[j]) and all_strings:  # pragma: no cover
                     # all cells are strings, but doorstop expects some things to be boolean. Convert those here.
                     # csv reader returns a list of strings
                     # TODO: is there a better way of doing this?
-                    attributes[header_array[j]] = (cell == "True")
+                    attrs[header_array[j]] = (cell == "True")
                 else:
-                    attributes[header_array[j]] = cell
+                    attrs[header_array[j]] = cell
 
         # Convert the row to an item
-        if id_text and row:
+        if identifier and row:
 
             # Delete the old item
             try:
-                item = document.find_item(id_text)
+                item = document.find_item(identifier)
                 # TODO: maybe compare data with attributes first to see if anything changed,
                 #       no point in deleting if nothing changed
             except DoorstopError:
-                logging.debug("not yet an item: {}".format(id_text))
+                logging.debug("not yet an item: {}".format(identifier))
             else:
-                logging.debug("deleting old item: {}".format(id_text))
+                logging.debug("deleting old item: {}".format(identifier))
                 item.delete()
 
             # Import the item
             try:
-                add_item(document.prefix, id_text, attributes, document=document)
+                add_item(document.prefix, identifier,
+                         attrs=attrs, document=document)
             except DoorstopError as exc:
                 logging.warning(exc)
 
