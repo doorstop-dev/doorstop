@@ -24,7 +24,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError,
                           importer.import_file, 'a.a', mock_document)
         self.assertRaises(DoorstopError,
-                          importer.import_file, 'a.csv', '.a', mock_document)
+                          importer.import_file, 'a.csv', mock_document, '.a')
 
     @patch('doorstop.core.importer._file_csv')
     def test_import_file(self, mock_file_csv):
