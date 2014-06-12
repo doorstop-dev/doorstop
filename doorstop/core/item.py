@@ -228,10 +228,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         An inactive item will not be validated. Inactive items are
         intended to be used for:
-         - future requirements
-         - temporarily disabled requirements or tests
-         - externally implemented requirements
-         - etc.
+
+        - future requirements
+        - temporarily disabled requirements or tests
+        - externally implemented requirements
+        - etc.
 
         """
         return self._data['active']
@@ -269,9 +270,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         A non-normative item should not have or be linked to.
         Non-normative items are intended to be used for:
-         - headings
-         - comments
-         - etc.
+
+        - headings
+        - comments
+        - etc.
 
         """
         return self._data['normative']
