@@ -166,7 +166,6 @@ def import_xlsx(path, document):
     add_doorstop_items(data, header, document)
 
 
-
 def add_doorstop_items(value_array, header_array, document, all_strings=False):
     """Conversion function for multiple formats.
 
