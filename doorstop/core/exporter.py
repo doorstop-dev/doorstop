@@ -7,6 +7,8 @@ from collections import defaultdict
 import logging
 
 import yaml
+# TODO: openpyxl has false positives with pylint
+# pylint: disable=F0401,E1101,E1120,E1123
 import openpyxl
 from openpyxl.styles import Alignment, Font
 
@@ -183,9 +185,6 @@ def _get_xlsx(obj):
     @return: new workbook
 
     """
-    # TODO: openpyxl has false positives with pylint
-    # pylint: disable=E1101,E1120,E1123
-
     col_widths = defaultdict(int)
     col = 'A'
 

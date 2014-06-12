@@ -9,7 +9,8 @@ import tempfile
 import shutil
 import logging
 
-import openpyxl
+# TODO: openpyxl has false positives with pylint
+import openpyxl  # pylint: disable=F0401
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError

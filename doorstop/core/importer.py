@@ -5,8 +5,9 @@ import logging
 import re
 import csv
 
-import openpyxl
-from openpyxl import load_workbook
+# TODO: openpyxl has false positives with pylint
+import openpyxl  # pylint: disable=F0401
+from openpyxl import load_workbook  # pylint: disable=F0401
 
 from doorstop.common import DoorstopError
 from doorstop.core.document import Document
@@ -148,9 +149,6 @@ def _file_xlsx(path, document):
     @param document: document to import items
 
     """
-    # TODO: openpyxl has false positives with pylint
-    # pylint: disable=E1101,E1120,E1123
-
     header = []
     data = []
 

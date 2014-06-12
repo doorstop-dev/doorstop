@@ -16,7 +16,7 @@ from doorstop.core.test.test_document import FILES, MockItem
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201,C0103
 
     def test_import_file_unknown(self):
         """Verify an exception is raised when importing unknown formats."""
