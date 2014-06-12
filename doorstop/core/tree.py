@@ -47,8 +47,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def from_list(documents, root=None):
         """Initialize a new tree from a list of documents.
 
-        @param documents: list of Documents
-        @param root: path to root of the project
+        :param documents: list of Documents
+        :param root: path to root of the project
 
         @raise DoorstopError: when the tree cannot be built
 
@@ -131,7 +131,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def _place(self, document):
         """Attempt to place the document in the current tree.
 
-        @param document: Document to add
+        :param document: Document to add
 
         @raise DoorstopError: if the document cannot yet be placed
 
@@ -197,11 +197,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def new_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
-        @param path: directory path for the new document
-        @param value: document or prefix
-        @param sep: separator between prefix and numbers
-        @param digits: number of digits for the document's numbers
-        @param parent: parent document's prefix
+        :param path: directory path for the new document
+        :param value: document or prefix
+        :param sep: separator between prefix and numbers
+        :param digits: number of digits for the document's numbers
+        :param parent: parent document's prefix
 
         @raise DoorstopError: if the document cannot be created
 
@@ -227,9 +227,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def add_item(self, value, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
-        @param value: document or prefix
-        @param level: desired item level
-        @param reorder: update levels of document items
+        :param value: document or prefix
+        :param level: desired item level
+        :param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be created
 
@@ -246,8 +246,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def remove_item(self, value, reorder=True):
         """Remove an item from a document by ID.
 
-        @param value: item or ID
-        @param reorder: update levels of document items
+        :param value: item or ID
+        :param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be removed
 
@@ -269,8 +269,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def link_items(self, cid, pid):
         """Add a new link between two items by IDs.
 
-        @param cid: child item's ID (or child item)
-        @param pid: parent item's ID (or parent item)
+        :param cid: child item's ID (or child item)
+        :param pid: parent item's ID (or parent item)
 
         @raise DoorstopError: if the link cannot be created
 
@@ -289,8 +289,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def unlink_items(self, cid, pid):
         """Remove a link between two items by IDs.
 
-        @param cid: child item's ID (or child item)
-        @param pid: parent item's ID (or parent item)
+        :param cid: child item's ID (or child item)
+        :param pid: parent item's ID (or parent item)
 
         @raise DoorstopError: if the link cannot be removed
 
@@ -309,9 +309,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def edit_item(self, identifier, tool=None, launch=False):
         """Open an item for editing by ID.
 
-        @param identifier: item's ID (or item)
-        @param tool: alternative text editor to open the item
-        @param launch: open the text editor
+        :param identifier: item's ID (or item)
+        :param tool: alternative text editor to open the item
+        :param launch: open the text editor
 
         @raise DoorstopError: if the item cannot be found
 
@@ -334,7 +334,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def find_document(self, value):
         """Get a document by its prefix.
 
-        @param value: document or prefix
+        :param value: document or prefix
 
         @raise DoorstopError: if the document cannot be found
 
@@ -364,7 +364,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def find_item(self, value, _kind=''):
         """Get an item by its ID.
 
-        @param value: item or ID
+        :param value: item or ID
 
         @raise DoorstopError: if the item cannot be found
 
@@ -399,8 +399,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
+        :param document_hook: function to call for custom document validation
+        :param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 

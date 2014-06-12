@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>doorstop.core.vcs package &mdash; Doorstop 0.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Doorstop 0.7 documentation" href="index.html" />
+    <link rel="up" title="doorstop.core package" href="doorstop.core.html" />
+    <link rel="next" title="doorstop.core.vcs.test package" href="doorstop.core.vcs.test.html" />
+    <link rel="prev" title="doorstop.core.test package" href="doorstop.core.test.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.vcs.test.html" title="doorstop.core.vcs.test package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.test.html" title="doorstop.core.test package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >doorstop</a> &raquo;</li>
+          <li><a href="doorstop.html" >doorstop package</a> &raquo;</li>
+          <li><a href="doorstop.core.html" accesskey="U">doorstop.core package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="doorstop-core-vcs-package">
+<h1>doorstop.core.vcs package<a class="headerlink" href="#doorstop-core-vcs-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doorstop.core.vcs.test.html">doorstop.core.vcs.test package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.vcs.test.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.vcs.test.html#module-doorstop.core.vcs.test.test_base">doorstop.core.vcs.test.test_base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.vcs.test.html#module-doorstop.core.vcs.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-doorstop.core.vcs.base">
+<span id="doorstop-core-vcs-base-module"></span><h2>doorstop.core.vcs.base module<a class="headerlink" href="#module-doorstop.core.vcs.base" title="Permalink to this headline">¶</a></h2>
+<p>Abstract interface to version control systems.</p>
+<dl class="class">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy">
+<em class="property">class </em><tt class="descclassname">doorstop.core.vcs.base.</tt><tt class="descname">BaseWorkingCopy</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Abstract base class for VCS working copies.</p>
+<dl class="attribute">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.DIRECTORY">
+<tt class="descname">DIRECTORY</tt><em class="property"> = None</em><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.IGNORES">
+<tt class="descname">IGNORES</tt><em class="property"> = ()</em><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.IGNORES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.call">
+<em class="property">static </em><tt class="descname">call</tt><big>(</big><em>*args</em>, <em>return_stdout=False</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a command with string arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.ignored">
+<tt class="descname">ignored</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.ignored" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate if a path should be considered ignored.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.ignores">
+<tt class="descname">ignores</tt><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.ignores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of glob expressions to ignore.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.lock">
+<tt class="descname">lock</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pull, update, and lock a file for editing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.base.BaseWorkingCopy.save">
+<tt class="descname">save</tt><big>(</big><em>message=None</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.base.BaseWorkingCopy.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unlock files, commit, and push.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.core.vcs.git">
+<span id="doorstop-core-vcs-git-module"></span><h2>doorstop.core.vcs.git module<a class="headerlink" href="#module-doorstop.core.vcs.git" title="Permalink to this headline">¶</a></h2>
+<p>Plug-in module to store requirements in a Git repository.</p>
+<dl class="class">
+<dt id="doorstop.core.vcs.git.WorkingCopy">
+<em class="property">class </em><tt class="descclassname">doorstop.core.vcs.git.</tt><tt class="descname">WorkingCopy</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.git.WorkingCopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.core.vcs.base.BaseWorkingCopy" title="doorstop.core.vcs.base.BaseWorkingCopy"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.core.vcs.base.BaseWorkingCopy</span></tt></a></p>
+<p>Git working copy.</p>
+<dl class="attribute">
+<dt id="doorstop.core.vcs.git.WorkingCopy.DIRECTORY">
+<tt class="descname">DIRECTORY</tt><em class="property"> = '.git'</em><a class="headerlink" href="#doorstop.core.vcs.git.WorkingCopy.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.git.WorkingCopy.IGNORES">
+<tt class="descname">IGNORES</tt><em class="property"> = ('.gitignore',)</em><a class="headerlink" href="#doorstop.core.vcs.git.WorkingCopy.IGNORES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.git.WorkingCopy.lock">
+<tt class="descname">lock</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.git.WorkingCopy.lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.git.WorkingCopy.save">
+<tt class="descname">save</tt><big>(</big><em>message=None</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.git.WorkingCopy.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.core.vcs.mockvcs">
+<span id="doorstop-core-vcs-mockvcs-module"></span><h2>doorstop.core.vcs.mockvcs module<a class="headerlink" href="#module-doorstop.core.vcs.mockvcs" title="Permalink to this headline">¶</a></h2>
+<p>Plug-in module to simulate the storage of requirements in a repository.</p>
+<dl class="class">
+<dt id="doorstop.core.vcs.mockvcs.WorkingCopy">
+<em class="property">class </em><tt class="descclassname">doorstop.core.vcs.mockvcs.</tt><tt class="descname">WorkingCopy</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.mockvcs.WorkingCopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.core.vcs.base.BaseWorkingCopy" title="doorstop.core.vcs.base.BaseWorkingCopy"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.core.vcs.base.BaseWorkingCopy</span></tt></a></p>
+<p>Simulated working copy.</p>
+<dl class="attribute">
+<dt id="doorstop.core.vcs.mockvcs.WorkingCopy.DIRECTORY">
+<tt class="descname">DIRECTORY</tt><em class="property"> = '.mockvcs'</em><a class="headerlink" href="#doorstop.core.vcs.mockvcs.WorkingCopy.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.mockvcs.WorkingCopy.ignores">
+<tt class="descname">ignores</tt><a class="headerlink" href="#doorstop.core.vcs.mockvcs.WorkingCopy.ignores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.mockvcs.WorkingCopy.lock">
+<tt class="descname">lock</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.mockvcs.WorkingCopy.lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.mockvcs.WorkingCopy.save">
+<tt class="descname">save</tt><big>(</big><em>message=None</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.mockvcs.WorkingCopy.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.core.vcs.subversion">
+<span id="doorstop-core-vcs-subversion-module"></span><h2>doorstop.core.vcs.subversion module<a class="headerlink" href="#module-doorstop.core.vcs.subversion" title="Permalink to this headline">¶</a></h2>
+<p>Plug-in module to store requirements in a Subversion (1.7) repository.</p>
+<dl class="class">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy">
+<em class="property">class </em><tt class="descclassname">doorstop.core.vcs.subversion.</tt><tt class="descname">WorkingCopy</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.core.vcs.base.BaseWorkingCopy" title="doorstop.core.vcs.base.BaseWorkingCopy"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.core.vcs.base.BaseWorkingCopy</span></tt></a></p>
+<p>Subversion working copy.</p>
+<dl class="attribute">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy.DIRECTORY">
+<tt class="descname">DIRECTORY</tt><em class="property"> = '.svn'</em><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy.IGNORES">
+<tt class="descname">IGNORES</tt><em class="property"> = ('.sgignores', '.vvignores')</em><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy.IGNORES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy.ignores">
+<tt class="descname">ignores</tt><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy.ignores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy.lock">
+<tt class="descname">lock</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy.lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.subversion.WorkingCopy.save">
+<tt class="descname">save</tt><big>(</big><em>message=None</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.subversion.WorkingCopy.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.core.vcs.veracity">
+<span id="doorstop-core-vcs-veracity-module"></span><h2>doorstop.core.vcs.veracity module<a class="headerlink" href="#module-doorstop.core.vcs.veracity" title="Permalink to this headline">¶</a></h2>
+<p>Plug-in module to store requirements in a Veracity repository.</p>
+<dl class="class">
+<dt id="doorstop.core.vcs.veracity.WorkingCopy">
+<em class="property">class </em><tt class="descclassname">doorstop.core.vcs.veracity.</tt><tt class="descname">WorkingCopy</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.veracity.WorkingCopy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.core.vcs.base.BaseWorkingCopy" title="doorstop.core.vcs.base.BaseWorkingCopy"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.core.vcs.base.BaseWorkingCopy</span></tt></a></p>
+<p>Veracity working copy.</p>
+<dl class="attribute">
+<dt id="doorstop.core.vcs.veracity.WorkingCopy.DIRECTORY">
+<tt class="descname">DIRECTORY</tt><em class="property"> = '.sgdrawer'</em><a class="headerlink" href="#doorstop.core.vcs.veracity.WorkingCopy.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="doorstop.core.vcs.veracity.WorkingCopy.IGNORES">
+<tt class="descname">IGNORES</tt><em class="property"> = ('.sgignores', '.vvignores')</em><a class="headerlink" href="#doorstop.core.vcs.veracity.WorkingCopy.IGNORES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.veracity.WorkingCopy.lock">
+<tt class="descname">lock</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.veracity.WorkingCopy.lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.core.vcs.veracity.WorkingCopy.save">
+<tt class="descname">save</tt><big>(</big><em>message=None</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.veracity.WorkingCopy.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.core.vcs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-doorstop.core.vcs" title="Permalink to this headline">¶</a></h2>
+<p>Interfaces to version control systems.</p>
+<dl class="function">
+<dt id="doorstop.core.vcs.find_root">
+<tt class="descclassname">doorstop.core.vcs.</tt><tt class="descname">find_root</tt><big>(</big><em>cwd</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.find_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the root of the working copy.</p>
+<p>&#64;param cwd: current working directory</p>
+<p>&#64;raise DoorstopError: if the root cannot be found</p>
+<p>&#64;return: path to root of working copy</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="doorstop.core.vcs.load">
+<tt class="descclassname">doorstop.core.vcs.</tt><tt class="descname">load</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.core.vcs.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a working copy for the specified path.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">doorstop.core.vcs package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs.base">doorstop.core.vcs.base module</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs.git">doorstop.core.vcs.git module</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs.mockvcs">doorstop.core.vcs.mockvcs module</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs.subversion">doorstop.core.vcs.subversion module</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs.veracity">doorstop.core.vcs.veracity module</a></li>
+<li><a class="reference internal" href="#module-doorstop.core.vcs">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="doorstop.core.test.html"
+                        title="previous chapter">doorstop.core.test package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="doorstop.core.vcs.test.html"
+                        title="next chapter">doorstop.core.vcs.test package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/doorstop.core.vcs.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.vcs.test.html" title="doorstop.core.vcs.test package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.test.html" title="doorstop.core.test package"
+             >previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >doorstop</a> &raquo;</li>
+          <li><a href="doorstop.html" >doorstop package</a> &raquo;</li>
+          <li><a href="doorstop.core.html" >doorstop.core package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Jace Browning.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

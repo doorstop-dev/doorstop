@@ -1,0 +1,2 @@
+sphinx-apidoc -o docs/sphinx doorstop/
+sphinx-build -b html docs/sphinx docs/sphinx/output

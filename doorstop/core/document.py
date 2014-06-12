@@ -28,8 +28,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
 
-        @param path: path to document directory
-        @param root: path to root of project
+        :param path: path to document directory
+        :param root: path to root of project
 
         """
         super().__init__()
@@ -79,16 +79,16 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
-        @param tree: reference to tree that contains this document
+        :param tree: reference to tree that contains this document
 
-        @param path: path to directory for the new document
-        @param root: path to root of the project
-        @param prefix: prefix for the new document
+        :param path: path to directory for the new document
+        :param root: path to root of the project
+        :param prefix: prefix for the new document
 
-        @param sep: separator between prefix and numbers
-        @param digits: number of digits for the new document
-        @param parent: parent ID for the new document
-        @param auto: automatically save the document
+        :param sep: separator between prefix and numbers
+        :param digits: number of digits for the new document
+        :param parent: parent ID for the new document
+        :param auto: automatically save the document
 
         @raise DoorstopError: if the document already exists
 
@@ -289,8 +289,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def add_item(self, level=None, reorder=True):
         """Create a new item for the document and return it.
 
-        @param level: desired item level
-        @param reorder: update levels of document items
+        :param level: desired item level
+        :param reorder: update levels of document items
 
         @return: added Item
 
@@ -316,8 +316,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def remove_item(self, value, reorder=True):
         """Remove an item by its ID.
 
-        @param value: item or ID
-        @param reorder: update levels of document items
+        :param value: item or ID
+        :param reorder: update levels of document items
 
         @raise DoorstopError: if the item cannot be found
 
@@ -335,9 +335,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def reorder(self, items=None, start=None, keep=None):
         """Reorder a document's items.
 
-        @param items: items to reorder (None = reorder instance items)
-        @param start: level to start numbering (None = use current start)
-        @param keep: item or ID to keep over duplicates
+        :param items: items to reorder (None = reorder instance items)
+        :param start: level to start numbering (None = use current start)
+        :param keep: item or ID to keep over duplicates
 
         """
         items = items or self.items
@@ -349,9 +349,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _reorder(items, start=None, keep=None):
         """Reorder a document's items.
 
-        @param items: items to reorder
-        @param start: level to start numbering (None = use current start)
-        @param keep: item to keep over duplicates
+        :param items: items to reorder
+        :param start: level to start numbering (None = use current start)
+        :param keep: item to keep over duplicates
 
         """
         nlevel = plevel = None
@@ -424,7 +424,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_item(self, value, _kind=''):
         """Return an item by its ID.
 
-        @param value: item or ID
+        :param value: item or ID
 
         @raise DoorstopError: if the item cannot be found
 
@@ -441,7 +441,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
-        @param item_hook: function to call for custom item validation
+        :param item_hook: function to call for custom item validation
 
         @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 

@@ -391,7 +391,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def unlink(self, value):
         """Remove an existing link by item ID.
 
-        @param value: item or ID
+        :param value: item or ID
 
         """
         identifier = ID(value)

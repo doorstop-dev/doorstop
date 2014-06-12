@@ -1,0 +1,734 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>doorstop.cli.test package &mdash; Doorstop 0.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Doorstop 0.7 documentation" href="index.html" />
+    <link rel="up" title="doorstop.cli package" href="doorstop.cli.html" />
+    <link rel="next" title="doorstop.core package" href="doorstop.core.html" />
+    <link rel="prev" title="doorstop.cli package" href="doorstop.cli.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.html" title="doorstop.core package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="doorstop.cli.html" title="doorstop.cli package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >doorstop</a> &raquo;</li>
+          <li><a href="doorstop.html" >doorstop package</a> &raquo;</li>
+          <li><a href="doorstop.cli.html" accesskey="U">doorstop.cli package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="doorstop-cli-test-package">
+<h1>doorstop.cli.test package<a class="headerlink" href="#doorstop-cli-test-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-doorstop.cli.test.test_all">
+<span id="doorstop-cli-test-test-all-module"></span><h2>doorstop.cli.test.test_all module<a class="headerlink" href="#module-doorstop.cli.test.test_all" title="Permalink to this headline">¶</a></h2>
+<p>Integration tests for the doorstop.cli package.</p>
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestAdd">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestAdd</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop add&#8217; command.</p>
+<dl class="classmethod">
+<dt id="doorstop.cli.test.test_all.TestAdd.setUpClass">
+<em class="property">classmethod </em><tt class="descname">setUpClass</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd.setUpClass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestAdd.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestAdd.test_add">
+<tt class="descname">test_add</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd.test_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop add&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestAdd.test_add_error">
+<tt class="descname">test_add_error</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd.test_add_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop add&#8217; returns an error with an unknown prefix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestAdd.test_add_specific_level">
+<tt class="descname">test_add_specific_level</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestAdd.test_add_specific_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop add&#8217; can be called with a specific level.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestEdit">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestEdit</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestEdit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop edit&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestEdit.test_edit">
+<tt class="descname">test_edit</tt><big>(</big><em>mock_launch</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestEdit.test_edit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop edit&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestEdit.test_edit_error">
+<tt class="descname">test_edit_error</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestEdit.test_edit_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop edit&#8217; returns an error with an unknown ID.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestExport">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestExport</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop export&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_error_directory">
+<tt class="descname">test_export_document_error_directory</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_error_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error with a directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_error_no_extension">
+<tt class="descname">test_export_document_error_no_extension</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_error_no_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error with no extension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_error_unknown">
+<tt class="descname">test_export_document_error_unknown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_error_unknown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; returns an error for an unknown format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_stdout">
+<tt class="descname">test_export_document_stdout</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_stdout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; can create output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_stdout_width">
+<tt class="descname">test_export_document_stdout_width</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_stdout_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; can create output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_xlsx">
+<tt class="descname">test_export_document_xlsx</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; can create an XLSX file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_document_yaml">
+<tt class="descname">test_export_document_yaml</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_document_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; can create a YAML file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_tree_no_path">
+<tt class="descname">test_export_tree_no_path</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_tree_no_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; returns an error with no path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestExport.test_export_tree_xlsx">
+<tt class="descname">test_export_tree_xlsx</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestExport.test_export_tree_xlsx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop export&#8217; can create an XLSX directory.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestImport">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestImport</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop import&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.test_import_document">
+<tt class="descname">test_import_document</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.test_import_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop import&#8217; can import a document.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.test_import_document_with_parent">
+<tt class="descname">test_import_document_with_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.test_import_document_with_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop import&#8217; can import a document with a parent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.test_import_error">
+<tt class="descname">test_import_error</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.test_import_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop import&#8217; requires a document or item.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.test_import_item">
+<tt class="descname">test_import_item</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.test_import_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop import&#8217; can import an item..</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestImport.test_import_item_with_attrs">
+<tt class="descname">test_import_item_with_attrs</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestImport.test_import_item_with_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop import&#8217; can import an item with attributes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestLink">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestLink</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop link&#8217; command.</p>
+<dl class="attribute">
+<dt id="doorstop.cli.test.test_all.TestLink.ITEM">
+<tt class="descname">ITEM</tt><em class="property"> = 'c:\\users\\theovoss\\documents\\github\\doorstop\\doorstop\\cli\\test\\..\\..\\..\\docs\\reqs\\tutorial\\TUT003.yml'</em><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.ITEM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLink.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLink.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLink.test_link">
+<tt class="descname">test_link</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.test_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop link&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLink.test_link_unknown_child">
+<tt class="descname">test_link_unknown_child</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.test_link_unknown_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop link&#8217; returns an error with an unknown child.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLink.test_link_unknown_parent">
+<tt class="descname">test_link_unknown_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLink.test_link_unknown_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop link&#8217; returns an error with an unknown parent.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestLogging">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestLogging</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the Doorstop CLI logging.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLogging.test_verbose_1">
+<tt class="descname">test_verbose_1</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging.test_verbose_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify verbose level 1 can be set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLogging.test_verbose_2">
+<tt class="descname">test_verbose_2</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging.test_verbose_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify verbose level 2 can be set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLogging.test_verbose_3">
+<tt class="descname">test_verbose_3</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging.test_verbose_3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify verbose level 3 can be set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLogging.test_verbose_4">
+<tt class="descname">test_verbose_4</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging.test_verbose_4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify verbose level 4 can be set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestLogging.test_verbose_5">
+<tt class="descname">test_verbose_5</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestLogging.test_verbose_5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify verbose level 5 cannot be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestMain">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestMain</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_empty">
+<tt class="descname">test_empty</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; can be run in a working copy with no docs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_exit">
+<tt class="descname">test_exit</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; treats False as an error .</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_gui">
+<tt class="descname">test_gui</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_gui" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop &#8211;gui&#8217; launches the GUI.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_interrupt">
+<tt class="descname">test_interrupt</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_interrupt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; treats KeyboardInterrupt as an error.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_main">
+<tt class="descname">test_main</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_main_custom_root">
+<tt class="descname">test_main_custom_root</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_main_custom_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; can be provided a custom root path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_main_error">
+<tt class="descname">test_main_error</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_main_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; returns an error in an empty directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_main_help">
+<tt class="descname">test_main_help</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_main_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop &#8211;help&#8217; can be requested.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestMain.test_options">
+<tt class="descname">test_options</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestMain.test_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop&#8217; can be run with options.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestNew">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestNew</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop new&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestNew.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestNew.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestNew.test_new">
+<tt class="descname">test_new</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew.test_new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop new&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestNew.test_new_error_reserved_prefix">
+<tt class="descname">test_new_error_reserved_prefix</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew.test_new_error_reserved_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop new&#8217; returns an error with a reserved prefix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestNew.test_new_error_unknwon_parent">
+<tt class="descname">test_new_error_unknwon_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestNew.test_new_error_unknwon_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop new&#8217; returns an error with an unknown parent.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestPublish">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestPublish</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop publish&#8217; command.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document">
+<tt class="descname">test_publish_document</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_error_directory">
+<tt class="descname">test_publish_document_error_directory</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_error_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error with a directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_error_empty">
+<tt class="descname">test_publish_document_error_empty</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_error_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error in an empty folder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_error_no_extension">
+<tt class="descname">test_publish_document_error_no_extension</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_error_no_extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error with no extension.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_html">
+<tt class="descname">test_publish_document_html</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create HTML output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_html_file">
+<tt class="descname">test_publish_document_html_file</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_html_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create an HTML file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_markdown">
+<tt class="descname">test_publish_document_markdown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_markdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create Markdown output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_markdown_file">
+<tt class="descname">test_publish_document_markdown_file</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_markdown_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create a Markdown file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_text">
+<tt class="descname">test_publish_document_text</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create text output.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_text_file">
+<tt class="descname">test_publish_document_text_file</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_text_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create a text file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_document_with_child_links">
+<tt class="descname">test_publish_document_with_child_links</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_document_with_child_links" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create output with child links.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_tree_html">
+<tt class="descname">test_publish_tree_html</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_tree_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create an HTML directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_tree_no_path">
+<tt class="descname">test_publish_tree_no_path</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_tree_no_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error with no path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_tree_text">
+<tt class="descname">test_publish_tree_text</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_tree_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; can create a text directory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestPublish.test_publish_unknown">
+<tt class="descname">test_publish_unknown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestPublish.test_publish_unknown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop publish&#8217; returns an error for an unknown format.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestRemove">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestRemove</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop remove&#8217; command.</p>
+<dl class="attribute">
+<dt id="doorstop.cli.test.test_all.TestRemove.ITEM">
+<tt class="descname">ITEM</tt><em class="property"> = 'c:\\users\\theovoss\\documents\\github\\doorstop\\doorstop\\cli\\test\\..\\..\\..\\docs\\reqs\\tutorial\\TUT003.yml'</em><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove.ITEM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestRemove.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestRemove.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestRemove.test_remove">
+<tt class="descname">test_remove</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove.test_remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop remove&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestRemove.test_remove_error">
+<tt class="descname">test_remove_error</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestRemove.test_remove_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop remove&#8217; returns an error on unknown item IDs.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_all.TestUnlink">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_all.</tt><tt class="descname">TestUnlink</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Integration tests for the &#8216;doorstop unlink&#8217; command.</p>
+<dl class="attribute">
+<dt id="doorstop.cli.test.test_all.TestUnlink.ITEM">
+<tt class="descname">ITEM</tt><em class="property"> = 'c:\\users\\theovoss\\documents\\github\\doorstop\\doorstop\\cli\\test\\..\\..\\..\\docs\\reqs\\tutorial\\TUT003.yml'</em><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.ITEM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestUnlink.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestUnlink.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestUnlink.test_unlink">
+<tt class="descname">test_unlink</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.test_unlink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop unlink&#8217; can be called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestUnlink.test_unlink_unknown_child">
+<tt class="descname">test_unlink_unknown_child</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.test_unlink_unknown_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop unlink&#8217; returns an error with an unknown child.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_all.TestUnlink.test_unlink_unknown_parent">
+<tt class="descname">test_unlink_unknown_parent</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_all.TestUnlink.test_unlink_unknown_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify &#8216;doorstop unlink&#8217; returns an error with an unknown parent.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.cli.test.test_tutorial">
+<span id="doorstop-cli-test-test-tutorial-module"></span><h2>doorstop.cli.test.test_tutorial module<a class="headerlink" href="#module-doorstop.cli.test.test_tutorial" title="Permalink to this headline">¶</a></h2>
+<p>Integration tests for the documentation tutorials.</p>
+<dl class="class">
+<dt id="doorstop.cli.test.test_tutorial.TestBase">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_tutorial.</tt><tt class="descname">TestBase</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></tt></p>
+<p>Base class for tutorial tests.</p>
+<dl class="staticmethod">
+<dt id="doorstop.cli.test.test_tutorial.TestBase.doorstop">
+<em class="property">static </em><tt class="descname">doorstop</tt><big>(</big><em>args=''</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestBase.doorstop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call &#8216;doorstop&#8217; with a string of arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestBase.setUp">
+<tt class="descname">setUp</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestBase.setUp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestBase.tearDown">
+<tt class="descname">tearDown</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestBase.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.cli.test.test_tutorial.TestSection1">
+<em class="property">class </em><tt class="descclassname">doorstop.cli.test.test_tutorial.</tt><tt class="descname">TestSection1</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestSection1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.cli.test.test_tutorial.TestBase" title="doorstop.cli.test.test_tutorial.TestBase"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.cli.test.test_tutorial.TestBase</span></tt></a></p>
+<p>Integration tests for section 1.0 of the tutorial.</p>
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_1">
+<tt class="descname">test_tutorial_section_1</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify tutorial section 1.0 is working.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_2">
+<tt class="descname">test_tutorial_section_2</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify tutorial section 2.0 is working.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_3">
+<tt class="descname">test_tutorial_section_3</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify tutorial section 3.0 is working.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_4">
+<tt class="descname">test_tutorial_section_4</tt><big>(</big><big>)</big><a class="headerlink" href="#doorstop.cli.test.test_tutorial.TestSection1.test_tutorial_section_4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify tutorial section 4.0 is working.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.cli.test">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-doorstop.cli.test" title="Permalink to this headline">¶</a></h2>
+<p>Package for the doorstop.cli tests.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">doorstop.cli.test package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-doorstop.cli.test.test_all">doorstop.cli.test.test_all module</a></li>
+<li><a class="reference internal" href="#module-doorstop.cli.test.test_tutorial">doorstop.cli.test.test_tutorial module</a></li>
+<li><a class="reference internal" href="#module-doorstop.cli.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="doorstop.cli.html"
+                        title="previous chapter">doorstop.cli package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="doorstop.core.html"
+                        title="next chapter">doorstop.core package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/doorstop.cli.test.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.core.html" title="doorstop.core package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="doorstop.cli.html" title="doorstop.cli package"
+             >previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >doorstop</a> &raquo;</li>
+          <li><a href="doorstop.html" >doorstop package</a> &raquo;</li>
+          <li><a href="doorstop.cli.html" >doorstop.cli package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Jace Browning.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

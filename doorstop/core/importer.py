@@ -14,9 +14,9 @@ _DOCUMENTS = []  # cache of unplaced documents
 def new_document(prefix, path, parent=None):
     """Create a Doorstop document from existing document information.
 
-    @param prefix: existing document's prefix (for new items)
-    @param path: new directory path to store this document's items
-    @param parent: parent document's prefix (if one will exist)
+    :param prefix: existing document's prefix (for new items)
+    :param path: new directory path to store this document's items
+    :param parent: parent document's prefix (if one will exist)
 
     @return: imported Document
 
@@ -50,9 +50,9 @@ def new_document(prefix, path, parent=None):
 def add_item(prefix, identifier, attrs=None):
     """Create a Doorstop document from existing document information.
 
-    @param prefix: previously imported document's prefix
-    @param identifier: existing item's unique ID
-    @param attrs: dictionary of Doorstop and custom attributes
+    :param prefix: previously imported document's prefix
+    :param identifier: existing item's unique ID
+    :param attrs: dictionary of Doorstop and custom attributes
 
     @return: imported Item
 

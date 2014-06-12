@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>doorstop package &mdash; Doorstop 0.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Doorstop 0.7 documentation" href="index.html" />
+    <link rel="up" title="doorstop" href="modules.html" />
+    <link rel="next" title="doorstop.cli package" href="doorstop.cli.html" />
+    <link rel="prev" title="doorstop" href="modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.cli.html" title="doorstop.cli package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="doorstop"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" accesskey="U">doorstop</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="doorstop-package">
+<h1>doorstop package<a class="headerlink" href="#doorstop-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="doorstop.cli.html">doorstop.cli package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.cli.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="doorstop.cli.test.html">doorstop.cli.test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.cli.test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.cli.test.html#module-doorstop.cli.test.test_all">doorstop.cli.test.test_all module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.cli.test.html#module-doorstop.cli.test.test_tutorial">doorstop.cli.test.test_tutorial module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.cli.test.html#module-doorstop.cli.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.cli.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.cli.html#module-doorstop.cli.main">doorstop.cli.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.cli.html#module-doorstop.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="doorstop.core.html">doorstop.core package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="doorstop.core.test.html">doorstop.core.test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_all">doorstop.core.test.test_all module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_builder">doorstop.core.test.test_builder module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_document">doorstop.core.test.test_document module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_exporter">doorstop.core.test.test_exporter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_importer">doorstop.core.test.test_importer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_item">doorstop.core.test.test_item module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_publisher">doorstop.core.test.test_publisher module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_tree">doorstop.core.test.test_tree module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test.test_types">doorstop.core.test.test_types module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.test.html#module-doorstop.core.test">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="doorstop.core.vcs.html">doorstop.core.vcs package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="doorstop.core.vcs.test.html">doorstop.core.vcs.test package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="doorstop.core.vcs.test.html#submodules">Submodules</a></li>
+<li class="toctree-l6"><a class="reference internal" href="doorstop.core.vcs.test.html#module-doorstop.core.vcs.test.test_base">doorstop.core.vcs.test.test_base module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="doorstop.core.vcs.test.html#module-doorstop.core.vcs.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs.base">doorstop.core.vcs.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs.git">doorstop.core.vcs.git module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs.mockvcs">doorstop.core.vcs.mockvcs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs.subversion">doorstop.core.vcs.subversion module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs.veracity">doorstop.core.vcs.veracity module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.core.vcs.html#module-doorstop.core.vcs">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.base">doorstop.core.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.builder">doorstop.core.builder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.document">doorstop.core.document module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.editor">doorstop.core.editor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.exporter">doorstop.core.exporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.importer">doorstop.core.importer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.item">doorstop.core.item module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.publisher">doorstop.core.publisher module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.tree">doorstop.core.tree module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core.types">doorstop.core.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.core.html#module-doorstop.core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="doorstop.gui.html">doorstop.gui package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.gui.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="doorstop.gui.test.html">doorstop.gui.test package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.gui.test.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.gui.test.html#module-doorstop.gui.test.test_all">doorstop.gui.test.test_all module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="doorstop.gui.test.html#module-doorstop.gui.test">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.gui.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.gui.html#module-doorstop.gui.main">doorstop.gui.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doorstop.gui.html#module-doorstop.gui">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-doorstop.common">
+<span id="doorstop-common-module"></span><h2>doorstop.common module<a class="headerlink" href="#module-doorstop.common" title="Permalink to this headline">¶</a></h2>
+<p>Common exceptions, classes, and functions for Doorstop.</p>
+<dl class="exception">
+<dt id="doorstop.common.DoorstopError">
+<em class="property">exception </em><tt class="descclassname">doorstop.common.</tt><tt class="descname">DoorstopError</tt><a class="headerlink" href="#doorstop.common.DoorstopError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.Exception</span></tt></p>
+<p>Generic Doorstop error.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="doorstop.common.DoorstopInfo">
+<em class="property">exception </em><tt class="descclassname">doorstop.common.</tt><tt class="descname">DoorstopInfo</tt><a class="headerlink" href="#doorstop.common.DoorstopInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.common.DoorstopError" title="doorstop.common.DoorstopError"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.common.DoorstopError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.Warning</span></tt></p>
+<p>Generic Doorstop info.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="doorstop.common.DoorstopWarning">
+<em class="property">exception </em><tt class="descclassname">doorstop.common.</tt><tt class="descname">DoorstopWarning</tt><a class="headerlink" href="#doorstop.common.DoorstopWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#doorstop.common.DoorstopError" title="doorstop.common.DoorstopError"><tt class="xref py py-class docutils literal"><span class="pre">doorstop.common.DoorstopError</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.Warning</span></tt></p>
+<p>Generic Doorstop warning.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.common.HelpFormatter">
+<em class="property">class </em><tt class="descclassname">doorstop.common.</tt><tt class="descname">HelpFormatter</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#doorstop.common.HelpFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">argparse.HelpFormatter</span></tt></p>
+<p>Command-line help text formatter with wider help text.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="doorstop.common.WarningFormatter">
+<em class="property">class </em><tt class="descclassname">doorstop.common.</tt><tt class="descname">WarningFormatter</tt><big>(</big><em>default_format</em>, <em>verbose_format</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#doorstop.common.WarningFormatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">logging.Formatter</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Logging formatter that displays verbose formatting for WARNING+.</p>
+<dl class="method">
+<dt id="doorstop.common.WarningFormatter.format">
+<tt class="descname">format</tt><big>(</big><em>record</em><big>)</big><a class="headerlink" href="#doorstop.common.WarningFormatter.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Python 3 hack to change the formatting style dynamically.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="doorstop.common.create_dirname">
+<tt class="descclassname">doorstop.common.</tt><tt class="descname">create_dirname</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.common.create_dirname" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure a parent directory exists for a path.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="doorstop.common.delete">
+<tt class="descclassname">doorstop.common.</tt><tt class="descname">delete</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#doorstop.common.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a file or directory with error handling.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-doorstop.settings">
+<span id="doorstop-settings-module"></span><h2>doorstop.settings module<a class="headerlink" href="#module-doorstop.settings" title="Permalink to this headline">¶</a></h2>
+<p>Settings for the Doorstop package.</p>
+</div>
+<div class="section" id="module-doorstop">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-doorstop" title="Permalink to this headline">¶</a></h2>
+<p>Package for doorstop.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">doorstop package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-doorstop.common">doorstop.common module</a></li>
+<li><a class="reference internal" href="#module-doorstop.settings">doorstop.settings module</a></li>
+<li><a class="reference internal" href="#module-doorstop">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">doorstop</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="doorstop.cli.html"
+                        title="next chapter">doorstop.cli package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/doorstop.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="doorstop.cli.html" title="doorstop.cli package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="doorstop"
+             >previous</a> |</li>
+        <li><a href="index.html">Doorstop 0.7 documentation</a> &raquo;</li>
+          <li><a href="modules.html" >doorstop</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Jace Browning.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

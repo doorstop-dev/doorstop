@@ -232,9 +232,9 @@ def _configure_settings(args):
 def _run(args, cwd, err):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -253,9 +253,9 @@ def _run(args, cwd, err):  # pylint: disable=W0613
 def _run_new(args, cwd, _):
     """Process arguments and run the `doorstop new` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -274,9 +274,9 @@ def _run_new(args, cwd, _):
 def _run_add(args, cwd, _):
     """Process arguments and run the `doorstop add` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -293,9 +293,9 @@ def _run_add(args, cwd, _):
 def _run_remove(args, cwd, _):
     """Process arguments and run the `doorstop remove` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -312,9 +312,9 @@ def _run_remove(args, cwd, _):
 def _run_link(args, cwd, _):
     """Process arguments and run the `doorstop link` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -332,9 +332,9 @@ def _run_link(args, cwd, _):
 def _run_unlink(args, cwd, _):
     """Process arguments and run the `doorstop unlink` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -352,9 +352,9 @@ def _run_unlink(args, cwd, _):
 def _run_edit(args, cwd, _):
     """Process arguments and run the `doorstop edit` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
@@ -371,9 +371,9 @@ def _run_edit(args, cwd, _):
 def _run_import(args, _, err):
     """Process arguments and run the `doorstop import` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     document = item = None
@@ -406,9 +406,9 @@ def _run_import(args, _, err):
 def _run_export(args, cwd, err):
     """Process arguments and run the `doorstop export` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     # Parse arguments
@@ -447,9 +447,9 @@ def _run_export(args, cwd, err):
 def _run_publish(args, cwd, err):
     """Process arguments and run the `doorstop publish` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     # Parse arguments
@@ -493,11 +493,11 @@ def _run_publish(args, cwd, err):
 def _get_extension(args, ext_stdout, ext_file, whole_tree, err):
     """Determine the output file extensions from input arguments.
 
-    @param args: Namespace of CLI arguments
-    @param ext_stdout: default extension for standard output
-    @param ext_file: default extension for file output
-    @param whole_tree: indicates the path is a directory for the whole tree
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param ext_stdout: default extension for standard output
+    :param ext_file: default extension for file output
+    :param whole_tree: indicates the path is a directory for the whole tree
+    :param err: function to call for CLI errors
 
     @return: chosen extension
 
