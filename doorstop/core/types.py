@@ -128,16 +128,19 @@ class ID(object):
     @property
     def prefix(self):
         """Get the ID's prefix."""
-        if self._exc:
-            raise self._exc
+        self.check()
         return self._prefix
 
     @property
     def number(self):
         """Get the ID's number."""
+        self.check()
+        return self._number
+
+    def check(self):
+        """Verify an ID is valid."""
         if self._exc:
             raise self._exc
-        return self._number
 
     @staticmethod
     def split_id(text):

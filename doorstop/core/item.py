@@ -40,7 +40,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
-            ID(name).prefix, ID(name).number
+            ID(name).check()
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
@@ -103,6 +103,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         @return: new Item
 
         """
+        ID(identifier).check()
         filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file

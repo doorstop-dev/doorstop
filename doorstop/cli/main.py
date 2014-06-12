@@ -99,6 +99,9 @@ def main(args=None):  # pylint: disable=R0915
     sub = subs.add_parser('import',
                           help="import an existing document or item",
                           **shared)
+    sub.add_argument('path', nargs='?',
+                     help="path to previously exported document file")
+    sub.add_argument('prefix', nargs='?', help="prefix of document for import")
     sub.add_argument('-d', '--document', nargs=2, metavar='ARG',
                      help="import an existing document by: PREFIX PATH")
     sub.add_argument('-i', '--item', nargs=2, metavar='ARG',
@@ -156,7 +159,7 @@ def main(args=None):  # pylint: disable=R0915
         logging.debug("launching GUI...")
         function = gui
     elif args.command:
-        logging.debug("launching command '{}'...".format(args.command))
+        logging.debug("running command '{}'...".format(args.command))
         function = globals()['_run_' + args.command]
     else:
         logging.debug("launching main command...")
@@ -368,7 +371,7 @@ def _run_edit(args, cwd, _):
     return True
 
 
-def _run_import(args, _, err):
+def _run_import(args, cwd, err):
     """Process arguments and run the `doorstop import` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -378,16 +381,32 @@ def _run_import(args, _, err):
     """
     document = item = None
 
+    # Parse arguments
+    if args.path:
+        if not args.prefix:
+            err("when [path] specified, [prefix] is also required")
+        elif args.document:
+            err("''--document' cannot be used with [path] [prefix]")
+        elif args.item:
+            err("--item cannot be used with [path] [prefix]")
+        ext = _get_extension(args, None, None, False, err)
+    elif not (args.document or args.item):
+        err("specify [path], '--document', '--item' to import")
+
+    # Import document or item
     try:
-        if args.document:
+        if args.path:
+            tree = build(cwd, root=args.project)
+            document = tree.find_document(args.prefix)
+            importer.from_file(args.path, document, ext)
+        elif args.document:
             prefix, path = args.document
             document = importer.new_document(prefix, path, parent=args.parent)
         elif args.item:
             prefix, identifier = args.item
             attrs = ast.literal_eval(args.attrs) if args.attrs else None
             item = importer.add_item(prefix, identifier, attrs=attrs)
-        else:
-            err("specify '--document' or '--item' to import")
+
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -413,9 +432,9 @@ def _run_export(args, cwd, err):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = _get_extension(args, '.yml', '.xlsx', whole_tree, err)
+    ext = _get_extension(args, '.yml', '.csv', whole_tree, err)
 
-    # Publish documents
+    # Export documents
     try:
         exporter.check(ext)
         tree = build(cwd, root=args.project)
@@ -534,7 +553,7 @@ def _get_extension(args, ext_stdout, ext_file, whole_tree, err):
                 err("given a prefix, [path] must include an extension")
             else:
                 ext = ext_stdout
-        logging.debug("extension based on default: {}".format(ext))
+            logging.debug("extension based on default: {}".format(ext))
 
     return ext
 

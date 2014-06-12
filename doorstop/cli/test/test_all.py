@@ -9,9 +9,10 @@ import shutil
 
 from doorstop.cli.main import main
 from doorstop import common
+from doorstop.core.builder import _clear_tree
 from doorstop import settings
 
-from doorstop.cli.test import ENV, REASON, ROOT, REQS, TUTORIAL
+from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -259,11 +260,11 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' returns an error with an unknown ID."""
         self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
-
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+
 
     def tearDown(self):
         try:
@@ -274,6 +275,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
             os.remove(os.path.join(REQS, 'REQ099.yml'))
         except IOError:
             pass
+
 
     def test_import_document(self):
         """Verify 'doorstop import' can import a document."""
@@ -297,6 +299,40 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
     def test_import_error(self):
         """Verify 'doorstop import' requires a document or item."""
         self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
+
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+        os.chdir(self.temp)
+        open('.mockvcs', 'w').close()
+        _clear_tree()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_import_file_to_document_unknown(self):
+        """Verify 'doorstop import' returns an error for unknown documents."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        self.assertRaises(SystemExit,
+                          main, ['import', path, 'PREFIX'])
+
+    def test_import_xlsx_to_document_existing(self):
+        """Verify 'doorstop import' can import XLSX to an existing document."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX']))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

@@ -13,9 +13,22 @@ from doorstop.core.builder import _set_tree
 from doorstop.core.test.test_document import MockItem
 
 
-class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the new_document function."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=C0103
+
+    def test_export_document_unknown(self):
+        """Verify an exception is raised when importing unknown formats."""
+        mock_document = Mock()
+        self.assertRaises(DoorstopError,
+                          importer.from_file, 'a.a', mock_document)
+        self.assertRaises(DoorstopError,
+                          importer.from_file, 'a.csv', '.a', mock_document)
+
+
+class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the doorstop.core.importer:new_document function."""  # pylint: disable=C0103
 
     def setUp(self):
         # Create default document options
@@ -61,9 +74,9 @@ class TestNewDocument(unittest.TestCase):  # pylint: disable=R0904
 
 
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
-class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
+class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the add_item function."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer:add_item function."""  # pylint: disable=C0103
 
     prefix = 'PREFIX'
     root = 'ROOT'
@@ -85,11 +98,11 @@ class TestAddItem(unittest.TestCase):  # pylint: disable=R0904
     def mock_find_document(self, prefix):
         """Mock Tree.find_document() to return a mock document."""
         assert isinstance(self, Tree)
-        assert prefix == TestAddItem.prefix
-        TestAddItem.mock_document.prefix = prefix
-        TestAddItem.mock_document.path = TestAddItem.path
-        TestAddItem.mock_document.root = TestAddItem.root
-        return TestAddItem.mock_document
+        assert prefix == TestModuleAddItem.prefix
+        TestModuleAddItem.mock_document.prefix = prefix
+        TestModuleAddItem.mock_document.path = TestModuleAddItem.path
+        TestModuleAddItem.mock_document.root = TestModuleAddItem.root
+        return TestModuleAddItem.mock_document
 
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
     @patch('doorstop.core.item.Item.new')

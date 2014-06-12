@@ -18,32 +18,36 @@ from doorstop.core.types import ID
 _DOCUMENTS = []  # cache of unplaced documents
 
 
-def from_file(path, ext=None, **kwargs):
+def from_file(path, document, ext=None, **kwargs):
     """Import items from an exported file.
 
     @param path: input file location
+    @param document: document to import items
     @param ext: file extension to override input path's extension
 
     @raise DoorstopError: for unknown file formats
 
+    @return: document with imported items
+
     """
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
-    func(path, **kwargs)
+    func(path, document, **kwargs)
 
 
-def new_document(prefix, path, parent=None):
+def new_document(prefix, path, parent=None, tree=None):
     """Create a Doorstop document from existing document information.
 
     @param prefix: existing document's prefix (for new items)
     @param path: new directory path to store this document's items
     @param parent: parent document's prefix (if one will exist)
+    @param document: explicit tree to add the document
 
     @return: imported Document
 
     """
-    # Load the current tree
-    tree = _get_tree()
+    if not tree:
+        tree = _get_tree()
 
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
@@ -68,21 +72,25 @@ def new_document(prefix, path, parent=None):
     return document
 
 
-def add_item(prefix, identifier, attrs=None):
+def add_item(prefix, identifier, attrs=None, document=None):
     """Create a Doorstop document from existing document information.
 
     @param prefix: previously imported document's prefix
     @param identifier: existing item's unique ID
     @param attrs: dictionary of Doorstop and custom attributes
+    @param document: explicit document to add the item
 
     @return: imported Item
 
     """
-    # Load the current tree
-    tree = _get_tree()
-
-    # Get the specified document
-    document = tree.find_document(prefix)
+    if document:
+        # Get an explicit tree
+        tree = document.tree
+        assert tree  # tree should be set internally
+    else:
+        # Get an implicit tree and document
+        tree = _get_tree()
+        document = tree.find_document(prefix)
 
     logging.info("importing item '{}'...".format(identifier))
     item = Item.new(tree, document,
@@ -99,40 +107,46 @@ def add_item(prefix, identifier, attrs=None):
     return item
 
 
-def import_tsv(file_path, delimiter='\t'):
-    """Import a tsv document to doorstop.
+def import_tsv(path, document, delimiter='\t'):
+    """Import items from a TSV export to a document.
 
-    @param file_path - the path to the .tsv file
+    @param path: input file location
+    @param document: document to import items
+
     """
-    import_csv(file_path, delimiter)
+    import_csv(path, document, delimiter=delimiter)
 
 
-def import_csv(file_path, delimiter=','):
-    """Import a csv document to doorstop.
+def import_csv(path, document, delimiter=','):
+    """Import items from a CSV export to a document.
 
-    @param file_path - the path to the .csv file
+    @param path: input file location
+    @param document: document to import items
+
     """
     rows = []
-    with open(file_path) as csvfile:
-        reader = csv.reader(csvfile, delimiter=delimiter)
+
+    with open(path) as stream:
+        reader = csv.reader(stream, delimiter=delimiter)
         for row in reader:
             rows.append(row)
 
-    add_doorstop_items(rows[1:], rows[0], True)
+    add_doorstop_items(rows[1:], rows[0], document, all_strings=True)
 
 
-def import_xlsx(file_path):
-    """Import an xlsx document to doorstop.
+def import_xlsx(path, document):
+    """Import items from an XLSX export to a document.
 
-    @param file_path - the path to the excel file
-    Excel format should be in the exported format
-    where the first row is the doorstop attributes, one of which is the ID
+    @param path: input file location
+    @param document: document to import items
+
     """
     # basically the first row
     header = []
     data = []
 
-    workbook = load_workbook(file_path)
+    logging.debug("opening {}...".format(path))
+    workbook = load_workbook(path)
     # assuming that the desired worksheet is the wanted one
     worksheet = workbook.active
 
@@ -145,21 +159,23 @@ def import_xlsx(file_path):
         for j, cell in enumerate(row):
             if not i:
                 # first row. just header info
-                header.append(cell.value)
+                header.append(str(cell.value).lower())
             else:
                 # convert to text for processing
                 data[i].append(cell.value)
-    add_doorstop_items(data, header)
+    add_doorstop_items(data, header, document)
 
 
-def add_doorstop_items(value_array, header_array, all_strings=False):
+
+def add_doorstop_items(value_array, header_array, document, all_strings=False):
     """Conversion function for multiple formats.
 
     @param value_array is the rows of data to be added as doorstop items (array of arrays)
     @param header_array is the mapping of columns to doorstop attributes
+    @param document: document to import items
+
     """
     # Load the current tree
-    tree = _get_tree()
     prefix = None
 
     for row in value_array:
@@ -182,7 +198,7 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
                 else:
                     attributes[header_array[j]] = cell
         # guard against empty rows
-        if row:
+        if id_text and row:
             # all columns parsed for a given row
             # create the requirement based on accumulated attributes
             identifier = ID(id_text)
@@ -194,20 +210,22 @@ def add_doorstop_items(value_array, header_array, all_strings=False):
             # prefix = re.search("[a-zA-Z]+", id_text).group(0)
             req = id_text
 
+            # Delete the old item
             try:
-                # if the item exists, delete and re-create from excel data
-                item = tree.find_item(req)
+                item = document.find_item(req)
                 # TODO: maybe compare data with attributes first to see if anything changed,
                 #       no point in deleting if nothing changed
-                item.delete()
-                add_item(prefix, req, attributes)
             except DoorstopError:
-                # item doesn't exist yet
-                if prefix in [doc.prefix for doc in tree.documents]:
-                    add_item(prefix, req, attributes)
-                else:
-                    new_document(prefix, tree.root + os.sep + prefix)
-                    add_item(prefix, req, attributes)
+                logging.debug("not yet an item: {}".format(req))
+            else:
+                logging.debug("deleting old item: {}".format(req))
+                item.delete()
+
+            # Import the item
+            try:
+                add_item(document.prefix, req, attributes, document=document)
+            except DoorstopError as exc:
+                logging.warning(exc)
 
 
 # Mapping from file extension to file reader
