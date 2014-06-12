@@ -85,7 +85,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     """Abstract Base Class for objects whose attributes save to a file.
 
     For properties that are saved to a file, decorate their getters
-    with @auto_load and their setters with @auto_save.
+    with :func:`auto_load` and their setters with :func:`auto_save`.
 
     """
 
