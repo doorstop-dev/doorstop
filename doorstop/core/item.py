@@ -98,7 +98,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param level: level for the new item
         :param auto: automatically save the item
 
-        :raises: :class:`DoorstopError` if the item already exists
+        :raises: :class:`doorstop.common.DoorstopError` if the item already exists
 
         :return: new :class:`Item`
 
@@ -403,8 +403,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, **kwargs):
         """Yield all the item's issues.
 
-        :return: generator of :class:`DoorstopError`, :class:`DoorstopWarning`,
-                 :class:`DoorstopInfo`
+        :return: generator of :class:`doorstop.common.DoorstopError`,
+                              :class:`doorstop.common.DoorstopWarning`,
+                              :class:`doorstop.common.DoorstopInfo`
 
         """
         assert kwargs.get('document_hook') is None
@@ -520,7 +521,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param root: override path to the working copy (for testing)
         :param ignored: override VCS ignore function (for testing)
 
-        :raises: :class:`DoorstopError` when no reference is found
+        :raises: :class:`doorstop.common.DoorstopError` when no reference is found
 
         :return: relative path to file, line number (when found in file)
                  relative path to file, None (when found as filename)
