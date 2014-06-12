@@ -18,7 +18,7 @@ def build(cwd=None, root=None):
     :param cwd: current working directory
     :param root: path to root of the working copy
 
-    @raise DoorstopError: when the tree cannot be built
+    :raises: :class:`DoorstopError` when the tree cannot be built
 
     :return: new Tree
 

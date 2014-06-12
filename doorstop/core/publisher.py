@@ -28,7 +28,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     :param linkify: turn links into hyperlinks (for Markdown or HTML)
     :param index: create an index.html (for HTML)
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`DoorstopError` for unknown file formats
 
     """
     # Determine the output format
@@ -101,7 +101,7 @@ def lines(obj, ext='.txt', **kwargs):
     :param obj: Item, list of Items, or Document to publish
     :param ext: file extension to specify the output format
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`DoorstopError` for unknown file formats
 
     """
     gen = check(ext)
@@ -325,7 +325,7 @@ FORMAT_LINES = {'.txt': lines_text,
 def check(ext):
     """Confirm an extension is supported for publish.
 
-    @raise DoorstopError: for unknown formats
+    :raises: :class:`DoorstopError` for unknown formats
 
     :return: lines generator if available
 

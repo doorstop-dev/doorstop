@@ -29,7 +29,7 @@ def export(obj, path, ext=None, **kwargs):
     :param path: (1) output file path or (2) output directory path
     :param ext: file extension to override output extension
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`DoorstopError` for unknown file formats
 
     """
     # Determine the output format
@@ -56,7 +56,7 @@ def lines(obj, ext='.yml', **kwargs):
     :param obj: Item, list of Items, or Document to export
     :param ext: file extension to specify the output format
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`DoorstopError` for unknown file formats
 
     """
     gen = check(ext, get_lines_gen=True)
@@ -71,7 +71,7 @@ def create(obj, path, ext=None, **kwargs):
     :param path: output file location with desired extension
     :param ext: file extension to override output path's extension
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`DoorstopError` for unknown file formats
 
     """
     ext = ext or os.path.splitext(path)[-1]
@@ -254,7 +254,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
     :param get_lines_func: return a lines generator if available
     :param get_file_func: return a file creator if available
 
-    @raise DoorstopError: for unknown formats
+    :raises: :class:`DoorstopError` for unknown formats
 
     :return: function requested if available
 

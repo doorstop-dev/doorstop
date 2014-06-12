@@ -103,7 +103,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param path: path to new file
         :param name: humanized name for this file
 
-        @raise DoorstopError: if the file already exists
+        :raises: :class:`DoorstopError` if the file already exists
 
         """
         if os.path.exists(path):

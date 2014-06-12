@@ -90,7 +90,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param parent: parent ID for the new document
         :param auto: automatically save the document
 
-        @raise DoorstopError: if the document already exists
+        :raises: :class:`DoorstopError` if the document already exists
 
         :return: new Document
 
@@ -319,7 +319,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param value: item or ID
         :param reorder: update levels of document items
 
-        @raise DoorstopError: if the item cannot be found
+        :raises: :class:`DoorstopError` if the item cannot be found
 
         :return: removed Item
 
@@ -426,7 +426,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param value: item or ID
 
-        @raise DoorstopError: if the item cannot be found
+        :raises: :class:`DoorstopError` if the item cannot be found
 
         :return: matching Item
 

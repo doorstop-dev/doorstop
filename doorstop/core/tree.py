@@ -50,7 +50,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param documents: list of Documents
         :param root: path to root of the project
 
-        @raise DoorstopError: when the tree cannot be built
+        :raises: :class:`DoorstopError` when the tree cannot be built
 
         :return: new Tree
 
@@ -133,7 +133,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         :param document: Document to add
 
-        @raise DoorstopError: if the document cannot yet be placed
+        :raises: :class:`DoorstopError` if the document cannot yet be placed
 
         """
         logging.debug("trying to add '{}'...".format(document))
@@ -203,7 +203,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param digits: number of digits for the document's numbers
         :param parent: parent document's prefix
 
-        @raise DoorstopError: if the document cannot be created
+        :raises: :class:`DoorstopError` if the document cannot be created
 
         :return: newly created and placed Document
 
@@ -231,7 +231,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param level: desired item level
         :param reorder: update levels of document items
 
-        @raise DoorstopError: if the item cannot be created
+        :raises: :class:`DoorstopError` if the item cannot be created
 
         :return: newly created Item
 
@@ -249,7 +249,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param value: item or ID
         :param reorder: update levels of document items
 
-        @raise DoorstopError: if the item cannot be removed
+        :raises: :class:`DoorstopError` if the item cannot be removed
 
         :return: removed Item
 
@@ -272,7 +272,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param cid: child item's ID (or child item)
         :param pid: parent item's ID (or parent item)
 
-        @raise DoorstopError: if the link cannot be created
+        :raises: :class:`DoorstopError` if the link cannot be created
 
         :return: child Item, parent Item
 
@@ -292,7 +292,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param cid: child item's ID (or child item)
         :param pid: parent item's ID (or parent item)
 
-        @raise DoorstopError: if the link cannot be removed
+        :raises: :class:`DoorstopError` if the link cannot be removed
 
         :return: child Item, parent Item
 
@@ -313,7 +313,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param tool: alternative text editor to open the item
         :param launch: open the text editor
 
-        @raise DoorstopError: if the item cannot be found
+        :raises: :class:`DoorstopError` if the item cannot be found
 
         :return: edited Item
 
@@ -336,7 +336,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         :param value: document or prefix
 
-        @raise DoorstopError: if the document cannot be found
+        :raises: :class:`DoorstopError` if the document cannot be found
 
         :return: matching Document
 
@@ -366,7 +366,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         :param value: item or ID
 
-        @raise DoorstopError: if the item cannot be found
+        :raises: :class:`DoorstopError` if the item cannot be found
 
         :return: matching Item
 

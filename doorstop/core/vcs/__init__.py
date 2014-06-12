@@ -19,7 +19,7 @@ def find_root(cwd):
 
     :param cwd: current working directory
 
-    @raise DoorstopError: if the root cannot be found
+    :raises: :class:`DoorstopError` if the root cannot be found
 
     :return: path to root of working copy
 
