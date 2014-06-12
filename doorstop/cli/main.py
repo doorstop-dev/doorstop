@@ -457,7 +457,7 @@ def _run_export(args, cwd, err):
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in exporter.lines(document, ext):
+        for line in exporter.export_lines(document, ext):
             print(line)
 
     return True
