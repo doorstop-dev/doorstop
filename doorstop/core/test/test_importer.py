@@ -1,29 +1,124 @@
 """Unit tests for the doorstop.core.importer module."""
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
+import logging
 
 from doorstop.common import DoorstopError
 from doorstop.core.tree import Tree
 from doorstop.core import importer
 from doorstop.core.builder import _set_tree
 
-from doorstop.core.test.test_document import MockItem
+from doorstop.core.test.test_document import FILES, MockItem
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the doorstop.core.importer module."""  # pylint: disable=C0103
 
-    def test_export_document_unknown(self):
+    def test_import_file_unknown(self):
         """Verify an exception is raised when importing unknown formats."""
         mock_document = Mock()
         self.assertRaises(DoorstopError,
-                          importer.from_file, 'a.a', mock_document)
+                          importer.import_file, 'a.a', mock_document)
         self.assertRaises(DoorstopError,
-                          importer.from_file, 'a.csv', '.a', mock_document)
+                          importer.import_file, 'a.csv', '.a', mock_document)
+
+    @patch('doorstop.core.importer._file_csv')
+    def test_import_file(self, mock_file_csv):
+        """Verify an extension is parsed from the import path."""
+        mock_path = 'path/to/file.csv'
+        mock_document = Mock()
+        importer.FORMAT_FILE['.csv'] = mock_file_csv
+        importer.import_file(mock_path, mock_document)
+        mock_file_csv.assert_called_once_with(mock_path, mock_document)
+
+    @patch('doorstop.core.importer.check')
+    def test_import_file_custom_ext(self, mock_check):
+        """Verify a custom extension can be specified for import."""
+        mock_path = 'path/to/file.ext'
+        mock_document = Mock()
+        importer.import_file(mock_path, mock_document, ext='.custom')
+        mock_check.assert_called_once_with('.custom')
+
+    @patch('doorstop.core.importer._itemize')
+    def test_file_csv(self, mock_itemize):
+        """Verify a CSV file can be imported."""
+        path = os.path.join(FILES, 'exported.csv')
+        mock_document = Mock()
+        # Act
+        importer._file_csv(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        self.assertEqual('id', header[0])
+        self.assertEqual('REQ001', data[0][0])
+        self.assertEqual(mock_document, document)
+
+    @patch('doorstop.core.importer._file_csv')
+    def test_file_tsv(self, mock_file_csv):
+        """Verify a TSV file can be imported."""
+        mock_path = 'path/to/file.tsv'
+        mock_document = Mock()
+        # Act
+        importer._file_tsv(mock_path, mock_document)  # pylint: disable=W0212
+        # Assert
+        mock_file_csv.assert_called_once_with(mock_path, mock_document,
+                                              delimiter='\t')
+
+    @patch('doorstop.core.importer._itemize')
+    def test_file_xlsx(self, mock_itemize):
+        """Verify a CSV file can be imported."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        mock_document = Mock()
+        # Act
+        importer._file_xlsx(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        self.assertEqual('id', header[0])
+        self.assertEqual('REQ001', data[0][0])
+        self.assertEqual(mock_document, document)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize(self, mock_add_item):
+        """Verify item data can be converted to items."""
+        header = ['id', 'text', 'links', 'ext1']
+        data = [['req1', 'text1', '', 'val1'],
+                ['req2', 'text2', 'sys1,sys2', None]]
+        mock_document = Mock()
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(2, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_replace_existing(self, mock_add_item):
+        """Verify item data can replace existing items."""
+        header = ['id', 'text', 'links', 'ext1']
+        data = [['req1', 'text1', '', 'val1'],
+                ['req2', 'text2', 'sys1,sys2', None]]
+        mock_document = Mock()
+        mock_document.find_item = Mock(side_effect=DoorstopError)
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(2, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
+    def test_itemize_invalid(self):
+        """Verify item data can include invalid values."""
+        header = ['id', 'text', 'links', 'ext1']
+        data = [['req1', 'text1', '', 'val1'],
+                ['invalid']]
+        mock_document = Mock()
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
 
 
 class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
@@ -44,13 +139,25 @@ class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document(self, mock_new):
-        """Verify a new document can be created to import items."""
+        """Verify a new document can be created for import."""
         importer.new_document(self.prefix, self.path)
         mock_new.assert_called_once_with(self.path, self.prefix, parent=None)
 
+    @patch('doorstop.core.builder._get_tree')
+    @patch('doorstop.core.tree.Tree.new_document')
+    def test_create_document_explicit_tree(self, mock_new, mock_get_tree):
+        """Verify a new document can be created for import (explicit tree)."""
+        mock_document = Mock()
+        mock_document.root = None
+        tree = Tree(document=mock_document)
+        importer.new_document(self.prefix, self.path, tree=tree)
+        self.assertFalse(mock_get_tree.called)
+        mock_new.assert_called_once_with(self.path, self.prefix, parent=None)
+        self.assertIn(mock_document, tree)
+
     @patch('doorstop.core.tree.Tree.new_document')
     def test_create_document_with_parent(self, mock_new):
-        """Verify a new document can be created with a parent."""
+        """Verify a new document can be created for import with a parent."""
         importer.new_document(self.prefix, self.path, parent=self.parent)
         mock_new.assert_called_once_with(self.path, self.prefix,
                                          parent=self.parent)
@@ -58,7 +165,7 @@ class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.tree.Tree.new_document',
            Mock(side_effect=DoorstopError))
     def test_create_document_already_exists(self):
-        """Verify non-parent exceptions are re-raised."""
+        """Verify non-parent import exceptions are re-raised."""
         self.assertRaises(DoorstopError,
                           importer.new_document, self.prefix, self.path)
 
@@ -66,7 +173,7 @@ class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
            Mock(side_effect=DoorstopError))
     @patch('doorstop.core.document.Document.new')
     def test_create_document_unknown_parent(self, mock_new):
-        """Verify documents can be created with unknown parents."""
+        """Verify documents can be created for import with unknown parents."""
         importer.new_document(self.prefix, self.path, parent=self.parent)
         mock_new.assert_called_once_with(self.mock_tree,
                                          self.path, self.root, self.prefix,
@@ -110,6 +217,20 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item can be imported into an existing document."""
         importer.add_item(self.prefix, self.identifier)
         mock_new.assert_called_once_with(self.mock_tree, self.mock_document,
+                                         self.path, self.root, self.identifier,
+                                         auto=False)
+
+    @patch('doorstop.core.builder._get_tree')
+    @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_explicit_document(self, mock_new, mock_get_tree):
+        """Verify an item can be imported into an explicit document."""
+        mock_document = self.mock_document
+        mock_tree = mock_document.tree
+        mock_document.tree._item_cache = MagicMock()  # pylint:disable=W0212
+        importer.add_item(self.prefix, self.identifier, document=mock_document)
+        self.assertFalse(mock_get_tree.called)
+        mock_new.assert_called_once_with(mock_tree, mock_document,
                                          self.path, self.root, self.identifier,
                                          auto=False)
 

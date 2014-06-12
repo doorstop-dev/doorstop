@@ -398,7 +398,7 @@ def _run_import(args, cwd, err):
         if args.path:
             tree = build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
-            importer.from_file(args.path, document, ext)
+            importer.import_file(args.path, document, ext)
         elif args.document:
             prefix, path = args.document
             document = importer.new_document(prefix, path, parent=args.parent)

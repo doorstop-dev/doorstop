@@ -270,8 +270,7 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -306,7 +305,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         _tree = _get_tree()
         document = _tree.new_document(_path, 'REQ')
         # Act
-        core.importer.from_file(path, document)
+        core.importer.import_file(path, document)
         # Assert
         expected = [item.data for item in self.document.items]
         logging.debug("expected:")
@@ -317,50 +316,6 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         for index, row in enumerate(actual):
             logging.debug("{}: {}".format(index, row))
         self.assertListEqual(expected, actual)
-
-    def test_import_csv_change(self):
-        """Verify items can be imported from a CSV file with changes."""
-        self.skipTest("TODO: is this needed?")
-        path = os.path.join(self.temp, 'exported.csv')
-        core.exporter.export(self.document, path)
-        _path = os.path.join(self.temp, 'imports', 'req')
-        _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
-        # Act
-        core.importer.from_file(path, document)
-        # Assert
-        expected = [item.data for item in self.document.items]
-        logging.debug("expected:")
-        for index, row in enumerate(expected):
-            logging.debug("{}: {}".format(index, row))
-        actual = [item.data for item in document.items]
-        logging.debug("actual:")
-        for index, row in enumerate(actual):
-            logging.debug("{}: {}".format(index, row))
-        self.assertListEqual(expected, actual)
-
-        # change values
-        item = self.document.find_item('REQ004')
-        REQ004_text = item.text
-        item.text = "Goodbye, World"
-        item = self.document.find_item('REQ001')
-        REQ001_links = item.links
-        item.links = []
-        core.exporter.export(self.document, path)
-
-        # Act
-        core.importer.from_file(path, document)
-        # Assert
-        document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # Revert changes
-        item = self.document.find_item('REQ004')
-        item.text = REQ004_text
-        item = self.document.find_item('REQ001')
-        item.links = REQ001_links
-        core.exporter.export(self.document, path)
 
     def test_import_tsv(self):
         """Verify items can be imported from a TSV file."""
@@ -370,7 +325,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         _tree = _get_tree()
         document = _tree.new_document(_path, 'REQ')
         # Act
-        core.importer.from_file(path, document)
+        core.importer.import_file(path, document)
         # Assert
         document = core.find_document('REQ')
         self.assertListEqual([item.data for item in self.document.items],
@@ -386,45 +341,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.exporter.export(self.document, path)
 
         # Act
-        core.importer.from_file(path, document)
-        # Assert
-        document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # Revert changes
-        item = self.document.find_item('REQ004')
-        item.text = REQ004_text
-        item = self.document.find_item('REQ001')
-        item.links = REQ001_links
-        core.exporter.export(self.document, path)
-
-    def test_import_tsv_change(self):
-        """Verify items can be imported from a TSV file with changes."""
-        self.skipTest("TODO: is this needed?")
-        path = os.path.join(self.temp, 'exported.tsv')
-        core.exporter.export(self.document, path)
-        _path = os.path.join(self.temp, 'imports', 'req')
-        _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
-        # Act
-        core.importer.from_file(path, document)
-        # Assert
-        document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # change values
-        item = self.document.find_item('REQ004')
-        REQ004_text = item.text
-        item.text = "Goodbye, World"
-        item = self.document.find_item('REQ001')
-        REQ001_links = item.links
-        item.links = []
-        core.exporter.export(self.document, path)
-
-        # Act
-        core.importer.from_file(path, document)
+        core.importer.import_file(path, document)
         # Assert
         document = core.find_document('REQ')
         self.assertListEqual([item.data for item in self.document.items],
@@ -445,7 +362,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         _tree = _get_tree()
         document = _tree.new_document(_path, 'REQ')
         # Act
-        core.importer.from_file(path, document)
+        core.importer.import_file(path, document)
         # Assert
         self.assertListEqual([item.data for item in self.document.items],
                              [item.data for item in document.items])
@@ -460,44 +377,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.exporter.export(self.document, path)
 
         # re-import
-        core.importer.from_file(path, document)
-        document = core.find_document('REQ')
-
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # Revert changes
-        item = self.document.find_item('REQ004')
-        item.text = REQ004_text
-        item = self.document.find_item('REQ001')
-        item.links = REQ001_links
-        core.exporter.export(self.document, path)
-
-    def test_import_xlsx_changes(self):
-        """Verify items can be imported from an XLSX file with changes."""
-        self.skipTest("TODO: is this needed?")
-        path = os.path.join(self.temp, 'exported.xlsx')
-        core.exporter.export(self.document, path)
-        _path = os.path.join(self.temp, 'imports', 'req')
-        _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
-        # Act
-        core.importer.from_file(path, document)
-        # Assert
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # change values
-        item = self.document.find_item('REQ004')
-        REQ004_text = item.text
-        item.text = "Goodbye, World"
-        item = self.document.find_item('REQ001')
-        REQ001_links = item.links
-        item.links = []
-        core.exporter.export(self.document, path)
-
-        # re-import
-        core.importer.from_file(path, document)
+        core.importer.import_file(path, document)
         document = core.find_document('REQ')
 
         self.assertListEqual([item.data for item in self.document.items],

@@ -300,8 +300,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
 
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
