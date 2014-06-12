@@ -503,7 +503,7 @@ def _run_publish(args, cwd, err):
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in publisher.lines(document, ext, **kwargs):
+        for line in publisher.publish_lines(document, ext, **kwargs):
             print(line)
 
     return True

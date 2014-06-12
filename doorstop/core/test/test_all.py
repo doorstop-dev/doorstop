@@ -535,7 +535,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -549,7 +549,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -562,7 +562,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -576,7 +576,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -589,7 +589,8 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html', linkify=True)
+        lines = core.publisher.publish_lines(self.document, '.html',
+                                             linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -603,7 +604,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html')
+        lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:

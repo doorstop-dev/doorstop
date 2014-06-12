@@ -15,7 +15,7 @@ INDEX = 'index.html'
 
 
 def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
-    """Publish a document to a given format.
+    """Publish an object to a given format.
 
     The function can be called in two ways:
 
@@ -44,7 +44,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         create_dirname(path2)
         logging.info("creating file {}...".format(path2))
         with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj2, ext, linkify=linkify, **kwargs):
+            for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
                 outfile.write(line + '\n')
 
     # Create index
@@ -95,7 +95,7 @@ def _lines_index(filenames):
     yield '</html>'
 
 
-def lines(obj, ext='.txt', **kwargs):
+def publish_lines(obj, ext='.txt', **kwargs):
     """Yield lines for a report in the specified format.
 
     @param obj: Item, list of Items, or Document to publish
@@ -109,7 +109,7 @@ def lines(obj, ext='.txt', **kwargs):
     yield from gen(obj, **kwargs)
 
 
-def lines_text(obj, indent=8, width=79, **_):
+def _lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -174,7 +174,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj, linkify=False):
+def _lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -280,7 +280,7 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def lines_html(obj, linkify=False):
+def _lines_html(obj, linkify=False):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -308,7 +308,7 @@ def lines_html(obj, linkify=False):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    text = '\n'.join(lines_markdown(obj, linkify=linkify))
+    text = '\n'.join(_lines_markdown(obj, linkify=linkify))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
@@ -317,9 +317,9 @@ def lines_html(obj, linkify=False):
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.txt': lines_text,
-                '.md': lines_markdown,
-                '.html': lines_html}
+FORMAT_LINES = {'.txt': _lines_text,
+                '.md': _lines_markdown,
+                '.html': _lines_html}
 
 
 def check(ext):
