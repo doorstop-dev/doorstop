@@ -46,8 +46,8 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
-        :return: generator of :class:`doorstop.common.DoorstopError', 
-                              :class:`doorstop.common.DoorstopWarning`, 
+        :return: generator of :class:`doorstop.common.DoorstopError',
+                              :class:`doorstop.common.DoorstopWarning`,
                               :class:`doorstop.common.DoorstopInfo`
 
         """
