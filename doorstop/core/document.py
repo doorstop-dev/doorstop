@@ -92,7 +92,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         @raise DoorstopError: if the document already exists
 
-        @return: new Document
+        :return: new Document
 
         """
         # TODO: raise a specific exception for invalid separator characters?
@@ -292,7 +292,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param level: desired item level
         :param reorder: update levels of document items
 
-        @return: added Item
+        :return: added Item
 
         """
         number = self.next
@@ -321,7 +321,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         @raise DoorstopError: if the item cannot be found
 
-        @return: removed Item
+        :return: removed Item
 
         """
         identifier = ID(value)
@@ -428,7 +428,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         @raise DoorstopError: if the item cannot be found
 
-        @return: matching Item
+        :return: matching Item
 
         """
         identifier = ID(value)
@@ -443,7 +443,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param item_hook: function to call for custom item validation
 
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        :return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
         assert kwargs.get('document_hook') is None

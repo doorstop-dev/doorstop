@@ -21,7 +21,7 @@ def find_root(cwd):
 
     @raise DoorstopError: if the root cannot be found
 
-    @return: path to root of working copy
+    :return: path to root of working copy
 
     """
     path = cwd

@@ -20,7 +20,7 @@ def build(cwd=None, root=None):
 
     @raise DoorstopError: when the tree cannot be built
 
-    @return: new Tree
+    :return: new Tree
 
     """
     documents = []

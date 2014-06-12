@@ -52,7 +52,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: when the tree cannot be built
 
-        @return: new Tree
+        :return: new Tree
 
         """
         if not documents:
@@ -205,7 +205,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the document cannot be created
 
-        @return: newly created and placed Document
+        :return: newly created and placed Document
 
         """
         prefix = Prefix(value)
@@ -233,7 +233,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the item cannot be created
 
-        @return: newly created Item
+        :return: newly created Item
 
         """
         prefix = Prefix(value)
@@ -251,7 +251,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the item cannot be removed
 
-        @return: removed Item
+        :return: removed Item
 
         """
         identifier = ID(value)
@@ -274,7 +274,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the link cannot be created
 
-        @return: child Item, parent Item
+        :return: child Item, parent Item
 
         """
         logging.info("linking {} to {}...".format(cid, pid))
@@ -294,7 +294,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the link cannot be removed
 
-        @return: child Item, parent Item
+        :return: child Item, parent Item
 
         """
         logging.info("unlinking '{}' from '{}'...".format(cid, pid))
@@ -315,7 +315,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the item cannot be found
 
-        @return: edited Item
+        :return: edited Item
 
         """
         logging.debug("looking for {}...".format(identifier))
@@ -338,7 +338,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the document cannot be found
 
-        @return: matching Document
+        :return: matching Document
 
         """
         prefix = Prefix(value)
@@ -368,7 +368,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         @raise DoorstopError: if the item cannot be found
 
-        @return: matching Item
+        :return: matching Item
 
         """
         identifier = ID(value)
@@ -402,7 +402,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        :return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
         hook = document_hook if document_hook else lambda **kwargs: []

@@ -18,7 +18,7 @@ def new_document(prefix, path, parent=None):
     :param path: new directory path to store this document's items
     :param parent: parent document's prefix (if one will exist)
 
-    @return: imported Document
+    :return: imported Document
 
     """
     # Load the current tree
@@ -54,7 +54,7 @@ def add_item(prefix, identifier, attrs=None):
     :param identifier: existing item's unique ID
     :param attrs: dictionary of Doorstop and custom attributes
 
-    @return: imported Item
+    :return: imported Item
 
     """
     # Load the current tree

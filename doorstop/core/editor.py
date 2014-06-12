@@ -22,7 +22,7 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
     :param path: path of file to open
     :param tool: path of alternate editor
 
-    @return: launched process
+    :return: launched process
 
     """
     process = launch(path, tool=tool)
@@ -46,7 +46,7 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
 
     @raise: DoorstopError: no default editor or editor unavailable
 
-    @return: launched process if long-running, else None
+    :return: launched process if long-running, else None
 
     """
     # Determine how to launch the editor

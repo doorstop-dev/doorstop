@@ -21,7 +21,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
-        @return: indication that the object is valid
+        :return: indication that the object is valid
 
         """
         valid = True
@@ -46,7 +46,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        :return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
 
         """
 
@@ -130,7 +130,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         :param path: path to a text file
 
-        @return: contexts of text file
+        :return: contexts of text file
 
         """
         if not self._exists:
@@ -145,7 +145,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param text: text read from a file
         :param path: path to the file (for displaying errors)
 
-        @return: dictionary of YAML data
+        :return: dictionary of YAML data
 
         """
         # Load the YAML data
@@ -187,7 +187,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         :param data: dictionary of YAML data
 
-        @return: text to write to a file
+        :return: text to write to a file
 
         """
         return yaml.dump(data, default_flow_style=False)
@@ -219,7 +219,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param name: name of extended attribute
         :param default: value to return for missing attributes
 
-        @return: value of extended attribute
+        :return: value of extended attribute
 
         """
         if hasattr(self, name):

@@ -116,7 +116,7 @@ def lines_text(obj, indent=8, width=79, **_):
     :param indent: number of spaces to indent text
     :param width: maximum line length
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -180,7 +180,7 @@ def lines_markdown(obj, linkify=False):
     :param obj: Item, list of Items, or Document to publish
     :param linkify: turn links into hyperlinks (for conversion to HTML)
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -286,7 +286,7 @@ def lines_html(obj, linkify=False):
     :param obj: Item, list of Items, or Document to publish
     :param linkify: turn links into hyperlinks
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     # Determine if a full HTML document should be generated
@@ -327,7 +327,7 @@ def check(ext):
 
     @raise DoorstopError: for unknown formats
 
-    @return: lines generator if available
+    :return: lines generator if available
 
     """
     exts = ', '.join(ext for ext in FORMAT_LINES)

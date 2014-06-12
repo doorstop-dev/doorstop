@@ -499,7 +499,7 @@ def _get_extension(args, ext_stdout, ext_file, whole_tree, err):
     :param whole_tree: indicates the path is a directory for the whole tree
     :param err: function to call for CLI errors
 
-    @return: chosen extension
+    :return: chosen extension
 
     """
     ext = None

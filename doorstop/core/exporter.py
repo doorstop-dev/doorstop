@@ -85,7 +85,7 @@ def lines_yaml(obj):
 
     :param obj: Item, list of Items, or Document to export
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -101,7 +101,7 @@ def tabulate(obj, sep=',\n'):
     :param obj: Item, list of Items, or Document to export
     :param sep: string separating list values when joined in a string
 
-    @return: iterator of rows of data
+    :return: iterator of rows of data
 
     """
     yield_header = True
@@ -136,7 +136,7 @@ def file_csv(obj, path, delimiter=','):
 
     :param obj: Item, list of Items, or Document to export
 
-    @return: path of created file
+    :return: path of created file
 
     """
     with open(path, 'w', newline='') as stream:
@@ -151,7 +151,7 @@ def file_tsv(obj, path):
 
     :param obj: Item, list of Items, or Document to export
 
-    @return: path of created file
+    :return: path of created file
 
     """
     return file_csv(obj, path, delimiter='\t')
@@ -162,7 +162,7 @@ def file_xlsx(obj, path):
 
     :param obj: Item, list of Items, or Document to export
 
-    @return: path of created file
+    :return: path of created file
 
     """
     workbook = _get_xlsx(obj)
@@ -176,7 +176,7 @@ def _get_xlsx(obj):
 
     :param obj: Item, list of Items, or Document to export
 
-    @return: new workbook
+    :return: new workbook
 
     """
     # TODO: openpyxl has false positives with pylint
@@ -256,7 +256,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
 
     @raise DoorstopError: for unknown formats
 
-    @return: function requested if available
+    :return: function requested if available
 
     """
     exts = ', '.join(ext for ext in FORMAT)
