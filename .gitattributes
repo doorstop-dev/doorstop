@@ -1,5 +1,7 @@
 * text=auto
 
+*.yml -text
+*.html -text
 *.csv -text
 *.tsv -text
 
