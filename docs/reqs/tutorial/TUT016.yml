@@ -1,0 +1,21 @@
+active: true
+derived: false
+level: 3.1
+links:
+- REQ016
+normative: true
+ref: ''
+text: |
+  **Importing a File**
+
+  Enter VCS working copy:
+
+      cd /tmp/doorstop
+
+  Create a document for the import:
+
+      doorstop new HLR
+
+  Import from an exported document:
+
+      doorstop import path/to/exported.xlsx HLR
