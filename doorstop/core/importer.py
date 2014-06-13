@@ -33,7 +33,7 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     @return: document with imported items
 
     """
-    logging.info("importing {} to {}...".format(path, document))
+    logging.info("importing {} into {}...".format(path, document))
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
     func(path, document, mapping=mapping, **kwargs)

@@ -244,6 +244,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
 
     """
     try:
+        print("validating tree...")
         tree = build(cwd, root=args.project)
         tree.load()
         valid = tree.validate()
@@ -403,6 +404,7 @@ def _run_import(args, cwd, err):
         if args.path:
             tree = build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
+            print("importing {} into {}...".format(args.path, document))
             importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
             prefix, path = args.document
@@ -410,11 +412,11 @@ def _run_import(args, cwd, err):
         elif args.item:
             prefix, identifier = args.item
             item = importer.add_item(prefix, identifier, attrs=attrs)
-
     except DoorstopError as error:
         logging.error(error)
         return False
 
+    # Display result
     if document:
         name = document.prefix
         relpath = document.relpath
@@ -456,6 +458,7 @@ def _run_export(args, cwd, err):
         else:
             print("exporting {} to {}...".format(document, args.path))
             exporter.export(document, args.path, ext)
+        print("exported: {}".format(args.path))
 
     # Display to standard output
     else:
@@ -502,6 +505,7 @@ def _run_publish(args, cwd, err):
         else:
             print("publishing {} to {}...".format(document, args.path))
             publisher.publish(document, args.path, ext, **kwargs)
+        print("published: {}".format(args.path))
 
     # Display to standard output
     else:
