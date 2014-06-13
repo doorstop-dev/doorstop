@@ -1,7 +1,7 @@
 * text=auto
 
-*.yml eol=lf
-*.html eol=lf
+*.yml text eol=lf
+*.html text eol=lf
 *.csv -text
 *.tsv -text
 
