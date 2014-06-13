@@ -55,6 +55,12 @@ def main(args=None):  # pylint: disable=R0915
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
+    # Delete subparser
+    info = "delete a document directory"
+    sub = subs.add_parser('delete', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('prefix', help="prefix of document to delete")
+
     # Add subparser
     info = "create an item file in a document directory"
     sub = subs.add_parser('add', description=info.capitalize() + '.',
@@ -278,6 +284,27 @@ def _run_new(args, cwd, _):
     return True
 
 
+def _run_delete(args, cwd, _):
+    """Process arguments and run the `doorstop delete` subcommand.
+
+    @param args: Namespace of CLI arguments
+    @param cwd: current working directory
+    @param err: function to call for CLI errors
+
+    """
+    try:
+        tree = build(cwd, root=args.project)
+        document = tree.find_document(args.prefix)
+        prefix, relpath = document.prefix, document.relpath
+        document.delete()
+    except DoorstopError as error:
+        logging.error(error)
+        return False
+
+    print("deleted document: {} ({})".format(prefix, relpath))
+    return True
+
+
 def _run_add(args, cwd, _):
     """Process arguments and run the `doorstop add` subcommand.
 
@@ -307,7 +334,8 @@ def _run_remove(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        item = tree.remove_item(args.id)
+        item = tree.find_item(args.id)
+        item.delete()
     except DoorstopError as error:
         logging.error(error)
         return False
