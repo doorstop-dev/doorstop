@@ -94,13 +94,14 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         expected_data = [['REQ0555', '1.2.3', 'Hello, world!\n', '',
                           'SYS001,\nSYS002', True, False, False, ''],
                          ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
-                          'REQ001', False, False, True, "''"],
+                          'REQ001', False, False, True,
+                          'Some "quoted" text \'here\'.'],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
-                          '', False, True, True, 'DOORSTOP RULES!!'],
+                          '', False, True, True, ''],
                          ['REQ002', '2.1', 'Hello, world!\n', '',
-                          '', True, False, True, "Hey, I've got some text. The \"Back\" button should be 'bold'. I said \"failure's\"."],
+                          '', True, False, True, ''],
                          ['REQ2-001', '2.1', 'Hello, world!\n', '',
-                          'REQ001', True, False, True, 'Is alive?\n']]
+                          'REQ001', True, False, True, '']]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 

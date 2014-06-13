@@ -227,7 +227,7 @@ def _itemize(header, data, document, mapping=None):
                 identifier = value
             elif key == 'links':
                 # split links into a list
-                attrs[key] = [p for p in LIST_SEP_RE.split(value) if p]
+                attrs[key] = _split_list(value)
             else:
                 attrs[key] = value
 
@@ -249,6 +249,14 @@ def _itemize(header, data, document, mapping=None):
                          attrs=attrs, document=document)
             except DoorstopError as exc:
                 logging.warning(exc)
+
+
+def _split_list(value):
+    """Split a string list into parts."""
+    if value:
+        return [p for p in LIST_SEP_RE.split(value) if p]
+    else:
+        return []
 
 
 # Mapping from file extension to file reader
