@@ -166,7 +166,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         """
         if not self._exists:
-            raise DoorstopError("cannot read from deleted: {}".format(self))
+            msg = "cannot read from deleted: {}".format(self.path)
+            raise DoorstopError(msg)
         with open(path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 

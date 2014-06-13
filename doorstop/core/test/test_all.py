@@ -305,7 +305,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
+        document = _tree.create_document(_path, 'REQ')
         # Act
         core.importer.import_file(path, document)
         # Assert
@@ -320,7 +320,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
+        document = _tree.create_document(_path, 'REQ')
         # Act
         core.importer.import_file(path, document)
         # Assert
@@ -335,7 +335,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.new_document(_path, 'REQ')
+        document = _tree.create_document(_path, 'REQ')
         # Act
         core.importer.import_file(path, document)
         # Assert
@@ -346,7 +346,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
-        document = core.importer.new_document(self.prefix, self.path)
+        document = core.importer.create_document(self.prefix, self.path)
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
 
@@ -355,8 +355,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Verify the document does not already exist
         self.assertRaises(DoorstopError, core.find_document, self.prefix)
         # Import a document
-        document = core.importer.new_document(self.prefix, self.path,
-                                              parent=self.parent)
+        document = core.importer.create_document(self.prefix, self.path,
+                                                 parent=self.parent)
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
@@ -368,15 +368,15 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Attempt to create the same document
-        self.assertRaises(DoorstopError,
-                          core.importer.new_document, self.prefix, self.path)
+        self.assertRaises(DoorstopError, core.importer.create_document,
+                          self.prefix, self.path)
 
     def test_add_item(self):
         """Verify an item can be imported into a document."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Verify the item does not already exist
         self.assertRaises(DoorstopError, core.find_item, self.identifier)
         # Import an item
@@ -393,7 +393,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item_with_attrs(self):
         """Verify an item with attributes can be imported into a document."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
         item = core.importer.add_item(self.prefix, self.identifier,
