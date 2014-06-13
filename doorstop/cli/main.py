@@ -18,7 +18,7 @@ from doorstop import settings
 
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
-    from doorstop import CLI, VERSION
+    from doorstop import CLI, VERSION, DESCRIPTION
 
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
@@ -30,7 +30,8 @@ def main(args=None):  # pylint: disable=R0915
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Main parser
-    parser = argparse.ArgumentParser(prog=CLI, description=__doc__, **shared)
+    parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION,
+                                     **shared)
     parser.add_argument('-F', '--no-reformat', action='store_true',
                         help="do not reformat item files during validation")
     parser.add_argument('-r', '--reorder', action='store_true',
@@ -46,59 +47,59 @@ def main(args=None):  # pylint: disable=R0915
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
     # New subparser
-    sub = subs.add_parser('new',
-                          help="create a new document directory",
-                          **shared)
+    info = "create a new document directory"
+    sub = subs.add_parser('new', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
     sub.add_argument('path', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
     # Add subparser
-    sub = subs.add_parser('add',
-                          help="create an item file in a document directory",
-                          **shared)
+    info = "create an item file in a document directory"
+    sub = subs.add_parser('add', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('prefix',
                      help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
 
     # Remove subparser
-    sub = subs.add_parser('remove',
-                          help="remove an item file from a document directory",
-                          **shared)
+    info = "remove an item file from a document directory"
+    sub = subs.add_parser('remove', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('id', metavar='ID',
                      help="item ID to remove from its document")
 
     # Link subparser
-    sub = subs.add_parser('link',
-                          help="add a new link between two items",
-                          **shared)
+    info = "add a new link between two items"
+    sub = subs.add_parser('link', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('child',
                      help="child item ID to link to the parent")
     sub.add_argument('parent',
                      help="parent item ID to link from the child")
 
     # Unlink subparser
-    sub = subs.add_parser('unlink',
-                          help="remove a link between two items",
-                          **shared)
+    info = "remove a link between two items"
+    sub = subs.add_parser('unlink', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('child',
                      help="child item ID to unlink from parent")
     sub.add_argument('parent',
                      help="parent item ID child is linked to")
 
     # Edit subparser
-    sub = subs.add_parser('edit',
-                          help="open an existing item file for editing",
-                          **shared)
+    info = "open an existing item file for editing"
+    sub = subs.add_parser('edit', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('id', metavar='ID', help="item ID to open for editing")
     sub.add_argument('-t', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
 
     # Import subparser
-    sub = subs.add_parser('import',
-                          help="import an existing document or item",
-                          **shared)
+    info = "import an existing document or item"
+    sub = subs.add_parser('import', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('path', nargs='?',
                      help="path to previously exported document file")
     sub.add_argument('prefix', nargs='?', help="prefix of document for import")
@@ -114,9 +115,9 @@ def main(args=None):  # pylint: disable=R0915
                      help="dictionary of custom item attribute names")
 
     # Export subparser
-    sub = subs.add_parser('export',
-                          help="export a document as YAML or another format",
-                          **shared)
+    info = "export a document as YAML or another format"
+    sub = subs.add_parser('export', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('prefix', help="prefix of document to export or 'all'")
     sub.add_argument('path', nargs='?',
                      help="path to exported file or directory for 'all'")
@@ -130,9 +131,9 @@ def main(args=None):  # pylint: disable=R0915
                      help="limit line width on text output")
 
     # Publish subparser
-    sub = subs.add_parser('publish',
-                          help="publish a document as text or another format",
-                          **shared)
+    info = "publish a document as text or another format"
+    sub = subs.add_parser('publish', description=info.capitalize() + '.',
+                          help=info, **shared)
     sub.add_argument('prefix', help="prefix of document to publish or 'all'")
     sub.add_argument('path', nargs='?',
                      help="path to published file or directory for 'all'")
