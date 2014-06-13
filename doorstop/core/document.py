@@ -454,7 +454,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check for items
         items = self.items
         if not items:
-            return DoorstopWarning("no items")
+            yield DoorstopWarning("no items")
+            return
         # Reorder or check item levels
         if settings.REORDER:
             self.reorder(items=items)
