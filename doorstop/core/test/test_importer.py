@@ -75,6 +75,34 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
+    @patch('doorstop.core.importer._itemize')
+    def test_file_csv_modified(self, mock_itemize):
+        """Verify a CSV file (with modifications) can be imported."""
+        path = os.path.join(FILES, 'exported-modified.csv')
+        mock_document = Mock()
+        # Act
+        importer._file_csv(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        expected_header = ['id', 'level', 'text', 'ref',
+                           'links', 'active', 'derived', 'normative']
+        self.assertEqual(expected_header, header)
+        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
+                          'SYS001,\nSYS002', True, False, True],
+                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                          'REQ001', True, False, True],
+                         ['REQ004', '1.6', 'Hello, world!\n', '',
+                          '', True, False, True],
+                         ['REQ002', '2.1', 'Hello, world!\n', '',
+                          '', True, False, True],
+                         ['REQ2-001', '2.1', 'Hello, world!\n', '',
+                          'REQ001', True, False, True]]
+        self.assertEqual(expected_data, data)
+        self.assertIs(mock_document, document)
+
     @patch('doorstop.core.importer._file_csv')
     def test_file_tsv(self, mock_file_csv):
         """Verify a TSV file can be imported."""
