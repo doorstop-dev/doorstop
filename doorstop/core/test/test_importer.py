@@ -36,7 +36,8 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         importer.FORMAT_FILE['.csv'] = mock_file_csv
         importer.import_file(mock_path, mock_document)
-        mock_file_csv.assert_called_once_with(mock_path, mock_document)
+        mock_file_csv.assert_called_once_with(mock_path, mock_document,
+                                              mapping=None)
 
     @patch('doorstop.core.importer.check')
     def test_import_file_custom_ext(self, mock_check):
@@ -83,7 +84,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer._file_tsv(mock_path, mock_document)  # pylint: disable=W0212
         # Assert
         mock_file_csv.assert_called_once_with(mock_path, mock_document,
-                                              delimiter='\t')
+                                              delimiter='\t', mapping=None)
 
     @patch('doorstop.core.importer._itemize')
     def test_file_xlsx(self, mock_itemize):
@@ -122,6 +123,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         mock_document = Mock()
         # Act
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(2, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_with_mapping(self, mock_add_item):
+        """Verify item data can be converted to items."""
+        header = ['myid', 'text', 'links', 'ext1']
+        data = [['req1', 'text1', '', 'val1'],
+                ['req2', 'text2', 'sys1,sys2', None]]
+        mock_document = Mock()
+        mapping = {'MyID': 'id'}
+        # Act
+        importer._itemize(header, data, mock_document, mapping=mapping)  # pylint: disable=W0212
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 

@@ -110,6 +110,8 @@ def main(args=None):  # pylint: disable=R0915
                      help="parent document prefix for imported document")
     sub.add_argument('-a', '--attrs', metavar='DICT',
                      help="dictionary of item attributes to import")
+    sub.add_argument('-m', '--map', metavar='DICT',
+                     help="dictionary of custom item attribute names")
 
     # Export subparser
     sub = subs.add_parser('export',
@@ -382,6 +384,8 @@ def _run_import(args, cwd, err):
     document = item = None
 
     # Parse arguments
+    attrs = _literal_eval(args.attrs, err)
+    mapping = _literal_eval(args.map, err)
     if args.path:
         if not args.prefix:
             err("when [path] specified, [prefix] is also required")
@@ -398,13 +402,12 @@ def _run_import(args, cwd, err):
         if args.path:
             tree = build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
-            importer.import_file(args.path, document, ext)
+            importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
             prefix, path = args.document
             document = importer.new_document(prefix, path, parent=args.parent)
         elif args.item:
             prefix, identifier = args.item
-            attrs = ast.literal_eval(args.attrs) if args.attrs else None
             item = importer.add_item(prefix, identifier, attrs=attrs)
 
     except DoorstopError as error:
@@ -507,6 +510,14 @@ def _run_publish(args, cwd, err):
             print(line)
 
     return True
+
+
+def _literal_eval(literal, err, default=None):
+    """Convert an literal to its value."""
+    try:
+        return ast.literal_eval(literal) if literal else default
+    except (SyntaxError, ValueError):
+        err("invalid Python literal: {}".format(literal))
 
 
 def _get_extension(args, ext_stdout, ext_file, whole_tree, err):

@@ -334,6 +334,27 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'exported.xlsx')
         self.assertRaises(SystemExit, main, ['import', path, 'PREFIX'])
 
+    def test_import_file_with_map(self):
+        """Verify 'doorstop import' can import a file using a custom map."""
+        path = os.path.join(FILES, 'exported-map.csv')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX',
+                                  '--map', "{'mylevel': 'level'}"]))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
+        with open(path, 'r') as stream:
+            text = stream.read()
+        self.assertIn('\nlevel: 1.2.3', text)
+
+    def test_import_file_with_map_invalid(self):
+        """Verify 'doorstop import' returns an error with an invalid map."""
+        path = os.path.join(FILES, 'exported.csv')
+        self.assertRaises(SystemExit,
+                          main, ['import', path, 'PREFIX', '--map', "{'my"])
+
     def test_import_csv_to_document_existing(self):
         """Verify 'doorstop import' can import CSV to an existing document."""
         path = os.path.join(FILES, 'exported.csv')

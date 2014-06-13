@@ -20,12 +20,13 @@ LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 _DOCUMENTS = []  # cache of unplaced documents
 
 
-def import_file(path, document, ext=None, **kwargs):
+def import_file(path, document, ext=None, mapping=None, **kwargs):
     """Import items from an exported file.
 
-    @param path: input file location
-    @param document: document to import items
-    @param ext: file extension to override input path's extension
+    :param path: input file location
+    :param document: document to import items
+    :param ext: file extension to override input path's extension
+    :param mapping: dictionary mapping custom to standard attribute names
 
     @raise DoorstopError: for unknown file formats
 
@@ -35,7 +36,7 @@ def import_file(path, document, ext=None, **kwargs):
     logging.info("importing {} to {}...".format(path, document))
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
-    func(path, document, **kwargs)
+    func(path, document, mapping=mapping, **kwargs)
 
 
 def new_document(prefix, path, parent=None, tree=None):
@@ -110,11 +111,13 @@ def add_item(prefix, identifier, attrs=None, document=None):
     return item
 
 
-def _file_csv(path, document, delimiter=','):
+def _file_csv(path, document, delimiter=',', mapping=None):
     """Import items from a CSV export to a document.
 
-    @param path: input file location
-    @param document: document to import items
+    :param path: input file location
+    :param document: document to import items
+    :param delimiter: CSV field delimiter
+    :param mapping: dictionary mapping custom to standard attribute names
 
     """
     rows = []
@@ -138,24 +141,26 @@ def _file_csv(path, document, delimiter=','):
     data = rows[1:]
 
     # Import items from the rows
-    _itemize(header, data, document)
+    _itemize(header, data, document, mapping=mapping)
 
 
-def _file_tsv(path, document):
+def _file_tsv(path, document, mapping=None):
     """Import items from a TSV export to a document.
 
-    @param path: input file location
-    @param document: document to import items
+    :param path: input file location
+    :param document: document to import items
+    :param mapping: dictionary mapping custom to standard attribute names
 
     """
-    _file_csv(path, document, delimiter='\t')
+    _file_csv(path, document, delimiter='\t', mapping=mapping)
 
 
-def _file_xlsx(path, document):
+def _file_xlsx(path, document, mapping=None):
     """Import items from an XLSX export to a document.
 
-    @param path: input file location
-    @param document: document to import items
+    :param path: input file location
+    :param document: document to import items
+    :param mapping: dictionary mapping custom to standard attribute names
 
     """
     header = []
@@ -178,7 +183,7 @@ def _file_xlsx(path, document):
         for cell in row:
             if not i:
                 # first row. just header info
-                header.append(str(cell.value).lower())
+                header.append(cell.value)
             else:
                 # convert to text for processing
                 row2.append(cell.value)
@@ -186,15 +191,16 @@ def _file_xlsx(path, document):
             data.append(row2)
 
     # Import items from the rows
-    _itemize(header, data, document)
+    _itemize(header, data, document, mapping=mapping)
 
 
-def _itemize(header, data, document):
+def _itemize(header, data, document, mapping=None):
     """Conversion function for multiple formats.
 
     :param header: list of columns names
     :param data: list of lists of row values
     :param document: document to import items
+    :param mapping: dictionary mapping custom to standard attribute names
 
     """
     logging.info("converting rows to items...")
@@ -206,15 +212,23 @@ def _itemize(header, data, document):
         attrs = {}
         identifier = None
         for index, value in enumerate(row):
+            key = header[index].lower()
+            if mapping:
+                for custom, standard in mapping.items():
+                    if key == custom.lower():
+                        key = standard
+                        msg = "mapped: '{}' => '{}'".format(key, standard)
+                        logging.debug(msg)
+                        break
             if value:
-                if header[index] == 'id':
+                if key == 'id':
                     identifier = value
-                elif header[index] == 'links':
+                elif key == 'links':
                     # split links into a list
                     _parts = LIST_SEP_RE.split(value)
-                    attrs[header[index]] = [p for p in _parts if p]
+                    attrs[key] = [p for p in _parts if p]
                 else:
-                    attrs[header[index]] = value
+                    attrs[key] = value
 
         # Convert the row to an item
         if identifier:
