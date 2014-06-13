@@ -63,7 +63,7 @@ class TestSection1(TestBase):  # pylint: disable=R0904
 
         # 1.1
 
-        self.doorstop("new REQ ./reqs")
+        self.doorstop("create REQ ./reqs")
 
         self.doorstop("add REQ")
         self.doorstop("add REQ")
@@ -74,7 +74,7 @@ class TestSection1(TestBase):  # pylint: disable=R0904
 
         # 1.2
 
-        self.doorstop("new TST ./reqs/tests --parent REQ")
+        self.doorstop("create TST ./reqs/tests --parent REQ")
 
         self.doorstop("add TST")
         self.doorstop("add TST")
@@ -101,10 +101,10 @@ class TestSection1(TestBase):  # pylint: disable=R0904
         """Verify tutorial section 2.0 is working."""
 
         # Create a basic document
-        self.doorstop("new REQ ./reqs")
+        self.doorstop("create REQ ./reqs")
         self.doorstop("add REQ")
         self.doorstop("add REQ")
-        self.doorstop("new TST ./reqs/tests --parent REQ")
+        self.doorstop("create TST ./reqs/tests --parent REQ")
         self.doorstop("add TST")
         self.doorstop("add TST")
         self.doorstop("link TST1 REQ1")
@@ -146,10 +146,10 @@ class TestSection1(TestBase):  # pylint: disable=R0904
         """Verify tutorial section 4.0 is working."""
 
         # Create a basic document
-        self.doorstop("new REQ ./reqs")
+        self.doorstop("create REQ ./reqs")
         self.doorstop("add REQ")
         self.doorstop("add REQ")
-        self.doorstop("new TST ./reqs/tests --parent REQ")
+        self.doorstop("create TST ./reqs/tests --parent REQ")
         self.doorstop("add TST")
         self.doorstop("add TST")
         self.doorstop("link TST1 REQ1")

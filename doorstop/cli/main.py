@@ -46,9 +46,9 @@ def main(args=None):  # pylint: disable=R0915
                         help="launch the graphical user interface")
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
 
-    # New subparser
+    # Create subparser
     info = "create a new document directory"
-    sub = subs.add_parser('new', description=info.capitalize() + '.',
+    sub = subs.add_parser('create', description=info.capitalize() + '.',
                           help=info, **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
     sub.add_argument('path', help="path to a directory for item files")
@@ -263,8 +263,8 @@ def _run(args, cwd, err):  # pylint: disable=W0613
     return valid
 
 
-def _run_new(args, cwd, _):
-    """Process arguments and run the `doorstop new` subcommand.
+def _run_create(args, cwd, _):
+    """Process arguments and run the `doorstop create` subcommand.
 
     @param args: Namespace of CLI arguments
     @param cwd: current working directory
@@ -273,8 +273,8 @@ def _run_new(args, cwd, _):
     """
     try:
         tree = build(cwd, root=args.project)
-        document = tree.new_document(args.path, args.prefix,
-                                     parent=args.parent, digits=args.digits)
+        document = tree.create_document(args.path, args.prefix,
+                                        parent=args.parent, digits=args.digits)
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -436,7 +436,8 @@ def _run_import(args, cwd, err):
             importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
             prefix, path = args.document
-            document = importer.new_document(prefix, path, parent=args.parent)
+            document = importer.create_document(prefix, path,
+                                                parent=args.parent)
         elif args.item:
             prefix, identifier = args.item
             item = importer.add_item(prefix, identifier, attrs=attrs)

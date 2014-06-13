@@ -172,7 +172,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     @clear_document_cache
     @clear_item_cache
-    def new_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document

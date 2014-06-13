@@ -39,7 +39,7 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     func(path, document, mapping=mapping, **kwargs)
 
 
-def new_document(prefix, path, parent=None, tree=None):
+def create_document(prefix, path, parent=None, tree=None):
     """Create a Doorstop document from existing document information.
 
     @param prefix: existing document's prefix (for new items)
@@ -56,7 +56,7 @@ def new_document(prefix, path, parent=None, tree=None):
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
     try:
-        document = tree.new_document(path, prefix, parent=parent)
+        document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None
