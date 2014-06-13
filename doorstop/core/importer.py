@@ -5,7 +5,8 @@ import logging
 import re
 import csv
 
-# TODO: openpyxl has false positives with pylint
+# TODO: track pylint update to resolve openpyxl false positives
+# pylint: disable=E1101
 import openpyxl  # pylint: disable=F0401
 from openpyxl import load_workbook  # pylint: disable=F0401
 
@@ -14,6 +15,7 @@ from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
 
+LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
 _DOCUMENTS = []  # cache of unplaced documents
 
@@ -121,7 +123,14 @@ def _file_csv(path, document, delimiter=','):
     logging.info("reading rows in {}...".format(path))
     with open(path, 'r') as stream:
         reader = csv.reader(stream, delimiter=delimiter)
-        for row in reader:
+        for _row in reader:
+            row = []
+            for value in _row:
+                if str(value).lower() == 'true':
+                    value = True
+                elif str(value).lower() == 'false':
+                    value = False
+                row.append(value)
             rows.append(row)
 
     # Extract header and data rows
@@ -129,7 +138,7 @@ def _file_csv(path, document, delimiter=','):
     data = rows[1:]
 
     # Import items from the rows
-    _itemize(header, data, document, all_strings=True)
+    _itemize(header, data, document)
 
 
 def _file_tsv(path, document):
@@ -180,45 +189,39 @@ def _file_xlsx(path, document):
     _itemize(header, data, document)
 
 
-def _itemize(header_array, value_array, document, all_strings=False):
+def _itemize(header, data, document):
     """Conversion function for multiple formats.
 
-    @param header_array is the mapping of columns to doorstop attributes
-    @param value_array is the rows of data to be added as doorstop items (array of arrays)
-    @param document: document to import items
+    :param header: list of columns names
+    :param data: list of lists of row values
+    :param document: document to import items
 
     """
     logging.info("converting rows to items...")
-    logging.debug("header: {}".format(header_array))
-    for row in value_array:
-        logging.debug("datum: {}".format(row))
+    logging.debug("header: {}".format(header))
+    for row in data:
+        logging.debug("row: {}".format(row))
+
+        # Parse item attributes
         attrs = {}
-        identifier = ""
-        for j, cell in enumerate(row):
-            # not first row, this should be all the actual data
-            # gather all attribute data based on column headers
-            if cell:
-                if header_array[j] == "id":
-                    identifier = cell
-                elif 'links' == header_array[j]:
+        identifier = None
+        for index, value in enumerate(row):
+            if value:
+                if header[index] == 'id':
+                    identifier = value
+                elif header[index] == 'links':
                     # split links into a list
-                    attrs[header_array[j]] = re.split(r'[\s;,]+', cell)
-                elif ('active' == header_array[j] or 'normative' == header_array[j] or 'derived' == header_array[j]) and all_strings:  # pragma: no cover
-                    # all cells are strings, but doorstop expects some things to be boolean. Convert those here.
-                    # csv reader returns a list of strings
-                    # TODO: is there a better way of doing this?
-                    attrs[header_array[j]] = (cell == "True")
+                    _parts = LIST_SEP_RE.split(value)
+                    attrs[header[index]] = [p for p in _parts if p]
                 else:
-                    attrs[header_array[j]] = cell
+                    attrs[header[index]] = value
 
         # Convert the row to an item
-        if identifier and row:
+        if identifier:
 
             # Delete the old item
             try:
                 item = document.find_item(identifier)
-                # TODO: maybe compare data with attributes first to see if anything changed,
-                #       no point in deleting if nothing changed
             except DoorstopError:
                 logging.debug("not yet an item: {}".format(identifier))
             else:

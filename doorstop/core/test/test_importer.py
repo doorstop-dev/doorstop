@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 import os
+import pprint
 import logging
 
 from doorstop.common import DoorstopError
@@ -17,6 +18,8 @@ from doorstop.core.test.test_document import FILES, MockItem
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201,C0103
+
+    maxDiff = None
 
     def test_import_file_unknown(self):
         """Verify an exception is raised when importing unknown formats."""
@@ -55,9 +58,21 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        self.assertEqual('id', header[0])
-        self.assertEqual('REQ001', data[0][0])
-        self.assertEqual(mock_document, document)
+        expected_header = ['id', 'level', 'text', 'ref',
+                           'links', 'active', 'derived', 'normative']
+        self.assertEqual(expected_header, header)
+        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
+                          'SYS001,\nSYS002', True, False, True],
+                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                          'REQ001', True, False, True],
+                         ['REQ004', '1.6', 'Hello, world!\n', '',
+                          '', True, False, True],
+                         ['REQ002', '2.1', 'Hello, world!\n', '',
+                          '', True, False, True],
+                         ['REQ2-001', '2.1', 'Hello, world!\n', '',
+                          'REQ001', True, False, True]]
+        self.assertEqual(expected_data, data)
+        self.assertIs(mock_document, document)
 
     @patch('doorstop.core.importer._file_csv')
     def test_file_tsv(self, mock_file_csv):
@@ -82,9 +97,21 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        self.assertEqual('id', header[0])
-        self.assertEqual('REQ001', data[0][0])
-        self.assertEqual(mock_document, document)
+        expected_header = ['id', 'level', 'text', 'ref',
+                           'links', 'active', 'derived', 'normative']
+        self.assertEqual(expected_header, header)
+        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
+                          'SYS001,\nSYS002', True, False, True],
+                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                          'REQ001', True, False, True],
+                         ['REQ004', '1.6', 'Hello, world!\n', None,
+                          None, True, False, True],
+                         ['REQ002', '2.1', 'Hello, world!\n', None,
+                          None, True, False, True],
+                         ['REQ2-001', '2.1', 'Hello, world!\n', None,
+                          'REQ001', True, False, True]]
+        self.assertEqual(expected_data, data)
+        self.assertIs(mock_document, document)
 
     @patch('doorstop.core.importer.add_item')
     def test_itemize(self, mock_add_item):
@@ -242,3 +269,15 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(self.identifier, item.id)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext'], item.get('ext'))
+
+
+# helper functions ###########################################################
+
+
+def log_data(expected, actual):
+    """Log list values."""
+    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+            i=index,
+            e=pprint.pformat(evalue),
+            a=pprint.pformat(avalue)))

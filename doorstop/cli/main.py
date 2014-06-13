@@ -391,7 +391,7 @@ def _run_import(args, cwd, err):
             err("'--item' cannot be used with [path] [prefix]")
         ext = _get_extension(args, None, None, False, err)
     elif not (args.document or args.item):
-        err("specify [path], '--document', '--item' to import")
+        err("specify [path], '--document', or '--item' to import")
 
     # Import document or item
     try:

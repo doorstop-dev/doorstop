@@ -7,6 +7,7 @@ import os
 import csv
 import tempfile
 import shutil
+import pprint
 import logging
 
 # TODO: openpyxl has false positives with pylint
@@ -309,13 +310,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.import_file(path, document)
         # Assert
         expected = [item.data for item in self.document.items]
-        logging.debug("expected:")
-        for index, row in enumerate(expected):
-            logging.debug("{}: {}".format(index, row))
         actual = [item.data for item in document.items]
-        logging.debug("actual:")
-        for index, row in enumerate(actual):
-            logging.debug("{}: {}".format(index, row))
+        log_data(expected, actual)
         self.assertListEqual(expected, actual)
 
     def test_import_tsv(self):
@@ -328,32 +324,10 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Act
         core.importer.import_file(path, document)
         # Assert
-        document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # change values
-        item = self.document.find_item('REQ004')
-        REQ004_text = item.text
-        item.text = "Goodbye, World"
-        item = self.document.find_item('REQ001')
-        REQ001_links = item.links
-        item.links = []
-        core.exporter.export(self.document, path)
-
-        # Act
-        core.importer.import_file(path, document)
-        # Assert
-        document = core.find_document('REQ')
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # Revert changes
-        item = self.document.find_item('REQ004')
-        item.text = REQ004_text
-        item = self.document.find_item('REQ001')
-        item.links = REQ001_links
-        core.exporter.export(self.document, path)
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
 
     def test_import_xlsx(self):
         """Verify items can be imported from an XLSX file."""
@@ -365,31 +339,10 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Act
         core.importer.import_file(path, document)
         # Assert
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # change values
-        item = self.document.find_item('REQ004')
-        REQ004_text = item.text
-        item.text = "Goodbye, World"
-        item = self.document.find_item('REQ001')
-        REQ001_links = item.links
-        item.links = []
-        core.exporter.export(self.document, path)
-
-        # re-import
-        core.importer.import_file(path, document)
-        document = core.find_document('REQ')
-
-        self.assertListEqual([item.data for item in self.document.items],
-                             [item.data for item in document.items])
-
-        # Revert changes
-        item = self.document.find_item('REQ004')
-        item.text = REQ004_text
-        item = self.document.find_item('REQ001')
-        item.links = REQ001_links
-        core.exporter.export(self.document, path)
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
@@ -643,6 +596,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
 
 # helper functions ###########################################################
+
+
+def log_data(expected, actual):
+    """Log list values."""
+    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+            i=index,
+            e=pprint.pformat(evalue),
+            a=pprint.pformat(avalue)))
 
 
 def read_csv(path, delimiter=','):

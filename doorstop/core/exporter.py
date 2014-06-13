@@ -7,13 +7,15 @@ from collections import defaultdict
 import logging
 
 import yaml
-# TODO: openpyxl has false positives with pylint
-# pylint: disable=F0401,E1101,E1120,E1123
-import openpyxl
-from openpyxl.styles import Alignment, Font
+# TODO: track pylint update to resolve openpyxl false positives
+# pylint: disable=E1101,E1120,E1123
+import openpyxl  # pylint: disable=F0401
+from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items
+
+LIST_SEP = ',\n'  # string separating list values when joined in a string
 
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
@@ -101,7 +103,7 @@ def _lines_yaml(obj):
         yield text
 
 
-def _tabulate(obj, sep=',\n'):
+def _tabulate(obj, sep=LIST_SEP):
     """Yield lines of header/data for tabular export.
 
     @param obj: Item, list of Items, or Document to export
@@ -129,11 +131,14 @@ def _tabulate(obj, sep=',\n'):
         row = [item.id]
         for key in header:
             value = data.get(key)
-            if isinstance(value, list):
+            if key == 'level':
+                # some levels are floats for YAML presentation
+                value = str(value)
+            elif isinstance(value, list):
                 # separate lists with commas
-                row.append(sep.join(str(p) for p in value))
-            else:
-                row.append(value)
+                value = sep.join(str(p) for p in value)
+            row.append(value)
+
         yield row
 
 
