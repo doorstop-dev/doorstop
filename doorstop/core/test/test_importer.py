@@ -88,18 +88,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
         expected_header = ['id', 'level', 'text', 'ref',
-                           'links', 'active', 'derived', 'normative']
+                           'links', 'active', 'derived',
+                           'normative', 'additional']
         self.assertEqual(expected_header, header)
-        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
-                          'SYS001,\nSYS002', True, False, True],
+        expected_data = [['REQ0555', '1.2.3', 'Hello, world!\n', '',
+                          'SYS001,\nSYS002', True, False, False, ''],
                          ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
-                          'REQ001', True, False, True],
+                          'REQ001', False, False, True, "''"],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
-                          '', True, False, True],
+                          '', False, True, True, 'DOORSTOP RULES!!'],
                          ['REQ002', '2.1', 'Hello, world!\n', '',
-                          '', True, False, True],
+                          '', True, False, True, "Hey, I've got some text. The \"Back\" button should be 'bold'. I said \"failure's\"."],
                          ['REQ2-001', '2.1', 'Hello, world!\n', '',
-                          'REQ001', True, False, True]]
+                          'REQ001', True, False, True, 'Is alive?\n']]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
