@@ -178,16 +178,14 @@ def _file_xlsx(path, document, mapping=None):
     last_cell = _highest_letter + str(_highest_row)
 
     # Extract header and data rows
-    for i, row in enumerate(worksheet.range('A1:%s' % last_cell)):
+    for index, row in enumerate(worksheet.range('A1:%s' % last_cell)):
         row2 = []
         for cell in row:
-            if not i:
-                # first row. just header info
+            if index == 0:
                 header.append(cell.value)
             else:
-                # convert to text for processing
                 row2.append(cell.value)
-        if i:
+        if index:
             data.append(row2)
 
     # Import items from the rows
@@ -213,20 +211,18 @@ def _itemize(header, data, document, mapping=None):
         identifier = None
         for index, value in enumerate(row):
             key = header[index].lower()
-            if mapping:
-                for custom, standard in mapping.items():
-                    if key == custom.lower():
-                        key = standard
-                        msg = "mapped: '{}' => '{}'".format(key, standard)
-                        logging.debug(msg)
-                        break
+            for custom, standard in (mapping or {}).items():
+                if key == custom.lower():
+                    msg = "mapped: '{}' => '{}'".format(key, standard)
+                    logging.debug(msg)
+                    key = standard
+                    break
             if value:
                 if key == 'id':
                     identifier = value
                 elif key == 'links':
                     # split links into a list
-                    _parts = LIST_SEP_RE.split(value)
-                    attrs[key] = [p for p in _parts if p]
+                    attrs[key] = [p for p in LIST_SEP_RE.split(value) if p]
                 else:
                     attrs[key] = value
 

@@ -198,6 +198,7 @@ class Text(str):  # pylint: disable=R0904
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
+        assert not isinstance(value, Text)
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
@@ -222,7 +223,7 @@ class Text(str):  # pylint: disable=R0904
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        return Literal(Text.wrap(Text.sbd(text, end=end)))
+        return Literal(Text.wrap(Text.sbd(str(text), end=end)))
 
     # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
     RE_SENTENCE_BOUNDARIES = re.compile(r"""
