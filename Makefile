@@ -155,7 +155,7 @@ pylint: .depends-dev
 
 .PHONY: test
 test: .depends-ci
-	$(NOSE)
+	$(NOSE) --stop
 
 .PHONY: tests
 tests: .depends-ci

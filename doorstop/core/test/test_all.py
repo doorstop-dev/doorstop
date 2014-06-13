@@ -7,13 +7,15 @@ import os
 import csv
 import tempfile
 import shutil
+import pprint
 import logging
 
-import openpyxl
+# TODO: openpyxl has false positives with pylint
+import openpyxl  # pylint: disable=F0401
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError
-from doorstop.core.builder import _clear_tree
+from doorstop.core.builder import _get_tree, _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 from doorstop.core.test import DocumentNoSkip
@@ -270,7 +272,7 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -288,12 +290,59 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.parent = 'PARENT_PREFIX'
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
+        # Load an actual document
+        self.document = core.Document(FILES, root=ROOT)
         # Ensure the tree is reloaded
         _clear_tree()
 
     def tearDown(self):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
+
+    def test_import_csv(self):
+        """Verify items can be imported from a CSV file."""
+        path = os.path.join(self.temp, 'exported.csv')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.new_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    def test_import_tsv(self):
+        """Verify items can be imported from a TSV file."""
+        path = os.path.join(self.temp, 'exported.tsv')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.new_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    def test_import_xlsx(self):
+        """Verify items can be imported from an XLSX file."""
+        path = os.path.join(self.temp, 'exported.xlsx')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.new_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
@@ -440,7 +489,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -454,7 +503,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -467,7 +516,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -481,7 +530,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -494,7 +543,8 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html', linkify=True)
+        lines = core.publisher.publish_lines(self.document, '.html',
+                                             linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -508,7 +558,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html')
+        lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -546,6 +596,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
 
 # helper functions ###########################################################
+
+
+def log_data(expected, actual):
+    """Log list values."""
+    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+            i=index,
+            e=pprint.pformat(evalue),
+            a=pprint.pformat(avalue)))
 
 
 def read_csv(path, delimiter=','):

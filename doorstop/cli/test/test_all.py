@@ -9,9 +9,10 @@ import shutil
 
 from doorstop.cli.main import main
 from doorstop import common
+from doorstop.core.builder import _clear_tree
 from doorstop import settings
 
-from doorstop.cli.test import ENV, REASON, ROOT, REQS, TUTORIAL
+from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -297,6 +298,95 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
     def test_import_error(self):
         """Verify 'doorstop import' requires a document or item."""
         self.assertRaises(SystemExit, main, ['import', '--attr', "{}"])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+        os.chdir(self.temp)
+        open('.mockvcs', 'w').close()
+        _clear_tree()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.temp)
+
+    def test_import_file_missing_prefix(self):
+        """Verify 'doorstop import' returns an error with a missing prefix."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        self.assertRaises(SystemExit, main, ['import', path])
+
+    def test_import_file_extra_flags(self):
+        """Verify 'doorstop import' returns an error with extra flags."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        self.assertRaises(SystemExit,
+                          main, ['import', path, 'PREFIX', '-d', '_', '_'])
+        self.assertRaises(SystemExit,
+                          main, ['import', path, 'PREFIX', '-i', '_', '_'])
+
+    def test_import_file_to_document_unknown(self):
+        """Verify 'doorstop import' returns an error for unknown documents."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        self.assertRaises(SystemExit, main, ['import', path, 'PREFIX'])
+
+    def test_import_file_with_map(self):
+        """Verify 'doorstop import' can import a file using a custom map."""
+        path = os.path.join(FILES, 'exported-map.csv')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX',
+                                  '--map', "{'mylevel': 'level'}"]))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
+        with open(path, 'r') as stream:
+            text = stream.read()
+        self.assertIn('\nlevel: 1.2.3', text)
+
+    def test_import_file_with_map_invalid(self):
+        """Verify 'doorstop import' returns an error with an invalid map."""
+        path = os.path.join(FILES, 'exported.csv')
+        self.assertRaises(SystemExit,
+                          main, ['import', path, 'PREFIX', '--map', "{'my"])
+
+    def test_import_csv_to_document_existing(self):
+        """Verify 'doorstop import' can import CSV to an existing document."""
+        path = os.path.join(FILES, 'exported.csv')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX']))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
+
+    def test_import_tsv_to_document_existing(self):
+        """Verify 'doorstop import' can import TSV to an existing document."""
+        path = os.path.join(FILES, 'exported.tsv')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX']))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
+
+    def test_import_xlsx_to_document_existing(self):
+        """Verify 'doorstop import' can import XLSX to an existing document."""
+        path = os.path.join(FILES, 'exported.xlsx')
+        dirpath = os.path.join(self.temp, 'imported', 'prefix')
+        main(['new', 'PREFIX', dirpath])
+        # Act
+        self.assertIs(None, main(['import', path, 'PREFIX']))
+        # Assert
+        path = os.path.join(dirpath, 'REQ001.yml')
+        self.assertTrue(os.path.isfile(path))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
