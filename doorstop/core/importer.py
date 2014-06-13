@@ -129,10 +129,12 @@ def _file_csv(path, document, delimiter=',', mapping=None):
         for _row in reader:
             row = []
             for value in _row:
-                if str(value).lower() == 'true':
-                    value = True
-                elif str(value).lower() == 'false':
-                    value = False
+                # convert string booleans
+                if isinstance(value, str):
+                    if value.lower() == 'true':
+                        value = True
+                    elif value.lower() == 'false':
+                        value = False
                 row.append(value)
             rows.append(row)
 
@@ -211,20 +213,23 @@ def _itemize(header, data, document, mapping=None):
         identifier = None
         for index, value in enumerate(row):
             key = header[index].lower()
+
+            # Map to custom attributes names
             for custom, standard in (mapping or {}).items():
                 if key == custom.lower():
                     msg = "mapped: '{}' => '{}'".format(key, standard)
                     logging.debug(msg)
                     key = standard
                     break
-            if value:
-                if key == 'id':
-                    identifier = value
-                elif key == 'links':
-                    # split links into a list
-                    attrs[key] = [p for p in LIST_SEP_RE.split(value) if p]
-                else:
-                    attrs[key] = value
+
+            # Convert values for particular keys
+            if key == 'id':
+                identifier = value
+            elif key == 'links':
+                # split links into a list
+                attrs[key] = [p for p in LIST_SEP_RE.split(value) if p]
+            else:
+                attrs[key] = value
 
         # Convert the row to an item
         if identifier:

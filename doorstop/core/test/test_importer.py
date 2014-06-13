@@ -148,12 +148,21 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify item data can be converted to items."""
         header = ['id', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
-                ['req2', 'text2', 'sys1,sys2', None]]
+                ['req2', '', 'sys1,sys2', False]]
         mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
         # Act
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual('PREFIX', args[0])
+        self.assertEqual('req2', args[1])
+        expected_attrs = {'ext1': False,
+                          'links': ['sys1', 'sys2'],
+                          'text': ''}
+        self.assertEqual(expected_attrs, kwargs['attrs'])
+        self.assertIs(mock_document, kwargs['document'])
 
     @patch('doorstop.core.importer.add_item')
     def test_itemize_with_mapping(self, mock_add_item):
