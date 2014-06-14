@@ -30,7 +30,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
     @raise DoorstopError: for unknown file formats
 
-    @return: output location if created, else None
+    @return: output location if files created, else None
 
     """
     # Determine the output format

@@ -35,7 +35,7 @@ def export(obj, path, ext=None, **kwargs):
 
     @raise DoorstopError: for unknown file formats
 
-    @return: output location if created, else None
+    @return: output location if files created, else None
 
     """
     # Determine the output format
