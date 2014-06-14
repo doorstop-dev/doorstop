@@ -19,6 +19,8 @@ class Prefix(str):  # pylint: disable=R0904
         if isinstance(value, Prefix):
             return value
         else:
+            if str(value).lower() in settings.RESERVED_WORDS:
+                raise DoorstopError("cannot use reserved word: %s" % value)
             obj = super().__new__(cls, Prefix.load_prefix(value))
             return obj
 
@@ -126,16 +128,19 @@ class ID(object):
     @property
     def prefix(self):
         """Get the ID's prefix."""
-        if self._exc:
-            raise self._exc
+        self.check()
         return self._prefix
 
     @property
     def number(self):
         """Get the ID's number."""
+        self.check()
+        return self._number
+
+    def check(self):
+        """Verify an ID is valid."""
         if self._exc:
             raise self._exc
-        return self._number
 
     @staticmethod
     def split_id(text):
@@ -193,6 +198,7 @@ class Text(str):  # pylint: disable=R0904
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
+        assert not isinstance(value, Text)
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
@@ -217,7 +223,7 @@ class Text(str):  # pylint: disable=R0904
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        return Literal(Text.wrap(Text.sbd(text, end=end)))
+        return Literal(Text.wrap(Text.sbd(str(text), end=end)))
 
     # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
     RE_SENTENCE_BOUNDARIES = re.compile(r"""

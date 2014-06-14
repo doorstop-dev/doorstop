@@ -8,6 +8,7 @@ import logging
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
+from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
@@ -60,14 +61,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             return "{} ({})".format(self.prefix, self.relpath)
 
-    def __iter__(self):
-        yield from self._iter()
-
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
 
     def __ne__(self, other):
         return not self == other
+
+    def __iter__(self):
+        yield from self._iter()
+
+    def __len__(self):
+        return len(list(self._iter()))
+
+    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+        return True
 
     @staticmethod
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
@@ -280,6 +287,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
+    @clear_item_cache
     def add_item(self, level=None, reorder=True):
         """Create a new item for the document and return it.
 
@@ -307,6 +315,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder(keep=item)
         return item
 
+    @clear_item_cache
     def remove_item(self, value, reorder=True):
         """Remove an item by its ID.
 
@@ -321,7 +330,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         identifier = ID(value)
         item = self.find_item(identifier)
         item.delete()
-        self._items.remove(item)
         if reorder:
             self.reorder()
         return item
@@ -446,7 +454,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check for items
         items = self.items
         if not items:
-            return DoorstopWarning("no items")
+            yield DoorstopWarning("no items")
+            return
         # Reorder or check item levels
         if settings.REORDER:
             self.reorder(items=items)
@@ -493,6 +502,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     break
             prev = item
 
+    @clear_document_cache
     def delete(self, path=None):
         """Delete the document and its items."""
         for item in self:

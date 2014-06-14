@@ -10,7 +10,7 @@ import tempfile
 import subprocess
 import logging
 
-from doorstop.cli.test import ROOT
+from doorstop.cli.test import ROOT, FILES
 
 ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
 REASON = "'{0}' variable not set".format(ENV)
@@ -123,16 +123,24 @@ class TestSection1(TestBase):  # pylint: disable=R0904
     def test_tutorial_section_3(self):
         """Verify tutorial section 3.0 is working."""
 
-        # 3.1
+        # 3.2
 
         self.doorstop("import --document HLR reqs/hlr")
         self.doorstop("import --document LLR reqs/llr --parent HLR")
 
-        # 3.2
+        # 3.3
 
         self.doorstop("import --item HLR HLR001")
         self.doorstop("import --item LLR LLR001 "
                       "--attr \"{'text': 'The item text.'}\"")
+
+        # 3.1
+
+        dirpath = os.path.join(self.temp, 'path', 'to')
+        os.makedirs(dirpath)
+        path = os.path.join(FILES, 'exported.xlsx')
+        shutil.copy(path, dirpath)
+        self.doorstop("import path/to/exported.xlsx HLR")
 
     def test_tutorial_section_4(self):
         """Verify tutorial section 4.0 is working."""

@@ -99,6 +99,9 @@ def main(args=None):  # pylint: disable=R0915
     sub = subs.add_parser('import',
                           help="import an existing document or item",
                           **shared)
+    sub.add_argument('path', nargs='?',
+                     help="path to previously exported document file")
+    sub.add_argument('prefix', nargs='?', help="prefix of document for import")
     sub.add_argument('-d', '--document', nargs=2, metavar='ARG',
                      help="import an existing document by: PREFIX PATH")
     sub.add_argument('-i', '--item', nargs=2, metavar='ARG',
@@ -107,6 +110,8 @@ def main(args=None):  # pylint: disable=R0915
                      help="parent document prefix for imported document")
     sub.add_argument('-a', '--attrs', metavar='DICT',
                      help="dictionary of item attributes to import")
+    sub.add_argument('-m', '--map', metavar='DICT',
+                     help="dictionary of custom item attribute names")
 
     # Export subparser
     sub = subs.add_parser('export',
@@ -156,7 +161,7 @@ def main(args=None):  # pylint: disable=R0915
         logging.debug("launching GUI...")
         function = gui
     elif args.command:
-        logging.debug("launching command '{}'...".format(args.command))
+        logging.debug("running command '{}'...".format(args.command))
         function = globals()['_run_' + args.command]
     else:
         logging.debug("launching main command...")
@@ -368,7 +373,7 @@ def _run_edit(args, cwd, _):
     return True
 
 
-def _run_import(args, _, err):
+def _run_import(args, cwd, err):
     """Process arguments and run the `doorstop import` subcommand.
 
     @param args: Namespace of CLI arguments
@@ -378,16 +383,33 @@ def _run_import(args, _, err):
     """
     document = item = None
 
+    # Parse arguments
+    attrs = _literal_eval(args.attrs, err)
+    mapping = _literal_eval(args.map, err)
+    if args.path:
+        if not args.prefix:
+            err("when [path] specified, [prefix] is also required")
+        elif args.document:
+            err("'--document' cannot be used with [path] [prefix]")
+        elif args.item:
+            err("'--item' cannot be used with [path] [prefix]")
+        ext = _get_extension(args, None, None, False, err)
+    elif not (args.document or args.item):
+        err("specify [path], '--document', or '--item' to import")
+
+    # Import document or item
     try:
-        if args.document:
+        if args.path:
+            tree = build(cwd, root=args.project)
+            document = tree.find_document(args.prefix)
+            importer.import_file(args.path, document, ext, mapping=mapping)
+        elif args.document:
             prefix, path = args.document
             document = importer.new_document(prefix, path, parent=args.parent)
         elif args.item:
             prefix, identifier = args.item
-            attrs = ast.literal_eval(args.attrs) if args.attrs else None
             item = importer.add_item(prefix, identifier, attrs=attrs)
-        else:
-            err("specify '--document' or '--item' to import")
+
     except DoorstopError as error:
         logging.error(error)
         return False
@@ -413,9 +435,9 @@ def _run_export(args, cwd, err):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = _get_extension(args, '.yml', '.xlsx', whole_tree)
+    ext = _get_extension(args, '.yml', '.csv', whole_tree, err)
 
-    # Publish documents
+    # Export documents
     try:
         exporter.check(ext)
         tree = build(cwd, root=args.project)
@@ -438,7 +460,7 @@ def _run_export(args, cwd, err):
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in exporter.lines(document, ext):
+        for line in exporter.export_lines(document, ext):
             print(line)
 
     return True
@@ -454,7 +476,7 @@ def _run_publish(args, cwd, err):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = _get_extension(args, '.txt', '.html', whole_tree)
+    ext = _get_extension(args, '.txt', '.html', whole_tree, err)
 
     # Publish documents
     try:
@@ -484,31 +506,43 @@ def _run_publish(args, cwd, err):
     else:
         if whole_tree:
             err("only single documents can be displayed")
-        for line in publisher.lines(document, ext, **kwargs):
+        for line in publisher.publish_lines(document, ext, **kwargs):
             print(line)
 
     return True
 
 
-def _get_extension(args, ext_stdout, ext_file, whole_tree):
+def _literal_eval(literal, err, default=None):
+    """Convert an literal to its value."""
+    try:
+        return ast.literal_eval(literal) if literal else default
+    except (SyntaxError, ValueError):
+        err("invalid Python literal: {}".format(literal))
+
+
+def _get_extension(args, ext_stdout, ext_file, whole_tree, err):
     """Determine the output file extensions from input arguments.
 
     @param args: Namespace of CLI arguments
     @param ext_stdout: default extension for standard output
     @param ext_file: default extension for file output
-    @param: whole_tree: indicates the path is a directory for the whole tree
+    @param whole_tree: indicates the path is a directory for the whole tree
+    @param err: function to call for CLI errors
 
     @return: chosen extension
 
     """
     ext = None
-    # Get the argument from a provided output path
+
+    # Get the default argument from a provided output path
     if args.path:
         if whole_tree:
             ext = ext_file
         else:
+            if os.path.isdir(args.path):
+                err("given a prefix, [path] must be a file, not a directory")
             ext = os.path.splitext(args.path)[-1]
-        logging.debug("extension based on path: {}".format(ext))
+        logging.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
     for _ext, option in {'.txt': 'text',
@@ -526,8 +560,11 @@ def _get_extension(args, ext_stdout, ext_file, whole_tree):
             continue
     else:
         if not ext:
-            ext = ext_stdout
-        logging.debug("extension based on default: {}".format(ext))
+            if args.path:
+                err("given a prefix, [path] must include an extension")
+            else:
+                ext = ext_stdout
+            logging.debug("extension based on default: {}".format(ext))
 
     return ext
 

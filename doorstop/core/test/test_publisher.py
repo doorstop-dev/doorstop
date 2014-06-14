@@ -30,7 +30,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     @patch('os.makedirs')
     @patch('builtins.open')
-    @patch('doorstop.core.publisher.lines')
+    @patch('doorstop.core.publisher.publish_lines')
     def test_publish_document_html(self, mock_lines, mock_open, mock_makedirs):
         """Verify a (mock) HTML file can be created."""
         dirpath = os.path.join('mock', 'directory')
@@ -106,7 +106,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""
         expected = "1.1     Heading\n\n"
-        lines = publisher.lines(self.item, '.txt')
+        lines = publisher.publish_lines(self.item, '.txt')
         # Act
         text = ''.join(line + '\n' for line in lines)
         # Assert
@@ -119,7 +119,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
                     "        Reference: Doorstop.sublime-project (line None)"
                     + '\n\n'
                     "        Links: sys4" + '\n\n')
-        lines = publisher.lines(self.item3, '.txt')
+        lines = publisher.publish_lines(self.item3, '.txt')
         # Act
         text = ''.join(line + '\n' for line in lines)
         # Assert
@@ -131,7 +131,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.item.ref = 'abc123'
         self.item.heading = False
         # Act
-        lines = publisher.lines(self.item, '.txt')
+        lines = publisher.publish_lines(self.item, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Reference: 'abc123'", text)
@@ -140,7 +140,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_item_with_child_links(self):
         """Verify text can be published with child links."""
         # Act
-        lines = publisher.lines(self.item2, '.txt')
+        lines = publisher.publish_lines(self.item2, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
@@ -149,7 +149,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify Markdown can be published from an item (heading)."""
         expected = "## 1.1 Heading {: #req3 }\n\n"
         # Act
-        lines = publisher.lines(self.item, '.md', linkify=True)
+        lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -158,7 +158,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_markdown_item_with_child_links(self):
         """Verify Markdown can be published from an item (heading)."""
         # Act
-        lines = publisher.lines(self.item2, '.md')
+        lines = publisher.publish_lines(self.item2, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
@@ -170,7 +170,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')
         # Act
-        lines = publisher.lines(self.item3, '.md', linkify=False)
+        lines = publisher.publish_lines(self.item3, '.md', linkify=False)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -179,7 +179,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify HTML can be published from an item."""
         expected = '<h2>1.1 Heading</h2>\n'
         # Act
-        lines = publisher.lines(self.item, '.html')
+        lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -188,7 +188,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify HTML (hyper) can be published from an item."""
         expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
-        lines = publisher.lines(self.item, '.html', linkify=True)
+        lines = publisher.publish_lines(self.item, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
@@ -197,7 +197,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_html_item_with_child_links(self):
         """Verify HTML can be published from an item w/ child links."""
         # Act
-        lines = publisher.lines(self.item2, '.html')
+        lines = publisher.publish_lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
@@ -206,7 +206,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_html_item_with_child_links_linkify(self):
         """Verify HTML (hyper) can be published from an item w/ child links."""
         # Act
-        lines = publisher.lines(self.item2, '.html', linkify=True)
+        lines = publisher.publish_lines(self.item2, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links:", text)
@@ -215,6 +215,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_lines_unknown(self):
         """Verify an exception is raised when iterating an unknown format."""
         # Act
-        gen = publisher.lines(self.document, '.a')
+        gen = publisher.publish_lines(self.document, '.a')
         # Assert
         self.assertRaises(DoorstopError, list, gen)
