@@ -155,11 +155,11 @@ pylint: .depends-dev
 
 .PHONY: test
 test: .depends-ci
-	$(NOSE) --stop
+	$(NOSE)
 
 .PHONY: tests
 tests: .depends-ci
-	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
+	TEST_INTEGRATION=1 $(NOSE) --verbose --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
 tutorial: env

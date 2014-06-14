@@ -66,7 +66,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
-        mock_index.assert_called_once_with(dirpath)
+        mock_index.assert_called_once_with(dirpath, tree=mock_tree)
 
     @patch('doorstop.core.publisher._index')
     @patch('os.makedirs')

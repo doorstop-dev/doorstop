@@ -97,6 +97,19 @@ def _lines_index(filenames, tree=None):
     for filename in filenames:
         name = os.path.splitext(filename)[0]
         yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+    if tree:
+        yield '<br> <hr> <br>'
+        # table
+        yield '<table border="1">'
+        # header
+        yield '<tr>'
+        for document in tree:
+            link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
+            yield '<td> {l} </td>'.format(l=link)
+        yield '</tr>'
+        # data
+        # TODO: add table data
+
     yield '</body>'
     yield '</html>'
 
@@ -267,15 +280,32 @@ def _format_ref(item):
 
 
 def _format_links(items, linkify):
-    """Format a list of linked items."""
+    """Format a list of linked items in Markdown."""
     if linkify:
         links = []
         for item in items:
-            links.append("[{i}]({p}.html#{i})".format(i=item.id,
-                                                      p=item.document.prefix))
+            link = _format_item_link(item, linkify=True)
+            links.append(link)
         return ', '.join(links)
     else:
         return ', '.join(str(item.id) for item in items)
+
+
+# TODO: delete this function if not used
+def _format_document_link(document, linkify=True):  # pramga: no cover
+    """Format a document link in Markdown."""
+    if linkify:
+        return "[{p}]({p}.html)".format(p=document.prefix)
+    else:
+        return str(document.prefix)
+
+
+def _format_item_link(item, linkify=True):
+    """Format an item link in Markdown."""
+    if linkify:
+        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+    else:
+        return str(item.id)
 
 
 def _format_label_links(label, links, linkify):
