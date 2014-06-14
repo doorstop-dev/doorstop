@@ -96,6 +96,7 @@ def add_item(prefix, identifier, attrs=None, document=None):
         tree = _get_tree()
         document = tree.find_document(prefix)
 
+    # Add an item using the specified identifier
     logging.info("importing item '{}'...".format(identifier))
     item = Item.new(tree, document,
                     document.path, document.root, identifier,
