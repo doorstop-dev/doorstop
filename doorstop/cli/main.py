@@ -483,11 +483,12 @@ def _run_export(args, cwd, err):
     if args.path:
         if whole_tree:
             print("exporting tree to {}...".format(args.path))
-            exporter.export(tree, args.path, ext)
+            path = exporter.export(tree, args.path, ext)
         else:
             print("exporting {} to {}...".format(document, args.path))
-            exporter.export(document, args.path, ext)
-        print("exported: {}".format(args.path))
+            path = exporter.export(document, args.path, ext)
+        if path:
+            print("exported: {}".format(path))
 
     # Display to standard output
     else:
@@ -530,11 +531,12 @@ def _run_publish(args, cwd, err):
     if args.path:
         if whole_tree:
             print("publishing tree to {}...".format(args.path))
-            publisher.publish(tree, args.path, ext, **kwargs)
+            path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
             print("publishing {} to {}...".format(document, args.path))
-            publisher.publish(document, args.path, ext, **kwargs)
-        print("published: {}".format(args.path))
+            path = publisher.publish(document, args.path, ext, **kwargs)
+        if path:
+            print("published: {}".format(path))
 
     # Display to standard output
     else:

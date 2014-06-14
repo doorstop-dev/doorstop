@@ -1,7 +1,7 @@
 """Tests for the doorstop.core package."""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import os
 import csv
@@ -424,8 +424,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.csv')
         expected = read_csv(path)
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_csv(temp)
             self.assertEqual(expected, actual)
@@ -437,8 +438,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.tsv')
         expected = read_csv(path, delimiter='\t')
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_csv(temp, delimiter='\t')
             self.assertEqual(expected, actual)
@@ -450,8 +452,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.xlsx')
         expected = read_xlsx(path)
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_xlsx(temp)
             self.assertEqual(expected, actual)
@@ -471,18 +474,31 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         self.tree = core.build(cwd=FILES, root=FILES)
         # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document('REQ')
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        if os.path.exists(self.temp):
+            shutil.rmtree(self.temp)
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""
-        temp = tempfile.mkdtemp()
-        try:
-            path = os.path.join(temp, 'published.html')
-            # Act
-            core.publisher.publish(self.document, path, '.html')
-            # Assert
-            self.assertTrue(os.path.isfile(path))
-        finally:
-            shutil.rmtree(temp)
+        path = os.path.join(self.temp, 'published.html')
+        # Act
+        path2 = core.publisher.publish(self.document, path, '.html')
+        # Assert
+        self.assertIs(path, path2)
+        self.assertTrue(os.path.isfile(path))
+
+    def test_publish_empty_tree(self):
+        """Verify a directory is not created when no documents."""
+        mock_tree = Mock()
+        mock_tree.documents = []
+        dirpath = os.path.join(self.temp, 'gen')
+        # Act
+        path2 = core.publisher.publish(mock_tree, dirpath, index=True)
+        # Assert
+        self.assertIs(None, path2)
+        self.assertFalse(os.path.exists(dirpath))
 
     def test_lines_text_document(self):
         """Verify text can be published from a document."""

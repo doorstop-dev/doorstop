@@ -35,13 +35,17 @@ def export(obj, path, ext=None, **kwargs):
 
     @raise DoorstopError: for unknown file formats
 
+    @return: output location if created, else None
+
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.csv'
     check(ext)
 
     # Export documents
+    count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
+        count += 1
 
         # Export content to the specified path
         create_dirname(path2)
@@ -52,6 +56,15 @@ def export(obj, path, ext=None, **kwargs):
                     outfile.write(line + '\n')
         else:
             export_file(obj2, path2, ext, **kwargs)
+
+    # Return the exported path
+    if count:
+        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        logging.info(msg)
+        return path
+    else:
+        logging.warning("nothing to export")
+        return None
 
 
 def export_lines(obj, ext='.yml', **kwargs):
