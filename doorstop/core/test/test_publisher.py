@@ -23,8 +23,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(dirpath, 'published.html')
         self.document.items = []
         # Act
-        publisher.publish(self.document, path)
+        path2 = publisher.publish(self.document, path)
         # Assert
+        self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, 'w')
 
@@ -36,8 +37,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         dirpath = os.path.join('mock', 'directory')
         path = os.path.join(dirpath, 'published.custom')
         # Act
-        publisher.publish(self.document, path, '.html')
+        path2 = publisher.publish(self.document, path, '.html')
         # Assert
+        self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, 'w')
         mock_lines.assert_called_once_with(self.document, '.html',
@@ -62,11 +64,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
         # Act
-        publisher.publish(mock_tree, dirpath)
+        dirpath2 = publisher.publish(mock_tree, dirpath)
         # Assert
+        self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
-        mock_index.assert_called_once_with(dirpath)
+        self.assertEqual(1, mock_index.call_count)
 
     @patch('doorstop.core.publisher._index')
     @patch('os.makedirs')
@@ -80,11 +83,22 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
         # Act
-        publisher.publish(mock_tree, dirpath, index=False)
+        dirpath2 = publisher.publish(mock_tree, dirpath, index=False)
         # Assert
+        self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
         self.assertEqual(0, mock_index.call_count)
+
+    def test_publish_tree_no_documents(self):
+        """Verify a tree can be published with no documents."""
+        dirpath = os.path.join('mock', 'directory')
+        mock_tree = MagicMock()
+        mock_tree.documents = []
+        # Act
+        path2 = publisher.publish(mock_tree, dirpath, index=False)
+        # Assert
+        self.assertIs(None, path2)
 
     def test_index(self):
         """Verify an HTML index can be created."""

@@ -30,6 +30,8 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
     @raise DoorstopError: for unknown file formats
 
+    @return: output location if files created, else None
+
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.html'
@@ -38,7 +40,9 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     check(ext)
 
     # Publish documents
+    count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
+        count += 1
 
         # Publish content to the specified path
         create_dirname(path2)
@@ -48,8 +52,18 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
                 outfile.write(line + '\n')
 
     # Create index
-    if index:
+    if index and count:
+        count += 1
         _index(path)
+
+    # Return the published path
+    if count:
+        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        logging.info(msg)
+        return path
+    else:
+        logging.warning("nothing to publish")
+        return None
 
 
 def _index(directory, extensions=('.html',)):
