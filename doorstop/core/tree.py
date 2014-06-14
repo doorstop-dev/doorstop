@@ -1,37 +1,15 @@
 """Representation of a hierarchy of documents."""
 
-import functools
 from itertools import chain
 import logging
 
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
+from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
 from doorstop.core import editor
-
-
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._document_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
-
-
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        self._item_cache.clear()  # pylint: disable=W0212
-        return result
-    return wrapped
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -194,7 +172,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     @clear_document_cache
     @clear_item_cache
-    def new_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         @param path: directory path for the new document

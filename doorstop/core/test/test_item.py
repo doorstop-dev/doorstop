@@ -6,7 +6,9 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 
 from doorstop.common import DoorstopError
+from doorstop.core.types import Text
 from doorstop.core.item import Item
+
 
 from doorstop.core.test import FILES, EMPTY, EXTERNAL
 from doorstop.core.test import MockItem
@@ -253,8 +255,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("abc123", self.item.ref)
 
     def test_extended(self):
-        """Verify an extended attribute can be used."""
+        """Verify an extended attribute (`str`) can be used."""
         self.item.set('ext1', 'foobar')
+        self.assertIn("ext1: foobar\n", self.item._write.call_args[0][0])
+        self.assertEqual('foobar', self.item.get('ext1'))
+        self.assertEqual(['ext1'], self.item.extended)
+
+    def test_extended_text(self):
+        """Verify an extended attribute (`Text`) can be used."""
+        self.item.set('ext1', Text('foobar'))
+        self.assertIn("ext1: foobar\n", self.item._write.call_args[0][0])
         self.assertEqual('foobar', self.item.get('ext1'))
         self.assertEqual(['ext1'], self.item.extended)
 
