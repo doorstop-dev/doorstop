@@ -490,7 +490,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(os.path.isfile(path))
 
     def test_publish_empty_tree(self):
-        """Verify a directory is not created when no documents."""
+        """Verify a directory is not created when no documents to publish"""
         mock_tree = Mock()
         mock_tree.documents = []
         dirpath = os.path.join(self.temp, 'gen')
@@ -499,6 +499,19 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertIs(None, path2)
         self.assertFalse(os.path.exists(dirpath))
+
+    def test_publish_bad_link(self):
+        """Verify a tree can be published with bad links."""
+        item = self.document.add_item()
+        try:
+            item.link('badlink')
+            dirpath = os.path.join(self.temp, 'html')
+            # Act
+            dirpath2 = core.publisher.publish(self.tree, dirpath)
+            # Assert
+            self.assertIs(dirpath, dirpath2)
+        finally:
+            item.delete()
 
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
