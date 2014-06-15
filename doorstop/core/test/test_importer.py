@@ -201,7 +201,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
 
 
-class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
+class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
 
     """Unit tests for the doorstop.core.importer:create_document function."""  # pylint: disable=C0103
 
