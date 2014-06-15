@@ -461,8 +461,8 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         else:  # binary file always changes, only copy when not checking
             move_file(temp, path)
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
+
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
 class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103

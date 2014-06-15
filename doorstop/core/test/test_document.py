@@ -98,12 +98,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
-        """Verify documents can be converted to strings."""
+        """Verify a document can be converted to a string."""
         self.assertEqual("REQ", str(self.document))
 
     @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
-        """Verify documents can be converted to strings in verbose mode."""
+        """Verify a document can be converted to a string (verbose)."""
         relpath = os.path.relpath(self.document.path, self.document.root)
         text = "REQ (@{}{})".format(os.sep, relpath)
         self.assertEqual(text, str(self.document))

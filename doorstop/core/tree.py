@@ -242,7 +242,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 item = document.remove_item(identifier, reorder=reorder)
                 return item
 
-        raise DoorstopError("no matching ID: {}".format(identifier))
+        raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k='', i=identifier))
 
     def link_items(self, cid, pid):
         """Add a new link between two items by IDs.
@@ -337,7 +337,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             logging.debug("could not find document: {}".format(prefix))
             self._document_cache[prefix] = None
 
-        raise DoorstopError("no matching prefix: {}".format(prefix))
+        raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
     def find_item(self, value, _kind=''):
         """Get an item by its ID.
@@ -372,7 +372,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             logging.debug("could not find item: {}".format(identifier))
             self._item_cache[identifier] = None
 
-        raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
+        raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
 
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
