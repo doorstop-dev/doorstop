@@ -351,7 +351,8 @@ class Level(object):
                 self._parts = parts
                 self.heading = False
         self.heading = self.heading if heading is None else heading
-        self._adjust()
+        if not value:
+            self._adjust()
 
     def __repr__(self):
         if self.heading:
