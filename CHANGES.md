@@ -10,6 +10,9 @@ Changelog
 - Fixed bug publishing a document to a directory.
 - Fixed bug publishing a document without an extension or type specified.
 - Made 'all' a reserved word that cannot be used as a prefix.
+- Added `doorstop import FILE PREFIX` to import from the export formats.
+- Added `doorstop deleete PREFIX` to delete document directories.
+- Renamed `doorstop new ...` to `doorstop create ...`.
 
 0.6 (2014/5/15)
 ---------------

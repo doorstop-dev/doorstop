@@ -1,19 +1,21 @@
 """Tests for the doorstop.core package."""
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import os
 import csv
 import tempfile
 import shutil
+import pprint
 import logging
 
-import openpyxl
+# TODO: openpyxl has false positives with pylint
+import openpyxl  # pylint: disable=F0401
 
 from doorstop import core
 from doorstop.common import DoorstopWarning, DoorstopError
-from doorstop.core.builder import _clear_tree
+from doorstop.core.builder import _get_tree, _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 from doorstop.core.test import DocumentNoSkip
@@ -270,7 +272,7 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -288,6 +290,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.parent = 'PARENT_PREFIX'
         # Create default item attributes
         self.identifier = 'PREFIX-00042'
+        # Load an actual document
+        self.document = core.Document(FILES, root=ROOT)
         # Ensure the tree is reloaded
         _clear_tree()
 
@@ -295,9 +299,54 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_import_csv(self):
+        """Verify items can be imported from a CSV file."""
+        path = os.path.join(self.temp, 'exported.csv')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    def test_import_tsv(self):
+        """Verify items can be imported from a TSV file."""
+        path = os.path.join(self.temp, 'exported.tsv')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    def test_import_xlsx(self):
+        """Verify items can be imported from an XLSX file."""
+        path = os.path.join(self.temp, 'exported.xlsx')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
     def test_create_document(self):
         """Verify a new document can be created to import items."""
-        document = core.importer.new_document(self.prefix, self.path)
+        document = core.importer.create_document(self.prefix, self.path)
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
 
@@ -306,8 +355,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Verify the document does not already exist
         self.assertRaises(DoorstopError, core.find_document, self.prefix)
         # Import a document
-        document = core.importer.new_document(self.prefix, self.path,
-                                              parent=self.parent)
+        document = core.importer.create_document(self.prefix, self.path,
+                                                 parent=self.parent)
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
@@ -319,15 +368,15 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Attempt to create the same document
-        self.assertRaises(DoorstopError,
-                          core.importer.new_document, self.prefix, self.path)
+        self.assertRaises(DoorstopError, core.importer.create_document,
+                          self.prefix, self.path)
 
     def test_add_item(self):
         """Verify an item can be imported into a document."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Verify the item does not already exist
         self.assertRaises(DoorstopError, core.find_item, self.identifier)
         # Import an item
@@ -344,7 +393,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
     def test_add_item_with_attrs(self):
         """Verify an item with attributes can be imported into a document."""
         # Create a document
-        core.importer.new_document(self.prefix, self.path)
+        core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
         item = core.importer.add_item(self.prefix, self.identifier,
@@ -375,8 +424,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.csv')
         expected = read_csv(path)
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_csv(temp)
             self.assertEqual(expected, actual)
@@ -388,8 +438,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.tsv')
         expected = read_csv(path, delimiter='\t')
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_csv(temp, delimiter='\t')
             self.assertEqual(expected, actual)
@@ -401,8 +452,9 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
         temp = os.path.join(self.temp, 'exported.xlsx')
         expected = read_xlsx(path)
         # Act
-        core.exporter.export(self.document, temp)
+        path2 = core.exporter.export(self.document, temp)
         # Assert
+        self.assertIs(temp, path2)
         if CHECK_EXPORTED_CONTENT:
             actual = read_xlsx(temp)
             self.assertEqual(expected, actual)
@@ -422,25 +474,51 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         self.tree = core.build(cwd=FILES, root=FILES)
         # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document('REQ')
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        if os.path.exists(self.temp):
+            shutil.rmtree(self.temp)
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""
-        temp = tempfile.mkdtemp()
+        path = os.path.join(self.temp, 'published.html')
+        # Act
+        path2 = core.publisher.publish(self.document, path, '.html')
+        # Assert
+        self.assertIs(path, path2)
+        self.assertTrue(os.path.isfile(path))
+
+    def test_publish_empty_tree(self):
+        """Verify a directory is not created when no documents to publish"""
+        mock_tree = Mock()
+        mock_tree.documents = []
+        dirpath = os.path.join(self.temp, 'gen')
+        # Act
+        path2 = core.publisher.publish(mock_tree, dirpath, index=True)
+        # Assert
+        self.assertIs(None, path2)
+        self.assertFalse(os.path.exists(dirpath))
+
+    def test_publish_bad_link(self):
+        """Verify a tree can be published with bad links."""
+        item = self.document.add_item()
         try:
-            path = os.path.join(temp, 'published.html')
+            item.link('badlink')
+            dirpath = os.path.join(self.temp, 'html')
             # Act
-            core.publisher.publish(self.document, path, '.html')
+            dirpath2 = core.publisher.publish(self.tree, dirpath)
             # Assert
-            self.assertTrue(os.path.isfile(path))
+            self.assertIs(dirpath, dirpath2)
         finally:
-            shutil.rmtree(temp)
+            item.delete()
 
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'published.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -454,7 +532,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.txt')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.txt')
+        lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -467,7 +545,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -481,7 +559,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.md')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.md')
+        lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -494,7 +572,8 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html', linkify=True)
+        lines = core.publisher.publish_lines(self.document, '.html',
+                                             linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -508,7 +587,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         path = os.path.join(FILES, 'published2.html')
         expected = open(path).read()
         # Act
-        lines = core.publisher.lines(self.document, '.html')
+        lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -546,6 +625,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
 
 # helper functions ###########################################################
+
+
+def log_data(expected, actual):
+    """Log list values."""
+    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+            i=index,
+            e=pprint.pformat(evalue),
+            a=pprint.pformat(avalue)))
 
 
 def read_csv(path, delimiter=','):

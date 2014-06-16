@@ -6,7 +6,7 @@ Setup script for Doorstop.
 
 import setuptools
 
-from doorstop import __project__, __version__, CLI, GUI
+from doorstop import __project__, __version__, CLI, GUI, DESCRIPTION
 
 import os
 if os.path.exists('README.rst'):
@@ -19,7 +19,7 @@ setuptools.setup(
     name=__project__,
     version=__version__,
 
-    description="Text-based requirements management using version control.",
+    description=DESCRIPTION,
     url='http://github.com/jacebrowning/doorstop',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',

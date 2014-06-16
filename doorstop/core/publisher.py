@@ -7,7 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.types import iter_documents, iter_items, is_tree
+from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
@@ -15,7 +15,7 @@ INDEX = 'index.html'
 
 
 def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
-    """Publish a document to a given format.
+    """Publish an object to a given format.
 
     The function can be called in two ways:
 
@@ -30,6 +30,8 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
     @raise DoorstopError: for unknown file formats
 
+    @return: output location if files created, else None
+
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.html'
@@ -38,18 +40,30 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     check(ext)
 
     # Publish documents
+    count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
+        count += 1
 
         # Publish content to the specified path
         create_dirname(path2)
         logging.info("creating file {}...".format(path2))
         with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj2, ext, linkify=linkify, **kwargs):
+            for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
                 outfile.write(line + '\n')
 
     # Create index
-    if index:
+    if index and count:
+        count += 1
         _index(path)
+
+    # Return the published path
+    if count:
+        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        logging.info(msg)
+        return path
+    else:
+        logging.warning("nothing to publish")
+        return None
 
 
 def _index(directory, extensions=('.html',)):
@@ -95,7 +109,7 @@ def _lines_index(filenames):
     yield '</html>'
 
 
-def lines(obj, ext='.txt', **kwargs):
+def publish_lines(obj, ext='.txt', **kwargs):
     """Yield lines for a report in the specified format.
 
     @param obj: Item, list of Items, or Document to publish
@@ -109,7 +123,7 @@ def lines(obj, ext='.txt', **kwargs):
     yield from gen(obj, **kwargs)
 
 
-def lines_text(obj, indent=8, width=79, **_):
+def _lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -174,7 +188,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj, linkify=False):
+def _lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -262,14 +276,15 @@ def _format_ref(item):
 
 def _format_links(items, linkify):
     """Format a list of linked items."""
-    if linkify:
-        links = []
-        for item in items:
-            links.append("[{i}]({p}.html#{i})".format(i=item.id,
-                                                      p=item.document.prefix))
-        return ', '.join(links)
-    else:
-        return ', '.join(str(item.id) for item in items)
+    links = []
+    for item in items:
+        if is_item(item) and linkify:
+            link = "[{i}]({p}.html#{i})".format(i=item.id,
+                                                p=item.document.prefix)
+        else:
+            link = str(item.id)  # assume this is an `UnknownItem`
+        links.append(link)
+    return ', '.join(links)
 
 
 def _format_label_links(label, links, linkify):
@@ -280,7 +295,7 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def lines_html(obj, linkify=False):
+def _lines_html(obj, linkify=False):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -308,7 +323,7 @@ def lines_html(obj, linkify=False):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    text = '\n'.join(lines_markdown(obj, linkify=linkify))
+    text = '\n'.join(_lines_markdown(obj, linkify=linkify))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
@@ -317,9 +332,9 @@ def lines_html(obj, linkify=False):
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.txt': lines_text,
-                '.md': lines_markdown,
-                '.html': lines_html}
+FORMAT_LINES = {'.txt': _lines_text,
+                '.md': _lines_markdown,
+                '.html': _lines_html}
 
 
 def check(ext):

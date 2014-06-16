@@ -62,6 +62,9 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
         logging.debug("mock write path: {}".format(path))
         self._file = text
 
+    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+        return True
+
 
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902,R0904
 
