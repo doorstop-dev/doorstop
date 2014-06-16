@@ -168,8 +168,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if not self._exists:
             msg = "cannot read from deleted: {}".format(self.path)
             raise DoorstopError(msg)
-        with open(path, 'r') as stream:
-            return stream.read()
+        with open(path, 'rb') as stream:
+            return stream.read().decode('utf-8')
 
     @staticmethod
     def _load(text, path):
