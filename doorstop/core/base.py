@@ -11,6 +11,38 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 
 
+def clear_document_cache(func):
+    """Decorator for methods that should clear the document cache."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear document cache after execution."""
+        result = func(self, *args, **kwargs)
+        try:
+            tree = self.tree  # document or item method was decorated
+        except AttributeError:
+            tree = self  # tree method was decorated
+        if tree:
+            tree._document_cache.clear()  # pylint: disable=W0212
+        return result
+    return wrapped
+
+
+def clear_item_cache(func):
+    """Decorator for methods that should clear the item cache."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to clear item cache after execution."""
+        result = func(self, *args, **kwargs)
+        try:
+            tree = self.tree  # document or item method was decorated
+        except AttributeError:
+            tree = self  # tree method was decorated
+        if tree:
+            tree._item_cache.clear()  # pylint: disable=W0212
+        return result
+    return wrapped
+
+
 class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     """Abstract Base Class for objects that can be validated."""
@@ -136,7 +168,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         """
         if not self._exists:
-            raise DoorstopError("cannot read from deleted: {}".format(self))
+            msg = "cannot read from deleted: {}".format(self.path)
+            raise DoorstopError(msg)
         with open(path, 'rb') as infile:
             return infile.read().decode('UTF-8')
 

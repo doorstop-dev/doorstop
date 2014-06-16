@@ -27,6 +27,7 @@ from doorstop import settings
 def main(args=None):
     """Process command-line arguments and run the program."""
     from doorstop import GUI, VERSION
+
     # Main parser
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)

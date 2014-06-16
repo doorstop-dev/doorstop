@@ -15,7 +15,7 @@ text: |
 
   Create a new document:
 
-      doorstop new REQ ./reqs
+      doorstop create REQ ./reqs
 
   Add items:
 

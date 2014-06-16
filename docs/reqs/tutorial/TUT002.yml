@@ -18,7 +18,7 @@ text: |
 
   Create a new child document:
 
-      doorstop new TST ./reqs/tests --parent REQ
+      doorstop create TST ./reqs/tests --parent REQ
 
   Add new items:
 

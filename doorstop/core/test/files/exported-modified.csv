@@ -1,0 +1,12 @@
+id,level,text,ref,links,active,derived,normative,additional
+REQ0555,1.2.3,"Hello, world!
+",,"SYS001,
+SYS002",True,"False",FALSE,
+REQ003,1.4,"Hello, world!
+",REF123,REQ001,false,"FALSE",True,"Some ""quoted"" text 'here'."
+REQ004,1.6,"Hello, world!
+",,,FAlSe,tRue,"TRUE",
+REQ002,2.1,"Hello, world!
+",,,"true",False,"True",""
+REQ2-001,2.1,"Hello, world!
+",,REQ001,True,"false",True,""

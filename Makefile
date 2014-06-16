@@ -233,11 +233,11 @@ upload: .git-no-changes doc
 
 .PHONY: develop
 develop:
-	python setup.py develop
+	python3 setup.py develop
 
 .PHONY: install
 install:
-	python setup.py install
+	python3 setup.py install
 
 .PHONY: download
 download:
