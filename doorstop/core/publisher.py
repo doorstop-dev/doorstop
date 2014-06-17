@@ -65,6 +65,13 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         logging.warning("nothing to publish")
         return None
 
+    """ copy the CSS file to the output directory 
+        so we can reference it instead of embedding it
+    """
+    if ext == '.html':
+        shutil.copy(CSS, path)
+
+
 
 def _index(directory, extensions=('.html',)):
     """Create an HTML index of all files in a directory.
@@ -92,21 +99,11 @@ def _index(directory, extensions=('.html',)):
 
 def _lines_index(filenames):
     """Yield lines of HTML for index.html."""
-    yield '<!DOCTYPE html>'
-    yield '<head>'
-    yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as infile:
-        for line in infile:
-            yield line
-    yield '</style>'
-    yield '</head>'
-    yield '<body>'
+    yield header_html()
     for filename in filenames:
         name = os.path.splitext(filename)[0]
         yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-    yield '</body>'
-    yield '</html>'
+    yield footer_html()
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
