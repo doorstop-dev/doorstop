@@ -544,7 +544,21 @@ class Level(object):
 
 
 def to_bool(obj):
-    """Convert a boolean-like object."""
+    """Convert a boolean-like object.
+
+    >>> to_bool(1)
+    True
+
+    >>> to_bool(0)
+    False
+
+    >>> to_bool(' True ')
+    True
+
+    >>> to_bool('F')
+    False
+
+    """
     if isinstance(obj, str):
         return obj.lower().strip() in ('yes', 'true', 'enabled')
     else:
