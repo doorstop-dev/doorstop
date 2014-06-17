@@ -159,7 +159,7 @@ test: .depends-ci
 
 .PHONY: tests
 tests: .depends-ci
-	TEST_INTEGRATION=1 $(NOSE) --verbose --cover-package=$(PACKAGE)
+	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
 
 .PHONY: tutorial
 tutorial: env
