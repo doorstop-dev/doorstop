@@ -295,7 +295,7 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def _lines_html(obj, linkify=False):
+def _lines_html(obj, linkify=False, charset='UTF-8'):
     """Yield lines for an HTML report.
 
     @param obj: Item, list of Items, or Document to publish
@@ -315,6 +315,9 @@ def _lines_html(obj, linkify=False):
     if document:
         yield '<!DOCTYPE html>'
         yield '<head>'
+        line = ('<meta http-equiv="content-type" content="text/html; '
+                'charset={charset}">'.format(charset=charset))
+        yield line
         yield '<style type="text/css">'
         yield ''
         with open(CSS) as infile:
