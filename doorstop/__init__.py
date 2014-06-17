@@ -6,6 +6,7 @@ __version__ = '0.7-beta.1'
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
 VERSION = __project__ + '-' + __version__
+DESCRIPTION = "Text-based requirements management using version control."
 
 MIN_PYTHON_VERSION = 3, 3
 

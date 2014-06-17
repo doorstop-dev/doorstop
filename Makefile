@@ -155,7 +155,7 @@ pylint: .depends-dev
 
 .PHONY: test
 test: .depends-ci
-	$(NOSE) --stop
+	$(NOSE)
 
 .PHONY: tests
 tests: .depends-ci
@@ -224,11 +224,11 @@ upload: .git-no-changes doc
 
 .PHONY: develop
 develop:
-	python setup.py develop
+	python3 setup.py develop
 
 .PHONY: install
 install:
-	python setup.py install
+	python3 setup.py install
 
 .PHONY: download
 download:

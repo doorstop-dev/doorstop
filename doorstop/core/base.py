@@ -166,9 +166,10 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
         """
         if not self._exists:
-            raise DoorstopError("cannot read from deleted: {}".format(self))
-        with open(path, 'rb') as infile:
-            return infile.read().decode('UTF-8')
+            msg = "cannot read from deleted: {}".format(self.path)
+            raise DoorstopError(msg)
+        with open(path, 'rb') as stream:
+            return stream.read().decode('utf-8')
 
     @staticmethod
     def _load(text, path):
@@ -210,8 +211,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(path, 'w') as outfile:
-            outfile.write(text)
+        with open(path, 'wb') as outfile:
+            outfile.write(text.encode('utf-8'))
 
     @staticmethod
     def _dump(data):
@@ -222,7 +223,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         @return: text to write to a file
 
         """
-        return yaml.dump(data, default_flow_style=False)
+        return yaml.dump(data, default_flow_style=False, allow_unicode=True)
 
     # properties #############################################################
 

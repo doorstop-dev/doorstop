@@ -7,7 +7,7 @@ import os
 
 from doorstop.common import DoorstopError
 from doorstop.core.types import Text
-from doorstop.core.item import Item
+from doorstop.core.item import Item, UnknownItem
 
 
 from doorstop.core.test import FILES, EMPTY, EXTERNAL
@@ -59,12 +59,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
-        """Verify an item can be converted to strings."""
+        """Verify an item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
     @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
-        """Verify an item can be converted to strings in verbose mode."""
+        """Verify an item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 
@@ -340,7 +340,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_parent_items(self):
         """Verify 'parent_items' exists to mirror the child behavior."""
-        # Arrange
         mock_tree = Mock()
         mock_tree.find_item = Mock(return_value='mock_item')
         self.item.tree = mock_tree
@@ -349,6 +348,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         items = self.item.parent_items
         # Assert
         self.assertEqual(['mock_item'], items)
+
+    def test_parent_items_unknown(self):
+        """Verify 'parent_items' can handle unknown items."""
+        mock_tree = Mock()
+        mock_tree.find_item = Mock(side_effect=DoorstopError)
+        self.item.tree = mock_tree
+        self.item.links = ['mock_id']
+        # Act
+        items = self.item.parent_items
+        # Assert
+        self.assertIsInstance(items[0], UnknownItem)
 
     def test_parent_documents(self):
         """Verify 'parent_documents' exists to mirror the child behavior."""
@@ -363,6 +373,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         documents = self.item.parent_documents
         # Assert
         self.assertEqual(['mock_document'], documents)
+
+    def test_parent_documents_unknown(self):
+        """Verify 'parent_documents' can handle unknown documents."""
+        # Arrange
+        mock_tree = Mock()
+        mock_tree.find_document = Mock(side_effect=DoorstopError)
+        self.item.tree = mock_tree
+        self.item.links = ['mock_id']
+        self.item.document = Mock()
+        self.item.document.prefix = 'mock_prefix'
+        # Act
+        documents = self.item.parent_documents
+        # Assert
+        self.assertEqual([], documents)
 
     def test_find_ref(self):
         """Verify an item's reference can be found."""
@@ -667,6 +691,68 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         with open(self.ITEM, 'r') as infile:
             text = infile.read()
             self.assertEqual(self.backup, text)
+
+
+class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the UnknownItem class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.item = UnknownItem('RQ001')
+
+    @patch('doorstop.common.VERBOSITY', 2)
+    def test_str(self):
+        """Verify an unknown item can be converted to a string."""
+        self.assertEqual("RQ001", str(self.item))
+
+    @patch('doorstop.common.VERBOSITY', 3)
+    def test_str_verbose(self):
+        """Verify an unknown item can be converted to a string (verbose)."""
+        text = "RQ001 (@{}{})".format(os.sep, '???')
+        self.assertEqual(text, str(self.item))
+
+    def test_id(self):
+        """Verify an unknown item's ID can be read but not set."""
+        self.assertEqual('RQ001', self.item.id)
+        self.assertRaises(AttributeError, setattr, self.item, 'id', 'RQ002')
+
+    def test_relpath(self):
+        """Verify an item's relative path string can be read but not set."""
+        text = "@{}{}".format(os.sep, '???')
+        self.assertEqual(text, self.item.relpath)
+        self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
+
+    def test_prefix(self):
+        """Verify an item's prefix can be read but not set."""
+        self.assertEqual('RQ', self.item.prefix)
+        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
+
+    def test_number(self):
+        """Verify an item's number can be read but not set."""
+        self.assertEqual(1, self.item.number)
+        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
+
+    @patch('logging.debug')
+    def test_attributes(self, mock_warning):
+        """Verify all other `Item` attributes raise an exception."""
+        self.assertRaises(AttributeError, getattr, self.item, 'path')
+        self.assertRaises(AttributeError, getattr, self.item, 'text')
+        self.assertRaises(AttributeError, getattr, self.item, 'get_issues')
+        self.assertRaises(AttributeError, getattr, self.item, 'delete')
+        self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
+        self.assertEqual(3, mock_warning.call_count)
+
+    @patch('logging.debug')
+    def test_attributes_with_spec(self, mock_warning):
+        """Verify all other `Item` attributes raise an exception."""
+        spec = Item(os.path.join(FILES, 'REQ001.yml'))
+        self.item = UnknownItem(self.item.id, spec=spec)
+        self.assertRaises(AttributeError, getattr, self.item, 'path')
+        self.assertRaises(AttributeError, getattr, self.item, 'text')
+        self.assertRaises(AttributeError, getattr, self.item, 'get_issues')
+        self.assertRaises(AttributeError, getattr, self.item, 'delete')
+        self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
+        self.assertEqual(4, mock_warning.call_count)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

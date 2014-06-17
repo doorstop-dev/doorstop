@@ -33,13 +33,13 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     @return: document with imported items
 
     """
-    logging.info("importing {} to {}...".format(path, document))
+    logging.info("importing {} into {}...".format(path, document))
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
     func(path, document, mapping=mapping, **kwargs)
 
 
-def new_document(prefix, path, parent=None, tree=None):
+def create_document(prefix, path, parent=None, tree=None):
     """Create a Doorstop document from existing document information.
 
     @param prefix: existing document's prefix (for new items)
@@ -56,7 +56,7 @@ def new_document(prefix, path, parent=None, tree=None):
     # Attempt to create a document with the given parent
     logging.info("importing document '{}'...".format(prefix))
     try:
-        document = tree.new_document(path, prefix, parent=parent)
+        document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None
@@ -96,6 +96,7 @@ def add_item(prefix, identifier, attrs=None, document=None):
         tree = _get_tree()
         document = tree.find_document(prefix)
 
+    # Add an item using the specified identifier
     logging.info("importing item '{}'...".format(identifier))
     item = Item.new(tree, document,
                     document.path, document.root, identifier,

@@ -14,7 +14,7 @@ text: |
 
   Create a document for the import:
 
-      doorstop new HLR
+      doorstop create HLR
 
   Import from an exported document:
 
