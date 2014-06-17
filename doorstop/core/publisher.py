@@ -3,8 +3,8 @@
 import os
 import textwrap
 import logging
-
 import markdown
+import shutils
 
 from doorstop.common import DoorstopError, create_dirname
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
@@ -65,6 +65,13 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         logging.warning("nothing to publish")
         return None
 
+    """ copy the CSS file to the output directory 
+        so we can reference it instead of embedding it
+    """
+    if ext == '.html':
+        shutil.copy(CSS, path)
+
+
 
 def _index(directory, extensions=('.html',)):
     """Create an HTML index of all files in a directory.
@@ -92,21 +99,11 @@ def _index(directory, extensions=('.html',)):
 
 def _lines_index(filenames):
     """Yield lines of HTML for index.html."""
-    yield '<!DOCTYPE html>'
-    yield '<head>'
-    yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as infile:
-        for line in infile:
-            yield line
-    yield '</style>'
-    yield '</head>'
-    yield '<body>'
+    yield header_html()
     for filename in filenames:
         name = os.path.splitext(filename)[0]
         yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-    yield '</body>'
-    yield '</html>'
+    yield footer_html()
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
@@ -313,22 +310,12 @@ def _lines_html(obj, linkify=False):
         document = True
     # Generate HTML
     if document:
-        yield '<!DOCTYPE html>'
-        yield '<head>'
-        yield '<style type="text/css">'
-        yield ''
-        with open(CSS) as infile:
-            for line in infile:  # pragma: no cover (integration test)
-                yield line
-        yield '</style>'
-        yield '</head>'
-        yield '<body>'
+        yield header_html()
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
-        yield '</body>'
-        yield '</html>'
+        yield footer_html()
 
 
 # Mapping from file extension to lines generator
@@ -356,3 +343,37 @@ def check(ext):
     else:
         logging.debug("found lines generator for: {}".format(ext))
         return gen
+
+
+# create standard HTML header - keep it DRY
+def header_html():
+    """standard header for html output
+    TODO add a parameter to embed or link the CSS
+    this version is only providing a link
+    @param css: option to embed or link the CSS
+
+    @return: standard html header for this project
+
+    this will break if documents get nested into subdirectories
+    because we assume the CSS goes in the current/root directory
+
+    """
+    header = """<!DOCTYPE html>
+    <head>
+    <link rel="stylesheet" type="text/css" href="./doorstop.css">
+    </head>
+    <body>"""
+    return header;
+
+# create standard HTML header - keep it DRY
+def footer_html():
+    """standard footer for html formats
+
+    @return: standard html header for this project
+
+    """
+    footer = """</body>
+</html>"""
+    return footer;
+
+
