@@ -10,8 +10,8 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Build and validate the tree:
 
-      doorstop
+      $ doorstop

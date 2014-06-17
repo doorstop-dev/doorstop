@@ -8,7 +8,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Prefix, ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level, to_bool
 from doorstop import settings
 
 
@@ -131,11 +131,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             if key == 'level':
                 self._data['level'] = Level(value)
             elif key == 'active':
-                self._data['active'] = bool(value)
+                self._data['active'] = to_bool(value)
             elif key == 'normative':
-                self._data['normative'] = bool(value)
+                self._data['normative'] = to_bool(value)
             elif key == 'derived':
-                self._data['derived'] = bool(value)
+                self._data['derived'] = to_bool(value)
             elif key == 'text':
                 self._data['text'] = Text(value)
             elif key == 'ref':
@@ -244,7 +244,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def active(self, value):
         """Set the item's active status."""
-        self._data['active'] = bool(value)
+        self._data['active'] = to_bool(value)
 
     @property
     @auto_load
@@ -263,7 +263,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def derived(self, value):
         """Set the item's derived status."""
-        self._data['derived'] = bool(value)
+        self._data['derived'] = to_bool(value)
 
     @property
     @auto_load
@@ -284,7 +284,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = bool(value)
+        self._data['normative'] = to_bool(value)
 
     @property
     def heading(self):
@@ -300,7 +300,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def heading(self, value):
         """Set the item's heading status."""
-        heading = bool(value)
+        heading = to_bool(value)
         if heading and not self.heading:
             self.level.heading = True
             self.normative = False
