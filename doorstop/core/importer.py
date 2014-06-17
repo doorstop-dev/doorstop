@@ -28,9 +28,9 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     :param ext: file extension to override input path's extension
     :param mapping: dictionary mapping custom to standard attribute names
 
-    @raise DoorstopError: for unknown file formats
+    :raise DoorstopError: for unknown file formats
 
-    @return: document with imported items
+    :return: document with imported items
 
     """
     logging.info("importing {} into {}...".format(path, document))
@@ -42,12 +42,12 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
 def create_document(prefix, path, parent=None, tree=None):
     """Create a Doorstop document from existing document information.
 
-    @param prefix: existing document's prefix (for new items)
-    @param path: new directory path to store this document's items
-    @param parent: parent document's prefix (if one will exist)
-    @param document: explicit tree to add the document
+    :param prefix: existing document's prefix (for new items)
+    :param path: new directory path to store this document's items
+    :param parent: parent document's prefix (if one will exist)
+    :param document: explicit tree to add the document
 
-    @return: imported Document
+    :return: imported Document
 
     """
     if not tree:
@@ -79,12 +79,12 @@ def create_document(prefix, path, parent=None, tree=None):
 def add_item(prefix, identifier, attrs=None, document=None):
     """Create a Doorstop document from existing document information.
 
-    @param prefix: previously imported document's prefix
-    @param identifier: existing item's unique ID
-    @param attrs: dictionary of Doorstop and custom attributes
-    @param document: explicit document to add the item
+    :param prefix: previously imported document's prefix
+    :param identifier: existing item's unique ID
+    :param attrs: dictionary of Doorstop and custom attributes
+    :param document: explicit document to add the item
 
-    @return: imported Item
+    :return: imported Item
 
     """
     if document:
@@ -215,10 +215,8 @@ def _itemize(header, data, document, mapping=None):
         for index, value in enumerate(row):
 
             # Key lookup
-            key = header[index]
-            if key:
-                key = str(key).lower()
-            else:
+            key = str(header[index]).lower().strip() if header[index] else ''
+            if not key:
                 continue
 
             # Map key to custom attributes names
@@ -275,9 +273,9 @@ FORMAT_FILE = {'.csv': _file_csv,
 def check(ext):
     """Confirm an extension is supported for import.
 
-    @raise DoorstopError: for unknown formats
+    :raise DoorstopError: for unknown formats
 
-    @return: file importer if available
+    :return: file importer if available
 
     """
     exts = ', '.join(ext for ext in FORMAT_FILE)
