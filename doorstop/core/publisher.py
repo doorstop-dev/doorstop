@@ -47,9 +47,9 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         # Publish content to the specified path
         create_dirname(path2)
         logging.info("creating file {}...".format(path2))
-        with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
+        with open(path2, 'wb') as outfile:  # pragma: no cover (integration test)
             for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
-                outfile.write(line + '\n')
+                outfile.write((line + '\n').encode('utf-8'))
 
     # Create index
     if index and count:
