@@ -23,8 +23,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         dirpath = os.path.join('mock', 'directory')
         path = os.path.join(dirpath, 'exported.xlsx')
         # Act
-        exporter.export(self.document, path)
+        path2 = exporter.export(self.document, path)
         # Assert
+        self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
         mock_export_file.assert_called_once_with(self.document, path, '.xlsx')
 
@@ -46,10 +47,25 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.documents = [mock_document]
         # Act
-        exporter.export(mock_tree, dirpath)
+        dirpath2 = exporter.export(mock_tree, dirpath)
         # Assert
+        self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(1, mock_open.call_count)
+
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_export_tree_no_documents(self, mock_open, mock_makedirs):
+        """Verify a tree can be exported."""
+        dirpath = os.path.join('mock', 'directory')
+        mock_tree = MagicMock()
+        mock_tree.documents = []
+        # Act
+        dirpath2 = exporter.export(mock_tree, dirpath)
+        # Assert
+        self.assertIs(None, dirpath2)
+        self.assertEqual(0, mock_makedirs.call_count)
+        self.assertEqual(0, mock_open.call_count)
 
     def test_lines(self):
         """Verify an item can be exported as lines."""

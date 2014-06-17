@@ -201,9 +201,9 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
 
 
-class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
+class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.importer:new_document function."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer:create_document function."""  # pylint: disable=C0103
 
     def setUp(self):
         # Create default document options
@@ -217,44 +217,44 @@ class TestModuleNewDocument(unittest.TestCase):  # pylint: disable=R0904
         self.mock_tree = Tree(mock_document)
         _set_tree(self.mock_tree)
 
-    @patch('doorstop.core.tree.Tree.new_document')
+    @patch('doorstop.core.tree.Tree.create_document')
     def test_create_document(self, mock_new):
         """Verify a new document can be created for import."""
-        importer.new_document(self.prefix, self.path)
+        importer.create_document(self.prefix, self.path)
         mock_new.assert_called_once_with(self.path, self.prefix, parent=None)
 
     @patch('doorstop.core.builder._get_tree')
-    @patch('doorstop.core.tree.Tree.new_document')
+    @patch('doorstop.core.tree.Tree.create_document')
     def test_create_document_explicit_tree(self, mock_new, mock_get_tree):
         """Verify a new document can be created for import (explicit tree)."""
         mock_document = Mock()
         mock_document.root = None
         tree = Tree(document=mock_document)
-        importer.new_document(self.prefix, self.path, tree=tree)
+        importer.create_document(self.prefix, self.path, tree=tree)
         self.assertFalse(mock_get_tree.called)
         mock_new.assert_called_once_with(self.path, self.prefix, parent=None)
         self.assertIn(mock_document, tree)
 
-    @patch('doorstop.core.tree.Tree.new_document')
+    @patch('doorstop.core.tree.Tree.create_document')
     def test_create_document_with_parent(self, mock_new):
         """Verify a new document can be created for import with a parent."""
-        importer.new_document(self.prefix, self.path, parent=self.parent)
+        importer.create_document(self.prefix, self.path, parent=self.parent)
         mock_new.assert_called_once_with(self.path, self.prefix,
                                          parent=self.parent)
 
-    @patch('doorstop.core.tree.Tree.new_document',
+    @patch('doorstop.core.tree.Tree.create_document',
            Mock(side_effect=DoorstopError))
     def test_create_document_already_exists(self):
         """Verify non-parent import exceptions are re-raised."""
         self.assertRaises(DoorstopError,
-                          importer.new_document, self.prefix, self.path)
+                          importer.create_document, self.prefix, self.path)
 
-    @patch('doorstop.core.tree.Tree.new_document',
+    @patch('doorstop.core.tree.Tree.create_document',
            Mock(side_effect=DoorstopError))
     @patch('doorstop.core.document.Document.new')
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created for import with unknown parents."""
-        importer.new_document(self.prefix, self.path, parent=self.parent)
+        importer.create_document(self.prefix, self.path, parent=self.parent)
         mock_new.assert_called_once_with(self.mock_tree,
                                          self.path, self.root, self.prefix,
                                          parent=self.parent)

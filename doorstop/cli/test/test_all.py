@@ -15,6 +15,31 @@ from doorstop import settings
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 
 
+class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
+
+    """Base test case class with a temporary directory."""  # pylint: disable=C0103
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        if os.path.exists(self.temp):
+            shutil.rmtree(self.temp)
+
+
+class MockTestCase(TempTestCase):  # pylint: disable=R0904
+
+    """Base test case class for a temporary mock working copy."""  # pylint: disable=C0103
+
+    def setUp(self):
+        super().setUp()
+        os.chdir(self.temp)
+        open('.mockvcs', 'w').close()
+        _clear_tree()
+
+
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
@@ -99,32 +124,38 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestNew(unittest.TestCase):  # pylint: disable=R0904
+class TestCreate(TempTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop new' command."""
+    """Integration tests for the 'doorstop create' command."""  # pylint: disable=C0103
 
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
+    def test_create(self):
+        """Verify 'doorstop create' can be called."""
+        self.assertIs(None, main(['create', '_TEMP', self.temp, '-p', 'REQ']))
 
-    def tearDown(self):
-        os.chdir(self.cwd)
-        if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
-
-    def test_new(self):
-        """Verify 'doorstop new' can be called."""
-        self.assertIs(None, main(['new', '_TEMP', self.temp, '-p', 'REQ']))
-
-    def test_new_error_unknwon_parent(self):
-        """Verify 'doorstop new' returns an error with an unknown parent."""
+    def test_create_error_unknwon_parent(self):
+        """Verify 'doorstop create' returns an error with an unknown parent."""
         self.assertRaises(SystemExit, main,
-                          ['new', '_TEMP', self.temp, '-p', 'UNKNOWN'])
+                          ['create', '_TEMP', self.temp, '-p', 'UNKNOWN'])
 
-    def test_new_error_reserved_prefix(self):
-        """Verify 'doorstop new' returns an error with a reserved prefix."""
+    def test_create_error_reserved_prefix(self):
+        """Verify 'doorstop create' returns an error with a reserved prefix."""
         self.assertRaises(SystemExit, main,
-                          ['new', 'ALL', self.temp, '-p', 'REQ'])
+                          ['create', 'ALL', self.temp, '-p', 'REQ'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestDelete(MockTestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop delete' command."""
+
+    def test_delete(self):
+        """Verify 'doorstop delete' can be called."""
+        main(['create', 'PREFIX', 'prefix'])
+        self.assertIs(None, main(['delete', 'PREFIX']))
+
+    def test_delete_error(self):
+        """Verify 'doorstop delete' returns an error on unknown document."""
+        self.assertRaises(SystemExit, main, ['delete', 'UNKNOWN'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -301,20 +332,9 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
+class TestImportFile(MockTestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-        os.chdir(self.temp)
-        open('.mockvcs', 'w').close()
-        _clear_tree()
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
 
     def test_import_file_missing_prefix(self):
         """Verify 'doorstop import' returns an error with a missing prefix."""
@@ -338,7 +358,7 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop import' can import a file using a custom map."""
         path = os.path.join(FILES, 'exported-map.csv')
         dirpath = os.path.join(self.temp, 'imported', 'prefix')
-        main(['new', 'PREFIX', dirpath])
+        main(['create', 'PREFIX', dirpath])
         # Act
         self.assertIs(None, main(['import', path, 'PREFIX',
                                   '--map', "{'mylevel': 'level'}"]))
@@ -359,7 +379,7 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop import' can import CSV to an existing document."""
         path = os.path.join(FILES, 'exported.csv')
         dirpath = os.path.join(self.temp, 'imported', 'prefix')
-        main(['new', 'PREFIX', dirpath])
+        main(['create', 'PREFIX', dirpath])
         # Act
         self.assertIs(None, main(['import', path, 'PREFIX']))
         # Assert
@@ -370,7 +390,7 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop import' can import TSV to an existing document."""
         path = os.path.join(FILES, 'exported.tsv')
         dirpath = os.path.join(self.temp, 'imported', 'prefix')
-        main(['new', 'PREFIX', dirpath])
+        main(['create', 'PREFIX', dirpath])
         # Act
         self.assertIs(None, main(['import', path, 'PREFIX']))
         # Assert
@@ -381,7 +401,7 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop import' can import XLSX to an existing document."""
         path = os.path.join(FILES, 'exported.xlsx')
         dirpath = os.path.join(self.temp, 'imported', 'prefix')
-        main(['new', 'PREFIX', dirpath])
+        main(['create', 'PREFIX', dirpath])
         # Act
         self.assertIs(None, main(['import', path, 'PREFIX']))
         # Assert
@@ -390,17 +410,9 @@ class TestImportFile(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestExport(unittest.TestCase):  # pylint: disable=R0904
+class TestExport(TempTestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
-
-    def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
 
     def test_export_document_error_unknown(self):
         """Verify 'doorstop export' returns an error for an unknown format."""
@@ -447,18 +459,16 @@ class TestExport(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestPublish(unittest.TestCase):  # pylint: disable=R0904
+class TestPublish(TempTestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
 
     def setUp(self):
-        self.cwd = os.getcwd()
-        self.temp = tempfile.mkdtemp()
+        super().setUp()
         self.backup = (settings.PUBLISH_CHILD_LINKS,)
 
     def tearDown(self):
-        os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        super().tearDown()
         (settings.PUBLISH_CHILD_LINKS,) = self.backup
 
     def test_publish_unknown(self):

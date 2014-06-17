@@ -8,7 +8,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level
 from doorstop import settings
 
 
@@ -365,7 +365,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     def parent_items(self):
         """Get a list of items that this item links to."""
-        return [self.tree.find_item(i) for i in self.links]
+        items = []
+        for identifier in self.links:
+            try:
+                item = self.tree.find_item(identifier)
+            except DoorstopError:
+                item = UnknownItem(identifier)
+                logging.warning(item.exception)
+            items.append(item)
+        return items
 
     @property
     def parent_documents(self):
@@ -374,7 +382,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         Note: a document only has one parent.
 
         """
-        return [self.tree.find_document(self.document.prefix)]
+        # TODO: determine if an `UnknownDocument` class is needed
+        try:
+            return [self.tree.find_document(self.document.prefix)]
+        except DoorstopError:
+            logging.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
+            return []
 
     # actions ################################################################
 
@@ -655,3 +668,37 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if self.document and self in self.document._items:  # pylint:disable=W0212
             self.document._items.remove(self)  # pylint:disable=W0212
         super().delete(self.path)
+
+
+class UnknownItem(object):
+
+    """Represents an unknown item, which doesn't have a path."""
+
+    UNKNOWN_PATH = '???'  # string to represent an unknown path
+
+    def __init__(self, value, spec=Item):
+        self._id = ID(value)
+        self._spec = dir(spec)  # list of attribute names for warnings
+        msg = ID.UNKNOWN_MESSAGE.format(k='', i=self.id)
+        self.exception = DoorstopError(msg)
+
+    def __str__(self):
+        return Item.__str__(self)
+
+    def __getattr__(self, name):
+        if name in self._spec:
+            logging.debug(self.exception)
+        return self.__getattribute__(name)
+
+    @property
+    def id(self):  # pylint: disable=C0103
+        """Get the item's ID."""
+        return self._id
+
+    prefix = Item.prefix
+    number = Item.number
+
+    @property
+    def relpath(self):
+        """Get the unknown item's relative path string."""
+        return "@{}???".format(os.sep, self.UNKNOWN_PATH)
