@@ -213,9 +213,15 @@ def _itemize(header, data, document, mapping=None):
         attrs = {}
         identifier = None
         for index, value in enumerate(row):
-            key = header[index].lower()
 
-            # Map to custom attributes names
+            # Key lookup
+            key = header[index]
+            if key:
+                key = str(key).lower()
+            else:
+                continue
+
+            # Map key to custom attributes names
             for custom, standard in (mapping or {}).items():
                 if key == custom.lower():
                     msg = "mapped: '{}' => '{}'".format(key, standard)

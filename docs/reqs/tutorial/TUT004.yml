@@ -13,12 +13,12 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Remove a link between two document items:
 
-      doorstop unlink TST1 REQ3
+      $ doorstop unlink TST1 REQ3
 
   Remove a document's item:
 
-      doorstop remove REQ3
+      $ doorstop remove REQ3

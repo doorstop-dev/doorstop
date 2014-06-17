@@ -10,8 +10,8 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Create an HTML directory for all documents:
 
-      doorstop publish all path/to/htmldir
+      $ doorstop publish all path/to/htmldir

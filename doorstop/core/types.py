@@ -543,6 +543,14 @@ class Level(object):
         return Level(self.value)
 
 
+def to_bool(obj):
+    """Convert a boolean-like object."""
+    if isinstance(obj, str):
+        return obj.lower().strip() in ('yes', 'true', 'enabled')
+    else:
+        return bool(obj)
+
+
 def is_tree(obj):
     """Determine if the object is a tree-like."""
     return hasattr(obj, 'documents')

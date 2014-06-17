@@ -10,12 +10,12 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Import an item:
 
-      doorstop import --item HLR HLR001
+      $ doorstop import --item HLR HLR001
 
   Import an item with attributes:
 
-      doorstop import --item LLR LLR001 --attr "{'text': 'The item text.'}"
+      $ doorstop import --item LLR LLR001 --attr "{'text': 'The item text.'}"
