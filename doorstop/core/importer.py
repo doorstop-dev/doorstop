@@ -28,9 +28,9 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     :param ext: file extension to override input path's extension
     :param mapping: dictionary mapping custom to standard attribute names
 
-    @raise DoorstopError: for unknown file formats
+    :raise DoorstopError: for unknown file formats
 
-    @return: document with imported items
+    :return: document with imported items
 
     """
     logging.info("importing {} into {}...".format(path, document))
@@ -213,9 +213,13 @@ def _itemize(header, data, document, mapping=None):
         attrs = {}
         identifier = None
         for index, value in enumerate(row):
-            key = header[index].lower()
 
-            # Map to custom attributes names
+            # Key lookup
+            key = str(header[index]).lower().strip() if header[index] else ''
+            if not key:
+                continue
+
+            # Map key to custom attributes names
             for custom, standard in (mapping or {}).items():
                 if key == custom.lower():
                     msg = "mapped: '{}' => '{}'".format(key, standard)
@@ -269,9 +273,9 @@ FORMAT_FILE = {'.csv': _file_csv,
 def check(ext):
     """Confirm an extension is supported for import.
 
-    @raise DoorstopError: for unknown formats
+    :raise DoorstopError: for unknown formats
 
-    @return: file importer if available
+    :return: file importer if available
 
     """
     exts = ', '.join(ext for ext in FORMAT_FILE)

@@ -27,7 +27,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
-        mock_open.assert_called_once_with(path, 'w')
+        mock_open.assert_called_once_with(path, 'wb')
 
     @patch('os.makedirs')
     @patch('builtins.open')
@@ -41,7 +41,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
-        mock_open.assert_called_once_with(path, 'w')
+        mock_open.assert_called_once_with(path, 'wb')
         mock_lines.assert_called_once_with(self.document, '.html',
                                            linkify=False)
 
