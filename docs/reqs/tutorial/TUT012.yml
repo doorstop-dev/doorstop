@@ -10,12 +10,12 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Import a document:
 
-      doorstop import --document HLR reqs/hlr
+      $ doorstop import --document HLR reqs/hlr
 
   Import a document with a parent:
 
-      doorstop import --document LLR reqs/llr --parent HLR
+      $ doorstop import --document LLR reqs/llr --parent HLR

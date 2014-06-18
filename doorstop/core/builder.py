@@ -15,12 +15,12 @@ _TREE = None  # implicit tree for convenience functions
 def build(cwd=None, root=None):
     """Build a tree from the current working directory or explicit root.
 
-    @param cwd: current working directory
-    @param root: path to root of the working copy
+    :param cwd: current working directory
+    :param root: path to root of the working copy
 
-    @raise DoorstopError: when the tree cannot be built
+    :raises: :class:`doorstop.common.DoorstopError` when the tree cannot be built
 
-    @return: new Tree
+    :return: new Tree
 
     """
     documents = []
@@ -49,9 +49,9 @@ def build(cwd=None, root=None):
 def _document_from_path(path, root, documents):
     """Attempt to create and append a document from the specified path.
 
-    @param path: path to a potential document
-    @param root: path to root of working copy
-    @param documents: list of Documents to append results
+    :param path: path to a potential document
+    :param root: path to root of working copy
+    :param documents: list of Documents to append results
 
     """
     try:

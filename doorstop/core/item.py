@@ -8,7 +8,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Prefix, ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level, to_bool
 from doorstop import settings
 
 
@@ -28,8 +28,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
 
-        @param path: path to Item file
-        @param root: path to root of project
+        :param path: path to Item file
+        :param root: path to root of project
 
         """
         super().__init__()
@@ -88,19 +88,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
         """Internal method to create a new item.
 
-        @param tree: reference to the tree that contains this item
-        @param document: reference to document that contains this item
+        :param tree: reference to the tree that contains this item
+        :param document: reference to document that contains this item
 
-        @param path: path to directory for the new item
-        @param root: path to root of the project
-        @param identifier: ID for the new item
+        :param path: path to directory for the new item
+        :param root: path to root of the project
+        :param identifier: ID for the new item
 
-        @param level: level for the new item
-        @param auto: automatically save the item
+        :param level: level for the new item
+        :param auto: automatically save the item
 
-        @raise DoorstopError: if the item already exists
+        :raises: :class:`doorstop.common.DoorstopError` if the item already exists
 
-        @return: new Item
+        :return: new :class:`Item`
 
         """
         ID(identifier).check()
@@ -131,11 +131,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             if key == 'level':
                 self._data['level'] = Level(value)
             elif key == 'active':
-                self._data['active'] = bool(value)
+                self._data['active'] = to_bool(value)
             elif key == 'normative':
-                self._data['normative'] = bool(value)
+                self._data['normative'] = to_bool(value)
             elif key == 'derived':
-                self._data['derived'] = bool(value)
+                self._data['derived'] = to_bool(value)
             elif key == 'text':
                 self._data['text'] = Text(value)
             elif key == 'ref':
@@ -231,10 +231,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         An inactive item will not be validated. Inactive items are
         intended to be used for:
-         - future requirements
-         - temporarily disabled requirements or tests
-         - externally implemented requirements
-         - etc.
+
+        - future requirements
+        - temporarily disabled requirements or tests
+        - externally implemented requirements
+        - etc.
 
         """
         return self._data['active']
@@ -244,7 +245,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def active(self, value):
         """Set the item's active status."""
-        self._data['active'] = bool(value)
+        self._data['active'] = to_bool(value)
 
     @property
     @auto_load
@@ -263,7 +264,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def derived(self, value):
         """Set the item's derived status."""
-        self._data['derived'] = bool(value)
+        self._data['derived'] = to_bool(value)
 
     @property
     @auto_load
@@ -272,9 +273,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         A non-normative item should not have or be linked to.
         Non-normative items are intended to be used for:
-         - headings
-         - comments
-         - etc.
+
+        - headings
+        - comments
+        - etc.
 
         """
         return self._data['normative']
@@ -284,7 +286,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = bool(value)
+        self._data['normative'] = to_bool(value)
 
     @property
     def heading(self):
@@ -300,7 +302,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def heading(self, value):
         """Set the item's heading status."""
-        heading = bool(value)
+        heading = to_bool(value)
         if heading and not self.heading:
             self.level.heading = True
             self.normative = False
@@ -396,7 +398,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def link(self, value):
         """Add a new link to another item ID.
 
-        @param value: item or ID
+        :param value: item or ID
 
         """
         identifier = ID(value)
@@ -407,7 +409,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def unlink(self, value):
         """Remove an existing link by item ID.
 
-        @param value: item or ID
+        :param value: item or ID
 
         """
         identifier = ID(value)
@@ -419,7 +421,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, **kwargs):
         """Yield all the item's issues.
 
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        :return: generator of :class:`doorstop.common.DoorstopError`,
+                              :class:`doorstop.common.DoorstopWarning`,
+                              :class:`doorstop.common.DoorstopInfo`
 
         """
         assert kwargs.get('document_hook') is None
@@ -531,13 +535,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_ref(self, skip=None, root=None, ignored=None):
         """Get the external file reference and line number.
 
-        @param skip: function to determine if a path is ignored
-        @param root: override path to the working copy (for testing)
-        @param ignored: override VCS ignore function (for testing)
+        :param skip: function to determine if a path is ignored
+        :param root: override path to the working copy (for testing)
+        :param ignored: override VCS ignore function (for testing)
 
-        @raise DoorstopError: when no reference is found
+        :raises: :class:`doorstop.common.DoorstopError` when no reference is found
 
-        @return: relative path to file, line number (when found in file)
+        :return: relative path to file, line number (when found in file)
                  relative path to file, None (when found as filename)
                  None, None (when no reference set)
 
@@ -589,9 +593,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_child_links(self, find_all=True):
         """Get a list of item IDs that link to this item (reverse links).
 
-        @param find_all: find all items (not just the first) before returning
+        :param find_all: find all items (not just the first) before returning
 
-        @return: list of found item IDs
+        :return: list of found item IDs
 
         """
         items, _ = self._find_child_objects(find_all=find_all)
@@ -603,9 +607,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_child_items(self, find_all=True):
         """Get a list of items that link to this item.
 
-        @param find_all: find all items (not just the first) before returning
+        :param find_all: find all items (not just the first) before returning
 
-        @return: list of found items
+        :return: list of found items
 
         """
         items, _ = self._find_child_objects(find_all=find_all)
@@ -616,7 +620,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def find_child_documents(self):
         """Get a list of documents that should link to this item's document.
 
-        @return: list of found documents
+        :return: list of found documents
 
         """
         _, documents = self._find_child_objects(find_all=False)
@@ -627,9 +631,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _find_child_objects(self, find_all=True):
         """Get lists of child items and child documents.
 
-        @param find_all: find all items (not just the first) before returning
+        :param find_all: find all items (not just the first) before returning
 
-        @return: list of found items, list of all child Documents
+        :return: list of found items, list of all child Documents
 
         """
         child_items = []
