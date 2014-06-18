@@ -151,7 +151,7 @@ def main(args=None):  # pylint: disable=R0915
                      help="output HTML (default for 'all')")
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
-    sub.add_argument('-C', '--with-child-links', action='store_true',
+    sub.add_argument('-C', '--no-child-links', action='store_true',
                      help="include child links in published documents")
 
     # Parse arguments
@@ -237,8 +237,8 @@ def _configure_settings(args):
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
     # Parse subcommand settings
-    if 'with_child_links' in args and args.with_child_links is not None:
-        settings.PUBLISH_CHILD_LINKS = args.with_child_links
+    if 'no_child_links' in args and args.no_child_links is not None:
+        settings.PUBLISH_CHILD_LINKS = not args.no_child_links
 
 
 def _run(args, cwd, err):  # pylint: disable=W0613
