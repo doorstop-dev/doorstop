@@ -19,10 +19,10 @@ LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
 def edit(path, tool=None):  # pragma: no cover (integration test)
     """Open a file and wait for the default editor to exit.
 
-    @param path: path of file to open
-    @param tool: path of alternate editor
+    :param path: path of file to open
+    :param tool: path of alternate editor
 
-    @return: launched process
+    :return: launched process
 
     """
     process = launch(path, tool=tool)
@@ -41,12 +41,12 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
 def launch(path, tool=None):  # pragma: no cover (integration test)
     """Open a file using the default editor.
 
-    @param path: path of file to open
-    @param tool: path of alternate editor
+    :param path: path of file to open
+    :param tool: path of alternate editor
 
-    @raise: DoorstopError: no default editor or editor unavailable
+    :raises: :class:`doorstop.common.DoorstopError` no default editor or editor unavailable
 
-    @return: launched process if long-running, else None
+    :return: launched process if long-running, else None
 
     """
     # Determine how to launch the editor

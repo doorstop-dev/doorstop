@@ -45,7 +45,7 @@ def create_document(prefix, path, parent=None, tree=None):
     :param prefix: existing document's prefix (for new items)
     :param path: new directory path to store this document's items
     :param parent: parent document's prefix (if one will exist)
-    :param document: explicit tree to add the document
+    :param tree: explicit tree to add the document
 
     :return: imported Document
 

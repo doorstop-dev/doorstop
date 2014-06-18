@@ -16,6 +16,7 @@ apidocs
 docs/*.html
 *.rst
 docs/*.png
+docs/sphinx/_build
 
 # Google Drive
 *.gdoc
