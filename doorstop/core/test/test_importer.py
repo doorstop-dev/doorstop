@@ -191,6 +191,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_blank_column(self, mock_add_item):
+        """Verify item data can include invalid values."""
+        header = ['id', 'text', None, 'links', 'ext1']
+        data = [['req1', 'text1', 'blank', '', 'val1']]
+        mock_document = Mock()
+        mock_document.prefix = 'prefix'
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        expected_attrs = {'links': [], 'ext1': 'val1', 'text': 'text1'}
+        mock_add_item.assert_called_once_with(mock_document.prefix, 'req1',
+                                              attrs=expected_attrs,
+                                              document=mock_document)
+
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):
         """Verify item data can include invalid values."""
