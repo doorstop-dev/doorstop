@@ -35,7 +35,7 @@ def export(obj, path, ext=None, **kwargs):
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
-    @return: output location if files created, else None
+    :return: output location if files created, else None
 
     """
     # Determine the output format
@@ -75,7 +75,7 @@ def export_lines(obj, ext='.yml', **kwargs):
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
-    @return: lines generator
+    :return: lines generator
 
     """
     gen = check(ext, get_lines_gen=True)
@@ -92,7 +92,7 @@ def export_file(obj, path, ext=None, **kwargs):
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
-    @return: path to created file
+    :return: path to created file
 
     """
     ext = ext or os.path.splitext(path)[-1]

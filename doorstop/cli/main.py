@@ -287,9 +287,9 @@ def _run_create(args, cwd, _):
 def _run_delete(args, cwd, _):
     """Process arguments and run the `doorstop delete` subcommand.
 
-    @param args: Namespace of CLI arguments
-    @param cwd: current working directory
-    @param err: function to call for CLI errors
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
 
     """
     try:
