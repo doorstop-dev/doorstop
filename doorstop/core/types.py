@@ -15,6 +15,8 @@ class Prefix(str):  # pylint: disable=R0904
 
     """Unique document prefixes."""
 
+    UNKNOWN_MESSGE = "no document with prefix: {}"
+
     def __new__(cls, value=""):
         if isinstance(value, Prefix):
             return value
@@ -55,6 +57,8 @@ class ID(object):
 
     """Unique item identifier."""
 
+    UNKNOWN_MESSAGE = "no{k} item with ID: {i}"  # k='parent'|'child'|'', i=ID
+
     def __new__(cls, *values):
         if values and isinstance(values[0], ID):
             return values[0]
@@ -66,11 +70,11 @@ class ID(object):
 
         Option 1:
 
-        @param *values: string representation of ID
+        :param *values: string representation of ID
 
         Option 2:
 
-        @param *values: prefix, separator, number, digit count
+        :param *values: prefix, separator, number, digit count
 
         """
         # Join values
@@ -128,16 +132,19 @@ class ID(object):
     @property
     def prefix(self):
         """Get the ID's prefix."""
-        if self._exc:
-            raise self._exc
+        self.check()
         return self._prefix
 
     @property
     def number(self):
         """Get the ID's number."""
+        self.check()
+        return self._number
+
+    def check(self):
+        """Verify an ID is valid."""
         if self._exc:
             raise self._exc
-        return self._number
 
     @staticmethod
     def split_id(text):
@@ -195,6 +202,7 @@ class Text(str):  # pylint: disable=R0904
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
+        assert not isinstance(value, Text)
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
@@ -219,7 +227,7 @@ class Text(str):  # pylint: disable=R0904
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        return Literal(Text.wrap(Text.sbd(text, end=end)))
+        return Literal(Text.wrap(Text.sbd(str(text), end=end)))
 
     # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
     RE_SENTENCE_BOUNDARIES = re.compile(r"""
@@ -242,8 +250,8 @@ class Text(str):  # pylint: disable=R0904
     def sbd(text, end='\n'):
         r"""Replace sentence boundaries with newlines and append a newline.
 
-        @param text: string to line break at sentences
-        @param end: appended to the end of the update text
+        :param text: string to line break at sentences
+        :param end: appended to the end of the update text
 
         >>> Text.sbd("Hello, world!", end='')
         'Hello, world!'
@@ -327,8 +335,8 @@ class Level(object):
     def __init__(self, value, heading=None):
         """Initialize an item level from a sequence of numbers.
 
-        @param value: sequence of int, float, or period-delimited string
-        @param heading: force a heading value (or inferred from trailing zero)
+        :param value: sequence of int, float, or period-delimited string
+        :param heading: force a heading value (or inferred from trailing zero)
 
         """
         if isinstance(value, Level):
@@ -343,7 +351,8 @@ class Level(object):
                 self._parts = parts
                 self.heading = False
         self.heading = self.heading if heading is None else heading
-        self._adjust()
+        if not value:
+            self._adjust()
 
     def __repr__(self):
         if self.heading:
@@ -534,14 +543,55 @@ class Level(object):
         return Level(self.value)
 
 
-def is_document(obj):
-    """Determine if the object is a document."""
-    return hasattr(obj, 'items')
+def to_bool(obj):
+    """Convert a boolean-like object.
+
+    >>> to_bool(1)
+    True
+
+    >>> to_bool(0)
+    False
+
+    >>> to_bool(' True ')
+    True
+
+    >>> to_bool('F')
+    False
+
+    """
+    if isinstance(obj, str):
+        return obj.lower().strip() in ('yes', 'true', 'enabled')
+    else:
+        return bool(obj)
 
 
 def is_tree(obj):
-    """Determine if the object is a tree."""
+    """Determine if the object is a tree-like."""
     return hasattr(obj, 'documents')
+
+
+def is_document(obj):
+    """Determine if the object is a document-like."""
+    return hasattr(obj, 'items')
+
+
+def is_item(obj):
+    """Determine if the object is item-like."""
+    return hasattr(obj, 'text')
+
+
+def iter_documents(obj, path, ext):
+    """Get an iterator if documents from a tree or document-like object."""
+    if is_tree(obj):
+        # a tree
+        logging.debug("iterating over tree...")
+        for document in obj.documents:
+            path2 = os.path.join(path, document.prefix + ext)
+            yield document, path2
+    else:
+        # assume a document-like object
+        logging.debug("iterating over document-like object...")
+        yield obj, path
 
 
 def iter_items(obj):
@@ -558,17 +608,3 @@ def iter_items(obj):
         # an item
         logging.debug("iterating over an item (in a container)...")
         return [obj]
-
-
-def iter_documents(obj, path, ext):
-    """Get an iterator if documents from a tree or document-like object."""
-    if is_tree(obj):
-        # a tree
-        logging.debug("iterating over tree...")
-        for document in obj.documents:
-            path2 = os.path.join(path, document.prefix + ext)
-            yield document, path2
-    else:
-        # assume a document-like object
-        logging.debug("iterating over document-like object...")
-        yield obj, path

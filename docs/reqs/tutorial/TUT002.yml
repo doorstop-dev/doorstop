@@ -14,25 +14,25 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Create a new child document:
 
-      doorstop new TST ./reqs/tests --parent REQ
+      $ doorstop create TST ./reqs/tests --parent REQ
 
   Add new items:
 
-      doorstop add TST
-      doorstop add TST
+      $ doorstop add TST
+      $ doorstop add TST
 
   Edit the new items in the default text editor:
 
-      doorstop edit TST1
-      doorstop edit TST2
+      $ doorstop edit TST1
+      $ doorstop edit TST2
 
   Add links to item's in the parent document:
 
-      doorstop link TST1 REQ1
-      doorstop link TST1 REQ3
-      doorstop link TST2 REQ1
-      doorstop link TST2 REQ2
+      $ doorstop link TST1 REQ1
+      $ doorstop link TST1 REQ3
+      $ doorstop link TST2 REQ1
+      $ doorstop link TST2 REQ2

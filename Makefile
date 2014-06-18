@@ -80,7 +80,7 @@ $(DEPENDS_CI): Makefile
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade docutils pdoc pylint wheel
+	$(PIP) install --upgrade docutils pdoc pylint wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -96,7 +96,7 @@ gui: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme html uml apidocs
+doc: readme html uml apidocs sphinx
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -127,10 +127,18 @@ apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
+.PHONY: sphinx
+sphinx: .depends-dev docs/sphinx/_build
+docs/sphinx/_build: $(SOURCES)
+	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
+	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
+	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
+
 .PHONY: read
 read: doc
 	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
+	$(OPEN) docs/sphinx/_build/index.html
 	$(OPEN) docs/README-pypi.html
 	$(OPEN) docs/README-github.html
 
@@ -180,13 +188,14 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-build
 .clean-build:
-	find $(PACKAGE) -name '*.pyc' -delete
-	find $(PACKAGE) -name '__pycache__' -delete
+	find . -name '*.pyc' -delete
+	find . -name '__pycache__' -delete
 	rm -rf *.egg-info
 
 .PHONY: .clean-doc
 .clean-doc:
 	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
+	rm -rf docs/sphinx/doorstop*.rst docs/sphinx/_build
 
 .PHONY: .clean-test
 .clean-test:
@@ -224,11 +233,11 @@ upload: .git-no-changes doc
 
 .PHONY: develop
 develop:
-	python setup.py develop
+	python3 setup.py develop
 
 .PHONY: install
 install:
-	python setup.py install
+	python3 setup.py install
 
 .PHONY: download
 download:

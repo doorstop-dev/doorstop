@@ -11,19 +11,19 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Create a new document:
 
-      doorstop new REQ ./reqs
+      $ doorstop create REQ ./reqs
 
   Add items:
 
-      doorstop add REQ
-      doorstop add REQ
-      doorstop add REQ
+      $ doorstop add REQ
+      $ doorstop add REQ
+      $ doorstop add REQ
 
   Edit the new items in the default text editor:
 
-      doorstop edit REQ1
-      doorstop edit REQ2
+      $ doorstop edit REQ1
+      $ doorstop edit REQ2

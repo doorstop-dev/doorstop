@@ -197,12 +197,12 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def test_new_document(self):
         """Verify a new document can be created on a tree."""
-        self.tree.new_document(EMPTY, '_TEST', parent='REQ')
+        self.tree.create_document(EMPTY, '_TEST', parent='REQ')
 
     def test_new_document_unknown_parent(self):
         """Verify an exception is raised for an unknown parent."""
         temp = tempfile.mkdtemp()
-        self.assertRaises(DoorstopError, self.tree.new_document,
+        self.assertRaises(DoorstopError, self.tree.create_document,
                           temp, '_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 

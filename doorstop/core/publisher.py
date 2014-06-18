@@ -7,7 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.types import iter_documents, iter_items, is_tree
+from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
@@ -15,20 +15,22 @@ INDEX = 'index.html'
 
 
 def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
-    """Publish a document to a given format.
+    """Publish an object to a given format.
 
     The function can be called in two ways:
 
     1. document or item-like object + output file path
     2. tree-like object + output directory path
 
-    @param obj: (1) Item, list of Items, Document or (2) Tree
-    @param path: (1) output file path or (2) output directory path
-    @param ext: file extension to override output extension
-    @param linkify: turn links into hyperlinks (for Markdown or HTML)
-    @param index: create an index.html (for HTML)
+    :param obj: (1) Item, list of Items, Document or (2) Tree
+    :param path: (1) output file path or (2) output directory path
+    :param ext: file extension to override output extension
+    :param linkify: turn links into hyperlinks (for Markdown or HTML)
+    :param index: create an index.html (for HTML)
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
+
+    :return: output location if files created, else None
 
     """
     # Determine the output format
@@ -38,25 +40,37 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     check(ext)
 
     # Publish documents
+    count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
+        count += 1
 
         # Publish content to the specified path
         create_dirname(path2)
         logging.info("creating file {}...".format(path2))
-        with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in lines(obj2, ext, linkify=linkify, **kwargs):
-                outfile.write(line + '\n')
+        with open(path2, 'wb') as outfile:  # pragma: no cover (integration test)
+            for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
+                outfile.write((line + '\n').encode('utf-8'))
 
     # Create index
-    if index:
+    if index and count:
+        count += 1
         _index(path)
+
+    # Return the published path
+    if count:
+        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        logging.info(msg)
+        return path
+    else:
+        logging.warning("nothing to publish")
+        return None
 
 
 def _index(directory, extensions=('.html',)):
     """Create an HTML index of all files in a directory.
 
-    @param directory: directory for index
-    @param extensions: file extensions to include
+    :param directory: directory for index
+    :param extensions: file extensions to include
 
     """
     # Get paths for the index index
@@ -95,13 +109,13 @@ def _lines_index(filenames):
     yield '</html>'
 
 
-def lines(obj, ext='.txt', **kwargs):
+def publish_lines(obj, ext='.txt', **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param ext: file extension to specify the output format
+    :param obj: Item, list of Items, or Document to publish
+    :param ext: file extension to specify the output format
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
     """
     gen = check(ext)
@@ -109,14 +123,14 @@ def lines(obj, ext='.txt', **kwargs):
     yield from gen(obj, **kwargs)
 
 
-def lines_text(obj, indent=8, width=79, **_):
+def _lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param indent: number of spaces to indent text
-    @param width: maximum line length
+    :param obj: Item, list of Items, or Document to publish
+    :param indent: number of spaces to indent text
+    :param width: maximum line length
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -174,13 +188,13 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def lines_markdown(obj, linkify=False):
+def _lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param linkify: turn links into hyperlinks (for conversion to HTML)
+    :param obj: Item, list of Items, or Document to publish
+    :param linkify: turn links into hyperlinks (for conversion to HTML)
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -262,14 +276,15 @@ def _format_ref(item):
 
 def _format_links(items, linkify):
     """Format a list of linked items."""
-    if linkify:
-        links = []
-        for item in items:
-            links.append("[{i}]({p}.html#{i})".format(i=item.id,
-                                                      p=item.document.prefix))
-        return ', '.join(links)
-    else:
-        return ', '.join(str(item.id) for item in items)
+    links = []
+    for item in items:
+        if is_item(item) and linkify:
+            link = "[{i}]({p}.html#{i})".format(i=item.id,
+                                                p=item.document.prefix)
+        else:
+            link = str(item.id)  # assume this is an `UnknownItem`
+        links.append(link)
+    return ', '.join(links)
 
 
 def _format_label_links(label, links, linkify):
@@ -280,13 +295,13 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def lines_html(obj, linkify=False):
+def _lines_html(obj, linkify=False):
     """Yield lines for an HTML report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param linkify: turn links into hyperlinks
+    :param obj: Item, list of Items, or Document to publish
+    :param linkify: turn links into hyperlinks
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     # Determine if a full HTML document should be generated
@@ -308,7 +323,7 @@ def lines_html(obj, linkify=False):
         yield '</style>'
         yield '</head>'
         yield '<body>'
-    text = '\n'.join(lines_markdown(obj, linkify=linkify))
+    text = '\n'.join(_lines_markdown(obj, linkify=linkify))
     html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
     yield from html.splitlines()
     if document:
@@ -317,17 +332,17 @@ def lines_html(obj, linkify=False):
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.txt': lines_text,
-                '.md': lines_markdown,
-                '.html': lines_html}
+FORMAT_LINES = {'.txt': _lines_text,
+                '.md': _lines_markdown,
+                '.html': _lines_html}
 
 
 def check(ext):
     """Confirm an extension is supported for publish.
 
-    @raise DoorstopError: for unknown formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown formats
 
-    @return: lines generator if available
+    :return: lines generator if available
 
     """
     exts = ', '.join(ext for ext in FORMAT_LINES)
