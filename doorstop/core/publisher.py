@@ -30,7 +30,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
-    @return: output location if files created, else None
+    :return: output location if files created, else None
 
     """
     # Determine the output format
