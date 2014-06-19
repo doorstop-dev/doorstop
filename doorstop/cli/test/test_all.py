@@ -478,12 +478,17 @@ class TestPublish(TempTestCase):  # pylint: disable=R0904
     def test_publish_document(self):
         """Verify 'doorstop publish' can create output."""
         self.assertIs(None, main(['publish', 'tut']))
-        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_document_with_child_links(self):
         """Verify 'doorstop publish' can create output with child links."""
-        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
+        self.assertIs(None, main(['publish', 'tut']))
         self.assertTrue(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_document_without_child_links(self):
+        """Verify 'doorstop publish' can create output without child links."""
+        self.assertIs(None, main(['publish', 'tut', '--no-child-links']))
+        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

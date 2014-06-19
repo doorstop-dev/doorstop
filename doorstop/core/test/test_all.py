@@ -526,9 +526,9 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_text_document_with_child_links(self):
-        """Verify text can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_text_document_without_child_links(self):
+        """Verify text can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.txt')
         expected = open(path).read()
         # Act
@@ -553,9 +553,9 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_markdown_document_with_child_links(self):
-        """Verify Markdown can be published from a document w/ child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_document_without_child_links(self):
+        """Verify Markdown can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.md')
         expected = open(path).read()
         # Act
@@ -581,9 +581,9 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         with open(path, 'w') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_html_document_with_child_links(self):
-        """Verify HTML can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_html_document_without_child_links(self):
+        """Verify HTML can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.html')
         expected = open(path).read()
         # Act
