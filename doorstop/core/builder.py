@@ -18,9 +18,10 @@ def build(cwd=None, root=None):
     :param cwd: current working directory
     :param root: path to root of the working copy
 
-    :raises: :class:`doorstop.common.DoorstopError` when the tree cannot be built
+    :raises: :class:`~doorstop.common.DoorstopError` when the tree
+    `cannot be built
 
-    :return: new Tree
+    :return: new :class:`~doorstop.core.tree.Tree`
 
     """
     documents = []
@@ -51,7 +52,8 @@ def _document_from_path(path, root, documents):
 
     :param path: path to a potential document
     :param root: path to root of working copy
-    :param documents: list of Documents to append results
+    :param documents: list of :class:`~doorstop.core.document.Document`
+        to append results
 
     """
     try:
