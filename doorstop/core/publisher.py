@@ -35,9 +35,11 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.html'
-    linkify = linkify if linkify is not None else is_tree(obj)
-    index = index if index is not None else is_tree(obj)
     check(ext)
+    if linkify is None:
+        linkify = is_tree(obj) and ext == '.html'
+    if index is None:
+        index = is_tree(obj) and ext == '.html'
 
     # Publish documents
     count = 0
