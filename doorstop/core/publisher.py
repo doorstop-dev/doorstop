@@ -90,10 +90,12 @@ def _index(directory, extensions=('.html',)):
         logging.warning("no files for {}".format(INDEX))
 
 
-def _lines_index(filenames):
+def _lines_index(filenames, charset='UTF-8'):
     """Yield lines of HTML for index.html."""
     yield '<!DOCTYPE html>'
     yield '<head>'
+    yield ('<meta http-equiv="content-type" content="text/html; '
+           'charset={charset}">'.format(charset=charset))
     yield '<style type="text/css">'
     yield ''
     with open(CSS) as stream:
@@ -315,9 +317,8 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
     if document:
         yield '<!DOCTYPE html>'
         yield '<head>'
-        line = ('<meta http-equiv="content-type" content="text/html; '
-                'charset={charset}">'.format(charset=charset))
-        yield line
+        yield ('<meta http-equiv="content-type" content="text/html; '
+               'charset={charset}">'.format(charset=charset))
         yield '<style type="text/css">'
         yield ''
         with open(CSS) as stream:
