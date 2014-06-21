@@ -6,7 +6,7 @@
 
 1.4     REQ003
 
-        Unicode: -40° ±1%
+        Unicode: -40Â° Â±1%
 
         Reference: external/text.txt (line 3)
 

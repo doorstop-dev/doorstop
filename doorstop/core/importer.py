@@ -125,7 +125,7 @@ def _file_csv(path, document, delimiter=',', mapping=None):
 
     # Parse the file
     logging.info("reading rows in {}...".format(path))
-    with open(path, 'r') as stream:
+    with open(path, 'r', encoding='utf-8') as stream:
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []

@@ -163,7 +163,7 @@ def _file_csv(obj, path, delimiter=','):
     :return: path of created file
 
     """
-    with open(path, 'w', newline='') as stream:
+    with open(path, 'w', newline='', encoding='utf-8') as stream:
         writer = csv.writer(stream, delimiter=delimiter)
         for row in _tabulate(obj):
             writer.writerow(row)
