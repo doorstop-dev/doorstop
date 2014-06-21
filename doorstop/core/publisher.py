@@ -7,6 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
+from doorstop.core.base import write_lines
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
@@ -48,19 +49,17 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
         # Publish content to the specified path
         create_dirname(path2)
-        logging.info("creating file {}...".format(path2))
-        with open(path2, 'wb') as outfile:  # pragma: no cover (integration test)
-            for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
-                outfile.write((line + '\n').encode('utf-8'))
+        logging.info("publishing to {}...".format(path2))
+        lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
+        write_lines(lines, path2)
 
     # Create index
     if index and count:
-        count += 1
         _index(path)
 
     # Return the published path
     if count:
-        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        msg = "published to {} file{}".format(count, 's' if count > 1 else '')
         logging.info(msg)
         return path
     else:
@@ -84,10 +83,9 @@ def _index(directory, extensions=('.html',)):
     # Create the index
     if filenames:
         path = os.path.join(directory, INDEX)
-        logging.info("publishing {}...".format(path))
-        with open(path, 'w') as outfile:
-            for line in _lines_index(filenames):
-                outfile.write(line + '\n')
+        logging.info("creating an {}...".format(INDEX))
+        lines = _lines_index(filenames)
+        write_lines(lines, path)
     else:
         logging.warning("no files for {}".format(INDEX))
 

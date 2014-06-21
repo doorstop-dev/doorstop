@@ -297,3 +297,11 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
+
+
+def write_lines(lines, path, end='\n', encoding='utf-8'):  # pragma: no cover (integration test)
+    """Write lines of text to a file."""
+    logging.debug("writing lines to {}...".format(path))
+    with open(path, 'wb') as stream:
+        for line in lines:
+            stream.write((line + end).encode(encoding))
