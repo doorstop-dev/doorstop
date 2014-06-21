@@ -96,8 +96,8 @@ def _lines_index(filenames):
     yield '<head>'
     yield '<style type="text/css">'
     yield ''
-    with open(CSS) as infile:
-        for line in infile:
+    with open(CSS) as stream:
+        for line in stream:
             yield line
     yield '</style>'
     yield '</head>'
@@ -317,8 +317,8 @@ def _lines_html(obj, linkify=False):
         yield '<head>'
         yield '<style type="text/css">'
         yield ''
-        with open(CSS) as infile:
-            for line in infile:  # pragma: no cover (integration test)
+        with open(CSS) as stream:
+            for line in stream:  # pragma: no cover (integration test)
                 yield line
         yield '</style>'
         yield '</head>'

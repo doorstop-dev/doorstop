@@ -676,8 +676,8 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'r') as infile:
-            self.backup = infile.read()
+        with open(self.ITEM, 'r') as stream:
+            self.backup = stream.read()
 
     def tearDown(self):
         with open(self.ITEM, 'w') as outfile:
@@ -688,8 +688,8 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'r') as infile:
-            text = infile.read()
+        with open(self.ITEM, 'r') as stream:
+            text = stream.read()
             self.assertEqual(self.backup, text)
 
 
