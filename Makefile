@@ -113,7 +113,7 @@ docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
 	- $(MAKE) doorstop
 	$(BIN)/doorstop publish all docs/gen --text
 	$(BIN)/doorstop publish all docs/gen --markdown
-	$(BIN)/doorstop publish all docs/gen --html --with-child-links
+	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: uml
 uml: .depends-dev docs/*.png $(SOURCES)

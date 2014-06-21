@@ -98,9 +98,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param level: level for the new item
         :param auto: automatically save the item
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item already exists
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            already exists
 
-        :return: new :class:`Item`
+        :return: new :class:`~doorstop.core.item.Item`
 
         """
         ID(identifier).check()
@@ -381,7 +382,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def parent_documents(self):
         """Get a list of documents that this item's document should link to.
 
-        Note: a document only has one parent.
+        .. note::
+
+           A document only has one parent.
 
         """
         # TODO: determine if an `UnknownDocument` class is needed
@@ -421,9 +424,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def get_issues(self, **kwargs):
         """Yield all the item's issues.
 
-        :return: generator of :class:`doorstop.common.DoorstopError`,
-                              :class:`doorstop.common.DoorstopWarning`,
-                              :class:`doorstop.common.DoorstopInfo`
+        :return: generator of :class:`~doorstop.common.DoorstopError`,
+                              :class:`~doorstop.common.DoorstopWarning`,
+                              :class:`~doorstop.common.DoorstopInfo`
 
         """
         assert kwargs.get('document_hook') is None
@@ -539,11 +542,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param root: override path to the working copy (for testing)
         :param ignored: override VCS ignore function (for testing)
 
-        :raises: :class:`doorstop.common.DoorstopError` when no reference is found
+        :raises: :class:`~doorstop.common.DoorstopError` when no
+            reference is found
 
-        :return: relative path to file, line number (when found in file)
-                 relative path to file, None (when found as filename)
-                 None, None (when no reference set)
+        :return: relative path to file or None (when no reference
+            set),
+            line number (when found in file) or None (when found as
+            filename) or None (when no reference set)
 
         """
         root = root or self.root

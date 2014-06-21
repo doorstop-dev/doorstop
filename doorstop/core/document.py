@@ -91,9 +91,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param parent: parent ID for the new document
         :param auto: automatically save the document
 
-        :raises: :class:`doorstop.common.DoorstopError` if the document already exists
+        :raises: :class:`~doorstop.common.DoorstopError` if the document
+            already exists
 
-        :return: new Document
+        :return: new :class:`~doorstop.core.document.Document`
 
         """
         # TODO: raise a specific exception for invalid separator characters?
@@ -295,7 +296,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param level: desired item level
         :param reorder: update levels of document items
 
-        :return: added Item
+        :return: added :class:`~doorstop.core.item.Item`
 
         """
         number = number or self.next
@@ -323,9 +324,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :param value: item or ID
         :param reorder: update levels of document items
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be found
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be found
 
-        :return: removed Item
+        :return: removed :class:`~doorstop.core.item.Item`
 
         """
         identifier = ID(value)
@@ -429,9 +431,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param value: item or ID
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be found
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be found
 
-        :return: matching Item
+        :return: matching :class:`~doorstop.core.item.Item`
 
         """
         identifier = ID(value)
@@ -446,9 +449,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param item_hook: function to call for custom item validation
 
-        :return: generator of :class:`doorstop.common.DoorstopError`,
-                              :class:`doorstop.common.DoorstopWarning`,
-                              :class:`doorstop.common.DoorstopInfo`
+        :return: generator of :class:`~doorstop.common.DoorstopError`,
+                              :class:`~doorstop.common.DoorstopWarning`,
+                              :class:`~doorstop.common.DoorstopInfo`
 
         """
         assert kwargs.get('document_hook') is None

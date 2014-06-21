@@ -13,6 +13,7 @@ import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
 from doorstop.common import DoorstopError, create_dirname
+from doorstop.core.base import write_lines
 from doorstop.core.types import iter_documents, iter_items
 
 LIST_SEP = ',\n'  # string separating list values when joined in a string
@@ -49,17 +50,16 @@ def export(obj, path, ext=None, **kwargs):
 
         # Export content to the specified path
         create_dirname(path2)
-        logging.info("creating file {}...".format(path2))
+        logging.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
-            with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-                for line in export_lines(obj2, ext, **kwargs):
-                    outfile.write(line + '\n')
+            lines = export_lines(obj2, ext, **kwargs)
+            write_lines(lines, path2)
         else:
             export_file(obj2, path2, ext, **kwargs)
 
     # Return the exported path
     if count:
-        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        msg = "exported to {} file{}".format(count, 's' if count > 1 else '')
         logging.info(msg)
         return path
     else:

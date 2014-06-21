@@ -26,4 +26,4 @@ CHECK_REF = True  # validate external file references
 CHECK_CHILD_LINKS = True  # validate reverse links
 
 # Publishing settings
-PUBLISH_CHILD_LINKS = False
+PUBLISH_CHILD_LINKS = True  # include child links when publishing

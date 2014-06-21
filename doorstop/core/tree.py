@@ -14,7 +14,7 @@ from doorstop.core import editor
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
 
-    """A bidirectional tree structure to store the hierarchy of documents.
+    """A bidirectional tree structure to store a hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
     document processing and validation.
@@ -25,12 +25,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def from_list(documents, root=None):
         """Initialize a new tree from a list of documents.
 
-        :param documents: list of Documents
+        :param documents: list of :class:`~doorstop.core.document.Document`
         :param root: path to root of the project
 
-        :raises: :class:`doorstop.common.DoorstopError` when the tree cannot be built
+        :raises: :class:`~doorstop.common.DoorstopError` when the tree
+            cannot be built
 
-        :return: new Tree
+        :return: new :class:`~doorstop.core.tree.Tree`
 
         """
         if not documents:
@@ -109,9 +110,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def _place(self, document):
         """Attempt to place the document in the current tree.
 
-        :param document: Document to add
+        :param document: :class:`doorstop.core.document.Document` to add
 
-        :raises: :class:`doorstop.common.DoorstopError` if the document cannot yet be placed
+        :raises: :class:`~doorstop.common.DoorstopError` if the document
+            cannot yet be placed
 
         """
         logging.debug("trying to add '{}'...".format(document))
@@ -181,9 +183,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param digits: number of digits for the document's numbers
         :param parent: parent document's prefix
 
-        :raises: :class:`doorstop.common.DoorstopError` if the document cannot be created
+        :raises: :class:`~doorstop.common.DoorstopError` if the
+            document cannot be created
 
-        :return: newly created and placed Document
+        :return: newly created and placed document
+            :class:`~doorstop.core.document.Document`
 
         """
         prefix = Prefix(value)
@@ -209,9 +213,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param level: desired item level
         :param reorder: update levels of document items
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be created
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be created
 
-        :return: newly created Item
+        :return: newly created :class:`~doorstop.core.item.Item`
 
         """
         prefix = Prefix(value)
@@ -227,9 +232,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param value: item or ID
         :param reorder: update levels of document items
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be removed
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be removed
 
-        :return: removed Item
+        :return: removed :class:`~doorstop.core.item.Item`
 
         """
         identifier = ID(value)
@@ -250,9 +256,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param cid: child item's ID (or child item)
         :param pid: parent item's ID (or parent item)
 
-        :raises: :class:`doorstop.common.DoorstopError` if the link cannot be created
+        :raises: :class:`~doorstop.common.DoorstopError` if the link
+            cannot be created
 
-        :return: child Item, parent Item
+        :return: child :class:`~doorstop.core.item.Item`,
+                 parent :class:`~doorstop.core.item.Item`
 
         """
         logging.info("linking {} to {}...".format(cid, pid))
@@ -270,9 +278,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param cid: child item's ID (or child item)
         :param pid: parent item's ID (or parent item)
 
-        :raises: :class:`doorstop.common.DoorstopError` if the link cannot be removed
+        :raises: :class:`~doorstop.common.DoorstopError` if the link
+            cannot be removed
 
-        :return: child Item, parent Item
+        :return: child :class:`~doorstop.core.item.Item`,
+                 parent :class:`~doorstop.core.item.Item`
 
         """
         logging.info("unlinking '{}' from '{}'...".format(cid, pid))
@@ -291,9 +301,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param tool: alternative text editor to open the item
         :param launch: open the text editor
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be found
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be found
 
-        :return: edited Item
+        :return: edited :class:`~doorstop.core.item.Item`
 
         """
         logging.debug("looking for {}...".format(identifier))
@@ -314,9 +325,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         :param value: document or prefix
 
-        :raises: :class:`doorstop.common.DoorstopError` if the document cannot be found
+        :raises: :class:`~doorstop.common.DoorstopError` if the document
+            cannot be found
 
-        :return: matching Document
+        :return: matching :class:`~doorstop.core.document.Document`
 
         """
         prefix = Prefix(value)
@@ -344,9 +356,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         :param value: item or ID
 
-        :raises: :class:`doorstop.common.DoorstopError` if the item cannot be found
+        :raises: :class:`~doorstop.common.DoorstopError` if the item
+            cannot be found
 
-        :return: matching Item
+        :return: matching :class:`~doorstop.core.item.Item`
 
         """
         identifier = ID(value)
@@ -380,9 +393,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
-        :return: generator of :class:`doorstop.common.DoorstopError`,
-                              :class:`doorstop.common.DoorstopWarning`,
-                              :class:`doorstop.common.DoorstopInfo`
+        :return: generator of :class:`~doorstop.common.DoorstopError`,
+                              :class:`~doorstop.common.DoorstopWarning`,
+                              :class:`~doorstop.common.DoorstopInfo`
 
         """
         hook = document_hook if document_hook else lambda **kwargs: []
@@ -403,9 +416,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def load(self, reload=False):
         """Load the tree's documents and items.
 
-        Unlike the Document and Item class, this load method is not
+        Unlike the :class:`~doorstop.core.document.Document` and
+        :class:`~doorstop.core.item.Item` class, this load method is not
         used internally. Its purpose is to force the loading of
-        content in large trees where lazy loading may be too slow.
+        content in large trees where lazy loading may cause long delays
+        late in processing.
 
         """
         if self._loaded and not reload:
