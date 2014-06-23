@@ -6,7 +6,7 @@ Hello, world!
 
 ## 1.4 REQ003
 
-Hello, world!
+Unicode: -40° ±1%
 
 Reference: external/text.txt (line 3)
 
