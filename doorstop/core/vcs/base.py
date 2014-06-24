@@ -49,8 +49,8 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     def _update_ignores_from_file(self, path):  # pragma: no cover (integration test)
         """Parse and append patterns from a standard ignores file."""
-        with open(path, 'r') as infile:
-            for line in infile:
+        with open(path, 'r') as stream:
+            for line in stream:
                 pattern = line.strip(" @\\/*\n")
                 if pattern and not pattern.startswith('#'):
                     self._ignores.append('*' + pattern + '*')

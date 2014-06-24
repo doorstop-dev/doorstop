@@ -516,61 +516,61 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'published.txt')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_text_document_with_child_links(self):
-        """Verify text can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_text_document_without_child_links(self):
+        """Verify text can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.txt')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'published.md')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_markdown_document_with_child_links(self):
-        """Verify Markdown can be published from a document w/ child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_document_without_child_links(self):
+        """Verify Markdown can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.md')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'published.html')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.html',
                                              linkify=True)
@@ -578,21 +578,21 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_html_document_with_child_links(self):
-        """Verify HTML can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_html_document_without_child_links(self):
+        """Verify HTML can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.html')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
 
@@ -649,7 +649,7 @@ def read_csv(path, delimiter=','):
     """Return a list of rows from a CSV file."""
     rows = []
     try:
-        with open(path, 'r', newline='') as stream:
+        with open(path, 'r', newline='', encoding='utf-8') as stream:
             reader = csv.reader(stream, delimiter=delimiter)
             for row in reader:
                 rows.append(row)

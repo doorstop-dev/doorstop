@@ -50,7 +50,8 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def validate(self, document_hook=None, item_hook=None):
         """Check the object for validity.
 
-        :param document_hook: function to call for custom document validation
+        :param document_hook: function to call for custom document
+            validation
         :param item_hook: function to call for custom item validation
 
         :return: indication that the object is valid
@@ -75,12 +76,13 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the objects's issues.
 
-        :param document_hook: function to call for custom document validation
+        :param document_hook: function to call for custom document
+            validation
         :param item_hook: function to call for custom item validation
 
-        :return: generator of :class:`doorstop.common.DoorstopError',
-                              :class:`doorstop.common.DoorstopWarning`,
-                              :class:`doorstop.common.DoorstopInfo`
+        :return: generator of :class:`~doorstop.common.DoorstopError`,
+                              :class:`~doorstop.common.DoorstopWarning`,
+                              :class:`~doorstop.common.DoorstopInfo`
 
         """
 
@@ -137,7 +139,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :param path: path to new file
         :param name: humanized name for this file
 
-        :raises: :class:`doorstop.common.DoorstopError` if the file already exists
+        :raises: :class:`~doorstop.common.DoorstopError` if the file
+            already exists
 
         """
         if os.path.exists(path):
@@ -294,3 +297,11 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
+
+
+def write_lines(lines, path, end='\n', encoding='utf-8'):  # pragma: no cover (integration test)
+    """Write lines of text to a file."""
+    logging.debug("writing lines to {}...".format(path))
+    with open(path, 'wb') as stream:
+        for line in lines:
+            stream.write((line + end).encode(encoding))
