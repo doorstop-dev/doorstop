@@ -126,6 +126,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_item_normative(self):
         """Verify text can be published from an item (normative)."""
         expected = ("1.2     req4" + '\n\n'
@@ -170,13 +171,23 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_markdown_item_with_child_links(self):
-        """Verify Markdown can be published from an item (heading)."""
+        """Verify Markdown can be published from an item w/ child links."""
         # Act
         lines = publisher.publish_lines(self.item2, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_item_without_child_links(self):
+        """Verify Markdown can be published from an item w/o child links."""
+        # Act
+        lines = publisher.publish_lines(self.item2, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertNotIn("Child links", text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
         expected = ("## 1.2 req4" + '\n\n'
@@ -215,6 +226,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
+
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_html_item_without_child_links(self):
+        """Verify HTML can be published from an item w/o child links."""
+        # Act
+        lines = publisher.publish_lines(self.item2, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertNotIn("Child links", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_html_item_with_child_links_linkify(self):

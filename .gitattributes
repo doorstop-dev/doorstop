@@ -1,8 +1,11 @@
 * text=auto
 
-*.yml text eol=lf
-*.html text eol=lf
-*.csv -text
-*.tsv -text
+# Python, Git, and Cygwin have different ideas about the correct line endings
+*.yml  -text
+*.txt  -text
+*.md   -text
+*.html -text
+*.csv  -text
+*.tsv  -text
 
 *.xlsx binary

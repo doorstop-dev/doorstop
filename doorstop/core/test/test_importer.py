@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Unit tests for the doorstop.core.importer module."""
 
 import unittest
@@ -64,7 +66,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
                           '', True, False, True],
@@ -133,7 +135,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', None,
                           None, True, False, True],
