@@ -90,7 +90,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(2, mock_open.call_count)
         self.assertEqual(0, mock_index.call_count)
 
-    def test_publish_tree_no_documents(self):
+    @patch('doorstop.core.publisher._index')
+    def test_publish_tree_no_documents(self, mock_index):
         """Verify a tree can be published with no documents."""
         dirpath = os.path.join('mock', 'directory')
         mock_tree = MagicMock()
@@ -99,6 +100,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         path2 = publisher.publish(mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(None, path2)
+        mock_index.assert_never_called()
 
     def test_index(self):
         """Verify an HTML index can be created."""
@@ -116,6 +118,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         publisher._index(EMPTY)  # pylint: disable=W0212
         # Assert
         self.assertFalse(os.path.isfile(path))
+
+    def test_index_tree(self):
+        path = os.path.join(FILES, 'index2.html')
+        mock_tree = MagicMock()
+        mock_tree.documents = []
+        # Act
+        publisher._index(FILES, tree=mock_tree)  # pylint: disable=W0212
+        # Assert
+        self.assertTrue(os.path.isfile(path))
 
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""

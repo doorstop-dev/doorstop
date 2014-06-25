@@ -111,18 +111,23 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '</style>'
     yield '</head>'
     yield '<body>'
+    yield '<div align="center">'
     for filename in filenames:
         name = os.path.splitext(filename)[0]
         yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-    if tree:
+    yield '</div>'
+    documents = tree.documents if tree else None
+    if documents:
         yield '<br> <hr> <br>'
         # table
-        yield '<table border="1">'
+        yield '<table align="center">'
         # header
+        for document in documents:
+            yield '<col width="100">'
         yield '<tr>'
-        for document in tree:
+        for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield '<td> {l} </td>'.format(l=link)
+            yield '<td height="25" align="center"> {l} </td>'.format(l=link)
         yield '</tr>'
         # data
         # TODO: add table data
@@ -300,8 +305,8 @@ def _format_links(items, linkify):
     """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        if is_item(item) and linkify:
-            link = _format_item_link(item, linkify=True)
+        if is_item(item):
+            link = _format_item_link(item, linkify=linkify)
         else:
             link = str(item.id)  # assume this is an `UnknownItem`
         links.append(link)
@@ -309,7 +314,7 @@ def _format_links(items, linkify):
 
 
 # TODO: delete this function if not used
-def _format_document_link(document, linkify=True):  # pramga: no cover
+def _format_document_link(document, linkify=True):  # pragma: no cover
     """Format a document link in Markdown."""
     if linkify:
         return "[{p}]({p}.html)".format(p=document.prefix)
