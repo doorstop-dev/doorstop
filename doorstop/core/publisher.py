@@ -67,10 +67,11 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         return None
 
 
-def _index(directory, extensions=('.html',), tree=None):
+def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     """Create an HTML index of all files in a directory.
 
     :param directory: directory for index
+    :param index: filename for index
     :param extensions: file extensions to include
     :param tree: optional tree to determine index structure
 
@@ -83,12 +84,12 @@ def _index(directory, extensions=('.html',), tree=None):
 
     # Create the index
     if filenames:
-        path = os.path.join(directory, INDEX)
-        logging.info("creating an {}...".format(INDEX))
+        path = os.path.join(directory, index)
+        logging.info("creating an {}...".format(index))
         lines = _lines_index(filenames, tree=tree)
         write_lines(lines, path)
     else:
-        logging.warning("no files for {}".format(INDEX))
+        logging.warning("no files for {}".format(index))
 
 
 def _lines_index(filenames, charset='UTF-8', tree=None):
@@ -118,7 +119,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '</div>'
     documents = tree.documents if tree else None
     if documents:
-        yield '<br> <hr> <br>'
+        yield '<br> <br>'
         # table
         yield '<table align="center">'
         # header
@@ -127,10 +128,11 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield '<td height="25" align="center"> {l} </td>'.format(l=link)
+            yield '  <td height="25" align="center"> {l} </td>'.format(l=link)
         yield '</tr>'
         # data
         # TODO: add table data
+        yield '</table>'
 
     yield '</body>'
     yield '</html>'
@@ -305,8 +307,8 @@ def _format_links(items, linkify):
     """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        if is_item(item):
-            link = _format_item_link(item, linkify=linkify)
+        if is_item(item) and linkify:
+            link = _format_item_link(item)
         else:
             link = str(item.id)  # assume this is an `UnknownItem`
         links.append(link)
@@ -314,20 +316,14 @@ def _format_links(items, linkify):
 
 
 # TODO: delete this function if not used
-def _format_document_link(document, linkify=True):  # pragma: no cover
+def _format_document_link(document):  # pragma: no cover
     """Format a document link in Markdown."""
-    if linkify:
-        return "[{p}]({p}.html)".format(p=document.prefix)
-    else:
-        return str(document.prefix)
+    return "[{p}]({p}.html)".format(p=document.prefix)
 
 
-def _format_item_link(item, linkify=True):
+def _format_item_link(item):
     """Format an item link in Markdown."""
-    if linkify:
-        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
-    else:
-        return str(item.id)
+    return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
 
 
 def _format_label_links(label, links, linkify):

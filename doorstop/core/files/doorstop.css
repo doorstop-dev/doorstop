@@ -100,3 +100,7 @@ hr {
     margin: 0 auto 0 0;
     color: #999;
 }
+table, th, td {
+    border:1px solid black;
+    border-collapse:collapse;
+}

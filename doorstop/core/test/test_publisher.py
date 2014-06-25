@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.publisher module."""
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, Mock, MagicMock
 
 import os
 
@@ -120,11 +120,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(os.path.isfile(path))
 
     def test_index_tree(self):
+        """Verify an HTML index can be created with a tree."""
         path = os.path.join(FILES, 'index2.html')
         mock_tree = MagicMock()
         mock_tree.documents = []
+        for prefix in ('SYS', 'HLR', 'LLR', 'HLT', 'LLT'):
+            mock_document = Mock()
+            mock_document.prefix = prefix
+            mock_tree.documents.append(mock_document)
         # Act
-        publisher._index(FILES, tree=mock_tree)  # pylint: disable=W0212
+        publisher._index(FILES, index="index2.html", tree=mock_tree)  # pylint: disable=W0212
         # Assert
         self.assertTrue(os.path.isfile(path))
 
