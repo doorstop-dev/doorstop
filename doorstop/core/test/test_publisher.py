@@ -128,6 +128,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
             mock_document = Mock()
             mock_document.prefix = prefix
             mock_tree.documents.append(mock_document)
+        mock_tree.draw = lambda: "(mock tree structure)"
         # Act
         publisher._index(FILES, index="index2.html", tree=mock_tree)  # pylint: disable=W0212
         # Assert

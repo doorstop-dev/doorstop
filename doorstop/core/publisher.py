@@ -112,16 +112,37 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '</style>'
     yield '</head>'
     yield '<body>'
-    yield '<div align="center">'
-    for filename in filenames:
-        name = os.path.splitext(filename)[0]
-        yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-    yield '</div>'
+    # Tree structure
+    text = tree.draw() if tree else None
+    if text:
+        yield ''
+        yield '<h3>Tree Structure:</h3>'
+        yield '<pre><code>' + text + '</pre></code>'
+    # Additional files
+    if filenames:
+        if text:
+            yield ''
+            yield '<hr>'
+        yield ''
+        yield '<h3>Published Documents:</h3>'
+        yield '<p>'
+        yield '<ul>'
+        for filename in filenames:
+            name = os.path.splitext(filename)[0]
+            yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+        yield '</ul>'
+        yield '</p>'
+    # Traceability table
     documents = tree.documents if tree else None
     if documents:
-        yield '<br> <br>'
+        if text or filenames:
+            yield ''
+            yield '<hr>'
+        yield ''
         # table
-        yield '<table align="center">'
+        yield '<h3>Item Traceability:</h3>'
+        yield '<p>'
+        yield '<table>'
         # header
         for document in documents:
             yield '<col width="100">'
@@ -133,7 +154,9 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         # data
         # TODO: add table data
         yield '</table>'
+        yield '</p>'
 
+    yield ''
     yield '</body>'
     yield '</html>'
 
