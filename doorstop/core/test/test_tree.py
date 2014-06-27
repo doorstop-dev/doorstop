@@ -26,26 +26,30 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def setUpClass(cls):
         a = Tree('a', root='.')
         b1 = Tree('b1', parent=a, root='.')
+        d = Tree('d', parent=b1, root='.')
+        e = Tree('e', parent=d, root='.')
         b2 = Tree('b2', parent=a, root='.')
         c1 = Tree('c1', parent=b2, root='.')
         c2 = Tree('c2', parent=b2, root='.')
         a.children = [b1, b2]
+        b1.children = [d]
+        d.children = [e]
         b2.children = [c1, c2]
         cls.tree = a
 
     def test_repr(self):
         """Verify trees can be represented."""
-        text = "<Tree a <- [ b1, b2 <- [ c1, c2 ] ]>"
+        text = "<Tree a <- [ b1 <- [ d <- [ e ] ], b2 <- [ c1, c2 ] ]>"
         self.assertEqual(text, repr(self.tree))
 
     def test_str(self):
         """Verify trees can be converted to strings."""
-        text = "a <- [ b1, b2 <- [ c1, c2 ] ]"
+        text = "a <- [ b1 <- [ d <- [ e ] ], b2 <- [ c1, c2 ] ]"
         self.assertEqual(text, str(self.tree))
 
     def test_len(self):
         """Verify a tree lengths are correct."""
-        self.assertEqual(5, len(self.tree))
+        self.assertEqual(7, len(self.tree))
 
     def test_getitem(self):
         """Verify item access is not allowed on trees."""
@@ -54,12 +58,32 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def test_iter(self):
         """Verify a tree can be iterated over."""
         items = [d for d in self.tree]
-        self.assertListEqual(['a', 'b1', 'b2', 'c1', 'c2'], items)
+        self.assertListEqual(['a', 'b1', 'd', 'e', 'b2', 'c1', 'c2'], items)
 
     def test_contains(self):
         """Verify a tree can be checked for contents."""
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
+
+    def test_draw(self):
+        """Verify trees structure can be drawn."""
+        text = ("a" + '\n'
+                "|   " + '\n'
+                "├ ‒ b1" + '\n'
+                "|   |   " + '\n'
+                "|   └ ‒ d" + '\n'
+                "|       |   " + '\n'
+                "|       └ ‒ e" + '\n'
+                "|   " + '\n'
+                "└ ‒ b2" + '\n'
+                "    |   " + '\n'
+                "    ├ ‒ c1" + '\n'
+                "    |   " + '\n'
+                "    └ ‒ c2")
+        logging.debug('\n' + text)
+        text2 = self.tree.draw()
+        logging.debug('\n' + text2)
+        self.assertEqual(text, text2)
 
     @patch('doorstop.settings.REORDER', False)
     def test_from_list(self):
