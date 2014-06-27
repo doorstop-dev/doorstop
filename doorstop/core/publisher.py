@@ -108,7 +108,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield ''
     with open(CSS) as stream:
         for line in stream:
-            yield line.strip()
+            yield line.rstrip()
         yield ''
     yield '</style>'
     yield '</head>'
@@ -406,7 +406,8 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield ''
         with open(CSS) as stream:
             for line in stream:  # pragma: no cover (integration test)
-                yield line
+                yield line.rstrip()
+            yield ''
         yield '</style>'
         yield '</head>'
         yield '<body>'
