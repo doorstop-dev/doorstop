@@ -112,6 +112,19 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify document non-equality is correct."""
         self.assertNotEqual(self.document, None)
 
+    def test_hash(self):
+        """Verify documents can be hashed."""
+        document1 = MockDocument('path/to/fake1')
+        document2 = MockDocument('path/to/fake2')
+        document3 = MockDocument('path/to/fake2')
+        my_set = set()
+        # Act
+        my_set.add(document1)
+        my_set.add(document2)
+        my_set.add(document3)
+        # Assert
+        self.assertEqual(2, len(my_set))
+
     def test_len(self):
         """Verify a document has a length."""
         self.assertEqual(5, len(self.document))
