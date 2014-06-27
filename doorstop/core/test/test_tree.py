@@ -69,17 +69,17 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         """Verify trees structure can be drawn."""
         text = ("a" + '\n'
                 "|   " + '\n'
-                "├ ‒ b1" + '\n'
+                "├ ─ b1" + '\n'
                 "|   |   " + '\n'
-                "|   └ ‒ d" + '\n'
+                "|   └ ─ d" + '\n'
                 "|       |   " + '\n'
-                "|       └ ‒ e" + '\n'
+                "|       └ ─ e" + '\n'
                 "|   " + '\n'
-                "└ ‒ b2" + '\n'
+                "└ ─ b2" + '\n'
                 "    |   " + '\n'
-                "    ├ ‒ c1" + '\n'
+                "    ├ ─ c1" + '\n'
                 "    |   " + '\n'
-                "    └ ‒ c2")
+                "    └ ─ c2")
         logging.debug('\n' + text)
         text2 = self.tree.draw()
         logging.debug('\n' + text2)
@@ -218,6 +218,20 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_issues(self):
         """Verify an tree's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.tree.issues))
+
+    def test_get_traceability(self):
+        """Verify traceability rows are correct."""
+        rows = [
+            (self.tree.find_item('SYS001'), self.tree.find_item('REQ001')),
+            (self.tree.find_item('SYS002'), self.tree.find_item('REQ001')),
+            (None, self.tree.find_item('REQ002')),
+            (None, self.tree.find_item('REQ004')),
+        ]
+        # Act
+        rows2 = self.tree.get_traceability()
+        # Assert
+        self.maxDiff = None
+        self.assertListEqual(rows, rows2)
 
     def test_new_document(self):
         """Verify a new document can be created on a tree."""

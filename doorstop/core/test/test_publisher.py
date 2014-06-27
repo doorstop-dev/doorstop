@@ -125,10 +125,20 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.documents = []
         for prefix in ('SYS', 'HLR', 'LLR', 'HLT', 'LLT'):
-            mock_document = Mock()
+            mock_document = MagicMock()
             mock_document.prefix = prefix
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
+        mock_item = Mock()
+        mock_item.id = 'KNOWN-001'
+        mock_item_unknown = Mock(spec=['id'])
+        mock_item_unknown.id = 'UNKNOWN-002'
+        mock_trace = [
+            (None, mock_item, None, None, None),
+            (None, None, None, mock_item_unknown, None),
+            (None, None, None, None, None),
+        ]
+        mock_tree.get_traceability = lambda: mock_trace
         # Act
         publisher._index(FILES, index="index2.html", tree=mock_tree)  # pylint: disable=W0212
         # Assert

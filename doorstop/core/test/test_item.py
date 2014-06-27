@@ -68,6 +68,19 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 
+    def test_hash(self):
+        """Verify items can be hashed."""
+        item1 = MockItem('path/to/fake1.yml')
+        item2 = MockItem('path/to/fake2.yml')
+        item3 = MockItem('path/to/fake2.yml')
+        my_set = set()
+        # Act
+        my_set.add(item1)
+        my_set.add(item2)
+        my_set.add(item3)
+        # Assert
+        self.assertEqual(2, len(my_set))
+
     def test_ne(self):
         """Verify item non-equality is correct."""
         self.assertNotEqual(self.item, None)

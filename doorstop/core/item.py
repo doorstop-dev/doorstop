@@ -72,6 +72,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             return "{} ({})".format(self.id, self.relpath)
 
+    def __hash__(self):
+        return hash(self.path)
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
 
@@ -684,6 +687,8 @@ class UnknownItem(object):
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path
+
+    normative = False  # do not include unknown items in traceability
 
     def __init__(self, value, spec=Item):
         self._id = ID(value)

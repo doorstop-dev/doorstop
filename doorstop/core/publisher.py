@@ -108,7 +108,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield ''
     with open(CSS) as stream:
         for line in stream:
-            yield line
+            yield line.strip()
+        yield ''
     yield '</style>'
     yield '</head>'
     yield '<body>'
@@ -149,10 +150,22 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield '  <td height="25" align="center"> {l} </td>'.format(l=link)
+            yield '  <th height="25" align="center"> {l} </th>'.format(l=link)
         yield '</tr>'
         # data
-        # TODO: add table data
+        for index, row in enumerate(tree.get_traceability()):
+            if index % 2:
+                yield '<tr class="alt">'
+            else:
+                yield '<tr>'
+            for item in row:
+                if item is None:
+                    link = ''
+                else:
+                    link = _format_html_item_link(item)
+                yield '  <td height="25" align="center"> {} </td>'.format(link)
+            yield '</tr>'
+
         yield '</table>'
         yield '</p>'
 
@@ -258,14 +271,14 @@ def _lines_markdown(obj, linkify=False):
 
             # Level and Text
             standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
-            attr_list = _format_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
         else:
 
             # Level and ID
             standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
-            attr_list = _format_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
             # Text
@@ -286,8 +299,8 @@ def _lines_markdown(obj, linkify=False):
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                links = _format_links(items2, linkify)
-                label_links = _format_label_links(label, links, linkify)
+                links = _format_md_links(items2, linkify)
+                label_links = _format_md_label_links(label, links, linkify)
                 yield label_links
 
             # Child links
@@ -296,8 +309,8 @@ def _lines_markdown(obj, linkify=False):
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"
-                    links = _format_links(items2, linkify)
-                    label_links = _format_label_links(label, links, linkify)
+                    links = _format_md_links(items2, linkify)
+                    label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
 
         yield ""  # break between items
@@ -311,7 +324,7 @@ def _format_level(level):
     return text
 
 
-def _format_attr_list(item, linkify):
+def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
     return " {{: #{i} }}".format(i=item.id) if linkify else ''
 
@@ -326,30 +339,40 @@ def _format_ref(item):
         return "Reference: '{r}'".format(r=item.ref)
 
 
-def _format_links(items, linkify):
+def _format_md_links(items, linkify):
     """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        if is_item(item) and linkify:
-            link = _format_item_link(item)
-        else:
-            link = str(item.id)  # assume this is an `UnknownItem`
+        link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
     return ', '.join(links)
 
 
 # TODO: delete this function if not used
-def _format_document_link(document):  # pragma: no cover
+def _format_md_document_link(document):  # pragma: no cover
     """Format a document link in Markdown."""
     return "[{p}]({p}.html)".format(p=document.prefix)
 
 
-def _format_item_link(item):
+def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
-    return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+    if linkify and is_item(item):
+        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+    else:
+        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
 
 
-def _format_label_links(label, links, linkify):
+def _format_html_item_link(item, linkify=True):
+    """Format an item link in HTML."""
+    if linkify and is_item(item):
+        link = '<a href="{p}.html#{i}">{i}</a>'.format(i=item.id,
+                                                       p=item.document.prefix)
+        return link
+    else:
+        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+
+
+def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
         return "*{lb}* {ls}".format(lb=label, ls=links)

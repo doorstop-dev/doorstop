@@ -403,6 +403,89 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
+    def get_traceability(self):
+        """Return sorted rows of traceability slices.
+
+        :return: list of list of :class:`~doorstop.core.item.Item` or `None`
+
+        """
+        def by_id(row):
+            """Helper function to sort rows by ID."""
+            row2 = []
+            for item in row:
+                if item:
+                    row2.append('0' + str(item.id))
+                else:
+                    row2.append('1')  # force `None` to sort after items
+            return row2
+
+        # Create mapping of document prefix to slice index
+        mapping = {}
+        for index, document in enumerate(self.documents):
+            mapping[document.prefix] = index
+
+        # Collect all rows
+        rows = set()
+        for index, document in enumerate(self.documents):
+            for item in document:
+
+                for row in self._iter_rows(item, mapping):
+                    rows.add(row)
+
+        # Sort rows
+        return sorted(rows, key=by_id)
+
+    def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
+        """Generate all traceability row slices.
+
+        :param item: base :class:`~doorstop.core.item.Item` for slicing
+        :param mapping: `dict` of document prefix to slice index
+        :param parent: indicate recursion is in the parent direction
+        :param child: indicates recursion is in the child direction
+        :param row: currently generated row
+
+        """
+        class Row(list):
+
+            """List type that tracks upper and lower boundaries."""
+
+            def __init__(self, *args, parent=False, child=False, **kwargs):
+                super().__init__(*args, **kwargs)
+                # Flags to indicate upper and lower bounds have been hit
+                self.parent = parent
+                self.child = child
+
+        if item.normative:
+
+            # Start the next row or copy from recursion
+            if row is None:
+                row = Row([None] * len(mapping))
+            else:
+                row = Row(row, parent=row.parent, child=row.child)
+
+            # Add the current item to the row
+            row[mapping[item.document.prefix]] = item
+
+            # Recurse to the next parent/child item
+            if parent:
+                items = item.parent_items
+                for item2 in items:
+                    yield from self._iter_rows(item2, mapping,
+                                               child=False, row=row)
+                if not items:
+                    row.parent = True
+            if child:
+                items = item.child_items
+                for item2 in items:
+                    yield from self._iter_rows(item2, mapping,
+                                               parent=False, row=row)
+                if not items:
+                    row.child = True
+
+            # Yield the row if both boundaries have been hit
+            if row.parent and row.child:
+                yield tuple(row)
+
     @clear_document_cache
     @clear_item_cache
     def load(self, reload=False):
@@ -448,10 +531,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             yield '|   '
             if count < len(self.children):
                 base = '|   '
-                indent = '├ ‒ '
+                indent = '├ ─ '
             else:
                 base = '    '
-                indent = '└ ‒ '
+                indent = '└ ─ '
             for count, line in enumerate(child._draw_lines(), start=1):  # pylint: disable=W0212
                 if count == 1:
                     yield indent + line

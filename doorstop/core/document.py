@@ -61,6 +61,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             return "{} ({})".format(self.prefix, self.relpath)
 
+    def __hash__(self):
+        return hash(self.path)
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.path == other.path
 
