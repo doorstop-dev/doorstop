@@ -105,11 +105,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield ('<meta http-equiv="content-type" content="text/html; '
            'charset={charset}">'.format(charset=charset))
     yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as stream:
-        for line in stream:
-            yield line.rstrip()
-        yield ''
+    yield from _lines_css()
     yield '</style>'
     yield '</head>'
     yield '<body>'
@@ -165,13 +161,20 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
                     link = _format_html_item_link(item)
                 yield '  <td height="25" align="center"> {} </td>'.format(link)
             yield '</tr>'
-
         yield '</table>'
         yield '</p>'
-
     yield ''
     yield '</body>'
     yield '</html>'
+
+
+def _lines_css():
+    """Yield lines of CSS to embedded in HTML."""
+    yield ''
+    with open(CSS) as stream:
+        for line in stream:
+            yield line.rstrip()
+    yield ''
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
@@ -403,11 +406,7 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield ('<meta http-equiv="content-type" content="text/html; '
                'charset={charset}">'.format(charset=charset))
         yield '<style type="text/css">'
-        yield ''
-        with open(CSS) as stream:
-            for line in stream:  # pragma: no cover (integration test)
-                yield line.rstrip()
-            yield ''
+        yield from _lines_css()
         yield '</style>'
         yield '</head>'
         yield '<body>'

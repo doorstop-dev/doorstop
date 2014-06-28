@@ -507,6 +507,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._loaded = True
 
     def draw(self):
+        """Get the tree structure as text."""
         return '\n'.join(self._draw_lines())
 
     def _draw_line(self):
