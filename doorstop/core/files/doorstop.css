@@ -115,3 +115,10 @@ th {
 tr.alt td {
     background-color: #F8F8F8;
 }
+
+:target {
+    background-color: #F5F9FC;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+}

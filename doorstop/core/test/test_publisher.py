@@ -131,6 +131,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
         mock_item.id = 'KNOWN-001'
+        mock_item.document = Mock()
+        mock_item.document.prefix = 'KNOWN'
         mock_item_unknown = Mock(spec=['id'])
         mock_item_unknown.id = 'UNKNOWN-002'
         mock_trace = [
