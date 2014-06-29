@@ -131,6 +131,8 @@ def main(args=None):  # pylint: disable=R0915
                      help="output YAML (default when no path)")
     sub.add_argument('-c', '--csv', action='store_true',
                      help="output CSV (default for 'all')")
+    sub.add_argument('-t', '--tsv', action='store_true',
+                     help="output TSV")
     sub.add_argument('-x', '--xlsx', action='store_true',
                      help="output XLSX")
     sub.add_argument('-w', '--width', type=int,
