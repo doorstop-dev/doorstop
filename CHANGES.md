@@ -13,6 +13,7 @@ Changelog
 - Added `doorstop import FILE PREFIX` to import from the export formats.
 - Added `doorstop deleete PREFIX` to delete document directories.
 - Renamed `doorstop new ...` to `doorstop create ...`.
+- Added tree structure and traceability to `index.html`.
 
 0.6 (2014/5/15)
 ---------------

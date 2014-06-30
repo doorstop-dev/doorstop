@@ -83,9 +83,9 @@ def _configure_logging(verbosity=0):
 def _run(args, cwd, error):
     """Start the GUI.
 
-    @param args: Namespace of CLI arguments (from this module or the CLI)
-    @param cwd: current working directory
-    @param error: function to call for CLI errors
+    :param args: Namespace of CLI arguments (from this module or the CLI)
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
 
     """
     from doorstop import __project__, __version__

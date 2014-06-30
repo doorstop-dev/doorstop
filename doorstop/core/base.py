@@ -50,10 +50,11 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def validate(self, document_hook=None, item_hook=None):
         """Check the object for validity.
 
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
+        :param document_hook: function to call for custom document
+            validation
+        :param item_hook: function to call for custom item validation
 
-        @return: indication that the object is valid
+        :return: indication that the object is valid
 
         """
         valid = True
@@ -75,10 +76,13 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the objects's issues.
 
-        @param document_hook: function to call for custom document validation
-        @param item_hook: function to call for custom item validation
+        :param document_hook: function to call for custom document
+            validation
+        :param item_hook: function to call for custom item validation
 
-        @return: generator of DoorstopError, DoorstopWarning, DoorstopInfo
+        :return: generator of :class:`~doorstop.common.DoorstopError`,
+                              :class:`~doorstop.common.DoorstopWarning`,
+                              :class:`~doorstop.common.DoorstopInfo`
 
         """
 
@@ -115,7 +119,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     """Abstract Base Class for objects whose attributes save to a file.
 
     For properties that are saved to a file, decorate their getters
-    with @auto_load and their setters with @auto_save.
+    with :func:`auto_load` and their setters with :func:`auto_save`.
 
     """
 
@@ -128,14 +132,24 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self._exists = True
         self._loaded = False
 
+    def __hash__(self):
+        return hash(self.path)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.path == other.path
+
+    def __ne__(self, other):
+        return not self == other
+
     @staticmethod
     def _new(path, name):  # pragma: no cover (integration test)
         """Create a new file for the object.
 
-        @param path: path to new file
-        @param name: humanized name for this file
+        :param path: path to new file
+        :param name: humanized name for this file
 
-        @raise DoorstopError: if the file already exists
+        :raises: :class:`~doorstop.common.DoorstopError` if the file
+            already exists
 
         """
         if os.path.exists(path):
@@ -160,25 +174,25 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def _read(self, path):  # pragma: no cover (integration test)
         """Read text from the object's file.
 
-        @param path: path to a text file
+        :param path: path to a text file
 
-        @return: contexts of text file
+        :return: contexts of text file
 
         """
         if not self._exists:
             msg = "cannot read from deleted: {}".format(self.path)
             raise DoorstopError(msg)
-        with open(path, 'rb') as infile:
-            return infile.read().decode('UTF-8')
+        with open(path, 'rb') as stream:
+            return stream.read().decode('utf-8')
 
     @staticmethod
     def _load(text, path):
         """Load YAML data from text.
 
-        @param text: text read from a file
-        @param path: path to the file (for displaying errors)
+        :param text: text read from a file
+        :param path: path to the file (for displaying errors)
 
-        @return: dictionary of YAML data
+        :return: dictionary of YAML data
 
         """
         # Load the YAML data
@@ -205,25 +219,25 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def _write(self, text, path):  # pragma: no cover (integration test)
         """Write text to the object's file.
 
-        @param text: text to write to a file
-        @param path: path to the file
+        :param text: text to write to a file
+        :param path: path to the file
 
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(path, 'w') as outfile:
-            outfile.write(text)
+        with open(path, 'wb') as outfile:
+            outfile.write(text.encode('utf-8'))
 
     @staticmethod
     def _dump(data):
         """Dump YAML data to text.
 
-        @param data: dictionary of YAML data
+        :param data: dictionary of YAML data
 
-        @return: text to write to a file
+        :return: text to write to a file
 
         """
-        return yaml.dump(data, default_flow_style=False)
+        return yaml.dump(data, default_flow_style=False, allow_unicode=True)
 
     # properties #############################################################
 
@@ -249,10 +263,10 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def get(self, name, default=None):
         """Get an extended attribute.
 
-        @param name: name of extended attribute
-        @param default: value to return for missing attributes
+        :param name: name of extended attribute
+        :param default: value to return for missing attributes
 
-        @return: value of extended attribute
+        :return: value of extended attribute
 
         """
         if hasattr(self, name):
@@ -268,8 +282,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def set(self, name, value):
         """Set an extended attribute.
 
-        @param name: name of extended attribute
-        @param value: value to set
+        :param name: name of extended attribute
+        :param value: value to set
 
         """
         if hasattr(self, name):
@@ -292,3 +306,11 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
+
+
+def write_lines(lines, path, end='\n', encoding='utf-8'):  # pragma: no cover (integration test)
+    """Write lines of text to a file."""
+    logging.debug("writing lines to {}...".format(path))
+    with open(path, 'wb') as stream:
+        for line in lines:
+            stream.write((line + end).encode(encoding))

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Unit tests for the doorstop.core.importer module."""
 
 import unittest
@@ -64,7 +66,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
                           '', True, False, True],
@@ -133,7 +135,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', None,
                           None, True, False, True],
@@ -190,6 +192,19 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_blank_column(self, mock_add_item):
+        """Verify item data can include invalid values."""
+        header = ['id', 'text', None, 'links', 'ext1']
+        data = [['req1', 'text1', 'blank', '', 'val1']]
+        mock_document = Mock()
+        mock_document.prefix = 'prefix'
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        expected_attrs = {'links': [], 'ext1': 'val1', 'text': 'text1'}
+        mock_add_item.assert_called_once_with(mock_document.prefix, 'req1',
+                                              attrs=expected_attrs,
+                                              document=mock_document)
 
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):

@@ -7,6 +7,7 @@ import logging
 import markdown
 
 from doorstop.common import DoorstopError, create_dirname
+from doorstop.core.base import write_lines
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
@@ -22,22 +23,24 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     1. document or item-like object + output file path
     2. tree-like object + output directory path
 
-    @param obj: (1) Item, list of Items, Document or (2) Tree
-    @param path: (1) output file path or (2) output directory path
-    @param ext: file extension to override output extension
-    @param linkify: turn links into hyperlinks (for Markdown or HTML)
-    @param index: create an index.html (for HTML)
+    :param obj: (1) Item, list of Items, Document or (2) Tree
+    :param path: (1) output file path or (2) output directory path
+    :param ext: file extension to override output extension
+    :param linkify: turn links into hyperlinks (for Markdown or HTML)
+    :param index: create an index.html (for HTML)
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
-    @return: output location if files created, else None
+    :return: output location if files created, else None
 
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.html'
-    linkify = linkify if linkify is not None else is_tree(obj)
-    index = index if index is not None else is_tree(obj)
     check(ext)
+    if linkify is None:
+        linkify = is_tree(obj) and ext == '.html'
+    if index is None:
+        index = is_tree(obj) and ext == '.html'
 
     # Publish documents
     count = 0
@@ -46,19 +49,17 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
 
         # Publish content to the specified path
         create_dirname(path2)
-        logging.info("creating file {}...".format(path2))
-        with open(path2, 'w') as outfile:  # pragma: no cover (integration test)
-            for line in publish_lines(obj2, ext, linkify=linkify, **kwargs):
-                outfile.write(line + '\n')
+        logging.info("publishing to {}...".format(path2))
+        lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
+        write_lines(lines, path2)
 
     # Create index
     if index and count:
-        count += 1
-        _index(path)
+        _index(path, tree=obj if is_tree(obj) else None)
 
     # Return the published path
     if count:
-        msg = "created {} file{}".format(count, 's' if count > 1 else '')
+        msg = "published to {} file{}".format(count, 's' if count > 1 else '')
         logging.info(msg)
         return path
     else:
@@ -66,11 +67,13 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         return None
 
 
-def _index(directory, extensions=('.html',)):
+def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     """Create an HTML index of all files in a directory.
 
-    @param directory: directory for index
-    @param extensions: file extensions to include
+    :param directory: directory for index
+    :param index: filename for index
+    :param extensions: file extensions to include
+    :param tree: optional tree to determine index structure
 
     """
     # Get paths for the index index
@@ -81,41 +84,106 @@ def _index(directory, extensions=('.html',)):
 
     # Create the index
     if filenames:
-        path = os.path.join(directory, INDEX)
-        logging.info("publishing {}...".format(path))
-        with open(path, 'w') as outfile:
-            for line in _lines_index(filenames):
-                outfile.write(line + '\n')
+        path = os.path.join(directory, index)
+        logging.info("creating an {}...".format(index))
+        lines = _lines_index(filenames, tree=tree)
+        write_lines(lines, path)
     else:
-        logging.warning("no files for {}".format(INDEX))
+        logging.warning("no files for {}".format(index))
 
 
-def _lines_index(filenames):
-    """Yield lines of HTML for index.html."""
+def _lines_index(filenames, charset='UTF-8', tree=None):
+    """Yield lines of HTML for index.html.
+
+    :param filesnames: list of filenames to add to the index
+    :param charset: character encoding for output
+    :param tree: optional tree to determine index structure
+
+    """
     yield '<!DOCTYPE html>'
     yield '<head>'
+    yield ('<meta http-equiv="content-type" content="text/html; '
+           'charset={charset}">'.format(charset=charset))
     yield '<style type="text/css">'
-    yield ''
-    with open(CSS) as infile:
-        for line in infile:
-            yield line
+    yield from _lines_css()
     yield '</style>'
     yield '</head>'
     yield '<body>'
-    for filename in filenames:
-        name = os.path.splitext(filename)[0]
-        yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+    # Tree structure
+    text = tree.draw() if tree else None
+    if text:
+        yield ''
+        yield '<h3>Tree Structure:</h3>'
+        yield '<pre><code>' + text + '</pre></code>'
+    # Additional files
+    if filenames:
+        if text:
+            yield ''
+            yield '<hr>'
+        yield ''
+        yield '<h3>Published Documents:</h3>'
+        yield '<p>'
+        yield '<ul>'
+        for filename in filenames:
+            name = os.path.splitext(filename)[0]
+            yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+        yield '</ul>'
+        yield '</p>'
+    # Traceability table
+    documents = tree.documents if tree else None
+    if documents:
+        if text or filenames:
+            yield ''
+            yield '<hr>'
+        yield ''
+        # table
+        yield '<h3>Item Traceability:</h3>'
+        yield '<p>'
+        yield '<table>'
+        # header
+        for document in documents:
+            yield '<col width="100">'
+        yield '<tr>'
+        for document in documents:
+            link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
+            yield '  <th height="25" align="center"> {l} </th>'.format(l=link)
+        yield '</tr>'
+        # data
+        for index, row in enumerate(tree.get_traceability()):
+            if index % 2:
+                yield '<tr class="alt">'
+            else:
+                yield '<tr>'
+            for item in row:
+                if item is None:
+                    link = ''
+                else:
+                    link = _format_html_item_link(item)
+                yield '  <td height="25" align="center"> {} </td>'.format(link)
+            yield '</tr>'
+        yield '</table>'
+        yield '</p>'
+    yield ''
     yield '</body>'
     yield '</html>'
+
+
+def _lines_css():
+    """Yield lines of CSS to embedded in HTML."""
+    yield ''
+    with open(CSS) as stream:
+        for line in stream:
+            yield line.rstrip()
+    yield ''
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
     """Yield lines for a report in the specified format.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param ext: file extension to specify the output format
+    :param obj: Item, list of Items, or Document to publish
+    :param ext: file extension to specify the output format
 
-    @raise DoorstopError: for unknown file formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
     """
     gen = check(ext)
@@ -126,11 +194,11 @@ def publish_lines(obj, ext='.txt', **kwargs):
 def _lines_text(obj, indent=8, width=79, **_):
     """Yield lines for a text report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param indent: number of spaces to indent text
-    @param width: maximum line length
+    :param obj: Item, list of Items, or Document to publish
+    :param indent: number of spaces to indent text
+    :param width: maximum line length
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -191,10 +259,10 @@ def _chunks(text, width, indent):
 def _lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param linkify: turn links into hyperlinks (for conversion to HTML)
+    :param obj: Item, list of Items, or Document to publish
+    :param linkify: turn links into hyperlinks (for conversion to HTML)
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     for item in iter_items(obj):
@@ -206,14 +274,14 @@ def _lines_markdown(obj, linkify=False):
 
             # Level and Text
             standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
-            attr_list = _format_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
         else:
 
             # Level and ID
             standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
-            attr_list = _format_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
             # Text
@@ -234,8 +302,8 @@ def _lines_markdown(obj, linkify=False):
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                links = _format_links(items2, linkify)
-                label_links = _format_label_links(label, links, linkify)
+                links = _format_md_links(items2, linkify)
+                label_links = _format_md_label_links(label, links, linkify)
                 yield label_links
 
             # Child links
@@ -244,8 +312,8 @@ def _lines_markdown(obj, linkify=False):
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"
-                    links = _format_links(items2, linkify)
-                    label_links = _format_label_links(label, links, linkify)
+                    links = _format_md_links(items2, linkify)
+                    label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
 
         yield ""  # break between items
@@ -259,7 +327,7 @@ def _format_level(level):
     return text
 
 
-def _format_attr_list(item, linkify):
+def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
     return " {{: #{i} }}".format(i=item.id) if linkify else ''
 
@@ -274,20 +342,40 @@ def _format_ref(item):
         return "Reference: '{r}'".format(r=item.ref)
 
 
-def _format_links(items, linkify):
-    """Format a list of linked items."""
+def _format_md_links(items, linkify):
+    """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        if is_item(item) and linkify:
-            link = "[{i}]({p}.html#{i})".format(i=item.id,
-                                                p=item.document.prefix)
-        else:
-            link = str(item.id)  # assume this is an `UnknownItem`
+        link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
     return ', '.join(links)
 
 
-def _format_label_links(label, links, linkify):
+# TODO: delete this function if not used
+def _format_md_document_link(document):  # pragma: no cover
+    """Format a document link in Markdown."""
+    return "[{p}]({p}.html)".format(p=document.prefix)
+
+
+def _format_md_item_link(item, linkify=True):
+    """Format an item link in Markdown."""
+    if linkify and is_item(item):
+        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+    else:
+        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+
+
+def _format_html_item_link(item, linkify=True):
+    """Format an item link in HTML."""
+    if linkify and is_item(item):
+        link = '<a href="{p}.html#{i}">{i}</a>'.format(i=item.id,
+                                                       p=item.document.prefix)
+        return link
+    else:
+        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+
+
+def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
         return "*{lb}* {ls}".format(lb=label, ls=links)
@@ -295,13 +383,13 @@ def _format_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def _lines_html(obj, linkify=False):
+def _lines_html(obj, linkify=False, charset='UTF-8'):
     """Yield lines for an HTML report.
 
-    @param obj: Item, list of Items, or Document to publish
-    @param linkify: turn links into hyperlinks
+    :param obj: Item, list of Items, or Document to publish
+    :param linkify: turn links into hyperlinks
 
-    @return: iterator of lines of text
+    :return: iterator of lines of text
 
     """
     # Determine if a full HTML document should be generated
@@ -315,11 +403,10 @@ def _lines_html(obj, linkify=False):
     if document:
         yield '<!DOCTYPE html>'
         yield '<head>'
+        yield ('<meta http-equiv="content-type" content="text/html; '
+               'charset={charset}">'.format(charset=charset))
         yield '<style type="text/css">'
-        yield ''
-        with open(CSS) as infile:
-            for line in infile:  # pragma: no cover (integration test)
-                yield line
+        yield from _lines_css()
         yield '</style>'
         yield '</head>'
         yield '<body>'
@@ -340,9 +427,9 @@ FORMAT_LINES = {'.txt': _lines_text,
 def check(ext):
     """Confirm an extension is supported for publish.
 
-    @raise DoorstopError: for unknown formats
+    :raises: :class:`doorstop.common.DoorstopError` for unknown formats
 
-    @return: lines generator if available
+    :return: lines generator if available
 
     """
     exts = ', '.join(ext for ext in FORMAT_LINES)

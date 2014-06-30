@@ -17,11 +17,11 @@ DIRECTORIES = {wc.DIRECTORY: wc for wc in _bwc.__subclasses__()}  # pylint: disa
 def find_root(cwd):
     """Find the root of the working copy.
 
-    @param cwd: current working directory
+    :param cwd: current working directory
 
-    @raise DoorstopError: if the root cannot be found
+    :raises: :class:`doorstop.common.DoorstopError` if the root cannot be found
 
-    @return: path to root of working copy
+    :return: path to root of working copy
 
     """
     path = cwd

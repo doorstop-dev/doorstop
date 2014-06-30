@@ -10,9 +10,9 @@ text: |
 
   Enter VCS working copy:
 
-      cd /tmp/doorstop
+      $ cd /tmp/doorstop
 
   Display the documents on standard output:
 
-      doorstop publish req
-      doorstop publish tst
+      $ doorstop publish req
+      $ doorstop publish tst
