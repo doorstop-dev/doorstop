@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Doorstop : Text-based requirements management using version control." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Doorstop</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jacebrowning/doorstop">View on GitHub</a>
+
+          <h1 id="project_title">Doorstop</h1>
+          <h2 id="project_tagline">Text-based requirements management using version control.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jacebrowning/doorstop/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jacebrowning/doorstop/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="doorstop" class="anchor" href="#doorstop"><span class="octicon octicon-link"></span></a>Doorstop</h1>
+
+<p><a href="https://travis-ci.org/jacebrowning/doorstop"><img src="http://img.shields.io/travis/jacebrowning/doorstop/master.svg" alt="Build Status"></a>
+<a href="https://coveralls.io/r/jacebrowning/doorstop"><img src="http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg" alt="Coverage Status"></a>
+<a href="https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master"><img src="http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg" alt="Scrutinizer Code Quality"></a>
+<a href="https://pypi.python.org/pypi/Doorstop"><img src="http://img.shields.io/pypi/v/Doorstop.svg" alt="PyPI Version"></a>
+<a href="https://pypi.python.org/pypi/Doorstop"><img src="http://img.shields.io/pypi/dm/Doorstop.svg" alt="PyPI Downloads"></a>
+<a href="https://www.gittip.com/jacebrowning"><img src="http://img.shields.io/badge/gittip-me-brightgreen.svg" alt="Gittip"></a></p>
+
+<p>Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.</p>
+
+<p>Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each designated directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.</p>
+
+<p>Additional reading:</p>
+
+<ul>
+<li>publication: <a href="http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ">JSEA Paper</a>
+</li>
+<li>conference: <a href="https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control">GRDevDay Talk</a>
+</li>
+<li>demo: <a href="http://nbviewer.ipython.org/gist/jacebrowning/9754157">IPython Notebook</a>
+</li>
+<li>sample: <a href="http://jacebrowning.github.io/doorstop">Generated HTML</a>
+</li>
+</ul><h1>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h1>
+
+<h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<ul>
+<li>Python 3.3+</li>
+<li>A version control system for requirements storage</li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Doorstop can be installed with 'pip':</p>
+
+<pre><code>$ pip install doorstop
+</code></pre>
+
+<p>Or directly from source:</p>
+
+<pre><code>$ git clone https://github.com/jacebrowning/doorstop.git
+$ cd doorstop
+$ python setup.py install
+</code></pre>
+
+<p>After installation, Doorstop is available on the command-line:</p>
+
+<pre><code>$ doorstop --help
+</code></pre>
+
+<p>And the package is available under the name 'doorstop':</p>
+
+<pre><code>$ python
+&gt;&gt;&gt; import doorstop
+&gt;&gt;&gt; doorstop.__version__
+</code></pre>
+
+<h1>
+<a name="basic-usage" class="anchor" href="#basic-usage"><span class="octicon octicon-link"></span></a>Basic Usage</h1>
+
+<h2>
+<a name="document-creation" class="anchor" href="#document-creation"><span class="octicon octicon-link"></span></a>Document Creation</h2>
+
+<p><strong>Parent Document</strong></p>
+
+<p>After configuring version control, a new parent document can be created:</p>
+
+<pre><code>$ doorstop new REQ ./reqs
+created document: REQ (@/reqs)
+</code></pre>
+
+<p>Items can be added to the document and edited:</p>
+
+<pre><code>$ doorstop add REQ
+added item: REQ001 (@/reqs/REQ001.yml)
+
+$ doorstop edit REQ1
+opened item: REQ001 (@/reqs/REQ001.yml)
+</code></pre>
+
+<p><strong>Child Documents</strong></p>
+
+<p>Additional documents can be created that link to other documents:</p>
+
+<pre><code>$ doorstop new TST ./reqs/tests --parent REQ
+created document: TST (@/reqs/tests)
+</code></pre>
+
+<p>Items can be added and linked to parent items:</p>
+
+<pre><code>$ doorstop add TST
+added item: TST001 (@/reqs/tests/TST001.yml)
+
+$ doorstop link TST1 REQ1
+linked item: TST001 (@/reqs/tests/TST001.yml) -&gt; REQ001 (@/reqs/REQ001.yml)
+</code></pre>
+
+<h2>
+<a name="document-validation" class="anchor" href="#document-validation"><span class="octicon octicon-link"></span></a>Document Validation</h2>
+
+<p>To check a document hierarchy for consistency, run the main command:</p>
+
+<pre><code>$ doorstop
+valid tree: REQ &lt;- [ TST ]
+</code></pre>
+
+<h2>
+<a name="document-publishing" class="anchor" href="#document-publishing"><span class="octicon octicon-link"></span></a>Document Publishing</h2>
+
+<p>A text report of a document can be displayed:</p>
+
+<pre><code>$ doorstop publish TST
+1       TST001
+
+        Verify the foobar will foo and bar.
+
+        Links: REQ001
+</code></pre>
+
+<p>Other formats are also supported:</p>
+
+<pre><code>$ doorstop publish TST --html
+&lt;!DOCTYPE html&gt;
+...
+&lt;body&gt;
+&lt;h1&gt;1 (TST001)&lt;/h1&gt;
+&lt;p&gt;Verify the foobar will foo and bar.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Links: REQ001&lt;/em&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Or a file can be created using one of the supported extensions:</p>
+
+<pre><code>$ doorstop publish TST path/to/tst.md
+publishing TST to path/to/tst.md...
+</code></pre>
+
+<p>Supported formats:</p>
+
+<ul>
+<li>Text: <strong>.txt</strong>
+</li>
+<li>Markdown: <strong>.md</strong>
+</li>
+<li>HTML: <strong>.html</strong>
+</li>
+</ul><h2>
+<a name="content-interchange" class="anchor" href="#content-interchange"><span class="octicon octicon-link"></span></a>Content Interchange</h2>
+
+<p><strong>Export</strong></p>
+
+<p>Documents can be exported for editing or to exchange with other systems:</p>
+
+<pre><code>$ doorstop export TST
+TST001:
+  active: true
+  dervied: false
+  level: 1
+  links:
+  - REQ001
+  normative: true
+  ref: ''
+  text: |
+    Verify the foobar will foo and bar.
+</code></pre>
+
+<p>Or a file can be created using one of the supported extensions:</p>
+
+<pre><code>$ doorstop export TST path/to/tst.csv
+exporting TST to path/to/tst.csv...
+exported: path/to/tst.csv
+</code></pre>
+
+<p>Supported formats:</p>
+
+<ul>
+<li>YAML: <strong>.yml</strong>
+</li>
+<li>Comma-Separated Values: <strong>.csv</strong>
+</li>
+<li>Tab-Separated Values: <strong>.tsv</strong>
+</li>
+<li>Microsoft Office Excel: <strong>.xlsx</strong>
+</li>
+</ul><p><strong>Import</strong></p>
+
+<p>Items can be created/updated from the export formats:</p>
+
+<pre><code>$ doorstop import path/to/tst.csv TST
+</code></pre>
+
+<h1>
+<a name="for-contributors" class="anchor" href="#for-contributors"><span class="octicon octicon-link"></span></a>For Contributors</h1>
+
+<h2>
+<a name="requirements-1" class="anchor" href="#requirements-1"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<ul>
+<li>GNU Make:
+
+<ul>
+<li>Windows: <a href="http://cygwin.com/install.html">http://cygwin.com/install.html</a>
+</li>
+<li>Mac: <a href="https://developer.apple.com/xcode">https://developer.apple.com/xcode</a>
+</li>
+<li>Linux: <a href="http://www.gnu.org/software/make">http://www.gnu.org/software/make</a> (likely already installed)</li>
+</ul>
+</li>
+<li>virtualenv: <a href="https://pypi.python.org/pypi/virtualenv#installation">https://pypi.python.org/pypi/virtualenv#installation</a>
+</li>
+<li>Pandoc: <a href="http://johnmacfarlane.net/pandoc/installing.html">http://johnmacfarlane.net/pandoc/installing.html</a>
+</li>
+<li>Graphviz: <a href="http://www.graphviz.org/Download.php">http://www.graphviz.org/Download.php</a>
+</li>
+</ul><h2>
+<a name="installation-1" class="anchor" href="#installation-1"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Create a virtualenv:</p>
+
+<pre><code>make env
+</code></pre>
+
+<p>Run the tests:</p>
+
+<pre><code>make test
+make tests  # includes integration tests
+</code></pre>
+
+<p>Build the documentation:</p>
+
+<pre><code>make doc
+</code></pre>
+
+<p>Run static analysis:</p>
+
+<pre><code>make pep8
+make pep257
+make pylint
+make check  # includes all checks
+</code></pre>
+
+<p>Prepare a release:</p>
+
+<pre><code>make dist  # dry run
+make upload
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Doorstop maintained by <a href="https://github.com/jacebrowning">jacebrowning</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
