@@ -237,61 +237,6 @@ exported: path/to/tst.csv
 <pre><code>$ doorstop import path/to/tst.csv TST
 </code></pre>
 
-<h1>
-<a name="for-contributors" class="anchor" href="#for-contributors"><span class="octicon octicon-link"></span></a>For Contributors</h1>
-
-<h2>
-<a name="requirements-1" class="anchor" href="#requirements-1"><span class="octicon octicon-link"></span></a>Requirements</h2>
-
-<ul>
-<li>GNU Make:
-
-<ul>
-<li>Windows: <a href="http://cygwin.com/install.html">http://cygwin.com/install.html</a>
-</li>
-<li>Mac: <a href="https://developer.apple.com/xcode">https://developer.apple.com/xcode</a>
-</li>
-<li>Linux: <a href="http://www.gnu.org/software/make">http://www.gnu.org/software/make</a> (likely already installed)</li>
-</ul>
-</li>
-<li>virtualenv: <a href="https://pypi.python.org/pypi/virtualenv#installation">https://pypi.python.org/pypi/virtualenv#installation</a>
-</li>
-<li>Pandoc: <a href="http://johnmacfarlane.net/pandoc/installing.html">http://johnmacfarlane.net/pandoc/installing.html</a>
-</li>
-<li>Graphviz: <a href="http://www.graphviz.org/Download.php">http://www.graphviz.org/Download.php</a>
-</li>
-</ul><h2>
-<a name="installation-1" class="anchor" href="#installation-1"><span class="octicon octicon-link"></span></a>Installation</h2>
-
-<p>Create a virtualenv:</p>
-
-<pre><code>make env
-</code></pre>
-
-<p>Run the tests:</p>
-
-<pre><code>make test
-make tests  # includes integration tests
-</code></pre>
-
-<p>Build the documentation:</p>
-
-<pre><code>make doc
-</code></pre>
-
-<p>Run static analysis:</p>
-
-<pre><code>make pep8
-make pep257
-make pylint
-make check  # includes all checks
-</code></pre>
-
-<p>Prepare a release:</p>
-
-<pre><code>make dist  # dry run
-make upload
-</code></pre>
       </section>
     </div>
 
@@ -302,8 +247,6 @@ make upload
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
     
-
   </body>
 </html>
