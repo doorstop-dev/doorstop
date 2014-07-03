@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Representation of a hierarchy of documents."""
 
 from itertools import chain
@@ -529,15 +532,18 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):
-            yield '|   '
+            if count == 1:
+                yield '┬   '
+            else:
+                yield '│   '
             if count < len(self.children):
-                base = '|   '
-                indent = '├ ─ '
+                base = '│   '
+                indent = '├── '
             else:
                 base = '    '
-                indent = '└ ─ '
-            for count, line in enumerate(child._draw_lines(), start=1):  # pylint: disable=W0212
-                if count == 1:
+                indent = '└── '
+            for count2, line in enumerate(child._draw_lines(), start=1):  # pylint: disable=W0212
+                if count2 == 1:
                     yield indent + line
                 else:
                     yield base + line

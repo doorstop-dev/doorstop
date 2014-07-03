@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Unit tests for the doorstop.core.tree module."""
 
 import unittest
@@ -68,21 +71,21 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def test_draw(self):
         """Verify trees structure can be drawn."""
         text = ("a" + '\n'
-                "|   " + '\n'
-                "├ ─ b1" + '\n'
-                "|   |   " + '\n'
-                "|   └ ─ d" + '\n'
-                "|       |   " + '\n'
-                "|       └ ─ e" + '\n'
-                "|   " + '\n'
-                "└ ─ b2" + '\n'
-                "    |   " + '\n'
-                "    ├ ─ c1" + '\n'
-                "    |   " + '\n'
-                "    └ ─ c2")
-        logging.debug('\n' + text)
+                "┬   " + '\n'
+                "├── b1" + '\n'
+                "│   ┬   " + '\n'
+                "│   └── d" + '\n'
+                "│       ┬   " + '\n'
+                "│       └── e" + '\n'
+                "│   " + '\n'
+                "└── b2" + '\n'
+                "    ┬   " + '\n'
+                "    ├── c1" + '\n'
+                "    │   " + '\n'
+                "    └── c2")
+        logging.debug('expected:\n' + text)
         text2 = self.tree.draw()
-        logging.debug('\n' + text2)
+        logging.debug('actual:\n' + text2)
         self.assertEqual(text, text2)
 
     @patch('doorstop.settings.REORDER', False)
