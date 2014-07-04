@@ -68,8 +68,28 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
 
-    def test_draw(self):
-        """Verify trees structure can be drawn."""
+    def test_draw_utf8(self):
+        """Verify trees structure can be drawn (UTF-8)."""
+        text = ("a" + '\n'
+                "│   " + '\n'
+                "├ ─ b1" + '\n'
+                "│   │   " + '\n'
+                "│   └ ─ d" + '\n'
+                "│       │   " + '\n'
+                "│       └ ─ e" + '\n'
+                "│   " + '\n'
+                "└ ─ b2" + '\n'
+                "    │   " + '\n'
+                "    ├ ─ c1" + '\n'
+                "    │   " + '\n'
+                "    └ ─ c2")
+        logging.debug('expected:\n' + text)
+        text2 = self.tree.draw(encoding='UTF-8')
+        logging.debug('actual:\n' + text2)
+        self.assertEqual(text, text2)
+
+    def test_draw_cp437(self):
+        """Verify trees structure can be drawn (cp437)."""
         text = ("a" + '\n'
                 "┬   " + '\n'
                 "├── b1" + '\n'
@@ -84,7 +104,27 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
                 "    │   " + '\n'
                 "    └── c2")
         logging.debug('expected:\n' + text)
-        text2 = self.tree.draw()
+        text2 = self.tree.draw(encoding='cp437')
+        logging.debug('actual:\n' + text2)
+        self.assertEqual(text, text2)
+
+    def test_draw_unknown(self):
+        """Verify trees structure can be drawn (unknown)."""
+        text = ("a" + '\n'
+                "|   " + '\n'
+                "+-- b1" + '\n'
+                "|   |   " + '\n'
+                "|   +-- d" + '\n'
+                "|       |   " + '\n'
+                "|       +-- e" + '\n'
+                "|   " + '\n'
+                "+-- b2" + '\n'
+                "    |   " + '\n'
+                "    +-- c1" + '\n'
+                "    |   " + '\n'
+                "    +-- c2")
+        logging.debug('expected:\n' + text)
+        text2 = self.tree.draw(encoding='unknown')
         logging.debug('actual:\n' + text2)
         self.assertEqual(text, text2)
 

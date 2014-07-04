@@ -252,7 +252,7 @@ def _run(args, cwd, err):  # pylint: disable=W0613
 
     """
     try:
-        print("validating tree...")
+        print("validating tree...", flush=True)
         tree = build(cwd, root=args.project)
         tree.load()
         valid = tree.validate()
@@ -436,7 +436,8 @@ def _run_import(args, cwd, err):
         if args.path:
             tree = build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
-            print("importing {} into {}...".format(args.path, document))
+            msg = "importing {} into {}...".format(args.path, document)
+            print(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
             prefix, path = args.document
@@ -451,13 +452,10 @@ def _run_import(args, cwd, err):
 
     # Display result
     if document:
-        name = document.prefix
-        relpath = document.relpath
+        print("imported: {} ({})".format(document.prefix, document.relpath))
     else:
         assert item
-        name = item.id
-        relpath = item.relpath
-    print("imported: {} ({})".format(name, relpath))
+        print("imported: {} ({})".format(item.id, item.relpath))
     return True
 
 
@@ -486,10 +484,11 @@ def _run_export(args, cwd, err):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("exporting tree to {}...".format(args.path))
+            print("exporting tree to {}...".format(args.path), flush=True)
             path = exporter.export(tree, args.path, ext)
         else:
-            print("exporting {} to {}...".format(document, args.path))
+            msg = "exporting {} to {}...".format(document, args.path)
+            print(msg, flush=True)
             path = exporter.export(document, args.path, ext)
         if path:
             print("exported: {}".format(path))
@@ -534,10 +533,11 @@ def _run_publish(args, cwd, err):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("publishing tree to {}...".format(args.path))
+            print("publishing tree to {}...".format(args.path), flush=True)
             path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
-            print("publishing {} to {}...".format(document, args.path))
+            msg = "publishing {} to {}...".format(document, args.path)
+            print(msg, flush=True)
             path = publisher.publish(document, args.path, ext, **kwargs)
         if path:
             print("published: {}".format(path))
