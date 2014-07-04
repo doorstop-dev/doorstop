@@ -300,6 +300,21 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_import_yml(self):
+        """Verify items can be imported from a YAML file."""
+        path = os.path.join(self.temp, 'exported.yml')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
     def test_import_csv(self):
         """Verify items can be imported from a CSV file."""
         path = os.path.join(self.temp, 'exported.csv')

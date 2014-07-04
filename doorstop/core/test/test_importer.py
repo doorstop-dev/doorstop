@@ -49,6 +49,21 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer.import_file(mock_path, mock_document, ext='.custom')
         mock_check.assert_called_once_with('.custom')
 
+    @patch('doorstop.core.importer.add_item')
+    def test_file_yml(self, mock_add_item):
+        """Verify a YAML file can be imported."""
+        path = os.path.join(FILES, 'exported.yml')
+        mock_document = Mock()
+        # Act
+        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(5, mock_add_item.call_count)
+
+    def test_file_yml_bad_format(self):
+        """Verify YAML file import can handle bad data."""
+        path = os.path.join(FILES, 'exported.csv')
+        self.assertRaises(DoorstopError, importer._file_yml, path, None)  # pylint: disable=W0212
+
     @patch('doorstop.core.importer._itemize')
     def test_file_csv(self, mock_itemize):
         """Verify a CSV file can be imported."""
