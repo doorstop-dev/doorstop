@@ -10,6 +10,7 @@ import shutil
 import pprint
 import logging
 
+import yaml
 # TODO: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
@@ -418,6 +419,20 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
     def tearDown(self):
         shutil.rmtree(self.temp)
 
+    def test_export_yml(self):
+        """Verify a document can be exported as a YAML file."""
+        path = os.path.join(FILES, 'exported.yml')
+        temp = os.path.join(self.temp, 'exported.yml')
+        expected = read_yml(path)
+        # Act
+        path2 = core.exporter.export(self.document, temp)
+        # Assert
+        self.assertIs(temp, path2)
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_yml(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+
     def test_export_csv(self):
         """Verify a document can be exported as a CSV file."""
         path = os.path.join(FILES, 'exported.csv')
@@ -634,6 +649,14 @@ def log_data(expected, actual):
             i=index,
             e=pprint.pformat(evalue),
             a=pprint.pformat(avalue)))
+
+
+def read_yml(path):
+    """Return a dictionary of items from a YAML file."""
+    with open(path, 'r', encoding='utf-8') as stream:
+        text = stream.read()
+    data = yaml.load(text)
+    return data
 
 
 def read_csv(path, delimiter=','):
