@@ -10,7 +10,7 @@ Doorstop
 
 Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.
 
-Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each designated directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.
+Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.
 
 Additional reading:
 
@@ -33,7 +33,7 @@ Requirements
 Installation
 ------------
 
-Doorstop can be installed with 'pip':
+Doorstop can be installed with pip:
 
     $ pip install doorstop
 
