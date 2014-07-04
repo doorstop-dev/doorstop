@@ -132,6 +132,12 @@ def _file_yml(path, document, **_):
             raise DoorstopError(msg) from None
     # Add items
     for identifier, attrs in data.items():
+        try:
+            item = document.find_item(identifier)
+        except DoorstopError:
+            pass
+        else:
+            item.delete()
         add_item(document.prefix, identifier, attrs=attrs, document=document)
 
 

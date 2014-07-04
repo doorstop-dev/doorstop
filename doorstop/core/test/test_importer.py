@@ -54,6 +54,17 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         """Verify a YAML file can be imported."""
         path = os.path.join(FILES, 'exported.yml')
         mock_document = Mock()
+        mock_document.find_item = Mock(side_effect=DoorstopError)
+        # Act
+        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(5, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_file_yml_duplicates(self, mock_add_item):
+        """Verify a YAML file can be imported (over existing items)."""
+        path = os.path.join(FILES, 'exported.yml')
+        mock_document = Mock()
         # Act
         importer._file_yml(path, mock_document)  # pylint: disable=W0212
         # Assert
