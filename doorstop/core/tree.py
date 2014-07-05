@@ -323,16 +323,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: edited :class:`~doorstop.core.item.Item`
 
         """
-        logging.debug("looking for {}...".format(identifier))
-        # Find item
+        # Find the item
         item = self.find_item(identifier)
-        # Lock the item
-        self.vcs.lock(item.path)
-        # Open item
+        # Edit the item
         if launch:
-            editor.launch(item.path, tool=tool)
-            # TODO: force an item reload without touching a private attribute
-            item._loaded = False  # pylint: disable=W0212
+            item.edit(tool=tool)
         # Return the item
         return item
 
