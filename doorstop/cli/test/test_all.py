@@ -81,12 +81,12 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.temp)
         self.assertIs(None, main(['--project', '.']))
 
-    @patch('doorstop.cli.main._run', Mock(return_value=False))
+    @patch('doorstop.cli.commands.run', Mock(return_value=False))
     def test_exit(self):
         """Verify 'doorstop' treats False as an error ."""
         self.assertRaises(SystemExit, main, [])
 
-    @patch('doorstop.cli.main._run', Mock(side_effect=KeyboardInterrupt))
+    @patch('doorstop.cli.commands.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify 'doorstop' treats KeyboardInterrupt as an error."""
         self.assertRaises(SystemExit, main, [])
@@ -553,7 +553,7 @@ class TestPublish(TempTestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
-@patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
+@patch('doorstop.cli.commands.run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the Doorstop CLI logging."""
