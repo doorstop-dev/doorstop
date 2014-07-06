@@ -14,6 +14,7 @@ Changelog
 - Added `doorstop deleete PREFIX` to delete document directories.
 - Renamed `doorstop new ...` to `doorstop create ...`.
 - Added tree structure and traceability to `index.html`.
+- Updated `doorstop edit ...` to support document export/import.
 
 0.6 (2014/5/15)
 ---------------

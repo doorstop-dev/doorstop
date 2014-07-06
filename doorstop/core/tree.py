@@ -13,7 +13,6 @@ from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop.core import editor
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
