@@ -63,14 +63,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
          settings.REORDER,
          settings.CHECK_LEVELS) = self.backup
 
-    def test_main(self):
-        """Verify 'doorstop' can be called."""
-        self.assertIs(None, main([]))
-
-    def test_main_help(self):
-        """Verify 'doorstop --help' can be requested."""
-        self.assertRaises(SystemExit, main, ['--help'])
-
     def test_main_error(self):
         """Verify 'doorstop' returns an error in an empty directory."""
         os.chdir(self.temp)
@@ -80,16 +72,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' can be provided a custom root path."""
         os.chdir(self.temp)
         self.assertIs(None, main(['--project', '.']))
-
-    @patch('doorstop.cli.commands.run', Mock(return_value=False))
-    def test_exit(self):
-        """Verify 'doorstop' treats False as an error ."""
-        self.assertRaises(SystemExit, main, [])
-
-    @patch('doorstop.cli.commands.run', Mock(side_effect=KeyboardInterrupt))
-    def test_interrupt(self):
-        """Verify 'doorstop' treats KeyboardInterrupt as an error."""
-        self.assertRaises(SystemExit, main, [])
 
     def test_empty(self):
         """Verify 'doorstop' can be run in a working copy with no docs."""
@@ -116,11 +98,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
-
-    @patch('doorstop.cli.main.gui', Mock(return_value=True))
-    def test_gui(self):
-        """Verify 'doorstop --gui' launches the GUI."""
-        self.assertIs(None, main(['--gui']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

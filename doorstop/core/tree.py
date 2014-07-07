@@ -533,7 +533,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                          - (other) - ACSII characters
 
         """
-        encoding = encoding or sys.stdout.encoding
+        encoding = encoding or getattr(sys.stdout, 'encoding', None)
         encoding = encoding.lower() if encoding else None
         return '\n'.join(self._draw_lines(encoding))
 
