@@ -416,6 +416,8 @@ def export_import(args, cwd, err, document, ext):
 
     # Import the file to the same document
     if utilities.ask("import from {}?".format(path)):
+        args.attrs = {}
+        args.map = {}
         get('import')(args, cwd, err, catch=False)
         common.delete(path)
     else:

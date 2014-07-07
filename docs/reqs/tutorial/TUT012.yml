@@ -8,7 +8,7 @@ ref: ''
 text: |
   **Importing a Document**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 
