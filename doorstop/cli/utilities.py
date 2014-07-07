@@ -60,11 +60,11 @@ def configure_settings(args):
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
     # Parse subcommand settings
-    if 'no_child_links' in args and args.no_child_links is not None:
+    if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
 
 
-def literal_eval(literal, err, default=None):
+def literal_eval(literal, err=None, default=None):
     """Convert an literal to its value.
 
     :param literal: string to evaulate
@@ -72,11 +72,21 @@ def literal_eval(literal, err, default=None):
     :param default: default value for empty inputs
     :return: Python literal
 
+    >>> literal_eval("False")
+    False
+
+    >>> literal_eval("[1, 2, 3]")
+    [1, 2, 3]
+
     """
     try:
         return ast.literal_eval(literal) if literal else default
     except (SyntaxError, ValueError):
-        err("invalid Python literal: {}".format(literal))
+        msg = "invalid Python literal: {}".format(literal)
+        if err:
+            err(msg)
+        else:
+            logging.critical(msg)
 
 
 def get_ext(args, ext_stdout, ext_file, whole_tree, err):
@@ -142,17 +152,16 @@ def ask(question, default=None):
              "y": True,
              "no": False,
              "n": False}
+    prompts = {'yes': " [Y/n] ",
+               'no': " [y/N] ",
+               None: " [y/n] "}
 
-    if default == 'yes':
-        prompt = " [Y/n] "
-    elif default == 'no':
-        prompt = " [y/N] "
-    else:
-        prompt = " [y/n] "
+    prompt = prompts.get(default, prompts[None])
+    message = question + prompt
 
     while True:
         try:
-            choice = input(question + prompt).lower().strip() or default
+            choice = input(message).lower().strip() or default
         except KeyboardInterrupt as exc:
             print()
             raise exc from None

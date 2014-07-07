@@ -558,6 +558,10 @@ class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the Doorstop CLI logging."""
 
+    def test_verbose_0(self):
+        """Verify verbose level 0 can be set."""
+        self.assertIs(None, main([]))
+
     def test_verbose_1(self):
         """Verify verbose level 1 can be set."""
         self.assertIs(None, main(['-v']))

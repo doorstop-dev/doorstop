@@ -226,7 +226,7 @@ def _publish(subs, shared):
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
     sub.add_argument('-C', '--no-child-links', action='store_true',
-                     help="include child links in published documents")
+                     help="do not include child links in published documents")
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
