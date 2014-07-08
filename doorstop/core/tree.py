@@ -13,7 +13,6 @@ from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop.core import editor
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
@@ -323,16 +322,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: edited :class:`~doorstop.core.item.Item`
 
         """
-        logging.debug("looking for {}...".format(identifier))
-        # Find item
+        # Find the item
         item = self.find_item(identifier)
-        # Lock the item
-        self.vcs.lock(item.path)
-        # Open item
+        # Edit the item
         if launch:
-            editor.launch(item.path, tool=tool)
-            # TODO: force an item reload without touching a private attribute
-            item._loaded = False  # pylint: disable=W0212
+            item.edit(tool=tool)
         # Return the item
         return item
 
@@ -539,7 +533,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                          - (other) - ACSII characters
 
         """
-        encoding = encoding or sys.stdout.encoding
+        encoding = encoding or getattr(sys.stdout, 'encoding', None)
         encoding = encoding.lower() if encoding else None
         return '\n'.join(self._draw_lines(encoding))
 

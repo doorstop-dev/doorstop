@@ -12,7 +12,7 @@ ref: ''
 text: |
   **Creating a Child Document with Links to the Parent Document**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 

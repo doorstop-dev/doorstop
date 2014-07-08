@@ -40,6 +40,7 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(Prefix('req'), self.prefix1)
         self.assertEqual('Req', self.prefix1)
         self.assertNotEqual(None, self.prefix1)
+        self.assertNotEqual('all', self.prefix1)
 
     def test_sort(self):
         """Verify prefixes can be sorted."""

@@ -33,6 +33,8 @@ class Prefix(str):  # pylint: disable=R0904
         return super().__hash__()
 
     def __eq__(self, other):
+        if other in settings.RESERVED_WORDS:
+            return False
         if not isinstance(other, Prefix):
             other = Prefix(other)
         return self.lower() == other.lower()
