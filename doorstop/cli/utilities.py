@@ -8,6 +8,28 @@ from doorstop import common
 from doorstop import settings
 
 
+class capture(object):  # pylint: disable=R0903,C0103
+
+    """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
+
+    def __init__(self, catch=True):
+        self.catch = catch
+        self._success = True
+
+    def __bool__(self):
+        return self._success
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type and issubclass(exc_type, common.DoorstopError):
+            self._success = False
+            if self.catch:
+                logging.error(exc_value)
+                return True
+
+
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
     assert common.STR_VERBOSITY == 3

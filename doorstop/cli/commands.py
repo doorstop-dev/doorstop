@@ -28,22 +28,19 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         print("validating tree...", flush=True)
         tree = build(cwd, root=args.project)
         tree.load()
         valid = tree.validate()
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     if tree and valid:
         print()
         print(tree.draw())
         print()
+
     return valid
 
 
@@ -56,16 +53,12 @@ def run_create(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         document = tree.create_document(args.path, args.prefix,
                                         parent=args.parent, digits=args.digits)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     print("created document: {} ({})".format(document.prefix,
                                              document.relpath))
@@ -81,19 +74,16 @@ def run_delete(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         document = tree.find_document(args.prefix)
         prefix, relpath = document.prefix, document.relpath
         document.delete()
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     print("deleted document: {} ({})".format(prefix, relpath))
+
     return True
 
 
@@ -106,17 +96,14 @@ def run_add(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         item = tree.add_item(args.prefix, level=args.level)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     print("added item: {} ({})".format(item.id, item.relpath))
+
     return True
 
 
@@ -129,18 +116,15 @@ def run_remove(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         item = tree.find_item(args.id)
         item.delete()
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     print("removed item: {} ({})".format(item.id, item.relpath))
+
     return True
 
 
@@ -153,18 +137,15 @@ def run_link(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         child, parent = tree.link_items(args.child, args.parent)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     msg = "linked items: {} ({}) -> {} ({})"
     print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+
     return True
 
 
@@ -177,18 +158,15 @@ def run_unlink(args, cwd, _, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    try:
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
         child, parent = tree.unlink_items(args.child, args.parent)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     msg = "unlinked items: {} ({}) -> {} ({})"
     print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+
     return True
 
 
@@ -204,12 +182,9 @@ def run_edit(args, cwd, err, catch=True):
     item = document = None
     ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
 
-    try:
-
-        # Build tree
+    with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
-
-        # Find item or document
+        # find item or document
         if not args.document:
             try:
                 item = tree.find_item(args.label)
@@ -218,23 +193,17 @@ def run_edit(args, cwd, err, catch=True):
                     raise exc from None
         if not item:
             document = tree.find_document(args.label)
-
-        # Edit item
+        # edit item or document
         if item:
             item.edit(tool=args.tool)
-        # or edit document
         else:
             export_import(args, cwd, err, document, ext)
-
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     if item:
         print("opened item: {} ({})".format(item.id, item.relpath))
+
     return True
 
 
@@ -264,7 +233,7 @@ def run_import(args, cwd, err, catch=True):
         err("specify [path], '--document', or '--item' to import")
 
     # Import document or item
-    try:
+    with utilities.capture(catch=catch) as success:
         if args.path:
             tree = build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
@@ -278,12 +247,8 @@ def run_import(args, cwd, err, catch=True):
         elif args.item:
             prefix, identifier = args.item
             item = importer.add_item(prefix, identifier, attrs=attrs)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     # Display result
     if document:
@@ -291,6 +256,7 @@ def run_import(args, cwd, err, catch=True):
     else:
         assert item
         print("imported: {} ({})".format(item.id, item.relpath))
+
     return True
 
 
@@ -308,17 +274,13 @@ def run_export(args, cwd, err, catch=True):
     ext = utilities.get_ext(args, '.yml', '.csv', whole_tree, err)
 
     # Export documents
-    try:
+    with utilities.capture(catch=catch) as success:
         exporter.check(ext)
         tree = build(cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     # Write to output file(s)
     if args.path:
@@ -356,17 +318,13 @@ def run_publish(args, cwd, err, catch=True):
     ext = utilities.get_ext(args, '.txt', '.html', whole_tree, err)
 
     # Publish documents
-    try:
+    with utilities.capture(catch=catch) as success:
         publisher.check(ext)
         tree = build(cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
-    except common.DoorstopError as error:
-        if catch:
-            logging.error(error)
-            return False
-        else:
-            raise error
+    if not success:
+        return False
 
     # Set publishing arguments
     kwargs = {}
@@ -421,8 +379,6 @@ def export_import(args, cwd, err, document, ext):
         get('import')(args, cwd, err, catch=False)
         common.delete(path)
     else:
-
-        # Delete the exported file
         print("import canceled")
         if utilities.ask("delete {}?".format(path), default='no'):
             common.delete(path)

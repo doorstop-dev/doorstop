@@ -4,7 +4,35 @@ import unittest
 from unittest.mock import patch, Mock
 
 from doorstop.cli import utilities
+from doorstop import common
 from doorstop import settings
+
+
+class TestCapture(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the `Capture` class."""  # pylint: disable=C0103
+
+    def test_success(self):
+        """Verify a success can be captured."""
+        with utilities.capture() as success:
+            pass
+        self.assertTrue(success)
+
+    def test_failure(self):
+        """Verify a failure can be captured."""
+        with utilities.capture() as success:
+            raise common.DoorstopError
+        self.assertFalse(success)
+
+    def test_failure_uncaught(self):
+        """Verify a failure can be left uncaught."""
+        try:
+            with utilities.capture(catch=False) as success:
+                raise common.DoorstopError
+        except common.DoorstopError:
+            self.assertFalse(success)
+        else:
+            self.fail("DoorstopError not raised")
 
 
 class TestConfigureSettings(unittest.TestCase):  # pylint: disable=R0904
