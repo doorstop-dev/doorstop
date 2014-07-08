@@ -3,19 +3,21 @@ Doorstop
 
 [![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
 [![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
+[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
+[![Gittip](http://img.shields.io/badge/gittip-me-brightgreen.svg)](https://www.gittip.com/jacebrowning)
 
 Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.
 
-Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each designated directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.
+Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.
 
 Additional reading:
 
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - conference: [GRDevDay Talk](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control)
 - demo: [IPython Notebook](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
-- sample: [Generated HTML](http://jacebrowning.github.io/doorstop)
+- sample: [Generated HTML](http://doorstop.info/reqs/index)
 
 
 Getting Started
@@ -31,7 +33,7 @@ Requirements
 Installation
 ------------
 
-Doorstop can be installed with 'pip':
+Doorstop can be installed with pip:
 
     $ pip install doorstop
 
@@ -130,9 +132,48 @@ Or a file can be created using one of the supported extensions:
 
 Supported formats:
 
--   Text: **.txt**
--   Markdown: **.md**
--   HTML: **.html**
+- Text: **.txt**
+- Markdown: **.md**
+- HTML: **.html**
+
+
+Content Interchange
+-------------------
+
+**Export**
+
+Documents can be exported for editing or to exchange with other systems:
+
+    $ doorstop export TST
+    TST001:
+      active: true
+      dervied: false
+      level: 1
+      links:
+      - REQ001
+      normative: true
+      ref: ''
+      text: |
+        Verify the foobar will foo and bar.
+
+Or a file can be created using one of the supported extensions:
+
+    $ doorstop export TST path/to/tst.csv
+    exporting TST to path/to/tst.csv...
+    exported: path/to/tst.csv
+
+Supported formats:
+
+- YAML: **.yml**
+- Comma-Separated Values: **.csv**
+- Tab-Separated Values: **.tsv**
+- Microsoft Office Excel: **.xlsx**
+
+**Import**
+
+Items can be created/updated from the export formats:
+
+    $ doorstop import path/to/tst.csv TST
 
 
 

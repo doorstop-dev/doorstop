@@ -8,7 +8,7 @@ ref: ''
 text: |
   **Publishing a Document as Text**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 

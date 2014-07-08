@@ -1,0 +1,54 @@
+REQ001:
+  active: true
+  derived: false
+  level: 1.2.3
+  links:
+  - SYS001
+  - SYS002
+  normative: true
+  ref: ''
+  text: |
+    Hello, world!
+
+REQ003:
+  active: true
+  derived: false
+  level: 1.4
+  links:
+  - REQ001
+  normative: true
+  ref: REF123
+  text: |
+    Unicode: -40° ±1%
+
+REQ004:
+  active: true
+  derived: false
+  level: 1.6
+  links: []
+  normative: true
+  ref: ''
+  text: |
+    Hello, world!
+
+REQ002:
+  active: true
+  derived: false
+  level: 2.1
+  links: []
+  normative: true
+  ref: ''
+  text: |
+    Hello, world!
+
+REQ2-001:
+  active: true
+  derived: false
+  level: 2.1
+  links:
+  - REQ001
+  normative: true
+  ref: ''
+  text: |
+    Hello, world!
+

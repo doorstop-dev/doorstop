@@ -10,6 +10,7 @@ import shutil
 import pprint
 import logging
 
+import yaml
 # TODO: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
@@ -299,6 +300,21 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_import_yml(self):
+        """Verify items can be imported from a YAML file."""
+        path = os.path.join(self.temp, 'exported.yml')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
     def test_import_csv(self):
         """Verify items can be imported from a CSV file."""
         path = os.path.join(self.temp, 'exported.csv')
@@ -417,6 +433,20 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 
     def tearDown(self):
         shutil.rmtree(self.temp)
+
+    def test_export_yml(self):
+        """Verify a document can be exported as a YAML file."""
+        path = os.path.join(FILES, 'exported.yml')
+        temp = os.path.join(self.temp, 'exported.yml')
+        expected = read_yml(path)
+        # Act
+        path2 = core.exporter.export(self.document, temp)
+        # Assert
+        self.assertIs(temp, path2)
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_yml(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
 
     def test_export_csv(self):
         """Verify a document can be exported as a CSV file."""
@@ -643,6 +673,14 @@ def log_data(expected, actual):
             i=index,
             e=pprint.pformat(evalue),
             a=pprint.pformat(avalue)))
+
+
+def read_yml(path):
+    """Return a dictionary of items from a YAML file."""
+    with open(path, 'r', encoding='utf-8') as stream:
+        text = stream.read()
+    data = yaml.load(text)
+    return data
 
 
 def read_csv(path, delimiter=','):

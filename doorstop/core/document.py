@@ -61,19 +61,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         else:
             return "{} ({})".format(self.prefix, self.relpath)
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.path == other.path
-
-    def __ne__(self, other):
-        return not self == other
-
     def __iter__(self):
         yield from self._iter()
 
     def __len__(self):
         return len(list(self._iter()))
 
-    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
         return True
 
     @staticmethod

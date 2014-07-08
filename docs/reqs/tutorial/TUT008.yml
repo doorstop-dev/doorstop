@@ -8,7 +8,7 @@ ref: ''
 text: |
   **Validating the Tree**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 

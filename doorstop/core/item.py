@@ -9,6 +9,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, to_bool
+from doorstop.core import editor
 from doorstop import settings
 
 
@@ -71,12 +72,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             return str(self.id)
         else:
             return "{} ({})".format(self.id, self.relpath)
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.path == other.path
-
-    def __ne__(self, other):
-        return not self == other
 
     def __lt__(self, other):
         if self.level == other.level:
@@ -397,6 +392,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     # actions ################################################################
 
     @auto_save
+    def edit(self, tool=None):
+        """Open the item for editing.
+
+        :param tool: path of alternate editor
+
+        """
+        # Lock the item
+        self.tree.vcs.lock(self.path)
+        # Open in an editor
+        editor.edit(self.path, tool=tool)
+        # Force reloaded
+        self._loaded = False
+
+    @auto_save
     @auto_load
     def link(self, value):
         """Add a new link to another item ID.
@@ -684,6 +693,8 @@ class UnknownItem(object):
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path
+
+    normative = False  # do not include unknown items in traceability
 
     def __init__(self, value, spec=Item):
         self._id = ID(value)

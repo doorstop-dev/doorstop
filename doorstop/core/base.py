@@ -132,6 +132,15 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         self._exists = True
         self._loaded = False
 
+    def __hash__(self):
+        return hash(self.path)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.path == other.path
+
+    def __ne__(self, other):
+        return not self == other
+
     @staticmethod
     def _new(path, name):  # pragma: no cover (integration test)
         """Create a new file for the object.

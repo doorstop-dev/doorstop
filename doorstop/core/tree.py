@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Representation of a hierarchy of documents."""
 
+import sys
 from itertools import chain
 import logging
 
@@ -9,7 +13,26 @@ from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop.core import editor
+
+UTF8 = 'utf-8'
+CP437 = 'cp437'
+ASCII = 'ascii'
+
+BOX = {'end': {UTF8: '│   ',
+               CP437: '┬   ',
+               ASCII: '|   '},
+       'tee': {UTF8: '├ ─ ',
+               CP437: '├── ',
+               ASCII: '+-- '},
+       'bend': {UTF8: '└ ─ ',
+                CP437: '└── ',
+                ASCII: '+-- '},
+       'pipe': {UTF8: '│   ',
+                CP437: '│   ',
+                ASCII: '|   '},
+       'space': {UTF8: '    ',
+                 CP437: '    ',
+                 ASCII: '    '}}
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -80,18 +103,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._document_cache = {}
 
     def __repr__(self):
-        return "<Tree {}>".format(self)
+        return "<Tree {}>".format(self._draw_line())
 
     def __str__(self):
-        # Build parent prefix string (enables mock testing)
-        prefix = getattr(self.document, 'prefix', self.document)
-        # Build children prefix strings
-        children = ", ".join(str(c) for c in self.children)
-        # Format the tree
-        if children:
-            return "{} <- [ {} ]".format(prefix, children)
-        else:
-            return "{}".format(prefix)
+        return self._draw_line()
 
     def __len__(self):
         if self.document:
@@ -307,16 +322,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: edited :class:`~doorstop.core.item.Item`
 
         """
-        logging.debug("looking for {}...".format(identifier))
-        # Find item
+        # Find the item
         item = self.find_item(identifier)
-        # Lock the item
-        self.vcs.lock(item.path)
-        # Open item
+        # Edit the item
         if launch:
-            editor.launch(item.path, tool=tool)
-            # TODO: force an item reload without touching a private attribute
-            item._loaded = False  # pylint: disable=W0212
+            item.edit(tool=tool)
         # Return the item
         return item
 
@@ -411,6 +421,89 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
+    def get_traceability(self):
+        """Return sorted rows of traceability slices.
+
+        :return: list of list of :class:`~doorstop.core.item.Item` or `None`
+
+        """
+        def by_id(row):
+            """Helper function to sort rows by ID."""
+            row2 = []
+            for item in row:
+                if item:
+                    row2.append('0' + str(item.id))
+                else:
+                    row2.append('1')  # force `None` to sort after items
+            return row2
+
+        # Create mapping of document prefix to slice index
+        mapping = {}
+        for index, document in enumerate(self.documents):
+            mapping[document.prefix] = index
+
+        # Collect all rows
+        rows = set()
+        for index, document in enumerate(self.documents):
+            for item in document:
+
+                for row in self._iter_rows(item, mapping):
+                    rows.add(row)
+
+        # Sort rows
+        return sorted(rows, key=by_id)
+
+    def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
+        """Generate all traceability row slices.
+
+        :param item: base :class:`~doorstop.core.item.Item` for slicing
+        :param mapping: `dict` of document prefix to slice index
+        :param parent: indicate recursion is in the parent direction
+        :param child: indicates recursion is in the child direction
+        :param row: currently generated row
+
+        """
+        class Row(list):
+
+            """List type that tracks upper and lower boundaries."""
+
+            def __init__(self, *args, parent=False, child=False, **kwargs):
+                super().__init__(*args, **kwargs)
+                # Flags to indicate upper and lower bounds have been hit
+                self.parent = parent
+                self.child = child
+
+        if item.normative:
+
+            # Start the next row or copy from recursion
+            if row is None:
+                row = Row([None] * len(mapping))
+            else:
+                row = Row(row, parent=row.parent, child=row.child)
+
+            # Add the current item to the row
+            row[mapping[item.document.prefix]] = item
+
+            # Recurse to the next parent/child item
+            if parent:
+                items = item.parent_items
+                for item2 in items:
+                    yield from self._iter_rows(item2, mapping,
+                                               child=False, row=row)
+                if not items:
+                    row.parent = True
+            if child:
+                items = item.child_items
+                for item2 in items:
+                    yield from self._iter_rows(item2, mapping,
+                                               parent=False, row=row)
+                if not items:
+                    row.child = True
+
+            # Yield the row if both boundaries have been hit
+            if row.parent and row.child:
+                yield tuple(row)
+
     @clear_document_cache
     @clear_item_cache
     def load(self, reload=False):
@@ -430,6 +523,61 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             document.load(reload=True)
         # Set meta attributes
         self._loaded = True
+
+    def draw(self, encoding=None):
+        """Get the tree structure as text.
+
+        :param encoding: limit character set to:
+                         - 'utf-8' - all characters
+                         - 'cp437' - Code Page 437 characters
+                         - (other) - ACSII characters
+
+        """
+        encoding = encoding or getattr(sys.stdout, 'encoding', None)
+        encoding = encoding.lower() if encoding else None
+        return '\n'.join(self._draw_lines(encoding))
+
+    def _draw_line(self):
+        """Get the tree structure in one line."""
+        # Build parent prefix string (`getattr` to enable mock testing)
+        prefix = getattr(self.document, 'prefix', '') or str(self.document)
+        # Build children prefix strings
+        children = ", ".join(c._draw_line() for c in self.children)  # pylint: disable=W0212
+        # Format the tree
+        if children:
+            return "{} <- [ {} ]".format(prefix, children)
+        else:
+            return "{}".format(prefix)
+
+    def _draw_lines(self, encoding):
+        """Generate lines of the tree structure."""
+        # Build parent prefix string (`getattr` to enable mock testing)
+        prefix = getattr(self.document, 'prefix', '') or str(self.document)
+        yield prefix
+        # Build child prefix strings
+        for count, child in enumerate(self.children, start=1):
+            if count == 1:
+                yield self._symbol('end', encoding)
+            else:
+                yield self._symbol('pipe', encoding)
+            if count < len(self.children):
+                base = self._symbol('pipe', encoding)
+                indent = self._symbol('tee', encoding)
+            else:
+                base = self._symbol('space', encoding)
+                indent = self._symbol('bend', encoding)
+            for index, line in enumerate(child._draw_lines(encoding)):  # pylint: disable=W0212
+                if index == 0:
+                    yield indent + line
+                else:
+                    yield base + line
+
+    @staticmethod
+    def _symbol(name, encoding):
+        """Get a drawing symbol based on encoding."""
+        if encoding not in (UTF8, CP437):
+            encoding = ASCII
+        return BOX[name][encoding]
 
     def delete(self):
         """Delete the tree and its documents and items."""
