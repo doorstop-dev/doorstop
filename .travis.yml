@@ -3,10 +3,11 @@ python:
 - 3.3
 - 3.4
 install:
-- pip install coveralls
+- pip install coveralls scrutinizer-ocular
 script: make ci
 after_success:
 - coveralls
+- ocular
 after_script:
 # Generate HTML pages
 - make html
