@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Representation of a hierarchy of documents."""
 
+import sys
 from itertools import chain
 import logging
 
@@ -9,7 +13,26 @@ from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop.core import editor
+
+UTF8 = 'utf-8'
+CP437 = 'cp437'
+ASCII = 'ascii'
+
+BOX = {'end': {UTF8: '│   ',
+               CP437: '┬   ',
+               ASCII: '|   '},
+       'tee': {UTF8: '├ ─ ',
+               CP437: '├── ',
+               ASCII: '+-- '},
+       'bend': {UTF8: '└ ─ ',
+                CP437: '└── ',
+                ASCII: '+-- '},
+       'pipe': {UTF8: '│   ',
+                CP437: '│   ',
+                ASCII: '|   '},
+       'space': {UTF8: '    ',
+                 CP437: '    ',
+                 ASCII: '    '}}
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -299,16 +322,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: edited :class:`~doorstop.core.item.Item`
 
         """
-        logging.debug("looking for {}...".format(identifier))
-        # Find item
+        # Find the item
         item = self.find_item(identifier)
-        # Lock the item
-        self.vcs.lock(item.path)
-        # Open item
+        # Edit the item
         if launch:
-            editor.launch(item.path, tool=tool)
-            # TODO: force an item reload without touching a private attribute
-            item._loaded = False  # pylint: disable=W0212
+            item.edit(tool=tool)
         # Return the item
         return item
 
@@ -506,9 +524,18 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Set meta attributes
         self._loaded = True
 
-    def draw(self):
-        """Get the tree structure as text."""
-        return '\n'.join(self._draw_lines())
+    def draw(self, encoding=None):
+        """Get the tree structure as text.
+
+        :param encoding: limit character set to:
+                         - 'utf-8' - all characters
+                         - 'cp437' - Code Page 437 characters
+                         - (other) - ACSII characters
+
+        """
+        encoding = encoding or getattr(sys.stdout, 'encoding', None)
+        encoding = encoding.lower() if encoding else None
+        return '\n'.join(self._draw_lines(encoding))
 
     def _draw_line(self):
         """Get the tree structure in one line."""
@@ -522,25 +549,35 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return "{}".format(prefix)
 
-    def _draw_lines(self):
+    def _draw_lines(self, encoding):
         """Generate lines of the tree structure."""
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, 'prefix', '') or str(self.document)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):
-            yield '|   '
-            if count < len(self.children):
-                base = '|   '
-                indent = '├ ─ '
+            if count == 1:
+                yield self._symbol('end', encoding)
             else:
-                base = '    '
-                indent = '└ ─ '
-            for count, line in enumerate(child._draw_lines(), start=1):  # pylint: disable=W0212
-                if count == 1:
+                yield self._symbol('pipe', encoding)
+            if count < len(self.children):
+                base = self._symbol('pipe', encoding)
+                indent = self._symbol('tee', encoding)
+            else:
+                base = self._symbol('space', encoding)
+                indent = self._symbol('bend', encoding)
+            for index, line in enumerate(child._draw_lines(encoding)):  # pylint: disable=W0212
+                if index == 0:
                     yield indent + line
                 else:
                     yield base + line
+
+    @staticmethod
+    def _symbol(name, encoding):
+        """Get a drawing symbol based on encoding."""
+        if encoding not in (UTF8, CP437):
+            encoding = ASCII
+        return BOX[name][encoding]
 
     def delete(self):
         """Delete the tree and its documents and items."""

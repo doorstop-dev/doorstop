@@ -112,7 +112,7 @@ def _lines_yaml(obj):
     for item in iter_items(obj):
 
         data = {str(item.id): item.data}
-        text = yaml.dump(data)
+        text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
 
 

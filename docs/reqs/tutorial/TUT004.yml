@@ -11,7 +11,7 @@ ref: ''
 text: |
   **Removing Items and Links**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 

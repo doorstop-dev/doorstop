@@ -308,6 +308,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, self.item.document)
         self.assertIs(None, self.item.tree)
 
+    @patch('doorstop.core.editor.launch')
+    def test_edit(self, mock_launch):
+        """Verify an item can be edited."""
+        self.item.tree = Mock()
+        # Act
+        self.item.edit(tool='mock_editor')
+        # Assert
+        self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
+        mock_launch.assert_called_once_with(self.item.path, tool='mock_editor')
+
     def test_link(self):
         """Verify links can be added to an item."""
         self.item.link('abc')

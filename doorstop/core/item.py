@@ -9,6 +9,7 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, to_bool
+from doorstop.core import editor
 from doorstop import settings
 
 
@@ -389,6 +390,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             return []
 
     # actions ################################################################
+
+    @auto_save
+    def edit(self, tool=None):
+        """Open the item for editing.
+
+        :param tool: path of alternate editor
+
+        """
+        # Lock the item
+        self.tree.vcs.lock(self.path)
+        # Open in an editor
+        editor.edit(self.path, tool=tool)
+        # Force reloaded
+        self._loaded = False
 
     @auto_save
     @auto_load
