@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.7 (dev)
----------
+0.7 (2014/07/08)
+----------------
 
 - Added `doorstop delete ...` to delete document directories.
 - Added `doorstop export ...` to export content for external tools.
@@ -16,8 +16,8 @@ Changelog
 - Renamed `doorstop new ...` to `doorstop create ...`.
 - Made 'all' a reserved word, which cannot be used as a prefix.
 
-0.6 (2014/5/15)
----------------
+0.6 (2014/05/15)
+----------------
 
 - Refactored Item levels into a Level class
 - Refactored Item identifiers into an ID class
@@ -40,22 +40,9 @@ Changelog
 - Added '--level' option to 'doorstop add' to force an Item level
 - Added warnings for duplicate Item levels in a Document
 - Added warnings for skipped Item levels in a Document
-- Renamed Item methods:
-    + add_link -> link
-    + remove_link -> unlink
-    + valid -> validate
-- Renamed Document methods:
-    + add -> add_item
-    + remove -> remove_item
-    + valid -> validate
-- Renamed Tree methods:
-    + new -> new_document
-    + add -> add_item
-    + remove -> remove_item
-    + link -> link_items
-    + unlink -> unlink_items
-    + edit -> edit_item
-    + valid -> validate
+- Renamed Item methods: add_link -> link, remove_link -> unlink, valid -> validate
+- Renamed Document methods: add -> add_item, remove -> remove_item, valid -> validate
+- Renamed Tree methods: new -> new_document, add -> add_item, remove -> remove_item, link -> link_items, unlink -> unlink_items, edit -> edit_item, valid -> validate
 - Added doorstop.importer functions to add exiting Documents and Items
 
 0.4.3 (2014/03/18)
@@ -148,7 +135,7 @@ Changelog
 
 
 0.0.14 (2014/01/27)
---------------------
+-------------------
 
 - Added Tree/Document/Item.iter_issues() method to yield all issues
 - Tree/Document/Item.check() now logs all issues rather than failing fast
