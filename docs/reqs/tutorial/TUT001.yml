@@ -9,7 +9,7 @@ ref: ''
 text: |
   **Creating a New Document and Adding Items**
 
-  Enter VCS working copy:
+  Enter a VCS working copy:
 
       $ cd /tmp/doorstop
 

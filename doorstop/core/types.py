@@ -33,6 +33,8 @@ class Prefix(str):  # pylint: disable=R0904
         return super().__hash__()
 
     def __eq__(self, other):
+        if other in settings.RESERVED_WORDS:
+            return False
         if not isinstance(other, Prefix):
             other = Prefix(other)
         return self.lower() == other.lower()
@@ -70,11 +72,11 @@ class ID(object):
 
         Option 1:
 
-        @param *values: string representation of ID
+        :param *values: string representation of ID
 
         Option 2:
 
-        @param *values: prefix, separator, number, digit count
+        :param *values: prefix, separator, number, digit count
 
         """
         # Join values
@@ -250,8 +252,8 @@ class Text(str):  # pylint: disable=R0904
     def sbd(text, end='\n'):
         r"""Replace sentence boundaries with newlines and append a newline.
 
-        @param text: string to line break at sentences
-        @param end: appended to the end of the update text
+        :param text: string to line break at sentences
+        :param end: appended to the end of the update text
 
         >>> Text.sbd("Hello, world!", end='')
         'Hello, world!'
@@ -335,8 +337,8 @@ class Level(object):
     def __init__(self, value, heading=None):
         """Initialize an item level from a sequence of numbers.
 
-        @param value: sequence of int, float, or period-delimited string
-        @param heading: force a heading value (or inferred from trailing zero)
+        :param value: sequence of int, float, or period-delimited string
+        :param heading: force a heading value (or inferred from trailing zero)
 
         """
         if isinstance(value, Level):

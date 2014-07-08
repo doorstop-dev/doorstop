@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Unit tests for the doorstop.core.importer module."""
 
 import unittest
@@ -47,6 +49,32 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer.import_file(mock_path, mock_document, ext='.custom')
         mock_check.assert_called_once_with('.custom')
 
+    @patch('doorstop.core.importer.add_item')
+    def test_file_yml(self, mock_add_item):
+        """Verify a YAML file can be imported."""
+        path = os.path.join(FILES, 'exported.yml')
+        mock_document = Mock()
+        mock_document.find_item = Mock(side_effect=DoorstopError)
+        # Act
+        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(5, mock_add_item.call_count)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_file_yml_duplicates(self, mock_add_item):
+        """Verify a YAML file can be imported (over existing items)."""
+        path = os.path.join(FILES, 'exported.yml')
+        mock_document = Mock()
+        # Act
+        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(5, mock_add_item.call_count)
+
+    def test_file_yml_bad_format(self):
+        """Verify YAML file import can handle bad data."""
+        path = os.path.join(FILES, 'exported.csv')
+        self.assertRaises(DoorstopError, importer._file_yml, path, None)  # pylint: disable=W0212
+
     @patch('doorstop.core.importer._itemize')
     def test_file_csv(self, mock_itemize):
         """Verify a CSV file can be imported."""
@@ -64,7 +92,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
                           '', True, False, True],
@@ -133,7 +161,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
                           'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
+                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
                           'REQ001', True, False, True],
                          ['REQ004', '1.6', 'Hello, world!\n', None,
                           None, True, False, True],

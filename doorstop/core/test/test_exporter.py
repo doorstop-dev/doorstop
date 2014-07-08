@@ -67,13 +67,27 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(0, mock_makedirs.call_count)
         self.assertEqual(0, mock_open.call_count)
 
+    @patch('os.makedirs')
+    @patch('doorstop.core.exporter.write_lines')
+    def test_export_document_lines(self, mock_write_lines, mock_makedirs):
+        """Verify a document can be exported (lines to file)."""
+        dirpath = os.path.join('mock', 'directory')
+        path = os.path.join(dirpath, 'exported.custom')
+        # Act
+        path2 = exporter.export(self.document, path, ext='.yml')
+        # Assert
+        self.assertIs(path, path2)
+        mock_makedirs.assert_called_once_with(dirpath)
+        mock_write_lines.assert_called_once()
+
     def test_lines(self):
         """Verify an item can be exported as lines."""
         expected = ("req3:" + '\n'
                     "  active: true" + '\n'
                     "  derived: false" + '\n'
                     "  level: 1.1.0" + '\n'
-                    "  links: [sys3]" + '\n'
+                    "  links:" + '\n'
+                    "  - sys3" + '\n'
                     "  normative: false" + '\n'
                     "  ref: ''" + '\n'
                     "  text: |" + '\n' +

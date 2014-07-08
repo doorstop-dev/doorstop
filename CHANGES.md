@@ -4,15 +4,17 @@ Changelog
 0.7 (dev)
 ---------
 
+- Added `doorstop delete ...` to delete document directories.
 - Added `doorstop export ...` to export content for external tools.
 - Fixed `doorstop publish ...` handling of unknown formats.
+- Added tree structure and traceability to `index.html`.
 - Added clickable links using Item IDs in HTML header tags.
 - Fixed bug publishing a document to a directory.
 - Fixed bug publishing a document without an extension or type specified.
-- Made 'all' a reserved word that cannot be used as a prefix.
-- Added `doorstop import FILE PREFIX` to import from the export formats.
-- Added `doorstop deleete PREFIX` to delete document directories.
+- Updated `doorstop import ...` to import from document export formats.
+- Updated `doorstop edit ...` to support document export/import.
 - Renamed `doorstop new ...` to `doorstop create ...`.
+- Made 'all' a reserved word, which cannot be used as a prefix.
 
 0.6 (2014/5/15)
 ---------------

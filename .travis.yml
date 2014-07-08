@@ -10,6 +10,7 @@ after_success:
 after_script:
 # Generate HTML pages
 - make html
+- cp -r docs/gen/ pages/reqs/
 # Configure Git with Travis CI information
 - git config --global user.email "travis@travis-ci.org"
 - git config --global user.name "travis-ci"
@@ -17,7 +18,7 @@ after_script:
 - rm -rf .git
 # Rebuild the repository from the generated files and push to GitHub pages
 - > 
-  cd docs/gen ;
+  cd pages;
   echo "[${TRAVIS_REPO_SLUG}](~${TRAVIS_REPO_SLUG})" | sed -e 's/\//.github.io\//g' | sed -e 's/~/http:\/\//g' > README.md ;
   git init ;
   git add . ;

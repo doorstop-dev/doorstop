@@ -68,6 +68,19 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
         self.assertEqual(text, str(self.item))
 
+    def test_hash(self):
+        """Verify items can be hashed."""
+        item1 = MockItem('path/to/fake1.yml')
+        item2 = MockItem('path/to/fake2.yml')
+        item3 = MockItem('path/to/fake2.yml')
+        my_set = set()
+        # Act
+        my_set.add(item1)
+        my_set.add(item2)
+        my_set.add(item3)
+        # Assert
+        self.assertEqual(2, len(my_set))
+
     def test_ne(self):
         """Verify item non-equality is correct."""
         self.assertNotEqual(self.item, None)
@@ -294,6 +307,16 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify a standalone item does not have object references."""
         self.assertIs(None, self.item.document)
         self.assertIs(None, self.item.tree)
+
+    @patch('doorstop.core.editor.launch')
+    def test_edit(self, mock_launch):
+        """Verify an item can be edited."""
+        self.item.tree = Mock()
+        # Act
+        self.item.edit(tool='mock_editor')
+        # Assert
+        self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
+        mock_launch.assert_called_once_with(self.item.path, tool='mock_editor')
 
     def test_link(self):
         """Verify links can be added to an item."""
@@ -676,8 +699,8 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'r') as infile:
-            self.backup = infile.read()
+        with open(self.ITEM, 'r') as stream:
+            self.backup = stream.read()
 
     def tearDown(self):
         with open(self.ITEM, 'w') as outfile:
@@ -688,8 +711,8 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'r') as infile:
-            text = infile.read()
+        with open(self.ITEM, 'r') as stream:
+            text = stream.read()
             self.assertEqual(self.backup, text)
 
 

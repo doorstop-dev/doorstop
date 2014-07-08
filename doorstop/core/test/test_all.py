@@ -10,6 +10,7 @@ import shutil
 import pprint
 import logging
 
+import yaml
 # TODO: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
@@ -299,6 +300,21 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
 
+    def test_import_yml(self):
+        """Verify items can be imported from a YAML file."""
+        path = os.path.join(self.temp, 'exported.yml')
+        core.exporter.export(self.document, path)
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        core.importer.import_file(path, document)
+        # Assert
+        expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
     def test_import_csv(self):
         """Verify items can be imported from a CSV file."""
         path = os.path.join(self.temp, 'exported.csv')
@@ -418,6 +434,20 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
     def tearDown(self):
         shutil.rmtree(self.temp)
 
+    def test_export_yml(self):
+        """Verify a document can be exported as a YAML file."""
+        path = os.path.join(FILES, 'exported.yml')
+        temp = os.path.join(self.temp, 'exported.yml')
+        expected = read_yml(path)
+        # Act
+        path2 = core.exporter.export(self.document, temp)
+        # Assert
+        self.assertIs(temp, path2)
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_yml(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+
     def test_export_csv(self):
         """Verify a document can be exported as a CSV file."""
         path = os.path.join(FILES, 'exported.csv')
@@ -516,61 +546,61 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'published.txt')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_text_document_with_child_links(self):
-        """Verify text can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_text_document_without_child_links(self):
+        """Verify text can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.txt')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'published.md')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_markdown_document_with_child_links(self):
-        """Verify Markdown can be published from a document w/ child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_document_without_child_links(self):
+        """Verify Markdown can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.md')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'published.html')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.html',
                                              linkify=True)
@@ -578,21 +608,21 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    def test_lines_html_document_with_child_links(self):
-        """Verify HTML can be published from a document with child links."""
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_html_document_without_child_links(self):
+        """Verify HTML can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.html')
-        expected = open(path).read()
+        expected = open(path, encoding='utf-8').read()
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w') as outfile:
+        with open(path, 'w', encoding='utf-8') as outfile:
             outfile.write(text)
 
 
@@ -636,11 +666,19 @@ def log_data(expected, actual):
             a=pprint.pformat(avalue)))
 
 
+def read_yml(path):
+    """Return a dictionary of items from a YAML file."""
+    with open(path, 'r', encoding='utf-8') as stream:
+        text = stream.read()
+    data = yaml.load(text)
+    return data
+
+
 def read_csv(path, delimiter=','):
     """Return a list of rows from a CSV file."""
     rows = []
     try:
-        with open(path, 'r', newline='') as stream:
+        with open(path, 'r', newline='', encoding='utf-8') as stream:
             reader = csv.reader(stream, delimiter=delimiter)
             for row in reader:
                 rows.append(row)

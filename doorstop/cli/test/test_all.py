@@ -67,10 +67,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' can be called."""
         self.assertIs(None, main([]))
 
-    def test_main_help(self):
-        """Verify 'doorstop --help' can be requested."""
-        self.assertRaises(SystemExit, main, ['--help'])
-
     def test_main_error(self):
         """Verify 'doorstop' returns an error in an empty directory."""
         os.chdir(self.temp)
@@ -80,16 +76,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop' can be provided a custom root path."""
         os.chdir(self.temp)
         self.assertIs(None, main(['--project', '.']))
-
-    @patch('doorstop.cli.main._run', Mock(return_value=False))
-    def test_exit(self):
-        """Verify 'doorstop' treats False as an error ."""
-        self.assertRaises(SystemExit, main, [])
-
-    @patch('doorstop.cli.main._run', Mock(side_effect=KeyboardInterrupt))
-    def test_interrupt(self):
-        """Verify 'doorstop' treats KeyboardInterrupt as an error."""
-        self.assertRaises(SystemExit, main, [])
 
     def test_empty(self):
         """Verify 'doorstop' can be run in a working copy with no docs."""
@@ -116,11 +102,6 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
-
-    @patch('doorstop.cli.main.gui', Mock(return_value=True))
-    def test_gui(self):
-        """Verify 'doorstop --gui' launches the GUI."""
-        self.assertIs(None, main(['--gui']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -281,11 +262,47 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop edit' command."""
 
     @patch('doorstop.core.editor.launch')
-    def test_edit(self, mock_launch):
-        """Verify 'doorstop edit' can be called."""
+    def test_edit_item(self, mock_launch):
+        """Verify 'doorstop edit' can be called with an item."""
         self.assertIs(None, main(['edit', 'tut2']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
         mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    def test_edit_item_unknown(self):
+        """Verify 'doorstop edit' returns an error on an unknown item."""
+        self.assertRaises(SystemExit, main, ['edit', '--item', 'FAKE001'])
+
+    @patch('time.time', Mock(return_value=123))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='yes'))
+    def test_edit_document_yes_yes(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (yes, yes)."""
+        path = "TUT-123.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    @patch('time.time', Mock(return_value=456))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_edit_document_no_no(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (no, no)."""
+        path = "TUT-456.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        os.remove(path)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    @patch('time.time', Mock(return_value=789))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(side_effect=['no', 'yes']))
+    def test_edit_document_no_yes(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (no, yes)."""
+        path = "TUT-789.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    def test_edit_document_unknown(self):
+        """Verify 'doorstop edit' returns an error on an unknown document."""
+        self.assertRaises(SystemExit, main, ['edit', '--document', 'FAKE'])
 
     def test_edit_error(self):
         """Verify 'doorstop edit' returns an error with an unknown ID."""
@@ -478,12 +495,17 @@ class TestPublish(TempTestCase):  # pylint: disable=R0904
     def test_publish_document(self):
         """Verify 'doorstop publish' can create output."""
         self.assertIs(None, main(['publish', 'tut']))
-        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+        self.assertTrue(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_document_with_child_links(self):
         """Verify 'doorstop publish' can create output with child links."""
-        self.assertIs(None, main(['publish', 'tut', '--with-child-links']))
+        self.assertIs(None, main(['publish', 'tut']))
         self.assertTrue(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_document_without_child_links(self):
+        """Verify 'doorstop publish' can create output without child links."""
+        self.assertIs(None, main(['publish', 'tut', '--no-child-links']))
+        self.assertFalse(settings.PUBLISH_CHILD_LINKS)
 
     def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""
@@ -548,10 +570,14 @@ class TestPublish(TempTestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['publish', 'all'])
 
 
-@patch('doorstop.cli.main._run', Mock(return_value=True))  # pylint: disable=R0904
+@patch('doorstop.cli.commands.run', Mock(return_value=True))  # pylint: disable=R0904
 class TestLogging(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the Doorstop CLI logging."""
+
+    def test_verbose_0(self):
+        """Verify verbose level 0 can be set."""
+        self.assertIs(None, main([]))
 
     def test_verbose_1(self):
         """Verify verbose level 1 can be set."""

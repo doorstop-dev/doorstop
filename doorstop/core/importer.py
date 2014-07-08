@@ -5,6 +5,7 @@ import logging
 import re
 import csv
 
+import yaml
 # TODO: track pylint update to resolve openpyxl false positives
 # pylint: disable=E1101
 import openpyxl  # pylint: disable=F0401
@@ -45,7 +46,7 @@ def create_document(prefix, path, parent=None, tree=None):
     :param prefix: existing document's prefix (for new items)
     :param path: new directory path to store this document's items
     :param parent: parent document's prefix (if one will exist)
-    :param document: explicit tree to add the document
+    :param tree: explicit tree to add the document
 
     :return: imported Document
 
@@ -112,6 +113,34 @@ def add_item(prefix, identifier, attrs=None, document=None):
     return item
 
 
+def _file_yml(path, document, **_):
+    """Import items from a YAML export to a document.
+
+    :param path: input file location
+    :param document: document to import items
+
+    """
+    # Parse the file
+    logging.info("reading items in {}...".format(path))
+    with open(path, 'r', encoding='utf-8') as stream:
+        text = stream.read()
+    # Load the YAML data
+        try:
+            data = yaml.load(text) or {}
+        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
+            msg = "invalid contents: {}:\n{}".format(path, exc)
+            raise DoorstopError(msg) from None
+    # Add items
+    for identifier, attrs in data.items():
+        try:
+            item = document.find_item(identifier)
+        except DoorstopError:
+            pass
+        else:
+            item.delete()
+        add_item(document.prefix, identifier, attrs=attrs, document=document)
+
+
 def _file_csv(path, document, delimiter=',', mapping=None):
     """Import items from a CSV export to a document.
 
@@ -125,7 +154,7 @@ def _file_csv(path, document, delimiter=',', mapping=None):
 
     # Parse the file
     logging.info("reading rows in {}...".format(path))
-    with open(path, 'r') as stream:
+    with open(path, 'r', encoding='utf-8') as stream:
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []
@@ -265,7 +294,8 @@ def _split_list(value):
 
 
 # Mapping from file extension to file reader
-FORMAT_FILE = {'.csv': _file_csv,
+FORMAT_FILE = {'.yml': _file_yml,
+               '.csv': _file_csv,
                '.tsv': _file_tsv,
                '.xlsx': _file_xlsx}
 

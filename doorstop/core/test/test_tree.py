@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Unit tests for the doorstop.core.tree module."""
 
 import unittest
@@ -26,26 +29,30 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def setUpClass(cls):
         a = Tree('a', root='.')
         b1 = Tree('b1', parent=a, root='.')
+        d = Tree('d', parent=b1, root='.')
+        e = Tree('e', parent=d, root='.')
         b2 = Tree('b2', parent=a, root='.')
         c1 = Tree('c1', parent=b2, root='.')
         c2 = Tree('c2', parent=b2, root='.')
         a.children = [b1, b2]
+        b1.children = [d]
+        d.children = [e]
         b2.children = [c1, c2]
         cls.tree = a
 
     def test_repr(self):
         """Verify trees can be represented."""
-        text = "<Tree a <- [ b1, b2 <- [ c1, c2 ] ]>"
+        text = "<Tree a <- [ b1 <- [ d <- [ e ] ], b2 <- [ c1, c2 ] ]>"
         self.assertEqual(text, repr(self.tree))
 
     def test_str(self):
         """Verify trees can be converted to strings."""
-        text = "a <- [ b1, b2 <- [ c1, c2 ] ]"
+        text = "a <- [ b1 <- [ d <- [ e ] ], b2 <- [ c1, c2 ] ]"
         self.assertEqual(text, str(self.tree))
 
     def test_len(self):
         """Verify a tree lengths are correct."""
-        self.assertEqual(5, len(self.tree))
+        self.assertEqual(7, len(self.tree))
 
     def test_getitem(self):
         """Verify item access is not allowed on trees."""
@@ -54,12 +61,72 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
     def test_iter(self):
         """Verify a tree can be iterated over."""
         items = [d for d in self.tree]
-        self.assertListEqual(['a', 'b1', 'b2', 'c1', 'c2'], items)
+        self.assertListEqual(['a', 'b1', 'd', 'e', 'b2', 'c1', 'c2'], items)
 
     def test_contains(self):
         """Verify a tree can be checked for contents."""
         child = self.tree.children[1].children[0]
         self.assertIn(child.document, self.tree)
+
+    def test_draw_utf8(self):
+        """Verify trees structure can be drawn (UTF-8)."""
+        text = ("a" + '\n'
+                "│   " + '\n'
+                "├ ─ b1" + '\n'
+                "│   │   " + '\n'
+                "│   └ ─ d" + '\n'
+                "│       │   " + '\n'
+                "│       └ ─ e" + '\n'
+                "│   " + '\n'
+                "└ ─ b2" + '\n'
+                "    │   " + '\n'
+                "    ├ ─ c1" + '\n'
+                "    │   " + '\n'
+                "    └ ─ c2")
+        logging.debug('expected:\n' + text)
+        text2 = self.tree.draw(encoding='UTF-8')
+        logging.debug('actual:\n' + text2)
+        self.assertEqual(text, text2)
+
+    def test_draw_cp437(self):
+        """Verify trees structure can be drawn (cp437)."""
+        text = ("a" + '\n'
+                "┬   " + '\n'
+                "├── b1" + '\n'
+                "│   ┬   " + '\n'
+                "│   └── d" + '\n'
+                "│       ┬   " + '\n'
+                "│       └── e" + '\n'
+                "│   " + '\n'
+                "└── b2" + '\n'
+                "    ┬   " + '\n'
+                "    ├── c1" + '\n'
+                "    │   " + '\n'
+                "    └── c2")
+        logging.debug('expected:\n' + text)
+        text2 = self.tree.draw(encoding='cp437')
+        logging.debug('actual:\n' + text2)
+        self.assertEqual(text, text2)
+
+    def test_draw_unknown(self):
+        """Verify trees structure can be drawn (unknown)."""
+        text = ("a" + '\n'
+                "|   " + '\n'
+                "+-- b1" + '\n'
+                "|   |   " + '\n'
+                "|   +-- d" + '\n'
+                "|       |   " + '\n'
+                "|       +-- e" + '\n'
+                "|   " + '\n'
+                "+-- b2" + '\n'
+                "    |   " + '\n'
+                "    +-- c1" + '\n'
+                "    |   " + '\n'
+                "    +-- c2")
+        logging.debug('expected:\n' + text)
+        text2 = self.tree.draw(encoding='unknown')
+        logging.debug('actual:\n' + text2)
+        self.assertEqual(text, text2)
 
     @patch('doorstop.settings.REORDER', False)
     def test_from_list(self):
@@ -194,6 +261,20 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
     def test_issues(self):
         """Verify an tree's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.tree.issues))
+
+    def test_get_traceability(self):
+        """Verify traceability rows are correct."""
+        rows = [
+            (self.tree.find_item('SYS001'), self.tree.find_item('REQ001')),
+            (self.tree.find_item('SYS002'), self.tree.find_item('REQ001')),
+            (None, self.tree.find_item('REQ002')),
+            (None, self.tree.find_item('REQ004')),
+        ]
+        # Act
+        rows2 = self.tree.get_traceability()
+        # Assert
+        self.maxDiff = None
+        self.assertListEqual(rows, rows2)
 
     def test_new_document(self):
         """Verify a new document can be created on a tree."""
