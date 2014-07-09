@@ -4,3 +4,4 @@ checks:
         duplicate_code: true
 tools:
     external_code_coverage: true
+    timeout: 720
