@@ -8,6 +8,13 @@ from bottle import get, post, request, run
 from doorstop import build, publisher
 
 
+@get('/')
+def get_tree():
+    yield '<pre><code>'
+    yield tree.draw()
+    yield '</pre></code>'
+
+
 @get('/documents')
 def get_documents():
     prefixes = [str(document.prefix) for document in tree]
