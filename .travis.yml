@@ -21,7 +21,7 @@ after_script:
 # Delete the current repository
 - rm -rf .git
 # Rebuild the repository from the generated files and push to GitHub pages
-- > 
+- >
   cd pages;
   echo "[${TRAVIS_REPO_SLUG}](~${TRAVIS_REPO_SLUG})" | sed -e 's/\//.github.io\//g' | sed -e 's/~/http:\/\//g' > README.md ;
   git init ;
@@ -36,3 +36,7 @@ env:
   global:
     # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci
     secure: JfVl6zxzhRIEG1VvLqMEPMGOecrzDyb2U0HPyQ4Z4pfKJgFJOdQ1orT9Aztpfr4edXqbCZnEy4WH8+FLBQagkXjT3Ladopv+9j1IkP8v1Gu1O8H2tHQc7wfGxnkQF+h0pFFS6adNAsMliQ5dxTojFYVoWebvZQbiVGYkew+QZ0c=
+
+branches:
+  except:
+    - server
