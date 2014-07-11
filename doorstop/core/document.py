@@ -343,6 +343,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         keep = self.find_item(keep) if keep else None
         logging.info("reordering {}...".format(self))
         self._reorder(items, start=start, keep=keep)
+        self._index(items, self.path)
 
     @staticmethod
     def _reorder(items, start=None, keep=None):
@@ -419,6 +420,21 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 items = [items.pop(items.index(keep))] + items
             for item in items:
                 yield level, item
+
+    @staticmethod
+    def _index(items, dirpath):
+        """Update the document index."""
+        path = os.path.join(dirpath, 'index.yml')
+        with open(path, 'w', encoding='utf-8') as stream:
+            stream.write("initial: 1.0" + '\n')
+            stream.write("outline:" + '\n')
+            for item in items:
+                space = "  " * item.depth
+                comment = item.text.replace('\n', ' ') or item.ref
+                line = space + "- {i}: # {c}".format(i=item.id, c=comment)
+                if len(line) > settings.MAX_LINE_LENTH:
+                    line = line[:settings.MAX_LINE_LENTH - 3] + '...'
+                stream.write(line + '\n')
 
     def find_item(self, value, _kind=''):
         """Return an item by its ID.

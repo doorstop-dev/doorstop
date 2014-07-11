@@ -1,0 +1,6 @@
+initial: 1.0
+outline:
+  - HLT001: # test_tutorial_section_1
+  - HLT002: # test_tutorial_section_2
+  - HLT003: # test_tutorial_section_3
+  - HLT004: # test_tutorial_section_4

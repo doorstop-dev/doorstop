@@ -1,0 +1,6 @@
+initial: 1.0
+outline:
+    - REQ003: # Unicode: -40° ±1%
+    - REQ004: # Hello, world!
+    - REQ002: # Hello, world!
+    - REQ2-001: # Hello, world!
