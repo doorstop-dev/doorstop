@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import json
 import logging
 
 from bottle import get, post, request, run
@@ -19,7 +18,8 @@ def get_tree():
 def get_documents():
     prefixes = [str(document.prefix) for document in tree]
     if json_response(request):
-        return json.dumps(prefixes)
+        data = {'prefixes': prefixes}
+        return data
     else:
         return '<br>'.join(prefixes)
 
@@ -29,7 +29,7 @@ def get_document(prefix):
     document = tree.find_document(prefix)
     if json_response(request):
         data = {str(item.id): item.data for item in document}
-        return json.dumps(data)
+        return data
     else:
         return publisher.publish_lines(document, ext='.html')
 
@@ -39,7 +39,8 @@ def get_items(prefix):
     document = tree.find_document(prefix)
     identifiers = [str(item.id) for item in document]
     if json_response(request):
-        return json.dumps(identifiers)
+        data = {'identifiers': identifiers}
+        return data
     else:
         return '<br>'.join(identifiers)
 
@@ -49,7 +50,8 @@ def add_item(prefix):
     document = tree.find_document(prefix)
     number = document.next
     if json_response(request):
-        return json.dumps(number)
+        data = {'number': number}
+        return data
     else:
         return str(number)
 
@@ -59,7 +61,7 @@ def get_item(prefix, identifier):
     document = tree.find_document(prefix)
     item = document.find_item(identifier)
     if json_response(request):
-        return json.dumps(item.data)
+        return item.data
     else:
         return publisher.publish_lines(item, ext='.html')
 
@@ -70,7 +72,8 @@ def get_item_attribute(prefix, identifier, name):
     item = document.find_item(identifier)
     value = item.data.get(name, None)
     if json_response(request):
-        return json.dumps(value)
+        data = {'value': value}
+        return data
     else:
         return str(value)
 
