@@ -61,24 +61,27 @@ class ID(object):
 
     UNKNOWN_MESSAGE = "no{k} item with ID: {i}"  # k='parent'|'child'|'', i=ID
 
-    def __new__(cls, *values):
+    def __new__(cls, *values, **_):
         if values and isinstance(values[0], ID):
             return values[0]
         else:
             return super().__new__(cls)
 
-    def __init__(self, *values):
+    def __init__(self, *values, stamp=None):
         """Initialize an ID using a string or set of parts.
 
         Option 1:
 
         :param *values: string representation of ID
+        :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 2:
 
         :param *values: prefix, separator, number, digit count
+        param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         """
+        self.stamp = stamp
         # Join values
         if len(values) == 0:
             self.value = ""

@@ -411,6 +411,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual([], documents)
 
+    def test_stamp(self):
+        """Verify an item's contents can be stamped."""
+        self.assertEqual('36641868bd8a49a76ed8c8bbd1b300ab', self.item.stamp)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file

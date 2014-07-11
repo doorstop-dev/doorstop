@@ -2,6 +2,7 @@
 
 import os
 import re
+import hashlib
 import logging
 
 from doorstop import common
@@ -137,7 +138,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'ref':
                 self._data['ref'] = value.strip()
             elif key == 'links':
-                self._data['links'] = set(ID(v) for v in value)
+                links = set()
+                for value2 in value:
+                    if isinstance(value2, dict):
+                        pair = value2.items[0]
+                        links.add(ID(pair[0], stamp=pair[1]))
+                    else:
+                        links.add(ID(value2))
+                self._data['links'] = links
             else:
                 if isinstance(value, str):
                     value = Text(value)
@@ -388,6 +396,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         except DoorstopError:
             logging.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
             return []
+
+    @property
+    @auto_load
+    def stamp(self):
+        """Hash the item's key content for later comparison."""
+        md5 = hashlib.md5()
+        md5.update(str(self.id).encode())
+        md5.update(b'\n')
+        md5.update(str(self.text).encode())
+        md5.update(b'\n')
+        md5.update(str(self.ref).encode())
+        digest = md5.hexdigest()
+        return digest
 
     # actions ################################################################
 
