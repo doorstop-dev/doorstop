@@ -45,6 +45,11 @@ class Prefix(str):  # pylint: disable=R0904
     def __lt__(self, other):
         return self.lower() < other.lower()
 
+    @property
+    def short(self):
+        """Get a shortened version of the prefix."""
+        return self.lower()
+
     @staticmethod
     def load_prefix(value):
         """Convert a value to a prefix.
@@ -142,6 +147,12 @@ class ID(object):
         """Get the ID's number."""
         self.check()
         return self._number
+
+    @property
+    def short(self):
+        """Get a shortened version of the ID."""
+        self.check()
+        return self.prefix.lower() + str(self.number)
 
     def check(self):
         """Verify an ID is valid."""

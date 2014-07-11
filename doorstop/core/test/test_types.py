@@ -47,6 +47,11 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         prefixes = [Prefix('a'), Prefix('B'), Prefix('c')]
         self.assertListEqual(prefixes, sorted(prefixes))
 
+    def test_short(self):
+        """Verify the short representation of prefixes is correct."""
+        self.assertEqual('req', self.prefix1.short)
+        self.assertEqual('tst', self.prefix2.short)
+
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
 
@@ -106,6 +111,12 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, self.id1.number)
         self.assertEqual(2, self.id2.number)
         self.assertEqual(3, self.id3.number)
+
+    def test_short(self):
+        """Verify the short representation of IDs is correct."""
+        self.assertEqual('req1', self.id1.short)
+        self.assertEqual('tst2', self.id2.short)
+        self.assertEqual('sys3', self.id3.short)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904
