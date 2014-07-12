@@ -411,10 +411,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual([], documents)
 
-    def test_stamp(self):
-        """Verify an item's contents can be stamped."""
-        self.assertEqual('36641868bd8a49a76ed8c8bbd1b300ab', self.item.stamp)
-
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" + "123"  # to avoid matching in this file
@@ -687,6 +683,17 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_issues(self):
         """Verify an item's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.item.issues))
+
+    def test_stamp(self):
+        """Verify an item's contents can be stamped."""
+        stamp = '36641868bd8a49a76ed8c8bbd1b300ab'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_links(self):
+        """Verify an item's contents can be stamped."""
+        self.item.link('mock_link')
+        stamp = 'ab9773b253e1e0051d9b68d8c69e67db'
+        self.assertEqual(stamp, self.item.stamp(links=True))
 
     @patch('doorstop.common.delete')
     def test_delete(self, mock_delete):

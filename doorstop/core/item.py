@@ -397,19 +397,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             logging.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
             return []
 
-    @property
-    @auto_load
-    def stamp(self):
-        """Hash the item's key content for later comparison."""
-        md5 = hashlib.md5()
-        md5.update(str(self.id).encode())
-        md5.update(b'\n')
-        md5.update(str(self.text).encode())
-        md5.update(b'\n')
-        md5.update(str(self.ref).encode())
-        digest = md5.hexdigest()
-        return digest
-
     # actions ################################################################
 
     @auto_save
@@ -699,6 +686,22 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             joined = ', '.join(str(d) for d in child_documents)
             logging.debug("child documents: {}".format(joined))
         return sorted(child_items), child_documents
+
+    @auto_load
+    def stamp(self, links=False):
+        """Hash the item's key content for later comparison."""
+        md5 = hashlib.md5()
+        md5.update(str(self.id).encode())
+        md5.update(b'\n')
+        md5.update(str(self.text).encode())
+        md5.update(b'\n')
+        md5.update(str(self.ref).encode())
+        if links:
+            for identifier in self.links:
+                md5.update(b'\n')
+                md5.update(str(identifier).encode())
+        digest = md5.hexdigest()
+        return digest
 
     @clear_item_cache
     def delete(self, path=None):
