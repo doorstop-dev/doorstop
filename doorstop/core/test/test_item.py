@@ -21,6 +21,7 @@ level: 1.0
 links: []
 normative: true
 ref: ''
+reviewed: null
 text: ''
 """.lstrip()
 
@@ -192,6 +193,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.heading = 0  # converted to False
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
+
+    def test_reviwed(self):
+        """Verify an item's review status can be set and read."""
+        self.assertFalse(self.item.reviewed)  # not reviewed by default
+        self.item.reviewed = 1  # calls `review()`
+        self.assertTrue(self.item.reviewed)
+        self.item.reviewed = 0  # converted to None
+        self.assertFalse(self.item.reviewed)
 
     def test_text(self):
         """Verify an item's text can be set and read."""
@@ -722,7 +731,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'r') as stream:
+        with open(self.ITEM, 'r', encoding='utf-8') as stream:
             text = stream.read()
             self.assertEqual(self.backup, text)
 

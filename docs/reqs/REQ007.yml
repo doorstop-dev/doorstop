@@ -4,5 +4,6 @@ level: 2.1
 links: []
 normative: true
 ref: ''
+reviewed: null
 text: |
   Doorstop **shall** provide a way to view requirements as a document.

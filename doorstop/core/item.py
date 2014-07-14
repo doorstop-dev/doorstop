@@ -24,6 +24,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
+    DEFAULT_REVIEWED = None
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
 
@@ -61,6 +62,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._data['active'] = Item.DEFAULT_ACTIVE
         self._data['normative'] = Item.DEFAULT_NORMATIVE
         self._data['derived'] = Item.DEFAULT_DERIVED
+        self._data['reviewed'] = Item.DEFAULT_REVIEWED
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
@@ -126,30 +128,33 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                self._data['level'] = Level(value)
+                value = Level(value)
             elif key == 'active':
-                self._data['active'] = to_bool(value)
+                value = to_bool(value)
             elif key == 'normative':
-                self._data['normative'] = to_bool(value)
+                value = to_bool(value)
             elif key == 'derived':
-                self._data['derived'] = to_bool(value)
+                value = to_bool(value)
+            elif key == 'reviewed':
+                if not isinstance(value, str):
+                    value = None
             elif key == 'text':
-                self._data['text'] = Text(value)
+                value = Text(value)
             elif key == 'ref':
-                self._data['ref'] = value.strip()
+                value = value.strip()
             elif key == 'links':
                 links = set()
                 for value2 in value:
                     if isinstance(value2, dict):
-                        pair = value2.items[0]
+                        pair = list(value2.items())[0]
                         links.add(ID(pair[0], stamp=pair[1]))
                     else:
                         links.add(ID(value2))
-                self._data['links'] = links
+                value = links
             else:
                 if isinstance(value, str):
                     value = Text(value)
-                self._data[key] = value
+            self._data[key] = value
         # Set meta attributes
         self._loaded = True
 
@@ -175,13 +180,21 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                data['level'] = value.yaml
+                value = value.yaml
             elif key == 'text':
-                data['text'] = value.yaml
+                value = value.yaml
             elif key == 'ref':
-                data['ref'] = value.strip()
+                value = value.strip()
             elif key == 'links':
-                data['links'] = sorted(str(v) for v in value)
+                links = []
+                for value2 in sorted(value):
+                    logging.critical(repr(value2))
+                    if isinstance(value2, ID):
+                        link = {str(value2): value2.stamp}
+                    else:
+                        link = {str(value2): None}
+                    links.append(link)
+                value = links
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
@@ -191,7 +204,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         value = Text.save_text(value, end=end)
                     else:
                         value = str(value)  # line is short enough as a string
-                data[key] = value
+            data[key] = value
         return data
 
     @property
@@ -316,6 +329,23 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     @auto_load
+    def reviewed(self):
+        """Indicate if the item has been reviewed."""
+        return self._data['reviewed'] == self.stamp(links=True)
+
+    @reviewed.setter
+    @auto_save
+    @auto_load
+    def reviewed(self, value):
+        """Set the item's review status."""
+        reviewed = to_bool(value)
+        if reviewed:
+            self.review()
+        else:
+            self._data['reviewed'] = None
+
+    @property
+    @auto_load
     def text(self):
         """Get the item's text."""
         return self._data['text']
@@ -356,7 +386,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def links(self, value):
         """Set the list of item IDs this item links to."""
-        self._data['links'] = set(value)
+        self._data['links'] = set()
+        for value2 in value:
+            if isinstance(value2, ID)
+        self._data['links'] = set(ID(v) for v in value)
 
     @property
     def parent_links(self):
@@ -481,6 +514,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check links against both document and tree
         if self.document and self.tree:
             yield from self._get_issues_both(self.document, self.tree)
+        # Check review status
+        if not self.reviewed:
+            yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
             self.save()
@@ -533,9 +569,17 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if not item.normative:
                     msg = "linked to non-normative item: {}".format(item)
                     yield DoorstopWarning(msg)
-                identifier = item.id  # reformat the item's ID
-                logging.debug("found linked item: {}".format(identifier))
-                identifiers.add(identifier)
+                if identifier.stamp != item.stamp():
+                    msg = "suspect link: {}".format(item)
+                    yield DoorstopWarning(msg)
+                # Reformat the item's ID
+                logging.critical(identifier)
+                if isinstance(identifier, ID):
+                    identifier2 = ID(str(item.id), stamp='s')  # identifier.stamp)
+                else:
+                    identifier2 = item.id
+                logging.debug("found linked item: {}".format(identifier2))
+                identifiers.add(identifier2)
         # Apply the reformatted item IDs
         if settings.REFORMAT:
             self._data['links'] = identifiers
@@ -702,6 +746,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 md5.update(str(identifier).encode())
         digest = md5.hexdigest()
         return digest
+
+    @auto_load
+    @auto_save
+    @auto_load
+    def review(self):
+        """Mark the item as reviewed."""
+        stamp = self.stamp(links=True)
+        self._data['reviewed'] = stamp
 
     @clear_item_cache
     def delete(self, path=None):

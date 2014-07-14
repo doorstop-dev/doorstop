@@ -2,9 +2,10 @@ active: true
 derived: false
 level: 2.1
 links:
-- REQ007
+- REQ007: s
 normative: true
 ref: ''
+reviewed: null
 text: |
   **Publishing a Document as Text**
 

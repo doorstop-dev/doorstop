@@ -2,10 +2,11 @@ active: true
 derived: false
 level: 1
 links:
-- TUT001
-- TUT002
-- TUT004
-- TUT008
+- TUT001: s
+- TUT002: s
+- TUT004: s
+- TUT008: s
 normative: true
 ref: test_tutorial_section_1
+reviewed: null
 text: ''

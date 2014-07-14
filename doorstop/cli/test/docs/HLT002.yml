@@ -2,8 +2,9 @@ active: true
 derived: false
 level: 2
 links:
-- TUT009
-- TUT010
+- TUT009: s
+- TUT010: s
 normative: true
 ref: test_tutorial_section_2
+reviewed: null
 text: ''

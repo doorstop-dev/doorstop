@@ -2,7 +2,8 @@ active: true
 derived: false
 level: 3
 links:
-- REQ007
+- REQ007: s
 normative: true
 ref: Verify text can be published from a document.
+reviewed: null
 text: ''

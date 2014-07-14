@@ -103,7 +103,10 @@ class ID(object):
             self._exc = None
 
     def __repr__(self):
-        return "ID('{}')".format(self.value)
+        if self.stamp:
+            return "ID('{}', stamp='{}')".format(self.value, self.stamp)
+        else:
+            return "ID('{}')".format(self.value)
 
     def __str__(self):
         return self.value
