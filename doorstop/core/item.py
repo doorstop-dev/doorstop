@@ -188,7 +188,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'links':
                 links = []
                 for value2 in sorted(value):
-                    logging.critical(repr(value2))
                     if isinstance(value2, ID):
                         link = {str(value2): value2.stamp}
                     else:
@@ -386,9 +385,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def links(self, value):
         """Set the list of item IDs this item links to."""
-        self._data['links'] = set()
-        for value2 in value:
-            if isinstance(value2, ID)
         self._data['links'] = set(ID(v) for v in value)
 
     @property
@@ -563,6 +559,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "linked to unknown item: {}".format(identifier)
                 yield DoorstopError(msg)
             else:
+                # check the linked item
                 if not item.active:
                     msg = "linked to inactive item: {}".format(item)
                     yield DoorstopInfo(msg)
@@ -572,12 +569,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if identifier.stamp != item.stamp():
                     msg = "suspect link: {}".format(item)
                     yield DoorstopWarning(msg)
-                # Reformat the item's ID
-                logging.critical(identifier)
-                if isinstance(identifier, ID):
-                    identifier2 = ID(str(item.id), stamp='s')  # identifier.stamp)
-                else:
-                    identifier2 = item.id
+                # reformat the item's ID
+                identifier2 = ID(item.id, stamp=identifier.stamp)
                 logging.debug("found linked item: {}".format(identifier2))
                 identifiers.add(identifier2)
         # Apply the reformatted item IDs

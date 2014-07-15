@@ -61,9 +61,9 @@ class ID(object):
 
     UNKNOWN_MESSAGE = "no{k} item with ID: {i}"  # k='parent'|'child'|'', i=ID
 
-    def __new__(cls, *values, **_):
-        if values and isinstance(values[0], ID):
-            return values[0]
+    def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
+        if args and isinstance(args[0], ID):
+            return args[0]
         else:
             return super().__new__(cls)
 
@@ -81,6 +81,9 @@ class ID(object):
         param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         """
+        if values and isinstance(values[0], ID):
+            self.stamp = stamp or values[0].stamp
+            return
         self.stamp = stamp
         # Join values
         if len(values) == 0:

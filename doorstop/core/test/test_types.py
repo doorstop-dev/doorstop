@@ -14,10 +14,13 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.prefix1 = Prefix('REQ')
         self.prefix2 = Prefix('TST (@/tst)')
 
-    def test_init(self):
-        """Verify prefixes are parsed correctly."""
-        self.assertIs(self.prefix1, Prefix(self.prefix1))
+    def test_init_empty(self):
+        """Verify prefixes are parsed correctly(empty)."""
         self.assertEqual(Prefix(''), Prefix())
+
+    def test_init_instance(self):
+        """Verify prefixes are parsed correctly (instance)."""
+        self.assertIs(self.prefix1, Prefix(self.prefix1))
 
     def test_init_reseved(self):
         """Verify an exception is raised for a reserved word."""
@@ -56,18 +59,29 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.id1 = ID('REQ001')
         self.id2 = ID('TST-02')
         self.id3 = ID('SYS', '-', 3, 5)
+        self.id4 = ID('REQ001', stamp='abc123')
 
-    def test_init(self):
-        """Verify IDs are parsed correctly."""
-        self.assertIs(self.id1, ID(self.id1))
+    def test_init_string(self):
+        """Verify IDs are parsed correctly (string)."""
         identifier = ID('REQ')
         self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
         identifier = ID('REQ-?')
         self.assertRaises(DoorstopError, getattr, identifier, 'number')
+
+    def test_init_values(self):
+        """Verify IDs are parsed correctly (values)."""
         self.assertRaises(TypeError, ID, 'REQ', '-')
         self.assertRaises(TypeError, ID, 'REQ', '-', 42)
         self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
+
+    def test_init_empty(self):
+        """Verify IDs are parsed correctly (empty)."""
         self.assertEqual(ID(""), ID())
+
+    def test_init_instance(self):
+        """Verify IDs are parsed correctly (instance)."""
+        self.assertIs(self.id1, ID(self.id1))
+        self.assertIs(self.id4, ID(self.id4))
 
     def test_repr(self):
         """Verify IDs can be represented."""
@@ -89,6 +103,7 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(ID('REQ1'), ID('REQ001 (@/req1.yml)'))
         self.assertEqual('req1', ID('REQ001'))
         self.assertNotEqual(None, ID('REQ001'))
+        self.assertEqual(self.id1, self.id4)
 
     def test_sort(self):
         """Verify IDs can be sorted."""
@@ -106,6 +121,12 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, self.id1.number)
         self.assertEqual(2, self.id2.number)
         self.assertEqual(3, self.id3.number)
+
+    def test_stamp(self):
+        """Verify stamps are stored correctly."""
+        self.assertEqual('abc123', self.id4.stamp)
+        self.assertEqual('abc123', ID(self.id4).stamp)
+        self.assertEqual('def456', ID(self.id4, stamp='def456').stamp)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904

@@ -43,12 +43,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
+        with open(self.path, 'rb') as item:
             self.backup = item.read()
         self.item = core.Item(self.path)
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
+        with open(self.path, 'wb') as item:
             item.write(self.backup)
 
     def test_save_load(self):
@@ -241,14 +241,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
+        with open(self.path, 'rb') as item:
             self.backup = item.read()
         self.item = core.Item(self.path)
         self.tree = core.Tree(core.Document(SYS))
         self.tree._place(core.Document(FILES))  # pylint: disable=W0212
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
+        with open(self.path, 'wb') as item:
             item.write(self.backup)
 
     @patch('doorstop.settings.REORDER', False)
