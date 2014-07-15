@@ -29,9 +29,10 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
 
     """
     with utilities.capture(catch=catch) as success:
-        print("validating tree...", flush=True)
+        print("building tree...", flush=True)
         tree = build(cwd, root=args.project)
         tree.load()
+        print("validating tree...", flush=True)
         valid = tree.validate()
     if not success:
         return False
@@ -197,7 +198,7 @@ def run_edit(args, cwd, err, catch=True):
         if item:
             item.edit(tool=args.tool)
         else:
-            export_import(args, cwd, err, document, ext)
+            _export_import(args, cwd, err, document, ext)
     if not success:
         return False
 
@@ -353,7 +354,7 @@ def run_publish(args, cwd, err, catch=True):
     return True
 
 
-def export_import(args, cwd, err, document, ext):
+def _export_import(args, cwd, err, document, ext):
     """Edit a document by calling export followed by import.
 
     :param args: Namespace of CLI arguments
