@@ -61,12 +61,19 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.id3 = ID('SYS', '-', 3, 5)
         self.id4 = ID('REQ001', stamp='abc123')
 
-    def test_init_string(self):
+    def test_init_str(self):
         """Verify IDs are parsed correctly (string)."""
         identifier = ID('REQ')
         self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
         identifier = ID('REQ-?')
         self.assertRaises(DoorstopError, getattr, identifier, 'number')
+
+    def test_init_dict(self):
+        """Verify IDs are parsed correctly (dictionary)."""
+        identifier = ID({'REQ001': 'abc123'})
+        self.assertEqual('REQ', identifier.prefix)
+        self.assertEqual(1, identifier.number)
+        self.assertEqual('abc123', identifier.stamp)
 
     def test_init_values(self):
         """Verify IDs are parsed correctly (values)."""
@@ -88,6 +95,7 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("ID('REQ001')", repr(self.id1))
         self.assertEqual("ID('TST-02')", repr(self.id2))
         self.assertEqual("ID('SYS-00003')", repr(self.id3))
+        self.assertEqual("ID('REQ001', stamp='abc123')", repr(self.id4))
 
     def test_str(self):
         """Verify IDs can be converted to strings."""

@@ -89,7 +89,12 @@ class ID(object):
         if len(values) == 0:
             self.value = ""
         elif len(values) == 1:
-            self.value = str(values[0])
+            if isinstance(values[0], dict):
+                pair = list(values[0].items())[0]
+                self.value = str(pair[0])
+                self.stamp = self.stamp or pair[1]
+            else:
+                self.value = str(values[0])
         elif len(values) == 4:
             self.value = ID.join_id(*values)
         else:
