@@ -90,9 +90,11 @@ class ID(object):
             self.value = ""
         elif len(values) == 1:
             if isinstance(values[0], dict):
-                pair = list(values[0].items())[0]
-                self.value = str(pair[0])
-                self.stamp = self.stamp or pair[1]
+                value, stamp = list(values[0].items())[0]
+                self.value = str(value)
+                if to_bool(stamp):
+                    stamp = True
+                self.stamp = self.stamp or stamp
             else:
                 self.value = str(values[0])
         elif len(values) == 4:

@@ -136,7 +136,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'derived':
                 value = to_bool(value)
             elif key == 'reviewed':
-                if not isinstance(value, str):
+                if to_bool(value):
+                    value = True
+                elif not isinstance(value, str):
                     value = None
             elif key == 'text':
                 value = Text(value)
@@ -316,7 +318,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def reviewed(self):
         """Indicate if the item has been reviewed."""
-        return self._data['reviewed'] == self.stamp(links=True)
+        return self._data['reviewed'] is True or \
+            self._data['reviewed'] == self.stamp(links=True)
 
     @reviewed.setter
     @auto_save
@@ -497,7 +500,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if self.document and self.tree:
             yield from self._get_issues_both(self.document, self.tree)
         # Check review status
-        if not self.reviewed:
+        if self.reviewed:
+            self.review()  # convert True to a stamp
+        else:
             yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
@@ -552,7 +557,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if not item.normative:
                     msg = "linked to non-normative item: {}".format(item)
                     yield DoorstopWarning(msg)
-                if identifier.stamp != item.stamp():
+                if identifier.stamp is True:
+                    identifier.stamp = item.stamp()
+                elif identifier.stamp != item.stamp():
                     msg = "suspect link: {}".format(item)
                     yield DoorstopWarning(msg)
                 # reformat the item's ID
@@ -726,7 +733,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         digest = md5.hexdigest()
         return digest
 
-    @auto_load
     @auto_save
     @auto_load
     def review(self):
