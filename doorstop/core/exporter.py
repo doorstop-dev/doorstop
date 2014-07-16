@@ -148,13 +148,11 @@ def _tabulate(obj, sep=LIST_SEP):
                 # some levels are floats for YAML presentation
                 value = str(value)
             elif key == 'links':
-                # separate identifiers with a delimiter and strip stamps
-                identifiers = [list(part.keys())[0] for part in value]
-                value = sep.join(str(identifier) for identifier in identifiers)
-            elif key == 'reviewed':
-                value = item.reviewed
+                # separate identifiers with a delimiter
+                value = sep.join(identifier.text for identifier in item.links)
+            elif value is None:
+                value = ''
             row.append(value)
-
         yield row
 
 

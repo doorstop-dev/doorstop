@@ -135,6 +135,13 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('abc123', self.id4.stamp)
         self.assertEqual('abc123', ID(self.id4).stamp)
         self.assertEqual('def456', ID(self.id4, stamp='def456').stamp)
+        self.assertIs(True, ID({'REQ001': 1}).stamp)
+        self.assertIs(True, ID("REQ001:1").stamp)
+
+    def test_text(self):
+        """Verify IDs can be converted to text."""
+        self.assertEqual("REQ001", self.id1.text)
+        self.assertEqual("REQ001:abc123", self.id4.text)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904

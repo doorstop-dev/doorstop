@@ -3,7 +3,7 @@ derived: false
 level: 1.2.3
 links:
 - SYS001: null
-- SYS002: fakehash
+- SYS002: abc123
 normative: true
 ref: ''
 reviewed: null

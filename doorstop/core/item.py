@@ -558,7 +558,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     msg = "linked to non-normative item: {}".format(item)
                     yield DoorstopWarning(msg)
                 if identifier.stamp is True:
-                    identifier.stamp = item.stamp()
+                    identifier.stamp = item.stamp()  # convert True to a stamp
                 elif identifier.stamp != item.stamp():
                     msg = "suspect link: {}".format(item)
                     yield DoorstopWarning(msg)

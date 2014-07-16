@@ -89,14 +89,20 @@ class ID(object):
         if len(values) == 0:
             self.value = ""
         elif len(values) == 1:
-            if isinstance(values[0], dict):
-                value, stamp = list(values[0].items())[0]
+            value = values[0]
+            # TODO: determine if this case is still needed
+            if isinstance(value, str) and ':' in value:
+                # split identifier:stamp into a dictionary
+                pair = value.rsplit(':', 1)
+                value = {pair[0]: pair[1]}
+            if isinstance(value, dict):
+                value, stamp = list(value.items())[0]
                 self.value = str(value)
                 if to_bool(stamp):
                     stamp = True
                 self.stamp = self.stamp or stamp
             else:
-                self.value = str(values[0])
+                self.value = str(value)
         elif len(values) == 4:
             self.value = ID.join_id(*values)
         else:
@@ -158,6 +164,14 @@ class ID(object):
         """Get the ID's number."""
         self.check()
         return self._number
+
+    @property
+    def text(self):
+        """Convert the ID and stamp to a single string."""
+        if self.stamp:
+            return "{}:{}".format(self.value, self.stamp)
+        else:
+            return "{}".format(self.value)
 
     def check(self):
         """Verify an ID is valid."""
@@ -578,7 +592,7 @@ def to_bool(obj):
 
     """
     if isinstance(obj, str):
-        return obj.lower().strip() in ('yes', 'true', 'enabled')
+        return obj.lower().strip() in ('yes', 'true', 'enabled', '1')
     else:
         return bool(obj)
 

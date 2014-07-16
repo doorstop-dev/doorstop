@@ -91,15 +91,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
-                          'SYS001\nSYS002', True, False, True, False],
+                          'SYS001\nSYS002:abc123', True, False, True, ''],
                          ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
-                          'REQ001', True, False, True, False],
+                          'REQ001', True, False, True, ''],
                          ['REQ004', '1.6', 'Hello, world!\n', '',
-                          '', True, False, True, False],
+                          '', True, False, True, ''],
                          ['REQ002', '2.1', 'Hello, world!\n', '',
-                          '', True, False, True, False],
+                          '', True, False, True, ''],
                          ['REQ2-001', '2.1', 'Hello, world!\n', '',
-                          'REQ001', True, False, True, False]]
+                          'REQ001', True, False, True, '']]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
@@ -160,15 +160,15 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
-                          'SYS001\nSYS002', True, False, True, False],
+                          'SYS001\nSYS002:abc123', True, False, True, None],
                          ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
-                          'REQ001', True, False, True, False],
+                          'REQ001', True, False, True, None],
                          ['REQ004', '1.6', 'Hello, world!\n', None,
-                          None, True, False, True, False],
+                          None, True, False, True, None],
                          ['REQ002', '2.1', 'Hello, world!\n', None,
-                          None, True, False, True, False],
+                          None, True, False, True, None],
                          ['REQ2-001', '2.1', 'Hello, world!\n', None,
-                          'REQ001', True, False, True, False]]
+                          'REQ001', True, False, True, None]]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
