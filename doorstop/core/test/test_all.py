@@ -272,8 +272,8 @@ class TestEditor(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the editor module."""  # pylint: disable=C0103
 
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integrations tests for the importer module."""  # pylint: disable=C0103
@@ -419,8 +419,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
+
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103

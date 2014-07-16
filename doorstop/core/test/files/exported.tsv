@@ -1,12 +1,12 @@
-id	level	text	ref	links	active	derived	normative
+id	level	text	ref	links	active	derived	normative	reviewed
 REQ001	1.2.3	"Hello, world!
-"		"SYS001,
-SYS002"	True	False	True
+"		"SYS001
+SYS002"	True	False	True	False
 REQ003	1.4	"Unicode: -40° ±1%
-"	REF123	REQ001	True	False	True
+"	REF123	REQ001	True	False	True	False
 REQ004	1.6	"Hello, world!
-"			True	False	True
+"			True	False	True	False
 REQ002	2.1	"Hello, world!
-"			True	False	True
+"			True	False	True	False
 REQ2-001	2.1	"Hello, world!
-"		REQ001	True	False	True
+"		REQ001	True	False	True	False

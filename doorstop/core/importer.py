@@ -279,8 +279,9 @@ def _itemize(header, data, document, mapping=None):
 
             # Import the item
             try:
-                add_item(document.prefix, identifier,
-                         attrs=attrs, document=document)
+                item = add_item(document.prefix, identifier,
+                                attrs=attrs, document=document)
+                # TODO: clear suspect links
             except DoorstopError as exc:
                 logging.warning(exc)
 

@@ -143,7 +143,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = set(ID(v) for v in value)
+                value = set(ID(part) for part in value)
             else:
                 if isinstance(value, str):
                     value = Text(value)
@@ -179,7 +179,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = [{str(v): v.stamp} for v in sorted(value)]
+                value = [{str(part): part.stamp} for part in sorted(value)]
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
