@@ -348,6 +348,50 @@ class TestClear(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestReview(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop review' command."""
+
+    @patch('doorstop.core.item.Item.review')
+    def test_review_item(self, mock_review):
+        """Verify 'doorstop review' can be called with an item."""
+        self.assertIs(None, main(['review', 'tut2']))
+        self.assertEqual(1, mock_review.call_count)
+
+    def test_review_item_unknown(self):
+        """Verify 'doorstop review' returns an error on an unknown item."""
+        self.assertRaises(SystemExit, main, ['review', '--item', 'FAKE001'])
+
+    @patch('doorstop.core.item.Item.review')
+    def test_review_document(self, mock_review):
+        """Verify 'doorstop review' can be called with a document"""
+        self.assertIs(None, main(['review', 'tut']))
+        self.assertEqual(14, mock_review.call_count)
+
+    def test_review_document_unknown(self):
+        """Verify 'doorstop review' returns an error on an unknown document."""
+        self.assertRaises(SystemExit, main, ['review', '--document', 'FAKE'])
+
+    @patch('doorstop.core.item.Item.review')
+    def test_review_tree(self, mock_review):
+        """Verify 'doorstop review' can be called with a tree"""
+        self.assertIs(None, main(['review', 'all']))
+        self.assertEqual(41, mock_review.call_count)
+
+    def test_review_tree_item(self):
+        """Verify 'doorstop review' returns an error with tree and item."""
+        self.assertRaises(SystemExit, main, ['review', '--item', 'all'])
+
+    def test_review_tree_document(self):
+        """Verify 'doorstop review' returns an error with tree and document."""
+        self.assertRaises(SystemExit, main, ['review', '--document', 'all'])
+
+    def test_review_error(self):
+        """Verify 'doorstop review' returns an error with an unknown ID."""
+        self.assertRaises(SystemExit, main, ['review', 'req9999'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103

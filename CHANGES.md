@@ -6,6 +6,8 @@ Changelog
 
 - Added `doorstop clear ...` to absolve items of their suspect link status.
 - Added `Item.clear()` to save stamps (hashes) of linked items.
+- Added `doorstop review ...` to absolve items of their unreviewed status.
+- Added `Item.review()` to save stamps (hashes) of reviewed items.
 
 0.7 (2014/07/08)
 ----------------

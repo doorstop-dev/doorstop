@@ -227,6 +227,25 @@ def run_clear(args, cwd, err, catch=True):
     return True
 
 
+def run_review(args, cwd, err, catch=True):
+    """Process arguments and run the `doorstop review` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    with utilities.capture(catch=catch) as success:
+        for item in _iter_items(args, cwd, err):
+            print("marking {} as reviewed...".format(item.id))
+            item.review()
+    if not success:
+        return False
+
+    return True
+
+
 def run_import(args, cwd, err, catch=True):
     """Process arguments and run the `doorstop import` subcommand.
 
