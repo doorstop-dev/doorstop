@@ -171,7 +171,7 @@ tests: .depends-ci
 
 .PHONY: tutorial
 tutorial: env
-	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py --config=.noserc --stop
+	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
 # Cleanup ####################################################################
 
