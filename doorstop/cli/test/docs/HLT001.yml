@@ -2,10 +2,10 @@ active: true
 derived: false
 level: 1
 links:
-- TUT001: null
-- TUT002: null
-- TUT004: null
-- TUT008: null
+- TUT001: 63207cc0be9a957dd43f20eb88b20170
+- TUT002: 3a4234ca2b58212fa1bd6052b113daa7
+- TUT004: 81b4d9e74572f0a91b46c924de931c36
+- TUT008: 2dbd9266fa287cc3f765c2a81aa57a91
 normative: true
 ref: test_tutorial_section_1
 reviewed: null

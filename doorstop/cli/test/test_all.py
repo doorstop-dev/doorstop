@@ -304,6 +304,50 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestClear(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop clear' command."""
+
+    @patch('doorstop.core.item.Item.clear')
+    def test_clear_item(self, mock_clear):
+        """Verify 'doorstop clear' can be called with an item."""
+        self.assertIs(None, main(['clear', 'tut2']))
+        self.assertEqual(1, mock_clear.call_count)
+
+    def test_clear_item_unknown(self):
+        """Verify 'doorstop clear' returns an error on an unknown item."""
+        self.assertRaises(SystemExit, main, ['clear', '--item', 'FAKE001'])
+
+    @patch('doorstop.core.item.Item.clear')
+    def test_clear_document(self, mock_clear):
+        """Verify 'doorstop clear' can be called with a document"""
+        self.assertIs(None, main(['clear', 'tut']))
+        self.assertEqual(14, mock_clear.call_count)
+
+    def test_clear_document_unknown(self):
+        """Verify 'doorstop clear' returns an error on an unknown document."""
+        self.assertRaises(SystemExit, main, ['clear', '--document', 'FAKE'])
+
+    @patch('doorstop.core.item.Item.clear')
+    def test_clear_tree(self, mock_clear):
+        """Verify 'doorstop clear' can be called with a tree"""
+        self.assertIs(None, main(['clear', 'all']))
+        self.assertEqual(41, mock_clear.call_count)
+
+    def test_clear_tree_item(self):
+        """Verify 'doorstop clear' returns an error with tree and item."""
+        self.assertRaises(SystemExit, main, ['clear', '--item', 'all'])
+
+    def test_clear_tree_document(self):
+        """Verify 'doorstop clear' returns an error with tree and document."""
+        self.assertRaises(SystemExit, main, ['clear', '--document', 'all'])
+
+    def test_clear_error(self):
+        """Verify 'doorstop clear' returns an error with an unknown ID."""
+        self.assertRaises(SystemExit, main, ['clear', 'req9999'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103

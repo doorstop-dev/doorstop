@@ -208,6 +208,25 @@ def run_edit(args, cwd, err, catch=True):
     return True
 
 
+def run_clear(args, cwd, err, catch=True):
+    """Process arguments and run the `doorstop clear` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    with utilities.capture(catch=catch) as success:
+        for item in _iter_items(args, cwd, err):
+            print("clearing {}'s suspect links...".format(item.id))
+            item.clear()
+    if not success:
+        return False
+
+    return True
+
+
 def run_import(args, cwd, err, catch=True):
     """Process arguments and run the `doorstop import` subcommand.
 
@@ -352,6 +371,60 @@ def run_publish(args, cwd, err, catch=True):
             print(line)
 
     return True
+
+
+def _iter_items(args, cwd, err):
+    """Build a tree and iterate through items.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+
+    Items are filtered to:
+
+    - `args.label` == 'all': all items
+    - `args.label` == document prefix: the document's items
+    - `args.label` == item ID: a single item
+
+    Documents and items are inferred unless flagged by:
+
+    - `args.document`: `args.label` is a prefix
+    - `args.item`: `args.label` is an ID
+
+    """
+    # Parse arguments
+    if args.label == 'all':
+        if args.item:
+            err("argument -i/--item: not allowed with 'all'")
+        if args.document:
+            err("argument -d/--document: not allowed with 'all'")
+
+    # Build tree
+    item = None
+    document = None
+    tree = build(cwd, root=args.project)
+
+    # Determine if tree, document, or item was requested
+    if args.label != 'all':
+        if not args.item:
+            try:
+                document = tree.find_document(args.label)
+            except common.DoorstopError as exc:
+                if args.document:
+                    raise exc from None
+        if not document:
+            item = tree.find_item(args.label)
+
+    # Yield items from the requested object
+    if item:
+        yield item
+    elif document:
+        for item in document:
+            yield item
+    else:
+        for document in tree:
+            for item in document:
+                yield item
 
 
 def _export_import(args, cwd, err, document, ext):

@@ -2,7 +2,7 @@ active: true
 derived: false
 level: 2
 links:
-- REQ004: null
+- REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
 normative: true
 ref: Verify Markdown can be published from a document.
 reviewed: null
