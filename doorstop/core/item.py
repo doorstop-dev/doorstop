@@ -314,6 +314,25 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     @auto_load
+    def cleared(self):
+        """Indicate if no links are suspect."""
+        items = self.parent_items
+        for identifier in self.links:
+            for item in items:
+                if identifier == item.id:
+                    if identifier.stamp != item.stamp():
+                        return False
+        return True
+
+    @cleared.setter
+    @auto_save
+    @auto_load
+    def cleared(self, value):
+        """Set the item's suspect link status."""
+        self.clear(_inverse=not to_bool(value))
+
+    @property
+    @auto_load
     def reviewed(self):
         """Indicate if the item has been reviewed."""
         stamp = self.stamp(links=True)
@@ -436,6 +455,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         identifier = ID(value)
+        logging.info("linking to '{}'...".format(identifier))
         self._data['links'].add(identifier)
 
     @auto_save
@@ -722,8 +742,23 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @auto_save
     @auto_load
+    def clear(self, _inverse=False):
+        """Clear suspect links."""
+        logging.info("clearing suspect links...")
+        items = self.parent_items
+        for identifier in self.links:
+            for item in items:
+                if identifier == item.id:
+                    if _inverse:
+                        identifier.stamp = Stamp()
+                    else:
+                        identifier.stamp = item.stamp()
+
+    @auto_save
+    @auto_load
     def review(self):
         """Mark the item as reviewed."""
+        logging.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
     @clear_item_cache

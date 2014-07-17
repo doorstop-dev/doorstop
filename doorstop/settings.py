@@ -4,6 +4,7 @@ import logging
 
 # Logging settings
 DEFAULT_LOGGING_FORMAT = "%(message)s"
+LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
 VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(module)-8s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
 DEFAULT_LOGGING_LEVEL = logging.WARNING

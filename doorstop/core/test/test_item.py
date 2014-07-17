@@ -194,6 +194,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
+    def test_cleared(self):
+        """Verify an item's suspect link status can be set and read."""
+        mock_item = Mock()
+        mock_item.id = 'mock_id'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_id')
+        self.item.cleared = 1  # updates each stamp
+        self.assertTrue(self.item.cleared)
+        self.item.cleared = 0  # sets each stamp to None
+        self.assertFalse(self.item.cleared)
+
     def test_reviwed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
@@ -721,6 +735,23 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.link('mock_link')
         stamp = '1020719292bbdc4090bd236cf41cd104'
         self.assertEqual(stamp, self.item.stamp(links=True))
+
+    def test_clear(self):
+        """Verify an item's links can be cleared as suspect."""
+        mock_item = Mock()
+        mock_item.id = 'mock_id'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_id')
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)  # pylint: disable=E1101
+        # Act
+        self.item.clear()
+        # Assert
+        self.assertTrue(self.item.cleared)
+        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
 
     def test_review(self):
         """Verify an item can be marked as reviewed."""
