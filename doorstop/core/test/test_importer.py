@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 import os
-import pprint
 import logging
 
 from doorstop.common import DoorstopError
@@ -352,15 +351,3 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(self.identifier, item.id)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext'], item.get('ext'))
-
-
-# helper functions ###########################################################
-
-
-def log_data(expected, actual):
-    """Log list values."""
-    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
-        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-            i=index,
-            e=pprint.pformat(evalue),
-            a=pprint.pformat(avalue)))
