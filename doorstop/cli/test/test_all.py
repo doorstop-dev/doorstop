@@ -36,7 +36,7 @@ class MockTestCase(TempTestCase):  # pylint: disable=R0904
     def setUp(self):
         super().setUp()
         os.chdir(self.temp)
-        open('.mockvcs', 'w').close()
+        common.touch('.mockvcs')
         _clear_tree()
 
 
@@ -178,12 +178,10 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.ITEM)
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.ITEM)
 
     def test_remove(self):
         """Verify 'doorstop remove' can be called."""
@@ -203,12 +201,10 @@ class TestLink(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.ITEM)
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.ITEM)
 
     def test_link(self):
         """Verify 'doorstop link' can be called."""
@@ -233,13 +229,11 @@ class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(TUTORIAL, 'TUT003.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.ITEM)
         main(['link', 'tut3', 'req2'])  # create a temporary link
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.ITEM)
 
     def test_unlink(self):
         """Verify 'doorstop unlink' can be called."""
@@ -382,8 +376,7 @@ class TestImportFile(MockTestCase):  # pylint: disable=R0904
         # Assert
         path = os.path.join(dirpath, 'REQ001.yml')
         self.assertTrue(os.path.isfile(path))
-        with open(path, 'r') as stream:
-            text = stream.read()
+        text = common.read_text(path)
         self.assertIn('\nlevel: 1.2.3', text)
 
     def test_import_file_with_map_invalid(self):

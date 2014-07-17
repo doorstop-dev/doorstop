@@ -5,10 +5,10 @@ from unittest.mock import patch, Mock, MagicMock
 
 import os
 
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
-
 
 from doorstop.core.test import FILES, EMPTY, EXTERNAL
 from doorstop.core.test import MockItem
@@ -774,21 +774,18 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'rb') as stream:
-            self.backup = stream.read()
+        self.backup = common.read_text(self.ITEM)
 
     def tearDown(self):
-        with open(self.ITEM, 'wb') as outfile:
-            outfile.write(self.backup)
+        common.write_text(self.backup, self.ITEM)
 
     def test_load_save(self):
         """Verify text formatting is preserved."""
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'rb') as stream:
-            text = stream.read()
-            self.assertEqual(self.backup, text)
+        text = common.read_text(self.ITEM)
+        self.assertEqual(self.backup, text)
 
 
 class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904

@@ -5,13 +5,12 @@ import logging
 import re
 import csv
 
-import yaml
 # TODO: track pylint update to resolve openpyxl false positives
 # pylint: disable=E1101
 import openpyxl  # pylint: disable=F0401
 from openpyxl import load_workbook  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError
+from doorstop.common import DoorstopError, read_text, load_yaml
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
@@ -122,14 +121,9 @@ def _file_yml(path, document, **_):
     """
     # Parse the file
     logging.info("reading items in {}...".format(path))
-    with open(path, 'r', encoding='utf-8') as stream:
-        text = stream.read()
+    text = read_text(path)
     # Load the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(path, exc)
-            raise DoorstopError(msg) from None
+    data = load_yaml(text, path)
     # Add items
     for identifier, attrs in data.items():
         try:

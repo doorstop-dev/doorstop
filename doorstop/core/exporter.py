@@ -12,8 +12,7 @@ import yaml
 import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.base import write_lines
+from doorstop.common import DoorstopError, create_dirname, write_lines
 from doorstop.core.types import iter_documents, iter_items
 
 LIST_SEP = '\n'  # string separating list values when joined in a string

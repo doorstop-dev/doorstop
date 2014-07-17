@@ -582,21 +582,12 @@ class Stamp(object):
 
     """Hashed content for change tracking.
 
-    Option 1:
+    :param *values: one of the following:
 
-    :param *values: objects to hash as strings
-
-    Option 2:
-
-    :param *values: existing string stamp
-
-    Option 3:
-
-    :param *values: True (manually-confirmed matching hash)
-
-    Option 3:
-
-    :param *values: False|None|<empty> (manually-confirmed mismatching hash)
+        - objects to hash as strings
+        - existing string stamp
+        - `True` - manually-confirmed matching hash, to be replaced later
+        - `False` | `None` | (nothing) - manually-confirmed mismatching hash
 
     """
 
@@ -707,10 +698,10 @@ def iter_items(obj):
         logging.debug("iterating over document...")
         return (i for i in obj.items if i.active)
     try:
-        # an iterable
+        # an iterable (of items)
         logging.debug("iterating over document-like object...")
         return iter(obj)
     except TypeError:
-        # an item
+        # assume an item
         logging.debug("iterating over an item (in a container)...")
         return [obj]
