@@ -4,6 +4,6 @@ level: 3.1
 links: []
 normative: true
 ref: ''
-reviewed: null
+reviewed: e58a22974b6610a0698866fce6c1ad14
 text: |
   Doorstop **shall** store requirements in a permanent and secure manner.

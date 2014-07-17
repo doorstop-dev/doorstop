@@ -4,6 +4,6 @@ level: 1.3
 links: []
 normative: true
 ref: ''
-reviewed: null
+reviewed: 37a3faae380b4e466aaf18c31f2184c0
 text: |
   Doorstop **shall** support the storage of external requirements assets.

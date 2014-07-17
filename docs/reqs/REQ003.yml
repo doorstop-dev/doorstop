@@ -4,7 +4,7 @@ level: 1.1
 links: []
 normative: true
 ref: ''
-reviewed: null
+reviewed: 64964eaf0252a2fc0bf1509f1bcd4b09
 text: |
   Doorstop **shall** provide unique and permanent identifiers to linkable
   sections of text.

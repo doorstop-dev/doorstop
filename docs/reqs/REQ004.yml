@@ -4,6 +4,6 @@ level: 1.2
 links: []
 normative: true
 ref: ''
-reviewed: null
+reviewed: 94f4db8d1a50ab62ee0edec1e28c0afb
 text: |
   Doorstop **shall** support formatting within linkable text.

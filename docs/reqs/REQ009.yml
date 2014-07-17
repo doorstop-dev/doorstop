@@ -4,7 +4,7 @@ level: 2.3
 links: []
 normative: true
 ref: ''
-reviewed: null
+reviewed: 2bc459e9afb3ac656fb94ba680b799ff
 text: |
   Doorstop **shall** provide the capability to baseline versions of
   requirements.

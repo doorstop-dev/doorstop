@@ -29,10 +29,9 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
 
     """
     with utilities.capture(catch=catch) as success:
-        print("building tree...", flush=True)
+        print("validating tree...", flush=True)
         tree = build(cwd, root=args.project)
         tree.load()
-        print("validating tree...", flush=True)
         valid = tree.validate()
     if not success:
         return False
