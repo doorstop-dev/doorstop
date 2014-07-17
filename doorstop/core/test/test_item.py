@@ -849,6 +849,10 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
         self.assertEqual(4, mock_warning.call_count)
 
+    def test_stamp(self):
+        """Verify an unknown item has no stamp."""
+        self.assertEqual(Stamp(None), self.item.stamp())
+
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
