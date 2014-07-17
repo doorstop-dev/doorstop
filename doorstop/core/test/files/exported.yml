@@ -41,7 +41,7 @@ REQ002:
   links: []
   normative: true
   ref: ''
-  reviewed: null
+  reviewed: b5fbcc355112791bbcd2ea881c7c5f81
   text: |
     Hello, world!
 

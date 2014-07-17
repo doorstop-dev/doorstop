@@ -3,7 +3,7 @@
 import unittest
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level, Stamp
 
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
@@ -135,8 +135,8 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('abc123', self.id4.stamp)
         self.assertEqual('abc123', ID(self.id4).stamp)
         self.assertEqual('def456', ID(self.id4, stamp='def456').stamp)
-        self.assertIs(True, ID({'REQ001': 1}).stamp)
-        self.assertIs(True, ID("REQ001:1").stamp)
+        self.assertEqual(True, ID({'REQ001': 1}).stamp)
+        self.assertEqual(True, ID("REQ001:1").stamp)
 
     def test_text(self):
         """Verify IDs can be converted to text."""
@@ -346,6 +346,61 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(level, self.level_1_2)
         level += 1
         self.assertNotEqual(level, self.level_1_2)
+
+
+class TestStamp(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Stamp class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.stamp1 = Stamp('abc123')
+        self.stamp2 = Stamp("Hello, world!", 42, False)
+        self.stamp3 = Stamp(True)
+        self.stamp4 = Stamp(False)
+        self.stamp5 = Stamp()
+
+    def test_repr(self):
+        """Verify stamps can be represented."""
+        self.assertEqual("Stamp('abc123')", repr(self.stamp1))
+        self.assertEqual("Stamp('2645439971b8090da05c7403320afcfa')",
+                         repr(self.stamp2))
+        self.assertEqual("Stamp(True)", repr(self.stamp3))
+        self.assertEqual("Stamp(None)", repr(self.stamp4))
+        self.assertEqual("Stamp(None)", repr(self.stamp5))
+
+    def test_str(self):
+        """Verify stamps can be converted to strings."""
+        self.assertEqual('abc123', str(self.stamp1))
+        self.assertEqual('2645439971b8090da05c7403320afcfa', str(self.stamp2))
+        self.assertEqual('', str(self.stamp3))
+        self.assertEqual('', str(self.stamp4))
+        self.assertEqual('', str(self.stamp5))
+
+    def test_bool(self):
+        """Verify stamps can be converted to boolean."""
+        self.assertTrue(self.stamp1)
+        self.assertTrue(self.stamp2)
+        self.assertTrue(self.stamp3)
+        self.assertFalse(self.stamp4)
+        self.assertFalse(self.stamp5)
+
+    def test_eq(self):
+        """Verify stamps can be equated."""
+        self.assertEqual('abc123', self.stamp1)
+        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2)
+        self.assertEqual(True, self.stamp3)
+        self.assertEqual(None, self.stamp4)
+        self.assertNotEqual(self.stamp1, self.stamp2)
+        self.assertNotEqual(self.stamp3, self.stamp4)
+        self.assertEqual(self.stamp4, self.stamp5)
+
+    def test_yaml(self):
+        """Verify stamps can be converted to their YAML dump format."""
+        self.assertEqual('abc123', self.stamp1.yaml)
+        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2.yaml)
+        self.assertEqual(True, self.stamp3.yaml)
+        self.assertEqual(None, self.stamp4.yaml)
+        self.assertEqual(None, self.stamp5.yaml)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

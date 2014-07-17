@@ -2,14 +2,13 @@
 
 import os
 import re
-import hashlib
 import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, clear_item_cache
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Prefix, ID, Text, Level, to_bool
+from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
 
@@ -24,7 +23,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
-    DEFAULT_REVIEWED = None
+    DEFAULT_REVIEWED = Stamp()
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
 
@@ -136,10 +135,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'derived':
                 value = to_bool(value)
             elif key == 'reviewed':
-                if to_bool(value):
-                    value = True
-                elif not isinstance(value, str):
-                    value = None
+                value = Stamp(value)
             elif key == 'text':
                 value = Text(value)
             elif key == 'ref':
@@ -181,7 +177,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = [{str(part): part.stamp} for part in sorted(value)]
+                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+            elif key == 'reviewed':
+                value = value.yaml
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
@@ -318,19 +316,17 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def reviewed(self):
         """Indicate if the item has been reviewed."""
-        return self._data['reviewed'] is True or \
-            self._data['reviewed'] == self.stamp(links=True)
+        stamp = self.stamp(links=True)
+        if self._data['reviewed'] == Stamp(True):
+            self._data['reviewed'] = stamp
+        return self._data['reviewed'] == stamp
 
     @reviewed.setter
     @auto_save
     @auto_load
     def reviewed(self, value):
         """Set the item's review status."""
-        reviewed = to_bool(value)
-        if reviewed:
-            self.review()
-        else:
-            self._data['reviewed'] = None
+        self._data['reviewed'] = Stamp(value)
 
     @property
     @auto_load
@@ -500,9 +496,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if self.document and self.tree:
             yield from self._get_issues_both(self.document, self.tree)
         # Check review status
-        if self.reviewed:
-            self.review()  # convert True to a stamp
-        else:
+        if not self.reviewed:
             yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
@@ -557,7 +551,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if not item.normative:
                     msg = "linked to non-normative item: {}".format(item)
                     yield DoorstopWarning(msg)
-                if identifier.stamp is True:
+                # check the link status
+                if identifier.stamp == Stamp(True):
                     identifier.stamp = item.stamp()  # convert True to a stamp
                 elif identifier.stamp != item.stamp():
                     msg = "suspect link: {}".format(item)
@@ -720,25 +715,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def stamp(self, links=False):
         """Hash the item's key content for later comparison."""
-        md5 = hashlib.md5()
-        md5.update(str(self.id).encode())
-        md5.update(b'\n')
-        md5.update(str(self.text).encode())
-        md5.update(b'\n')
-        md5.update(str(self.ref).encode())
+        values = [self.id, self.text, self.ref]
         if links:
-            for identifier in self.links:
-                md5.update(b'\n')
-                md5.update(str(identifier).encode())
-        digest = md5.hexdigest()
-        return digest
+            values.extend(self.links)
+        return Stamp(*values)
 
     @auto_save
     @auto_load
     def review(self):
         """Mark the item as reviewed."""
-        stamp = self.stamp(links=True)
-        self._data['reviewed'] = stamp
+        self._data['reviewed'] = self.stamp(links=True)
 
     @clear_item_cache
     def delete(self, path=None):

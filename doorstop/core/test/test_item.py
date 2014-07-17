@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Text
+from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
 
 
@@ -545,6 +545,24 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                    Mock(side_effect=DoorstopError)):
             self.assertTrue(self.item.validate())
 
+    def test_validate_reviewed(self):
+        """Verify that checking a reviewed item updates the stamp."""
+        self.item._data['reviewed'] = True
+        self.assertTrue(self.item.validate())
+        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        self.assertEqual(stamp, self.item._data['reviewed'])
+
+    def test_validate_cleared(self):
+        """Verify that checking a cleared link updates the stamp."""
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_id': True}]
+        self.assertTrue(self.item.validate())
+        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
+
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
@@ -695,14 +713,20 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_stamp(self):
         """Verify an item's contents can be stamped."""
-        stamp = '36641868bd8a49a76ed8c8bbd1b300ab'
+        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
         self.item.link('mock_link')
-        stamp = 'ab9773b253e1e0051d9b68d8c69e67db'
+        stamp = '1020719292bbdc4090bd236cf41cd104'
         self.assertEqual(stamp, self.item.stamp(links=True))
+
+    def test_review(self):
+        """Verify an item can be marked as reviewed."""
+        self.item.reviewed = False
+        self.item.review()
+        self.assertTrue(self.item.reviewed)
 
     @patch('doorstop.common.delete')
     def test_delete(self, mock_delete):

@@ -7,6 +7,6 @@ REQ003	1.4	"Unicode: -40° ±1%
 REQ004	1.6	"Hello, world!
 "			True	False	True	
 REQ002	2.1	"Hello, world!
-"			True	False	True	
+"			True	False	True	b5fbcc355112791bbcd2ea881c7c5f81
 REQ2-001	2.1	"Hello, world!
 "		REQ001	True	False	True	

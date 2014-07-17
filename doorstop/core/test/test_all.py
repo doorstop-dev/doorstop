@@ -122,7 +122,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(13, len(issues))  # TODO: fix some of these link warnings
+        self.assertEqual(12, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     def test_issues_duplicate_level(self):
