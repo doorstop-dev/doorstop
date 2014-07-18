@@ -182,6 +182,7 @@ def _unlink(subs, shared):
     sub.add_argument('parent',
                      help="parent item ID child is linked to")
 
+
 def _clear(subs, shared):
     """Configure the `doorstop clear` subparser."""
     info = "absolve items of their suspect link status"

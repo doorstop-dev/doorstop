@@ -196,6 +196,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop remove' returns an error on unknown item IDs."""
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
+
 # TODO: uncomment
 # @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestReorder(unittest.TestCase):  # pylint: disable=R0904

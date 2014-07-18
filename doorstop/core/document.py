@@ -358,8 +358,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @staticmethod
     def _reorder_index(items, path):
         """Reorder a document's item from an index."""
-
-
         # TODO: implement method
         common.delete(path)
 
