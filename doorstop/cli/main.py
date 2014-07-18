@@ -47,9 +47,9 @@ def main(args=None):  # pylint: disable=R0915
     _delete(subs, shared)
     _add(subs, shared)
     _remove(subs, shared)
+    _edit(subs, shared)
     _link(subs, shared)
     _unlink(subs, shared)
-    _edit(subs, shared)
     _clear(subs, shared)
     _review(subs, shared)
     _import(subs, shared)
@@ -121,28 +121,6 @@ def _remove(subs, shared):
                      help="item ID to remove from its document")
 
 
-def _link(subs, shared):
-    """Configure the `doorstop link` subparser."""
-    info = "add a new link between two items"
-    sub = subs.add_parser('link', description=info.capitalize() + '.',
-                          help=info, **shared)
-    sub.add_argument('child',
-                     help="child item ID to link to the parent")
-    sub.add_argument('parent',
-                     help="parent item ID to link from the child")
-
-
-def _unlink(subs, shared):
-    """Configure the `doorstop unlink` subparser."""
-    info = "remove a link between two items"
-    sub = subs.add_parser('unlink', description=info.capitalize() + '.',
-                          help=info, **shared)
-    sub.add_argument('child',
-                     help="child item ID to unlink from parent")
-    sub.add_argument('parent',
-                     help="parent item ID child is linked to")
-
-
 def _edit(subs, shared):
     """Configure the `doorstop edit` subparser."""
     info = "open an existing item or document for editing"
@@ -167,6 +145,27 @@ def _edit(subs, shared):
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
 
+
+def _link(subs, shared):
+    """Configure the `doorstop link` subparser."""
+    info = "add a new link between two items"
+    sub = subs.add_parser('link', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('child',
+                     help="child item ID to link to the parent")
+    sub.add_argument('parent',
+                     help="parent item ID to link from the child")
+
+
+def _unlink(subs, shared):
+    """Configure the `doorstop unlink` subparser."""
+    info = "remove a link between two items"
+    sub = subs.add_parser('unlink', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('child',
+                     help="child item ID to unlink from parent")
+    sub.add_argument('parent',
+                     help="parent item ID child is linked to")
 
 def _clear(subs, shared):
     """Configure the `doorstop clear` subparser."""

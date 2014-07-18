@@ -128,6 +128,43 @@ def run_remove(args, cwd, _, catch=True):
     return True
 
 
+def run_edit(args, cwd, err, catch=True):
+    """Process arguments and run the `doorstop edit` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    item = document = None
+    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
+
+    with utilities.capture(catch=catch) as success:
+        tree = build(cwd, root=args.project)
+        # find item or document
+        if not args.document:
+            try:
+                item = tree.find_item(args.label)
+            except common.DoorstopError as exc:
+                if args.item:
+                    raise exc from None
+        if not item:
+            document = tree.find_document(args.label)
+        # edit item or document
+        if item:
+            item.edit(tool=args.tool)
+        else:
+            _export_import(args, cwd, err, document, ext)
+    if not success:
+        return False
+
+    if item:
+        print("opened item: {} ({})".format(item.id, item.relpath))
+
+    return True
+
+
 def run_link(args, cwd, _, catch=True):
     """Process arguments and run the `doorstop link` subcommand.
 
@@ -166,43 +203,6 @@ def run_unlink(args, cwd, _, catch=True):
 
     msg = "unlinked items: {} ({}) -> {} ({})"
     print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
-
-    return True
-
-
-def run_edit(args, cwd, err, catch=True):
-    """Process arguments and run the `doorstop edit` subcommand.
-
-    :param args: Namespace of CLI arguments
-    :param cwd: current working directory
-    :param err: function to call for CLI errors
-    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
-
-    """
-    item = document = None
-    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
-
-    with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
-        # find item or document
-        if not args.document:
-            try:
-                item = tree.find_item(args.label)
-            except common.DoorstopError as exc:
-                if args.item:
-                    raise exc from None
-        if not item:
-            document = tree.find_document(args.label)
-        # edit item or document
-        if item:
-            item.edit(tool=args.tool)
-        else:
-            _export_import(args, cwd, err, document, ext)
-    if not success:
-        return False
-
-    if item:
-        print("opened item: {} ({})".format(item.id, item.relpath))
 
     return True
 
