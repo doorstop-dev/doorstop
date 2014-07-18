@@ -12,11 +12,10 @@ import yaml
 import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.base import write_lines
+from doorstop.common import DoorstopError, create_dirname, write_lines
 from doorstop.core.types import iter_documents, iter_items
 
-LIST_SEP = ',\n'  # string separating list values when joined in a string
+LIST_SEP = '\n'  # string separating list values when joined in a string
 
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
@@ -147,11 +146,12 @@ def _tabulate(obj, sep=LIST_SEP):
             if key == 'level':
                 # some levels are floats for YAML presentation
                 value = str(value)
-            elif isinstance(value, list):
-                # separate lists with commas
-                value = sep.join(str(p) for p in value)
+            elif key == 'links':
+                # separate identifiers with a delimiter
+                value = sep.join(identifier.text for identifier in item.links)
+            elif value is None:
+                value = ''
             row.append(value)
-
         yield row
 
 

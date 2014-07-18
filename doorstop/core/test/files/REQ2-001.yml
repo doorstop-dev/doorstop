@@ -2,8 +2,9 @@ active: true
 derived: false
 level: 2.1
 links:
-- REQ001
+- REQ001: null
 normative: true
 ref: ''
+reviewed: null
 text: |
   Hello, world!

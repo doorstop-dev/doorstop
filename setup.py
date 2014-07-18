@@ -20,7 +20,7 @@ setuptools.setup(
     version=__version__,
 
     description=DESCRIPTION,
-    url='http://github.com/jacebrowning/doorstop',
+    url='http://doorstop.info',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
 

@@ -528,9 +528,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """Get the tree structure as text.
 
         :param encoding: limit character set to:
-                         - 'utf-8' - all characters
-                         - 'cp437' - Code Page 437 characters
-                         - (other) - ACSII characters
+
+            - `'utf-8'` - all characters
+            - `'cp437'` - Code Page 437 characters
+            - (other) - ACSII characters
 
         """
         encoding = encoding or getattr(sys.stdout, 'encoding', None)

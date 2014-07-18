@@ -154,11 +154,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if os.path.exists(path):
             raise DoorstopError("{} already exists: {}".format(name, path))
-        dirpath = os.path.dirname(path)
-        if not os.path.isdir(dirpath):
-            os.makedirs(dirpath)
-        with open(path, 'w'):
-            pass  # just touch the file
+        common.create_dirname(path)
+        common.touch(path)
 
     @abc.abstractmethod
     def load(self, reload=False):  # pragma: no cover (abstract method)
@@ -182,8 +179,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if not self._exists:
             msg = "cannot read from deleted: {}".format(self.path)
             raise DoorstopError(msg)
-        with open(path, 'rb') as stream:
-            return stream.read().decode('utf-8')
+        return common.read_text(path)
 
     @staticmethod
     def _load(text, path):
@@ -195,17 +191,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :return: dictionary of YAML data
 
         """
-        # Load the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(path, exc)
-            raise DoorstopError(msg) from None
-        # Ensure data is a dictionary
-        if not isinstance(data, dict):
-            msg = "invalid contents: {}".format(path)
-            raise DoorstopError(msg)
-        return data
+        return common.load_yaml(text, path)
 
     @abc.abstractmethod
     def save(self):  # pragma: no cover (abstract method)
@@ -225,8 +211,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(path, 'wb') as outfile:
-            outfile.write(text.encode('utf-8'))
+        common.write_text(text, path)
 
     @staticmethod
     def _dump(data):
@@ -306,11 +291,3 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             self._exists = False  # but, prevent future access
         else:
             logging.warning("already deleted: {}".format(self))
-
-
-def write_lines(lines, path, end='\n', encoding='utf-8'):  # pragma: no cover (integration test)
-    """Write lines of text to a file."""
-    logging.debug("writing lines to {}...".format(path))
-    with open(path, 'wb') as stream:
-        for line in lines:
-            stream.write((line + end).encode(encoding))
