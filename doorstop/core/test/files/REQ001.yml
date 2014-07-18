@@ -2,9 +2,10 @@ active: true
 derived: false
 level: 1.2.3
 links:
-- SYS001
-- SYS002
+- SYS001: null
+- SYS002: abc123
 normative: true
 ref: ''
+reviewed: null
 text: |
   Hello, world!

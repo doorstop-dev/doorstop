@@ -2,9 +2,10 @@ active: true
 derived: false
 level: 3
 links:
-- TUT012
-- TUT013
-- TUT016
+- TUT012: 000c0e9c39a92c6eb93902e4ea972740
+- TUT013: d9ecaf05f4eba86402b07d0ef10ff8f6
+- TUT016: 1e9933f973dc2d1ebbc101b414046fa1
 normative: true
 ref: test_tutorial_section_3
+reviewed: 90f7997574edcd1aca3b7a22b458aa54
 text: ''
