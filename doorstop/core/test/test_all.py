@@ -14,8 +14,9 @@ import yaml
 # TODO: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
-from doorstop import core
+from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
+from doorstop import core
 from doorstop.core.builder import _get_tree, _clear_tree
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
@@ -43,13 +44,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.path)
 
     def test_save_load(self):
         """Verify an item can be saved and loaded from a file."""
@@ -122,7 +121,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(8, len(issues))
+        self.assertEqual(12, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     def test_issues_duplicate_level(self):
@@ -241,15 +240,13 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
         self.tree = core.Tree(core.Document(SYS))
         self.tree._place(core.Document(FILES))  # pylint: disable=W0212
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.path)
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
@@ -283,7 +280,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
         os.chdir(self.temp)
-        open(".mockvcs", 'w').close()
+        common.touch('.mockvcs')
         # Create default document attributes
         self.prefix = 'PREFIX'
         self.root = self.temp
@@ -546,61 +543,57 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'published.txt')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_document_without_child_links(self):
         """Verify text can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.txt')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'published.md')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_document_without_child_links(self):
         """Verify Markdown can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.md')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'published.html')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html',
                                              linkify=True)
@@ -608,22 +601,20 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_html_document_without_child_links(self):
         """Verify HTML can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.html')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -677,8 +668,7 @@ def log_data(expected, actual):
 
 def read_yml(path):
     """Return a dictionary of items from a YAML file."""
-    with open(path, 'r', encoding='utf-8') as stream:
-        text = stream.read()
+    text = common.read_text(path)
     data = yaml.load(text)
     return data
 

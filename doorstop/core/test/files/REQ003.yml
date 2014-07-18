@@ -2,8 +2,9 @@ active: true
 derived: false
 level: 1.4
 links:
-- REQ001
+- REQ001: null
 normative: true
 ref: REF123
+reviewed: null
 text: |
   Unicode: -40° ±1%

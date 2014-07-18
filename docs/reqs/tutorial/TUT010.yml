@@ -2,9 +2,10 @@ active: true
 derived: false
 level: 2.2
 links:
-- REQ007
+- REQ007: 1b2201126b830e4ea9f57c77dbd6a38e
 normative: true
 ref: ''
+reviewed: 260ebc296fee841bda6010189194c56d
 text: |
   **Publishing All Documents as an HTML Directory**
 

@@ -5,10 +5,10 @@ from unittest.mock import patch, Mock, MagicMock
 
 import os
 
+from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core.types import Text
+from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
-
 
 from doorstop.core.test import FILES, EMPTY, EXTERNAL
 from doorstop.core.test import MockItem
@@ -21,6 +21,7 @@ level: 1.0
 links: []
 normative: true
 ref: ''
+reviewed: null
 text: ''
 """.lstrip()
 
@@ -192,6 +193,28 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.heading = 0  # converted to False
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
+
+    def test_cleared(self):
+        """Verify an item's suspect link status can be set and read."""
+        mock_item = Mock()
+        mock_item.id = 'mock_id'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_id')
+        self.item.cleared = 1  # updates each stamp
+        self.assertTrue(self.item.cleared)
+        self.item.cleared = 0  # sets each stamp to None
+        self.assertFalse(self.item.cleared)
+
+    def test_reviwed(self):
+        """Verify an item's review status can be set and read."""
+        self.assertFalse(self.item.reviewed)  # not reviewed by default
+        self.item.reviewed = 1  # calls `review()`
+        self.assertTrue(self.item.reviewed)
+        self.item.reviewed = 0  # converted to None
+        self.assertFalse(self.item.reviewed)
 
     def test_text(self):
         """Verify an item's text can be set and read."""
@@ -536,6 +559,24 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
                    Mock(side_effect=DoorstopError)):
             self.assertTrue(self.item.validate())
 
+    def test_validate_reviewed(self):
+        """Verify that checking a reviewed item updates the stamp."""
+        self.item._data['reviewed'] = True
+        self.assertTrue(self.item.validate())
+        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        self.assertEqual(stamp, self.item._data['reviewed'])
+
+    def test_validate_cleared(self):
+        """Verify that checking a cleared link updates the stamp."""
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_id': True}]
+        self.assertTrue(self.item.validate())
+        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
+
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
@@ -684,6 +725,40 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item's issues convenience property can be accessed."""
         self.assertEqual(0, len(self.item.issues))
 
+    def test_stamp(self):
+        """Verify an item's contents can be stamped."""
+        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_links(self):
+        """Verify an item's contents can be stamped."""
+        self.item.link('mock_link')
+        stamp = '1020719292bbdc4090bd236cf41cd104'
+        self.assertEqual(stamp, self.item.stamp(links=True))
+
+    def test_clear(self):
+        """Verify an item's links can be cleared as suspect."""
+        mock_item = Mock()
+        mock_item.id = 'mock_id'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_id')
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)  # pylint: disable=E1101
+        # Act
+        self.item.clear()
+        # Assert
+        self.assertTrue(self.item.cleared)
+        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
+
+    def test_review(self):
+        """Verify an item can be marked as reviewed."""
+        self.item.reviewed = False
+        self.item.review()
+        self.assertTrue(self.item.reviewed)
+
     @patch('doorstop.common.delete')
     def test_delete(self, mock_delete):
         """Verify an item can be deleted."""
@@ -699,21 +774,18 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
     def setUp(self):
-        with open(self.ITEM, 'r') as stream:
-            self.backup = stream.read()
+        self.backup = common.read_text(self.ITEM)
 
     def tearDown(self):
-        with open(self.ITEM, 'w') as outfile:
-            outfile.write(self.backup)
+        common.write_text(self.backup, self.ITEM)
 
     def test_load_save(self):
         """Verify text formatting is preserved."""
         item = Item(self.ITEM)
         item.load()
         item.save()
-        with open(self.ITEM, 'r') as stream:
-            text = stream.read()
-            self.assertEqual(self.backup, text)
+        text = common.read_text(self.ITEM)
+        self.assertEqual(self.backup, text)
 
 
 class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
@@ -776,6 +848,10 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(AttributeError, getattr, self.item, 'delete')
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
         self.assertEqual(4, mock_warning.call_count)
+
+    def test_stamp(self):
+        """Verify an unknown item has no stamp."""
+        self.assertEqual(Stamp(None), self.item.stamp())
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

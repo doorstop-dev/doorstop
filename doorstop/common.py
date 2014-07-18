@@ -5,6 +5,8 @@ import shutil
 import argparse
 import logging
 
+import yaml
+
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
 MAX_VERBOSITY = 4
@@ -57,6 +59,87 @@ def create_dirname(path):
     if dirpath and not os.path.isdir(dirpath):
         logging.info("creating directory {}...".format(dirpath))
         os.makedirs(dirpath)
+
+
+def read_text(path, encoding='utf-8'):
+    """Read text from a file.
+
+    :param path: file path to read from
+    :param encoding: input file encoding
+
+    :return: string
+
+    """
+    with open(path, 'r', encoding=encoding) as stream:
+        text = stream.read()
+    return text
+
+
+def load_yaml(text, path):
+    """Parse a dictionary from YAML text.
+
+    :param text: string containing dumped YAML data
+    :param path: file path for error messages
+
+    :return: dictionary
+
+    """
+    # Load the YAML data
+    try:
+        data = yaml.load(text) or {}
+    except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
+        msg = "invalid contents: {}:\n{}".format(path, exc)
+        raise DoorstopError(msg) from None
+    # Ensure data is a dictionary
+    if not isinstance(data, dict):
+        msg = "invalid contents: {}".format(path)
+        raise DoorstopError(msg)
+    # Return the parsed data
+    return data
+
+
+def write_lines(lines, path, end='\n', encoding='utf-8'):
+    """Write lines of text to a file.
+
+    :param lines: iterator of strings
+    :param path: file to write lines
+    :param end: string to end lines
+    :param encoding: output file encoding
+
+    :return: path of new file
+
+    """
+    logging.debug("writing lines to {}...".format(path))
+    with open(path, 'wb') as stream:
+        for line in lines:
+            data = (line + end).encode(encoding)
+            stream.write(data)
+    return path
+
+
+def write_text(text, path, encoding='utf-8'):
+    """Write text to a file.
+
+    :param text: string
+    :param path: file to write text
+    :param encoding: output file encoding
+
+    :return: path of new file
+
+    """
+    if text:
+        logging.debug("writing text to {}...".format(path))
+    with open(path, 'wb') as stream:
+        data = text.encode(encoding)
+        stream.write(data)
+    return path
+
+
+def touch(path):  # pragma: no cover (integration test)
+    """Ensure a file exists."""
+    if not os.path.exists(path):
+        logging.debug("creating empty {}...".format(path))
+        write_text('', path)
 
 
 def delete(path):  # pragma: no cover (integration test)

@@ -1,12 +1,12 @@
 """Package for doorstop."""
 
 __project__ = 'Doorstop'
-__version__ = '0.7-dev'
+__version__ = '0.8-dev'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
 VERSION = __project__ + '-' + __version__
-DESCRIPTION = "Text-based requirements management using version control."
+DESCRIPTION = "Requirements management using version control."
 
 MIN_PYTHON_VERSION = 3, 3
 

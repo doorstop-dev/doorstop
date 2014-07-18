@@ -157,17 +157,17 @@ pep257: .depends-ci
 
 .PHONY: pylint
 pylint: .depends-dev
-	$(PYLINT) $(PACKAGE) --rcfile .pylintrc
+	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
 
 # Testing ####################################################################
 
 .PHONY: test
 test: .depends-ci
-	$(NOSE)
+	$(NOSE) --config=.noserc
 
 .PHONY: tests
 tests: .depends-ci
-	TEST_INTEGRATION=1 $(NOSE) --verbose --stop --cover-package=$(PACKAGE)
+	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
 
 .PHONY: tutorial
 tutorial: env

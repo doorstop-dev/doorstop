@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 import os
-import pprint
 import logging
 
 from doorstop.common import DoorstopError
@@ -77,7 +76,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.importer._itemize')
     def test_file_csv(self, mock_itemize):
-        """Verify a CSV file can be imported."""
+        """Verify a CSV file can be imported."""  # pylint: disable=C0301
         path = os.path.join(FILES, 'exported.csv')
         mock_document = Mock()
         # Act
@@ -87,25 +86,22 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        expected_header = ['id', 'level', 'text', 'ref',
-                           'links', 'active', 'derived', 'normative']
+        expected_header = ['id', 'level', 'text', 'ref', 'links',
+                           'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
-        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', '',
-                          'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
-                          'REQ001', True, False, True],
-                         ['REQ004', '1.6', 'Hello, world!\n', '',
-                          '', True, False, True],
-                         ['REQ002', '2.1', 'Hello, world!\n', '',
-                          '', True, False, True],
-                         ['REQ2-001', '2.1', 'Hello, world!\n', '',
-                          'REQ001', True, False, True]]
+        expected_data = [
+            ['REQ001', '1.2.3', 'Hello, world!\n', '', 'SYS001\nSYS002:abc123', True, False, True, ''],
+            ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123', 'REQ001', True, False, True, ''],
+            ['REQ004', '1.6', 'Hello, world!\n', '', '', True, False, True, ''],
+            ['REQ002', '2.1', 'Hello, world!\n', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
+            ['REQ2-001', '2.1', 'Hello, world!\n', '', 'REQ001', True, False, True, ''],
+        ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
     @patch('doorstop.core.importer._itemize')
     def test_file_csv_modified(self, mock_itemize):
-        """Verify a CSV file (with modifications) can be imported."""
+        """Verify a CSV file (with modifications) can be imported."""  # pylint: disable=C0301
         path = os.path.join(FILES, 'exported-modified.csv')
         mock_document = Mock()
         # Act
@@ -115,21 +111,16 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        expected_header = ['id', 'level', 'text', 'ref',
-                           'links', 'active', 'derived',
-                           'normative', 'additional']
+        expected_header = ['id', 'level', 'text', 'ref', 'links',
+                           'active', 'derived', 'normative', 'additional']
         self.assertEqual(expected_header, header)
-        expected_data = [['REQ0555', '1.2.3', 'Hello, world!\n', '',
-                          'SYS001,\nSYS002', True, False, False, ''],
-                         ['REQ003', '1.4', 'Hello, world!\n', 'REF''123',
-                          'REQ001', False, False, True,
-                          'Some "quoted" text \'here\'.'],
-                         ['REQ004', '1.6', 'Hello, world!\n', '',
-                          '', False, True, True, ''],
-                         ['REQ002', '2.1', 'Hello, world!\n', '',
-                          '', True, False, True, ''],
-                         ['REQ2-001', '2.1', 'Hello, world!\n', '',
-                          'REQ001', True, False, True, '']]
+        expected_data = [
+            ['REQ0555', '1.2.3', 'Hello, world!\n', '', 'SYS001,\nSYS002', True, False, False, ''],
+            ['REQ003', '1.4', 'Hello, world!\n', 'REF''123', 'REQ001', False, False, True, 'Some "quoted" text \'here\'.'],
+            ['REQ004', '1.6', 'Hello, world!\n', '', '', False, True, True, ''],
+            ['REQ002', '2.1', 'Hello, world!\n', '', '', True, False, True, ''],
+            ['REQ2-001', '2.1', 'Hello, world!\n', '', 'REQ001', True, False, True, ''],
+        ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
@@ -146,7 +137,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.core.importer._itemize')
     def test_file_xlsx(self, mock_itemize):
-        """Verify a CSV file can be imported."""
+        """Verify a CSV file can be imported."""  # pylint: disable=C0301
         path = os.path.join(FILES, 'exported.xlsx')
         mock_document = Mock()
         # Act
@@ -156,19 +147,16 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        expected_header = ['id', 'level', 'text', 'ref',
-                           'links', 'active', 'derived', 'normative']
+        expected_header = ['id', 'level', 'text', 'ref', 'links',
+                           'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
-        expected_data = [['REQ001', '1.2.3', 'Hello, world!\n', None,
-                          'SYS001,\nSYS002', True, False, True],
-                         ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123',
-                          'REQ001', True, False, True],
-                         ['REQ004', '1.6', 'Hello, world!\n', None,
-                          None, True, False, True],
-                         ['REQ002', '2.1', 'Hello, world!\n', None,
-                          None, True, False, True],
-                         ['REQ2-001', '2.1', 'Hello, world!\n', None,
-                          'REQ001', True, False, True]]
+        expected_data = [
+            ['REQ001', '1.2.3', 'Hello, world!\n', None, 'SYS001\nSYS002:abc123', True, False, True, None],
+            ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123', 'REQ001', True, False, True, None],
+            ['REQ004', '1.6', 'Hello, world!\n', None, None, True, False, True, None],
+            ['REQ002', '2.1', 'Hello, world!\n', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
+            ['REQ2-001', '2.1', 'Hello, world!\n', None, 'REQ001', True, False, True, None],
+        ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
@@ -363,15 +351,3 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(self.identifier, item.id)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext'], item.get('ext'))
-
-
-# helper functions ###########################################################
-
-
-def log_data(expected, actual):
-    """Log list values."""
-    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
-        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-            i=index,
-            e=pprint.pformat(evalue),
-            a=pprint.pformat(avalue)))
