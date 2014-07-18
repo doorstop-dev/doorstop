@@ -194,7 +194,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify a standalone document does not have object references."""
         self.assertIs(None, self.document.tree)
 
-    @patch('doorstop.core.document.Document._reorder')
+    @patch('doorstop.core.document.Document._reorder_auto')
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new, mock_reorder):
         """Verify an item can be added to a document."""
@@ -241,7 +241,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         item2 = self.document.add_item(reorder=False)
         self.assertIn(item2, self.document)
 
-    @patch('doorstop.core.document.Document._reorder')
+    @patch('doorstop.core.document.Document._reorder_auto')
     @patch('os.remove')
     def test_remove(self, mock_remove, mock_reorder):
         """Verify an item can be removed."""
@@ -292,7 +292,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('3.5'),
                     Level('4.0'),
                     Level('4.1')]
-        Document._reorder(mock_items)
+        Document._reorder_auto(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
@@ -308,7 +308,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('2'),
                     Level('3'),
                     Level('4.1.1')]
-        Document._reorder(mock_items)
+        Document._reorder_auto(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
@@ -337,7 +337,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('2.5'),
                     Level('3.0'),
                     Level('3.1')]
-        Document._reorder(mock_items, start=(1, 2), keep=mock_item)
+        Document._reorder_auto(mock_items, start=(1, 2), keep=mock_item)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 

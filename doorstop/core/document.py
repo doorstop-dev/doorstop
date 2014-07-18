@@ -21,6 +21,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
+    INDEX = 'index.yml'
 
     DEFAULT_PREFIX = Prefix('REQ')
     DEFAULT_SEP = ''
@@ -201,6 +202,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return os.path.join(self.path, Document.CONFIG)
 
     @property
+    def index(self):
+        """Get the path to the document's index."""
+        path = os.path.join(self.path, Document.INDEX)
+        if os.path.exists(path):
+            return path
+
+    @property
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
@@ -331,7 +339,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
-    def reorder(self, items=None, start=None, keep=None):
+    def reorder(self, items=None, start=None, keep=None, index=True, auto=True):
         """Reorder a document's items.
 
         :param items: items to reorder (None = reorder instance items)
@@ -342,12 +350,22 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         items = items or self.items
         keep = self.find_item(keep) if keep else None
         logging.info("reordering {}...".format(self))
-        self._reorder(items, start=start, keep=keep)
-        self._index(items, self.path)
+        if index and self.index:
+            self._reorder_index(items, self.index)
+        if auto:
+            self._reorder_auto(items, start=start, keep=keep)
 
     @staticmethod
-    def _reorder(items, start=None, keep=None):
-        """Reorder a document's items.
+    def _reorder_index(items, path):
+        """Reorder a document's item from an index."""
+
+
+        # TODO: implement method
+        common.delete(path)
+
+    @staticmethod
+    def _reorder_auto(items, start=None, keep=None):
+        """Reorder a document's items automatically.
 
         :param items: items to reorder
         :param start: level to start numbering (None = use current start)
@@ -421,20 +439,23 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             for item in items:
                 yield level, item
 
+    def create_index(self):
+        path = os.path.join(self.path, Document.INDEX)
+        common.write_lines(self._index(self.items), path)
+        return path
+
     @staticmethod
-    def _index(items, dirpath):
+    def _index(items):
         """Update the document index."""
-        path = os.path.join(dirpath, 'index.yml')
-        with open(path, 'w', encoding='utf-8') as stream:
-            stream.write("initial: 1.0" + '\n')
-            stream.write("outline:" + '\n')
-            for item in items:
-                space = "  " * item.depth
-                comment = item.text.replace('\n', ' ') or item.ref
-                line = space + "- {i}: # {c}".format(i=item.id, c=comment)
-                if len(line) > settings.MAX_LINE_LENTH:
-                    line = line[:settings.MAX_LINE_LENTH - 3] + '...'
-                stream.write(line + '\n')
+        yield "initial: 1.0"
+        yield "outline:"
+        for item in items:
+            space = "  " * item.depth
+            comment = item.text.replace('\n', ' ') or item.ref
+            line = space + "- {i}: # {c}".format(i=item.id, c=comment)
+            if len(line) > settings.MAX_LINE_LENTH:
+                line = line[:settings.MAX_LINE_LENTH - 3] + '...'
+            yield line
 
     def find_item(self, value, _kind=''):
         """Return an item by its ID.

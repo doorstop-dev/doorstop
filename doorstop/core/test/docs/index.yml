@@ -1,9 +1,0 @@
-initial: 1.0
-outline:
-  - LLT001: # Verify an item can be added to a document.
-  - LLT002: # Verify Markdown can be published from a document.
-  - LLT003: # Verify text can be published from a document.
-  - LLT004: # Verify the items in a document can be accessed.
-  - LLT005: # Verify an item's reference can also be a filename.
-  - LLT007: # **Inspection Tests**  These checks ensure the version control ...
-  - LLT008: # **Inspection Tests**  These checks ensure the Python package i...

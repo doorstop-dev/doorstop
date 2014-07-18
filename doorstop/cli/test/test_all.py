@@ -196,6 +196,40 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop remove' returns an error on unknown item IDs."""
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestReorder(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop reorder' command."""
+
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='yes'))
+    def test_reorder_document_yes(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (yes)."""
+        path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
+        self.assertIs(None, main(['reorder', 'tut']))
+        mock_launch.assert_called_once_with(path, tool=None)
+        self.assertFalse(os.path.exists(path))
+
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_reorder_document_no(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (no)."""
+        path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
+        self.assertIs(None, main(['reorder', 'tut']))
+        mock_launch.assert_called_once_with(path, tool=None)
+        self.assertFalse(os.path.exists(path))
+
+    @patch('doorstop.core.editor.launch')
+    def test_reorder_document_auto(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (auto)."""
+        self.assertIs(None, main(['reorder', 'tut', '--auto']))
+        mock_launch.assert_never_called()
+
+    def test_reorder_document_error(self):
+        """Verify 'doorstop reorder' returns an error on an unknown prefix."""
+        self.assertRaises(SystemExit, main, ['reorder', 'FAKE'])
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestEdit(unittest.TestCase):  # pylint: disable=R0904

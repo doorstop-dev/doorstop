@@ -1,5 +1,6 @@
 """Command functions."""
 
+import os
 import time
 import logging
 
@@ -161,6 +162,46 @@ def run_edit(args, cwd, err, catch=True):
 
     if item:
         print("opened item: {} ({})".format(item.id, item.relpath))
+
+    return True
+
+
+def run_reorder(args, cwd, err, catch=True):
+    """Process arguments and run the `doorstop reorder` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    reordered = False
+    with utilities.capture(catch=catch) as success:
+        tree = build(cwd, root=args.project)
+        document = tree.find_document(args.prefix)
+        # automatically order
+        if args.auto:
+            document.reorder(index=False)
+            reordered = True
+        # or, reorder from a previously updated index
+        elif document.index or args.auto:
+            relpath = os.path.relpath(document.index, cwd)
+            if utilities.ask("reorder from {}?".format(relpath)):
+                document.reorder()
+                reordered = True
+            else:
+                common.delete(document.index)
+        # or, create a new index to update
+        else:
+            path = document.create_index()
+            relpath = os.path.relpath(path, cwd)
+            editor.edit(relpath, tool=args.tool)
+            get('reorder')(args, cwd, err, catch=False)
+    if not success:
+        return False
+
+    if reordered:
+        print("reordered: {} ({})".format(document.prefix, document.relpath))
 
     return True
 
