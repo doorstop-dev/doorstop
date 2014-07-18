@@ -351,16 +351,38 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         keep = self.find_item(keep) if keep else None
         if index and self.index:
             logging.info("reordering {} from index...".format(self))
-            self._reorder_index(items, self.index)
+            self._reorder_index(self, self.index)
         if auto:
             logging.info("reordering {} automatically...".format(self))
             self._reorder_auto(items, start=start, keep=keep)
 
     @staticmethod
-    def _reorder_index(items, path):
+    def _reorder_index(document, path):
         """Reorder a document's item from an index."""
-        # TODO: implement method
+        text = common.read_text(path)
+        data = common.load_yaml(text, path)
+        initial = data.get('initial', 1.0)
+        level = Level(initial)
+        outline = data.get('outline')
+        Document._reorder_section(outline, level, document)
+        logging.info("deleting index...")
         common.delete(path)
+
+    @staticmethod
+    def _reorder_section(section, level, document):
+        if isinstance(section, dict):
+            identifier = list(section.keys())[0]
+            subsections = section[identifier]
+            level.heading = bool(subsections)
+            item = document.find_item(identifier)  # TODO: handle bad IDs
+            logging.info("{}: {}".format(item, level))
+            item.level = level
+            if subsections:
+                Document._reorder_section(subsections, level >> 1, document)
+        else:
+            assert isinstance(section, list)
+            for n, subsection in enumerate(section):
+                Document._reorder_section(subsection, level + n, document)
 
     @staticmethod
     def _reorder_auto(items, start=None, keep=None):
@@ -446,11 +468,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @staticmethod
     def _index(items):
-        """Update the document index."""
-        yield "initial: 1.0"
+        """Generate (pseudo) YAML lines for the document index."""
+        yield "initial: 1.0"  # TODO: get correct starting level
         yield "outline:"
         for item in items:
-            space = "  " * item.depth
+            space = "    " * (item.depth - 1)
             comment = item.text.replace('\n', ' ') or item.ref
             line = space + "- {i}: # {c}".format(i=item.id, c=comment)
             if len(line) > settings.MAX_LINE_LENTH:

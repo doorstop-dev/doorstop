@@ -109,7 +109,7 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
     :return: path of new file
 
     """
-    logging.debug("writing lines to {}...".format(path))
+    logging.debug("writing lines to '{}'...".format(path))
     with open(path, 'wb') as stream:
         for line in lines:
             data = (line + end).encode(encoding)
@@ -128,7 +128,7 @@ def write_text(text, path, encoding='utf-8'):
 
     """
     if text:
-        logging.debug("writing text to {}...".format(path))
+        logging.debug("writing text to '{}'...".format(path))
     with open(path, 'wb') as stream:
         data = text.encode(encoding)
         stream.write(data)
@@ -138,7 +138,7 @@ def write_text(text, path, encoding='utf-8'):
 def touch(path):  # pragma: no cover (integration test)
     """Ensure a file exists."""
     if not os.path.exists(path):
-        logging.debug("creating empty {}...".format(path))
+        logging.debug("creating empty '{}'...".format(path))
         write_text('', path)
 
 
@@ -146,6 +146,7 @@ def delete(path):  # pragma: no cover (integration test)
     """Delete a file or directory with error handling."""
     if os.path.isdir(path):
         try:
+            logging.debug("deleting '{}'...".format(path))
             shutil.rmtree(path)
         except IOError:
             # bug: http://code.activestate.com/lists/python-list/159050
