@@ -4,5 +4,6 @@ level: 3.5
 links: []
 normative: true
 ref: ''
+reviewed: 5057c48dd88b53fe5e639e1e33126714
 text: |
   Doorstop **shall** provide a lightweight installation method.

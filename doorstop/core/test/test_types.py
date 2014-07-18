@@ -3,7 +3,7 @@
 import unittest
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, ID, Text, Level
+from doorstop.core.types import Prefix, ID, Text, Level, Stamp
 
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
@@ -14,10 +14,13 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.prefix1 = Prefix('REQ')
         self.prefix2 = Prefix('TST (@/tst)')
 
-    def test_init(self):
-        """Verify prefixes are parsed correctly."""
-        self.assertIs(self.prefix1, Prefix(self.prefix1))
+    def test_init_empty(self):
+        """Verify prefixes are parsed correctly(empty)."""
         self.assertEqual(Prefix(''), Prefix())
+
+    def test_init_instance(self):
+        """Verify prefixes are parsed correctly (instance)."""
+        self.assertIs(self.prefix1, Prefix(self.prefix1))
 
     def test_init_reseved(self):
         """Verify an exception is raised for a reserved word."""
@@ -61,24 +64,43 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.id1 = ID('REQ001')
         self.id2 = ID('TST-02')
         self.id3 = ID('SYS', '-', 3, 5)
+        self.id4 = ID('REQ001', stamp='abc123')
 
-    def test_init(self):
-        """Verify IDs are parsed correctly."""
-        self.assertIs(self.id1, ID(self.id1))
+    def test_init_str(self):
+        """Verify IDs are parsed correctly (string)."""
         identifier = ID('REQ')
         self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
         identifier = ID('REQ-?')
         self.assertRaises(DoorstopError, getattr, identifier, 'number')
+
+    def test_init_dict(self):
+        """Verify IDs are parsed correctly (dictionary)."""
+        identifier = ID({'REQ001': 'abc123'})
+        self.assertEqual('REQ', identifier.prefix)
+        self.assertEqual(1, identifier.number)
+        self.assertEqual('abc123', identifier.stamp)
+
+    def test_init_values(self):
+        """Verify IDs are parsed correctly (values)."""
         self.assertRaises(TypeError, ID, 'REQ', '-')
         self.assertRaises(TypeError, ID, 'REQ', '-', 42)
         self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
+
+    def test_init_empty(self):
+        """Verify IDs are parsed correctly (empty)."""
         self.assertEqual(ID(""), ID())
+
+    def test_init_instance(self):
+        """Verify IDs are parsed correctly (instance)."""
+        self.assertIs(self.id1, ID(self.id1))
+        self.assertIs(self.id4, ID(self.id4))
 
     def test_repr(self):
         """Verify IDs can be represented."""
         self.assertEqual("ID('REQ001')", repr(self.id1))
         self.assertEqual("ID('TST-02')", repr(self.id2))
         self.assertEqual("ID('SYS-00003')", repr(self.id3))
+        self.assertEqual("ID('REQ001', stamp='abc123')", repr(self.id4))
 
     def test_str(self):
         """Verify IDs can be converted to strings."""
@@ -94,6 +116,7 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(ID('REQ1'), ID('REQ001 (@/req1.yml)'))
         self.assertEqual('req1', ID('REQ001'))
         self.assertNotEqual(None, ID('REQ001'))
+        self.assertEqual(self.id1, self.id4)
 
     def test_sort(self):
         """Verify IDs can be sorted."""
@@ -117,6 +140,19 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('req1', self.id1.short)
         self.assertEqual('tst2', self.id2.short)
         self.assertEqual('sys3', self.id3.short)
+
+    def test_stamp(self):
+        """Verify stamps are stored correctly."""
+        self.assertEqual('abc123', self.id4.stamp)
+        self.assertEqual('abc123', ID(self.id4).stamp)
+        self.assertEqual('def456', ID(self.id4, stamp='def456').stamp)
+        self.assertEqual(True, ID({'REQ001': 1}).stamp)
+        self.assertEqual(True, ID("REQ001:1").stamp)
+
+    def test_text(self):
+        """Verify IDs can be converted to text."""
+        self.assertEqual("REQ001", self.id1.text)
+        self.assertEqual("REQ001:abc123", self.id4.text)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904
@@ -321,6 +357,61 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(level, self.level_1_2)
         level += 1
         self.assertNotEqual(level, self.level_1_2)
+
+
+class TestStamp(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the Stamp class."""  # pylint: disable=C0103,W0212
+
+    def setUp(self):
+        self.stamp1 = Stamp('abc123')
+        self.stamp2 = Stamp("Hello, world!", 42, False)
+        self.stamp3 = Stamp(True)
+        self.stamp4 = Stamp(False)
+        self.stamp5 = Stamp()
+
+    def test_repr(self):
+        """Verify stamps can be represented."""
+        self.assertEqual("Stamp('abc123')", repr(self.stamp1))
+        self.assertEqual("Stamp('2645439971b8090da05c7403320afcfa')",
+                         repr(self.stamp2))
+        self.assertEqual("Stamp(True)", repr(self.stamp3))
+        self.assertEqual("Stamp(None)", repr(self.stamp4))
+        self.assertEqual("Stamp(None)", repr(self.stamp5))
+
+    def test_str(self):
+        """Verify stamps can be converted to strings."""
+        self.assertEqual('abc123', str(self.stamp1))
+        self.assertEqual('2645439971b8090da05c7403320afcfa', str(self.stamp2))
+        self.assertEqual('', str(self.stamp3))
+        self.assertEqual('', str(self.stamp4))
+        self.assertEqual('', str(self.stamp5))
+
+    def test_bool(self):
+        """Verify stamps can be converted to boolean."""
+        self.assertTrue(self.stamp1)
+        self.assertTrue(self.stamp2)
+        self.assertTrue(self.stamp3)
+        self.assertFalse(self.stamp4)
+        self.assertFalse(self.stamp5)
+
+    def test_eq(self):
+        """Verify stamps can be equated."""
+        self.assertEqual('abc123', self.stamp1)
+        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2)
+        self.assertEqual(True, self.stamp3)
+        self.assertEqual(None, self.stamp4)
+        self.assertNotEqual(self.stamp1, self.stamp2)
+        self.assertNotEqual(self.stamp3, self.stamp4)
+        self.assertEqual(self.stamp4, self.stamp5)
+
+    def test_yaml(self):
+        """Verify stamps can be converted to their YAML dump format."""
+        self.assertEqual('abc123', self.stamp1.yaml)
+        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2.yaml)
+        self.assertEqual(True, self.stamp3.yaml)
+        self.assertEqual(None, self.stamp4.yaml)
+        self.assertEqual(None, self.stamp5.yaml)
 
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904

@@ -50,6 +50,8 @@ def main(args=None):  # pylint: disable=R0915
     _link(subs, shared)
     _unlink(subs, shared)
     _edit(subs, shared)
+    _clear(subs, shared)
+    _review(subs, shared)
     _import(subs, shared)
     _export(subs, shared)
     _publish(subs, shared)
@@ -164,6 +166,32 @@ def _edit(subs, shared):
                        help="edit document as exported XLSX")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
+
+
+def _clear(subs, shared):
+    """Configure the `doorstop clear` subparser."""
+    info = "absolve items of their suspect link status"
+    sub = subs.add_parser('clear', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('label', help="item ID, document prefix, or 'all'")
+    group = sub.add_mutually_exclusive_group()
+    group.add_argument('-i', '--item', action='store_true',
+                       help="indicates the 'label' is an item ID")
+    group.add_argument('-d', '--document', action='store_true',
+                       help="indicates the 'label' is a document prefix")
+
+
+def _review(subs, shared):
+    """Configure the `doorstop review` subparser."""
+    info = "absolve items of their unreviewed status"
+    sub = subs.add_parser('review', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('label', help="item ID, document prefix, or 'all'")
+    group = sub.add_mutually_exclusive_group()
+    group.add_argument('-i', '--item', action='store_true',
+                       help="indicates the 'label' is an item ID")
+    group.add_argument('-d', '--document', action='store_true',
+                       help="indicates the 'label' is a document prefix")
 
 
 def _import(subs, shared):
