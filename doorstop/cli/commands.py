@@ -4,6 +4,7 @@ import os
 import time
 import logging
 
+import doorstop
 from doorstop import common
 from doorstop.cli import utilities
 from doorstop.core.builder import build
@@ -166,7 +167,7 @@ def run_edit(args, cwd, err, catch=True):
     return True
 
 
-def run_reorder(args, cwd, err, catch=True):
+def run_reorder(args, cwd, err, catch=True, _tree=None):
     """Process arguments and run the `doorstop reorder` subcommand.
 
     :param args: Namespace of CLI arguments
@@ -177,17 +178,19 @@ def run_reorder(args, cwd, err, catch=True):
     """
     reordered = False
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = _tree or build(cwd, root=args.project)
         document = tree.find_document(args.prefix)
         # automatically order
         if args.auto:
+            print("reordering {}...".format(document), flush=True)
             document.reorder(index=False)
             reordered = True
         # or, reorder from a previously updated index
-        elif document.index or args.auto:
+        elif document.index:
             relpath = os.path.relpath(document.index, cwd)
-            if utilities.ask("reorder from {}?".format(relpath)):
-                document.reorder()
+            if utilities.ask("reorder from '{}'?".format(relpath)):
+                print("reordering {}...".format(document), flush=True)
+                document.reorder(auto=not args.manual)
                 reordered = True
             else:
                 common.delete(document.index)
@@ -196,12 +199,12 @@ def run_reorder(args, cwd, err, catch=True):
             path = document.create_index()
             relpath = os.path.relpath(path, cwd)
             editor.edit(relpath, tool=args.tool)
-            get('reorder')(args, cwd, err, catch=False)
+            get('reorder')(args, cwd, err, catch=False, _tree=tree)
     if not success:
         return False
 
     if reordered:
-        print("reordered: {} ({})".format(document.prefix, document.relpath))
+        print("reordered: {}".format(document))
 
     return True
 
@@ -486,6 +489,7 @@ def _iter_items(args, cwd, err):
                 yield item
 
 
+# TODO: pass tree back to `doorstop import`
 def _export_import(args, cwd, err, document, ext):
     """Edit a document by calling export followed by import.
 
@@ -506,14 +510,14 @@ def _export_import(args, cwd, err, document, ext):
     editor.edit(path, tool=args.tool)
 
     # Import the file to the same document
-    if utilities.ask("import from {}?".format(path)):
+    if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
         get('import')(args, cwd, err, catch=False)
         common.delete(path)
     else:
         print("import canceled")
-        if utilities.ask("delete {}?".format(path), default='no'):
+        if utilities.ask("delete '{}'?".format(path), default='no'):
             common.delete(path)
         else:
             print("to manually import: doorstop import {0}".format(path))

@@ -66,6 +66,7 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
 
     # Launch the editor
     try:
+        logging.info("opening '{}'...".format(path))
         process = _call(args)
     except FileNotFoundError:
         raise DoorstopError("editor not found: {}".format(args[0]))

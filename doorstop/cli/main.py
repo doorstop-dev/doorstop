@@ -48,7 +48,7 @@ def main(args=None):  # pylint: disable=R0915
     _add(subs, shared)
     _remove(subs, shared)
     _edit(subs, shared)
-    _reorder_auto(subs, shared)
+    _reorder(subs, shared)
     _link(subs, shared)
     _unlink(subs, shared)
     _clear(subs, shared)
@@ -147,7 +147,7 @@ def _edit(subs, shared):
                      help="text editor to open the document item")
 
 
-def _reorder_auto(subs, shared):
+def _reorder(subs, shared):
     """Configure the `doorstop reorder` subparser."""
     info = "organize the outline structure of a document"
     sub = subs.add_parser('reorder', description=info.capitalize() + '.',
@@ -155,7 +155,9 @@ def _reorder_auto(subs, shared):
     sub.add_argument('prefix', help="prefix of document to reorder")
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-a', '--auto', action='store_true',
-                       help="automatically reorder the items")
+                       help="only automatically reorder the items")
+    group.add_argument('-m', '--manual', action='store_true',
+                       help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document index")
     # TODO: clean up case on all CLI metavars/labels

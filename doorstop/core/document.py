@@ -349,10 +349,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         items = items or self.items
         keep = self.find_item(keep) if keep else None
-        logging.info("reordering {}...".format(self))
         if index and self.index:
+            logging.info("reordering {} from index...".format(self))
             self._reorder_index(items, self.index)
         if auto:
+            logging.info("reordering {} automatically...".format(self))
             self._reorder_auto(items, start=start, keep=keep)
 
     @staticmethod
@@ -439,6 +440,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def create_index(self):
         path = os.path.join(self.path, Document.INDEX)
+        logging.info("creating index...".format(path))
         common.write_lines(self._index(self.items), path)
         return path
 
