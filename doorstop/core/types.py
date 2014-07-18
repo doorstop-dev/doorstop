@@ -3,6 +3,7 @@
 import os
 import re
 import textwrap
+import hashlib
 import logging
 
 import yaml
@@ -61,29 +62,50 @@ class ID(object):
 
     UNKNOWN_MESSAGE = "no{k} item with ID: {i}"  # k='parent'|'child'|'', i=ID
 
-    def __new__(cls, *values):
-        if values and isinstance(values[0], ID):
-            return values[0]
+    def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
+        if args and isinstance(args[0], ID):
+            return args[0]
         else:
             return super().__new__(cls)
 
-    def __init__(self, *values):
-        """Initialize an ID using a string or set of parts.
+    def __init__(self, *values, stamp=None):
+        """Initialize an ID using a string, dictionary, or set of parts.
 
         Option 1:
 
-        :param *values: string representation of ID
+        :param *values: identifier + optional stamp ("id:stamp")
+        :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 2:
 
+        :param *values: {identifier: stamp}
+        :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
+
+        Option 3:
+
         :param *values: prefix, separator, number, digit count
+        param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         """
+        if values and isinstance(values[0], ID):
+            self.stamp = stamp or values[0].stamp
+            return
+        self.stamp = stamp or Stamp()
         # Join values
         if len(values) == 0:
             self.value = ""
         elif len(values) == 1:
-            self.value = str(values[0])
+            value = values[0]
+            if isinstance(value, str) and ':' in value:
+                # split identifier:stamp into a dictionary
+                pair = value.rsplit(':', 1)
+                value = {pair[0]: pair[1]}
+            if isinstance(value, dict):
+                pair = list(value.items())[0]
+                self.value = str(pair[0])
+                self.stamp = self.stamp or Stamp(pair[1])
+            else:
+                self.value = str(value)
         elif len(values) == 4:
             self.value = ID.join_id(*values)
         else:
@@ -100,7 +122,10 @@ class ID(object):
             self._exc = None
 
     def __repr__(self):
-        return "ID('{}')".format(self.value)
+        if self.stamp:
+            return "ID('{}', stamp='{}')".format(self.value, self.stamp)
+        else:
+            return "ID('{}')".format(self.value)
 
     def __str__(self):
         return self.value
@@ -142,6 +167,14 @@ class ID(object):
         """Get the ID's number."""
         self.check()
         return self._number
+
+    @property
+    def text(self):
+        """Convert the ID and stamp to a single string."""
+        if self.stamp:
+            return "{}:{}".format(self.value, self.stamp)
+        else:
+            return "{}".format(self.value)
 
     def check(self):
         """Verify an ID is valid."""
@@ -186,7 +219,7 @@ class ID(object):
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-class Literal(str):  # pylint: disable=R0904
+class _Literal(str):  # pylint: disable=R0904
 
     """Custom type for text which should be dumped in the literal style."""
 
@@ -196,7 +229,7 @@ class Literal(str):  # pylint: disable=R0904
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|' if data else '')
 
-yaml.add_representer(Literal, Literal.representer)
+yaml.add_representer(_Literal, _Literal.representer)
 
 
 class Text(str):  # pylint: disable=R0904
@@ -229,7 +262,7 @@ class Text(str):  # pylint: disable=R0904
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        return Literal(Text.wrap(Text.sbd(str(text), end=end)))
+        return _Literal(Text.wrap(Text.sbd(str(text), end=end)))
 
     # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
     RE_SENTENCE_BOUNDARIES = re.compile(r"""
@@ -545,6 +578,68 @@ class Level(object):
         return Level(self.value)
 
 
+class Stamp(object):
+
+    """Hashed content for change tracking.
+
+    :param *values: one of the following:
+
+        - objects to hash as strings
+        - existing string stamp
+        - `True` - manually-confirmed matching hash, to be replaced later
+        - `False` | `None` | (nothing) - manually-confirmed mismatching hash
+
+    """
+
+    def __init__(self, *values):
+        if not values:
+            self.value = None
+            return
+        if len(values) == 1:
+            value = values[0]
+            if to_bool(value):
+                self.value = True
+                return
+            if not value:
+                self.value = None
+                return
+            if isinstance(value, str):
+                self.value = value
+                return
+        self.value = self.digest(*values)
+
+    def __repr__(self):
+        return "Stamp({})".format(repr(self.value))
+
+    def __str__(self):
+        if isinstance(self.value, str):
+            return self.value
+        else:
+            return ''
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __ne__(self, other):
+        return not self == other
+
+    @property
+    def yaml(self):
+        """Get the value to be used in YAML dumping."""
+        return self.value
+
+    @staticmethod
+    def digest(*values):
+        """Hash the values for later comparison."""
+        md5 = hashlib.md5()
+        for value in values:
+            md5.update(str(value).encode())
+        return md5.hexdigest()
+
+
 def to_bool(obj):
     """Convert a boolean-like object.
 
@@ -562,7 +657,7 @@ def to_bool(obj):
 
     """
     if isinstance(obj, str):
-        return obj.lower().strip() in ('yes', 'true', 'enabled')
+        return obj.lower().strip() in ('yes', 'true', 'enabled', '1')
     else:
         return bool(obj)
 
@@ -603,10 +698,10 @@ def iter_items(obj):
         logging.debug("iterating over document...")
         return (i for i in obj.items if i.active)
     try:
-        # an iterable
+        # an iterable (of items)
         logging.debug("iterating over document-like object...")
         return iter(obj)
     except TypeError:
-        # an item
+        # assume an item
         logging.debug("iterating over an item (in a container)...")
         return [obj]

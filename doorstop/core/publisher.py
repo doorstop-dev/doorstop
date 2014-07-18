@@ -6,8 +6,7 @@ import logging
 
 import markdown
 
-from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.base import write_lines
+from doorstop.common import DoorstopError, create_dirname, write_lines
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 

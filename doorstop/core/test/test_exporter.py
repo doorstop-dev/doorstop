@@ -87,9 +87,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
                     "  derived: false" + '\n'
                     "  level: 1.1.0" + '\n'
                     "  links:" + '\n'
-                    "  - sys3" + '\n'
+                    "  - sys3: null" + '\n'
                     "  normative: false" + '\n'
                     "  ref: ''" + '\n'
+                    "  reviewed: null" + '\n'
                     "  text: |" + '\n' +
                     "    Heading" + '\n\n')
         # Act

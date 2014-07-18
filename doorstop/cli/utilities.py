@@ -39,11 +39,11 @@ def configure_logging(verbosity=0):
     if verbosity == 0:
         level = settings.DEFAULT_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
-        verbose_format = settings.VERBOSE_LOGGING_FORMAT
+        verbose_format = settings.LEVELED_LOGGING_FORMAT
     elif verbosity == 1:
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
-        verbose_format = settings.VERBOSE_LOGGING_FORMAT
+        verbose_format = settings.LEVELED_LOGGING_FORMAT
     elif verbosity == 2:
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
@@ -55,9 +55,10 @@ def configure_logging(verbosity=0):
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
-    logging.basicConfig(level=level)
-    formatter = common.WarningFormatter(default_format, verbose_format)
-    logging.root.handlers[0].setFormatter(formatter)
+    if not logging.root.handlers:  # pragma: no cover (manual test)
+        logging.basicConfig(level=level)
+        formatter = common.WarningFormatter(default_format, verbose_format)
+        logging.root.handlers[0].setFormatter(formatter)
 
     # Warn about excessive verbosity
     if verbosity > common.MAX_VERBOSITY:

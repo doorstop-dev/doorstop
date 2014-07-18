@@ -2,12 +2,13 @@ active: true
 derived: false
 level: 1.3
 links:
-- REQ003
-- REQ011
-- REQ012
-- REQ013
+- REQ003: 64964eaf0252a2fc0bf1509f1bcd4b09
+- REQ011: e58a22974b6610a0698866fce6c1ad14
+- REQ012: 456cf6a9040c790588ca8c78e1ed350f
+- REQ013: 349b2ab15cc29256da564fd7b4fac3a4
 normative: true
 ref: ''
+reviewed: 9e61ea88ad1b63819610dcdce6efe4e5
 text: |
   **Removing Items and Links**
 
