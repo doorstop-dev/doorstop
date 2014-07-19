@@ -207,6 +207,9 @@ class TestReorder(unittest.TestCase):  # pylint: disable=R0904
         cls.prefix = 'tut'
         cls.path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
 
+    def tearDown(self):
+        common.delete(self.path)
+
     @patch('doorstop.core.editor.launch')
     @patch('builtins.input', Mock(return_value='yes'))
     def test_reorder_document_yes(self, mock_launch):
@@ -239,7 +242,21 @@ class TestReorder(unittest.TestCase):  # pylint: disable=R0904
         mock_reorder_auto.assert_never_called()
         self.assertFalse(os.path.exists(self.path))
 
+    @patch('builtins.input', Mock(return_value='yes'))
     def test_reorder_document_error(self):
+        """Verify 'doorstop reorder' can handle invalid YAML."""
+
+        def bad_yaml_edit(path, **_):
+            """Simulate adding invalid YAML to the index."""
+            with open(path, 'w') as stream:
+                stream.write("%bad")
+
+        with patch('doorstop.core.editor.launch', bad_yaml_edit):
+            self.assertRaises(SystemExit, main, ['reorder', self.prefix])
+
+        self.assertTrue(os.path.exists(self.path))
+
+    def test_reorder_document_unknown(self):
         """Verify 'doorstop reorder' returns an error on an unknown prefix."""
         self.assertRaises(SystemExit, main, ['reorder', 'FAKE'])
 
