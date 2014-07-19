@@ -395,6 +395,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             mock_item = MagicMock()
             if identifier == 'bb':
                 mock_item.level = Level('3.2')
+            elif identifier == 'bab':
+                raise DoorstopError("unknown ID: bab")
             mock_item.id = identifier
             mock_items.append(mock_item)
             return mock_item
@@ -408,14 +410,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     {'b': [
                         {'ba': [
                             {'baa': None},
-                            {'bab': None}]},
+                            {'bab': None},
+                            {'bac': None}]},
                         {'bb': None}]},
                     {'c': None}]}
         expected = [Level('2'),
                     Level('3.0'),
                     Level('3.1.0'),
                     Level('3.1.1'),
-                    Level('3.1.2'),
+                    Level('3.1.3'),
                     Level('3.2'),
                     Level('4')]
 

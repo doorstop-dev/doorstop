@@ -420,18 +420,25 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
             # Get the item and subsection
             identifier = list(section.keys())[0]
-            item = document.find_item(identifier)
+            try:
+                item = document.find_item(identifier)
+            except DoorstopError as exc:
+                logging.debug(exc)
+                item = None
             subsection = section[identifier]
 
             # An item is a header if it has a subsection
             level.heading = bool(subsection)
 
             # Apply the new level
-            if item.level == level:
+            if item is None:
+                logging.info("({}): {}".format(identifier, level))
+            elif item.level == level:
                 logging.info("{}: {}".format(item, level))
             else:
                 logging.info("{}: {} to {}".format(item, item.level, level))
-            item.level = level
+            if item:
+                item.level = level
 
             # Process the heading's subsection
             if subsection:
