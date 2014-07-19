@@ -7,7 +7,7 @@ from collections import defaultdict
 import logging
 
 import yaml
-# TODO: track pylint update to resolve openpyxl false positives
+# TODO: track: openpyxl has false positives with pylint
 # pylint: disable=E1101,E1120,E1123
 import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401

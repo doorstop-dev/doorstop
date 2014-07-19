@@ -146,7 +146,11 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        last = sorted(os.listdir(TUTORIAL))[-1]
+        last = None
+        for last in sorted(os.listdir(TUTORIAL), reverse=True):
+            if "index" not in last:
+                break
+        assert last
         number = int(last.replace('TUT', '').replace('.yml', '')) + 1
         filename = "TUT{}.yml".format(str(number).zfill(3))
         cls.path = os.path.join(TUTORIAL, filename)
@@ -191,6 +195,123 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
     def test_remove_error(self):
         """Verify 'doorstop remove' returns an error on unknown item IDs."""
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestReorder(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop reorder' command."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.prefix = 'tut'
+        cls.path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
+
+    def tearDown(self):
+        common.delete(self.path)
+
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='yes'))
+    def test_reorder_document_yes(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (yes)."""
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertFalse(os.path.exists(self.path))
+
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_reorder_document_no(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (no)."""
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertFalse(os.path.exists(self.path))
+
+    @patch('doorstop.core.editor.launch')
+    def test_reorder_document_auto(self, mock_launch):
+        """Verify 'doorstop reorder' can be called with a document (auto)."""
+        self.assertIs(None, main(['reorder', self.prefix, '--auto']))
+        mock_launch.assert_never_called()
+
+    @patch('doorstop.core.document.Document._reorder_automatic')
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
+        """Verify 'doorstop reorder' can be called with a document (manual)."""
+        self.assertIs(None, main(['reorder', self.prefix, '--manual']))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_reorder_auto.assert_never_called()
+        self.assertFalse(os.path.exists(self.path))
+
+    @patch('builtins.input', Mock(return_value='yes'))
+    def test_reorder_document_error(self):
+        """Verify 'doorstop reorder' can handle invalid YAML."""
+
+        def bad_yaml_edit(path, **_):
+            """Simulate adding invalid YAML to the index."""
+            with open(path, 'w') as stream:
+                stream.write("%bad")
+
+        with patch('doorstop.core.editor.launch', bad_yaml_edit):
+            self.assertRaises(SystemExit, main, ['reorder', self.prefix])
+
+        self.assertTrue(os.path.exists(self.path))
+
+    def test_reorder_document_unknown(self):
+        """Verify 'doorstop reorder' returns an error on an unknown prefix."""
+        self.assertRaises(SystemExit, main, ['reorder', 'FAKE'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestEdit(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop edit' command."""
+
+    @patch('doorstop.core.editor.launch')
+    def test_edit_item(self, mock_launch):
+        """Verify 'doorstop edit' can be called with an item."""
+        self.assertIs(None, main(['edit', 'tut2']))
+        path = os.path.join(TUTORIAL, 'TUT002.yml')
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    def test_edit_item_unknown(self):
+        """Verify 'doorstop edit' returns an error on an unknown item."""
+        self.assertRaises(SystemExit, main, ['edit', '--item', 'FAKE001'])
+
+    @patch('time.time', Mock(return_value=123))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='yes'))
+    def test_edit_document_yes_yes(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (yes, yes)."""
+        path = "TUT-123.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    @patch('time.time', Mock(return_value=456))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_edit_document_no_no(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (no, no)."""
+        path = "TUT-456.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        os.remove(path)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    @patch('time.time', Mock(return_value=789))
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(side_effect=['no', 'yes']))
+    def test_edit_document_no_yes(self, mock_launch):
+        """Verify 'doorstop edit' can be called with a document (no, yes)."""
+        path = "TUT-789.yml"
+        self.assertIs(None, main(['edit', 'tut']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+
+    def test_edit_document_unknown(self):
+        """Verify 'doorstop edit' returns an error on an unknown document."""
+        self.assertRaises(SystemExit, main, ['edit', '--document', 'FAKE'])
+
+    def test_edit_error(self):
+        """Verify 'doorstop edit' returns an error with an unknown ID."""
+        self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -248,59 +369,6 @@ class TestUnlink(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop unlink' returns an error with an unknown parent."""
         self.assertRaises(SystemExit, main, ['unlink', 'tut3', 'unknown2'])
         self.assertRaises(SystemExit, main, ['unlink', 'tut3', 'req9999'])
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestEdit(unittest.TestCase):  # pylint: disable=R0904
-
-    """Integration tests for the 'doorstop edit' command."""
-
-    @patch('doorstop.core.editor.launch')
-    def test_edit_item(self, mock_launch):
-        """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2']))
-        path = os.path.join(TUTORIAL, 'TUT002.yml')
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
-
-    def test_edit_item_unknown(self):
-        """Verify 'doorstop edit' returns an error on an unknown item."""
-        self.assertRaises(SystemExit, main, ['edit', '--item', 'FAKE001'])
-
-    @patch('time.time', Mock(return_value=123))
-    @patch('doorstop.core.editor.launch')
-    @patch('builtins.input', Mock(return_value='yes'))
-    def test_edit_document_yes_yes(self, mock_launch):
-        """Verify 'doorstop edit' can be called with a document (yes, yes)."""
-        path = "TUT-123.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
-
-    @patch('time.time', Mock(return_value=456))
-    @patch('doorstop.core.editor.launch')
-    @patch('builtins.input', Mock(return_value='no'))
-    def test_edit_document_no_no(self, mock_launch):
-        """Verify 'doorstop edit' can be called with a document (no, no)."""
-        path = "TUT-456.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        os.remove(path)
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
-
-    @patch('time.time', Mock(return_value=789))
-    @patch('doorstop.core.editor.launch')
-    @patch('builtins.input', Mock(side_effect=['no', 'yes']))
-    def test_edit_document_no_yes(self, mock_launch):
-        """Verify 'doorstop edit' can be called with a document (no, yes)."""
-        path = "TUT-789.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
-
-    def test_edit_document_unknown(self):
-        """Verify 'doorstop edit' returns an error on an unknown document."""
-        self.assertRaises(SystemExit, main, ['edit', '--document', 'FAKE'])
-
-    def test_edit_error(self):
-        """Verify 'doorstop edit' returns an error with an unknown ID."""
-        self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

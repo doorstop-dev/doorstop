@@ -21,6 +21,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
+    INDEX = 'index.yml'
 
     DEFAULT_PREFIX = Prefix('REQ')
     DEFAULT_SEP = ''
@@ -280,6 +281,27 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Indicate the document should be skipped."""
         return os.path.isfile(os.path.join(self.path, Document.SKIP))
 
+    @property
+    def index(self):
+        """Get the path to the document's index if it exists else `None`."""
+        path = os.path.join(self.path, Document.INDEX)
+        if os.path.exists(path):
+            return path
+
+    @index.setter
+    def index(self, value):
+        """Create or update the document's index."""
+        if value:
+            path = os.path.join(self.path, Document.INDEX)
+            logging.info("creating {} index...".format(self))
+            common.write_lines(self._lines_index(self.items), path)
+
+    @index.deleter
+    def index(self):
+        """Delete the document's index if it exists."""
+        logging.info("deleting {} index...".format(self))
+        common.delete(self.index)
+
     # actions ################################################################
 
     @clear_item_cache
@@ -331,22 +353,112 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
-    def reorder(self, items=None, start=None, keep=None):
+    def reorder(self, index=True, auto=True, start=None, keep=None,
+                _items=None):
         """Reorder a document's items.
 
-        :param items: items to reorder (None = reorder instance items)
+        Two methods are using to create the outline order:
+
+        - manual: specify the order using an updated index (`index=True`)
+        - automatic: shift duplicate levels and compress gaps (`auto=True`)
+
+        :param index: enable manual ordering using the index (if one exists)
+
+        :param auto: enable automatic ordering (run after manual ordering)
         :param start: level to start numbering (None = use current start)
         :param keep: item or ID to keep over duplicates
 
         """
-        items = items or self.items
+        items = _items or self.items
         keep = self.find_item(keep) if keep else None
-        logging.info("reordering {}...".format(self))
-        self._reorder(items, start=start, keep=keep)
+        # Reorder manually
+        if index and self.index:
+            logging.info("reordering {} from index...".format(self))
+            self._reorder_from_index(self, self.index)
+            del self.index
+        # Reorder automatically
+        if auto:
+            logging.info("reordering {} automatically...".format(self))
+            self._reorder_automatic(items, start=start, keep=keep)
 
     @staticmethod
-    def _reorder(items, start=None, keep=None):
-        """Reorder a document's items.
+    def _lines_index(items):
+        """Generate (pseudo) YAML lines for the document index."""
+        yield '#' * settings.MAX_LINE_LENGTH
+        yield '# THIS IS A TEMPORARILY GENERATED FILE SHOWING THE ITEM OUTLINE'
+        yield '# IT WILL BE DELETED AFTER SUCCESSFULLY REORDERING THE ITEMS'
+        yield '# CHANGES TO ITEM LEVELS WILL BE REFLECT IN THE ITEM FILES'
+        yield '#' * settings.MAX_LINE_LENGTH
+        yield ''
+        yield "initial: {}".format(items[0].level if items else 1.0)
+        yield "outline:"
+        for item in items:
+            space = "    " * (item.depth - 1)
+            comment = item.text.replace('\n', ' ') or item.ref
+            line = space + "- {i}: # {c}".format(i=item.id, c=comment)
+            if len(line) > settings.MAX_LINE_LENGTH:
+                line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
+            yield line
+
+    @staticmethod
+    def _reorder_from_index(document, path):
+        """Reorder a document's item from the index."""
+        # Load and parse index
+        text = common.read_text(path)
+        data = common.load_yaml(text, path)
+        # Read updated values
+        initial = data.get('initial', 1.0)
+        outline = data.get('outline', [])
+        # Update levels
+        level = Level(initial)
+        Document._reorder_section(outline, level, document)
+
+    @staticmethod
+    def _reorder_section(section, level, document):
+        """Recursive function to reorder a section of an outline.
+
+        :param section: recursive `list` of `dict` loaded from document index
+        :param level: current :class:`~doorstop.core.types.Level`
+        :param document: :class:`~doorstop.core.document.Document` to order
+
+        """
+        if isinstance(section, dict):  # a section
+
+            # Get the item and subsection
+            identifier = list(section.keys())[0]
+            try:
+                item = document.find_item(identifier)
+            except DoorstopError as exc:
+                logging.debug(exc)
+                item = None
+            subsection = section[identifier]
+
+            # An item is a header if it has a subsection
+            level.heading = bool(subsection)
+
+            # Apply the new level
+            if item is None:
+                logging.info("({}): {}".format(identifier, level))
+            elif item.level == level:
+                logging.info("{}: {}".format(item, level))
+            else:
+                logging.info("{}: {} to {}".format(item, item.level, level))
+            if item:
+                item.level = level
+
+            # Process the heading's subsection
+            if subsection:
+                Document._reorder_section(subsection, level >> 1, document)
+
+        elif isinstance(section, list):  # a list of sections
+
+            # Process each subsection
+            for index, subsection in enumerate(section):
+                Document._reorder_section(subsection, level + index, document)
+
+    @staticmethod
+    def _reorder_automatic(items, start=None, keep=None):
+        """Reorder a document's items automatically.
 
         :param items: items to reorder
         :param start: level to start numbering (None = use current start)
@@ -458,7 +570,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             return
         # Reorder or check item levels
         if settings.REORDER:
-            self.reorder(items=items)
+            self.reorder(_items=items)
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
         # Check each item
