@@ -38,6 +38,11 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify an item cannot be initialized from an invalid path."""
         self.assertRaises(DoorstopError, Item, 'not/a/path')
 
+    def test_object_references(self):
+        """Verify a standalone item does not have object references."""
+        self.assertIs(None, self.item.document)
+        self.assertIs(None, self.item.tree)
+
     def test_load_empty(self):
         """Verify loading calls read."""
         self.item.load()
@@ -325,11 +330,6 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         """Verify extended attribute access can set standard properties."""
         self.item.set('text', "extended access")
         self.assertEqual("extended access", self.item.text)
-
-    def test_object_references_standalone(self):
-        """Verify a standalone item does not have object references."""
-        self.assertIs(None, self.item.document)
-        self.assertIs(None, self.item.tree)
 
     @patch('doorstop.core.editor.launch')
     def test_edit(self, mock_launch):

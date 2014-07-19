@@ -90,7 +90,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
-            ['REQ001', '1.2.3', 'Hello, world!\n', '', 'SYS001\nSYS002:abc123', True, False, True, ''],
+            ['REQ001', '1.2.3', 'The foo shall bar all night long!\n', '', 'SYS001\nSYS002:abc123', True, False, True, ''],
             ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123', 'REQ001', True, False, True, ''],
             ['REQ004', '1.6', 'Hello, world!\n', '', '', True, False, True, ''],
             ['REQ002', '2.1', 'Hello, world!\n', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
@@ -151,7 +151,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
-            ['REQ001', '1.2.3', 'Hello, world!\n', None, 'SYS001\nSYS002:abc123', True, False, True, None],
+            ['REQ001', '1.2.3', 'The foo shall bar all night long!\n', None, 'SYS001\nSYS002:abc123', True, False, True, None],
             ['REQ003', '1.4', 'Unicode: -40° ±1%\n', 'REF''123', 'REQ001', True, False, True, None],
             ['REQ004', '1.6', 'Hello, world!\n', None, None, True, False, True, None],
             ['REQ002', '2.1', 'Hello, world!\n', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],

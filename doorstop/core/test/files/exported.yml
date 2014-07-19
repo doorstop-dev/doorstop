@@ -9,7 +9,7 @@ REQ001:
   ref: ''
   reviewed: null
   text: |
-    Hello, world!
+    The foo shall bar all night long!
 
 REQ003:
   active: true

@@ -302,7 +302,7 @@ class Text(str):  # pylint: disable=R0904
             return ''
 
     @staticmethod
-    def wrap(text, width=settings.MAX_LINE_LENTH):
+    def wrap(text, width=settings.MAX_LINE_LENGTH):
         r"""Wrap lines of text to the maximum line length.
 
         >>> Text.wrap("Hello, world!", 9)
