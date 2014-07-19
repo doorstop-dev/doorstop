@@ -176,9 +176,14 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
 
     """
     reordered = False
+
     with utilities.capture(catch=catch) as success:
         tree = _tree or build(cwd, root=args.project)
         document = tree.find_document(args.prefix)
+    if not success:
+        return False
+
+    with utilities.capture(catch=catch) as success:
         # automatically order
         if args.auto:
             print("reordering {}...".format(document), flush=True)
@@ -200,6 +205,7 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
             editor.edit(relpath, tool=args.tool)
             get('reorder')(args, cwd, err, catch=False, _tree=tree)
     if not success:
+        print("after fixing the error: doorstop reorder {}".format(document))
         return False
 
     if reordered:
