@@ -1,5 +1,6 @@
 """Command functions."""
 
+import os
 import time
 import logging
 
@@ -128,6 +129,91 @@ def run_remove(args, cwd, _, catch=True):
     return True
 
 
+def run_edit(args, cwd, err, catch=True):
+    """Process arguments and run the `doorstop edit` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    item = document = None
+    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
+
+    with utilities.capture(catch=catch) as success:
+        tree = build(cwd, root=args.project)
+        # find item or document
+        if not args.document:
+            try:
+                item = tree.find_item(args.label)
+            except common.DoorstopError as exc:
+                if args.item:
+                    raise exc from None
+        if not item:
+            document = tree.find_document(args.label)
+        # edit item or document
+        if item:
+            item.edit(tool=args.tool)
+        else:
+            _export_import(args, cwd, err, document, ext)
+    if not success:
+        return False
+
+    if item:
+        print("opened item: {} ({})".format(item.id, item.relpath))
+
+    return True
+
+
+def run_reorder(args, cwd, err, catch=True, _tree=None):
+    """Process arguments and run the `doorstop reorder` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param err: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    reordered = False
+
+    with utilities.capture(catch=catch) as success:
+        tree = _tree or build(cwd, root=args.project)
+        document = tree.find_document(args.prefix)
+    if not success:
+        return False
+
+    with utilities.capture(catch=catch) as success:
+        # automatically order
+        if args.auto:
+            print("reordering {}...".format(document), flush=True)
+            document.reorder(index=False)
+            reordered = True
+        # or, reorder from a previously updated index
+        elif document.index:
+            relpath = os.path.relpath(document.index, cwd)
+            if utilities.ask("reorder from '{}'?".format(relpath)):
+                print("reordering {}...".format(document), flush=True)
+                document.reorder(auto=not args.manual)
+                reordered = True
+            else:
+                del document.index
+        # or, create a new index to update
+        else:
+            document.index = True  # create index
+            relpath = os.path.relpath(document.index, cwd)
+            editor.edit(relpath, tool=args.tool)
+            get('reorder')(args, cwd, err, catch=False, _tree=tree)
+    if not success:
+        print("after fixing the error: doorstop reorder {}".format(document))
+        return False
+
+    if reordered:
+        print("reordered: {}".format(document))
+
+    return True
+
+
 def run_link(args, cwd, _, catch=True):
     """Process arguments and run the `doorstop link` subcommand.
 
@@ -166,43 +252,6 @@ def run_unlink(args, cwd, _, catch=True):
 
     msg = "unlinked items: {} ({}) -> {} ({})"
     print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
-
-    return True
-
-
-def run_edit(args, cwd, err, catch=True):
-    """Process arguments and run the `doorstop edit` subcommand.
-
-    :param args: Namespace of CLI arguments
-    :param cwd: current working directory
-    :param err: function to call for CLI errors
-    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
-
-    """
-    item = document = None
-    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
-
-    with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
-        # find item or document
-        if not args.document:
-            try:
-                item = tree.find_item(args.label)
-            except common.DoorstopError as exc:
-                if args.item:
-                    raise exc from None
-        if not item:
-            document = tree.find_document(args.label)
-        # edit item or document
-        if item:
-            item.edit(tool=args.tool)
-        else:
-            _export_import(args, cwd, err, document, ext)
-    if not success:
-        return False
-
-    if item:
-        print("opened item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -445,6 +494,7 @@ def _iter_items(args, cwd, err):
                 yield item
 
 
+# TODO: pass tree back to `doorstop import`
 def _export_import(args, cwd, err, document, ext):
     """Edit a document by calling export followed by import.
 
@@ -465,14 +515,14 @@ def _export_import(args, cwd, err, document, ext):
     editor.edit(path, tool=args.tool)
 
     # Import the file to the same document
-    if utilities.ask("import from {}?".format(path)):
+    if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
         get('import')(args, cwd, err, catch=False)
         common.delete(path)
     else:
         print("import canceled")
-        if utilities.ask("delete {}?".format(path), default='no'):
+        if utilities.ask("delete '{}'?".format(path), default='no'):
             common.delete(path)
         else:
             print("to manually import: doorstop import {0}".format(path))

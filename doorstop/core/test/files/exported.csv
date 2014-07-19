@@ -1,5 +1,5 @@
 id,level,text,ref,links,active,derived,normative,reviewed
-REQ001,1.2.3,"Hello, world!
+REQ001,1.2.3,"The foo shall bar all night long!
 ",,"SYS001
 SYS002:abc123",True,False,True,
 REQ003,1.4,"Unicode: -40° ±1%

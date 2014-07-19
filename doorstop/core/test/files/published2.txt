@@ -1,6 +1,6 @@
 1.2.3   REQ001
 
-        Hello, world!
+        The foo shall bar all night long!
 
         Links: SYS001, SYS002
 
