@@ -4,7 +4,6 @@ import os
 import time
 import logging
 
-import doorstop
 from doorstop import common
 from doorstop.cli import utilities
 from doorstop.core.builder import build
@@ -193,11 +192,11 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
                 document.reorder(auto=not args.manual)
                 reordered = True
             else:
-                common.delete(document.index)
+                del document.index
         # or, create a new index to update
         else:
-            path = document.create_index()
-            relpath = os.path.relpath(path, cwd)
+            document.index = True  # create index
+            relpath = os.path.relpath(document.index, cwd)
             editor.edit(relpath, tool=args.tool)
             get('reorder')(args, cwd, err, catch=False, _tree=tree)
     if not success:

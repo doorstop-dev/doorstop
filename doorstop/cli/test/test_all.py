@@ -197,35 +197,47 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestReorder(unittest.TestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop reorder' command."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.prefix = 'tut'
+        cls.path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
 
     @patch('doorstop.core.editor.launch')
     @patch('builtins.input', Mock(return_value='yes'))
     def test_reorder_document_yes(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (yes)."""
-        path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
-        self.assertIs(None, main(['reorder', 'tut']))
-        mock_launch.assert_called_once_with(path, tool=None)
-        self.assertFalse(os.path.exists(path))
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
     @patch('builtins.input', Mock(return_value='no'))
     def test_reorder_document_no(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (no)."""
-        path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
-        self.assertIs(None, main(['reorder', 'tut']))
-        mock_launch.assert_called_once_with(path, tool=None)
-        self.assertFalse(os.path.exists(path))
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
     def test_reorder_document_auto(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (auto)."""
-        self.assertIs(None, main(['reorder', 'tut', '--auto']))
+        self.assertIs(None, main(['reorder', self.prefix, '--auto']))
         mock_launch.assert_never_called()
+
+    @patch('doorstop.core.document.Document._reorder_automatic')
+    @patch('doorstop.core.editor.launch')
+    @patch('builtins.input', Mock(return_value='no'))
+    def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
+        """Verify 'doorstop reorder' can be called with a document (manual)."""
+        self.assertIs(None, main(['reorder', self.prefix, '--manual']))
+        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_reorder_auto.assert_never_called()
+        self.assertFalse(os.path.exists(self.path))
 
     def test_reorder_document_error(self):
         """Verify 'doorstop reorder' returns an error on an unknown prefix."""

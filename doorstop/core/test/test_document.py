@@ -6,6 +6,7 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.types import Level
 from doorstop.core.document import Document
@@ -48,6 +49,10 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     def test_init_invalid(self):
         """Verify a document cannot be initialized from an invalid path."""
         self.assertRaises(DoorstopError, Document, 'not/a/path')
+
+    def test_object_references(self):
+        """Verify a standalone document does not have object references."""
+        self.assertIs(None, self.document.tree)
 
     def test_load_empty(self):
         """Verify loading calls read."""
@@ -190,11 +195,38 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Verify the next item number can be determined."""
         self.assertEqual(5, self.document.next)
 
-    def test_object_references(self):
-        """Verify a standalone document does not have object references."""
-        self.assertIs(None, self.document.tree)
+    def test_index_get(self):
+        """Verify a document's index can be retrieved."""
+        self.assertIs(None, self.document.index)
+        with patch('os.path.exists', Mock(return_value=True)):
+            path = os.path.join(self.document.path, self.document.INDEX)
+            self.assertEqual(path, self.document.index)
 
-    @patch('doorstop.core.document.Document._reorder_auto')
+    @patch('doorstop.common.write_lines')
+    @patch('doorstop.settings.MAX_LINE_LENGTH', 36)
+    def test_index_set(self, mock_write_lines):
+        """Verify an document's index can be created."""
+        lines = ['initial: 1.0',
+                 'outline:',
+                 '        - REQ001: # The foo shall...',
+                 '    - REQ003: # Unicode: -40° ±1%',
+                 '    - REQ004: # Hello, world!',
+                 '    - REQ002: # Hello, world!',
+                 '    - REQ2-001: # Hello, world!']
+        # Act
+        self.document.index = True  # create index
+        # Assert
+        gen, path = mock_write_lines.call_args[0]
+        self.assertListEqual(lines, list(gen))
+        self.assertEqual(os.path.join(FILES, 'index.yml'), path)
+
+    @patch('doorstop.common.delete')
+    def test_index_del(self, mock_delete):
+        """Verify a document's index can be deleted."""
+        del self.document.index
+        mock_delete.assert_called_once_with(None)
+
+    @patch('doorstop.core.document.Document._reorder_automatic')
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new, mock_reorder):
         """Verify an item can be added to a document."""
@@ -241,7 +273,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         item2 = self.document.add_item(reorder=False)
         self.assertIn(item2, self.document)
 
-    @patch('doorstop.core.document.Document._reorder_auto')
+    @patch('doorstop.core.document.Document._reorder_automatic')
     @patch('os.remove')
     def test_remove(self, mock_remove, mock_reorder):
         """Verify an item can be removed."""
@@ -270,8 +302,21 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(item, removed_item)
         mock_remove.assert_called_once_with(item.path)
 
-    def test_reorder(self):
+    @patch('doorstop.core.document.Document._reorder_automatic')
+    @patch('doorstop.core.document.Document._reorder_from_index')
+    def test_reorder(self, mock_index, mock_auto):
         """Verify items can be reordered."""
+        path = os.path.join(self.document.path, 'index.yml')
+        common.touch(path)
+        # Act
+        self.document.reorder()
+        # Assert
+        mock_index.assert_called_once_with(self.document, path)
+        mock_auto.assert_called_once_with(self.document.items,
+                                          start=None, keep=None)
+
+    def test_reorder_automatic(self):
+        """Verify items can be reordered automatically."""
         mock_items = [Mock(level=Level('2.3')),
                       Mock(level=Level('2.3')),
                       Mock(level=Level('2.7')),
@@ -292,11 +337,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('3.5'),
                     Level('4.0'),
                     Level('4.1')]
-        Document._reorder_auto(mock_items)
+        Document._reorder_automatic(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
-    def test_reorder_no_change(self):
+    def test_reorder_automatic_no_change(self):
         """Verify already ordered items can be reordered."""
         mock_items = [Mock(level=Level('1.1')),
                       Mock(level=Level('1.1.1.1')),
@@ -308,11 +353,11 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('2'),
                     Level('3'),
                     Level('4.1.1')]
-        Document._reorder_auto(mock_items)
+        Document._reorder_automatic(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
-    def test_reorder_with_start(self):
+    def test_reorder_automatic_with_start(self):
         """Verify items can be reordered with a given start."""
         mock_item = Mock(level=Level('2.3'))
         mock_items = [Mock(level=Level('2.2')),
@@ -337,7 +382,50 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                     Level('2.5'),
                     Level('3.0'),
                     Level('3.1')]
-        Document._reorder_auto(mock_items, start=(1, 2), keep=mock_item)
+        Document._reorder_automatic(mock_items, start=(1, 2), keep=mock_item)
+        actual = [item.level for item in mock_items]
+        self.assertListEqual(expected, actual)
+
+    def test_reorder_from_index(self):
+        """Verify items can be reordered from an index."""
+        mock_items = []
+
+        def mock_find_item(identifier):
+            """Return a mock item and store it."""
+            mock_item = MagicMock()
+            if identifier == 'bb':
+                mock_item.level = Level('3.2')
+            mock_item.id = identifier
+            mock_items.append(mock_item)
+            return mock_item
+
+        mock_document = Mock()
+        mock_document.find_item = mock_find_item
+
+        data = {'initial': 2.0,
+                'outline': [
+                    {'a': None},
+                    {'b': [
+                        {'ba': [
+                            {'baa': None},
+                            {'bab': None}]},
+                        {'bb': None}]},
+                    {'c': None}]}
+        expected = [Level('2'),
+                    Level('3.0'),
+                    Level('3.1.0'),
+                    Level('3.1.1'),
+                    Level('3.1.2'),
+                    Level('3.2'),
+                    Level('4')]
+
+        # Act
+        with patch('doorstop.common.read_text') as mock_read_text:
+            with patch('doorstop.common.load_yaml', Mock(return_value=data)):
+                Document._reorder_from_index(mock_document, 'mock_path')
+
+        # Assert
+        mock_read_text.assert_called_once_with('mock_path')
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
@@ -366,7 +454,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_get_issues.return_value = [DoorstopInfo('i')]
         with patch('doorstop.settings.REORDER', True):
             self.assertTrue(self.document.validate())
-        mock_reorder.assert_called_once_with(items=self.document.items)
+        mock_reorder.assert_called_once_with(_items=self.document.items)
         self.assertEqual(5, mock_get_issues.call_count)
 
     @patch('doorstop.core.item.Item.get_issues',
