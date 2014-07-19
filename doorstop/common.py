@@ -87,7 +87,7 @@ def load_yaml(text, path):
     # Load the YAML data
     try:
         data = yaml.load(text) or {}
-    except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
+    except yaml.error.YAMLError as exc:  # pylint: disable=E1101
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
     # Ensure data is a dictionary

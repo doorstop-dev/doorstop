@@ -299,7 +299,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @index.deleter
     def index(self):
         """Delete the document's index if it exists."""
-        logging.info("deleting {} index...".format)
+        logging.info("deleting {} index...".format(self))
         common.delete(self.index)
 
     # actions ################################################################

@@ -155,7 +155,7 @@ def _reorder(subs, shared):
     sub.add_argument('prefix', help="prefix of document to reorder")
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-a', '--auto', action='store_true',
-                       help="only automatically reorder the items")
+                       help="only perform automatic item reordering")
     group.add_argument('-m', '--manual', action='store_true',
                        help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
