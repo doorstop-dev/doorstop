@@ -206,7 +206,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.MAX_LINE_LENGTH', 36)
     def test_index_set(self, mock_write_lines):
         """Verify an document's index can be created."""
-        lines = ['initial: 1.0',
+        lines = ['initial: 1.2.3',
                  'outline:',
                  '        - REQ001: # The foo shall...',
                  '    - REQ003: # Unicode: -40° ±1%',
@@ -217,7 +217,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.index = True  # create index
         # Assert
         gen, path = mock_write_lines.call_args[0]
-        self.assertListEqual(lines, list(gen))
+        lines2 = list(gen)[6:]  # skip lines of info comments
+        self.assertListEqual(lines, lines2)
         self.assertEqual(os.path.join(FILES, 'index.yml'), path)
 
     @patch('doorstop.common.delete')
