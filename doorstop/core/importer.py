@@ -5,7 +5,7 @@ import logging
 import re
 import csv
 
-# TODO: track pylint update to resolve openpyxl false positives
+# TODO: track: openpyxl has false positives with pylint
 # pylint: disable=E1101
 import openpyxl  # pylint: disable=F0401
 from openpyxl import load_workbook  # pylint: disable=F0401
@@ -275,7 +275,6 @@ def _itemize(header, data, document, mapping=None):
             try:
                 item = add_item(document.prefix, identifier,
                                 attrs=attrs, document=document)
-                # TODO: clear suspect links
             except DoorstopError as exc:
                 logging.warning(exc)
 

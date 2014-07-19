@@ -10,9 +10,6 @@ import logging
 from doorstop.common import DoorstopError
 
 
-# TODO: add edit_document
-# TODO: add edit_item, refactor code from Tree.edit_item
-
 LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
 
 

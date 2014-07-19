@@ -384,7 +384,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @staticmethod
     def _lines_index(items):
         """Generate (pseudo) YAML lines for the document index."""
-        yield "initial: 1.0"  # TODO: get correct starting level
+        yield "initial: 1.0"
         yield "outline:"
         for item in items:
             space = "    " * (item.depth - 1)
@@ -420,7 +420,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
             # Get the item and subsection
             identifier = list(section.keys())[0]
-            item = document.find_item(identifier)  # TODO: handle bad IDs
+            item = document.find_item(identifier)
             subsection = section[identifier]
 
             # An item is a header if it has a subsection
