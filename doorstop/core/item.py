@@ -183,8 +183,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
-                    lenth = len(key) + 2 + len(value)
-                    if lenth > settings.MAX_LINE_LENTH or '\n' in value:
+                    length = len(key) + 2 + len(value)
+                    if length > settings.MAX_LINE_LENGTH or '\n' in value:
                         end = '\n' if value.endswith('\n') else ''
                         value = Text.save_text(value, end=end)
                     else:

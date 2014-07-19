@@ -47,9 +47,10 @@ def main(args=None):  # pylint: disable=R0915
     _delete(subs, shared)
     _add(subs, shared)
     _remove(subs, shared)
+    _edit(subs, shared)
+    _reorder(subs, shared)
     _link(subs, shared)
     _unlink(subs, shared)
-    _edit(subs, shared)
     _clear(subs, shared)
     _review(subs, shared)
     _import(subs, shared)
@@ -121,28 +122,6 @@ def _remove(subs, shared):
                      help="item ID to remove from its document")
 
 
-def _link(subs, shared):
-    """Configure the `doorstop link` subparser."""
-    info = "add a new link between two items"
-    sub = subs.add_parser('link', description=info.capitalize() + '.',
-                          help=info, **shared)
-    sub.add_argument('child',
-                     help="child item ID to link to the parent")
-    sub.add_argument('parent',
-                     help="parent item ID to link from the child")
-
-
-def _unlink(subs, shared):
-    """Configure the `doorstop unlink` subparser."""
-    info = "remove a link between two items"
-    sub = subs.add_parser('unlink', description=info.capitalize() + '.',
-                          help=info, **shared)
-    sub.add_argument('child',
-                     help="child item ID to unlink from parent")
-    sub.add_argument('parent',
-                     help="parent item ID child is linked to")
-
-
 def _edit(subs, shared):
     """Configure the `doorstop edit` subparser."""
     info = "open an existing item or document for editing"
@@ -166,6 +145,44 @@ def _edit(subs, shared):
                        help="edit document as exported XLSX")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document item")
+
+
+def _reorder(subs, shared):
+    """Configure the `doorstop reorder` subparser."""
+    info = "organize the outline structure of a document"
+    sub = subs.add_parser('reorder', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('prefix', help="prefix of document to reorder")
+    group = sub.add_mutually_exclusive_group()
+    group.add_argument('-a', '--auto', action='store_true',
+                       help="only perform automatic item reordering")
+    group.add_argument('-m', '--manual', action='store_true',
+                       help="do not automatically reorder the items")
+    sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                     help="text editor to open the document index")
+    # TODO: clean up case on all CLI metavars/labels
+
+
+def _link(subs, shared):
+    """Configure the `doorstop link` subparser."""
+    info = "add a new link between two items"
+    sub = subs.add_parser('link', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('child',
+                     help="child item ID to link to the parent")
+    sub.add_argument('parent',
+                     help="parent item ID to link from the child")
+
+
+def _unlink(subs, shared):
+    """Configure the `doorstop unlink` subparser."""
+    info = "remove a link between two items"
+    sub = subs.add_parser('unlink', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('child',
+                     help="child item ID to unlink from parent")
+    sub.add_argument('parent',
+                     help="parent item ID child is linked to")
 
 
 def _clear(subs, shared):
