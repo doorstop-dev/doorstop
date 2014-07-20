@@ -353,32 +353,32 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.reorder()
         return item
 
-    def reorder(self, index=True, auto=True, start=None, keep=None,
+    def reorder(self, manual=True, automatic=True, start=None, keep=None,
                 _items=None):
         """Reorder a document's items.
 
         Two methods are using to create the outline order:
 
-        - manual: specify the order using an updated index (`index=True`)
-        - automatic: shift duplicate levels and compress gaps (`auto=True`)
+        - manual: specify the order using an updated index file
+        - automatic: shift duplicate levels and compress gaps
 
-        :param index: enable manual ordering using the index (if one exists)
+        :param manual: enable manual ordering using the index (if one exists)
 
-        :param auto: enable automatic ordering (run after manual ordering)
+        :param automatic: enable automatic ordering (after manual ordering)
         :param start: level to start numbering (None = use current start)
         :param keep: item or ID to keep over duplicates
 
         """
-        items = _items or self.items
-        keep = self.find_item(keep) if keep else None
         # Reorder manually
-        if index and self.index:
+        if manual and self.index:
             logging.info("reordering {} from index...".format(self))
             self._reorder_from_index(self, self.index)
             del self.index
         # Reorder automatically
-        if auto:
+        if automatic:
             logging.info("reordering {} automatically...".format(self))
+            items = _items or self.items
+            keep = self.find_item(keep) if keep else None
             self._reorder_automatic(items, start=start, keep=keep)
 
     @staticmethod

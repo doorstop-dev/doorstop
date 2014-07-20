@@ -187,14 +187,14 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
         # automatically order
         if args.auto:
             print("reordering {}...".format(document), flush=True)
-            document.reorder(index=False)
+            document.reorder(manual=False)
             reordered = True
         # or, reorder from a previously updated index
         elif document.index:
             relpath = os.path.relpath(document.index, cwd)
             if utilities.ask("reorder from '{}'?".format(relpath)):
                 print("reordering {}...".format(document), flush=True)
-                document.reorder(auto=not args.manual)
+                document.reorder(automatic=not args.manual)
                 reordered = True
             else:
                 del document.index
