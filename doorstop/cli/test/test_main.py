@@ -18,9 +18,15 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
     @patch('doorstop.cli.main.gui')
     def test_gui(self, mock_gui):
-        """Verify the main GUI function can be called."""
+        """Verify the GUI function can be called."""
         main.main(args=['--gui'])
         mock_gui.assert_called_once()
+
+    @patch('doorstop.cli.main.server')
+    def test_server(self, mock_server):
+        """Verify the server function can be called."""
+        main.main(args=['--serve'])
+        mock_server.assert_called_once()
 
     @patch('doorstop.cli.commands.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):

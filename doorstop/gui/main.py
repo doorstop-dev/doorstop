@@ -47,7 +47,7 @@ def main(args=None):
 
     # Run the program
     try:
-        success = _run(args, os.getcwd(), parser.error)
+        success = run(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
         logging.debug("program interrupted")
         success = False
@@ -76,7 +76,7 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, error):
+def run(args, cwd, error):
     """Start the GUI.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)

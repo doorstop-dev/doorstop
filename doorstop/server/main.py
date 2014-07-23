@@ -2,9 +2,12 @@
 
 import logging
 
-from bottle import get, post, request, run
+import bottle
+from bottle import get, post, request
 
 from doorstop import build, publisher
+
+tree = None
 
 
 @get('/')
@@ -85,8 +88,17 @@ def json_response(a_request):
         return a_request.content_type == 'application/json'
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.INFO)
+    run(None, None, None)
+
+
+def run(args, cwd, err):
+    global tree
     tree = build()
     tree.load()
-    run(host='localhost', port=8080, debug=True, reloader=True)
+    bottle.run(host='localhost', port=8080, debug=True, reloader=True)
+
+
+if __name__ == '__main__':
+    main()

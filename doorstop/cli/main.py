@@ -8,7 +8,8 @@ import argparse
 import logging
 
 from doorstop.cli import utilities, commands
-from doorstop.gui.main import _run as gui
+from doorstop.gui.main import run as gui
+from doorstop.server.main import run as server
 from doorstop import common
 
 
@@ -40,6 +41,8 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not validate child (reverse) links")
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the graphical user interface")
+    parser.add_argument('-s', '--serve', action='store_true',
+                        help="start a server")
 
     # Build sub-parsers
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -70,6 +73,9 @@ def main(args=None):  # pylint: disable=R0915
     if args.gui:
         logging.debug("launching GUI...")
         function = gui
+    elif args.serve:
+        logging.debug("launching server...")
+        function = server
     else:
         function = commands.get(args.command)
     try:

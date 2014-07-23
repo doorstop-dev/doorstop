@@ -93,6 +93,10 @@ doorstop: env
 gui: env
 	$(BIN)/doorstop-gui
 
+.PHONY: serve
+serve: env
+	$(BIN)/doorstop --serve
+
 # Documentation ##############################################################
 
 .PHONY: doc
