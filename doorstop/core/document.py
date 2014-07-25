@@ -166,10 +166,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _iter(self, reload=False):
         """Yield the document's items."""
         if self._itered and not reload:
-            logging.debug("iterating through previously loaded items...")
+            msg = "iterating document {}'s loaded items...".format(self)
+            logging.debug(msg)
             yield from self._items
             return
-        logging.debug("iterating through items in {}...".format(self.path))
+        logging.info("loading document {}'s items...".format(self))
         # Reload the document's item
         self._items = []
         for dirpath, dirnames, filenames in os.walk(self.path):
@@ -177,9 +178,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 path = os.path.join(dirpath, dirname, Document.CONFIG)
                 if os.path.exists(path):
                     path = os.path.dirname(path)
-                    msg = "found embedded document: {}".format(path)
-                    logging.debug(msg)
                     dirnames.remove(dirname)
+                    logging.debug("skipped embedded document: {}".format(path))
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
@@ -574,7 +574,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
         # Check each item
-        for item in self:
+        for item in items:
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
                                item.get_issues()):

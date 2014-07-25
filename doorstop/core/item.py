@@ -520,11 +520,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
+            logging.debug("reformatting item {}...".format(self))
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
-        logging.debug("getting issues against document: {}".format(document))
+        logging.debug("getting issues against document...")
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
@@ -553,7 +554,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
-        logging.debug("getting issues against tree: {}".format(tree))
+        logging.debug("getting issues against tree...")
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -587,8 +588,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
-        logging.debug("getting issues against both: {} & {}".format(document,
-                                                                    tree))
+        logging.debug("getting issues against document and tree...")
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(find_all=False)
@@ -695,7 +695,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     child_documents = property(find_child_documents)
 
-    def _find_child_objects(self, find_all=True):
+    def _find_child_objects(self, find_all=True):  # TODO: pass document and tree?
         """Get lists of child items and child documents.
 
         :param find_all: find all items (not just the first) before returning
@@ -710,6 +710,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             logging.warning("document and tree required to find children")
             return child_items, child_documents
         # Find child objects
+        logging.debug("finding item {}'s child objects...".format(self))
         for document2 in self.tree:
             if document2.parent == self.document.prefix:
                 child_documents.append(document2)

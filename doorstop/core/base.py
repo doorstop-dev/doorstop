@@ -9,6 +9,7 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop import settings
 
 
 def clear_document_cache(func):
@@ -17,12 +18,13 @@ def clear_document_cache(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to clear document cache after execution."""
         result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._document_cache.clear()  # pylint: disable=W0212
+        if settings.CACHE_DOCUMENTS:
+            try:
+                tree = self.tree  # document or item method was decorated
+            except AttributeError:
+                tree = self  # tree method was decorated
+            if tree:
+                tree._document_cache.clear()  # pylint: disable=W0212
         return result
     return wrapped
 
@@ -33,12 +35,13 @@ def clear_item_cache(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to clear item cache after execution."""
         result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._item_cache.clear()  # pylint: disable=W0212
+        if settings.CACHE_ITEMS:
+            try:
+                tree = self.tree  # document or item method was decorated
+            except AttributeError:
+                tree = self  # tree method was decorated
+            if tree:
+                tree._item_cache.clear()  # pylint: disable=W0212
         return result
     return wrapped
 

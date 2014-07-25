@@ -13,6 +13,7 @@ from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
+from doorstop import settings
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
@@ -131,7 +132,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             cannot yet be placed
 
         """
-        logging.debug("trying to add '{}'...".format(document))
+        logging.debug("trying to add {}...".format(document))
         if not self.document:  # tree is empty
 
             if document.parent:
@@ -354,10 +355,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             for document in self:
                 if document.prefix.lower() == prefix.lower():
                     logging.debug("found document: {}".format(document))
-                    self._document_cache[prefix] = document
+                    if settings.CACHE_DOCUMENTS:
+                        self._document_cache[prefix] = document
                     return document
             logging.debug("could not find document: {}".format(prefix))
-            self._document_cache[prefix] = None
+            if settings.CACHE_DOCUMENTS:
+                self._document_cache[prefix] = None
 
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
@@ -390,10 +393,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     pass  # item not found in that document
                 else:
                     logging.debug("found item: {}".format(item))
-                    self._item_cache[identifier] = item
+                    if settings.CACHE_ITEMS:
+                        self._item_cache[identifier] = item
                     return item
             logging.debug("could not find item: {}".format(identifier))
-            self._item_cache[identifier] = None
+            if settings.CACHE_ITEMS:
+                self._item_cache[identifier] = None
 
         raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
 
