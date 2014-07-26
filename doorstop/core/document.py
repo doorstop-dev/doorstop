@@ -7,7 +7,7 @@ import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import BaseValidatable
+from doorstop.core.base import cache_document, BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
@@ -71,6 +71,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return True
 
     @staticmethod
+    @cache_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
@@ -621,3 +622,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             item.delete()
         super().delete(self.config)
         common.delete(self.path)
+        if settings.CACHE_DOCUMENTS:
+            if self.tree:
+                self.tree._document_cache.clear()
+                logging.debug("cleared document cache")

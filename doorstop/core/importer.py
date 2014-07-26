@@ -14,7 +14,6 @@ from doorstop.common import DoorstopError, read_text, load_yaml
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
-from doorstop import settings
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
@@ -71,10 +70,7 @@ def create_document(prefix, path, parent=None, tree=None):
 
     # TODO: attempt to place unplaced documents?
 
-    # Cache and return the document
     logging.info("imported: {}".format(document))
-    if settings.CACHE_DOCUMENTS:
-        tree._document_cache[document.prefix] = document  # pylint: disable=W0212
     return document
 
 

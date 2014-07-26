@@ -168,6 +168,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                           FILES, ROOT,
                           prefix='DUPL')
 
+    @patch('doorstop.core.document.Document', MockDocument)
+    def test_new_cache(self):
+        """Verify a new documents are cached."""
+        mock_tree = Mock()
+        mock_tree._document_cache = {}
+        document = MockDocument.new(mock_tree,
+                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        self.assertEqual(document, mock_tree._document_cache[document.prefix])
+
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
         self.assertRaises(DoorstopError, Document, EMPTY)
@@ -507,6 +516,16 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(2, mock_common_delete.call_count)
         self.assertEqual(5, mock_item_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
+
+    @patch('doorstop.core.item.Item.delete', Mock())
+    @patch('doorstop.common.delete', Mock())
+    def test_delete_cache(self):
+        """Verify the cache is cleared when a document is deleted."""
+        self.document.tree = Mock()
+        self.document.tree._item_cache = {}
+        self.document.tree._document_cache = {}
+        self.document.delete()
+        self.assertEqual({}, self.document.tree._document_cache)
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):

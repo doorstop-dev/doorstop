@@ -353,7 +353,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 logging.debug("found cached unknown: {}".format(prefix))
         except KeyError:
             for document in self:
-                if document.prefix.lower() == prefix.lower():
+                if document.prefix == prefix:
                     logging.debug("found document: {}".format(document))
                     if settings.CACHE_DOCUMENTS:
                         self._document_cache[prefix] = document

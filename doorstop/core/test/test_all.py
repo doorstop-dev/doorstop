@@ -645,15 +645,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(item2, item)
 
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestCache(unittest.TestCase):  # pylint: disable=R0904
-
-    """Integration tests for `Document` and `Item` caching."""
-
-    pass  # TODO: add tests
-
-
 # helper functions ###########################################################
 
 

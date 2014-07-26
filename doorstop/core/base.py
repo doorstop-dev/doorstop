@@ -61,21 +61,6 @@ def cache_document(func):
     return wrapped
 
 
-def expunge_document(func):
-    """Decorator for methods that expunge the returned document from cache."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        """Wrapped method to expunge the returned document."""
-        document = func(self, *args, **kwargs) or self
-        # pylint: disable=W0212
-        if settings.CACHE_DOCUMENTS:
-            if document.tree:
-                document.tree._document_cache[document.prefix] = None
-                logging.debug("expunged document: {}".format(document))
-        return document
-    return wrapped
-
-
 class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     """Abstract Base Class for objects that can be validated."""
