@@ -4,11 +4,10 @@ import os
 import re
 import textwrap
 import hashlib
-import logging
-
 import yaml
 
 from doorstop.common import DoorstopError
+from doorstop.core import log
 from doorstop import settings
 
 
@@ -506,7 +505,7 @@ class Level(object):
             new = Level(1 if not n else n for n in self._parts)
         if new:
             msg = "minimum level reached, reseting: {} -> {}".format(old, new)
-            logging.warning(msg)
+            log.warning(msg)
             self._parts = list(new.value)
 
     @staticmethod
@@ -681,13 +680,13 @@ def iter_documents(obj, path, ext):
     """Get an iterator if documents from a tree or document-like object."""
     if is_tree(obj):
         # a tree
-        logging.debug("iterating over tree...")
+        log.debug("iterating over tree...")
         for document in obj.documents:
             path2 = os.path.join(path, document.prefix + ext)
             yield document, path2
     else:
         # assume a document-like object
-        logging.debug("iterating over document-like object...")
+        log.debug("iterating over document-like object...")
         yield obj, path
 
 
@@ -695,13 +694,13 @@ def iter_items(obj):
     """Get an iterator of items from from an item, list, or document."""
     if is_document(obj):
         # a document
-        logging.debug("iterating over document...")
+        log.debug("iterating over document...")
         return (i for i in obj.items if i.active)
     try:
         # an iterable (of items)
-        logging.debug("iterating over document-like object...")
+        log.debug("iterating over document-like object...")
         return iter(obj)
     except TypeError:
         # assume an item
-        logging.debug("iterating over an item (in a container)...")
+        log.debug("iterating over an item (in a container)...")
         return [obj]

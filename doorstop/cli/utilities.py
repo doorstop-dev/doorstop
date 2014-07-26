@@ -2,13 +2,12 @@
 
 import os
 import ast
-import logging
 from argparse import ArgumentTypeError
+import logging
 
 from doorstop import common
+from doorstop.cli import log
 from doorstop import settings
-
-log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 
 class capture(object):  # pylint: disable=R0903,C0103

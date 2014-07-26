@@ -5,9 +5,8 @@
 import os
 import sys
 import argparse
-import logging
 
-from doorstop.cli import utilities, commands
+from doorstop.cli import log, utilities, commands
 from doorstop.gui.main import _run as gui
 from doorstop import common
 
@@ -68,19 +67,19 @@ def main(args=None):  # pylint: disable=R0915
 
     # Run the program
     if args.gui:
-        logging.debug("launching GUI...")
+        log.debug("launching GUI...")
         function = gui
     else:
         function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
-        logging.debug("command cancelled")
+        log.debug("command cancelled")
         success = False
     if success:
-        logging.debug("command succeeded")
+        log.debug("command succeeded")
     else:
-        logging.debug("command failed")
+        log.debug("command failed")
         sys.exit(1)
 
 

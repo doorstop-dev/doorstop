@@ -7,11 +7,11 @@ import logging
 
 import yaml
 
+from doorstop import log
+
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 4
 MAX_VERBOSITY = 5
-
-log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 
 class DoorstopError(Exception):

@@ -2,10 +2,9 @@
 
 import os
 import time
-import logging
 
 from doorstop import common
-from doorstop.cli import utilities
+from doorstop.cli import log, utilities
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
 
@@ -13,10 +12,10 @@ from doorstop.core import editor, importer, exporter, publisher
 def get(name):
     """Get a command function by name."""
     if name:
-        logging.debug("running command '{}'...".format(name))
+        log.debug("running command '{}'...".format(name))
         return globals()['run_' + name]
     else:
-        logging.debug("launching main command...")
+        log.debug("launching main command...")
         return run
 
 

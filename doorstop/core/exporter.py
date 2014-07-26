@@ -4,7 +4,6 @@ import os
 import csv
 import datetime
 from collections import defaultdict
-import logging
 
 import yaml
 # TODO: track: openpyxl has false positives with pylint
@@ -13,6 +12,7 @@ import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
 from doorstop.common import DoorstopError, create_dirname, write_lines
+from doorstop.core import log
 from doorstop.core.types import iter_documents, iter_items
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
@@ -49,7 +49,7 @@ def export(obj, path, ext=None, **kwargs):
 
         # Export content to the specified path
         create_dirname(path2)
-        logging.info("exporting to {}...".format(path2))
+        log.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
             lines = export_lines(obj2, ext, **kwargs)
             write_lines(lines, path2)
@@ -59,10 +59,10 @@ def export(obj, path, ext=None, **kwargs):
     # Return the exported path
     if count:
         msg = "exported to {} file{}".format(count, 's' if count > 1 else '')
-        logging.info(msg)
+        log.info(msg)
         return path
     else:
-        logging.warning("nothing to export")
+        log.warning("nothing to export")
         return None
 
 
@@ -78,7 +78,7 @@ def export_lines(obj, ext='.yml', **kwargs):
 
     """
     gen = check(ext, get_lines_gen=True)
-    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    log.debug("yielding {} as lines of {}...".format(obj, ext))
     yield from gen(obj, **kwargs)
 
 
@@ -96,7 +96,7 @@ def export_file(obj, path, ext=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext, get_file_func=True)
-    logging.debug("converting {} to file format {}...".format(obj, ext))
+    log.debug("converting {} to file format {}...".format(obj, ext))
     return func(obj, path, **kwargs)
 
 
@@ -292,7 +292,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
             exc = DoorstopError(fmt.format("lines export", lines_exts))
             raise exc from None
         else:
-            logging.debug("found lines generator for: {}".format(ext))
+            log.debug("found lines generator for: {}".format(ext))
             return gen
 
     if get_file_func:
@@ -302,7 +302,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
             exc = DoorstopError(fmt.format("file export", file_exts))
             raise exc from None
         else:
-            logging.debug("found file creator for: {}".format(ext))
+            log.debug("found file creator for: {}".format(ext))
             return func
 
     if ext not in FORMAT:

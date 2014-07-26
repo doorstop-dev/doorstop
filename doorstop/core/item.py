@@ -2,10 +2,10 @@
 
 import os
 import re
-import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop.core import log
 from doorstop.core.base import BaseValidatable, cache_item, expunge_item
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
@@ -106,7 +106,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         filename = str(identifier) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
-        logging.debug("creating item file at {}...".format(path2))
+        log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root, document=document, tree=tree, auto=False)
@@ -120,7 +120,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Load the item's properties from its file."""
         if self._loaded and not reload:
             return
-        logging.debug("loading {}...".format(repr(self)))
+        log.debug("loading {}...".format(repr(self)))
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
@@ -152,7 +152,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def save(self):
         """Format and save the item's properties to its file."""
-        logging.debug("saving {}...".format(repr(self)))
+        log.debug("saving {}...".format(repr(self)))
         # Format the data items
         data = self.data
         # Dump the data to YAML
@@ -411,7 +411,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 item = self.tree.find_item(identifier)
             except DoorstopError:
                 item = UnknownItem(identifier)
-                logging.warning(item.exception)
+                log.warning(item.exception)
             items.append(item)
         return items
 
@@ -428,7 +428,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         try:
             return [self.tree.find_document(self.document.prefix)]
         except DoorstopError:
-            logging.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
+            log.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
             return []
 
     # actions ################################################################
@@ -456,7 +456,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         identifier = ID(value)
-        logging.info("linking to '{}'...".format(identifier))
+        log.info("linking to '{}'...".format(identifier))
         self._data['links'].add(identifier)
 
     @auto_save
@@ -471,7 +471,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         try:
             self._data['links'].remove(identifier)
         except KeyError:
-            logging.warning("link to {0} does not exist".format(identifier))
+            log.warning("link to {0} does not exist".format(identifier))
 
     def get_issues(self, **kwargs):
         """Yield all the item's issues.
@@ -483,12 +483,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         assert kwargs.get('document_hook') is None
         assert kwargs.get('item_hook') is None
-        logging.info("checking item {}...".format(self))
+        log.info("checking item {}...".format(self))
         # Verify the file can be parsed
         self.load()
         # Skip inactive items
         if not self.active:
-            logging.info("skipped inactive item: {}".format(self))
+            log.info("skipped inactive item: {}".format(self))
             return
         # Delay item save if reformatting
         if settings.REFORMAT:
@@ -521,12 +521,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
-            logging.debug("reformatting item {}...".format(self))
+            log.debug("reformatting item {}...".format(self))
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
-        logging.debug("getting issues against document...")
+        log.debug("getting issues against document...")
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
@@ -555,7 +555,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
-        logging.debug("getting issues against tree...")
+        log.debug("getting issues against tree...")
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -581,7 +581,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     yield DoorstopWarning(msg)
                 # reformat the item's ID
                 identifier2 = ID(item.id, stamp=identifier.stamp)
-                logging.debug("found linked item: {}".format(identifier2))
+                log.debug("found linked item: {}".format(identifier2))
                 identifiers.add(identifier2)
         # Apply the reformatted item IDs
         if settings.REFORMAT:
@@ -589,7 +589,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
-        logging.debug("getting issues against document and tree...")
+        log.debug("getting issues against document and tree...")
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(find_all=False)
@@ -619,14 +619,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             self.tree.vcs.ignored if self.tree else (lambda _: False)
         # Return immediately if no external reference
         if not self.ref:
-            logging.debug("no external reference to search for")
+            log.debug("no external reference to search for")
             return None, None
         # Search for the external reference
-        logging.debug("seraching for ref '{}'...".format(self.ref))
+        log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        logging.debug("regex: {}".format(pattern))
+        log.debug("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        logging.debug("search path: {}".format(root))
+        log.debug("search path: {}".format(root))
         for root, _, filenames in os.walk(root):
             for filename in filenames:  # pragma: no cover (integration test)
                 path = os.path.join(root, filename)
@@ -651,7 +651,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     with open(path, 'r') as external:
                         for index, line in enumerate(external):
                             if regex.search(line):
-                                logging.debug("found ref: {}".format(relpath))
+                                log.debug("found ref: {}".format(relpath))
                                 return relpath, index + 1
                 except UnicodeDecodeError:
                     pass
@@ -710,10 +710,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # TODO: this check shouldn't be required anymore
         # Check for parent references
         if not self.document or not self.tree:
-            logging.warning("document and tree required to find children")
+            log.warning("document and tree required to find children")
             return child_items, child_documents
         # Find child objects
-        logging.debug("finding item {}'s child objects...".format(self))
+        log.debug("finding item {}'s child objects...".format(self))
         for document2 in self.tree:
             if document2.parent == self.document.prefix:
                 child_documents.append(document2)
@@ -731,9 +731,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "child items: {}".format(joined)
             else:
                 msg = "first child item: {}".format(child_items[0])
-            logging.debug(msg)
+            log.debug(msg)
             joined = ', '.join(str(d) for d in child_documents)
-            logging.debug("child documents: {}".format(joined))
+            log.debug("child documents: {}".format(joined))
         return sorted(child_items), child_documents
 
     @auto_load
@@ -748,7 +748,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def clear(self, _inverse=False):
         """Clear suspect links."""
-        logging.info("clearing suspect links...")
+        log.info("clearing suspect links...")
         items = self.parent_items
         for identifier in self.links:
             for item in items:
@@ -762,7 +762,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_load
     def review(self):
         """Mark the item as reviewed."""
-        logging.info("marking item as reviewed...")
+        log.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
     @expunge_item
@@ -790,7 +790,7 @@ class UnknownItem(object):
 
     def __getattr__(self, name):
         if name in self._spec:
-            logging.debug(self.exception)
+            log.debug(self.exception)
         return self.__getattribute__(name)
 
     @property

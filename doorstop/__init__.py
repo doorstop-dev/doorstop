@@ -24,6 +24,8 @@ import logging
 logging.addLevelName(logging.DEBUG - 1, "TRACE")
 logging.Logger.trace = _trace
 
+log = logging.Logger(__name__)  # pylint: disable=C0103
+
 try:
     from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
     from doorstop.core import Item, Document, Tree

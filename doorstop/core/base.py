@@ -3,12 +3,12 @@
 import os
 import abc
 import functools
-import logging
 
 import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop.core import log
 from doorstop import settings
 
 
@@ -23,7 +23,7 @@ def cache_item(func):
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.id] = item
-            logging.debug("cached item: {}".format(item))
+            log.debug("cached item: {}".format(item))
         return item
     return wrapped
 
@@ -39,7 +39,7 @@ def expunge_item(func):
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.id] = None
-            logging.debug("expunged item: {}".format(item))
+            log.debug("expunged item: {}".format(item))
         return item
     return wrapped
 
@@ -53,7 +53,7 @@ def cache_document(func):
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = document
-            logging.debug("cached document: {}".format(document))
+            log.debug("cached document: {}".format(document))
         return document
     return wrapped
 
@@ -77,12 +77,12 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         for issue in self.get_issues(document_hook=document_hook,
                                      item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
+                log.info(issue)
             elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
+                log.warning(issue)
             else:
                 assert isinstance(issue, DoorstopError)
-                logging.error(issue)
+                log.error(issue)
                 valid = False
         # Return the result
         return valid
@@ -272,7 +272,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
+            log.info(msg)
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -289,7 +289,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
+            log.info(msg)
             return setattr(self, name, value)
         else:
             self._data[name] = value
@@ -299,10 +299,9 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def delete(self, path):
         """Delete the object's file from the file system."""
         if self._exists:
-            logging.info("deleting {}...".format(self))
-            logging.debug("deleting file {}...".format(path))
+            log.info("deleting {}...".format(self))
             common.delete(path)
             self._loaded = False  # force the object to reload
             self._exists = False  # but, prevent future access
         else:
-            logging.warning("already deleted: {}".format(self))
+            log.warning("already deleted: {}".format(self))
