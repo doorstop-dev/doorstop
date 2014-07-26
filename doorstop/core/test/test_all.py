@@ -92,7 +92,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Clean up temporary files."""
         for filename in os.listdir(EMPTY):
             path = os.path.join(EMPTY, filename)
-            os.remove(path)
+            common.delete(path)
 
     def test_load(self):
         """Verify a document can be loaded from a directory."""
@@ -709,8 +709,5 @@ def read_xlsx(path):
 
 def move_file(src, dst):
     """Move a file from one path to another."""
-    try:
-        os.remove(dst)
-    except FileNotFoundError:
-        pass
+    common.delete(dst)
     shutil.move(src, dst)

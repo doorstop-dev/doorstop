@@ -300,6 +300,7 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
     parent = 'PARENT_PREFIX'
 
     mock_document = Mock()
+    mock_document._items = []  # pylint: disable=W0212
 
     def setUp(self):
         # Create default item attributes
@@ -312,7 +313,7 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         _set_tree(self.mock_tree)
 
     def mock_find_document(self, prefix):
-        """Mock Tree.find_document() to return a mock document."""
+        """Mock `Tree.find_document()` to return a mock document."""
         assert isinstance(self, Tree)
         assert prefix == TestModuleAddItem.prefix
         TestModuleAddItem.mock_document.prefix = prefix

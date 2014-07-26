@@ -107,11 +107,7 @@ def add_item(prefix, identifier, attrs=None, document=None):
         item.set(key, value)
     item.save()
 
-    # Cache and return the item
     logging.info("imported: {}".format(item))
-    document._items.append(item)  # pylint: disable=W0212
-    if settings.CACHE_ITEMS:
-        tree._item_cache[item.id] = item  # pylint: disable=W0212
     return item
 
 

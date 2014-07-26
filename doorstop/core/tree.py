@@ -9,7 +9,6 @@ import logging
 
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
-from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
@@ -115,6 +114,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return 0
 
+    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
+        return True
+
     def __getitem__(self, key):
         raise IndexError("{} cannot be indexed by key".format(self.__class__))
 
@@ -188,8 +190,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # actions ################################################################
 
-    @clear_document_cache
-    @clear_item_cache
     def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -221,7 +221,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             logging.info("added to tree: {}".format(document))
         return document
 
-    @clear_item_cache
+    # @cache_item decorates `Document.add_item()`
     def add_item(self, value, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
@@ -241,7 +241,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         item = document.add_item(level=level, reorder=reorder)
         return item
 
-    @clear_item_cache
+    # @expunge_item decorates `Document.remove_item()`
     def remove_item(self, value, reorder=True):
         """Remove an item from a document by ID.
 
@@ -509,8 +509,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if row.parent and row.child:
                 yield tuple(row)
 
-    @clear_document_cache
-    @clear_item_cache
     def load(self, reload=False):
         """Load the tree's documents and items.
 

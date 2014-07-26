@@ -6,7 +6,7 @@ import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import BaseValidatable, clear_item_cache
+from doorstop.core.base import BaseValidatable, cache_item, expunge_item
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
@@ -82,6 +82,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             return self.level < other.level
 
     @staticmethod
+    @cache_item
     def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
         """Internal method to create a new item.
 
@@ -106,7 +107,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
-        Item._new(path2, name='item')
+        Item._create(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root, document=document, tree=tree, auto=False)
         item.level = level if level is not None else item.level
@@ -705,6 +706,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         child_items = []
         child_documents = []
+        # TODO: this check shouldn't be required anymore
         # Check for parent references
         if not self.document or not self.tree:
             logging.warning("document and tree required to find children")
@@ -762,12 +764,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         logging.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
-    @clear_item_cache
+    @expunge_item
     def delete(self, path=None):
         """Delete the item."""
-        # TODO: #65: move this to a decorator and remove pylint comments
-        if self.document and self in self.document._items:  # pylint:disable=W0212
-            self.document._items.remove(self)  # pylint:disable=W0212
         super().delete(self.path)
 
 
