@@ -21,6 +21,7 @@ import logging
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop.core import vcs
 from doorstop.core import builder
+from doorstop.gui import log
 from doorstop import settings
 
 
@@ -49,12 +50,12 @@ def main(args=None):
     try:
         success = _run(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
-        logging.debug("program interrupted")
+        log.debug("program interrupted")
         success = False
     if success:
-        logging.debug("program exited")
+        log.debug("program exited")
     else:
-        logging.debug("program exited with error")
+        log.debug("program exited with error")
         sys.exit(1)
 
 
@@ -114,7 +115,7 @@ def _log(func):  # pragma: no cover (manual test)
                                           for k, v in kwargs.items()))
         msg = "{}: {}".format(func.__name__, sargs.strip(", "))
         if not self.ignore:
-            logging.critical(msg.strip())
+            log.critical(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
 
@@ -400,7 +401,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             try:
                 path = vcs.find_root(self.cwd)
             except DoorstopError as exc:
-                logging.error(exc)
+                log.error(exc)
             else:
                 self.stringvar_project.set(path)
 
@@ -408,7 +409,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     def browse(self):
         """Browse for the root of a project."""
         path = filedialog.askdirectory()
-        logging.debug("path: {}".format(path))
+        log.debug("path: {}".format(path))
         if path:
             self.stringvar_project.set(path)
 
@@ -416,7 +417,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         """Display the currently selected tree."""
         # Set the current tree
         self.tree = builder.build(root=self.stringvar_project.get())
-        logging.info("displaying tree...")
+        log.info("displaying tree...")
 
         # Display the documents in the tree
         values = ["{} ({})".format(document.prefix, document.relpath)
@@ -431,7 +432,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Set the current document
         index = self.combobox_documents.current()
         self.document = list(self.tree)[index]
-        logging.info("displaying document {}...".format(self.document))
+        log.info("displaying document {}...".format(self.document))
 
         # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
@@ -463,7 +464,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(identifier)
         self.index = self.listbox_outline.curselection()[0]
-        logging.info("displaying item {}...".format(self.item))
+        log.info("displaying item {}...".format(self.item))
 
         # Display the item's text
         self.text_item.replace('1.0', 'end', self.item.text)
@@ -520,7 +521,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.ignore = True
 
         name = self.stringvar_extendedkey.get()
-        logging.debug("displaying extended attribute '{}'...".format(name))
+        log.debug("displaying extended attribute '{}'...".format(name))
         self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
 
         self.ignore = False
@@ -531,7 +532,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             return
 
         # Update the current item
-        logging.info("updating {}...".format(self.item))
+        log.info("updating {}...".format(self.item))
         self.item.auto = False
         self.item.text = self.stringvar_text.get()
         self.item.active = self.intvar_active.get()

@@ -7,9 +7,10 @@ import logging
 
 import yaml
 
+from doorstop import log
+
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
 STR_VERBOSITY = 3
-TRACE_VERBOSITY = 3
 MAX_VERBOSITY = 4
 
 
@@ -54,17 +55,11 @@ class WarningFormatter(logging.Formatter, object):
         return super().format(record)
 
 
-def trace(msg):  # pragma: no cover (manual test)
-    """Low-level debugging function."""
-    if VERBOSITY >= TRACE_VERBOSITY:
-        logging.debug(msg)
-
-
 def create_dirname(path):
     """Ensure a parent directory exists for a path."""
     dirpath = os.path.dirname(path)
     if dirpath and not os.path.isdir(dirpath):
-        logging.info("creating directory {}...".format(dirpath))
+        log.info("creating directory {}...".format(dirpath))
         os.makedirs(dirpath)
 
 
@@ -77,7 +72,7 @@ def read_lines(path, encoding='utf-8'):
     :return: path of new file
 
     """
-    trace("reading lines from '{}'...".format(path))
+    log.trace("reading lines from '{}'...".format(path))
     with open(path, 'r', encoding=encoding) as stream:
         for line in stream:
             yield line
@@ -92,7 +87,7 @@ def read_text(path, encoding='utf-8'):
     :return: string
 
     """
-    trace("reading text from '{}'...".format(path))
+    log.trace("reading text from '{}'...".format(path))
     with open(path, 'r', encoding=encoding) as stream:
         text = stream.read()
     return text
@@ -132,7 +127,7 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
     :return: path of new file
 
     """
-    trace("writing lines to '{}'...".format(path))
+    log.trace("writing lines to '{}'...".format(path))
     with open(path, 'wb') as stream:
         for line in lines:
             data = (line + end).encode(encoding)
@@ -151,7 +146,7 @@ def write_text(text, path, encoding='utf-8'):
 
     """
     if text:
-        trace("writing text to '{}'...".format(path))
+        log.trace("writing text to '{}'...".format(path))
     with open(path, 'wb') as stream:
         data = text.encode(encoding)
         stream.write(data)
@@ -161,7 +156,7 @@ def write_text(text, path, encoding='utf-8'):
 def touch(path):  # pragma: no cover (integration test)
     """Ensure a file exists."""
     if not os.path.exists(path):
-        trace("creating empty '{}'...".format(path))
+        log.trace("creating empty '{}'...".format(path))
         write_text('', path)
 
 
@@ -169,12 +164,12 @@ def delete(path):  # pragma: no cover (integration test)
     """Delete a file or directory with error handling."""
     if os.path.isdir(path):
         try:
-            trace("deleting '{}'...".format(path))
+            log.trace("deleting '{}'...".format(path))
             shutil.rmtree(path)
         except IOError:
             # bug: http://code.activestate.com/lists/python-list/159050
             msg = "unable to delete: {}".format(path)
-            logging.warning(msg)
+            log.warning(msg)
     elif os.path.isfile(path):
-        trace("deleting '{}'...".format(path))
+        log.trace("deleting '{}'...".format(path))
         os.remove(path)

@@ -6,10 +6,11 @@ import logging
 DEFAULT_LOGGING_FORMAT = "%(message)s"
 LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
-VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(module)-8s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
+VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s.%(module)s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
 VERBOSE2_LOGGING_LEVEL = logging.DEBUG
+VERBOSE3_LOGGING_LEVEL = logging.DEBUG - 1
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators

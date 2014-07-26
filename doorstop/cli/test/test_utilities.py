@@ -83,7 +83,7 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
         utilities.literal_eval("1/", err=err)
         self.assertEqual(1, err.call_count)
 
-    @patch('logging.critical')
+    @patch('doorstop.cli.log.critical')
     def test_literal_eval_invalid_log(self, mock_log):
         """Verify an invalid literal logs an error."""
         utilities.literal_eval("1/")

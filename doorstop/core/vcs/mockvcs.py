@@ -1,7 +1,7 @@
 """Plug-in module to simulate the storage of requirements in a repository."""
 
-import logging
 
+from doorstop.core.vcs import log
 from doorstop.core.vcs.base import BaseWorkingCopy
 
 
@@ -12,10 +12,10 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
     DIRECTORY = '.mockvcs'
 
     def lock(self, path):
-        logging.info("simulated lock on: {}...".format(path))
+        log.info("simulated lock on: {}...".format(path))
 
     def save(self, message=None):
-        logging.info("simulated save")
+        log.info("simulated save")
 
     @property
     def ignores(self):
