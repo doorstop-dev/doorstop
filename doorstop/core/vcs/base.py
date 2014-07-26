@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 from doorstop import common
 
+
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     """Abstract base class for VCS working copies."""
