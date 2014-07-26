@@ -74,13 +74,13 @@ depends: .depends-ci .depends-dev
 .PHONY: .depends-ci
 .depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install --upgrade pep8 pep257 pylint nose coverage
+	$(PIP) install --upgrade pep8 pep257 nose coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade docutils pdoc wheel sphinx
+	$(PIP) install --upgrade docutils pdoc pylint wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -160,14 +160,13 @@ check: pep8 pep257 pylint
 .PHONY: pep8
 pep8: .depends-ci
 	$(PEP8) $(PACKAGE) --ignore=E501
-	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc --disable=all --enable=C0301
 
 .PHONY: pep257
 pep257: .depends-ci
 	$(PEP257) $(PACKAGE) --ignore=E501,D102
 
 .PHONY: pylint
-pylint: .depends-ci
+pylint: .depends-dev
 	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
 
 # Testing ####################################################################
