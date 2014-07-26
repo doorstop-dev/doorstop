@@ -2,6 +2,8 @@
 
 import logging
 
+import doorstop
+
 # Logging settings
 DEFAULT_LOGGING_FORMAT = "%(message)s"
 LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
@@ -10,6 +12,7 @@ VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(module)-8s @%(lineno)4d) %(messa
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
 VERBOSE2_LOGGING_LEVEL = logging.DEBUG
+VERBOSE3_LOGGING_LEVEL = doorstop.TRACE
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators

@@ -14,6 +14,18 @@ import sys
 if not sys.version_info >= MIN_PYTHON_VERSION:  # pragma: no cover (manual test)
     exit("Python {}.{}+ is required.".format(*MIN_PYTHON_VERSION))
 
+import logging
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, "TRACE")
+
+
+def _trace(self, message, *args, **kws):
+    """New logging level, TRACE."""
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, message, args, **kws)  # pylint: disable=W0212
+
+logging.Logger.trace = _trace
+
 try:
     from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
     from doorstop.core import Item, Document, Tree

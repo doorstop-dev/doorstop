@@ -8,6 +8,8 @@ from argparse import ArgumentTypeError
 from doorstop import common
 from doorstop import settings
 
+log = logging.getLogger(__name__)  # pylint: disable=C0103
+
 
 class capture(object):  # pylint: disable=R0903,C0103
 
@@ -27,14 +29,14 @@ class capture(object):  # pylint: disable=R0903,C0103
         if exc_type and issubclass(exc_type, common.DoorstopError):
             self._success = False
             if self.catch:
-                logging.error(exc_value)
+                log.error(exc_value)
                 return True
 
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
     assert common.STR_VERBOSITY == 4
-    assert common.MAX_VERBOSITY == 4
+    assert common.MAX_VERBOSITY == 5
 
     # Configure the logging level and format
     if verbosity == 0:
@@ -51,8 +53,11 @@ def configure_logging(verbosity=0):
     elif verbosity == 3:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    elif verbosity == 4:
+        level = settings.VERBOSE3_LOGGING_LEVEL
+        default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     else:
-        level = settings.VERBOSE2_LOGGING_LEVEL
+        level = settings.VERBOSE3_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
@@ -110,7 +115,7 @@ def literal_eval(literal, err=None, default=None):
         if err:
             err(msg)
         else:
-            logging.critical(msg)
+            log.critical(msg)
 
 
 def get_ext(args, ext_stdout, ext_file, whole_tree, err):
@@ -136,7 +141,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
             if os.path.isdir(path):
                 err("given a prefix, [path] must be a file, not a directory")
             ext = os.path.splitext(path)[-1]
-        logging.debug("extension based on path: {}".format(ext or None))
+        log.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
     for _ext, option in {'.txt': 'text',
@@ -148,7 +153,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
         try:
             if getattr(args, option):
                 ext = _ext
-                logging.debug("extension based on override: {}".format(ext))
+                log.debug("extension based on override: {}".format(ext))
                 break
         except AttributeError:
             continue
@@ -158,7 +163,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
                 err("given a prefix, [path] must include an extension")
             else:
                 ext = ext_stdout
-            logging.debug("extension based on default: {}".format(ext))
+            log.debug("extension based on default: {}".format(ext))
 
     return ext
 
