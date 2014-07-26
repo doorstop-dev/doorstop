@@ -61,7 +61,7 @@ def _document_from_path(path, root, documents):
         pass  # no document in directory
     else:
         if document.skip:
-            log.debug("skipping document: {}".format(document))
+            log.debug("skipped document: {}".format(document))
         else:
             log.info("found document: {}".format(document))
             documents.append(document)

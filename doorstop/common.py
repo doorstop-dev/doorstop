@@ -10,8 +10,8 @@ import yaml
 from doorstop import log
 
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
-STR_VERBOSITY = 4
-MAX_VERBOSITY = 5
+STR_VERBOSITY = 3
+MAX_VERBOSITY = 4
 
 
 class DoorstopError(Exception):

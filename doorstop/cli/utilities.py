@@ -34,8 +34,8 @@ class capture(object):  # pylint: disable=R0903,C0103
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
-    assert common.STR_VERBOSITY == 4
-    assert common.MAX_VERBOSITY == 5
+    assert common.STR_VERBOSITY == 3
+    assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
     if verbosity == 0:
@@ -47,12 +47,9 @@ def configure_logging(verbosity=0):
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.LEVELED_LOGGING_FORMAT
     elif verbosity == 2:
-        level = settings.VERBOSE_LOGGING_LEVEL
-        default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity == 3:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    elif verbosity == 4:
+    elif verbosity == 3:
         level = settings.VERBOSE3_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     else:
