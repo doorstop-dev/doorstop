@@ -3,10 +3,10 @@
 import os
 import fnmatch
 import subprocess
-import logging
 from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 from doorstop import common
+from doorstop.core.vcs import log
 
 
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
@@ -23,7 +23,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
         """Call a command with string arguments."""
-        logging.debug("$ {}".format(' '.join(args)))
+        log.debug("$ {}".format(' '.join(args)))
         if return_stdout:
             return subprocess.check_output(args).decode('utf-8')
         else:

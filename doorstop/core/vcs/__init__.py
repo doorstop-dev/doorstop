@@ -3,6 +3,8 @@
 import os
 import logging
 
+log = logging.getLogger(__name__)  # pylint: disable=C0103
+
 from doorstop.common import DoorstopError
 
 from doorstop.core.vcs import git
@@ -26,8 +28,8 @@ def find_root(cwd):
     """
     path = cwd
 
-    logging.debug("looking for working copy from {}...".format(path))
-    logging.debug("options: {}".format(', '.join([d for d in DIRECTORIES])))
+    log.debug("looking for working copy from {}...".format(path))
+    log.debug("options: {}".format(', '.join([d for d in DIRECTORIES])))
     while not any(d in DIRECTORIES for d in os.listdir(path)):
         parent = os.path.dirname(path)
         if path == parent:
@@ -36,7 +38,7 @@ def find_root(cwd):
         else:
             path = parent
 
-    logging.debug("found working copy: {}".format(path))
+    log.debug("found working copy: {}".format(path))
     return path
 
 
@@ -45,5 +47,5 @@ def load(path):
     for directory in os.listdir(path):
         if directory in DIRECTORIES:
             return DIRECTORIES[directory](path)
-    logging.warning("no working copy found at: {}".format(path))
+    log.warning("no working copy found at: {}".format(path))
     return mockvcs.WorkingCopy(path)
