@@ -388,9 +388,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _lines_index(items):
         """Generate (pseudo) YAML lines for the document index."""
         yield '#' * settings.MAX_LINE_LENGTH
-        yield '# THIS IS A TEMPORARILY GENERATED FILE SHOWING THE ITEM OUTLINE'
-        yield '# IT WILL BE DELETED AFTER SUCCESSFULLY REORDERING THE ITEMS'
-        yield '# CHANGES TO ITEM LEVELS WILL BE REFLECT IN THE ITEM FILES'
+        yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
+        yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
+        yield '# CHANGES ARE BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
         yield '#' * settings.MAX_LINE_LENGTH
         yield ''
         yield "initial: {}".format(items[0].level if items else 1.0)
