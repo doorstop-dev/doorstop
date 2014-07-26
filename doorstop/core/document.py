@@ -624,5 +624,5 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         common.delete(self.path)
         if settings.CACHE_DOCUMENTS:
             if self.tree:
-                self.tree._document_cache.clear()
+                self.tree._document_cache.clear()  # pylint: disable=W0212
                 logging.debug("cleared document cache")
