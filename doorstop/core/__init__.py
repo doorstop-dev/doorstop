@@ -2,7 +2,7 @@
 
 import logging
 
-log = logging.Logger(__name__)  # pylint: disable=C0103
+log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 from doorstop.core.item import Item
 from doorstop.core.document import Document
