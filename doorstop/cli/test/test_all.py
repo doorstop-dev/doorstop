@@ -140,6 +140,7 @@ class TestDelete(MockTestCase):  # pylint: disable=R0904
 
 
 def get_next_id():
+    """Helper function to get the next item ID number."""
     last = None
     for last in sorted(os.listdir(TUTORIAL), reverse=True):
         if "index" not in last:
@@ -170,8 +171,8 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     def test_add_multiple(self):
         """Verify 'doorstop add' can be called with a given positive count"""
-        n = get_next_id()
-        numbers = (n, n + 1, n + 2)
+        number = get_next_id()
+        numbers = (number, number + 1, number + 2)
         self.assertIs(None, main(['add', 'TUT', '--count', '3']))
         filenames = ("TUT{}.yml".format(str(x).zfill(3)) for x in numbers)
         paths = [os.path.join(TUTORIAL, f) for f in filenames]
@@ -182,7 +183,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
         os.remove(paths[2])
 
     def test_add_multiple_non_positive(self):
-        """Verify 'doorstop add' default to count=1 when non-positive count given"""
+        """Verify 'doorstop add' rejects non-positive integers for counts."""
         self.assertRaises(SystemExit, main, ['add', 'TUT', '--count', '-1'])
 
     def test_add_specific_level(self):
@@ -269,8 +270,7 @@ class TestReorder(unittest.TestCase):  # pylint: disable=R0904
 
         def bad_yaml_edit(path, **_):
             """Simulate adding invalid YAML to the index."""
-            with open(path, 'w') as stream:
-                stream.write("%bad")
+            common.write_text("%bad", path)
 
         with patch('doorstop.core.editor.launch', bad_yaml_edit):
             self.assertRaises(SystemExit, main, ['reorder', self.prefix])

@@ -696,7 +696,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     child_documents = property(find_child_documents)
 
-    def _find_child_objects(self, find_all=True):  # TODO: pass document and tree?
+    # TODO: pass document and tree?
+    def _find_child_objects(self, find_all=True):
         """Get lists of child items and child documents.
 
         :param find_all: find all items (not just the first) before returning

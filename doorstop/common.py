@@ -61,6 +61,21 @@ def create_dirname(path):
         os.makedirs(dirpath)
 
 
+def read_lines(path, encoding='utf-8'):
+    """Read lines of text from a file.
+
+    :param path: file to write lines
+    :param encoding: output file encoding
+
+    :return: path of new file
+
+    """
+    logging.debug("reading lines from '{}'...".format(path))
+    with open(path, 'r', encoding=encoding) as stream:
+        for line in stream:
+            yield line
+
+
 def read_text(path, encoding='utf-8'):
     """Read text from a file.
 
