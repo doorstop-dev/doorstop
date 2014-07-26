@@ -3,7 +3,7 @@
 import os
 import ast
 import logging
-import argparse
+from argparse import ArgumentTypeError
 
 from doorstop import common
 from doorstop import settings
@@ -204,7 +204,12 @@ def positive_int(value):
     :return: value casted to an integer
 
     """
-    ival = int(value)
-    if ival < 1:
-        raise argparse.ArgumentTypeError("{} is an invalid positive int value".format(value))
-    return ival
+    exc = ArgumentTypeError("'{}' is not a positive int value".format(value))
+    try:
+        ival = int(value)
+    except ValueError:
+        raise exc from None
+    else:
+        if ival < 1:
+            raise exc
+        return ival
