@@ -357,10 +357,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     logging.debug("found document: {}".format(document))
                     if settings.CACHE_DOCUMENTS:
                         self._document_cache[prefix] = document
+                        logging.debug("cached document: {}".format(document))
                     return document
             logging.debug("could not find document: {}".format(prefix))
             if settings.CACHE_DOCUMENTS:
                 self._document_cache[prefix] = None
+                logging.debug("cached unknown: {}".format(prefix))
 
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
@@ -395,10 +397,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     logging.debug("found item: {}".format(item))
                     if settings.CACHE_ITEMS:
                         self._item_cache[identifier] = item
+                        logging.debug("cached item: {}".format(item))
                     return item
             logging.debug("could not find item: {}".format(identifier))
             if settings.CACHE_ITEMS:
                 self._item_cache[identifier] = None
+                logging.debug("cached unknown: {}".format(identifier))
 
         raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
 

@@ -21,10 +21,9 @@ def cache_item(func):
         # pylint: disable=W0212
         if item.document and item not in item.document._items:
             item.document._items.append(item)
-        if settings.CACHE_ITEMS:
-            if item.tree:
-                item.tree._item_cache[item.id] = item
-                logging.debug("cached item: {}".format(item))
+        if settings.CACHE_ITEMS and item.tree:
+            item.tree._item_cache[item.id] = item
+            logging.debug("cached item: {}".format(item))
         return item
     return wrapped
 
@@ -38,10 +37,9 @@ def expunge_item(func):
         # pylint: disable=W0212
         if item.document and item in item.document._items:
             item.document._items.remove(item)
-        if settings.CACHE_ITEMS:
-            if item.tree:
-                item.tree._item_cache[item.id] = None
-                logging.debug("expunged item: {}".format(item))
+        if settings.CACHE_ITEMS and item.tree:
+            item.tree._item_cache[item.id] = None
+            logging.debug("expunged item: {}".format(item))
         return item
     return wrapped
 
@@ -53,10 +51,9 @@ def cache_document(func):
         """Wrapped method to cache the returned document."""
         document = func(self, *args, **kwargs) or self
         # pylint: disable=W0212
-        if settings.CACHE_DOCUMENTS:
-            if document.tree:
-                document.tree._document_cache[document.prefix] = document
-                logging.debug("cached document: {}".format(document))
+        if settings.CACHE_DOCUMENTS and document.tree:
+            document.tree._document_cache[document.prefix] = document
+            logging.debug("cached document: {}".format(document))
         return document
     return wrapped
 

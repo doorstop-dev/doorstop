@@ -520,12 +520,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item.delete', Mock())
     @patch('doorstop.common.delete', Mock())
     def test_delete_cache(self):
-        """Verify the cache is cleared when a document is deleted."""
+        """Verify a deleted document is expunged."""
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
         self.document.tree._document_cache = {}
         self.document.delete()
-        self.assertEqual({}, self.document.tree._document_cache)
+        self.assertIs(None, \
+            self.document.tree._document_cache[self.document.prefix])
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):

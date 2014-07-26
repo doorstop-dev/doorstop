@@ -189,9 +189,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     pass  # skip non-item files
                 else:
                     self._items.append(item)
-                    if settings.CACHE_ITEMS:
-                        if self.tree:
-                            self.tree._item_cache[item.id] = item  # pylint: disable=W0212
+                    if settings.CACHE_ITEMS and self.tree:
+                        self.tree._item_cache[item.id] = item  # pylint: disable=W0212
+                        logging.debug("cached item: {}".format(item))
         # Set meta attributes
         self._itered = True
         # Yield items
@@ -618,11 +618,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def delete(self, path=None):
         """Delete the document and its items."""
+        prefix = Prefix(str(self.prefix))
         for item in self:
             item.delete()
         super().delete(self.config)
         common.delete(self.path)
-        if settings.CACHE_DOCUMENTS:
-            if self.tree:
-                self.tree._document_cache.clear()  # pylint: disable=W0212
-                logging.debug("cleared document cache")
+        if settings.CACHE_DOCUMENTS and self.tree:
+            self.tree._document_cache[prefix] = None  # pylint: disable=W0212
+            logging.debug("expunged document: {}".format(prefix))
