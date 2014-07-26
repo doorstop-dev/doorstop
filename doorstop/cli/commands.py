@@ -101,10 +101,10 @@ def run_add(args, cwd, _, catch=True):
         tree = build(cwd, root=args.project)
         for _ in range(args.count):
             item = tree.add_item(args.prefix, level=args.level)
+            print("added item: {} ({})".format(item.id, item.relpath))
+
     if not success:
         return False
-
-    print("added item: {} ({})".format(item.id, item.relpath))
 
     return True
 
