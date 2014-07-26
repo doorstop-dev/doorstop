@@ -8,7 +8,6 @@ script: make ci
 after_success:
 - coveralls
 - ocular
-after_script:
 # Generate Doorstop HTML pages
 - make html
 - cp -r docs/gen/ pages/reqs/

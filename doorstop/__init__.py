@@ -14,16 +14,14 @@ import sys
 if not sys.version_info >= MIN_PYTHON_VERSION:  # pragma: no cover (manual test)
     exit("Python {}.{}+ is required.".format(*MIN_PYTHON_VERSION))
 
-import logging
-TRACE = logging.DEBUG - 1
-logging.addLevelName(TRACE, "TRACE")
-
 
 def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
     """New logging level, TRACE."""
-    if self.isEnabledFor(TRACE):
-        self._log(TRACE, message, args, **kws)  # pylint: disable=W0212
+    if self.isEnabledFor(logging.DEBUG - 1):
+        self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
 
+import logging
+logging.addLevelName(logging.DEBUG - 1, "TRACE")
 logging.Logger.trace = _trace
 
 try:
