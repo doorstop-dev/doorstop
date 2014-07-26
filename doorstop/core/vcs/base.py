@@ -6,6 +6,8 @@ import subprocess
 import logging
 from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
+from doorstop import common
+
 
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
@@ -49,11 +51,10 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     def _update_ignores_from_file(self, path):  # pragma: no cover (integration test)
         """Parse and append patterns from a standard ignores file."""
-        with open(path, 'r') as stream:
-            for line in stream:
-                pattern = line.strip(" @\\/*\n")
-                if pattern and not pattern.startswith('#'):
-                    self._ignores.append('*' + pattern + '*')
+        for line in common.read_lines(path):
+            pattern = line.strip(" @\\/*\n")
+            if pattern and not pattern.startswith('#'):
+                self._ignores.append('*' + pattern + '*')
 
     def ignored(self, path):
         """Indicate if a path should be considered ignored."""

@@ -6,7 +6,8 @@ import logging
 
 import markdown
 
-from doorstop.common import DoorstopError, create_dirname, write_lines
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
@@ -47,10 +48,10 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         count += 1
 
         # Publish content to the specified path
-        create_dirname(path2)
+        common.create_dirname(path2)
         logging.info("publishing to {}...".format(path2))
         lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
-        write_lines(lines, path2)
+        common.write_lines(lines, path2)
 
     # Create index
     if index and count:
@@ -86,7 +87,7 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
         path = os.path.join(directory, index)
         logging.info("creating an {}...".format(index))
         lines = _lines_index(filenames, tree=tree)
-        write_lines(lines, path)
+        common.write_lines(lines, path)
     else:
         logging.warning("no files for {}".format(index))
 
@@ -170,9 +171,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
 def _lines_css():
     """Yield lines of CSS to embedded in HTML."""
     yield ''
-    with open(CSS) as stream:
-        for line in stream:
-            yield line.rstrip()
+    for line in common.read_lines(CSS):
+        yield line.rstrip()
     yield ''
 
 
