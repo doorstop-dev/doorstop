@@ -63,12 +63,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str(self):
         """Verify an item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 4)
     def test_str_verbose(self):
         """Verify an item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
@@ -518,26 +518,36 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item', MockItem)
     def test_new(self):
         """Verify items can be created."""
-        MockItem._new.reset_mock()
+        MockItem._create.reset_mock()
         item = MockItem.new(None, None,
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
-        MockItem._new.assert_called_once_with(path, name='item')
+        MockItem._create.assert_called_once_with(path, name='item')
+
+    @patch('doorstop.core.item.Item', MockItem)
+    def test_new_cache(self):
+        """Verify new items are cached."""
+        mock_tree = Mock()
+        mock_tree._item_cache = {}
+        item = MockItem.new(mock_tree, None,
+                            EMPTY, FILES, 'TEST00042',
+                            level=(1, 2, 3))
+        self.assertEqual(item, mock_tree._item_cache[item.id])
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
-        MockItem._new.reset_mock()
+        MockItem._create.reset_mock()
         item = MockItem.new(None, None,
                             EMPTY, FILES, 'VSM.HLR_01-002-042',
                             level=(1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1,), item.level)
-        MockItem._new.assert_called_once_with(path, name='item')
+        MockItem._create.assert_called_once_with(path, name='item')
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
@@ -766,6 +776,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_delete.assert_called_once_with(self.item.path)
         self.item.delete()  # ensure a second delete is ignored
 
+    @patch('doorstop.common.delete', Mock())
+    def test_delete_cache(self):
+        """Verify an item is expunged after delete."""
+        self.item.tree = Mock()
+        self.item.tree._item_cache = {self.item.id: self.item}
+        self.item.delete()
+        self.assertIs(None, self.item.tree._item_cache[self.item.id])
+
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
@@ -795,12 +813,12 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.item = UnknownItem('RQ001')
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str(self):
         """Verify an unknown item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 4)
     def test_str_verbose(self):
         """Verify an unknown item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, '???')

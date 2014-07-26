@@ -99,11 +99,12 @@ def run_add(args, cwd, _, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
-        item = tree.add_item(args.prefix, level=args.level)
+        for _ in range(args.count):
+            item = tree.add_item(args.prefix, level=args.level)
+            print("added item: {} ({})".format(item.id, item.relpath))
+
     if not success:
         return False
-
-    print("added item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -187,14 +188,14 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
         # automatically order
         if args.auto:
             print("reordering {}...".format(document), flush=True)
-            document.reorder(index=False)
+            document.reorder(manual=False)
             reordered = True
         # or, reorder from a previously updated index
         elif document.index:
             relpath = os.path.relpath(document.index, cwd)
             if utilities.ask("reorder from '{}'?".format(relpath)):
                 print("reordering {}...".format(document), flush=True)
-                document.reorder(auto=not args.manual)
+                document.reorder(automatic=not args.manual)
                 reordered = True
             else:
                 del document.index

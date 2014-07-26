@@ -139,6 +139,16 @@ class TestDelete(MockTestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['delete', 'UNKNOWN'])
 
 
+def get_next_id():
+    last = None
+    for last in sorted(os.listdir(TUTORIAL), reverse=True):
+        if "index" not in last:
+            break
+    assert last
+    number = int(last.replace('TUT', '').replace('.yml', '')) + 1
+    return number
+
+
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
@@ -146,23 +156,34 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        last = None
-        for last in sorted(os.listdir(TUTORIAL), reverse=True):
-            if "index" not in last:
-                break
-        assert last
-        number = int(last.replace('TUT', '').replace('.yml', '')) + 1
+        number = get_next_id()
         filename = "TUT{}.yml".format(str(number).zfill(3))
         cls.path = os.path.join(TUTORIAL, filename)
 
     def tearDown(self):
-        if os.path.exists(self.path):
-            os.remove(self.path)
+        common.delete(self.path)
 
     def test_add(self):
         """Verify 'doorstop add' can be called."""
         self.assertIs(None, main(['add', 'TUT']))
         self.assertTrue(os.path.isfile(self.path))
+
+    def test_add_multiple(self):
+        """Verify 'doorstop add' can be called with a given positive count"""
+        n = get_next_id()
+        numbers = (n, n + 1, n + 2)
+        self.assertIs(None, main(['add', 'TUT', '--count', '3']))
+        filenames = ("TUT{}.yml".format(str(x).zfill(3)) for x in numbers)
+        paths = [os.path.join(TUTORIAL, f) for f in filenames]
+        self.assertTrue(os.path.isfile(paths[0]))
+        self.assertTrue(os.path.isfile(paths[1]))
+        self.assertTrue(os.path.isfile(paths[2]))
+        os.remove(paths[1])
+        os.remove(paths[2])
+
+    def test_add_multiple_non_positive(self):
+        """Verify 'doorstop add' default to count=1 when non-positive count given"""
+        self.assertRaises(SystemExit, main, ['add', 'TUT', '--count', '-1'])
 
     def test_add_specific_level(self):
         """Verify 'doorstop add' can be called with a specific level."""
@@ -293,7 +314,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' can be called with a document (no, no)."""
         path = "TUT-456.yml"
         self.assertIs(None, main(['edit', 'tut']))
-        os.remove(path)
+        common.delete(path)
         mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
 
     @patch('time.time', Mock(return_value=789))
@@ -465,14 +486,8 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
 
     def tearDown(self):
-        try:
-            shutil.rmtree(os.path.join(ROOT, 'tmp'))
-        except IOError:
-            pass
-        try:
-            os.remove(os.path.join(REQS, 'REQ099.yml'))
-        except IOError:
-            pass
+        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(REQS, 'REQ099.yml'))
 
     def test_import_document(self):
         """Verify 'doorstop import' can import a document."""

@@ -3,6 +3,7 @@
 import os
 import ast
 import logging
+from argparse import ArgumentTypeError
 
 from doorstop import common
 from doorstop import settings
@@ -32,7 +33,7 @@ class capture(object):  # pylint: disable=R0903,C0103
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
-    assert common.STR_VERBOSITY == 3
+    assert common.STR_VERBOSITY == 4
     assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
@@ -193,3 +194,22 @@ def ask(question, default=None):
         except KeyError:
             options = ', '.join(sorted(valid.keys()))
             print("valid responses: {}".format(options))
+
+
+def positive_int(value):
+    """Evaluate a value as positive.
+
+    :param value: passed in value to Evaluate
+
+    :return: value casted to an integer
+
+    """
+    exc = ArgumentTypeError("'{}' is not a positive int value".format(value))
+    try:
+        ival = int(value)
+    except ValueError:
+        raise exc from None
+    else:
+        if ival < 1:
+            raise exc
+        return ival

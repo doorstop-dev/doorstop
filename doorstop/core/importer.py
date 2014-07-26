@@ -70,9 +70,7 @@ def create_document(prefix, path, parent=None, tree=None):
 
     # TODO: attempt to place unplaced documents?
 
-    # Cache and return the document
     logging.info("imported: {}".format(document))
-    tree._document_cache[document.prefix] = document  # pylint: disable=W0212
     return document
 
 
@@ -105,10 +103,7 @@ def add_item(prefix, identifier, attrs=None, document=None):
         item.set(key, value)
     item.save()
 
-    # Cache and return the item
     logging.info("imported: {}".format(item))
-    document._items.append(item)  # pylint: disable=W0212
-    tree._item_cache[item.id] = item  # pylint: disable=W0212
     return item
 
 

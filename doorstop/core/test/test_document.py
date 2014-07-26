@@ -101,12 +101,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("custom: this", self.document._file)
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str(self):
         """Verify a document can be converted to a string."""
         self.assertEqual("REQ", str(self.document))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 4)
     def test_str_verbose(self):
         """Verify a document can be converted to a string (verbose)."""
         relpath = os.path.relpath(self.document.path, self.document.root)
@@ -143,16 +143,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             self.assertIs(self.document, item.document)
             self.assertIs(self.document.tree, item.tree)
 
+    def test_items_cache(self):
+        """Verify the items in a document get cached."""
+        self.document.tree = Mock()
+        self.document.tree._item_cache = {}
+        print(self.document.items)
+        self.assertEqual(5, len(self.document.tree._item_cache))
+
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
         """Verify a new document can be created with defaults."""
-        MockDocument._new.reset_mock()
+        MockDocument._create.reset_mock()
         path = os.path.join(EMPTY, '.doorstop.yml')
         document = MockDocument.new(None,
                                     EMPTY, root=FILES, prefix='NEW', digits=2)
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
-        MockDocument._new.assert_called_once_with(path, name='document')
+        MockDocument._create.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
@@ -160,6 +167,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                           None,
                           FILES, ROOT,
                           prefix='DUPL')
+
+    @patch('doorstop.core.document.Document', MockDocument)
+    def test_new_cache(self):
+        """Verify a new documents are cached."""
+        mock_tree = Mock()
+        mock_tree._document_cache = {}
+        document = MockDocument.new(mock_tree,
+                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        self.assertEqual(document, mock_tree._document_cache[document.prefix])
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
@@ -258,7 +274,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                          level=Level('2.2'))
 
     @patch('doorstop.core.item.Item.new')
-    def test_add_empty(self, mock_new):
+    def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
@@ -267,16 +283,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                          NEW, ROOT, 'NEW001',
                                          level=None)
 
-    def test_add_contains(self):
+    def test_add_item_contains(self):
         """Verify an added item is contained in the document."""
         item = self.document.items[0]
         self.assertIn(item, self.document)
         item2 = self.document.add_item(reorder=False)
         self.assertIn(item2, self.document)
 
+    def test_add_item_cache(self):
+        """Verify an added item is cached."""
+        self.document.tree = Mock()
+        self.document.tree._item_cache = {}
+        item = self.document.add_item(reorder=False)
+        self.assertEqual(item, self.document.tree._item_cache[item.id])
+
     @patch('doorstop.core.document.Document._reorder_automatic')
     @patch('os.remove')
-    def test_remove(self, mock_remove, mock_reorder):
+    def test_remove_item(self, mock_remove, mock_reorder):
         """Verify an item can be removed."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.remove_item('REQ001')
@@ -302,6 +325,15 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         removed_item = self.document.remove_item(item, reorder=False)
         self.assertEqual(item, removed_item)
         mock_remove.assert_called_once_with(item.path)
+
+    @patch('os.remove', Mock())
+    def test_remove_item_cache(self):
+        """Verify a removed item is expunged."""
+        self.document.tree = Mock()
+        self.document.tree._item_cache = {}
+        item = self.document.items[0]
+        removed_item = self.document.remove_item(item.id, reorder=False)
+        self.assertIs(None, self.document.tree._item_cache[removed_item.id])
 
     @patch('doorstop.core.document.Document._reorder_automatic')
     @patch('doorstop.core.document.Document._reorder_from_index')
@@ -484,6 +516,16 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(2, mock_common_delete.call_count)
         self.assertEqual(5, mock_item_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
+
+    @patch('doorstop.core.item.Item.delete', Mock())
+    @patch('doorstop.common.delete', Mock())
+    def test_delete_cache(self):
+        """Verify the cache is cleared when a document is deleted."""
+        self.document.tree = Mock()
+        self.document.tree._item_cache = {}
+        self.document.tree._document_cache = {}
+        self.document.delete()
+        self.assertEqual({}, self.document.tree._document_cache)
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):
