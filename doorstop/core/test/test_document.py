@@ -525,8 +525,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.tree._item_cache = {}
         self.document.tree._document_cache = {}
         self.document.delete()
-        self.assertIs(None, \
-            self.document.tree._document_cache[self.document.prefix])
+        self.assertIs(None,
+                      self.document.tree._document_cache[self.document.prefix])
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):
