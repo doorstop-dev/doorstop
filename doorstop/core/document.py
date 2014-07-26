@@ -179,7 +179,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if os.path.exists(path):
                     path = os.path.dirname(path)
                     dirnames.remove(dirname)
-                    logging.debug("skipped embedded document: {}".format(path))
+                    common.trace("skipped embedded document: {}".format(path))
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
