@@ -2,7 +2,7 @@
 
 import unittest
 from unittest.mock import patch, Mock
-import argparse
+from argparse import ArgumentTypeError
 
 from doorstop.cli import utilities
 from doorstop import common
@@ -192,10 +192,16 @@ class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
     """ Unit tests for the `positive_int` function."""  # pylint: disable=C0103
 
     def test_positive_int(self):
+        """Verify a positive integer can be parsed."""
         self.assertEqual(utilities.positive_int('1'), 1)
         self.assertEqual(utilities.positive_int(1), 1)
 
     def test_non_positive_int(self):
-        self.assertRaises(argparse.ArgumentTypeError, utilities.positive_int, '-1')
-        self.assertRaises(argparse.ArgumentTypeError, utilities.positive_int, -1)
-        self.assertRaises(argparse.ArgumentTypeError, utilities.positive_int, 0)
+        """Verify a non-positive integer is rejected."""
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, '-1')
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, -1)
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, 0)
+
+    def test_non_int(self):
+        """Verify a non-integer is rejected."""
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, 'abc')
