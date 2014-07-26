@@ -19,7 +19,7 @@ TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, "TRACE")
 
 
-def _trace(self, message, *args, **kws):
+def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
     """New logging level, TRACE."""
     if self.isEnabledFor(TRACE):
         self._log(TRACE, message, args, **kws)  # pylint: disable=W0212
