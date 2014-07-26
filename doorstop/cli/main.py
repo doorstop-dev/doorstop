@@ -111,6 +111,7 @@ def _add(subs, shared):
     sub.add_argument('prefix',
                      help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
+    sub.add_argument('-c', '--count', help="number of items to create.", default=1, type=utilities.positive_int)
 
 
 def _remove(subs, shared):

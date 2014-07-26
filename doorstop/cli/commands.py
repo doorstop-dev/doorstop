@@ -99,7 +99,8 @@ def run_add(args, cwd, _, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
-        item = tree.add_item(args.prefix, level=args.level)
+        for _ in range(args.count):
+            item = tree.add_item(args.prefix, level=args.level)
     if not success:
         return False
 

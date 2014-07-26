@@ -3,6 +3,7 @@
 import os
 import ast
 import logging
+import argparse
 
 from doorstop import common
 from doorstop import settings
@@ -193,3 +194,17 @@ def ask(question, default=None):
         except KeyError:
             options = ', '.join(sorted(valid.keys()))
             print("valid responses: {}".format(options))
+
+
+def positive_int(value):
+    """Evaluate a value as positive.
+
+    :param value: passed in value to Evaluate
+
+    :return: value casted to an integer
+
+    """
+    ival = int(value)
+    if ival < 1:
+        raise argparse.ArgumentTypeError("{} is an invalid positive int value".format(value))
+    return ival
