@@ -9,37 +9,55 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop import settings
 
 
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
+def cache_item(func):
+    """Decorator for methods that add returned item to cache."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._document_cache.clear()  # pylint: disable=W0212
-        return result
+        """Wrapped method to cache the returned item."""
+        item = func(self, *args, **kwargs) or self
+        # pylint: disable=W0212
+        if item.document and item not in item.document._items:
+            item.document._items.append(item)
+        if settings.CACHE_ITEMS:
+            if item.tree:
+                item.tree._item_cache[item.id] = item
+                logging.debug("cached item: {}".format(item))
+        return item
     return wrapped
 
 
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
+def expunge_item(func):
+    """Decorator for methods that expunge the returned item from cache."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._item_cache.clear()  # pylint: disable=W0212
-        return result
+        """Wrapped method to expunge the returned item."""
+        item = func(self, *args, **kwargs) or self
+        # pylint: disable=W0212
+        if item.document and item in item.document._items:
+            item.document._items.remove(item)
+        if settings.CACHE_ITEMS:
+            if item.tree:
+                item.tree._item_cache[item.id] = None
+                logging.debug("expunged item: {}".format(item))
+        return item
+    return wrapped
+
+
+def cache_document(func):
+    """Decorator for methods that add the returned document to cache."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to cache the returned document."""
+        document = func(self, *args, **kwargs) or self
+        # pylint: disable=W0212
+        if settings.CACHE_DOCUMENTS:
+            if document.tree:
+                document.tree._document_cache[document.prefix] = document
+                logging.debug("cached document: {}".format(document))
+        return document
     return wrapped
 
 
@@ -142,7 +160,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return not self == other
 
     @staticmethod
-    def _new(path, name):  # pragma: no cover (integration test)
+    def _create(path, name):  # pragma: no cover (integration test)
         """Create a new file for the object.
 
         :param path: path to new file

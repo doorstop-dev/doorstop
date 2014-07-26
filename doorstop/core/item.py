@@ -6,7 +6,7 @@ import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import BaseValidatable, clear_item_cache
+from doorstop.core.base import BaseValidatable, cache_item, expunge_item
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
@@ -82,6 +82,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             return self.level < other.level
 
     @staticmethod
+    @cache_item
     def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
         """Internal method to create a new item.
 
@@ -106,7 +107,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         path2 = os.path.join(path, filename)
         # Create the initial item file
         logging.debug("creating item file at {}...".format(path2))
-        Item._new(path2, name='item')
+        Item._create(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root, document=document, tree=tree, auto=False)
         item.level = level if level is not None else item.level
@@ -520,11 +521,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
+            logging.debug("reformatting item {}...".format(self))
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
-        logging.debug("getting issues against document: {}".format(document))
+        logging.debug("getting issues against document...")
         # Verify an item's ID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
@@ -553,7 +555,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
-        logging.debug("getting issues against tree: {}".format(tree))
+        logging.debug("getting issues against tree...")
         # Verify an item's links are valid
         identifiers = set()
         for identifier in self.links:
@@ -587,8 +589,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
-        logging.debug("getting issues against both: {} & {}".format(document,
-                                                                    tree))
+        logging.debug("getting issues against document and tree...")
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(find_all=False)
@@ -695,7 +696,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     child_documents = property(find_child_documents)
 
-    def _find_child_objects(self, find_all=True):
+    def _find_child_objects(self, find_all=True):  # TODO: pass document and tree?
         """Get lists of child items and child documents.
 
         :param find_all: find all items (not just the first) before returning
@@ -705,11 +706,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         child_items = []
         child_documents = []
+        # TODO: this check shouldn't be required anymore
         # Check for parent references
         if not self.document or not self.tree:
             logging.warning("document and tree required to find children")
             return child_items, child_documents
         # Find child objects
+        logging.debug("finding item {}'s child objects...".format(self))
         for document2 in self.tree:
             if document2.parent == self.document.prefix:
                 child_documents.append(document2)
@@ -761,12 +764,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         logging.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
-    @clear_item_cache
+    @expunge_item
     def delete(self, path=None):
         """Delete the item."""
-        # TODO: #65: move this to a decorator and remove pylint comments
-        if self.document and self in self.document._items:  # pylint:disable=W0212
-            self.document._items.remove(self)  # pylint:disable=W0212
         super().delete(self.path)
 
 

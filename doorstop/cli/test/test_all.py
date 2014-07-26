@@ -156,8 +156,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
         cls.path = os.path.join(TUTORIAL, filename)
 
     def tearDown(self):
-        if os.path.exists(self.path):
-            os.remove(self.path)
+        common.delete(self.path)
 
     def test_add(self):
         """Verify 'doorstop add' can be called."""
@@ -293,7 +292,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' can be called with a document (no, no)."""
         path = "TUT-456.yml"
         self.assertIs(None, main(['edit', 'tut']))
-        os.remove(path)
+        common.delete(path)
         mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
 
     @patch('time.time', Mock(return_value=789))
@@ -465,14 +464,8 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
 
     def tearDown(self):
-        try:
-            shutil.rmtree(os.path.join(ROOT, 'tmp'))
-        except IOError:
-            pass
-        try:
-            os.remove(os.path.join(REQS, 'REQ099.yml'))
-        except IOError:
-            pass
+        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(REQS, 'REQ099.yml'))
 
     def test_import_document(self):
         """Verify 'doorstop import' can import a document."""

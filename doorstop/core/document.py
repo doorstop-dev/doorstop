@@ -7,8 +7,7 @@ import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import BaseValidatable
-from doorstop.core.base import clear_document_cache, clear_item_cache
+from doorstop.core.base import cache_document, BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
@@ -72,6 +71,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return True
 
     @staticmethod
+    @cache_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
@@ -99,7 +99,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
         # Create the document directory
-        Document._new(config, name='document')
+        Document._create(config, name='document')
         # Initialize the document
         document = Document(path, root=root, tree=tree, auto=False)
         document.prefix = prefix if prefix is not None else document.prefix
@@ -166,10 +166,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _iter(self, reload=False):
         """Yield the document's items."""
         if self._itered and not reload:
-            logging.debug("iterating through previously loaded items...")
+            msg = "iterating document {}'s loaded items...".format(self)
+            logging.debug(msg)
             yield from self._items
             return
-        logging.debug("iterating through items in {}...".format(self.path))
+        logging.info("loading document {}'s items...".format(self))
         # Reload the document's item
         self._items = []
         for dirpath, dirnames, filenames in os.walk(self.path):
@@ -177,9 +178,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 path = os.path.join(dirpath, dirname, Document.CONFIG)
                 if os.path.exists(path):
                     path = os.path.dirname(path)
-                    msg = "found embedded document: {}".format(path)
-                    logging.debug(msg)
                     dirnames.remove(dirname)
+                    logging.debug("skipped embedded document: {}".format(path))
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
@@ -189,6 +189,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     pass  # skip non-item files
                 else:
                     self._items.append(item)
+                    if settings.CACHE_ITEMS:
+                        if self.tree:
+                            self.tree._item_cache[item.id] = item  # pylint: disable=W0212
         # Set meta attributes
         self._itered = True
         # Yield items
@@ -304,7 +307,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    @clear_item_cache
+    # @cache_item decorates `Item.new()`
     def add_item(self, number=None, level=None, reorder=True):
         """Create a new item for the document and return it.
 
@@ -328,12 +331,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         item = Item.new(self.tree, self,
                         self.path, self.root, identifier,
                         level=nlevel)
-        self._items.append(item)
         if level and reorder:
             self.reorder(keep=item)
         return item
 
-    @clear_item_cache
+    # @expunge_item decorates `Item.delete()`
     def remove_item(self, value, reorder=True):
         """Remove an item by its ID.
 
@@ -574,7 +576,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
         # Check each item
-        for item in self:
+        for item in items:
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
                                item.get_issues()):
@@ -614,10 +616,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     break
             prev = item
 
-    @clear_document_cache
     def delete(self, path=None):
         """Delete the document and its items."""
         for item in self:
             item.delete()
         super().delete(self.config)
         common.delete(self.path)
+        if settings.CACHE_DOCUMENTS:
+            if self.tree:
+                self.tree._document_cache.clear()  # pylint: disable=W0212
+                logging.debug("cleared document cache")

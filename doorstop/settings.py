@@ -28,3 +28,7 @@ CHECK_CHILD_LINKS = True  # validate reverse links
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
+
+# Caching settings
+CACHE_ITEMS = True
+CACHE_DOCUMENTS = True

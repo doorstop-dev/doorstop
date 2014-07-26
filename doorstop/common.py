@@ -8,7 +8,7 @@ import logging
 import yaml
 
 VERBOSITY = 0  # global verbosity setting for controlling string formatting
-STR_VERBOSITY = 3
+STR_VERBOSITY = 4
 MAX_VERBOSITY = 4
 
 
@@ -70,6 +70,7 @@ def read_text(path, encoding='utf-8'):
     :return: string
 
     """
+    logging.debug("reading text from '{}'...".format(path))
     with open(path, 'r', encoding=encoding) as stream:
         text = stream.read()
     return text
@@ -153,4 +154,5 @@ def delete(path):  # pragma: no cover (integration test)
             msg = "unable to delete: {}".format(path)
             logging.warning(msg)
     elif os.path.isfile(path):
+        logging.debug("deleting '{}'...".format(path))
         os.remove(path)
