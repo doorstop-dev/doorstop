@@ -84,6 +84,10 @@ def configure_settings(args):
         settings.CHECK_REF = not args.no_ref_check
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
+    if args.no_suspect_check is not None:
+        settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
+    if args.no_review_check is not None:
+        settings.CHECK_REVIEW_STATUS = not args.no_review_check
     # Parse subcommand settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links

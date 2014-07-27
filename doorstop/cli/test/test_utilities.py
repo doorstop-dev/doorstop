@@ -8,6 +8,8 @@ from doorstop.cli import utilities
 from doorstop import common
 from doorstop import settings
 
+from doorstop.cli.test import SettingsTestCase
+
 
 class TestCapture(unittest.TestCase):  # pylint: disable=R0904
 
@@ -36,25 +38,9 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
             self.fail("DoorstopError not raised")
 
 
-class TestConfigureSettings(unittest.TestCase):  # pylint: disable=R0904
+class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
 
     """Unit tests for the `configure_settings` function."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.backup = (settings.REFORMAT,
-                       settings.CHECK_REF,
-                       settings.CHECK_CHILD_LINKS,
-                       settings.REORDER,
-                       settings.CHECK_LEVELS,
-                       settings.PUBLISH_CHILD_LINKS)
-
-    def tearDown(self):
-        (settings.REFORMAT,
-         settings.CHECK_REF,
-         settings.CHECK_CHILD_LINKS,
-         settings.REORDER,
-         settings.CHECK_LEVELS,
-         settings.PUBLISH_CHILD_LINKS) = self.backup
 
     def test_configure_settings(self):
         """Verify settings are parsed correctly."""
@@ -67,6 +53,8 @@ class TestConfigureSettings(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
+        self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
 class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904

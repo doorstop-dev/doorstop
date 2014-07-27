@@ -13,6 +13,7 @@ from doorstop.core.builder import _clear_tree
 from doorstop import settings
 
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
+from doorstop.cli.test import SettingsTestCase
 
 
 class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -41,27 +42,19 @@ class MockTestCase(TempTestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestMain(unittest.TestCase):  # pylint: disable=R0904
+class TestMain(SettingsTestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop' command."""
 
     def setUp(self):
+        super().setUp()
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
-        self.backup = (settings.REFORMAT,
-                       settings.CHECK_REF,
-                       settings.CHECK_CHILD_LINKS,
-                       settings.REORDER,
-                       settings.CHECK_LEVELS)
 
     def tearDown(self):
+        super().tearDown()
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
-        (settings.REFORMAT,
-         settings.CHECK_REF,
-         settings.CHECK_CHILD_LINKS,
-         settings.REORDER,
-         settings.CHECK_LEVELS) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -87,6 +80,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.REORDER)
         self.assertTrue(settings.CHECK_LEVELS)
+        self.assertTrue(settings.CHECK_SUSPECT_LINKS)
+        self.assertTrue(settings.CHECK_REVIEW_STATUS)
 
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
@@ -96,12 +91,16 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
                                   '--no-ref-check',
                                   '--no-child-check',
                                   '--reorder',
-                                  '--no-level-check']))
+                                  '--no-level-check',
+                                  '--no-suspect-check',
+                                  '--no-review-check']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
+        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
+        self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
