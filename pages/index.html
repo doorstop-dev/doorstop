@@ -35,9 +35,9 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
 
-<p>Doorstop is a <a href="http://wikipedia.org/wiki/Requirements_management">requirements management</a> tool that leverages version control to store a project's traceability data in YAML files.</p>
+<p>Doorstop is a <a href="http://wikipedia.org/wiki/Requirements_management">requirements management</a> tool that leverages version control to store a project's documentation traced from specification through implementaiton.</p>
 
-<p>Each linkable item (use case, requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.</p>
+<p>Each linkable <strong>item</strong> (use case, requirement, test case, etc.) is stored as a YAML file in a designated directory with related items to form a <strong>document</strong>. The relationship between documents in a project forms a <strong>tree</strong>. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.</p>
 
 <p>Additional reading:</p>
 
@@ -67,19 +67,19 @@
 <pre><code>$ pip install doorstop
 </code></pre>
 
-<p>Or directly from source:</p>
+<p>or directly from source:</p>
 
 <pre><code>$ git clone https://github.com/jacebrowning/doorstop.git
 $ cd doorstop
 $ python setup.py install
 </code></pre>
 
-<p>After installation, Doorstop is available on the command-line:</p>
+<p>After installation, Doorstop is available as a command-line program:</p>
 
 <pre><code>$ doorstop --help
 </code></pre>
 
-<p>And the package is available under the name 'doorstop':</p>
+<p>and Python package:</p>
 
 <pre><code>$ python
 &gt;&gt;&gt; import doorstop
@@ -161,7 +161,7 @@ valid tree: REQ &lt;- [ TST ]
 &lt;/html&gt;
 </code></pre>
 
-<p>Or a file can be created using one of the supported extensions:</p>
+<p>A file can be created using one of the supported extensions:</p>
 
 <pre><code>$ doorstop publish TST path/to/tst.md
 publishing TST to path/to/tst.md...
