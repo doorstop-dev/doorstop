@@ -9,12 +9,8 @@ after_success:
 - coveralls
 - ocular
 after_script:
-# Generate Doorstop HTML pages
-- make reqs-html
-- cp -r docs/gen/ pages/reqs/
-# Generate Sphinx HTML pages
-- make sphinx
-- cp -r docs/sphinx/_build pages/docs/
+# Generate Doorstop and Sphinx HTML pages
+- make pages
 # Configure Git with Travis CI information
 - git config --global user.email "travis@travis-ci.org"
 - git config --global user.name "travis-ci"

@@ -98,6 +98,11 @@ gui: env
 .PHONY: doc
 doc: readme reqs uml apidocs sphinx
 
+.PHONY: pages 
+pages: reqs-html sphinx
+	cp -r docs/gen/ pages/reqs/
+	cp -r docs/sphinx/_build pages/docs/
+
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
 docs/README-github.html: README.md
@@ -206,6 +211,7 @@ clean-all: clean .clean-env
 .clean-doc:
 	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
 	rm -rf docs/sphinx/doorstop*.rst docs/sphinx/_build
+	rm -rf pages/docs/ pages/reqs/
 
 .PHONY: .clean-test
 .clean-test:
