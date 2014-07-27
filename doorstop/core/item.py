@@ -518,7 +518,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             yield from self._get_issues_both(self.document, self.tree)
         # Check review status
         if not self.reviewed:
-            yield DoorstopWarning("unreviewed changes")
+            if settings.CHECK_REVIEW_STATUS:
+                yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
             log.debug("reformatting item {}...".format(self))
@@ -577,8 +578,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if identifier.stamp == Stamp(True):
                     identifier.stamp = item.stamp()  # convert True to a stamp
                 elif identifier.stamp != item.stamp():
-                    msg = "suspect link: {}".format(item)
-                    yield DoorstopWarning(msg)
+                    if settings.CHECK_SUSPECT_LINKS:
+                        msg = "suspect link: {}".format(item)
+                        yield DoorstopWarning(msg)
                 # reformat the item's ID
                 identifier2 = ID(item.id, stamp=identifier.stamp)
                 log.debug("found linked item: {}".format(identifier2))
