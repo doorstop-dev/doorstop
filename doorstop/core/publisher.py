@@ -350,12 +350,6 @@ def _format_md_links(items, linkify):
     return ', '.join(links)
 
 
-# TODO: delete this function if not used
-def _format_md_document_link(document):  # pragma: no cover
-    """Format a document link in Markdown."""
-    return "[{p}]({p}.html)".format(p=document.prefix)
-
-
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):

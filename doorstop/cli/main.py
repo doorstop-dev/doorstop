@@ -94,7 +94,7 @@ def _create(subs, shared):
                           help=info, **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
     sub.add_argument('path', help="path to a directory for item files")
-    sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
+    sub.add_argument('-p', '--parent', help="prefix of parent document")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
 
@@ -123,8 +123,7 @@ def _remove(subs, shared):
     info = "remove an item file from a document directory"
     sub = subs.add_parser('remove', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('id', metavar='ID',
-                     help="item ID to remove from its document")
+    sub.add_argument('id', help="item ID to remove from its document")
 
 
 def _edit(subs, shared):
@@ -165,7 +164,6 @@ def _reorder(subs, shared):
                        help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document index")
-    # TODO: clean up case on all CLI metavars/labels
 
 
 def _link(subs, shared):
