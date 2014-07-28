@@ -9,8 +9,7 @@ script: "echo $TRAVIS_BRANCH; echo $TRAVIS_PULL_REQUEST; echo $TRAVIS_PYTHON_VER
 after_success:
 - coveralls
 - ocular
-after_script:
-->
+after_script: >
   if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_PYTHON_VERSION == '3.3' ]]
 
     # Generate Doorstop and Sphinx HTML pages
