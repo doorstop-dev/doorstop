@@ -11,7 +11,7 @@ after_success:
 - ocular
 after_script: >
   echo $TRAVIS_BRANCH; echo $TRAVIS_PULL_REQUEST; echo $TRAVIS_PYTHON_VERSION;
-  if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_PYTHON_VERSION == '3.3' ]]; then
+  if [[ $TRAVIS_BRANCH == 'pages' && $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_PYTHON_VERSION == '3.3' ]]; then
 
     # Generate Doorstop and Sphinx HTML pages
     make pages ;
