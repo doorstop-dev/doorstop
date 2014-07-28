@@ -36,7 +36,7 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
     if not success:
         return False
 
-    if tree and valid:
+    if len(tree) > 1 and valid:
         print()
         print(tree.draw())
         print()
