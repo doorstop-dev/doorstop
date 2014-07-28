@@ -347,22 +347,22 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             document = self._document_cache[prefix]
             if document:
-                log.debug("found cached document: {}".format(document))
+                log.trace("found cached document: {}".format(document))
                 return document
             else:
-                log.debug("found cached unknown: {}".format(prefix))
+                log.trace("found cached unknown: {}".format(prefix))
         except KeyError:
             for document in self:
                 if document.prefix == prefix:
-                    log.debug("found document: {}".format(document))
+                    log.trace("found document: {}".format(document))
                     if settings.CACHE_DOCUMENTS:
                         self._document_cache[prefix] = document
-                        log.debug("cached document: {}".format(document))
+                        log.trace("cached document: {}".format(document))
                     return document
             log.debug("could not find document: {}".format(prefix))
             if settings.CACHE_DOCUMENTS:
                 self._document_cache[prefix] = None
-                log.debug("cached unknown: {}".format(prefix))
+                log.trace("cached unknown: {}".format(prefix))
 
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
@@ -383,10 +383,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             item = self._item_cache[identifier]
             if item:
-                log.debug("found cached item: {}".format(item))
+                log.trace("found cached item: {}".format(item))
                 return item
             else:
-                log.debug("found cached unknown: {}".format(identifier))
+                log.trace("found cached unknown: {}".format(identifier))
         except KeyError:
             for document in self:
                 try:
@@ -394,15 +394,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
-                    log.debug("found item: {}".format(item))
+                    log.trace("found item: {}".format(item))
                     if settings.CACHE_ITEMS:
                         self._item_cache[identifier] = item
-                        log.debug("cached item: {}".format(item))
+                        log.trace("cached item: {}".format(item))
                     return item
             log.debug("could not find item: {}".format(identifier))
             if settings.CACHE_ITEMS:
                 self._item_cache[identifier] = None
-                log.debug("cached unknown: {}".format(identifier))
+                log.trace("cached unknown: {}".format(identifier))
 
         raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
 

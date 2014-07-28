@@ -23,7 +23,7 @@ def cache_item(func):
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.id] = item
-            log.debug("cached item: {}".format(item))
+            log.trace("cached item: {}".format(item))
         return item
     return wrapped
 
@@ -39,7 +39,7 @@ def expunge_item(func):
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.id] = None
-            log.debug("expunged item: {}".format(item))
+            log.trace("expunged item: {}".format(item))
         return item
     return wrapped
 
@@ -53,7 +53,7 @@ def cache_document(func):
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = document
-            log.debug("cached document: {}".format(document))
+            log.trace("cached document: {}".format(document))
         return document
     return wrapped
 

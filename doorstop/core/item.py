@@ -583,7 +583,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         yield DoorstopWarning(msg)
                 # reformat the item's ID
                 identifier2 = ID(item.id, stamp=identifier.stamp)
-                log.debug("found linked item: {}".format(identifier2))
                 identifiers.add(identifier2)
         # Apply the reformatted item IDs
         if settings.REFORMAT:
