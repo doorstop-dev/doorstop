@@ -5,10 +5,7 @@ python:
 install:
 - pip install coveralls scrutinizer-ocular
 # script: make ci
-script: |
-  echo $TRAVIS_BRANCH;
-  echo $TRAVIS_PULL_REQUEST;
-  echo $TRAVIS_PYTHON_VERSION;
+script: "echo $TRAVIS_BRANCH; echo $TRAVIS_PULL_REQUEST; echo $TRAVIS_PYTHON_VERSION"
 after_success:
 - coveralls
 - ocular
