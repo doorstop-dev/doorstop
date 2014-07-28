@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
     <title>Doorstop</title>
-    
+
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -26,35 +26,18 @@
     <div id="header_wrap" class="outer">
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/jacebrowning/doorstop">View on GitHub</a>
-
           <h1 id="project_title">Doorstop</h1>
           <h2 id="project_tagline">Requirements management using version control.</h2>
-          <iframe src="http://ghbtns.com/github-btn.html?user=jacebrowning&repo=doorstop&type=watch&count=true"
-  allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/jacebrowning/doorstop/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/jacebrowning/doorstop/tarball/master">Download this project as a tar.gz file</a>
-            </section>
         </header>
     </div>
 
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>
-<a name="doorstop" class="anchor" href="#doorstop"><span class="octicon octicon-link"></span></a>Doorstop</h1>
 
-<p><a href="https://travis-ci.org/jacebrowning/doorstop"><img src="http://img.shields.io/travis/jacebrowning/doorstop/master.svg?style=flat" alt="Build Status"></a>
-<a href="https://coveralls.io/r/jacebrowning/doorstop"><img src="http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg?style=flat" alt="Coverage Status"></a>
-<a href="https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master"><img src="http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg?style=flat" alt="Scrutinizer Code Quality"></a>
-<a href="https://pypi.python.org/pypi/Doorstop"><img src="http://img.shields.io/pypi/v/Doorstop.svg?style=flat" alt="PyPI Version"></a>
-<a href="https://pypi.python.org/pypi/Doorstop"><img src="http://img.shields.io/pypi/dm/Doorstop.svg?style=flat" alt="PyPI Downloads"></a>
-<a href="https://www.gittip.com/jacebrowning"><img src="http://img.shields.io/badge/gittip-me-brightgreen.svg?style=flat" alt="Gittip"></a></p>
+<p>Doorstop is a <a href="http://wikipedia.org/wiki/Requirements_management">requirements management</a> tool that leverages version control to store a project's documentation traced from specification through implementaiton.</p>
 
-<p>Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.</p>
-
-<p>Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.</p>
+<p>Each linkable <strong>item</strong> (use case, requirement, test case, etc.) is stored as a YAML file in a designated directory with related items to form a <strong>document</strong>. The relationship between documents in a project forms a <strong>tree</strong>. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.</p>
 
 <p>Additional reading:</p>
 
@@ -65,7 +48,7 @@
 </li>
 <li>demo: <a href="http://nbviewer.ipython.org/gist/jacebrowning/9754157">IPython Notebook</a>
 </li>
-<li>sample: <a href="reqs/index.html">Generated HTML</a>
+<li>sample: <a href="http://doorstop.info/reqs/index">Generated HTML</a>
 </li>
 </ul><h1>
 <a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h1>
@@ -84,19 +67,19 @@
 <pre><code>$ pip install doorstop
 </code></pre>
 
-<p>Or directly from source:</p>
+<p>or directly from source:</p>
 
 <pre><code>$ git clone https://github.com/jacebrowning/doorstop.git
 $ cd doorstop
 $ python setup.py install
 </code></pre>
 
-<p>After installation, Doorstop is available on the command-line:</p>
+<p>After installation, Doorstop is available as a command-line program:</p>
 
 <pre><code>$ doorstop --help
 </code></pre>
 
-<p>And the package is available under the name 'doorstop':</p>
+<p>and Python package:</p>
 
 <pre><code>$ python
 &gt;&gt;&gt; import doorstop
@@ -178,7 +161,7 @@ valid tree: REQ &lt;- [ TST ]
 &lt;/html&gt;
 </code></pre>
 
-<p>Or a file can be created using one of the supported extensions:</p>
+<p>A file can be created using one of the supported extensions:</p>
 
 <pre><code>$ doorstop publish TST path/to/tst.md
 publishing TST to path/to/tst.md...
