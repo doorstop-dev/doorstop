@@ -424,7 +424,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
            A document only has one parent.
 
         """
-        # TODO: determine if an `UnknownDocument` class is needed
         try:
             return [self.tree.find_document(self.document.prefix)]
         except DoorstopError:
@@ -499,9 +498,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check external references
         if settings.CHECK_REF:
             try:
-                # TODO: find_ref should get 'self.tree.vcs.ignored' internally
-                self.find_ref(ignored=self.tree.vcs.ignored
-                              if self.tree else None)
+                self.find_ref()
             except DoorstopError as exc:
                 yield exc
         # Check links
@@ -583,7 +580,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         yield DoorstopWarning(msg)
                 # reformat the item's ID
                 identifier2 = ID(item.id, stamp=identifier.stamp)
-                log.debug("found linked item: {}".format(identifier2))
                 identifiers.add(identifier2)
         # Apply the reformatted item IDs
         if settings.REFORMAT:
@@ -594,7 +590,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         log.debug("getting issues against document and tree...")
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
-            items, documents = self._find_child_objects(find_all=False)
+            items, documents = self._find_child_objects(document=document,
+                                                        tree=tree,
+                                                        find_all=False)
             if not items:
                 for document in documents:
                     msg = "no links from child document: {}".format(document)
@@ -698,32 +696,32 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     child_documents = property(find_child_documents)
 
-    # TODO: pass document and tree?
-    def _find_child_objects(self, find_all=True):
+    def _find_child_objects(self, document=None, tree=None, find_all=True):
         """Get lists of child items and child documents.
 
+        :param document: document containing the current item
+        :param tree: tree containing the current item
         :param find_all: find all items (not just the first) before returning
 
-        :return: list of found items, list of all child Documents
+        :return: list of found items, list of all child documents
 
         """
         child_items = []
         child_documents = []
-        # TODO: this check shouldn't be required anymore
-        # Check for parent references
-        if not self.document or not self.tree:
-            log.warning("document and tree required to find children")
+        document = document or self.document
+        tree = tree or self.tree
+        if not document or not tree:
             return child_items, child_documents
         # Find child objects
         log.debug("finding item {}'s child objects...".format(self))
-        for document2 in self.tree:
-            if document2.parent == self.document.prefix:
+        for document2 in tree:
+            if document2.parent == document.prefix:
                 child_documents.append(document2)
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:
-                    for item in document2:
-                        if self.id in item.links:
-                            child_items.append(item)
+                    for item2 in document2:
+                        if self.id in item2.links:
+                            child_items.append(item2)
                             if not find_all:
                                 break
         # Display found links

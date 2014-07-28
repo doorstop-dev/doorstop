@@ -180,7 +180,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if os.path.exists(path):
                     path = os.path.dirname(path)
                     dirnames.remove(dirname)
-                    log.debug("skipped embedded document: {}".format(path))
+                    log.trace("skipped embedded document: {}".format(path))
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
@@ -190,9 +190,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     pass  # skip non-item files
                 else:
                     self._items.append(item)
+                    if reload:
+                        item.load(reload=reload)
                     if settings.CACHE_ITEMS and self.tree:
                         self.tree._item_cache[item.id] = item  # pylint: disable=W0212
-                        log.debug("cached item: {}".format(item))
+                        log.trace("cached item: {}".format(item))
         # Set meta attributes
         self._itered = True
         # Yield items
@@ -626,4 +628,4 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         common.delete(self.path)
         if settings.CACHE_DOCUMENTS and self.tree:
             self.tree._document_cache[prefix] = None  # pylint: disable=W0212
-            log.debug("expunged document: {}".format(prefix))
+            log.trace("expunged document: {}".format(prefix))

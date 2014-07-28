@@ -294,7 +294,7 @@ def run_review(args, cwd, err, catch=True):
     return True
 
 
-def run_import(args, cwd, err, catch=True):
+def run_import(args, cwd, err, catch=True, _tree=None):
     """Process arguments and run the `doorstop import` subcommand.
 
     :param args: Namespace of CLI arguments
@@ -322,7 +322,7 @@ def run_import(args, cwd, err, catch=True):
     # Import document or item
     with utilities.capture(catch=catch) as success:
         if args.path:
-            tree = build(cwd, root=args.project)
+            tree = _tree or build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
@@ -498,7 +498,6 @@ def _iter_items(args, cwd, err):
                 yield item
 
 
-# TODO: pass tree back to `doorstop import`
 def _export_import(args, cwd, err, document, ext):
     """Edit a document by calling export followed by import.
 
@@ -522,7 +521,7 @@ def _export_import(args, cwd, err, document, ext):
     if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
-        get('import')(args, cwd, err, catch=False)
+        get('import')(args, cwd, err, catch=False, _tree=document.tree)
         common.delete(path)
     else:
         print("import canceled")
