@@ -269,7 +269,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(1, weight=5)
             frame.rowconfigure(2, weight=0)
             frame.rowconfigure(3, weight=0)
-            frame.rowconfigure(4, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=0)
             frame.columnconfigure(2, weight=0)
@@ -303,8 +302,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             ttk.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
             ttk.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
-            ttk.Label(frame, text="Items Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **kw_gp)
-            tk.Text(frame, height=height_code, width=width_code, wrap=tk.WORD, font=fixed).grid(row=4, column=0, columnspan=6, **kw_gsp)
 
             return frame
 
