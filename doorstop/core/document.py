@@ -3,10 +3,11 @@
 import os
 from itertools import chain
 from collections import OrderedDict
-import logging
+
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
+from doorstop.core import log
 from doorstop.core.base import cache_document, BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
@@ -115,7 +116,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Load the document's properties from its file."""
         if self._loaded and not reload:
             return
-        logging.debug("loading {}...".format(repr(self)))
+        log.debug("loading {}...".format(repr(self)))
         # Read text from file
         text = self._read(self.config)
         # Parse YAML data from text
@@ -138,7 +139,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def save(self):
         """Save the document's properties to its file."""
-        logging.debug("saving {}...".format(repr(self)))
+        log.debug("saving {}...".format(repr(self)))
         # Format the data items
         data = {}
         sets = {}
@@ -167,10 +168,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Yield the document's items."""
         if self._itered and not reload:
             msg = "iterating document {}'s loaded items...".format(self)
-            logging.debug(msg)
+            log.debug(msg)
             yield from self._items
             return
-        logging.info("loading document {}'s items...".format(self))
+        log.info("loading document {}'s items...".format(self))
         # Reload the document's item
         self._items = []
         for dirpath, dirnames, filenames in os.walk(self.path):
@@ -179,7 +180,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 if os.path.exists(path):
                     path = os.path.dirname(path)
                     dirnames.remove(dirname)
-                    logging.debug("skipped embedded document: {}".format(path))
+                    log.trace("skipped embedded document: {}".format(path))
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
@@ -189,9 +190,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     pass  # skip non-item files
                 else:
                     self._items.append(item)
-                    if settings.CACHE_ITEMS:
-                        if self.tree:
-                            self.tree._item_cache[item.id] = item  # pylint: disable=W0212
+                    if reload:
+                        item.load(reload=reload)
+                    if settings.CACHE_ITEMS and self.tree:
+                        self.tree._item_cache[item.id] = item  # pylint: disable=W0212
+                        log.trace("cached item: {}".format(item))
         # Set meta attributes
         self._itered = True
         # Yield items
@@ -296,13 +299,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Create or update the document's index."""
         if value:
             path = os.path.join(self.path, Document.INDEX)
-            logging.info("creating {} index...".format(self))
+            log.info("creating {} index...".format(self))
             common.write_lines(self._lines_index(self.items), path)
 
     @index.deleter
     def index(self):
         """Delete the document's index if it exists."""
-        logging.info("deleting {} index...".format(self))
+        log.info("deleting {} index...".format(self))
         common.delete(self.index)
 
     # actions ################################################################
@@ -319,14 +322,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         number = number or self.next
-        logging.debug("next number: {}".format(number))
+        log.debug("next number: {}".format(number))
         try:
             last = self.items[-1]
         except IndexError:
             nlevel = level
         else:
             nlevel = level or last.level + 1
-        logging.debug("next level: {}".format(nlevel))
+        log.debug("next level: {}".format(nlevel))
         identifier = ID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self,
                         self.path, self.root, identifier,
@@ -373,12 +376,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         # Reorder manually
         if manual and self.index:
-            logging.info("reordering {} from index...".format(self))
+            log.info("reordering {} from index...".format(self))
             self._reorder_from_index(self, self.index)
             del self.index
         # Reorder automatically
         if automatic:
-            logging.info("reordering {} automatically...".format(self))
+            log.info("reordering {} automatically...".format(self))
             items = _items or self.items
             keep = self.find_item(keep) if keep else None
             self._reorder_automatic(items, start=start, keep=keep)
@@ -387,9 +390,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     def _lines_index(items):
         """Generate (pseudo) YAML lines for the document index."""
         yield '#' * settings.MAX_LINE_LENGTH
-        yield '# THIS IS A TEMPORARILY GENERATED FILE SHOWING THE ITEM OUTLINE'
-        yield '# IT WILL BE DELETED AFTER SUCCESSFULLY REORDERING THE ITEMS'
-        yield '# CHANGES TO ITEM LEVELS WILL BE REFLECT IN THE ITEM FILES'
+        yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
+        yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
+        yield '# CHANGES ARE BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
         yield '#' * settings.MAX_LINE_LENGTH
         yield ''
         yield "initial: {}".format(items[0].level if items else 1.0)
@@ -431,7 +434,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             try:
                 item = document.find_item(identifier)
             except DoorstopError as exc:
-                logging.debug(exc)
+                log.debug(exc)
                 item = None
             subsection = section[identifier]
 
@@ -440,11 +443,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
             # Apply the new level
             if item is None:
-                logging.info("({}): {}".format(identifier, level))
+                log.info("({}): {}".format(identifier, level))
             elif item.level == level:
-                logging.info("{}: {}".format(item, level))
+                log.info("{}: {}".format(item, level))
             else:
-                logging.info("{}: {} to {}".format(item, item.level, level))
+                log.info("{}: {} to {}".format(item, item.level, level))
             if item:
                 item.level = level
 
@@ -469,22 +472,22 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         nlevel = plevel = None
         for clevel, item in Document._items_by_level(items, keep=keep):
-            logging.debug("current level: {}".format(clevel))
+            log.debug("current level: {}".format(clevel))
             # Determine the next level
             if not nlevel:
                 # Use the specified or current starting level
                 nlevel = Level(start) if start else clevel
                 nlevel.heading = clevel.heading
-                logging.debug("next level (start): {}".format(nlevel))
+                log.debug("next level (start): {}".format(nlevel))
             else:
                 # Adjust the next level to be the same depth
                 if len(clevel) > len(nlevel):
                     nlevel >>= len(clevel) - len(nlevel)
-                    logging.debug("matched current indent: {}".format(nlevel))
+                    log.debug("matched current indent: {}".format(nlevel))
                 elif len(clevel) < len(nlevel):
                     nlevel <<= len(nlevel) - len(clevel)
                     # nlevel += 1
-                    logging.debug("matched current dedent: {}".format(nlevel))
+                    log.debug("matched current dedent: {}".format(nlevel))
                 nlevel.heading = clevel.heading
                 # Check for a level jump
                 _size = min(len(clevel.value), len(plevel.value))
@@ -494,22 +497,22 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         nlevel += 1
                         nlevel >>= len(clevel) - len(nlevel)
                         msg = "next level (jump): {}".format(nlevel)
-                        logging.debug(msg)
+                        log.debug(msg)
                         break
                 # Check for a normal increment
                 else:
                     if len(nlevel) <= len(plevel):
                         nlevel += 1
                         msg = "next level (increment): {}".format(nlevel)
-                        logging.debug(msg)
+                        log.debug(msg)
                     else:
                         msg = "next level (indent/dedent): {}".format(nlevel)
-                        logging.debug(msg)
+                        log.debug(msg)
             # Apply the next level
             if clevel == nlevel:
-                logging.info("{}: {}".format(item, clevel))
+                log.info("{}: {}".format(item, clevel))
             else:
-                logging.info("{}: {} to {}".format(item, clevel, nlevel))
+                log.info("{}: {} to {}".format(item, clevel, nlevel))
             item.level = nlevel.copy()
             # Save the current level as the previous level
             plevel = clevel.copy()
@@ -529,7 +532,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             # Reorder items at this level
             if keep in items:
                 # move the kept item to the front of the list
-                logging.debug("keeping {} level over duplicates".format(keep))
+                log.debug("keeping {} level over duplicates".format(keep))
                 items = [items.pop(items.index(keep))] + items
             for item in items:
                 yield level, item
@@ -564,7 +567,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         assert kwargs.get('document_hook') is None
         hook = item_hook if item_hook else lambda **kwargs: []
-        logging.info("checking document {}...".format(self))
+        log.info("checking document {}...".format(self))
         # Check for items
         items = self.items
         if not items:
@@ -593,7 +596,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             plev = prev.level
             nid = item.id
             nlev = item.level
-            logging.debug("checking level {} to {}...".format(plev, nlev))
+            log.debug("checking level {} to {}...".format(plev, nlev))
             # Duplicate level
             if plev == nlev:
                 ids = sorted((pid, nid))
@@ -618,11 +621,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     def delete(self, path=None):
         """Delete the document and its items."""
+        prefix = Prefix(str(self.prefix))
         for item in self:
             item.delete()
         super().delete(self.config)
         common.delete(self.path)
-        if settings.CACHE_DOCUMENTS:
-            if self.tree:
-                self.tree._document_cache.clear()  # pylint: disable=W0212
-                logging.debug("cleared document cache")
+        if settings.CACHE_DOCUMENTS and self.tree:
+            self.tree._document_cache[prefix] = None  # pylint: disable=W0212
+            log.trace("expunged document: {}".format(prefix))

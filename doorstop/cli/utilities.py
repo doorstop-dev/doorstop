@@ -2,10 +2,11 @@
 
 import os
 import ast
-import logging
 from argparse import ArgumentTypeError
+import logging
 
 from doorstop import common
+from doorstop.cli import log
 from doorstop import settings
 
 
@@ -27,13 +28,13 @@ class capture(object):  # pylint: disable=R0903,C0103
         if exc_type and issubclass(exc_type, common.DoorstopError):
             self._success = False
             if self.catch:
-                logging.error(exc_value)
+                log.error(exc_value)
                 return True
 
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
-    assert common.STR_VERBOSITY == 4
+    assert common.STR_VERBOSITY == 3
     assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
@@ -46,13 +47,13 @@ def configure_logging(verbosity=0):
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.LEVELED_LOGGING_FORMAT
     elif verbosity == 2:
-        level = settings.VERBOSE_LOGGING_LEVEL
+        level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     elif verbosity == 3:
-        level = settings.VERBOSE2_LOGGING_LEVEL
+        level = settings.VERBOSE3_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE_LOGGING_FORMAT
     else:
-        level = settings.VERBOSE2_LOGGING_LEVEL
+        level = settings.VERBOSE3_LOGGING_LEVEL
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
@@ -83,6 +84,10 @@ def configure_settings(args):
         settings.CHECK_REF = not args.no_ref_check
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = not args.no_child_check
+    if args.no_suspect_check is not None:
+        settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
+    if args.no_review_check is not None:
+        settings.CHECK_REVIEW_STATUS = not args.no_review_check
     # Parse subcommand settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
@@ -110,7 +115,7 @@ def literal_eval(literal, err=None, default=None):
         if err:
             err(msg)
         else:
-            logging.critical(msg)
+            log.critical(msg)
 
 
 def get_ext(args, ext_stdout, ext_file, whole_tree, err):
@@ -136,7 +141,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
             if os.path.isdir(path):
                 err("given a prefix, [path] must be a file, not a directory")
             ext = os.path.splitext(path)[-1]
-        logging.debug("extension based on path: {}".format(ext or None))
+        log.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
     for _ext, option in {'.txt': 'text',
@@ -148,7 +153,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
         try:
             if getattr(args, option):
                 ext = _ext
-                logging.debug("extension based on override: {}".format(ext))
+                log.debug("extension based on override: {}".format(ext))
                 break
         except AttributeError:
             continue
@@ -158,7 +163,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
                 err("given a prefix, [path] must include an extension")
             else:
                 ext = ext_stdout
-            logging.debug("extension based on default: {}".format(ext))
+            log.debug("extension based on default: {}".format(ext))
 
     return ext
 

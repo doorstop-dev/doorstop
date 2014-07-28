@@ -2,10 +2,9 @@
 
 import os
 import time
-import logging
 
 from doorstop import common
-from doorstop.cli import utilities
+from doorstop.cli import log, utilities
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
 
@@ -13,10 +12,10 @@ from doorstop.core import editor, importer, exporter, publisher
 def get(name):
     """Get a command function by name."""
     if name:
-        logging.debug("running command '{}'...".format(name))
+        log.debug("running command '{}'...".format(name))
         return globals()['run_' + name]
     else:
-        logging.debug("launching main command...")
+        log.debug("launching main command...")
         return run
 
 
@@ -187,14 +186,14 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
     with utilities.capture(catch=catch) as success:
         # automatically order
         if args.auto:
-            print("reordering {}...".format(document), flush=True)
+            print("reordering document {}...".format(document), flush=True)
             document.reorder(manual=False)
             reordered = True
         # or, reorder from a previously updated index
         elif document.index:
             relpath = os.path.relpath(document.index, cwd)
             if utilities.ask("reorder from '{}'?".format(relpath)):
-                print("reordering {}...".format(document), flush=True)
+                print("reordering document {}...".format(document), flush=True)
                 document.reorder(automatic=not args.manual)
                 reordered = True
             else:
@@ -210,7 +209,7 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
         return False
 
     if reordered:
-        print("reordered: {}".format(document))
+        print("reordered document: {}".format(document))
 
     return True
 
@@ -268,7 +267,7 @@ def run_clear(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            print("clearing {}'s suspect links...".format(item.id))
+            print("clearing item {}'s suspect links...".format(item.id))
             item.clear()
     if not success:
         return False
@@ -287,7 +286,7 @@ def run_review(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            print("marking {} as reviewed...".format(item.id))
+            print("marking item {} as reviewed...".format(item.id))
             item.review()
     if not success:
         return False
@@ -295,7 +294,7 @@ def run_review(args, cwd, err, catch=True):
     return True
 
 
-def run_import(args, cwd, err, catch=True):
+def run_import(args, cwd, err, catch=True, _tree=None):
     """Process arguments and run the `doorstop import` subcommand.
 
     :param args: Namespace of CLI arguments
@@ -323,9 +322,10 @@ def run_import(args, cwd, err, catch=True):
     # Import document or item
     with utilities.capture(catch=catch) as success:
         if args.path:
-            tree = build(cwd, root=args.project)
+            tree = _tree or build(cwd, root=args.project)
             document = tree.find_document(args.prefix)
-            msg = "importing {} into {}...".format(args.path, document)
+            msg = "importing '{}' into document {}...".format(args.path,
+                                                              document)
             print(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
@@ -340,10 +340,11 @@ def run_import(args, cwd, err, catch=True):
 
     # Display result
     if document:
-        print("imported: {} ({})".format(document.prefix, document.relpath))
+        print("imported document: {} ({})".format(document.prefix,
+                                                  document.relpath))
     else:
         assert item
-        print("imported: {} ({})".format(item.id, item.relpath))
+        print("imported item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -373,10 +374,11 @@ def run_export(args, cwd, err, catch=True):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("exporting tree to {}...".format(args.path), flush=True)
+            print("exporting tree to '{}'...".format(args.path), flush=True)
             path = exporter.export(tree, args.path, ext)
         else:
-            msg = "exporting {} to {}...".format(document, args.path)
+            msg = "exporting document {} to '{}'...".format(document,
+                                                            args.path)
             print(msg, flush=True)
             path = exporter.export(document, args.path, ext)
         if path:
@@ -422,10 +424,11 @@ def run_publish(args, cwd, err, catch=True):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("publishing tree to {}...".format(args.path), flush=True)
+            print("publishing tree to '{}'...".format(args.path), flush=True)
             path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
-            msg = "publishing {} to {}...".format(document, args.path)
+            msg = "publishing document {} to '{}'...".format(document,
+                                                             args.path)
             print(msg, flush=True)
             path = publisher.publish(document, args.path, ext, **kwargs)
         if path:
@@ -495,7 +498,6 @@ def _iter_items(args, cwd, err):
                 yield item
 
 
-# TODO: pass tree back to `doorstop import`
 def _export_import(args, cwd, err, document, ext):
     """Edit a document by calling export followed by import.
 
@@ -519,7 +521,7 @@ def _export_import(args, cwd, err, document, ext):
     if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
-        get('import')(args, cwd, err, catch=False)
+        get('import')(args, cwd, err, catch=False, _tree=document.tree)
         common.delete(path)
     else:
         print("import canceled")

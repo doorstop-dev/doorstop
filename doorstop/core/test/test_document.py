@@ -101,12 +101,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("custom: this", self.document._file)
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify a document can be converted to a string."""
         self.assertEqual("REQ", str(self.document))
 
-    @patch('doorstop.common.VERBOSITY', 4)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify a document can be converted to a string (verbose)."""
         relpath = os.path.relpath(self.document.path, self.document.root)
@@ -520,12 +520,13 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item.delete', Mock())
     @patch('doorstop.common.delete', Mock())
     def test_delete_cache(self):
-        """Verify the cache is cleared when a document is deleted."""
+        """Verify a deleted document is expunged."""
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
         self.document.tree._document_cache = {}
         self.document.delete()
-        self.assertEqual({}, self.document.tree._document_cache)
+        self.assertIs(None,
+                      self.document.tree._document_cache[self.document.prefix])
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):

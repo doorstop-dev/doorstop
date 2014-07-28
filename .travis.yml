@@ -10,7 +10,7 @@ after_success:
 - ocular
 after_script:
 # Generate Doorstop HTML pages
-- make html
+- make reqs-html
 - cp -r docs/gen/ pages/reqs/
 # Generate Sphinx HTML pages
 - make sphinx

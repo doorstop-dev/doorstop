@@ -63,12 +63,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 4)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify an item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
@@ -813,12 +813,12 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
     def setUp(self):
         self.item = UnknownItem('RQ001')
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.VERBOSITY', 2)
     def test_str(self):
         """Verify an unknown item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 4)
+    @patch('doorstop.common.VERBOSITY', 3)
     def test_str_verbose(self):
         """Verify an unknown item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, '???')
@@ -845,7 +845,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, self.item.number)
         self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
 
-    @patch('logging.debug')
+    @patch('doorstop.core.log.debug')
     def test_attributes(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         self.assertRaises(AttributeError, getattr, self.item, 'path')
@@ -855,7 +855,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
         self.assertEqual(3, mock_warning.call_count)
 
-    @patch('logging.debug')
+    @patch('doorstop.core.log.debug')
     def test_attributes_with_spec(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         spec = Item(os.path.join(FILES, 'REQ001.yml'))

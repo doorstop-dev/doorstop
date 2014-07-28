@@ -1,10 +1,9 @@
 """Functions to build a tree and access documents and items."""
 
 import os
-import logging
 
 from doorstop.common import DoorstopError
-from doorstop.core import vcs
+from doorstop.core import log, vcs
 from doorstop.core.tree import Tree
 from doorstop.core.document import Document
 
@@ -31,7 +30,7 @@ def build(cwd=None, root=None):
     root = root or vcs.find_root(cwd)
 
     # Find all documents in the working copy
-    logging.info("looking for documents in {}...".format(root))
+    log.info("looking for documents in {}...".format(root))
     _document_from_path(root, root, documents)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
@@ -40,13 +39,13 @@ def build(cwd=None, root=None):
 
     # Build the tree
     if not documents:
-        logging.info("no documents found in: {}".format(root))
-    logging.info("building tree...")
+        log.info("no documents found in: {}".format(root))
+    log.info("building tree...")
     tree = Tree.from_list(documents, root=root)
     if len(tree):
-        logging.info("built tree: {}".format(tree or "(empty)"))
+        log.info("built tree: {}".format(tree or "(empty)"))
     else:
-        logging.info("tree is empty")
+        log.info("tree is empty")
     return tree
 
 
@@ -65,9 +64,9 @@ def _document_from_path(path, root, documents):
         pass  # no document in directory
     else:
         if document.skip:
-            logging.debug("skipping document: {}".format(document))
+            log.debug("skipped document: {}".format(document))
         else:
-            logging.info("found document: {}".format(document))
+            log.info("found document: {}".format(document))
             documents.append(document)
 
 

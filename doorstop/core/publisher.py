@@ -2,11 +2,12 @@
 
 import os
 import textwrap
-import logging
 
 import markdown
 
-from doorstop.common import DoorstopError, create_dirname, write_lines
+from doorstop import common
+from doorstop.common import DoorstopError
+from doorstop.core import log
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
@@ -47,10 +48,10 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         count += 1
 
         # Publish content to the specified path
-        create_dirname(path2)
-        logging.info("publishing to {}...".format(path2))
+        common.create_dirname(path2)
+        log.info("publishing to {}...".format(path2))
         lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
-        write_lines(lines, path2)
+        common.write_lines(lines, path2)
 
     # Create index
     if index and count:
@@ -59,10 +60,10 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     # Return the published path
     if count:
         msg = "published to {} file{}".format(count, 's' if count > 1 else '')
-        logging.info(msg)
+        log.info(msg)
         return path
     else:
-        logging.warning("nothing to publish")
+        log.warning("nothing to publish")
         return None
 
 
@@ -84,11 +85,11 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     # Create the index
     if filenames:
         path = os.path.join(directory, index)
-        logging.info("creating an {}...".format(index))
+        log.info("creating an {}...".format(index))
         lines = _lines_index(filenames, tree=tree)
-        write_lines(lines, path)
+        common.write_lines(lines, path)
     else:
-        logging.warning("no files for {}".format(index))
+        log.warning("no files for {}".format(index))
 
 
 def _lines_index(filenames, charset='UTF-8', tree=None):
@@ -170,9 +171,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
 def _lines_css():
     """Yield lines of CSS to embedded in HTML."""
     yield ''
-    with open(CSS) as stream:
-        for line in stream:
-            yield line.rstrip()
+    for line in common.read_lines(CSS):
+        yield line.rstrip()
     yield ''
 
 
@@ -186,7 +186,7 @@ def publish_lines(obj, ext='.txt', **kwargs):
 
     """
     gen = check(ext)
-    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    log.debug("yielding {} as lines of {}...".format(obj, ext))
     yield from gen(obj, **kwargs)
 
 
@@ -350,12 +350,6 @@ def _format_md_links(items, linkify):
     return ', '.join(links)
 
 
-# TODO: delete this function if not used
-def _format_md_document_link(document):  # pragma: no cover
-    """Format a document link in Markdown."""
-    return "[{p}]({p}.html)".format(p=document.prefix)
-
-
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
@@ -440,5 +434,5 @@ def check(ext):
     except KeyError:
         raise exc from None
     else:
-        logging.debug("found lines generator for: {}".format(ext))
+        log.debug("found lines generator for: {}".format(ext))
         return gen

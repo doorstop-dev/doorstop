@@ -6,11 +6,12 @@ import logging
 DEFAULT_LOGGING_FORMAT = "%(message)s"
 LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
-VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(module)-8s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
-LOGGING_FORMAT_TIME = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
+VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s.%(module)s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
+TIMED_LOGGING_FORMAT = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
 VERBOSE2_LOGGING_LEVEL = logging.DEBUG
+VERBOSE3_LOGGING_LEVEL = logging.DEBUG - 1
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators
@@ -26,6 +27,8 @@ REORDER = False  # reorder document levels during validation
 CHECK_LEVELS = True  # validate document levels during validation
 CHECK_REF = True  # validate external file references
 CHECK_CHILD_LINKS = True  # validate reverse links
+CHECK_SUSPECT_LINKS = True  # check stamps on links
+CHECK_REVIEW_STATUS = True  # check stamps on items
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
