@@ -4,15 +4,15 @@ import os
 from itertools import chain
 from collections import OrderedDict
 
-
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core import log
 from doorstop.core.base import cache_document, BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
 from doorstop import settings
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904

@@ -8,8 +8,9 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core import log
 from doorstop import settings
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def cache_item(func):

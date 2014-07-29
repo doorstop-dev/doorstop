@@ -68,7 +68,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(0, mock_open.call_count)
 
     @patch('os.makedirs')
-    @patch('doorstop.core.exporter.write_lines')
+    @patch('doorstop.common.write_lines')
     def test_export_document_lines(self, mock_write_lines, mock_makedirs):
         """Verify a document can be exported (lines to file)."""
         dirpath = os.path.join('mock', 'directory')

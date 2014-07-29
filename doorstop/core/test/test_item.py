@@ -845,7 +845,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, self.item.number)
         self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
 
-    @patch('doorstop.core.log.debug')
+    @patch('doorstop.core.item.log.debug')
     def test_attributes(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         self.assertRaises(AttributeError, getattr, self.item, 'path')
@@ -855,7 +855,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
         self.assertEqual(3, mock_warning.call_count)
 
-    @patch('doorstop.core.log.debug')
+    @patch('doorstop.core.item.log.debug')
     def test_attributes_with_spec(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         spec = Item(os.path.join(FILES, 'REQ001.yml'))

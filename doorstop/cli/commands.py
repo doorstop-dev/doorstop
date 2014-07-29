@@ -4,9 +4,11 @@ import os
 import time
 
 from doorstop import common
-from doorstop.cli import log, utilities
+from doorstop.cli import utilities
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def get(name):
@@ -36,7 +38,7 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
     if not success:
         return False
 
-    if tree and valid:
+    if len(tree) > 1 and valid:
         print()
         print(tree.draw())
         print()

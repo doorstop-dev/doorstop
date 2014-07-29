@@ -6,8 +6,8 @@
 import sys
 from itertools import chain
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core import log
 from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
@@ -33,6 +33,8 @@ BOX = {'end': {UTF8: '│   ',
        'space': {UTF8: '    ',
                  CP437: '    ',
                  ASCII: '    '}}
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902

@@ -18,11 +18,13 @@ import functools
 from itertools import chain
 import logging
 
+from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop.core import vcs
 from doorstop.core import builder
-from doorstop.gui import log
 from doorstop import settings
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def main(args=None):

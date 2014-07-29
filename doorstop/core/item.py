@@ -5,12 +5,13 @@ import re
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core import log
 from doorstop.core.base import BaseValidatable, cache_item, expunge_item
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904

@@ -6,9 +6,11 @@ import os
 import sys
 import argparse
 
-from doorstop.cli import log, utilities, commands
-from doorstop.gui.main import _run as gui
 from doorstop import common
+from doorstop.cli import utilities, commands
+from doorstop.gui.main import _run as gui
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def main(args=None):  # pylint: disable=R0915

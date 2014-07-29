@@ -1,8 +1,10 @@
 """Plug-in module to simulate the storage of requirements in a repository."""
 
 
-from doorstop.core.vcs import log
+from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
