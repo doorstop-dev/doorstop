@@ -6,9 +6,11 @@ import textwrap
 import hashlib
 import yaml
 
+from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core import log
 from doorstop import settings
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class Prefix(str):  # pylint: disable=R0904
@@ -581,7 +583,7 @@ class Stamp(object):
 
     """Hashed content for change tracking.
 
-    :param *values: one of the following:
+    :param values: one of the following:
 
         - objects to hash as strings
         - existing string stamp

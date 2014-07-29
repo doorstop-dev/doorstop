@@ -3,17 +3,19 @@
 import os
 import logging
 
-log = logging.getLogger(__name__)  # pylint: disable=C0103
-
+from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop.core.vcs import git, subversion, veracity, mockvcs
 
-from doorstop.core.vcs import git
-from doorstop.core.vcs import veracity
-from doorstop.core.vcs import subversion
-from doorstop.core.vcs import mockvcs
+DEFAULT = mockvcs.WorkingCopy
+DIRECTORIES = {
+    git.WorkingCopy.DIRECTORY: git.WorkingCopy,
+    subversion.WorkingCopy.DIRECTORY: subversion.WorkingCopy,
+    veracity.WorkingCopy.DIRECTORY: veracity.WorkingCopy,
+    DEFAULT.DIRECTORY: DEFAULT,
+}
 
-from doorstop.core.vcs.base import BaseWorkingCopy as _bwc
-DIRECTORIES = {wc.DIRECTORY: wc for wc in _bwc.__subclasses__()}  # pylint: disable=E1101
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def find_root(cwd):
@@ -47,5 +49,6 @@ def load(path):
     for directory in os.listdir(path):
         if directory in DIRECTORIES:
             return DIRECTORIES[directory](path)
+
     log.warning("no working copy found at: {}".format(path))
-    return mockvcs.WorkingCopy(path)
+    return DEFAULT(path)

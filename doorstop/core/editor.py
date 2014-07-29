@@ -6,11 +6,12 @@ from distutils.spawn import find_executable
 import subprocess
 import time
 
+from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core import log
-
 
 LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def edit(path, tool=None):  # pragma: no cover (integration test)

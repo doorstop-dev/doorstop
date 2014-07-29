@@ -6,7 +6,8 @@ import subprocess
 from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 from doorstop import common
-from doorstop.core.vcs import log
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921

@@ -2,13 +2,14 @@
 
 import os
 
+from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core import log, vcs
+from doorstop.core import vcs
 from doorstop.core.tree import Tree
 from doorstop.core.document import Document
 
-
-_TREE = None  # implicit tree for convenience functions
+log = common.logger(__name__)  # pylint: disable=C0103
+_tree = None  # implicit tree for convenience functions, pylint: disable=C0103
 
 
 def build(cwd=None, root=None):
@@ -18,7 +19,7 @@ def build(cwd=None, root=None):
     :param root: path to root of the working copy
 
     :raises: :class:`~doorstop.common.DoorstopError` when the tree
-    `cannot be built
+        cannot be built
 
     :return: new :class:`~doorstop.core.tree.Tree`
 
@@ -83,19 +84,19 @@ def find_item(identifier):
 
 def _get_tree():
     """Get a shared tree for convenience functions."""
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
-    return _TREE
+    global _tree  # pylint: disable=W0603,C0103
+    if _tree is None:
+        _tree = build()
+    return _tree
 
 
 def _set_tree(value):
     """Set the shared tree to a specific value (for testing)."""
-    global _TREE  # pylint: disable=W0603
-    _TREE = value
+    global _tree  # pylint: disable=W0603,C0103
+    _tree = value
 
 
 def _clear_tree():
     """Force the shared tree to be rebuilt."""
-    global _TREE  # pylint: disable=W0603
-    _TREE = None
+    global _tree  # pylint: disable=W0603,C0103
+    _tree = None

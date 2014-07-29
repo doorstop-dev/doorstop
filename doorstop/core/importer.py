@@ -9,15 +9,17 @@ import csv
 import openpyxl  # pylint: disable=F0401
 from openpyxl import load_workbook  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError, read_text, load_yaml
-from doorstop.core import log
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
-_DOCUMENTS = []  # cache of unplaced documents
+_documents = []  # cache of unplaced documents, pylint: disable=C0103
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def import_file(path, document, ext=None, mapping=None, **kwargs):
@@ -66,7 +68,7 @@ def create_document(prefix, path, parent=None, tree=None):
                                 path, tree.root, prefix,
                                 parent=parent)
         log.warning(exc)
-        _DOCUMENTS.append(document)
+        _documents.append(document)
 
     # TODO: attempt to place unplaced documents?
 
@@ -116,9 +118,9 @@ def _file_yml(path, document, **_):
     """
     # Parse the file
     log.info("reading items in {}...".format(path))
-    text = read_text(path)
+    text = common.read_text(path)
     # Load the YAML data
-    data = load_yaml(text, path)
+    data = common.load_yaml(text, path)
     # Add items
     for identifier, attrs in data.items():
         try:
