@@ -5,12 +5,13 @@ import sys
 from distutils.spawn import find_executable
 import subprocess
 import time
-import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError
 
-
 LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def edit(path, tool=None):  # pragma: no cover (integration test)
@@ -31,8 +32,8 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
         finally:
             if process.returncode is None:
                 process.terminate()
-                logging.warning("force closed editor")
-        logging.debug("process exited: {}".format(process.returncode))
+                log.warning("force closed editor")
+        log.debug("process exited: {}".format(process.returncode))
 
 
 def launch(path, tool=None):  # pragma: no cover (integration test)
@@ -63,7 +64,7 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
 
     # Launch the editor
     try:
-        logging.info("opening '{}'...".format(path))
+        log.info("opening '{}'...".format(path))
         process = _call(args)
     except FileNotFoundError:
         raise DoorstopError("editor not found: {}".format(args[0]))
@@ -71,9 +72,9 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     # Wait for the editor to launch
     time.sleep(LAUNCH_DELAY)
     if process.poll() is None:
-        logging.debug("process is running...")
+        log.debug("process is running...")
     else:
-        logging.debug("process exited: {}".format(process.returncode))
+        log.debug("process exited: {}".format(process.returncode))
         if process.returncode != 0:
             raise DoorstopError("no default editor for: {}".format(path))
 
@@ -84,6 +85,6 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
 
 def _call(args):  # pragma: no cover (integration test)
     """Call a program with arguments and return the process."""
-    logging.debug("$ {}".format(' '.join(args)))
+    log.debug("$ {}".format(' '.join(args)))
     process = subprocess.Popen(args)
     return process

@@ -100,7 +100,12 @@ serve: env
 # Documentation ##############################################################
 
 .PHONY: doc
-doc: readme html uml apidocs sphinx
+doc: readme reqs uml apidocs sphinx
+
+.PHONY: pages 
+pages: reqs-html sphinx
+	cp -r docs/gen/ pages/reqs/
+	cp -r docs/sphinx/_build pages/docs/
 
 .PHONY: readme
 readme: .depends-dev docs/README-github.html docs/README-pypi.html
@@ -111,13 +116,23 @@ docs/README-pypi.html: README.rst
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
-.PHONY: html
-html: env docs/gen/*.html
+.PHONY: reqs
+reqs: doorstop reqs-html reqs-md reqs-txt
+
+.PHONY: reqs-html
+reqs-html: env docs/gen/*.html
 docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
-	- $(MAKE) doorstop
-	$(BIN)/doorstop publish all docs/gen --text
-	$(BIN)/doorstop publish all docs/gen --markdown
 	$(BIN)/doorstop publish all docs/gen --html
+
+.PHONY: reqs-md
+reqs-md: env docs/gen/*.md
+docs/gen/*.md: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+	$(BIN)/doorstop publish all docs/gen --markdown
+
+.PHONY: reqs-txt
+reqs-txt: env docs/gen/*.txt
+docs/gen/*.txt: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+	$(BIN)/doorstop publish all docs/gen --text
 
 .PHONY: uml
 uml: .depends-dev docs/*.png $(SOURCES)
@@ -200,6 +215,7 @@ clean-all: clean .clean-env
 .clean-doc:
 	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
 	rm -rf docs/sphinx/doorstop*.rst docs/sphinx/_build
+	rm -rf pages/docs/ pages/reqs/
 
 .PHONY: .clean-test
 .clean-test:

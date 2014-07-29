@@ -13,6 +13,7 @@ from doorstop.core.builder import _clear_tree
 from doorstop import settings
 
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
+from doorstop.cli.test import SettingsTestCase
 
 
 class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
@@ -41,27 +42,19 @@ class MockTestCase(TempTestCase):  # pylint: disable=R0904
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestMain(unittest.TestCase):  # pylint: disable=R0904
+class TestMain(SettingsTestCase):  # pylint: disable=R0904
 
     """Integration tests for the 'doorstop' command."""
 
     def setUp(self):
+        super().setUp()
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
-        self.backup = (settings.REFORMAT,
-                       settings.CHECK_REF,
-                       settings.CHECK_CHILD_LINKS,
-                       settings.REORDER,
-                       settings.CHECK_LEVELS)
 
     def tearDown(self):
+        super().tearDown()
         os.chdir(self.cwd)
         shutil.rmtree(self.temp)
-        (settings.REFORMAT,
-         settings.CHECK_REF,
-         settings.CHECK_CHILD_LINKS,
-         settings.REORDER,
-         settings.CHECK_LEVELS) = self.backup
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -87,6 +80,8 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.REORDER)
         self.assertTrue(settings.CHECK_LEVELS)
+        self.assertTrue(settings.CHECK_SUSPECT_LINKS)
+        self.assertTrue(settings.CHECK_REVIEW_STATUS)
 
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
@@ -96,12 +91,16 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
                                   '--no-ref-check',
                                   '--no-child-check',
                                   '--reorder',
-                                  '--no-level-check']))
+                                  '--no-level-check',
+                                  '--no-suspect-check',
+                                  '--no-review-check']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertTrue(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
+        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
+        self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
@@ -139,6 +138,17 @@ class TestDelete(MockTestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['delete', 'UNKNOWN'])
 
 
+def get_next_id():
+    """Helper function to get the next item ID number."""
+    last = None
+    for last in sorted(os.listdir(TUTORIAL), reverse=True):
+        if "index" not in last:
+            break
+    assert last
+    number = int(last.replace('TUT', '').replace('.yml', '')) + 1
+    return number
+
+
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
@@ -146,23 +156,34 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        last = None
-        for last in sorted(os.listdir(TUTORIAL), reverse=True):
-            if "index" not in last:
-                break
-        assert last
-        number = int(last.replace('TUT', '').replace('.yml', '')) + 1
+        number = get_next_id()
         filename = "TUT{}.yml".format(str(number).zfill(3))
         cls.path = os.path.join(TUTORIAL, filename)
 
     def tearDown(self):
-        if os.path.exists(self.path):
-            os.remove(self.path)
+        common.delete(self.path)
 
     def test_add(self):
         """Verify 'doorstop add' can be called."""
         self.assertIs(None, main(['add', 'TUT']))
         self.assertTrue(os.path.isfile(self.path))
+
+    def test_add_multiple(self):
+        """Verify 'doorstop add' can be called with a given positive count"""
+        number = get_next_id()
+        numbers = (number, number + 1, number + 2)
+        self.assertIs(None, main(['add', 'TUT', '--count', '3']))
+        filenames = ("TUT{}.yml".format(str(x).zfill(3)) for x in numbers)
+        paths = [os.path.join(TUTORIAL, f) for f in filenames]
+        self.assertTrue(os.path.isfile(paths[0]))
+        self.assertTrue(os.path.isfile(paths[1]))
+        self.assertTrue(os.path.isfile(paths[2]))
+        os.remove(paths[1])
+        os.remove(paths[2])
+
+    def test_add_multiple_non_positive(self):
+        """Verify 'doorstop add' rejects non-positive integers for counts."""
+        self.assertRaises(SystemExit, main, ['add', 'TUT', '--count', '-1'])
 
     def test_add_specific_level(self):
         """Verify 'doorstop add' can be called with a specific level."""
@@ -248,8 +269,7 @@ class TestReorder(unittest.TestCase):  # pylint: disable=R0904
 
         def bad_yaml_edit(path, **_):
             """Simulate adding invalid YAML to the index."""
-            with open(path, 'w') as stream:
-                stream.write("%bad")
+            common.write_text("%bad", path)
 
         with patch('doorstop.core.editor.launch', bad_yaml_edit):
             self.assertRaises(SystemExit, main, ['reorder', self.prefix])
@@ -293,7 +313,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         """Verify 'doorstop edit' can be called with a document (no, no)."""
         path = "TUT-456.yml"
         self.assertIs(None, main(['edit', 'tut']))
-        os.remove(path)
+        common.delete(path)
         mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
 
     @patch('time.time', Mock(return_value=789))
@@ -465,14 +485,8 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
     """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
 
     def tearDown(self):
-        try:
-            shutil.rmtree(os.path.join(ROOT, 'tmp'))
-        except IOError:
-            pass
-        try:
-            os.remove(os.path.join(REQS, 'REQ099.yml'))
-        except IOError:
-            pass
+        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(REQS, 'REQ099.yml'))
 
     def test_import_document(self):
         """Verify 'doorstop import' can import a document."""

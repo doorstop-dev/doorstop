@@ -1,8 +1,9 @@
 """Plug-in module to store requirements in a Veracity repository."""
 
-import logging
-
+from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
@@ -17,7 +18,7 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
         self.call('vv', 'update')
         # TODO: track: http://veracity-scm.com/qa/questions/2034
         msg = "veracity does not support scripted locking: {}".format(path)
-        logging.warning(msg)
+        log.warning(msg)
 
     def save(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141

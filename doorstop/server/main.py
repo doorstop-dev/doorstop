@@ -7,7 +7,7 @@ from bottle import get, post, request
 
 from doorstop import build, publisher
 
-tree = None
+tree = None  # pylint: disable=C0103
 
 
 @get('/')
@@ -94,7 +94,7 @@ def main():
 
 
 def run(args, cwd, err):
-    global tree
+    global tree  # pylint: disable=W0603,C0103
     tree = build()
     tree.load()
     bottle.run(host='localhost', port=8080, debug=True, reloader=True)

@@ -2,10 +2,13 @@
 
 import unittest
 from unittest.mock import patch, Mock
+from argparse import ArgumentTypeError
 
 from doorstop.cli import utilities
 from doorstop import common
 from doorstop import settings
+
+from doorstop.cli.test import SettingsTestCase
 
 
 class TestCapture(unittest.TestCase):  # pylint: disable=R0904
@@ -35,25 +38,9 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
             self.fail("DoorstopError not raised")
 
 
-class TestConfigureSettings(unittest.TestCase):  # pylint: disable=R0904
+class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
 
     """Unit tests for the `configure_settings` function."""  # pylint: disable=C0103
-
-    def setUp(self):
-        self.backup = (settings.REFORMAT,
-                       settings.CHECK_REF,
-                       settings.CHECK_CHILD_LINKS,
-                       settings.REORDER,
-                       settings.CHECK_LEVELS,
-                       settings.PUBLISH_CHILD_LINKS)
-
-    def tearDown(self):
-        (settings.REFORMAT,
-         settings.CHECK_REF,
-         settings.CHECK_CHILD_LINKS,
-         settings.REORDER,
-         settings.CHECK_LEVELS,
-         settings.PUBLISH_CHILD_LINKS) = self.backup
 
     def test_configure_settings(self):
         """Verify settings are parsed correctly."""
@@ -66,6 +53,8 @@ class TestConfigureSettings(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
+        self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
 class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
@@ -82,7 +71,7 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
         utilities.literal_eval("1/", err=err)
         self.assertEqual(1, err.call_count)
 
-    @patch('logging.critical')
+    @patch('doorstop.cli.utilities.log.critical')
     def test_literal_eval_invalid_log(self, mock_log):
         """Verify an invalid literal logs an error."""
         utilities.literal_eval("1/")
@@ -184,3 +173,23 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         with patch('builtins.input', Mock(side_effect=['maybe', 'yes'])):
             response = utilities.ask("?")
         self.assertTrue(response)
+
+
+class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
+
+    """ Unit tests for the `positive_int` function."""  # pylint: disable=C0103
+
+    def test_positive_int(self):
+        """Verify a positive integer can be parsed."""
+        self.assertEqual(utilities.positive_int('1'), 1)
+        self.assertEqual(utilities.positive_int(1), 1)
+
+    def test_non_positive_int(self):
+        """Verify a non-positive integer is rejected."""
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, '-1')
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, -1)
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, 0)
+
+    def test_non_int(self):
+        """Verify a non-integer is rejected."""
+        self.assertRaises(ArgumentTypeError, utilities.positive_int, 'abc')

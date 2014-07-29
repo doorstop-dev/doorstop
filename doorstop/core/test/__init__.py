@@ -47,7 +47,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
-    _new = Mock()
+    _create = Mock()
 
     def _mock_read(self, path):
         """Mock read method."""

@@ -5,14 +5,14 @@
 
 import sys
 from itertools import chain
-import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
-from doorstop.core.base import clear_document_cache, clear_item_cache
 from doorstop.core.types import Prefix, ID
 from doorstop.core.document import Document
 from doorstop.core import vcs
+from doorstop import settings
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
@@ -33,6 +33,8 @@ BOX = {'end': {UTF8: '│   ',
        'space': {UTF8: '    ',
                  CP437: '    ',
                  ASCII: '    '}}
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -62,7 +64,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         unplaced = list(documents)
         for document in list(unplaced):
             if document.parent is None:
-                logging.info("root of the tree: {}".format(document))
+                log.info("root of the tree: {}".format(document))
                 tree = Tree(document)
                 document.tree = tree
                 unplaced.remove(document)
@@ -74,19 +76,19 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             count = len(unplaced)
             for document in list(unplaced):
                 if document.parent is None:
-                    logging.info("root of the tree: {}".format(document))
+                    log.info("root of the tree: {}".format(document))
                     raise DoorstopError("multiple root documents")
                 try:
                     tree._place(document)  # pylint: disable=W0212
                 except DoorstopError as error:
-                    logging.debug(error)
+                    log.debug(error)
                 else:
-                    logging.info("added to tree: {}".format(document))
+                    log.info("added to tree: {}".format(document))
                     document.tree = tree
                     unplaced.remove(document)
 
             if len(unplaced) == count:  # no more documents could be placed
-                logging.debug("unplaced documents: {}".format(unplaced))
+                log.debug("unplaced documents: {}".format(unplaced))
                 msg = "unplaced document: {}".format(unplaced[0])
                 raise DoorstopError(msg)
 
@@ -114,6 +116,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return 0
 
+    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
+        return True
+
     def __getitem__(self, key):
         raise IndexError("{} cannot be indexed by key".format(self.__class__))
 
@@ -131,7 +136,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             cannot yet be placed
 
         """
-        logging.debug("trying to add '{}'...".format(document))
+        log.debug("trying to add {}...".format(document))
         if not self.document:  # tree is empty
 
             if document.parent:
@@ -166,9 +171,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:  # tree has documents, but no parent specified for document
 
             msg = "no parent specified for {}".format(document)
-            logging.info(msg)
+            log.info(msg)
             prefixes = ', '.join(document.prefix for document in self)
-            logging.info("parent options: {}".format(document, prefixes))
+            log.info("parent options: {}".format(document, prefixes))
             raise DoorstopError(msg)
 
     # attributes #############################################################
@@ -187,8 +192,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # actions ################################################################
 
-    @clear_document_cache
-    @clear_item_cache
     def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -213,14 +216,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             self._place(document)
         except DoorstopError:
             msg = "deleting unplaced directory {}...".format(document.path)
-            logging.debug(msg)
+            log.debug(msg)
             document.delete()
             raise
         else:
-            logging.info("added to tree: {}".format(document))
+            log.info("added to tree: {}".format(document))
         return document
 
-    @clear_item_cache
+    # @cache_item decorates `Document.add_item()`
     def add_item(self, value, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
@@ -240,7 +243,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         item = document.add_item(level=level, reorder=reorder)
         return item
 
-    @clear_item_cache
+    # @expunge_item decorates `Document.remove_item()`
     def remove_item(self, value, reorder=True):
         """Remove an item from a document by ID.
 
@@ -278,7 +281,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                  parent :class:`~doorstop.core.item.Item`
 
         """
-        logging.info("linking {} to {}...".format(cid, pid))
+        log.info("linking {} to {}...".format(cid, pid))
         # Find child item
         child = self.find_item(cid, _kind='child')
         # Find parent item
@@ -300,7 +303,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                  parent :class:`~doorstop.core.item.Item`
 
         """
-        logging.info("unlinking '{}' from '{}'...".format(cid, pid))
+        log.info("unlinking '{}' from '{}'...".format(cid, pid))
         # Find child item
         child = self.find_item(cid, _kind='child')
         # Find parent item
@@ -342,22 +345,26 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
-        logging.debug("looking for document '{}'...".format(prefix))
+        log.debug("looking for document '{}'...".format(prefix))
         try:
             document = self._document_cache[prefix]
             if document:
-                logging.debug("found cached document: {}".format(document))
+                log.trace("found cached document: {}".format(document))
                 return document
             else:
-                logging.debug("found cached unknown: {}".format(prefix))
+                log.trace("found cached unknown: {}".format(prefix))
         except KeyError:
             for document in self:
-                if document.prefix.lower() == prefix.lower():
-                    logging.debug("found document: {}".format(document))
-                    self._document_cache[prefix] = document
+                if document.prefix == prefix:
+                    log.trace("found document: {}".format(document))
+                    if settings.CACHE_DOCUMENTS:
+                        self._document_cache[prefix] = document
+                        log.trace("cached document: {}".format(document))
                     return document
-            logging.debug("could not find document: {}".format(prefix))
-            self._document_cache[prefix] = None
+            log.debug("could not find document: {}".format(prefix))
+            if settings.CACHE_DOCUMENTS:
+                self._document_cache[prefix] = None
+                log.trace("cached unknown: {}".format(prefix))
 
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
@@ -374,14 +381,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         identifier = ID(value)
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
-        logging.debug("looking for{} item '{}'...".format(_kind, identifier))
+        log.debug("looking for{} item '{}'...".format(_kind, identifier))
         try:
             item = self._item_cache[identifier]
             if item:
-                logging.debug("found cached item: {}".format(item))
+                log.trace("found cached item: {}".format(item))
                 return item
             else:
-                logging.debug("found cached unknown: {}".format(identifier))
+                log.trace("found cached unknown: {}".format(identifier))
         except KeyError:
             for document in self:
                 try:
@@ -389,11 +396,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
-                    logging.debug("found item: {}".format(item))
-                    self._item_cache[identifier] = item
+                    log.trace("found item: {}".format(item))
+                    if settings.CACHE_ITEMS:
+                        self._item_cache[identifier] = item
+                        log.trace("cached item: {}".format(item))
                     return item
-            logging.debug("could not find item: {}".format(identifier))
-            self._item_cache[identifier] = None
+            log.debug("could not find item: {}".format(identifier))
+            if settings.CACHE_ITEMS:
+                self._item_cache[identifier] = None
+                log.trace("cached unknown: {}".format(identifier))
 
         raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
 
@@ -504,8 +515,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if row.parent and row.child:
                 yield tuple(row)
 
-    @clear_document_cache
-    @clear_item_cache
     def load(self, reload=False):
         """Load the tree's documents and items.
 
@@ -518,7 +527,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         if self._loaded and not reload:
             return
-        logging.info("loading the tree...")
+        log.info("loading the tree...")
         for document in self:
             document.load(reload=True)
         # Set meta attributes

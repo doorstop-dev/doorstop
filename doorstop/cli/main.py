@@ -5,12 +5,13 @@
 import os
 import sys
 import argparse
-import logging
 
+from doorstop import common
 from doorstop.cli import utilities, commands
 from doorstop.gui.main import run as gui
 from doorstop.server.main import run as server
-from doorstop import common
+
+log = common.logger(__name__)  # pylint: disable=C0103
 
 
 def main(args=None):  # pylint: disable=R0915
@@ -39,6 +40,10 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not validate external file references")
     parser.add_argument('-C', '--no-child-check', action='store_true',
                         help="do not validate child (reverse) links")
+    parser.add_argument('-S', '--no-suspect-check', action='store_true',
+                        help="do not check for suspect links")
+    parser.add_argument('-W', '--no-review-check', action='store_true',
+                        help="do not check item review status")
     parser.add_argument('-g', '--gui', action='store_true',
                         help="launch the graphical user interface")
     parser.add_argument('-s', '--serve', action='store_true',
@@ -71,22 +76,22 @@ def main(args=None):  # pylint: disable=R0915
 
     # Run the program
     if args.gui:
-        logging.debug("launching GUI...")
+        log.debug("launching GUI...")
         function = gui
     elif args.serve:
-        logging.debug("launching server...")
+        log.debug("launching server...")
         function = server
     else:
         function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
-        logging.debug("command cancelled")
+        log.debug("command cancelled")
         success = False
     if success:
-        logging.debug("command succeeded")
+        log.debug("command succeeded")
     else:
-        logging.debug("command failed")
+        log.debug("command failed")
         sys.exit(1)
 
 
@@ -97,7 +102,7 @@ def _create(subs, shared):
                           help=info, **shared)
     sub.add_argument('prefix', help="document prefix for new item IDs")
     sub.add_argument('path', help="path to a directory for item files")
-    sub.add_argument('-p', '--parent', help="prefix for parent item IDS")
+    sub.add_argument('-p', '--parent', help="prefix of parent document")
     sub.add_argument('-d', '--digits', help="number of digits in item IDs")
 
 
@@ -117,6 +122,8 @@ def _add(subs, shared):
     sub.add_argument('prefix',
                      help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
+    sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
+                     help="number of items to create (default: 1)")
 
 
 def _remove(subs, shared):
@@ -124,8 +131,7 @@ def _remove(subs, shared):
     info = "remove an item file from a document directory"
     sub = subs.add_parser('remove', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('id', metavar='ID',
-                     help="item ID to remove from its document")
+    sub.add_argument('id', help="item ID to remove from its document")
 
 
 def _edit(subs, shared):
@@ -166,7 +172,6 @@ def _reorder(subs, shared):
                        help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
                      help="text editor to open the document index")
-    # TODO: clean up case on all CLI metavars/labels
 
 
 def _link(subs, shared):
