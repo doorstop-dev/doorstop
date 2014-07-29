@@ -34,7 +34,7 @@ BOX = {'end': {UTF8: '│   ',
                  CP437: '    ',
                  ASCII: '    '}}
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902

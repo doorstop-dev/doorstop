@@ -18,7 +18,7 @@ from doorstop.core.test.test_document import FILES, MockItem
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201,C0103
+    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201
 
     maxDiff = None
 
@@ -232,7 +232,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.importer:create_document function."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer:create_document function."""
 
     def setUp(self):
         # Create default document options
@@ -292,7 +292,7 @@ class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
 class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.importer:add_item function."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.importer:add_item function."""
 
     prefix = 'PREFIX'
     root = 'ROOT'

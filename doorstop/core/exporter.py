@@ -20,7 +20,7 @@ LIST_SEP = '\n'  # string separating list values when joined in a string
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def export(obj, path, ext=None, **kwargs):

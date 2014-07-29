@@ -10,7 +10,7 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Prefix(str):  # pylint: disable=R0904

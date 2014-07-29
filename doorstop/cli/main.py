@@ -10,7 +10,7 @@ from doorstop import common
 from doorstop.cli import utilities, commands
 from doorstop.gui.main import _run as gui
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def main(args=None):  # pylint: disable=R0915

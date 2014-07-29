@@ -41,7 +41,7 @@ settings:
 @patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Document class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Document class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.document = MockDocument(FILES, root=ROOT)
@@ -595,6 +595,6 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.document module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.document module."""
 
     pass

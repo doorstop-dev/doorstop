@@ -15,7 +15,7 @@ DIRECTORIES = {
     DEFAULT.DIRECTORY: DEFAULT,
 }
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def find_root(cwd):

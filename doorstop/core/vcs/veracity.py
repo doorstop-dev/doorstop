@@ -3,7 +3,7 @@
 from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)

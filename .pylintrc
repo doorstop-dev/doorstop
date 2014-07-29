@@ -1,9 +1,10 @@
 [MESSAGES CONTROL]
 
-# I0011: Locally disabling %s
-# W0142: Used * or ** magic
+# I0011: locally disabling %s
+# W0142: used * or ** magic
 # W0511: TODO in comments
-disable=I0011,W0142,W0511
+# C0103: invalid constant name
+disable=I0011,W0142,W0511,C0103
 
 
 [REPORTS]

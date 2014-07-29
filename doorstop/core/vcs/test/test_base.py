@@ -22,7 +22,7 @@ class SampleWorkingCopy(BaseWorkingCopy):
 
 class TestSampleWorkingCopy(unittest.TestCase):  # pylint: disable=R0904
 
-    """Tests for the doorstop.vcs.base module."""  # pylint: disable=C0103
+    """Tests for the doorstop.vcs.base module."""
 
     def setUp(self):
         self.wc = SampleWorkingCopy(None)

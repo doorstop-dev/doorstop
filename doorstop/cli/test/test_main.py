@@ -8,7 +8,7 @@ from doorstop.cli import main
 
 class TestMain(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `main` function."""  # pylint: disable=C0103,R0201
+    """Unit tests for the `main` function."""  # pylint: disable=R0201
 
     @patch('doorstop.cli.commands.get')
     def test_run(self, mock_get):

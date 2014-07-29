@@ -11,7 +11,7 @@ from doorstop.core.types import Prefix, ID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
@@ -195,7 +195,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return data
 
     @property
-    def id(self):  # pylint: disable=C0103
+    def id(self):
         """Get the item's ID."""
         filename = os.path.basename(self.path)
         return ID(os.path.splitext(filename)[0])
@@ -795,7 +795,7 @@ class UnknownItem(object):
         return self.__getattribute__(name)
 
     @property
-    def id(self):  # pylint: disable=C0103
+    def id(self):
         """Get the item's ID."""
         return self._id
 

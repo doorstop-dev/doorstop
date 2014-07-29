@@ -21,8 +21,8 @@ def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
 logging.addLevelName(logging.DEBUG - 1, "TRACE")
 logging.Logger.trace = _trace
 
-logger = logging.getLogger  # pylint: disable=C0103
-log = logger(__name__)  # pylint: disable=C0103
+logger = logging.getLogger
+log = logger(__name__)
 
 
 class DoorstopError(Exception):

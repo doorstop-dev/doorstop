@@ -18,7 +18,7 @@ from doorstop.cli.test import SettingsTestCase
 
 class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
 
-    """Base test case class with a temporary directory."""  # pylint: disable=C0103
+    """Base test case class with a temporary directory."""
 
     def setUp(self):
         self.cwd = os.getcwd()
@@ -32,7 +32,7 @@ class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
 
 class MockTestCase(TempTestCase):  # pylint: disable=R0904
 
-    """Base test case class for a temporary mock working copy."""  # pylint: disable=C0103
+    """Base test case class for a temporary mock working copy."""
 
     def setUp(self):
         super().setUp()
@@ -106,7 +106,7 @@ class TestMain(SettingsTestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestCreate(TempTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop create' command."""  # pylint: disable=C0103
+    """Integration tests for the 'doorstop create' command."""
 
     def test_create(self):
         """Verify 'doorstop create' can be called."""
@@ -482,7 +482,7 @@ class TestReview(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImport(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+    """Integration tests for the 'doorstop import' command."""
 
     def tearDown(self):
         common.delete(os.path.join(ROOT, 'tmp'))
@@ -515,7 +515,7 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestImportFile(MockTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop import' command."""  # pylint: disable=C0103
+    """Integration tests for the 'doorstop import' command."""
 
     def test_import_file_missing_prefix(self):
         """Verify 'doorstop import' returns an error with a missing prefix."""
@@ -592,7 +592,7 @@ class TestImportFile(MockTestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestExport(TempTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop export' command."""  # pylint: disable=C0103
+    """Integration tests for the 'doorstop export' command."""
 
     def test_export_document_error_unknown(self):
         """Verify 'doorstop export' returns an error for an unknown format."""
@@ -641,7 +641,7 @@ class TestExport(TempTestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestPublish(TempTestCase):  # pylint: disable=R0904
 
-    """Integration tests for the 'doorstop publish' command."""  # pylint: disable=C0103
+    """Integration tests for the 'doorstop publish' command."""
 
     def setUp(self):
         super().setUp()

@@ -13,7 +13,7 @@ from doorstop import settings
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):

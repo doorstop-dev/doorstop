@@ -8,7 +8,7 @@ from doorstop.cli import utilities
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def get(name):

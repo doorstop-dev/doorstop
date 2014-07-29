@@ -13,7 +13,7 @@ from doorstop.core.test import FILES, EMPTY, MockDataMixIn
 
 class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.publisher module."""
 
     @patch('os.makedirs')
     @patch('builtins.open')

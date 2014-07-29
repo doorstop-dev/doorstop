@@ -8,10 +8,10 @@ import logging
 from doorstop import common
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
-class capture(object):  # pylint: disable=R0903,C0103
+class capture(object):  # pylint: disable=R0903
 
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 

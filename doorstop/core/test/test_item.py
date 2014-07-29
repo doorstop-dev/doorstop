@@ -28,7 +28,7 @@ text: ''
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Item class."""  # pylint: disable=W0212
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')
@@ -787,7 +787,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for text formatting in Items."""  # pylint: disable=C0103
+    """Unit tests for text formatting in Items."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
@@ -808,7 +808,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
 class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the UnknownItem class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the UnknownItem class."""  # pylint: disable= W0212
 
     def setUp(self):
         self.item = UnknownItem('RQ001')
@@ -874,6 +874,6 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.item module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.item module."""
 
     pass

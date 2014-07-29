@@ -14,7 +14,7 @@ from doorstop.core.test import MockDataMixIn
 
 class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.exporter module."""
 
     @patch('os.makedirs')
     @patch('doorstop.core.exporter.export_file')
