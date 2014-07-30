@@ -104,6 +104,16 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
 
     """Data for test cases requiring mock items and documents."""
 
+    # purely mock objects
+
+    mock_document = MagicMock()
+    mock_document.prefix = 'MOCK'
+    mock_document.items = []
+    mock_tree = MagicMock()
+    mock_tree.documents = [mock_document]
+
+    # mock objects that behave like the real thing
+
     item = MockItemAndVCS('path/to/req3.yml',
                           _file=("links: [sys3]" + '\n'
                                  "text: 'Heading'" + '\n'

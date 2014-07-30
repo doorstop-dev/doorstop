@@ -393,7 +393,7 @@ class Level(object):
     def __repr__(self):
         if self.heading:
             level = '.'.join(str(n) for n in self._parts)
-            return "Level('{}', heading=True)".format(level, self.heading)
+            return "Level('{}', heading=True)".format(level)
         else:
             return "Level('{}')".format(str(self))
 
