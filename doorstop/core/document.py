@@ -57,7 +57,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return "Document('{}')".format(self.path)
 
     def __str__(self):
-        if common.VERBOSITY < common.STR_VERBOSITY:
+        if common.verbosity < common.STR_VERBOSITY:
             return self.prefix
         else:
             return "{} ({})".format(self.prefix, self.relpath)

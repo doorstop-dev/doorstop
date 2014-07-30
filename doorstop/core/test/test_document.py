@@ -101,12 +101,12 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.document.save()
         self.assertIn("custom: this", self.document._file)
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify a document can be converted to a string."""
         self.assertEqual("REQ", str(self.document))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.verbosity', 3)
     def test_str_verbose(self):
         """Verify a document can be converted to a string (verbose)."""
         relpath = os.path.relpath(self.document.path, self.document.root)

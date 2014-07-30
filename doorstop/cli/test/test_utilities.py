@@ -175,6 +175,25 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(response)
 
 
+class TestShow(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the `show` function."""  # pylint: disable=R0201
+
+    @patch('builtins.print')
+    def test_show(self, mock_print):
+        """Verify prints are enabled by default."""
+        msg = "Hello, world!"
+        utilities.show(msg)
+        mock_print.assert_called_once_with(msg, flush=False)
+
+    @patch('builtins.print')
+    @patch('doorstop.common.verbosity', common.PRINT_VERBOSITY - 1)
+    def test_show_hidden(self, mock_print):
+        """Verify prints are hidden when verbosity is quiet."""
+        utilities.show("This won't be printed.")
+        mock_print.assert_never_called()
+
+
 class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
 
     """ Unit tests for the `positive_int` function."""
