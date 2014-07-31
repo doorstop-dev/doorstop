@@ -103,10 +103,10 @@ def _create(subs, shared):
     info = "create a new document directory"
     sub = subs.add_parser('create', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('prefix', help="document prefix for new item IDs")
+    sub.add_argument('prefix', help="document prefix for new item UIDs")
     sub.add_argument('path', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix of parent document")
-    sub.add_argument('-d', '--digits', help="number of digits in item IDs")
+    sub.add_argument('-d', '--digits', help="number of digits in item UIDs")
 
 
 def _delete(subs, shared):
@@ -134,7 +134,7 @@ def _remove(subs, shared):
     info = "remove an item file from a document directory"
     sub = subs.add_parser('remove', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('id', help="item ID to remove from its document")
+    sub.add_argument('uid', help="item UID to remove from its document")
 
 
 def _edit(subs, shared):
@@ -143,10 +143,10 @@ def _edit(subs, shared):
     sub = subs.add_parser('edit', description=info.capitalize() + '.',
                           help=info, **shared)
     sub.add_argument('label',
-                     help="item ID or document prefix to open for editing")
+                     help="item UID or document prefix to open for editing")
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-i', '--item', action='store_true',
-                       help="indicates the 'label' is an item ID")
+                       help="indicates the 'label' is an item UID")
     group.add_argument('-d', '--document', action='store_true',
                        help="indicates the 'label' is a document prefix")
     group = sub.add_mutually_exclusive_group()
@@ -183,9 +183,9 @@ def _link(subs, shared):
     sub = subs.add_parser('link', description=info.capitalize() + '.',
                           help=info, **shared)
     sub.add_argument('child',
-                     help="child item ID to link to the parent")
+                     help="child item UID to link to the parent")
     sub.add_argument('parent',
-                     help="parent item ID to link from the child")
+                     help="parent item UID to link from the child")
 
 
 def _unlink(subs, shared):
@@ -194,9 +194,9 @@ def _unlink(subs, shared):
     sub = subs.add_parser('unlink', description=info.capitalize() + '.',
                           help=info, **shared)
     sub.add_argument('child',
-                     help="child item ID to unlink from parent")
+                     help="child item UID to unlink from parent")
     sub.add_argument('parent',
-                     help="parent item ID child is linked to")
+                     help="parent item UID child is linked to")
 
 
 def _clear(subs, shared):
@@ -204,10 +204,10 @@ def _clear(subs, shared):
     info = "absolve items of their suspect link status"
     sub = subs.add_parser('clear', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('label', help="item ID, document prefix, or 'all'")
+    sub.add_argument('label', help="item UID, document prefix, or 'all'")
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-i', '--item', action='store_true',
-                       help="indicates the 'label' is an item ID")
+                       help="indicates the 'label' is an item UID")
     group.add_argument('-d', '--document', action='store_true',
                        help="indicates the 'label' is a document prefix")
 
@@ -217,10 +217,10 @@ def _review(subs, shared):
     info = "absolve items of their unreviewed status"
     sub = subs.add_parser('review', description=info.capitalize() + '.',
                           help=info, **shared)
-    sub.add_argument('label', help="item ID, document prefix, or 'all'")
+    sub.add_argument('label', help="item UID, document prefix, or 'all'")
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-i', '--item', action='store_true',
-                       help="indicates the 'label' is an item ID")
+                       help="indicates the 'label' is an item UID")
     group.add_argument('-d', '--document', action='store_true',
                        help="indicates the 'label' is a document prefix")
 
@@ -237,7 +237,7 @@ def _import(subs, shared):
     group.add_argument('-d', '--document', nargs=2, metavar='ARG',
                        help="import an existing document by: PREFIX PATH")
     group.add_argument('-i', '--item', nargs=2, metavar='ARG',
-                       help="import an existing item by: PREFIX ID")
+                       help="import an existing item by: PREFIX UID")
     sub.add_argument('-p', '--parent', metavar='PREFIX',
                      help="parent document prefix for imported document")
     sub.add_argument('-a', '--attrs', metavar='DICT',

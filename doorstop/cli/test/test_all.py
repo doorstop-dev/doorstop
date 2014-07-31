@@ -138,8 +138,8 @@ class TestDelete(MockTestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['delete', 'UNKNOWN'])
 
 
-def get_next_id():
-    """Helper function to get the next item ID number."""
+def get_next_number():
+    """Helper function to get the next document number."""
     last = None
     for last in sorted(os.listdir(TUTORIAL), reverse=True):
         if "index" not in last:
@@ -156,7 +156,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     @classmethod
     def setUpClass(cls):
-        number = get_next_id()
+        number = get_next_number()
         filename = "TUT{}.yml".format(str(number).zfill(3))
         cls.path = os.path.join(TUTORIAL, filename)
 
@@ -170,7 +170,7 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
     def test_add_multiple(self):
         """Verify 'doorstop add' can be called with a given positive count"""
-        number = get_next_id()
+        number = get_next_number()
         numbers = (number, number + 1, number + 2)
         self.assertIs(None, main(['add', 'TUT', '--count', '3']))
         filenames = ("TUT{}.yml".format(str(x).zfill(3)) for x in numbers)
@@ -214,7 +214,7 @@ class TestRemove(unittest.TestCase):  # pylint: disable=R0904
         self.assertFalse(os.path.exists(self.ITEM))
 
     def test_remove_error(self):
-        """Verify 'doorstop remove' returns an error on unknown item IDs."""
+        """Verify 'doorstop remove' returns an error on unknown item UIDs."""
         self.assertRaises(SystemExit, main, ['remove', 'tut9999'])
 
 
@@ -330,7 +330,7 @@ class TestEdit(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['edit', '--document', 'FAKE'])
 
     def test_edit_error(self):
-        """Verify 'doorstop edit' returns an error with an unknown ID."""
+        """Verify 'doorstop edit' returns an error with an unknown UID."""
         self.assertRaises(SystemExit, main, ['edit', 'req9999'])
 
 
@@ -431,7 +431,7 @@ class TestClear(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['clear', '--document', 'all'])
 
     def test_clear_error(self):
-        """Verify 'doorstop clear' returns an error with an unknown ID."""
+        """Verify 'doorstop clear' returns an error with an unknown UID."""
         self.assertRaises(SystemExit, main, ['clear', 'req9999'])
 
 
@@ -475,7 +475,7 @@ class TestReview(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, ['review', '--document', 'all'])
 
     def test_review_error(self):
-        """Verify 'doorstop review' returns an error with an unknown ID."""
+        """Verify 'doorstop review' returns an error with an unknown UID."""
         self.assertRaises(SystemExit, main, ['review', 'req9999'])
 
 

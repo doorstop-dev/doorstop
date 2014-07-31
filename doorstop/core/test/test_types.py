@@ -3,7 +3,7 @@
 import unittest
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, ID, Text, Level, Stamp
+from doorstop.core.types import Prefix, UID, Text, Level, Stamp
 
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
@@ -56,103 +56,103 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual('tst', self.prefix2.short)
 
 
-class TestID(unittest.TestCase):  # pylint: disable=R0904
+class TestUID(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the ID class."""  # pylint: disable=W0212
+    """Unit tests for the UID class."""  # pylint: disable=W0212
 
     def setUp(self):
-        self.id1 = ID('REQ001')
-        self.id2 = ID('TST-02')
-        self.id3 = ID('SYS', '-', 3, 5)
-        self.id4 = ID('REQ001', stamp='abc123')
+        self.uid1 = UID('REQ001')
+        self.uid2 = UID('TST-02')
+        self.uid3 = UID('SYS', '-', 3, 5)
+        self.uid4 = UID('REQ001', stamp='abc123')
 
     def test_init_str(self):
-        """Verify IDs are parsed correctly (string)."""
-        identifier = ID('REQ')
-        self.assertRaises(DoorstopError, getattr, identifier, 'prefix')
-        identifier = ID('REQ-?')
-        self.assertRaises(DoorstopError, getattr, identifier, 'number')
+        """Verify UIDs are parsed correctly (string)."""
+        uid = UID('REQ')
+        self.assertRaises(DoorstopError, getattr, uid, 'prefix')
+        uid = UID('REQ-?')
+        self.assertRaises(DoorstopError, getattr, uid, 'number')
 
     def test_init_dict(self):
-        """Verify IDs are parsed correctly (dictionary)."""
-        identifier = ID({'REQ001': 'abc123'})
-        self.assertEqual('REQ', identifier.prefix)
-        self.assertEqual(1, identifier.number)
-        self.assertEqual('abc123', identifier.stamp)
+        """Verify UIDs are parsed correctly (dictionary)."""
+        uid = UID({'REQ001': 'abc123'})
+        self.assertEqual('REQ', uid.prefix)
+        self.assertEqual(1, uid.number)
+        self.assertEqual('abc123', uid.stamp)
 
     def test_init_values(self):
-        """Verify IDs are parsed correctly (values)."""
-        self.assertRaises(TypeError, ID, 'REQ', '-')
-        self.assertRaises(TypeError, ID, 'REQ', '-', 42)
-        self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
+        """Verify UIDs are parsed correctly (values)."""
+        self.assertRaises(TypeError, UID, 'REQ', '-')
+        self.assertRaises(TypeError, UID, 'REQ', '-', 42)
+        self.assertRaises(TypeError, UID, 'REQ', '-', 42, 3, 'extra')
 
     def test_init_empty(self):
-        """Verify IDs are parsed correctly (empty)."""
-        self.assertEqual(ID(""), ID())
+        """Verify UIDs are parsed correctly (empty)."""
+        self.assertEqual(UID(""), UID())
 
     def test_init_instance(self):
-        """Verify IDs are parsed correctly (instance)."""
-        self.assertIs(self.id1, ID(self.id1))
-        self.assertIs(self.id4, ID(self.id4))
+        """Verify UIDs are parsed correctly (instance)."""
+        self.assertIs(self.uid1, UID(self.uid1))
+        self.assertIs(self.uid4, UID(self.uid4))
 
     def test_repr(self):
-        """Verify IDs can be represented."""
-        self.assertEqual("ID('REQ001')", repr(self.id1))
-        self.assertEqual("ID('TST-02')", repr(self.id2))
-        self.assertEqual("ID('SYS-00003')", repr(self.id3))
-        self.assertEqual("ID('REQ001', stamp='abc123')", repr(self.id4))
+        """Verify UIDs can be represented."""
+        self.assertEqual("UID('REQ001')", repr(self.uid1))
+        self.assertEqual("UID('TST-02')", repr(self.uid2))
+        self.assertEqual("UID('SYS-00003')", repr(self.uid3))
+        self.assertEqual("UID('REQ001', stamp='abc123')", repr(self.uid4))
 
     def test_str(self):
-        """Verify IDs can be converted to strings."""
-        self.assertEqual('REQ001', str(self.id1))
-        self.assertEqual('TST-02', str(self.id2))
-        self.assertEqual('SYS-00003', str(self.id3))
+        """Verify UIDs can be converted to strings."""
+        self.assertEqual('REQ001', str(self.uid1))
+        self.assertEqual('TST-02', str(self.uid2))
+        self.assertEqual('SYS-00003', str(self.uid3))
 
     def test_eq(self):
-        """Verify IDs can be equated."""
-        self.assertEqual(ID('REQ.001'), ID('req', '', 1, 3))
-        self.assertEqual(ID('REQ1'), ID('REQ', '', 1, 3))
-        self.assertNotEqual(ID('REQ.2'), ID('REQ', '-', 1, 3))
-        self.assertEqual(ID('REQ1'), ID('REQ001 (@/req1.yml)'))
-        self.assertEqual('req1', ID('REQ001'))
-        self.assertNotEqual(None, ID('REQ001'))
-        self.assertEqual(self.id1, self.id4)
+        """Verify UIDs can be equated."""
+        self.assertEqual(UID('REQ.001'), UID('req', '', 1, 3))
+        self.assertEqual(UID('REQ1'), UID('REQ', '', 1, 3))
+        self.assertNotEqual(UID('REQ.2'), UID('REQ', '-', 1, 3))
+        self.assertEqual(UID('REQ1'), UID('REQ001 (@/req1.yml)'))
+        self.assertEqual('req1', UID('REQ001'))
+        self.assertNotEqual(None, UID('REQ001'))
+        self.assertEqual(self.uid1, self.uid4)
 
     def test_sort(self):
-        """Verify IDs can be sorted."""
-        ids = [ID('a'), ID('a1'), ID('a2'), ID('b')]
-        self.assertListEqual(ids, sorted(ids))
+        """Verify UIDs can be sorted."""
+        uids = [UID('a'), UID('a1'), UID('a2'), UID('b')]
+        self.assertListEqual(uids, sorted(uids))
 
     def test_prefix(self):
-        """Verify IDs have prefixes."""
-        self.assertEqual('REQ', self.id1.prefix)
-        self.assertEqual('TST', self.id2.prefix)
-        self.assertEqual('SYS', self.id3.prefix)
+        """Verify UIDs have prefixes."""
+        self.assertEqual('REQ', self.uid1.prefix)
+        self.assertEqual('TST', self.uid2.prefix)
+        self.assertEqual('SYS', self.uid3.prefix)
 
     def test_number(self):
-        """Verify IDs have numbers."""
-        self.assertEqual(1, self.id1.number)
-        self.assertEqual(2, self.id2.number)
-        self.assertEqual(3, self.id3.number)
+        """Verify UIDs have numbers."""
+        self.assertEqual(1, self.uid1.number)
+        self.assertEqual(2, self.uid2.number)
+        self.assertEqual(3, self.uid3.number)
 
     def test_short(self):
         """Verify the short representation of IDs is correct."""
-        self.assertEqual('req1', self.id1.short)
-        self.assertEqual('tst2', self.id2.short)
-        self.assertEqual('sys3', self.id3.short)
+        self.assertEqual('req1', self.uid1.short)
+        self.assertEqual('tst2', self.uid2.short)
+        self.assertEqual('sys3', self.uid3.short)
+
+    def test_string(self):
+        """Verify UIDs can be converted to string including stamps."""
+        self.assertEqual("REQ001", self.uid1.string)
+        self.assertEqual("REQ001:abc123", self.uid4.string)
 
     def test_stamp(self):
         """Verify stamps are stored correctly."""
-        self.assertEqual('abc123', self.id4.stamp)
-        self.assertEqual('abc123', ID(self.id4).stamp)
-        self.assertEqual('def456', ID(self.id4, stamp='def456').stamp)
-        self.assertEqual(True, ID({'REQ001': 1}).stamp)
-        self.assertEqual(True, ID("REQ001:1").stamp)
-
-    def test_text(self):
-        """Verify IDs can be converted to text."""
-        self.assertEqual("REQ001", self.id1.text)
-        self.assertEqual("REQ001:abc123", self.id4.text)
+        self.assertEqual('abc123', self.uid4.stamp)
+        self.assertEqual('abc123', UID(self.uid4).stamp)
+        self.assertEqual('def456', UID(self.uid4, stamp='def456').stamp)
+        self.assertEqual(True, UID({'REQ001': 1}).stamp)
+        self.assertEqual(True, UID("REQ001:1").stamp)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904

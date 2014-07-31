@@ -7,7 +7,7 @@ import logging
 
 import yaml
 
-verbosity = None  # global verbosity setting for controlling string formatting
+verbosity = 0  # global verbosity setting for controlling string formatting
 PRINT_VERBOSITY = 0  # minimum verbosity to using `print`
 STR_VERBOSITY = 3  # minimum verbosity to use verbose `__str__`
 MAX_VERBOSITY = 4  # maximum verbosity level implemented
