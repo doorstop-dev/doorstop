@@ -8,7 +8,8 @@ import argparse
 
 from doorstop import common
 from doorstop.cli import utilities, commands
-from doorstop.gui.main import _run as gui
+from doorstop.gui.main import run as gui
+from doorstop.web.server import run as server
 
 log = common.logger(__name__)
 
