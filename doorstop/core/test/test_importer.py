@@ -86,7 +86,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        expected_header = ['id', 'level', 'text', 'ref', 'links',
+        expected_header = ['uid', 'level', 'text', 'ref', 'links',
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
@@ -147,7 +147,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         logging.debug("args: {}".format(args))
         logging.debug("kwargs: {}".format(kwargs))
         header, data, document = args
-        expected_header = ['id', 'level', 'text', 'ref', 'links',
+        expected_header = ['uid', 'level', 'text', 'ref', 'links',
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
@@ -163,7 +163,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.importer.add_item')
     def test_itemize(self, mock_add_item):
         """Verify item data can be converted to items."""
-        header = ['id', 'text', 'links', 'ext1']
+        header = ['uid', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
                 ['req2', '', 'sys1,sys2', False]]
         mock_document = Mock()
@@ -188,7 +188,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         data = [['req1', 'text1', '', 'val1'],
                 ['req2', 'text2', 'sys1,sys2', None]]
         mock_document = Mock()
-        mapping = {'MyID': 'id'}
+        mapping = {'MyID': 'uid'}
         # Act
         importer._itemize(header, data, mock_document, mapping=mapping)  # pylint: disable=W0212
         # Assert
@@ -197,7 +197,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.importer.add_item')
     def test_itemize_replace_existing(self, mock_add_item):
         """Verify item data can replace existing items."""
-        header = ['id', 'text', 'links', 'ext1']
+        header = ['uid', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
                 ['req2', 'text2', 'sys1,sys2', None]]
         mock_document = Mock()
@@ -210,7 +210,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.importer.add_item')
     def test_itemize_blank_column(self, mock_add_item):
         """Verify item data can include invalid values."""
-        header = ['id', 'text', None, 'links', 'ext1']
+        header = ['id', 'text', None, 'links', 'ext1']  # 'id' is also allowed
         data = [['req1', 'text1', 'blank', '', 'val1']]
         mock_document = Mock()
         mock_document.prefix = 'prefix'
@@ -223,7 +223,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):
         """Verify item data can include invalid values."""
-        header = ['id', 'text', 'links', 'ext1']
+        header = ['uid', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
                 ['invalid']]
         mock_document = Mock()
@@ -304,7 +304,7 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         # Create default item attributes
-        self.identifier = 'PREFIX-00042'
+        self.uid = 'PREFIX-00042'
         # Ensure the tree is reloaded
         mock_document = Mock()
         mock_document.root = self.root
@@ -325,9 +325,9 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new):
         """Verify an item can be imported into an existing document."""
-        importer.add_item(self.prefix, self.identifier)
+        importer.add_item(self.prefix, self.uid)
         mock_new.assert_called_once_with(self.mock_tree, self.mock_document,
-                                         self.path, self.root, self.identifier,
+                                         self.path, self.root, self.uid,
                                          auto=False)
 
     @patch('doorstop.core.builder._get_tree')
@@ -338,17 +338,17 @@ class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
         mock_document = self.mock_document
         mock_tree = mock_document.tree
         mock_document.tree._item_cache = MagicMock()  # pylint:disable=W0212
-        importer.add_item(self.prefix, self.identifier, document=mock_document)
+        importer.add_item(self.prefix, self.uid, document=mock_document)
         self.assertFalse(mock_get_tree.called)
         mock_new.assert_called_once_with(mock_tree, mock_document,
-                                         self.path, self.root, self.identifier,
+                                         self.path, self.root, self.uid,
                                          auto=False)
 
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
     def test_add_item_with_attrs(self):
         """Verify an item can be imported with attributes."""
         attrs = {'text': "The item text.", 'ext': "External attrubte."}
-        item = importer.add_item(self.prefix, self.identifier, attrs=attrs)
-        self.assertEqual(self.identifier, item.id)
+        item = importer.add_item(self.prefix, self.uid, attrs=attrs)
+        self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext'], item.get('ext'))

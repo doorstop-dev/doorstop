@@ -48,6 +48,6 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     def test_find_item(self, mock_find_item):  # pylint: disable=R0201
         """Verify items can be found using a convenience function."""
         _clear_tree()
-        identifier = 'req1'
-        find_item(identifier)
-        mock_find_item.assert_called_once_with(identifier)
+        uid = 'req1'
+        find_item(uid)
+        mock_find_item.assert_called_once_with(uid)
