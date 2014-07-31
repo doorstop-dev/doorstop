@@ -150,7 +150,7 @@ def _tabulate(obj, sep=LIST_SEP):
                 value = str(value)
             elif key == 'links':
                 # separate identifiers with a delimiter
-                value = sep.join(uid.text for uid in item.links)
+                value = sep.join(uid.string for uid in item.links)
             elif value is None:
                 value = ''
             row.append(value)

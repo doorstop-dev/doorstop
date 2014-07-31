@@ -9,6 +9,7 @@ Changelog
 - Added `Item.clear()` to save stamps (hashes) of linked items.
 - Added `Item.review()` to save stamps (hashes) of reviewed items.
 - Added `doorstop reorder ...` to organize a document's structure.
+- Renamed `Item.id` and `identifer` arguments to `uid`
 
 0.7 (2014/07/08)
 ----------------

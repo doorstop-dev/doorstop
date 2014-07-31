@@ -138,10 +138,10 @@ class TestUID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(True, UID({'REQ001': 1}).stamp)
         self.assertEqual(True, UID("REQ001:1").stamp)
 
-    def test_text(self):
-        """Verify UIDs can be converted to text."""
-        self.assertEqual("REQ001", self.uid1.text)
-        self.assertEqual("REQ001:abc123", self.uid4.text)
+    def test_string(self):
+        """Verify UIDs can be converted to string including stamps."""
+        self.assertEqual("REQ001", self.uid1.string)
+        self.assertEqual("REQ001:abc123", self.uid4.string)
 
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904

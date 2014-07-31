@@ -80,7 +80,7 @@ def add_item(prefix, uid, attrs=None, document=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
-    :param uid: existing item's unique UID
+    :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
 
@@ -96,7 +96,7 @@ def add_item(prefix, uid, attrs=None, document=None):
         tree = _get_tree()
         document = tree.find_document(prefix)
 
-    # Add an item using the specified uid
+    # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
     item = Item.new(tree, document,
                     document.path, document.root, uid,
@@ -248,7 +248,7 @@ def _itemize(header, data, document, mapping=None):
                     break
 
             # Convert values for particular keys
-            if key in ('uid', 'id'):
+            if key in ('uid', 'id'):  # 'id' for backwards compatibility
                 uid = value
             elif key == 'links':
                 # split links into a list

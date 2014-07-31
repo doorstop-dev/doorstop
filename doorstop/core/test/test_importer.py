@@ -210,7 +210,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.core.importer.add_item')
     def test_itemize_blank_column(self, mock_add_item):
         """Verify item data can include invalid values."""
-        header = ['id', 'text', None, 'links', 'ext1']  # 'id' is also allowed
+        header = ['id', 'text', None, 'links', 'ext1']  # test 'id' is accepted
         data = [['req1', 'text1', 'blank', '', 'val1']]
         mock_document = Mock()
         mock_document.prefix = 'prefix'

@@ -326,14 +326,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         try:
             last = self.items[-1]
         except IndexError:
-            nlevel = level
+            next_level = level
         else:
-            nlevel = level or last.level + 1
-        log.debug("next level: {}".format(nlevel))
+            next_level = level or last.level + 1
+        log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self,
                         self.path, self.root, uid,
-                        level=nlevel)
+                        level=next_level)
         if level and reorder:
             self.reorder(keep=item)
         return item

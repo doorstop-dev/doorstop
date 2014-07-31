@@ -525,7 +525,7 @@ def _export_import(args, cwd, err, document, ext):
         common.delete(path)
     else:
         show("import canceled")
-        if ask("delete '{}'?".format(path), default='no'):
+        if ask("delete '{}'?".format(path)):
             common.delete(path)
         else:
             show("to manually import: doorstop import {0}".format(path))

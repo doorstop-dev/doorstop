@@ -74,12 +74,12 @@ class UID(object):
 
         Option 1:
 
-        :param *values: uid + optional stamp ("uid:stamp")
+        :param *values: UID + optional stamp ("UID:stamp")
         :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 2:
 
-        :param *values: {uid: stamp}
+        :param *values: {UID: stamp}
         :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 3:
@@ -98,7 +98,7 @@ class UID(object):
         elif len(values) == 1:
             value = values[0]
             if isinstance(value, str) and ':' in value:
-                # split uid:stamp into a dictionary
+                # split UID:stamp into a dictionary
                 pair = value.rsplit(':', 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
@@ -170,7 +170,7 @@ class UID(object):
         return self._number
 
     @property
-    def text(self):
+    def string(self):
         """Convert the UID and stamp to a single string."""
         if self.stamp:
             return "{}:{}".format(self.value, self.stamp)

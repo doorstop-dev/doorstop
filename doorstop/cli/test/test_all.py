@@ -139,7 +139,7 @@ class TestDelete(MockTestCase):  # pylint: disable=R0904
 
 
 def get_next_number():
-    """Helper function to get the next item UID number."""
+    """Helper function to get the next document number."""
     last = None
     for last in sorted(os.listdir(TUTORIAL), reverse=True):
         if "index" not in last:
