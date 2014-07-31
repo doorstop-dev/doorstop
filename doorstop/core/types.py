@@ -641,6 +641,11 @@ class Stamp(object):
         return md5.hexdigest()
 
 
+class Reference(object):
+
+    """External reference to a file or lines in a file."""
+
+
 def to_bool(obj):
     """Convert a boolean-like object.
 

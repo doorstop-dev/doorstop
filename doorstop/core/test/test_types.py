@@ -3,7 +3,7 @@
 import unittest
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, ID, Text, Level, Stamp
+from doorstop.core.types import Prefix, ID, Text, Level, Stamp, Reference
 
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
@@ -403,8 +403,12 @@ class TestStamp(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(None, self.stamp5.yaml)
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestReference(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.types module."""
+    """Unit tests for the Reference class."""
 
-    pass
+    def setUp(self):
+        self.ref1 = Reference('abc123')
+        self.ref2 = Reference('path/to/external.txt', 5, 10)
+        self.ref2 = Reference('path/to/external.dat', None, None)
+        self.ref3 = Reference()
