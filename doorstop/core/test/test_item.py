@@ -103,10 +103,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertLess(item2, item3)
         self.assertGreater(item3, item1)
 
-    def test_id(self):
-        """Verify an item's ID can be read but not set."""
-        self.assertEqual('RQ001', self.item.id)
-        self.assertRaises(AttributeError, setattr, self.item, 'id', 'RQ002')
+    def test_uid(self):
+        """Verify an item's UID can be read but not set."""
+        self.assertEqual('RQ001', self.item.uid)
+        self.assertRaises(AttributeError, setattr, self.item, 'uid', 'RQ002')
 
     def test_relpath(self):
         """Verify an item's relative path string can be read but not set."""
@@ -202,12 +202,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_cleared(self):
         """Verify an item's suspect link status can be set and read."""
         mock_item = Mock()
-        mock_item.id = 'mock_id'
+        mock_item.uid = 'mock_uid'
         mock_item.stamp = Mock(return_value=Stamp('abc123'))
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
-        self.item.link('mock_id')
+        self.item.link('mock_uid')
         self.item.cleared = 1  # updates each stamp
         self.assertTrue(self.item.cleared)
         self.item.cleared = 0  # sets each stamp to None
@@ -389,7 +389,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.find_item = Mock(return_value='mock_item')
         self.item.tree = mock_tree
-        self.item.links = ['mock_id']
+        self.item.links = ['mock_uid']
         # Act
         items = self.item.parent_items
         # Assert
@@ -400,7 +400,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.find_item = Mock(side_effect=DoorstopError)
         self.item.tree = mock_tree
-        self.item.links = ['mock_id']
+        self.item.links = ['mock_uid']
         # Act
         items = self.item.parent_items
         # Assert
@@ -412,7 +412,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.find_document = Mock(return_value='mock_document')
         self.item.tree = mock_tree
-        self.item.links = ['mock_id']
+        self.item.links = ['mock_uid']
         self.item.document = Mock()
         self.item.document.prefix = 'mock_prefix'
         # Act
@@ -426,7 +426,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = Mock()
         mock_tree.find_document = Mock(side_effect=DoorstopError)
         self.item.tree = mock_tree
-        self.item.links = ['mock_id']
+        self.item.links = ['mock_uid']
         self.item.document = Mock()
         self.item.document.prefix = 'mock_prefix'
         # Act
@@ -472,7 +472,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_document_c.parent = 'RQ'
 
         mock_item = Mock()
-        mock_item.id = 'TST001'
+        mock_item.uid = 'TST001'
         mock_item.links = ['RQ001']
 
         def mock_iter(self):  # pylint: disable=W0613
@@ -488,7 +488,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.link('fake1')
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda identifier: Mock(id='fake1')
+        mock_tree.find_item = lambda uid: Mock(uid='fake1')
         self.item.tree = mock_tree
         self.item.document = mock_document_p
 
@@ -535,7 +535,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         item = MockItem.new(mock_tree, None,
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
-        self.assertEqual(item, mock_tree._item_cache[item.id])
+        self.assertEqual(item, mock_tree._item_cache[item.uid])
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_special(self):
@@ -583,7 +583,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
-        self.item.links = [{'mock_id': True}]
+        self.item.links = [{'mock_uid': True}]
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
 
@@ -628,8 +628,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.document = mock_document
         self.assertTrue(self.item.validate())
 
-    def test_validate_document_with_bad_link_IDs(self):
-        """Verify an item can be checked against a document w/ bad link IDs."""
+    def test_validate_document_with_bad_link_uids(self):
+        """Verify an item can be checked against a document w/ bad link UIDs."""
         self.item.link('invalid')
         mock_document = Mock()
         mock_document.parent = 'fake'
@@ -647,7 +647,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
             def mock_iter2(self):  # pylint: disable=W0613
                 """Mock Document.__iter__ to yield a mock Item."""
                 mock_item = Mock()
-                mock_item.id = 'TST001'
+                mock_item.uid = 'TST001'
                 mock_item.links = ['RQ001']
                 yield mock_item
 
@@ -658,7 +658,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda identifier: Mock(id='fake1')
+        mock_tree.find_item = lambda uid: Mock(uid='fake1')
 
         self.item.tree = mock_tree
 
@@ -683,7 +683,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
             return _iter
 
         mock_item = Mock()
-        mock_item.links = [self.item.id]
+        mock_item.links = [self.item.uid]
 
         mock_document = Mock()
         mock_document.parent = 'BOTH'
@@ -709,7 +709,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
             def mock_iter2(self):  # pylint: disable=W0613
                 """Mock Document.__iter__ to yield a mock Item."""
                 mock_item = Mock()
-                mock_item.id = 'TST001'
+                mock_item.uid = 'TST001'
                 mock_item.links = []
                 yield mock_item
 
@@ -723,7 +723,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda identifier: Mock(id='fake1')
+        mock_tree.find_item = lambda uid: Mock(uid='fake1')
 
         self.item.document = mock_document
         self.item.tree = mock_tree
@@ -749,12 +749,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_clear(self):
         """Verify an item's links can be cleared as suspect."""
         mock_item = Mock()
-        mock_item.id = 'mock_id'
+        mock_item.uid = 'mock_uid'
         mock_item.stamp = Mock(return_value=Stamp('abc123'))
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
-        self.item.link('mock_id')
+        self.item.link('mock_uid')
         self.assertFalse(self.item.cleared)
         self.assertEqual(None, self.item.links[0].stamp)  # pylint: disable=E1101
         # Act
@@ -780,9 +780,9 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
     def test_delete_cache(self):
         """Verify an item is expunged after delete."""
         self.item.tree = Mock()
-        self.item.tree._item_cache = {self.item.id: self.item}
+        self.item.tree._item_cache = {self.item.uid: self.item}
         self.item.delete()
-        self.assertIs(None, self.item.tree._item_cache[self.item.id])
+        self.assertIs(None, self.item.tree._item_cache[self.item.uid])
 
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
@@ -824,10 +824,10 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         text = "RQ001 (@{}{})".format(os.sep, '???')
         self.assertEqual(text, str(self.item))
 
-    def test_id(self):
-        """Verify an unknown item's ID can be read but not set."""
-        self.assertEqual('RQ001', self.item.id)
-        self.assertRaises(AttributeError, setattr, self.item, 'id', 'RQ002')
+    def test_uid(self):
+        """Verify an unknown item's UID can be read but not set."""
+        self.assertEqual('RQ001', self.item.uid)
+        self.assertRaises(AttributeError, setattr, self.item, 'uid', 'RQ002')
 
     def test_relpath(self):
         """Verify an item's relative path string can be read but not set."""
@@ -859,7 +859,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
     def test_attributes_with_spec(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         spec = Item(os.path.join(FILES, 'REQ001.yml'))
-        self.item = UnknownItem(self.item.id, spec=spec)
+        self.item = UnknownItem(self.item.uid, spec=spec)
         self.assertRaises(AttributeError, getattr, self.item, 'path')
         self.assertRaises(AttributeError, getattr, self.item, 'text')
         self.assertRaises(AttributeError, getattr, self.item, 'get_issues')

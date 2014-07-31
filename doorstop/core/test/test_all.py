@@ -287,7 +287,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.path = os.path.join(self.root, 'DIRECTORY')
         self.parent = 'PARENT_PREFIX'
         # Create default item attributes
-        self.identifier = 'PREFIX-00042'
+        self.uid = 'PREFIX-00042'
         # Load an actual document
         self.document = core.Document(FILES, root=ROOT)
         # Ensure the tree is reloaded
@@ -391,13 +391,13 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Create a document
         core.importer.create_document(self.prefix, self.path)
         # Verify the item does not already exist
-        self.assertRaises(DoorstopError, core.find_item, self.identifier)
+        self.assertRaises(DoorstopError, core.find_item, self.uid)
         # Import an item
-        item = core.importer.add_item(self.prefix, self.identifier)
+        item = core.importer.add_item(self.prefix, self.uid)
         # Verify the item's attributes are correct
-        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(self.uid, item.uid)
         # Verify the item can be found
-        item2 = core.find_item(self.identifier)
+        item2 = core.find_item(self.uid)
         self.assertIs(item, item2)
         # Verify the item is contained in the document
         document = core.find_document(self.prefix)
@@ -409,10 +409,10 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(self.prefix, self.identifier,
+        item = core.importer.add_item(self.prefix, self.uid,
                                       attrs=attrs)
         # Verify the item is correct
-        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 

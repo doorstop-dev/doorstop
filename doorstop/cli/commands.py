@@ -100,7 +100,7 @@ def run_add(args, cwd, _, catch=True):
         tree = build(cwd, root=args.project)
         for _ in range(args.count):
             item = tree.add_item(args.prefix, level=args.level)
-            show("added item: {} ({})".format(item.id, item.relpath))
+            show("added item: {} ({})".format(item.uid, item.relpath))
 
     if not success:
         return False
@@ -119,12 +119,12 @@ def run_remove(args, cwd, _, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         tree = build(cwd, root=args.project)
-        item = tree.find_item(args.id)
+        item = tree.find_item(args.uid)
         item.delete()
     if not success:
         return False
 
-    show("removed item: {} ({})".format(item.id, item.relpath))
+    show("removed item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -161,7 +161,7 @@ def run_edit(args, cwd, err, catch=True):
         return False
 
     if item:
-        show("opened item: {} ({})".format(item.id, item.relpath))
+        show("opened item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -230,7 +230,7 @@ def run_link(args, cwd, _, catch=True):
         return False
 
     msg = "linked items: {} ({}) -> {} ({})"
-    show(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    show(msg.format(child.uid, child.relpath, parent.uid, parent.relpath))
 
     return True
 
@@ -251,7 +251,7 @@ def run_unlink(args, cwd, _, catch=True):
         return False
 
     msg = "unlinked items: {} ({}) -> {} ({})"
-    show(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    show(msg.format(child.uid, child.relpath, parent.uid, parent.relpath))
 
     return True
 
@@ -267,7 +267,7 @@ def run_clear(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            show("clearing item {}'s suspect links...".format(item.id))
+            show("clearing item {}'s suspect links...".format(item.uid))
             item.clear()
     if not success:
         return False
@@ -286,7 +286,7 @@ def run_review(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            show("marking item {} as reviewed...".format(item.id))
+            show("marking item {} as reviewed...".format(item.uid))
             item.review()
     if not success:
         return False
@@ -333,8 +333,8 @@ def run_import(args, cwd, err, catch=True, _tree=None):
             document = importer.create_document(prefix, path,
                                                 parent=args.parent)
         elif args.item:
-            prefix, identifier = args.item
-            item = importer.add_item(prefix, identifier, attrs=attrs)
+            prefix, uid = args.item
+            item = importer.add_item(prefix, uid, attrs=attrs)
     if not success:
         return False
 
@@ -344,7 +344,7 @@ def run_import(args, cwd, err, catch=True, _tree=None):
                                                  document.relpath))
     else:
         assert item
-        show("imported item: {} ({})".format(item.id, item.relpath))
+        show("imported item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -455,12 +455,12 @@ def _iter_items(args, cwd, err):
 
     - `args.label` == 'all': all items
     - `args.label` == document prefix: the document's items
-    - `args.label` == item ID: a single item
+    - `args.label` == item UID: a single item
 
     Documents and items are inferred unless flagged by:
 
     - `args.document`: `args.label` is a prefix
-    - `args.item`: `args.label` is an ID
+    - `args.item`: `args.label` is an UID
 
     """
     # Parse arguments
@@ -525,7 +525,7 @@ def _export_import(args, cwd, err, document, ext):
         common.delete(path)
     else:
         show("import canceled")
-        if ask("delete '{}'?".format(path), default='no'):
+        if ask("delete '{}'?".format(path)):
             common.delete(path)
         else:
             show("to manually import: doorstop import {0}".format(path))

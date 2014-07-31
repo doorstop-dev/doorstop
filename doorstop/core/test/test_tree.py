@@ -397,7 +397,7 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.tree.edit_item, 'req9999')
 
     def test_find_item(self):
-        """Verify an item can be found by exact ID."""
+        """Verify an item can be found by exact UID."""
         # Cache miss
         item = self.tree.find_item('req2-001')
         self.assertIsNot(None, item)
