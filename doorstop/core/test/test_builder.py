@@ -12,7 +12,7 @@ from doorstop.core.test import MockDocumentSkip, MockDocumentNoSkip
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.builder module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.builder module."""
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_run_empty(self):

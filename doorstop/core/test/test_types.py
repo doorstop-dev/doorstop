@@ -8,7 +8,7 @@ from doorstop.core.types import Prefix, ID, Text, Level, Stamp
 
 class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Prefix class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Prefix class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.prefix1 = Prefix('REQ')
@@ -58,7 +58,7 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
 
 class TestID(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the ID class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the ID class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.id1 = ID('REQ001')
@@ -157,7 +157,7 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
 
 class TestText(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Text class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Text class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.text = Text("Hello, \nworld! ")
@@ -185,7 +185,7 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
 
 class TestLevel(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Level class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Level class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.level_1 = Level('1')
@@ -361,7 +361,7 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
 
 class TestStamp(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Stamp class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Stamp class."""  # pylint: disable=W0212
 
     def setUp(self):
         self.stamp1 = Stamp('abc123')
@@ -416,6 +416,6 @@ class TestStamp(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.types module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.types module."""
 
     pass

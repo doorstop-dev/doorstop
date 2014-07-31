@@ -23,7 +23,7 @@ from doorstop.core.test import MockDocumentSkip
 @patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
 class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Tree class using strings."""  # pylint: disable=C0103
+    """Unit tests for the Tree class using strings."""
 
     @classmethod
     def setUpClass(cls):
@@ -193,7 +193,7 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
 @patch('doorstop.core.tree.Document', MockDocumentSkip)  # pylint: disable=R0904
 class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Tree class."""  # pylint: disable=C0103
+    """Unit tests for the Tree class."""
 
     def setUp(self):
         document = Document(SYS)
@@ -430,4 +430,4 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.tree module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.tree module."""

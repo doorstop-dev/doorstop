@@ -87,7 +87,7 @@ $(DEPENDS_DEV): Makefile
 
 .PHONY: doorstop
 doorstop: env
-	$(BIN)/doorstop
+	$(BIN)/doorstop --quiet
 
 .PHONY: gui
 gui: env
@@ -102,7 +102,7 @@ serve: env
 .PHONY: doc
 doc: readme reqs uml apidocs sphinx
 
-.PHONY: pages 
+.PHONY: pages
 pages: reqs-html sphinx
 	cp -r docs/gen/ pages/reqs/
 	cp -r docs/sphinx/_build pages/docs/

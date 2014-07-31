@@ -28,7 +28,7 @@ text: ''
 
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the Item class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the Item class."""  # pylint: disable=W0212
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')
@@ -63,12 +63,12 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.verbosity', 3)
     def test_str_verbose(self):
         """Verify an item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, self.item.path)
@@ -787,7 +787,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
 class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for text formatting in Items."""  # pylint: disable=C0103
+    """Unit tests for text formatting in Items."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
 
@@ -808,17 +808,17 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
 
 class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the UnknownItem class."""  # pylint: disable=C0103,W0212
+    """Unit tests for the UnknownItem class."""  # pylint: disable= W0212
 
     def setUp(self):
         self.item = UnknownItem('RQ001')
 
-    @patch('doorstop.common.VERBOSITY', 2)
+    @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an unknown item can be converted to a string."""
         self.assertEqual("RQ001", str(self.item))
 
-    @patch('doorstop.common.VERBOSITY', 3)
+    @patch('doorstop.common.verbosity', 3)
     def test_str_verbose(self):
         """Verify an unknown item can be converted to a string (verbose)."""
         text = "RQ001 (@{}{})".format(os.sep, '???')
@@ -874,6 +874,6 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
 
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the doorstop.core.item module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.item module."""
 
     pass

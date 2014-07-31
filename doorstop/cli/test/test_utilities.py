@@ -13,7 +13,7 @@ from doorstop.cli.test import SettingsTestCase
 
 class TestCapture(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `Capture` class."""  # pylint: disable=C0103
+    """Unit tests for the `Capture` class."""
 
     def test_success(self):
         """Verify a success can be captured."""
@@ -40,7 +40,7 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
 
 class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `configure_settings` function."""  # pylint: disable=C0103
+    """Unit tests for the `configure_settings` function."""
 
     def test_configure_settings(self):
         """Verify settings are parsed correctly."""
@@ -59,7 +59,7 @@ class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
 
 class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `literal_eval` function."""  # pylint: disable=C0103
+    """Unit tests for the `literal_eval` function."""
 
     def test_literal_eval(self):
         """Verify a string can be evaluated as a Python literal."""
@@ -80,7 +80,7 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
 
 class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `get_ext` function."""  # pylint: disable=C0103
+    """Unit tests for the `get_ext` function."""
 
     def test_get_ext_stdout_document(self):
         """Verify a default output extension can be selected."""
@@ -149,7 +149,7 @@ class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
 
 class TestAsk(unittest.TestCase):  # pylint: disable=R0904
 
-    """Unit tests for the `ask` function."""  # pylint: disable=C0103
+    """Unit tests for the `ask` function."""
 
     def test_ask_yes(self):
         """Verify 'yes' maps to True."""
@@ -175,9 +175,28 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(response)
 
 
+class TestShow(unittest.TestCase):  # pylint: disable=R0904
+
+    """Unit tests for the `show` function."""  # pylint: disable=R0201
+
+    @patch('builtins.print')
+    def test_show(self, mock_print):
+        """Verify prints are enabled by default."""
+        msg = "Hello, world!"
+        utilities.show(msg)
+        mock_print.assert_called_once_with(msg, flush=False)
+
+    @patch('builtins.print')
+    @patch('doorstop.common.verbosity', common.PRINT_VERBOSITY - 1)
+    def test_show_hidden(self, mock_print):
+        """Verify prints are hidden when verbosity is quiet."""
+        utilities.show("This won't be printed.")
+        mock_print.assert_never_called()
+
+
 class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
 
-    """ Unit tests for the `positive_int` function."""  # pylint: disable=C0103
+    """ Unit tests for the `positive_int` function."""
 
     def test_positive_int(self):
         """Verify a positive integer can be parsed."""

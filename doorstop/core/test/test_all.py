@@ -40,7 +40,7 @@ CHECK_PUBLISHED_CONTENT = True
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the Item class."""  # pylint: disable=C0103
+    """Integration tests for the Item class."""
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
@@ -83,7 +83,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestDocument(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the Document class."""  # pylint: disable=C0103
+    """Integration tests for the Document class."""
 
     def setUp(self):
         self.document = core.Document(FILES, root=ROOT)
@@ -267,13 +267,13 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestEditor(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integrations tests for the editor module."""  # pylint: disable=C0103
+    """Integrations tests for the editor module."""
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
 class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integrations tests for the importer module."""  # pylint: disable=C0103
+    """Integrations tests for the importer module."""
 
     def setUp(self):
         # Create a temporary mock working copy
@@ -420,7 +420,7 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
 class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core.exporter module."""
 
     maxDiff = None
 
@@ -492,7 +492,7 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
 class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core.publisher module."""
 
     maxDiff = None
 
@@ -620,7 +620,7 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestModule(unittest.TestCase):  # pylint: disable=R0904
 
-    """Integration tests for the doorstop.core module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core module."""
 
     def setUp(self):
         """Reset the internal tree."""

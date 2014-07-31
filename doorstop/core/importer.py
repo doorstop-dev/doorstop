@@ -17,9 +17,9 @@ from doorstop.core.builder import _get_tree
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
-_documents = []  # cache of unplaced documents, pylint: disable=C0103
+_documents = []  # cache of unplaced documents
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def import_file(path, document, ext=None, mapping=None, **kwargs):

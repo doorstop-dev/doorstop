@@ -17,7 +17,7 @@ REASON = "'{0}' variable not set".format(ENV)
 
 class SettingsTestCase(unittest.TestCase):  # pylint: disable=R0904
 
-    """Base test case class that backs up settings."""  # pylint: disable=C0103
+    """Base test case class that backs up settings."""
 
     def setUp(self):
         self.backup = (settings.REFORMAT,

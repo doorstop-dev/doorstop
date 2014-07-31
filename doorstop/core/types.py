@@ -10,7 +10,7 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Prefix(str):  # pylint: disable=R0904
@@ -404,7 +404,7 @@ class Level(object):
     def __repr__(self):
         if self.heading:
             level = '.'.join(str(n) for n in self._parts)
-            return "Level('{}', heading=True)".format(level, self.heading)
+            return "Level('{}', heading=True)".format(level)
         else:
             return "Level('{}')".format(str(self))
 

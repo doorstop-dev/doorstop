@@ -10,8 +10,8 @@ try:  # pragma: no cover (manual test)
     from tkinter import font, filedialog
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
-    tk = Mock()  # pylint: disable=C0103
-    ttk = Mock()  # pylint: disable=C0103
+    tk = Mock()
+    ttk = Mock()
 import os
 import argparse
 import functools
@@ -24,7 +24,7 @@ from doorstop.core import vcs
 from doorstop.core import builder
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def main(args=None):
@@ -563,7 +563,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         """Increment the current item's level."""
 
     @_log
-    def up(self):  # pylint: disable=C0103
+    def up(self):
         """Decrement the current item's level."""
 
     @_log

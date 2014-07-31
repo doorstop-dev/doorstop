@@ -34,7 +34,7 @@ BOX = {'end': {UTF8: '│   ',
                  CP437: '    ',
                  ASCII: '    '}}
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -173,7 +173,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             msg = "no parent specified for {}".format(document)
             log.info(msg)
             prefixes = ', '.join(document.prefix for document in self)
-            log.info("parent options: {}".format(document, prefixes))
+            log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
 
     # attributes #############################################################

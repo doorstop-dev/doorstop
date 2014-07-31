@@ -12,7 +12,7 @@ from doorstop.core.types import Prefix, ID, Level
 from doorstop.core.item import Item
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
@@ -57,7 +57,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return "Document('{}')".format(self.path)
 
     def __str__(self):
-        if common.VERBOSITY < common.STR_VERBOSITY:
+        if common.verbosity < common.STR_VERBOSITY:
             return self.prefix
         else:
             return "{} ({})".format(self.prefix, self.relpath)
