@@ -9,7 +9,7 @@ import argparse
 from doorstop import common
 from doorstop.cli import utilities, commands
 from doorstop.gui.main import run as gui
-from doorstop.server.main import run as server
+from doorstop.web.server import run as server
 
 log = common.logger(__name__)  # pylint: disable=C0103
 

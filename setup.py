@@ -50,5 +50,6 @@ setuptools.setup(
         "Markdown >= 2, < 3",
         "openpyxl >= 2, < 3",
         "bottle >= 0.12, < 0.13",
+        "requests >= 2, < 3",
     ],
 )

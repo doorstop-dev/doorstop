@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""REST server to display content and reserve item numbers."""
+
+from collections import defaultdict
 import logging
 
 import bottle
@@ -7,7 +10,8 @@ from bottle import get, post, request
 
 from doorstop import build, publisher
 
-tree = None  # pylint: disable=C0103
+tree = None
+numbers = defaultdict(int)
 
 
 @get('/')
@@ -48,12 +52,13 @@ def get_items(prefix):
         return '<br>'.join(identifiers)
 
 
-@post('/documents/<prefix>/items')
-def add_item(prefix):
+@post('/documents/<prefix>/numbers')
+def post_numbers(prefix):
     document = tree.find_document(prefix)
-    number = document.next
+    number = max(document.next, numbers[prefix])
+    numbers[prefix] = number + 1
     if json_response(request):
-        data = {'number': number}
+        data = {'next': number}
         return data
     else:
         return str(number)
