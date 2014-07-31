@@ -35,11 +35,16 @@ class capture(object):  # pylint: disable=R0903
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
+    assert common.PRINT_VERBOSITY == 0
     assert common.STR_VERBOSITY == 3
     assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
-    if verbosity == 0:
+    if verbosity == -1:
+        level = settings.QUIET_LOGGING_LEVEL
+        default_format = settings.DEFAULT_LOGGING_FORMAT
+        verbose_format = settings.LEVELED_LOGGING_FORMAT
+    elif verbosity == 0:
         level = settings.DEFAULT_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.LEVELED_LOGGING_FORMAT
@@ -67,9 +72,9 @@ def configure_logging(verbosity=0):
     if verbosity > common.MAX_VERBOSITY:
         msg = "maximum verbosity level is {}".format(common.MAX_VERBOSITY)
         logging.warn(msg)
-        common.VERBOSITY = common.MAX_VERBOSITY
+        common.verbosity = common.MAX_VERBOSITY
     else:
-        common.VERBOSITY = verbosity
+        common.verbosity = verbosity
 
 
 def configure_settings(args):
@@ -167,6 +172,12 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
             log.debug("extension based on default: {}".format(ext))
 
     return ext
+
+
+def show(message, flush=False):
+    """Print (optionally flushed) text to the display."""
+    if common.verbosity >= common.PRINT_VERBOSITY:
+        print(message, flush=flush)
 
 
 def ask(question, default=None):

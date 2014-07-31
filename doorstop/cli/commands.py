@@ -5,6 +5,7 @@ import time
 
 from doorstop import common
 from doorstop.cli import utilities
+from doorstop.cli.utilities import show, ask
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
 
@@ -31,7 +32,7 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
 
     """
     with utilities.capture(catch=catch) as success:
-        print("validating tree...", flush=True)
+        show("validating tree...", flush=True)
         tree = build(cwd, root=args.project)
         tree.load()
         valid = tree.validate()
@@ -39,9 +40,7 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
         return False
 
     if len(tree) > 1 and valid:
-        print()
-        print(tree.draw())
-        print()
+        show('\n' + tree.draw() + '\n')
 
     return valid
 
@@ -62,8 +61,7 @@ def run_create(args, cwd, _, catch=True):
     if not success:
         return False
 
-    print("created document: {} ({})".format(document.prefix,
-                                             document.relpath))
+    show("created document: {} ({})".format(document.prefix, document.relpath))
     return True
 
 
@@ -84,7 +82,7 @@ def run_delete(args, cwd, _, catch=True):
     if not success:
         return False
 
-    print("deleted document: {} ({})".format(prefix, relpath))
+    show("deleted document: {} ({})".format(prefix, relpath))
 
     return True
 
@@ -102,7 +100,7 @@ def run_add(args, cwd, _, catch=True):
         tree = build(cwd, root=args.project)
         for _ in range(args.count):
             item = tree.add_item(args.prefix, level=args.level)
-            print("added item: {} ({})".format(item.id, item.relpath))
+            show("added item: {} ({})".format(item.id, item.relpath))
 
     if not success:
         return False
@@ -126,7 +124,7 @@ def run_remove(args, cwd, _, catch=True):
     if not success:
         return False
 
-    print("removed item: {} ({})".format(item.id, item.relpath))
+    show("removed item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -163,7 +161,7 @@ def run_edit(args, cwd, err, catch=True):
         return False
 
     if item:
-        print("opened item: {} ({})".format(item.id, item.relpath))
+        show("opened item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -188,14 +186,14 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
     with utilities.capture(catch=catch) as success:
         # automatically order
         if args.auto:
-            print("reordering document {}...".format(document), flush=True)
+            show("reordering document {}...".format(document), flush=True)
             document.reorder(manual=False)
             reordered = True
         # or, reorder from a previously updated index
         elif document.index:
             relpath = os.path.relpath(document.index, cwd)
-            if utilities.ask("reorder from '{}'?".format(relpath)):
-                print("reordering document {}...".format(document), flush=True)
+            if ask("reorder from '{}'?".format(relpath)):
+                show("reordering document {}...".format(document), flush=True)
                 document.reorder(automatic=not args.manual)
                 reordered = True
             else:
@@ -207,11 +205,11 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
             editor.edit(relpath, tool=args.tool)
             get('reorder')(args, cwd, err, catch=False, _tree=tree)
     if not success:
-        print("after fixing the error: doorstop reorder {}".format(document))
+        show("after fixing the error: doorstop reorder {}".format(document))
         return False
 
     if reordered:
-        print("reordered document: {}".format(document))
+        show("reordered document: {}".format(document))
 
     return True
 
@@ -232,7 +230,7 @@ def run_link(args, cwd, _, catch=True):
         return False
 
     msg = "linked items: {} ({}) -> {} ({})"
-    print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    show(msg.format(child.id, child.relpath, parent.id, parent.relpath))
 
     return True
 
@@ -253,7 +251,7 @@ def run_unlink(args, cwd, _, catch=True):
         return False
 
     msg = "unlinked items: {} ({}) -> {} ({})"
-    print(msg.format(child.id, child.relpath, parent.id, parent.relpath))
+    show(msg.format(child.id, child.relpath, parent.id, parent.relpath))
 
     return True
 
@@ -269,7 +267,7 @@ def run_clear(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            print("clearing item {}'s suspect links...".format(item.id))
+            show("clearing item {}'s suspect links...".format(item.id))
             item.clear()
     if not success:
         return False
@@ -288,7 +286,7 @@ def run_review(args, cwd, err, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         for item in _iter_items(args, cwd, err):
-            print("marking item {} as reviewed...".format(item.id))
+            show("marking item {} as reviewed...".format(item.id))
             item.review()
     if not success:
         return False
@@ -328,7 +326,7 @@ def run_import(args, cwd, err, catch=True, _tree=None):
             document = tree.find_document(args.prefix)
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
-            print(msg, flush=True)
+            show(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
         elif args.document:
             prefix, path = args.document
@@ -342,11 +340,11 @@ def run_import(args, cwd, err, catch=True, _tree=None):
 
     # Display result
     if document:
-        print("imported document: {} ({})".format(document.prefix,
-                                                  document.relpath))
+        show("imported document: {} ({})".format(document.prefix,
+                                                 document.relpath))
     else:
         assert item
-        print("imported item: {} ({})".format(item.id, item.relpath))
+        show("imported item: {} ({})".format(item.id, item.relpath))
 
     return True
 
@@ -376,22 +374,22 @@ def run_export(args, cwd, err, catch=True):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("exporting tree to '{}'...".format(args.path), flush=True)
+            show("exporting tree to '{}'...".format(args.path), flush=True)
             path = exporter.export(tree, args.path, ext)
         else:
             msg = "exporting document {} to '{}'...".format(document,
                                                             args.path)
-            print(msg, flush=True)
+            show(msg, flush=True)
             path = exporter.export(document, args.path, ext)
         if path:
-            print("exported: {}".format(path))
+            show("exported: {}".format(path))
 
     # Display to standard output
     else:
         if whole_tree:
             err("only single documents can be displayed")
         for line in exporter.export_lines(document, ext):
-            print(line)
+            show(line)
 
     return True
 
@@ -426,22 +424,22 @@ def run_publish(args, cwd, err, catch=True):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            print("publishing tree to '{}'...".format(args.path), flush=True)
+            show("publishing tree to '{}'...".format(args.path), flush=True)
             path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
             msg = "publishing document {} to '{}'...".format(document,
                                                              args.path)
-            print(msg, flush=True)
+            show(msg, flush=True)
             path = publisher.publish(document, args.path, ext, **kwargs)
         if path:
-            print("published: {}".format(path))
+            show("published: {}".format(path))
 
     # Display to standard output
     else:
         if whole_tree:
             err("only single documents can be displayed")
         for line in publisher.publish_lines(document, ext, **kwargs):
-            print(line)
+            show(line)
 
     return True
 
@@ -520,14 +518,14 @@ def _export_import(args, cwd, err, document, ext):
     editor.edit(path, tool=args.tool)
 
     # Import the file to the same document
-    if utilities.ask("import from '{}'?".format(path)):
+    if ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
         get('import')(args, cwd, err, catch=False, _tree=document.tree)
         common.delete(path)
     else:
-        print("import canceled")
-        if utilities.ask("delete '{}'?".format(path), default='no'):
+        show("import canceled")
+        if ask("delete '{}'?".format(path), default='no'):
             common.delete(path)
         else:
-            print("to manually import: doorstop import {0}".format(path))
+            show("to manually import: doorstop import {0}".format(path))

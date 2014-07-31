@@ -7,9 +7,10 @@ import logging
 
 import yaml
 
-VERBOSITY = 0  # global verbosity setting for controlling string formatting
-STR_VERBOSITY = 3
-MAX_VERBOSITY = 4
+verbosity = None  # global verbosity setting for controlling string formatting
+PRINT_VERBOSITY = 0  # minimum verbosity to using `print`
+STR_VERBOSITY = 3  # minimum verbosity to use verbose `__str__`
+MAX_VERBOSITY = 4  # maximum verbosity level implemented
 
 
 def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
@@ -23,6 +24,9 @@ logging.Logger.trace = _trace
 
 logger = logging.getLogger
 log = logger(__name__)
+
+
+# exception classes ##########################################################
 
 
 class DoorstopError(Exception):
@@ -64,6 +68,9 @@ class WarningFormatter(logging.Formatter, object):
         else:
             self._style._fmt = self.default_format  # pylint: disable=W0212
         return super().format(record)
+
+
+# disk helper functions ######################################################
 
 
 def create_dirname(path):

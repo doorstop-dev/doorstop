@@ -71,7 +71,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return "Item('{}')".format(self.path)
 
     def __str__(self):
-        if common.VERBOSITY < common.STR_VERBOSITY:
+        if common.verbosity < common.STR_VERBOSITY:
             return str(self.id)
         else:
             return "{} ({})".format(self.id, self.relpath)
