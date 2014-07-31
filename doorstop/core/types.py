@@ -61,7 +61,7 @@ class UID(object):
 
     """Unique item ID built from document prefix and number."""
 
-    UNKNOWN_MESSAGE = "no{k} item with UID: {i}"  # k='parent'|'child'|'', i=UID
+    UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
 
     def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
         if args and isinstance(args[0], UID):

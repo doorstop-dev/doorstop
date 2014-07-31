@@ -400,7 +400,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         for item in items:
             space = "    " * (item.depth - 1)
             comment = item.text.replace('\n', ' ') or item.ref
-            line = space + "- {i}: # {c}".format(i=item.uid, c=comment)
+            line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
             yield line

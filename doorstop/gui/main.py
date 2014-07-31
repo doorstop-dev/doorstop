@@ -443,12 +443,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {i}".format(s=indent, l=level, i=item.uid)
+            value = "{s}{l} {u}".format(s=indent, l=level, u=item.uid)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
-            value = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
-                                           i=item.uid)
+            value = "{t} [{u}]\n\n".format(t=item.text or item.ref or '???',
+                                           u=item.uid)
             self.text_items.insert('end', value)
         self.listbox_outline.autowidth()
 
@@ -501,7 +501,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             else:
                 text = item.text or item.ref or '???'
                 uid = item.uid
-            chars = "{t} [{i}]\n\n".format(t=text, i=uid)
+            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
             self.text_parents.insert('end', chars)
 
         # Display the items this item has links from
@@ -511,7 +511,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             item = self.tree.find_item(uid)
             text = item.text or item.ref or '???'
             uid = item.uid
-            chars = "{t} [{i}]\n\n".format(t=text, i=uid)
+            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
             self.text_children.insert('end', chars)
 
         self.ignore = False

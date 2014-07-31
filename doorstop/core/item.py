@@ -783,7 +783,7 @@ class UnknownItem(object):
     def __init__(self, value, spec=Item):
         self._uid = UID(value)
         self._spec = dir(spec)  # list of attribute names for warnings
-        msg = UID.UNKNOWN_MESSAGE.format(k='', i=self.uid)
+        msg = UID.UNKNOWN_MESSAGE.format(k='', u=self.uid)
         self.exception = DoorstopError(msg)
 
     def __str__(self):

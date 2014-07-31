@@ -266,7 +266,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 item = document.remove_item(uid, reorder=reorder)
                 return item
 
-        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', i=uid))
+        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
 
     def link_items(self, cid, pid):
         """Add a new link between two items by UIDs.
@@ -406,7 +406,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 self._item_cache[uid] = None
                 log.trace("cached unknown: {}".format(uid))
 
-        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, i=uid))
+        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
