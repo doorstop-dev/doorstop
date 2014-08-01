@@ -149,6 +149,7 @@ def get_next_number():
     return number
 
 
+@patch('doorstop.settings.SERVER', None)  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
@@ -193,6 +194,44 @@ class TestAdd(unittest.TestCase):  # pylint: disable=R0904
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
+
+
+# TODO: uncomment
+# @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
+class TestAddServer(unittest.TestCase):  # pylint: disable=R0904
+
+    """Integration tests for the 'doorstop add' command using a server."""
+
+    @classmethod
+    def setUpClass(cls):
+        number = get_next_number()
+        filename = "TUT{}.yml".format(str(number).zfill(3))
+        cls.path = os.path.join(TUTORIAL, filename)
+
+    def tearDown(self):
+        common.delete(self.path)
+
+    def test_add(self):
+        """Verify 'doorstop add' expects a server."""
+        self.assertRaises(SystemExit, main, ['add', 'TUT'])
+
+    @patch('doorstop.settings.SERVER_ADDRESS', None)
+    def test_add_no_server(self):
+        """Verify 'doorstop add' can be called if there is no server."""
+        self.assertIs(None, main(['add', 'TUT', '--no-server']))
+
+    def test_add_disable_server(self):
+        """Verify 'doorstop add' can be called when the server is disabled."""
+        self.assertIs(None, main(['add', 'TUT', '--no-server']))
+
+    # TODO: add a patch to bypass server call
+    def test_add_custom_server(self):
+        """Verify 'doorstop add' can be called without a server."""
+        self.assertIs(None, main(['add', 'TUT', '--server', 'MY_SERVER']))
+
+    def test_add_force(self):
+        """Verify 'doorstop add' can be called with a missing server."""
+        self.assertIs(None, main(['add', 'TUT', '--force']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904

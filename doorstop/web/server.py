@@ -2,6 +2,7 @@
 
 """REST server to display content and reserve item numbers."""
 
+import os
 from collections import defaultdict
 import logging
 
@@ -10,6 +11,7 @@ from bottle import get, post, request
 
 from doorstop import build, publisher
 from doorstop.web import utilities
+from doorstop import settings
 
 tree = None
 numbers = defaultdict(int)
@@ -18,7 +20,7 @@ numbers = defaultdict(int)
 def main():
     """Process command-line arguments and start the server."""
     logging.basicConfig(level=logging.INFO)
-    run(None, None, None)
+    run(None, os.getcwd(), None)
 
 
 def run(args, cwd, err):
@@ -26,7 +28,8 @@ def run(args, cwd, err):
     global tree  # pylint: disable=W0603,C0103
     tree = build(cwd=cwd)
     tree.load()
-    bottle.run(host='localhost', port=8080, debug=True, reloader=True)
+    bottle.run(host='localhost', port=settings.SERVER_PORT,
+               debug=True, reloader=True)  # TODO: remove debug and reloader
 
 
 @get('/')
