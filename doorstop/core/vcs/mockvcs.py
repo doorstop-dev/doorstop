@@ -7,7 +7,7 @@ from doorstop.core.vcs.base import BaseWorkingCopy
 log = common.logger(__name__)
 
 
-class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
+class WorkingCopy(BaseWorkingCopy):
 
     """Simulated working copy."""
 
