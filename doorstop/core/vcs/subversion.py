@@ -16,7 +16,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('svn', 'update')
         self.call('svn', 'lock', path)
 
-    def save(self, message=None):
+    def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
         self.call('svn', 'commit', '--message', message)
 

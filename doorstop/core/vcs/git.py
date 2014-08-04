@@ -17,7 +17,7 @@ class WorkingCopy(BaseWorkingCopy):
         log.info("git does not support locking: {}".format(path))
         self.call('git', 'pull')
 
-    def save(self, message=None):
+    def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
         self.call('git', 'commit', '--all', '--message', message)
         self.call('git', 'push')

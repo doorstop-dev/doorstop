@@ -16,7 +16,7 @@ class SampleWorkingCopy(BaseWorkingCopy):
     def lock(self, *args, **kwargs):
         pass
 
-    def save(self, *args, **kwargs):
+    def commit(self, *args, **kwargs):
         pass
 
 

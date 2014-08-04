@@ -16,7 +16,7 @@ class WorkingCopy(BaseWorkingCopy):
     def lock(self, path):
         log.info("simulated lock on: {}...".format(path))
 
-    def save(self, message=None):
+    def commit(self, message=None):
         log.info("simulated save")
 
     @property

@@ -19,7 +19,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('vv', 'pull')
         self.call('vv', 'update')
 
-    def save(self, message=None):
+    def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
         self.call('vv', 'commit', '--message', message)
         self.call('vv', 'push')

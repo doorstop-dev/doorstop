@@ -24,9 +24,9 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
         """Lock a file in the working copy."""
         self.wc.lock(self.path)
 
-    def save(self):
+    def commit(self):
         """Save all files in the working copy."""
-        self.wc.save(self.message)
+        self.wc.commit(self.message)
 
 
 @patch('subprocess.call')  # pylint: disable=R0904
@@ -42,9 +42,9 @@ class TestGit(BaseTestCase):
         calls = [call(("git", "pull"))]
         mock_call.assert_has_calls(calls)
 
-    def test_save(self, mock_call):
-        """Verify Git can save files."""
-        self.save()
+    def test_commit(self, mock_call):
+        """Verify Git can commit files."""
+        self.commit()
         calls = [call(("git", "commit", "--all", "--message", self.message)),
                  call(("git", "push"))]
         mock_call.assert_has_calls(calls)
@@ -63,9 +63,9 @@ class TestMockVCS(BaseTestCase):
         calls = []
         mock_call.assert_has_calls(calls)
 
-    def test_save(self, mock_call):
-        """Verify the placeholder VCS does not  save files."""
-        self.save()
+    def test_commit(self, mock_call):
+        """Verify the placeholder VCS does not commit files."""
+        self.commit()
         calls = []
         mock_call.assert_has_calls(calls)
 
@@ -84,9 +84,9 @@ class TestSubversion(BaseTestCase):
                  call(("svn", "lock", self.path))]
         mock_call.assert_has_calls(calls)
 
-    def test_save(self, mock_call):
-        """Verify Subversion can save files."""
-        self.save()
+    def test_commit(self, mock_call):
+        """Verify Subversion can commit files."""
+        self.commit()
         calls = [call(("svn", "commit", "--message", self.message))]
         mock_call.assert_has_calls(calls)
 
@@ -105,9 +105,9 @@ class TestVeracity(BaseTestCase):
                  call(("vv", "update"))]
         mock_call.assert_has_calls(calls)
 
-    def test_save(self, mock_call):
-        """Verify Veracity can save files."""
-        self.save()
+    def test_commit(self, mock_call):
+        """Verify Veracity can commit files."""
+        self.commit()
         calls = [call(("vv", "commit", "--message", self.message)),
                  call(("vv", "push"))]
         mock_call.assert_has_calls(calls)
