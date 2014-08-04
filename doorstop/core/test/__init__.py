@@ -125,14 +125,14 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                                   ("Hello, world! " * 10) +
                                   "'\nlevel: 1.2"))
     _mock_item = Mock()
-    _mock_item.id = 'sys3'
+    _mock_item.uid = 'sys3'
     _mock_item.document.prefix = 'sys'
     item2.tree = Mock()
     item2.tree.find_item = Mock(return_value=_mock_item)
     _mock_item2 = Mock()
-    _mock_item2.id = 'tst1'
+    _mock_item2.uid = 'tst1'
     _mock_item2.document.prefix = 'tst'
-    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.id]
+    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]
     item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
 
     document = MagicMock(spec=['items'])
@@ -158,7 +158,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
         "level: 1.2" + '\n'
         "normative: true"))
     _mock_item3 = Mock()
-    _mock_item3.id = 'sys4'
+    _mock_item3.uid = 'sys4'
     _mock_item3.document.prefix = 'sys'
     item3.tree = Mock()
     item3.tree.find_item = Mock(return_value=_mock_item3)

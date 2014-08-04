@@ -112,7 +112,7 @@ def _lines_yaml(obj):
     """
     for item in iter_items(obj):
 
-        data = {str(item.id): item.data}
+        data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
 
@@ -138,11 +138,11 @@ def _tabulate(obj, sep=LIST_SEP):
             for value in sorted(data.keys()):
                 if value not in header:
                     header.append(value)
-            yield ['id'] + header
+            yield ['uid'] + header
             yield_header = False
 
         # Yield row
-        row = [item.id]
+        row = [item.uid]
         for key in header:
             value = data.get(key)
             if key == 'level':
@@ -150,7 +150,7 @@ def _tabulate(obj, sep=LIST_SEP):
                 value = str(value)
             elif key == 'links':
                 # separate identifiers with a delimiter
-                value = sep.join(identifier.text for identifier in item.links)
+                value = sep.join(uid.string for uid in item.links)
             elif value is None:
                 value = ''
             row.append(value)

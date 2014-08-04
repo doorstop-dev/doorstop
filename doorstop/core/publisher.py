@@ -212,8 +212,8 @@ def _lines_text(obj, indent=8, width=79, **_):
 
         else:
 
-            # Level and ID
-            yield "{l:<{s}}{i}".format(l=level, s=indent, i=item.id)
+            # Level and UID
+            yield "{l:<{s}}{u}".format(l=level, s=indent, u=item.uid)
 
             # Text
             if item.text:
@@ -279,8 +279,8 @@ def _lines_markdown(obj, linkify=False):
 
         else:
 
-            # Level and ID
-            standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            # Level and UID
+            standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
@@ -329,7 +329,7 @@ def _format_level(level):
 
 def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
-    return " {{: #{i} }}".format(i=item.id) if linkify else ''
+    return " {{: #{u} }}".format(u=item.uid) if linkify else ''
 
 
 def _format_ref(item):
@@ -354,19 +354,19 @@ def _format_md_links(items, linkify):
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
-        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+        return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
     else:
-        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
 
 def _format_html_item_link(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
-        link = '<a href="{p}.html#{i}">{i}</a>'.format(i=item.id,
+        link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid,
                                                        p=item.document.prefix)
         return link
     else:
-        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
 
 def _format_md_label_links(label, links, linkify):

@@ -75,10 +75,10 @@ def find_document(prefix):
     return document
 
 
-def find_item(identifier):
+def find_item(uid):
     """Find an item without an explicitly building a tree."""
     tree = _get_tree()
-    item = tree.find_item(identifier)
+    item = tree.find_item(uid)
     return item
 
 
