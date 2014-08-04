@@ -18,10 +18,10 @@ class WorkingCopy(BaseWorkingCopy):
 
     def save(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
-        self.call('svn', 'commit', '-m', message)
+        self.call('svn', 'commit', '--message', message)
 
     @property
-    def ignores(self):
+    def ignores(self):  # pragma: no cover (manual test)
         if not self._ignores:
             os.chdir(self.path)
             for line in self.call('svn', 'pg', '-R', 'svn:ignore', '.',

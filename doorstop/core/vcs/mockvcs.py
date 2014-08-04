@@ -20,5 +20,5 @@ class WorkingCopy(BaseWorkingCopy):
         log.info("simulated save")
 
     @property
-    def ignores(self):
+    def ignores(self):  # pragma: no cover (manual test)
         return ("*/env/*", "*/apidocs/*", "*/build/lib/*")

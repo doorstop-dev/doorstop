@@ -14,10 +14,10 @@ class WorkingCopy(BaseWorkingCopy):
     IGNORES = ('.gitignore',)
 
     def lock(self, path):
+        log.info("git does not support locking: {}".format(path))
         self.call('git', 'pull')
-        log.warning("git does not support locking: {}".format(path))
 
     def save(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
-        self.call('git', 'commit', '-a', '-m', message)
+        self.call('git', 'commit', '--all', '--message', message)
         self.call('git', 'push')

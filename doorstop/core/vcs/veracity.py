@@ -14,13 +14,12 @@ class WorkingCopy(BaseWorkingCopy):
     IGNORES = ('.sgignores', '.vvignores')
 
     def lock(self, path):
+        # TODO: track: http://veracity-scm.com/qa/questions/2034
+        log.info("veracity does not support scripted locking: {}".format(path))
         self.call('vv', 'pull')
         self.call('vv', 'update')
-        # TODO: track: http://veracity-scm.com/qa/questions/2034
-        msg = "veracity does not support scripted locking: {}".format(path)
-        log.warning(msg)
 
     def save(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
-        self.call('vv', 'commit', '-m', message)
+        self.call('vv', 'commit', '--message', message)
         self.call('vv', 'push')
