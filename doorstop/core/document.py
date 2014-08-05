@@ -328,7 +328,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         except IndexError:
             next_level = level
         else:
-            next_level = level or last.level + 1
+            if level:
+                next_level = level
+            elif last.level.heading:
+                next_level = last.level >> 1
+                next_level.heading = False
+            else:
+                next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self,
