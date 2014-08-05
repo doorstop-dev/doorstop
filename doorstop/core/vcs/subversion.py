@@ -2,7 +2,10 @@
 
 import os
 
+from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
+
+log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
@@ -15,6 +18,15 @@ class WorkingCopy(BaseWorkingCopy):
     def lock(self, path):
         self.call('svn', 'update')
         self.call('svn', 'lock', path)
+
+    def edit(self, path):
+        log.info("`svn` adds all changes")
+
+    def add(self, path):
+        self.call('svn', 'add', path)
+
+    def delete(self, path):
+        self.call('svn', 'delete', path)
 
     def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141

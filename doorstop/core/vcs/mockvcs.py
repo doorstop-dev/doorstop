@@ -16,6 +16,15 @@ class WorkingCopy(BaseWorkingCopy):
     def lock(self, path):
         log.info("simulated lock on: {}...".format(path))
 
+    def edit(self, path):
+        log.info("simulated edit on: {}...".format(path))
+
+    def add(self, path):
+        log.info("simulated add on: {}...".format(path))
+
+    def delete(self, path):
+        log.info("simulated delete on: {}...".format(path))
+
     def commit(self, message=None):
         log.info("simulated save")
 

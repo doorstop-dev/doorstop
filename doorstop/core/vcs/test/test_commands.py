@@ -24,6 +24,18 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
         """Lock a file in the working copy."""
         self.wc.lock(self.path)
 
+    def edit(self):
+        """Edit a file in the working copy."""
+        self.wc.edit(self.path)
+
+    def add(self):
+        """Add a file to the working copy."""
+        self.wc.add(self.path)
+
+    def delete(self):
+        """Remove a file in the working copy."""
+        self.wc.delete(self.path)
+
     def commit(self):
         """Save all files in the working copy."""
         self.wc.commit(self.message)
@@ -40,6 +52,24 @@ class TestGit(BaseTestCase):
         """Verify Git can (fake) lock files."""
         self.lock()
         calls = [call(("git", "pull"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_edit(self, mock_call):
+        """Verify Git can edit files."""
+        self.edit()
+        calls = [call(("git", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify Git can add files."""
+        self.add()
+        calls = [call(("git", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify Git can delete files."""
+        self.delete()
+        calls = [call(("git", "rm", self.path))]
         mock_call.assert_has_calls(calls)
 
     def test_commit(self, mock_call):
@@ -60,6 +90,24 @@ class TestMockVCS(BaseTestCase):
     def test_lock(self, mock_call):
         """Verify the placeholder VCS does not lock files."""
         self.lock()
+        calls = []
+        mock_call.assert_has_calls(calls)
+
+    def test_edit(self, mock_call):
+        """Verify the placeholder VCS does not edit files."""
+        self.edit()
+        calls = []
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify the placeholder VCS does not add files."""
+        self.add()
+        calls = []
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify the placeholder VCS does not delete files."""
+        self.delete()
         calls = []
         mock_call.assert_has_calls(calls)
 
@@ -84,6 +132,24 @@ class TestSubversion(BaseTestCase):
                  call(("svn", "lock", self.path))]
         mock_call.assert_has_calls(calls)
 
+    def test_edit(self, mock_call):
+        """Verify Subversion can (fake) edit files."""
+        self.edit()
+        calls = []
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify Subversion can add files."""
+        self.add()
+        calls = [call(("svn", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify Subversion can delete files."""
+        self.delete()
+        calls = [call(("svn", "delete", self.path))]
+        mock_call.assert_has_calls(calls)
+
     def test_commit(self, mock_call):
         """Verify Subversion can commit files."""
         self.commit()
@@ -103,6 +169,24 @@ class TestVeracity(BaseTestCase):
         self.lock()
         calls = [call(("vv", "pull")),
                  call(("vv", "update"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_edit(self, mock_call):
+        """Verify Veracity can (fake) edit files."""
+        self.edit()
+        calls = []
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify Veracity can add files."""
+        self.add()
+        calls = [call(("vv", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify Veracity can delete files."""
+        self.delete()
+        calls = [call(("vv", "remove", self.path))]
         mock_call.assert_has_calls(calls)
 
     def test_commit(self, mock_call):

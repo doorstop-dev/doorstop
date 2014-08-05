@@ -15,9 +15,18 @@ class WorkingCopy(BaseWorkingCopy):
 
     def lock(self, path):
         # TODO: track: http://veracity-scm.com/qa/questions/2034
-        log.info("veracity does not support scripted locking: {}".format(path))
+        log.info("`vv` does not support scripted locking: {}".format(path))
         self.call('vv', 'pull')
         self.call('vv', 'update')
+
+    def edit(self, path):
+        log.info("`vv` adds all changes")
+
+    def add(self, path):
+        self.call('vv', 'add', path)
+
+    def delete(self, path):
+        self.call('vv', 'remove', path)
 
     def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
