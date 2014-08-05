@@ -8,5 +8,6 @@ links:
 - TUT008: 2dbd9266fa287cc3f765c2a81aa57a91
 normative: true
 ref: test_tutorial_section_1
-reviewed: 0ea857957c5bdba020c0d779c2e9cd34
-text: ''
+reviewed: cef0e4c932ef5fe6a13e66fcafb8c8b8
+text: |
+  Tutorial Section 1.0:

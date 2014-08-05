@@ -136,8 +136,21 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertTrue(os.path.isfile(path))
 
+    def test_lines_text_item(self):
+        """Verify text can be published from an item."""
+        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
+        self.item.heading = False  # TODO: other tests shouldn't have modified this
+        # Act
+        with patch.object(self.item, 'find_ref',
+                          Mock(return_value=('path/to/mock/file', 42))):
+            lines = publisher.publish_lines(self.item, '.txt')
+            text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertIn("Reference: path/to/mock/file (line 42)", text)
+
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""
+        self.item.heading = True  # TODO: other tests shouldn't have modified this
         expected = "1.1     Heading\n\n"
         lines = publisher.publish_lines(self.item, '.txt')
         # Act
@@ -150,7 +163,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify text can be published from an item (normative)."""
         expected = ("1.2     req4" + '\n\n'
                     "        This shall..." + '\n\n'
-                    "        Reference: Doorstop.sublime-project (line None)"
+                    "        Reference: Doorstop.sublime-project"
                     + '\n\n'
                     "        Links: sys4" + '\n\n')
         lines = publisher.publish_lines(self.item3, '.txt')
@@ -162,8 +175,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.CHECK_REF', False)
     def test_lines_text_item_no_ref(self):
         """Verify text can be published without checking references."""
-        self.item.ref = 'abc123'
-        self.item.heading = False
+        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
+        self.item.heading = False  # TODO: other tests shouldn't have modified this
         # Act
         lines = publisher.publish_lines(self.item, '.txt')
         text = ''.join(line + '\n' for line in lines)
@@ -179,8 +192,21 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertIn("Child links: tst1", text)
 
+    def test_lines_markdown_item(self):
+        """Verify Markdown can be published from an item."""
+        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
+        self.item.heading = False  # TODO: other tests shouldn't have modified this
+        # Act
+        with patch.object(self.item, 'find_ref',
+                          Mock(return_value=('path/to/mock/file', 42))):
+            lines = publisher.publish_lines(self.item, '.md')
+            text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertIn("> `path/to/mock/file` (line 42)", text)
+
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
+        self.item.heading = True  # TODO: other tests shouldn't have modified this
         expected = "## 1.1 Heading {: #req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
@@ -211,13 +237,24 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         """Verify Markdown can be published from an item (normative)."""
         expected = ("## 1.2 req4" + '\n\n'
                     "This shall..." + '\n\n'
-                    "Reference: Doorstop.sublime-project (line None)" + '\n\n'
+                    "> `Doorstop.sublime-project`" + '\n\n'
                     "*Links: sys4*" + '\n\n')
         # Act
         lines = publisher.publish_lines(self.item3, '.md', linkify=False)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_lines_markdown_item_no_ref(self):
+        """Verify Markdown can be published without checking references."""
+        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
+        self.item.heading = False  # TODO: other tests shouldn't have modified this
+        # Act
+        lines = publisher.publish_lines(self.item, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertIn("> 'abc123'", text)
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""

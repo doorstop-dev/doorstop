@@ -5,5 +5,6 @@ links:
 - REQ001: 37a3faae380b4e466aaf18c31f2184c0
 normative: true
 ref: Verify an item's reference can also be a filename.
-reviewed: 0e2361c4cd376eedd75f3e668ce9a6a5
-text: ''
+reviewed: 3d708f9247d638ef3580312c99a873e7
+text: |
+  Test referencing an external file by name:

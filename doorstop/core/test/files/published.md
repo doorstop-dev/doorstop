@@ -8,7 +8,7 @@ The foo shall bar all night long!
 
 Unicode: -40° ±1%
 
-Reference: external/text.txt (line 3)
+> `external/text.txt` (line 3)
 
 *Parent links: REQ001*
 

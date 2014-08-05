@@ -494,7 +494,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if settings.REFORMAT:
             self.auto = False
         # Check text
-        if not self.text and not self.ref:
+        if not self.text:
             yield DoorstopWarning("no text")
         # Check external references
         if settings.CHECK_REF:
