@@ -283,6 +283,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                          NEW, ROOT, 'NEW001',
                                          level=None)
 
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_after_header(self, mock_new):
+        """Verify the next item after a header is indented."""
+        mock_item = Mock()
+        mock_item.number = 1
+        mock_item.level = Level('1.0')
+        self.document._iter = Mock(return_value=[mock_item])
+        self.document.add_item()
+        mock_new.assert_called_once_with(None, self.document,
+                                         FILES, ROOT, 'REQ002',
+                                         level=Level('1.1'))
+
     def test_add_item_contains(self):
         """Verify an added item is contained in the document."""
         item = self.document.items[0]
