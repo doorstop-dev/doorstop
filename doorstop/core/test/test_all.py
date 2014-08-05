@@ -150,24 +150,24 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         document = core.Document.new(None,
                                      EMPTY, FILES,
                                      prefix='TMP')
-        item_1_0 = document.add_item(level='1.0')
-        item_3_0 = document.add_item(level='3.0')  # will get displaced
-        item_2_0 = document.add_item(level='2.0')
+        item_1_0 = document.add_item()
+        item_1_2 = document.add_item()  # will get displaced
+        item_1_1 = document.add_item(level='1.1')
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
-        self.assertEqual((3, 0), item_3_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
+        self.assertEqual((1, 2), item_1_2.level)
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed from a document."""
         document = core.Document.new(None,
                                      EMPTY, FILES,
                                      prefix='TMP')
-        item_1_0 = document.add_item(level='1.0')
-        item_3_0 = document.add_item(level='3.0')  # to be removed
-        item_2_0 = document.add_item(level='2.0')  # will get relocated
-        document.remove_item(item_3_0)
+        item_1_0 = document.add_item()
+        item_1_2 = document.add_item()  # to be removed
+        item_1_1 = document.add_item(level='1.1')  # will get relocated
+        document.remove_item(item_1_2)
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
