@@ -149,7 +149,7 @@ def get_next_number():
     return number
 
 
-@patch('doorstop.settings.SERVER', None)  # pylint: disable=R0904
+@patch('doorstop.settings.SERVER_ADDRESS', None)  # pylint: disable=R0904
 @unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
 class TestAdd(unittest.TestCase):  # pylint: disable=R0904
 
@@ -218,7 +218,7 @@ class TestAddServer(unittest.TestCase):  # pylint: disable=R0904
     @patch('doorstop.settings.SERVER_ADDRESS', None)
     def test_add_no_server(self):
         """Verify 'doorstop add' can be called if there is no server."""
-        self.assertIs(None, main(['add', 'TUT', '--no-server']))
+        self.assertIs(None, main(['add', 'TUT']))
 
     def test_add_disable_server(self):
         """Verify 'doorstop add' can be called when the server is disabled."""
@@ -227,7 +227,7 @@ class TestAddServer(unittest.TestCase):  # pylint: disable=R0904
     # TODO: add a patch to bypass server call
     def test_add_custom_server(self):
         """Verify 'doorstop add' can be called without a server."""
-        self.assertIs(None, main(['add', 'TUT', '--server', 'MY_SERVER']))
+        self.assertIs(None, main(['add', 'TUT', '--server', 'example.com']))
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
