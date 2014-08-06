@@ -219,16 +219,16 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             self.assertEqual(path, self.document.index)
 
     @patch('doorstop.common.write_lines')
-    @patch('doorstop.settings.MAX_LINE_LENGTH', 36)
+    @patch('doorstop.settings.MAX_LINE_LENGTH', 40)
     def test_index_set(self, mock_write_lines):
         """Verify an document's index can be created."""
         lines = ['initial: 1.2.3',
                  'outline:',
-                 '        - REQ001: # The foo shall...',
-                 '    - REQ003: # Unicode: -40° ±1%',
-                 '    - REQ004: # Hello, world!',
-                 '    - REQ002: # Hello, world!',
-                 '    - REQ2-001: # Hello, world!']
+                 '            - REQ001: # The foo shall...',
+                 '        - REQ003: # Unicode: -40° ±1%',
+                 '        - REQ004: # Hello, world!',
+                 '        - REQ002: # Hello, world!',
+                 '        - REQ2-001: # Hello, world!']
         # Act
         self.document.index = True  # create index
         # Assert

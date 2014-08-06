@@ -404,7 +404,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
         for item in items:
-            space = "    " * (item.depth - 1)
+            space = "    " * item.depth
             comment = item.text.replace('\n', ' ') or item.ref
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
