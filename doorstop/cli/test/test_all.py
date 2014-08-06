@@ -15,6 +15,9 @@ from doorstop import settings
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
 
+REQ_COUNT = 14
+ALL_COUNT = 44
+
 
 class TempTestCase(unittest.TestCase):  # pylint: disable=R0904
 
@@ -410,7 +413,7 @@ class TestClear(unittest.TestCase):  # pylint: disable=R0904
     def test_clear_document(self, mock_clear):
         """Verify 'doorstop clear' can be called with a document"""
         self.assertIs(None, main(['clear', 'tut']))
-        self.assertEqual(14, mock_clear.call_count)
+        self.assertEqual(REQ_COUNT, mock_clear.call_count)
 
     def test_clear_document_unknown(self):
         """Verify 'doorstop clear' returns an error on an unknown document."""
@@ -420,7 +423,7 @@ class TestClear(unittest.TestCase):  # pylint: disable=R0904
     def test_clear_tree(self, mock_clear):
         """Verify 'doorstop clear' can be called with a tree"""
         self.assertIs(None, main(['clear', 'all']))
-        self.assertEqual(41, mock_clear.call_count)
+        self.assertEqual(ALL_COUNT, mock_clear.call_count)
 
     def test_clear_tree_item(self):
         """Verify 'doorstop clear' returns an error with tree and item."""
@@ -454,7 +457,7 @@ class TestReview(unittest.TestCase):  # pylint: disable=R0904
     def test_review_document(self, mock_review):
         """Verify 'doorstop review' can be called with a document"""
         self.assertIs(None, main(['review', 'tut']))
-        self.assertEqual(14, mock_review.call_count)
+        self.assertEqual(REQ_COUNT, mock_review.call_count)
 
     def test_review_document_unknown(self):
         """Verify 'doorstop review' returns an error on an unknown document."""
@@ -464,7 +467,7 @@ class TestReview(unittest.TestCase):  # pylint: disable=R0904
     def test_review_tree(self, mock_review):
         """Verify 'doorstop review' can be called with a tree"""
         self.assertIs(None, main(['review', 'all']))
-        self.assertEqual(41, mock_review.call_count)
+        self.assertEqual(ALL_COUNT, mock_review.call_count)
 
     def test_review_tree_item(self):
         """Verify 'doorstop review' returns an error with tree and item."""
