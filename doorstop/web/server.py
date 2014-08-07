@@ -3,30 +3,61 @@
 """REST server to display content and reserve item numbers."""
 
 import os
+import sys
 from collections import defaultdict
+import argparse
 import logging
 
 import bottle
 from bottle import get, post, request
 
-from doorstop import build, publisher
+from doorstop import common, build, publisher
+from doorstop.common import HelpFormatter
 from doorstop.web import utilities
 from doorstop import settings
 
 tree = None  # TODO: switch to _get_tree() and pass in cwd
 numbers = defaultdict(int)
+log = common.logger(__name__)
 
 
-def main():
-    """Process command-line arguments and start the server."""
-    logging.basicConfig(level=logging.INFO)
-    run(None, os.getcwd(), None)
+def main(args=None):
+    """Process command-line arguments and run the program."""
+    from doorstop import SERVER, VERSION
+
+    # Main parser
+    debug = argparse.ArgumentParser(add_help=False)
+    debug.add_argument('-V', '--version', action='version', version=VERSION)
+    debug.add_argument('-v', '--verbose', action='count', default=0,
+                       help="enable verbose logging")
+    shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
+    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__, **shared)
+    # Hidden argument to override the root sharing directory path
+    parser.add_argument('-j', '--project', metavar="PATH",
+                        help="path to the root of the project")
+
+    # Parse arguments
+    args = parser.parse_args(args=args)
+
+    # Configure logging
+    logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
+                        level=settings.VERBOSE_LOGGING_LEVEL)
+    # TODO: configure logging similar to the GUI
+
+    # Run the program
+    run(args, os.getcwd(), parser.error)
 
 
-def run(args, cwd, err):
-    """Start the server."""
+def run(args, cwd, error):
+    """Start the server.
+
+    :param args: Namespace of CLI arguments (from this module or the CLI)
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
+
+    """
     global tree  # pylint: disable=W0603,C0103
-    tree = build(cwd=cwd)
+    tree = build(cwd=cwd, root=args.project)
     tree.load()
     bottle.run(host='localhost', port=settings.SERVER_PORT,
                debug=True, reloader=True)  # TODO: remove debug and reloader

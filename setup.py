@@ -6,7 +6,7 @@ Setup script for Doorstop.
 
 import setuptools
 
-from doorstop import __project__, __version__, CLI, GUI, DESCRIPTION
+from doorstop import __project__, __version__, CLI, GUI, SERVER, DESCRIPTION
 
 import os
 if os.path.exists('README.rst'):
@@ -28,7 +28,8 @@ setuptools.setup(
     package_data={'doorstop.core': ['files/*']},
 
     entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
-                                      GUI + ' = doorstop.gui.main:main']},
+                                      GUI + ' = doorstop.gui.main:main',
+                                      SERVER + ' = doorstop.web.server:main']},
 
     long_description=(README + '\n' + CHANGES),
     license='LGPL',

@@ -33,7 +33,7 @@ def run(args, cwd, err, catch=True):  # pylint: disable=W0613
     """
     with utilities.capture(catch=catch) as success:
         show("validating tree...", flush=True)
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         tree.load()
         valid = tree.validate()
     if not success:
@@ -55,7 +55,7 @@ def run_create(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         document = tree.create_document(args.path, args.prefix,
                                         parent=args.parent, digits=args.digits)
     if not success:
@@ -75,7 +75,7 @@ def run_delete(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         document = tree.find_document(args.prefix)
         prefix, relpath = document.prefix, document.relpath
         document.delete()
@@ -97,7 +97,7 @@ def run_add(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         for _ in range(args.count):
             item = tree.add_item(args.prefix, level=args.level)
             show("added item: {} ({})".format(item.uid, item.relpath))
@@ -118,7 +118,7 @@ def run_remove(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         item = tree.find_item(args.uid)
         item.delete()
     if not success:
@@ -142,7 +142,7 @@ def run_edit(args, cwd, err, catch=True):
     ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
 
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         # find item or document
         if not args.document:
             try:
@@ -178,7 +178,7 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
     reordered = False
 
     with utilities.capture(catch=catch) as success:
-        tree = _tree or build(cwd, root=args.project)
+        tree = _tree or build(cwd=cwd, root=args.project)
         document = tree.find_document(args.prefix)
     if not success:
         return False
@@ -224,7 +224,7 @@ def run_link(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         child, parent = tree.link_items(args.child, args.parent)
     if not success:
         return False
@@ -245,7 +245,7 @@ def run_unlink(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         child, parent = tree.unlink_items(args.child, args.parent)
     if not success:
         return False
@@ -322,7 +322,7 @@ def run_import(args, cwd, err, catch=True, _tree=None):
     # Import document or item
     with utilities.capture(catch=catch) as success:
         if args.path:
-            tree = _tree or build(cwd, root=args.project)
+            tree = _tree or build(cwd=cwd, root=args.project)
             document = tree.find_document(args.prefix)
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
@@ -365,7 +365,7 @@ def run_export(args, cwd, err, catch=True):
     # Export documents
     with utilities.capture(catch=catch) as success:
         exporter.check(ext)
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
     if not success:
@@ -410,7 +410,7 @@ def run_publish(args, cwd, err, catch=True):
     # Publish documents
     with utilities.capture(catch=catch) as success:
         publisher.check(ext)
-        tree = build(cwd, root=args.project)
+        tree = build(cwd=cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
     if not success:
@@ -473,7 +473,7 @@ def _iter_items(args, cwd, err):
     # Build tree
     item = None
     document = None
-    tree = build(cwd, root=args.project)
+    tree = build(cwd=cwd, root=args.project)
 
     # Determine if tree, document, or item was requested
     if args.label != 'all':

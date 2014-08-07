@@ -95,7 +95,7 @@ gui: env
 
 .PHONY: serve
 serve: env
-	$(BIN)/doorstop --serve
+	$(BIN)/doorstop-server
 
 # Documentation ##############################################################
 

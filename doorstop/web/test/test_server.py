@@ -46,7 +46,7 @@ class TestModule(BaseTestCase):
     @patch('bottle.run')
     def test_main(self, mock_run, mock_build):
         """Verify the server can started (mock)."""
-        self.server.main()
+        self.server.main([])
         mock_build.assert_called_once()
         mock_run.assert_called_once()
 
