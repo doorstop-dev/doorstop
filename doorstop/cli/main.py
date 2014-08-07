@@ -279,7 +279,9 @@ def _publish(subs, shared):
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
     sub.add_argument('-C', '--no-child-links', action='store_true',
-                     help="do not include child links in published documents")
+                     help="do not include child links on items")
+    sub.add_argument('-L', '--no-body-levels', action='store_true',
+                     help="do not include levels on non-heading items")
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
