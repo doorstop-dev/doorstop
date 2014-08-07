@@ -196,8 +196,7 @@ class TestAdd(unittest.TestCase):
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
 
 
-# TODO: uncomment
-# @unittest.skipUnless(os.getenv(ENV), REASON)
+@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestAddServer(unittest.TestCase):
 
     """Integration tests for the 'doorstop add' command using a server."""

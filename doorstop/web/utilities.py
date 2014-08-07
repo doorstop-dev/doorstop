@@ -1,9 +1,9 @@
-"""Shared server functions."""
+"""Shared functions for the `doorstop.web` package."""
 
 
-def json_response(req):
+def json_response(request):  # pragma: no cover (integration test)
     """Determine if the request's response should be JSON."""
-    if req.query.get('format') == 'json':
+    if request.query.get('format') == 'json':
         return True
     else:
-        return req.content_type == 'application/json'
+        return request.content_type == 'application/json'

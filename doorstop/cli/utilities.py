@@ -1,4 +1,4 @@
-"""Shared command-line functions."""
+"""Shared functions for the `doorstop.cli` package."""
 
 import os
 import ast
