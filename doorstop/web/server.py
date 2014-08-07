@@ -13,7 +13,7 @@ from doorstop import build, publisher
 from doorstop.web import utilities
 from doorstop import settings
 
-tree = None
+tree = None  # TODO: switch to _get_tree() and pass in cwd
 numbers = defaultdict(int)
 
 
@@ -33,7 +33,7 @@ def run(args, cwd, err):
 
 
 @get('/')
-def get_tree():
+def index():
     """Read the tree."""
     yield '<pre><code>'
     yield tree.draw()
@@ -56,7 +56,7 @@ def get_document(prefix):
     """Read a tree's document."""
     document = tree.find_document(prefix)
     if utilities.json_response(request):
-        data = {str(item.id): item.data for item in document}
+        data = {str(item.uid): item.data for item in document}
         return data
     else:
         return publisher.publish_lines(document, ext='.html')
@@ -66,12 +66,54 @@ def get_document(prefix):
 def get_items(prefix):
     """Read a document's items."""
     document = tree.find_document(prefix)
-    uids = [str(item.id) for item in document]
+    uids = [str(item.uid) for item in document]
     if utilities.json_response(request):
         data = {'uids': uids}
         return data
     else:
         return '<br>'.join(uids)
+
+
+@get('/documents/<prefix>/items/<uid>')
+def get_item(prefix, uid):
+    """Read a document's item."""
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+    if utilities.json_response(request):
+        return {'data': item.data}
+    else:
+        return publisher.publish_lines(item, ext='.html')
+
+
+@get('/documents/<prefix>/items/<uid>/attrs')
+def get_attrs(prefix, uid):
+    """Read an item's attributes."""
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+    attrs = sorted(item.data.keys())
+    if utilities.json_response(request):
+        data = {'attrs': attrs}
+        return data
+    else:
+        return '<br>'.join(attrs)
+
+
+@get('/documents/<prefix>/items/<uid>/attrs/<name>')
+def get_attr(prefix, uid, name):
+    """Read an item's attribute value."""
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+    value = item.data.get(name, None)
+    if utilities.json_response(request):
+        data = {'value': value}
+        return data
+    else:
+        if isinstance(value, str):
+            return value
+        try:
+            return '<br>'.join(str(e) for e in value)
+        except TypeError:
+            return str(value)
 
 
 @post('/documents/<prefix>/numbers')
@@ -87,29 +129,5 @@ def post_numbers(prefix):
         return str(number)
 
 
-@get('/documents/<prefix>/items/<uid>')
-def get_item(prefix, uid):
-    """Read a document's item."""
-    document = tree.find_document(prefix)
-    item = document.find_item(uid)
-    if utilities.json_response(request):
-        return item.data
-    else:
-        return publisher.publish_lines(item, ext='.html')
-
-
-@get('/documents/<prefix>/items/<uid>/<name>')
-def get_item_attribute(prefix, uid, name):
-    """Read an item's attribute."""
-    document = tree.find_document(prefix)
-    item = document.find_item(uid)
-    value = item.data.get(name, None)
-    if utilities.json_response(request):
-        data = {'value': value}
-        return data
-    else:
-        return str(value)
-
-
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover (manual test)
     main()
