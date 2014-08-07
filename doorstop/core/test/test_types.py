@@ -6,7 +6,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.types import Prefix, UID, Text, Level, Stamp
 
 
-class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
+class TestPrefix(unittest.TestCase):
 
     """Unit tests for the Prefix class."""  # pylint: disable=W0212
 
@@ -51,7 +51,7 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual(prefixes, sorted(prefixes))
 
 
-class TestUID(unittest.TestCase):  # pylint: disable=R0904
+class TestUID(unittest.TestCase):
 
     """Unit tests for the UID class."""  # pylint: disable=W0212
 
@@ -144,7 +144,7 @@ class TestUID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("REQ001:abc123", self.uid4.string)
 
 
-class TestText(unittest.TestCase):  # pylint: disable=R0904
+class TestText(unittest.TestCase):
 
     """Unit tests for the Text class."""  # pylint: disable=W0212
 
@@ -172,7 +172,7 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("Hello, world!\n", self.text.yaml)
 
 
-class TestLevel(unittest.TestCase):  # pylint: disable=R0904
+class TestLevel(unittest.TestCase):
 
     """Unit tests for the Level class."""  # pylint: disable=W0212
 
@@ -348,7 +348,7 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertNotEqual(level, self.level_1_2)
 
 
-class TestStamp(unittest.TestCase):  # pylint: disable=R0904
+class TestStamp(unittest.TestCase):
 
     """Unit tests for the Stamp class."""  # pylint: disable=W0212
 
@@ -401,10 +401,3 @@ class TestStamp(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)
-
-
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
-
-    """Unit tests for the doorstop.core.types module."""
-
-    pass

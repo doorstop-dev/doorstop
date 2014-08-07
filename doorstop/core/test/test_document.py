@@ -37,9 +37,9 @@ settings:
 """.lstrip()
 
 
-@patch('doorstop.settings.REORDER', False)  # pylint: disable=R0904
-@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.settings.REORDER', False)
+@patch('doorstop.core.item.Item', MockItem)
+class TestDocument(unittest.TestCase):
 
     """Unit tests for the Document class."""  # pylint: disable=W0212
 
@@ -605,7 +605,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected.args, issues[0].args)
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.document module."""
 

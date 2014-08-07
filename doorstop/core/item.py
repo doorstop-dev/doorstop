@@ -14,7 +14,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""
 

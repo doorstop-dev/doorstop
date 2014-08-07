@@ -26,7 +26,7 @@ text: ''
 """.lstrip()
 
 
-class TestItem(unittest.TestCase):  # pylint: disable=R0904
+class TestItem(unittest.TestCase):
 
     """Unit tests for the Item class."""  # pylint: disable=W0212
 
@@ -629,7 +629,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.item.validate())
 
     def test_validate_document_with_bad_link_uids(self):
-        """Verify an item can be checked against a document w/ bad link UIDs."""
+        """Verify an item can be checked against a document w/ bad links."""
         self.item.link('invalid')
         mock_document = Mock()
         mock_document.parent = 'fake'
@@ -785,7 +785,7 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertIs(None, self.item.tree._item_cache[self.item.uid])
 
 
-class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
+class TestFormatting(unittest.TestCase):
 
     """Unit tests for text formatting in Items."""
 
@@ -806,7 +806,7 @@ class TestFormatting(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(self.backup, text)
 
 
-class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
+class TestUnknownItem(unittest.TestCase):
 
     """Unit tests for the UnknownItem class."""  # pylint: disable= W0212
 
@@ -872,7 +872,7 @@ class TestUnknownItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(Stamp(None), self.item.stamp())
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.item module."""
 

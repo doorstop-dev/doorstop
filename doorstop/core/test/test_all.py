@@ -37,8 +37,8 @@ CHECK_EXPORTED_CONTENT = True
 CHECK_PUBLISHED_CONTENT = True
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestItem(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestItem(unittest.TestCase):
 
     """Integration tests for the Item class."""
 
@@ -80,8 +80,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestDocument(unittest.TestCase):
 
     """Integration tests for the Document class."""
 
@@ -233,8 +233,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual(expected, actual)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestTree(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestTree(unittest.TestCase):
 
     """Integration tests for the core.Tree class."""
 
@@ -264,14 +264,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.validate())
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestEditor(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestEditor(unittest.TestCase):
 
     """Integrations tests for the editor module."""
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
-class TestImporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902
+class TestImporter(unittest.TestCase):
 
     """Integrations tests for the importer module."""
 
@@ -417,8 +417,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
-class TestExporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
+class TestExporter(unittest.TestCase):
 
     """Integration tests for the doorstop.core.exporter module."""
 
@@ -489,8 +489,8 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
             move_file(temp, path)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
-class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)
+class TestPublisher(unittest.TestCase):
 
     """Integration tests for the doorstop.core.publisher module."""
 
@@ -617,8 +617,8 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         common.write_text(text, path)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestModule(unittest.TestCase):
 
     """Integration tests for the doorstop.core module."""
 

@@ -13,7 +13,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Prefix(str):  # pylint: disable=R0904
+class Prefix(str):
 
     """Unique document prefixes."""
 
@@ -220,7 +220,7 @@ class UID(object):
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-class _Literal(str):  # pylint: disable=R0904
+class _Literal(str):
 
     """Custom type for text which should be dumped in the literal style."""
 
@@ -233,7 +233,7 @@ class _Literal(str):  # pylint: disable=R0904
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):  # pylint: disable=R0904
+class Text(str):
 
     """Markdown text paragraph."""
 

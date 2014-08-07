@@ -16,7 +16,7 @@ from doorstop.core.builder import _set_tree
 from doorstop.core.test.test_document import FILES, MockItem
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201
 
@@ -230,7 +230,7 @@ class TestModule(unittest.TestCase):  # pylint: disable=R0904
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
 
 
-class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
+class TestModuleCreateDocument(unittest.TestCase):
 
     """Unit tests for the doorstop.core.importer:create_document function."""
 
@@ -289,8 +289,8 @@ class TestModuleCreateDocument(unittest.TestCase):  # pylint: disable=R0904
                                          parent=self.parent)
 
 
-@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
-class TestModuleAddItem(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.core.item.Item', MockItem)
+class TestModuleAddItem(unittest.TestCase):
 
     """Unit tests for the doorstop.core.importer:add_item function."""
 
