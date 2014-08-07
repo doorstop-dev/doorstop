@@ -11,7 +11,7 @@ from doorstop import settings
 from doorstop.cli.test import SettingsTestCase
 
 
-class TestCapture(unittest.TestCase):  # pylint: disable=R0904
+class TestCapture(unittest.TestCase):
 
     """Unit tests for the `Capture` class."""
 
@@ -38,7 +38,7 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
             self.fail("DoorstopError not raised")
 
 
-class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
+class TestConfigureSettings(SettingsTestCase):
 
     """Unit tests for the `configure_settings` function."""
 
@@ -57,7 +57,7 @@ class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
         self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
-class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
+class TestLiteralEval(unittest.TestCase):
 
     """Unit tests for the `literal_eval` function."""
 
@@ -78,7 +78,7 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, mock_log.call_count)
 
 
-class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
+class TestGetExt(unittest.TestCase):
 
     """Unit tests for the `get_ext` function."""
 
@@ -147,7 +147,7 @@ class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
         self.assertNotEqual(0, err.call_count)
 
 
-class TestAsk(unittest.TestCase):  # pylint: disable=R0904
+class TestAsk(unittest.TestCase):
 
     """Unit tests for the `ask` function."""
 
@@ -175,7 +175,7 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(response)
 
 
-class TestShow(unittest.TestCase):  # pylint: disable=R0904
+class TestShow(unittest.TestCase):
 
     """Unit tests for the `show` function."""  # pylint: disable=R0201
 
@@ -194,7 +194,7 @@ class TestShow(unittest.TestCase):  # pylint: disable=R0904
         mock_print.assert_never_called()
 
 
-class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
+class TestPositiveInt(unittest.TestCase):
 
     """ Unit tests for the `positive_int` function."""
 

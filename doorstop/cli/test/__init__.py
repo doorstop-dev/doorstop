@@ -15,7 +15,7 @@ ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
 
-class SettingsTestCase(unittest.TestCase):  # pylint: disable=R0904
+class SettingsTestCase(unittest.TestCase):
 
     """Base test case class that backs up settings."""
 

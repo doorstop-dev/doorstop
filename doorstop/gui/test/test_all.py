@@ -10,7 +10,7 @@ from doorstop.gui.main import main
 from doorstop.gui import main as gui
 
 
-class TestMain(unittest.TestCase):  # pylint: disable=R0904
+class TestMain(unittest.TestCase):
 
     """Integration tests for the 'doorstop-gui' command."""
 
@@ -30,7 +30,7 @@ class TestMain(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(SystemExit, main, [])
 
 
-class TestImport(unittest.TestCase):  # pylint: disable=R0904
+class TestImport(unittest.TestCase):
 
     """Integration tests for importing the GUI module."""
 
@@ -42,8 +42,8 @@ class TestImport(unittest.TestCase):  # pylint: disable=R0904
         self.assertIsInstance(gui.tk, Mock)
 
 
-@patch('doorstop.gui.main.run', Mock(return_value=True))  # pylint: disable=R0904
-class TestLogging(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.gui.main.run', Mock(return_value=True))
+class TestLogging(unittest.TestCase):
 
     """Integration tests for the Doorstop GUI logging."""
 

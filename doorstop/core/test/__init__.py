@@ -29,14 +29,14 @@ if not os.path.exists(EMPTY):
     os.makedirs(EMPTY)
 
 
-class DocumentNoSkip(Document):  # pylint: disable=R0904
+class DocumentNoSkip(Document):
 
     """Document class that is never skipped."""
 
     SKIP = '__disabled__'  # never skip test Documents
 
 
-class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
+class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 
     """Mock FileObject class with stubbed file IO."""
 
@@ -66,31 +66,31 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902,R0904
         return True
 
 
-class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902,R0904
+class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
 
     """Mock Item class with stubbed file IO."""
 
 
-class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902,R0904
+class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902
 
     """Mock Document class with stubbed file IO."""
 
 
-class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902,R0904
+class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
 
     """Mock Document class that is always skipped in tree placement."""
 
     skip = True
 
 
-class MockDocumentNoSkip(MockDocumentSkip):  # pylint: disable=W0223,R0902,R0904
+class MockDocumentNoSkip(MockDocumentSkip):  # pylint: disable=W0223,R0902
 
     """Mock Document class that is never skipped in tree placement."""
 
     SKIP = '__disabled__'  # never skip mock Documents
 
 
-class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902,R0904
+class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
 
     """Mock item class with stubbed IO and a mock VCS reference."""
 

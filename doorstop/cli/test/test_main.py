@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock
 from doorstop.cli import main
 
 
-class TestMain(unittest.TestCase):  # pylint: disable=R0904
+class TestMain(unittest.TestCase):
 
     """Unit tests for the `main` function."""  # pylint: disable=R0201
 

@@ -121,7 +121,7 @@ def _log(func):  # pragma: no cover (manual test)
     return wrapped
 
 
-class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901,R0904
+class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
 
     """Listbox class with automatic width adjustment."""
 
@@ -140,7 +140,7 @@ class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R
             self.config(width=width + shift)
 
 
-class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902,R0904
+class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
 
     """Graphical application for Doorstop."""
 

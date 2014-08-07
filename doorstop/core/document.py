@@ -15,7 +15,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
+class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents a document directory containing an outline of items."""
 
@@ -328,7 +328,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         except IndexError:
             next_level = level
         else:
-            next_level = level or last.level + 1
+            if level:
+                next_level = level
+            elif last.level.heading:
+                next_level = last.level >> 1
+                next_level.heading = False
+            else:
+                next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self,
@@ -398,7 +404,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
         for item in items:
-            space = "    " * (item.depth - 1)
+            space = "    " * item.depth
             comment = item.text.replace('\n', ' ') or item.ref
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:

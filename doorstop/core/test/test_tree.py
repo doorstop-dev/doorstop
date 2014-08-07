@@ -20,8 +20,8 @@ from doorstop.core.test import FILES, SYS, EMPTY
 from doorstop.core.test import MockDocumentSkip
 
 
-@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
-class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)
+class TestTreeStrings(unittest.TestCase):
 
     """Unit tests for the Tree class using strings."""
 
@@ -189,9 +189,9 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
 
-@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
-@patch('doorstop.core.tree.Document', MockDocumentSkip)  # pylint: disable=R0904
-class TestTree(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)
+@patch('doorstop.core.tree.Document', MockDocumentSkip)
+class TestTree(unittest.TestCase):
 
     """Unit tests for the Tree class."""
 
@@ -428,6 +428,6 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.tree.delete()  # ensure a second delete is ignored
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.tree module."""
