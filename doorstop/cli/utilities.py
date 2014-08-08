@@ -97,6 +97,8 @@ def configure_settings(args):
     # Parse subcommand settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
+    if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
+        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
 
 
 def literal_eval(literal, err=None, default=None):

@@ -32,6 +32,7 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
+PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 
 # Caching settings
 CACHE_ITEMS = True
