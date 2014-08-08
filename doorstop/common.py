@@ -29,19 +29,6 @@ log = logger(__name__)
 # exception classes ##########################################################
 
 
-def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
-    """New logging level, TRACE."""
-    if self.isEnabledFor(logging.DEBUG - 1):
-        self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
-
-
-logging.addLevelName(logging.DEBUG - 1, "TRACE")
-logging.Logger.trace = _trace
-
-logger = logging.getLogger  # pylint: disable=C0103
-log = logger(__name__)  # pylint: disable=C0103
-
-
 class DoorstopError(Exception):
 
     """Generic Doorstop error."""
