@@ -47,10 +47,10 @@ NOSE := $(BIN)/nosetests
 # Main Targets ###############################################################
 
 .PHONY: all
-all: doc $(ALL)
+all: $(ALL)
 $(ALL): $(SOURCES)
-	$(MAKE) check
-	touch $(ALL)  # flag to indicate all setup steps were succesful
+	$(MAKE) doc pep8 pep257
+	touch $(ALL)  # flag to indicate all setup steps were successful
 
 .PHONY: ci
 ci: doorstop pep8 pep257 test tests tutorial

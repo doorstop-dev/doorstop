@@ -684,11 +684,13 @@ class TestPublish(TempTestCase):
 
     def setUp(self):
         super().setUp()
-        self.backup = (settings.PUBLISH_CHILD_LINKS,)
+        self.backup = (settings.PUBLISH_CHILD_LINKS,
+                       settings.PUBLISH_BODY_LEVELS)
 
     def tearDown(self):
         super().tearDown()
-        (settings.PUBLISH_CHILD_LINKS,) = self.backup
+        (settings.PUBLISH_CHILD_LINKS,
+         settings.PUBLISH_BODY_LEVELS) = self.backup
 
     def test_publish_unknown(self):
         """Verify 'doorstop publish' returns an error for an unknown format."""
@@ -708,6 +710,11 @@ class TestPublish(TempTestCase):
         """Verify 'doorstop publish' can create output without child links."""
         self.assertIs(None, main(['publish', 'tut', '--no-child-links']))
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
+
+    def test_publish_document_without_body_levels(self):
+        """Verify 'doorstop publish' can create output without body levels."""
+        self.assertIs(None, main(['publish', 'tut', '--no-body-levels']))
+        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
 
     def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

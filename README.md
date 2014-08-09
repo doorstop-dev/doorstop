@@ -80,7 +80,7 @@ Items can be added to the document and edited:
 
 Additional documents can be created that link to other documents:
 
-    $ doorstop new TST ./reqs/tests --parent REQ
+    $ doorstop create TST ./reqs/tests --parent REQ
     created document: TST (@/reqs/tests)
 
 Items can be added and linked to parent items:
