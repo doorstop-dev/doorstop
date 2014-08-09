@@ -22,6 +22,11 @@ def main(args=None):  # pylint: disable=R0915
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
                        help="path to the root of the project")
+    # TODO: move the server options to 'add' only via a 'server' parser?
+    debug.add_argument('-u', '--server', metavar='HOST',
+                       help="IP address or hostname for a running server")
+    debug.add_argument('-f', '--force', action='store_true',
+                       help="perform the action without the server")
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     group = debug.add_mutually_exclusive_group()
     group.add_argument('-v', '--verbose', action='count', default=0,

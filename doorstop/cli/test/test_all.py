@@ -149,7 +149,7 @@ def get_next_number():
     return number
 
 
-@patch('doorstop.settings.SERVER_ADDRESS', None)
+@patch('doorstop.settings.SERVER_HOST', None)
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestAdd(unittest.TestCase):
 
@@ -196,7 +196,6 @@ class TestAdd(unittest.TestCase):
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
 
 
-@unittest.skip("TODO: enable tests")
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestAddServer(unittest.TestCase):
 
@@ -211,23 +210,23 @@ class TestAddServer(unittest.TestCase):
     def tearDown(self):
         common.delete(self.path)
 
+    @patch('doorstop.settings.SERVER_HOST', '')
     def test_add(self):
         """Verify 'doorstop add' expects a server."""
         self.assertRaises(SystemExit, main, ['add', 'TUT'])
 
-    @patch('doorstop.settings.SERVER_ADDRESS', None)
+    @patch('doorstop.settings.SERVER_HOST', None)
     def test_add_no_server(self):
         """Verify 'doorstop add' can be called if there is no server."""
         self.assertIs(None, main(['add', 'TUT']))
 
-    def test_add_disable_server(self):
-        """Verify 'doorstop add' can be called when the server is disabled."""
-        self.assertIs(None, main(['add', 'TUT', '--no-server']))
-
-    # TODO: add a patch to bypass server call
-    def test_add_custom_server(self):
-        """Verify 'doorstop add' can be called without a server."""
-        self.assertIs(None, main(['add', 'TUT', '--server', 'example.com']))
+    @patch('doorstop.server.check', Mock())
+    @patch('doorstop.server.get_next_number', Mock(side_effect=[1, 42]))
+    @patch('doorstop.core.document.Document.add_item')
+    def test_add_custom_server(self, mock_add_item):
+        """Verify 'doorstop add' can be called with a custom server."""
+        self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
+        mock_add_item.assert_called_once_with(number=42, level=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""

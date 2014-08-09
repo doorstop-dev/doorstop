@@ -8,6 +8,7 @@ from doorstop.cli import utilities
 from doorstop.cli.utilities import show, ask
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
+from doorstop import server
 
 log = common.logger(__name__)
 
@@ -100,8 +101,21 @@ def run_add(args, cwd, _, catch=True):
     """
     with utilities.capture(catch=catch) as success:
         tree = build(cwd=cwd, root=args.project)
+        document = tree.find_document(args.prefix)
+        if args.force:
+            log.warn("creating items without the server...")
+        else:
+            server.check()
         for _ in range(args.count):
-            item = tree.add_item(args.prefix, level=args.level)
+            number = 0
+            while number is not None and number < document.next:
+                if number:
+                    log.warn("server is behind, requesting next number...")
+                if args.force:
+                    number = None
+                else:
+                    number = server.get_next_number(args.prefix)
+            item = document.add_item(number=number, level=args.level)
             show("added item: {} ({})".format(item.uid, item.relpath))
 
     if not success:

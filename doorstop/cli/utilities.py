@@ -94,6 +94,8 @@ def configure_settings(args):
         settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
     if args.no_review_check is not None:
         settings.CHECK_REVIEW_STATUS = not args.no_review_check
+    if args.server is not None:
+        settings.SERVER_HOST = args.server
     # Parse subcommand settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links

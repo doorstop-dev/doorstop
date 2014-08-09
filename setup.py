@@ -27,9 +27,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={'doorstop.core': ['files/*']},
 
-    entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
-                                      GUI + ' = doorstop.gui.main:main',
-                                      SERVER + ' = doorstop.server.main:main']},
+    entry_points={
+        'console_scripts': [CLI + ' = doorstop.cli.main:main',
+                            GUI + ' = doorstop.gui.main:main',
+                            SERVER + ' = doorstop.server.main:main']
+    },
 
     long_description=(README + '\n' + CHANGES),
     license='LGPL',

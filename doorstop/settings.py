@@ -39,5 +39,5 @@ CACHE_ITEMS = True
 CACHE_DOCUMENTS = True
 
 # Server settings
-SERVER_ADDRESS = ''  # '' = server not specified, None = no server in use
+SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 8080

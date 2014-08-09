@@ -287,23 +287,19 @@ class TestTree(unittest.TestCase):
                           temp, '_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.document.Document.add_item')
-    def test_add_item(self, mock_add_item, mock_lock):
+    def test_add_item(self, mock_add_item):
         """Verify an item can be added to a document."""
         self.tree.add_item('REQ')
-        mock_add_item.assert_called_once_with(level=None, reorder=True)
-        path = os.path.join(FILES, '.doorstop.yml')
-        mock_lock.assert_called_once_with(path)
+        mock_add_item.assert_called_once_with(number=None, level=None,
+                                              reorder=True)
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.document.Document.add_item')
-    def test_add_item_level(self, mock_add, mock_lock):
+    def test_add_item_level(self, mock_add):
         """Verify an item can be added to a document with a level."""
         self.tree.add_item('REQ', level='1.2.3')
-        mock_add.assert_called_once_with(level='1.2.3', reorder=True)
-        path = os.path.join(FILES, '.doorstop.yml')
-        mock_lock.assert_called_once_with(path)
+        mock_add.assert_called_once_with(number=None, level='1.2.3',
+                                         reorder=True)
 
     def test_add_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (item)."""
