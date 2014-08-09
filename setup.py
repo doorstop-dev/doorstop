@@ -29,7 +29,7 @@ setuptools.setup(
 
     entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
                                       GUI + ' = doorstop.gui.main:main',
-                                      SERVER + ' = doorstop.web.server:main']},
+                                      SERVER + ' = doorstop.server.main:main']},
 
     long_description=(README + '\n' + CHANGES),
     license='LGPL',

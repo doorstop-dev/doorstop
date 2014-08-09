@@ -3,7 +3,6 @@
 """REST server to display content and reserve item numbers."""
 
 import os
-import sys
 from collections import defaultdict
 import argparse
 import logging
@@ -13,7 +12,7 @@ from bottle import get, post, request
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
-from doorstop.web import utilities
+from doorstop.server import utilities
 from doorstop import settings
 
 tree = None  # TODO: switch to _get_tree() and pass in cwd

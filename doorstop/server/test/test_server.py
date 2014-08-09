@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 
-from doorstop.web import server
+from doorstop.server import main as server
 
 
 class BaseTestCase(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestModule(BaseTestCase):
 
     """Unit tests for the doorstop.web.server module."""
 
-    @patch('doorstop.web.server.build')
+    @patch('doorstop.server.main.build')
     @patch('bottle.run')
     def test_main(self, mock_run, mock_build):
         """Verify the server can started (mock)."""
@@ -108,7 +108,7 @@ class TestRoutesHTML(BaseTestCase):
         self.assertEqual(43, self.server.numbers['prefix'])
 
 
-@patch('doorstop.web.utilities.json_response', Mock(return_value=True))
+@patch('doorstop.server.utilities.json_response', Mock(return_value=True))
 class TestRoutesJSON(BaseTestCase):
 
     """Unit tests for the doorstop.web.server module JSON responses."""
@@ -156,7 +156,7 @@ class TestRoutesJSON(BaseTestCase):
         data = server.get_attr('prefix', 'uid', 'links')
         self.assertEqual({'value': ['UID3', 'UID4']}, data)
 
-    @patch('doorstop.web.server.numbers', {'prefix': 123})
+    @patch('doorstop.server.main.numbers', {'prefix': 123})
     def test_post_numbers(self):
         """Verify `/document/PREFIX/numbers` works (JSON)."""
         data = server.post_numbers('prefix')

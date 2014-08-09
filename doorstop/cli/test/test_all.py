@@ -196,6 +196,7 @@ class TestAdd(unittest.TestCase):
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
 
 
+@unittest.skip("TODO: enable tests")
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestAddServer(unittest.TestCase):
 

@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from doorstop.web import client
+from doorstop.server import client
 
 
 class TestModule(unittest.TestCase):
