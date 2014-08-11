@@ -23,12 +23,12 @@ def get(name):
         return run
 
 
-def run(args, cwd, err, catch=True):  # pylint: disable=W0613
+def run(args, cwd, error, catch=True):  # pylint: disable=W0613
     """Process arguments and run the `doorstop` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -53,7 +53,7 @@ def run_create(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -73,7 +73,7 @@ def run_delete(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -95,7 +95,7 @@ def run_add(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -129,7 +129,7 @@ def run_remove(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -145,17 +145,17 @@ def run_remove(args, cwd, _, catch=True):
     return True
 
 
-def run_edit(args, cwd, err, catch=True):
+def run_edit(args, cwd, error, catch=True):
     """Process arguments and run the `doorstop edit` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     item = document = None
-    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, err=err)
+    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, error=error)
 
     with utilities.capture(catch=catch) as success:
         tree = build(cwd=cwd, root=args.project)
@@ -172,7 +172,7 @@ def run_edit(args, cwd, err, catch=True):
         if item:
             item.edit(tool=args.tool)
         else:
-            _export_import(args, cwd, err, document, ext)
+            _export_import(args, cwd, error, document, ext)
     if not success:
         return False
 
@@ -182,12 +182,12 @@ def run_edit(args, cwd, err, catch=True):
     return True
 
 
-def run_reorder(args, cwd, err, catch=True, _tree=None):
+def run_reorder(args, cwd, error, catch=True, _tree=None):
     """Process arguments and run the `doorstop reorder` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -219,7 +219,7 @@ def run_reorder(args, cwd, err, catch=True, _tree=None):
             document.index = True  # create index
             relpath = os.path.relpath(document.index, cwd)
             editor.edit(relpath, tool=args.tool)
-            get('reorder')(args, cwd, err, catch=False, _tree=tree)
+            get('reorder')(args, cwd, error, catch=False, _tree=tree)
     if not success:
         show("after fixing the error: doorstop reorder {}".format(document))
         return False
@@ -235,7 +235,7 @@ def run_link(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -256,7 +256,7 @@ def run_unlink(args, cwd, _, catch=True):
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
@@ -272,17 +272,17 @@ def run_unlink(args, cwd, _, catch=True):
     return True
 
 
-def run_clear(args, cwd, err, catch=True):
+def run_clear(args, cwd, error, catch=True):
     """Process arguments and run the `doorstop clear` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     with utilities.capture(catch=catch) as success:
-        for item in _iter_items(args, cwd, err):
+        for item in _iter_items(args, cwd, error):
             show("clearing item {}'s suspect links...".format(item.uid))
             item.clear()
     if not success:
@@ -291,17 +291,17 @@ def run_clear(args, cwd, err, catch=True):
     return True
 
 
-def run_review(args, cwd, err, catch=True):
+def run_review(args, cwd, error, catch=True):
     """Process arguments and run the `doorstop review` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     with utilities.capture(catch=catch) as success:
-        for item in _iter_items(args, cwd, err):
+        for item in _iter_items(args, cwd, error):
             show("marking item {} as reviewed...".format(item.uid))
             item.review()
     if not success:
@@ -310,30 +310,30 @@ def run_review(args, cwd, err, catch=True):
     return True
 
 
-def run_import(args, cwd, err, catch=True, _tree=None):
+def run_import(args, cwd, error, catch=True, _tree=None):
     """Process arguments and run the `doorstop import` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     document = item = None
 
     # Parse arguments
-    attrs = utilities.literal_eval(args.attrs, err)
-    mapping = utilities.literal_eval(args.map, err)
+    attrs = utilities.literal_eval(args.attrs, error)
+    mapping = utilities.literal_eval(args.map, error)
     if args.path:
         if not args.prefix:
-            err("when [path] specified, [prefix] is also required")
+            error("when [path] specified, [prefix] is also required")
         elif args.document:
-            err("'--document' cannot be used with [path] [prefix]")
+            error("'--document' cannot be used with [path] [prefix]")
         elif args.item:
-            err("'--item' cannot be used with [path] [prefix]")
-        ext = utilities.get_ext(args, None, None, False, err)
+            error("'--item' cannot be used with [path] [prefix]")
+        ext = utilities.get_ext(args, None, None, False, error)
     elif not (args.document or args.item):
-        err("specify [path], '--document', or '--item' to import")
+        error("specify [path], '--document', or '--item' to import")
 
     # Import document or item
     with utilities.capture(catch=catch) as success:
@@ -365,18 +365,18 @@ def run_import(args, cwd, err, catch=True, _tree=None):
     return True
 
 
-def run_export(args, cwd, err, catch=True):
+def run_export(args, cwd, error, catch=True):
     """Process arguments and run the `doorstop export` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, '.yml', '.csv', whole_tree, err)
+    ext = utilities.get_ext(args, '.yml', '.csv', whole_tree, error)
 
     # Export documents
     with utilities.capture(catch=catch) as success:
@@ -403,25 +403,25 @@ def run_export(args, cwd, err, catch=True):
     # Display to standard output
     else:
         if whole_tree:
-            err("only single documents can be displayed")
+            error("only single documents can be displayed")
         for line in exporter.export_lines(document, ext):
             show(line)
 
     return True
 
 
-def run_publish(args, cwd, err, catch=True):
+def run_publish(args, cwd, error, catch=True):
     """Process arguments and run the `doorstop publish` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, '.txt', '.html', whole_tree, err)
+    ext = utilities.get_ext(args, '.txt', '.html', whole_tree, error)
 
     # Publish documents
     with utilities.capture(catch=catch) as success:
@@ -453,19 +453,19 @@ def run_publish(args, cwd, err, catch=True):
     # Display to standard output
     else:
         if whole_tree:
-            err("only single documents can be displayed")
+            error("only single documents can be displayed")
         for line in publisher.publish_lines(document, ext, **kwargs):
             show(line)
 
     return True
 
 
-def _iter_items(args, cwd, err):
+def _iter_items(args, cwd, error):
     """Build a tree and iterate through items.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
 
     Items are filtered to:
 
@@ -482,9 +482,9 @@ def _iter_items(args, cwd, err):
     # Parse arguments
     if args.label == 'all':
         if args.item:
-            err("argument -i/--item: not allowed with 'all'")
+            error("argument -i/--item: not allowed with 'all'")
         if args.document:
-            err("argument -d/--document: not allowed with 'all'")
+            error("argument -d/--document: not allowed with 'all'")
 
     # Build tree
     item = None
@@ -514,12 +514,12 @@ def _iter_items(args, cwd, err):
                 yield item
 
 
-def _export_import(args, cwd, err, document, ext):
+def _export_import(args, cwd, error, document, ext):
     """Edit a document by calling export followed by import.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
     :param document: :class:`~doorstop.core.document.Document` to edit
     :param ext: extension for export format
 
@@ -528,7 +528,7 @@ def _export_import(args, cwd, err, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, err, catch=False)
+    get('export')(args, cwd, error, catch=False)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)
@@ -537,7 +537,7 @@ def _export_import(args, cwd, err, document, ext):
     if ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
-        get('import')(args, cwd, err, catch=False, _tree=document.tree)
+        get('import')(args, cwd, error, catch=False, _tree=document.tree)
         common.delete(path)
     else:
         show("import canceled")

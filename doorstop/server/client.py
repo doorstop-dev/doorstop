@@ -6,27 +6,16 @@ import requests
 
 from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop.server import utilities
 from doorstop import settings
 
 log = common.logger(__name__)
 
 
-def build_url(path=None):
-    """Build the server's URL with optional path."""
-    if not settings.SERVER_HOST:
-        return None
-    url = 'http://{}'.format(settings.SERVER_HOST)
-    if settings.SERVER_PORT != 80:
-        url += ':{}'.format(settings.SERVER_PORT)
-    if path:
-        url += path
-    return url
-
-
 def exists(path='/documents'):
     """Determine if the server exists."""
     found = False
-    url = build_url(path=path)
+    url = utilities.build_url(path=path)
     if url:
         log.debug("looking for {}...".format(url))
         try:
@@ -55,7 +44,7 @@ def check():
 def get_next_number(prefix):
     """Get the next number for the given document prefix."""
     number = None
-    url = build_url('/documents/{p}/numbers'.format(p=prefix))
+    url = utilities.build_url(path='/documents/{p}/numbers'.format(p=prefix))
     if not url:
         log.info("no server to get the next number from")
         return None

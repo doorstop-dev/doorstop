@@ -95,7 +95,7 @@ gui: env
 
 .PHONY: serve
 serve: env
-	$(BIN)/doorstop-server
+	$(BIN)/doorstop-server --debug --launch --port 80
 
 # Documentation ##############################################################
 

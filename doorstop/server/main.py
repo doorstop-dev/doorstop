@@ -4,6 +4,7 @@
 
 import os
 from collections import defaultdict
+import webbrowser
 import argparse
 import logging
 
@@ -15,26 +16,30 @@ from doorstop.common import HelpFormatter
 from doorstop.server import utilities
 from doorstop import settings
 
-tree = None  # TODO: switch to _get_tree() and pass in cwd
-numbers = defaultdict(int)
 log = common.logger(__name__)
+
+tree = None  # set in `run`, read in the route functions
+numbers = defaultdict(int)  # cache of next document numbers
 
 
 def main(args=None):
     """Process command-line arguments and run the program."""
     from doorstop import SERVER, VERSION
 
-    # Main parser
+    # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
-    debug.add_argument('-v', '--verbose', action='count', default=0,
-                       help="enable verbose logging")
+    debug.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
+    debug.add_argument('--launch', action='store_true', help=argparse.SUPPRESS)
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
+
+    # Build main parser
     parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
                                      **shared)
-    # Hidden argument to override the root sharing directory path
     parser.add_argument('-j', '--project', metavar="PATH",
                         help="path to the root of the project")
+    parser.add_argument('-P', '--port', metavar='NUM', type=int,
+                        help="use a custom port for the server")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -42,13 +47,12 @@ def main(args=None):
     # Configure logging
     logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
                         level=settings.VERBOSE_LOGGING_LEVEL)
-    # TODO: configure logging similar to the GUI
 
     # Run the program
     run(args, os.getcwd(), parser.error)
 
 
-def run(args, cwd, error):
+def run(args, cwd, _):
     """Start the server.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
@@ -59,8 +63,12 @@ def run(args, cwd, error):
     global tree  # pylint: disable=W0603,C0103
     tree = build(cwd=cwd, root=args.project)
     tree.load()
-    bottle.run(host='localhost', port=settings.SERVER_PORT,
-               debug=True, reloader=True)  # TODO: remove debug and reloader
+    host = 'localhost'
+    port = args.port or settings.SERVER_PORT
+    if args.launch:
+        url = utilities.build_url(host=host, port=port)
+        webbrowser.open(url)
+    bottle.run(host=host, port=port, debug=args.debug, reloader=args.debug)
 
 
 @get('/')

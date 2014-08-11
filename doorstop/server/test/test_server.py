@@ -50,6 +50,17 @@ class TestModule(BaseTestCase):
         mock_build.assert_called_once()
         mock_run.assert_called_once()
 
+    @patch('doorstop.settings.SERVER_PORT', 8080)
+    @patch('doorstop.server.main.build')
+    @patch('webbrowser.open')
+    @patch('bottle.run')
+    def test_main_debug(self, mock_run, mock_open, mock_build):
+        """Verify the server can started (mock, debug)."""
+        self.server.main(['--debug', '--launch'])
+        mock_build.assert_called_once()
+        mock_open.assert_called_once_with("http://localhost:8080")
+        mock_run.assert_called_once()
+
 
 class TestRoutesHTML(BaseTestCase):
 
