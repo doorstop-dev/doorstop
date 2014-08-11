@@ -9,6 +9,7 @@ from doorstop.common import DoorstopError
 from doorstop.server import client
 
 
+@patch('doorstop.settings.SERVER_PORT', 8080)
 class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.web.client module."""

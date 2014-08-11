@@ -25,6 +25,8 @@ def main(args=None):  # pylint: disable=R0915
     # TODO: move the server options to 'add' only via a 'server' parser?
     debug.add_argument('-u', '--server', metavar='HOST',
                        help="IP address or hostname for a running server")
+    debug.add_argument('-P', '--port', metavar='NUM', type=int,
+                       help="use a custom port for the server")
     debug.add_argument('-f', '--force', action='store_true',
                        help="perform the action without the server")
     debug.add_argument('-V', '--version', action='version', version=VERSION)

@@ -40,4 +40,4 @@ CACHE_DOCUMENTS = True
 
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use
-SERVER_PORT = 8080
+SERVER_PORT = 7867

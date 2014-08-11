@@ -96,6 +96,8 @@ def configure_settings(args):
         settings.CHECK_REVIEW_STATUS = not args.no_review_check
     if args.server is not None:
         settings.SERVER_HOST = args.server
+    if args.port is not None:
+        settings.SERVER_PORT = args.port
     # Parse subcommand settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
