@@ -11,9 +11,9 @@ from doorstop.core import publisher
 from doorstop.core.test import FILES, EMPTY, MockDataMixIn
 
 
-class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):
 
-    """Unit tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.publisher module."""
 
     @patch('os.makedirs')
     @patch('builtins.open')
@@ -58,18 +58,13 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_publish_tree(self, mock_open, mock_makedirs, mock_index):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
-        mock_document = MagicMock()
-        mock_document.prefix = 'MOCK'
-        mock_document.items = []
-        mock_tree = MagicMock()
-        mock_tree.documents = [mock_document]
         # Act
-        dirpath2 = publisher.publish(mock_tree, dirpath)
+        dirpath2 = publisher.publish(self.mock_tree, dirpath)
         # Assert
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
-        mock_index.assert_called_once_with(dirpath, tree=mock_tree)
+        mock_index.assert_called_once_with(dirpath, tree=self.mock_tree)
 
     @patch('doorstop.core.publisher._index')
     @patch('os.makedirs')
@@ -77,13 +72,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_publish_tree_no_index(self, mock_open, mock_makedirs, mock_index):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
-        mock_document = MagicMock()
-        mock_document.prefix = 'MOCK'
-        mock_document.items = []
-        mock_tree = MagicMock()
-        mock_tree.documents = [mock_document]
         # Act
-        dirpath2 = publisher.publish(mock_tree, dirpath, index=False)
+        dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)
@@ -130,11 +120,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
-        mock_item.id = 'KNOWN-001'
+        mock_item.uid = 'KNOWN-001'
         mock_item.document = Mock()
         mock_item.document.prefix = 'KNOWN'
-        mock_item_unknown = Mock(spec=['id'])
-        mock_item_unknown.id = 'UNKNOWN-002'
+        mock_item_unknown = Mock(spec=['uid'])
+        mock_item_unknown.uid = 'UNKNOWN-002'
         mock_trace = [
             (None, mock_item, None, None, None),
             (None, None, None, mock_item_unknown, None),
@@ -198,6 +188,19 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_item_normative(self):
+        """Verify Markdown can be published from an item (normative)."""
+        expected = ("## 1.2 req4" + '\n\n'
+                    "This shall..." + '\n\n'
+                    "Reference: Doorstop.sublime-project (line None)" + '\n\n'
+                    "*Links: sys4*" + '\n\n')
+        # Act
+        lines = publisher.publish_lines(self.item3, '.md', linkify=False)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_markdown_item_with_child_links(self):
         """Verify Markdown can be published from an item w/ child links."""
@@ -216,10 +219,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertNotIn("Child links", text)
 
+    @patch('doorstop.settings.PUBLISH_BODY_LEVELS', False)
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
-    def test_lines_markdown_item_normative(self):
-        """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4" + '\n\n'
+    def test_lines_markdown_item_without_body_levels(self):
+        """Verify Markdown can be published from an item (no body levels)."""
+        expected = ("## req4" + '\n\n'
                     "This shall..." + '\n\n'
                     "Reference: Doorstop.sublime-project (line None)" + '\n\n'
                     "*Links: sys4*" + '\n\n')

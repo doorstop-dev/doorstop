@@ -1,4 +1,4 @@
-"""Shared command-line functions."""
+"""Shared functions for the `doorstop.cli` package."""
 
 import os
 import ast
@@ -6,11 +6,12 @@ from argparse import ArgumentTypeError
 import logging
 
 from doorstop import common
-from doorstop.cli import log
 from doorstop import settings
 
+log = common.logger(__name__)
 
-class capture(object):  # pylint: disable=R0903,C0103
+
+class capture(object):  # pylint: disable=R0903
 
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 
@@ -34,11 +35,16 @@ class capture(object):  # pylint: disable=R0903,C0103
 
 def configure_logging(verbosity=0):
     """Configure logging using the provided verbosity level (0+)."""
+    assert common.PRINT_VERBOSITY == 0
     assert common.STR_VERBOSITY == 3
     assert common.MAX_VERBOSITY == 4
 
     # Configure the logging level and format
-    if verbosity == 0:
+    if verbosity == -1:
+        level = settings.QUIET_LOGGING_LEVEL
+        default_format = settings.DEFAULT_LOGGING_FORMAT
+        verbose_format = settings.LEVELED_LOGGING_FORMAT
+    elif verbosity == 0:
         level = settings.DEFAULT_LOGGING_LEVEL
         default_format = settings.DEFAULT_LOGGING_FORMAT
         verbose_format = settings.LEVELED_LOGGING_FORMAT
@@ -66,9 +72,9 @@ def configure_logging(verbosity=0):
     if verbosity > common.MAX_VERBOSITY:
         msg = "maximum verbosity level is {}".format(common.MAX_VERBOSITY)
         logging.warn(msg)
-        common.VERBOSITY = common.MAX_VERBOSITY
+        common.verbosity = common.MAX_VERBOSITY
     else:
-        common.VERBOSITY = verbosity
+        common.verbosity = verbosity
 
 
 def configure_settings(args):
@@ -88,16 +94,23 @@ def configure_settings(args):
         settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
     if args.no_review_check is not None:
         settings.CHECK_REVIEW_STATUS = not args.no_review_check
-    # Parse subcommand settings
+    # Parse `add` settings
+    if hasattr(args, 'server') and args.server is not None:
+        settings.SERVER_HOST = args.server
+    if hasattr(args, 'port') and args.port is not None:
+        settings.SERVER_PORT = args.port
+    # Parse `publish` settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
+    if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
+        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
 
 
-def literal_eval(literal, err=None, default=None):
+def literal_eval(literal, error=None, default=None):
     """Convert an literal to its value.
 
     :param literal: string to evaulate
-    :param err: function to call for errors
+    :param error: function to call for errors
     :param default: default value for empty inputs
     :return: Python literal
 
@@ -112,20 +125,20 @@ def literal_eval(literal, err=None, default=None):
         return ast.literal_eval(literal) if literal else default
     except (SyntaxError, ValueError):
         msg = "invalid Python literal: {}".format(literal)
-        if err:
-            err(msg)
+        if error:
+            error(msg)
         else:
             log.critical(msg)
 
 
-def get_ext(args, ext_stdout, ext_file, whole_tree, err):
+def get_ext(args, ext_stdout, ext_file, whole_tree, error):
     """Determine the output file extensions from input arguments.
 
     :param args: Namespace of CLI arguments
     :param ext_stdout: default extension for standard output
     :param ext_file: default extension for file output
     :param whole_tree: indicates the path is a directory for the whole tree
-    :param err: function to call for CLI errors
+    :param error: function to call for CLI errors
 
     :return: chosen extension
 
@@ -139,7 +152,7 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
             ext = ext_file
         else:
             if os.path.isdir(path):
-                err("given a prefix, [path] must be a file, not a directory")
+                error("given a prefix, [path] must be a file, not a directory")
             ext = os.path.splitext(path)[-1]
         log.debug("extension based on path: {}".format(ext or None))
 
@@ -160,12 +173,18 @@ def get_ext(args, ext_stdout, ext_file, whole_tree, err):
     else:
         if not ext:
             if path:
-                err("given a prefix, [path] must include an extension")
+                error("given a prefix, [path] must include an extension")
             else:
                 ext = ext_stdout
             log.debug("extension based on default: {}".format(ext))
 
     return ext
+
+
+def show(message, flush=False):
+    """Print (optionally flushed) text to the display."""
+    if common.verbosity >= common.PRINT_VERBOSITY:
+        print(message, flush=flush)
 
 
 def ask(question, default=None):

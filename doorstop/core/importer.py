@@ -9,15 +9,17 @@ import csv
 import openpyxl  # pylint: disable=F0401
 from openpyxl import load_workbook  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError, read_text, load_yaml
-from doorstop.core import log
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
-_DOCUMENTS = []  # cache of unplaced documents
+_documents = []  # cache of unplaced documents
+
+log = common.logger(__name__)
 
 
 def import_file(path, document, ext=None, mapping=None, **kwargs):
@@ -66,7 +68,7 @@ def create_document(prefix, path, parent=None, tree=None):
                                 path, tree.root, prefix,
                                 parent=parent)
         log.warning(exc)
-        _DOCUMENTS.append(document)
+        _documents.append(document)
 
     # TODO: attempt to place unplaced documents?
 
@@ -74,11 +76,11 @@ def create_document(prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(prefix, identifier, attrs=None, document=None):
+def add_item(prefix, uid, attrs=None, document=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
-    :param identifier: existing item's unique ID
+    :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
 
@@ -94,10 +96,10 @@ def add_item(prefix, identifier, attrs=None, document=None):
         tree = _get_tree()
         document = tree.find_document(prefix)
 
-    # Add an item using the specified identifier
-    log.info("importing item '{}'...".format(identifier))
+    # Add an item using the specified UID
+    log.info("importing item '{}'...".format(uid))
     item = Item.new(tree, document,
-                    document.path, document.root, identifier,
+                    document.path, document.root, uid,
                     auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
@@ -116,18 +118,18 @@ def _file_yml(path, document, **_):
     """
     # Parse the file
     log.info("reading items in {}...".format(path))
-    text = read_text(path)
+    text = common.read_text(path)
     # Load the YAML data
-    data = load_yaml(text, path)
+    data = common.load_yaml(text, path)
     # Add items
-    for identifier, attrs in data.items():
+    for uid, attrs in data.items():
         try:
-            item = document.find_item(identifier)
+            item = document.find_item(uid)
         except DoorstopError:
             pass
         else:
             item.delete()
-        add_item(document.prefix, identifier, attrs=attrs, document=document)
+        add_item(document.prefix, uid, attrs=attrs, document=document)
 
 
 def _file_csv(path, document, delimiter=',', mapping=None):
@@ -229,7 +231,7 @@ def _itemize(header, data, document, mapping=None):
 
         # Parse item attributes
         attrs = {}
-        identifier = None
+        uid = None
         for index, value in enumerate(row):
 
             # Key lookup
@@ -246,8 +248,8 @@ def _itemize(header, data, document, mapping=None):
                     break
 
             # Convert values for particular keys
-            if key == 'id':
-                identifier = value
+            if key in ('uid', 'id'):  # 'id' for backwards compatibility
+                uid = value
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
@@ -255,20 +257,20 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = value
 
         # Convert the row to an item
-        if identifier:
+        if uid:
 
             # Delete the old item
             try:
-                item = document.find_item(identifier)
+                item = document.find_item(uid)
             except DoorstopError:
-                log.debug("not yet an item: {}".format(identifier))
+                log.debug("not yet an item: {}".format(uid))
             else:
-                log.debug("deleting old item: {}".format(identifier))
+                log.debug("deleting old item: {}".format(uid))
                 item.delete()
 
             # Import the item
             try:
-                item = add_item(document.prefix, identifier,
+                item = add_item(document.prefix, uid,
                                 attrs=attrs, document=document)
             except DoorstopError as exc:
                 log.warning(exc)

@@ -11,14 +11,16 @@ import yaml
 import openpyxl  # pylint: disable=F0401
 from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
 
-from doorstop.common import DoorstopError, create_dirname, write_lines
-from doorstop.core import log
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
+
+log = common.logger(__name__)
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -48,11 +50,11 @@ def export(obj, path, ext=None, **kwargs):
         count += 1
 
         # Export content to the specified path
-        create_dirname(path2)
+        common.create_dirname(path2)
         log.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
             lines = export_lines(obj2, ext, **kwargs)
-            write_lines(lines, path2)
+            common.write_lines(lines, path2)
         else:
             export_file(obj2, path2, ext, **kwargs)
 
@@ -110,7 +112,7 @@ def _lines_yaml(obj):
     """
     for item in iter_items(obj):
 
-        data = {str(item.id): item.data}
+        data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
 
@@ -136,11 +138,11 @@ def _tabulate(obj, sep=LIST_SEP):
             for value in sorted(data.keys()):
                 if value not in header:
                     header.append(value)
-            yield ['id'] + header
+            yield ['uid'] + header
             yield_header = False
 
         # Yield row
-        row = [item.id]
+        row = [item.uid]
         for key in header:
             value = data.get(key)
             if key == 'level':
@@ -148,7 +150,7 @@ def _tabulate(obj, sep=LIST_SEP):
                 value = str(value)
             elif key == 'links':
                 # separate identifiers with a delimiter
-                value = sep.join(identifier.text for identifier in item.links)
+                value = sep.join(uid.string for uid in item.links)
             elif value is None:
                 value = ''
             row.append(value)

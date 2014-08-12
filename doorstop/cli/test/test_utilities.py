@@ -11,9 +11,9 @@ from doorstop import settings
 from doorstop.cli.test import SettingsTestCase
 
 
-class TestCapture(unittest.TestCase):  # pylint: disable=R0904
+class TestCapture(unittest.TestCase):
 
-    """Unit tests for the `Capture` class."""  # pylint: disable=C0103
+    """Unit tests for the `Capture` class."""
 
     def test_success(self):
         """Verify a success can be captured."""
@@ -38,9 +38,9 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
             self.fail("DoorstopError not raised")
 
 
-class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
+class TestConfigureSettings(SettingsTestCase):
 
-    """Unit tests for the `configure_settings` function."""  # pylint: disable=C0103
+    """Unit tests for the `configure_settings` function."""
 
     def test_configure_settings(self):
         """Verify settings are parsed correctly."""
@@ -55,11 +55,12 @@ class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
         self.assertFalse(settings.CHECK_SUSPECT_LINKS)
         self.assertFalse(settings.CHECK_REVIEW_STATUS)
+        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
 
 
-class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
+class TestLiteralEval(unittest.TestCase):
 
-    """Unit tests for the `literal_eval` function."""  # pylint: disable=C0103
+    """Unit tests for the `literal_eval` function."""
 
     def test_literal_eval(self):
         """Verify a string can be evaluated as a Python literal."""
@@ -67,40 +68,40 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
 
     def test_literal_eval_invalid_err(self):
         """Verify an invalid literal calls the error function."""
-        err = Mock()
-        utilities.literal_eval("1/", err=err)
-        self.assertEqual(1, err.call_count)
+        error = Mock()
+        utilities.literal_eval("1/", error=error)
+        self.assertEqual(1, error.call_count)
 
-    @patch('doorstop.cli.log.critical')
+    @patch('doorstop.cli.utilities.log.critical')
     def test_literal_eval_invalid_log(self, mock_log):
         """Verify an invalid literal logs an error."""
         utilities.literal_eval("1/")
         self.assertEqual(1, mock_log.call_count)
 
 
-class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
+class TestGetExt(unittest.TestCase):
 
-    """Unit tests for the `get_ext` function."""  # pylint: disable=C0103
+    """Unit tests for the `get_ext` function."""
 
     def test_get_ext_stdout_document(self):
         """Verify a default output extension can be selected."""
         args = Mock(spec=[])
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.out', ext)
 
     def test_get_ext_stdout_document_override(self):
         """Verify a default output extension can be overridden."""
         args = Mock(spec=['html'])
         args.html = True
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.html', ext)
 
     @patch('os.path.isdir', Mock(return_value=True))
@@ -108,48 +109,48 @@ class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
         """Verify a path is required for a single document."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
     def test_get_ext_file_document(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file.cust'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.cust', ext)
 
     def test_get_ext_file_tree(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', True, err)
+        ext = utilities.get_ext(args, '.out', '.file', True, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.file', ext)
 
     def test_get_ext_file_document_no_extension(self):
         """Verify an extension is required on single file paths."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
 
-class TestAsk(unittest.TestCase):  # pylint: disable=R0904
+class TestAsk(unittest.TestCase):
 
-    """Unit tests for the `ask` function."""  # pylint: disable=C0103
+    """Unit tests for the `ask` function."""
 
     def test_ask_yes(self):
         """Verify 'yes' maps to True."""
@@ -175,9 +176,28 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(response)
 
 
-class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
+class TestShow(unittest.TestCase):
 
-    """ Unit tests for the `positive_int` function."""  # pylint: disable=C0103
+    """Unit tests for the `show` function."""  # pylint: disable=R0201
+
+    @patch('builtins.print')
+    def test_show(self, mock_print):
+        """Verify prints are enabled by default."""
+        msg = "Hello, world!"
+        utilities.show(msg)
+        mock_print.assert_called_once_with(msg, flush=False)
+
+    @patch('builtins.print')
+    @patch('doorstop.common.verbosity', common.PRINT_VERBOSITY - 1)
+    def test_show_hidden(self, mock_print):
+        """Verify prints are hidden when verbosity is quiet."""
+        utilities.show("This won't be printed.")
+        mock_print.assert_never_called()
+
+
+class TestPositiveInt(unittest.TestCase):
+
+    """ Unit tests for the `positive_int` function."""
 
     def test_positive_int(self):
         """Verify a positive integer can be parsed."""

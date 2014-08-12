@@ -8,8 +8,9 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core import log
 from doorstop import settings
+
+log = common.logger(__name__)
 
 
 def cache_item(func):
@@ -22,7 +23,7 @@ def cache_item(func):
         if item.document and item not in item.document._items:
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
-            item.tree._item_cache[item.id] = item
+            item.tree._item_cache[item.uid] = item
             log.trace("cached item: {}".format(item))
         return item
     return wrapped
@@ -38,7 +39,7 @@ def expunge_item(func):
         if item.document and item in item.document._items:
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
-            item.tree._item_cache[item.id] = None
+            item.tree._item_cache[item.uid] = None
             log.trace("expunged item: {}".format(item))
         return item
     return wrapped

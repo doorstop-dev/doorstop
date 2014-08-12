@@ -30,6 +30,7 @@ else
 		OPEN := cygstart
 	else
 		OPEN := open
+		SUDO := sudo
 	endif
 endif
 
@@ -47,10 +48,10 @@ NOSE := $(BIN)/nosetests
 # Main Targets ###############################################################
 
 .PHONY: all
-all: doc $(ALL)
+all: $(ALL)
 $(ALL): $(SOURCES)
-	$(MAKE) check
-	touch $(ALL)  # flag to indicate all setup steps were succesful
+	$(MAKE) doc pep8 pep257
+	touch $(ALL)  # flag to indicate all setup steps were successful
 
 .PHONY: ci
 ci: doorstop pep8 pep257 test tests tutorial
@@ -87,18 +88,22 @@ $(DEPENDS_DEV): Makefile
 
 .PHONY: doorstop
 doorstop: env
-	$(BIN)/doorstop
+	$(BIN)/doorstop --quiet
 
 .PHONY: gui
 gui: env
 	$(BIN)/doorstop-gui
+
+.PHONY: serve
+serve: env
+	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
 
 # Documentation ##############################################################
 
 .PHONY: doc
 doc: readme reqs uml apidocs sphinx
 
-.PHONY: pages 
+.PHONY: pages
 pages: reqs-html sphinx
 	cp -r docs/gen/ pages/reqs/
 	cp -r docs/sphinx/_build pages/docs/
