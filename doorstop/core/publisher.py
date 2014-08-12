@@ -280,7 +280,10 @@ def _lines_markdown(obj, linkify=False):
         else:
 
             # Level and UID
-            standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+            if settings.PUBLISH_BODY_LEVELS:
+                standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+            else:
+                standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 

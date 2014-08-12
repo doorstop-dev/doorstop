@@ -12,7 +12,7 @@ DIR = os.path.dirname(__file__)
 ROOT = os.path.join(DIR, '..', '..', '..', '..')
 
 
-class TestFunctions(unittest.TestCase):  # pylint: disable=R0904
+class TestFunctions(unittest.TestCase):
 
     """Unit tests for top-level VCS functions."""
 

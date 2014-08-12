@@ -29,7 +29,7 @@ class SampleWorkingCopy(BaseWorkingCopy):
         pass
 
 
-class TestSampleWorkingCopy(unittest.TestCase):  # pylint: disable=R0904
+class TestSampleWorkingCopy(unittest.TestCase):
 
     """Tests for the doorstop.vcs.base module."""
 

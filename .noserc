@@ -7,7 +7,7 @@ with-doctest=1
 with-coverage=1
 cover-package=doorstop.common,doorstop.core,
     doorstop.cli.main,doorstop.cli.utilities,
-    doorstop.gui
+    doorstop.gui,doorstop.server
 cover-erase=1
 cover-min-percentage=100
 

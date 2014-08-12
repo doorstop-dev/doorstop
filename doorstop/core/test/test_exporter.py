@@ -12,7 +12,7 @@ from doorstop.core import exporter
 from doorstop.core.test import MockDataMixIn
 
 
-class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):
 
     """Unit tests for the doorstop.core.exporter module."""
 

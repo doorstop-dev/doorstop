@@ -14,7 +14,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""
 
@@ -169,7 +169,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def data(self):
-        """Get all the item's data formatted for dumping."""
+        """Get all the item's data formatted for YAML dumping."""
         data = {}
         for key, value in self._data.items():
             if key == 'level':

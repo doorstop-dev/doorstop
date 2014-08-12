@@ -27,8 +27,8 @@ if __name__ == '__main__':
     os.environ[ENV] = '1'  # run the integration tests when called directly
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestBase(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestBase(unittest.TestCase):
 
     """Base class for tutorial tests."""
 
@@ -53,8 +53,8 @@ class TestBase(unittest.TestCase):  # pylint: disable=R0904
             raise AssertionError("command failed: doorstop {}".format(args))
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestSection1(TestBase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestSection1(TestBase):
 
     """Integration tests for section 1.0 of the tutorial."""
 

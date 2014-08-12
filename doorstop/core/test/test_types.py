@@ -6,7 +6,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.types import Prefix, UID, Text, Level, Stamp
 
 
-class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
+class TestPrefix(unittest.TestCase):
 
     """Unit tests for the Prefix class."""  # pylint: disable=W0212
 
@@ -50,8 +50,13 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         prefixes = [Prefix('a'), Prefix('B'), Prefix('c')]
         self.assertListEqual(prefixes, sorted(prefixes))
 
+    def test_short(self):
+        """Verify the short representation of prefixes is correct."""
+        self.assertEqual('req', self.prefix1.short)
+        self.assertEqual('tst', self.prefix2.short)
 
-class TestUID(unittest.TestCase):  # pylint: disable=R0904
+
+class TestUID(unittest.TestCase):
 
     """Unit tests for the UID class."""  # pylint: disable=W0212
 
@@ -130,6 +135,17 @@ class TestUID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(2, self.uid2.number)
         self.assertEqual(3, self.uid3.number)
 
+    def test_short(self):
+        """Verify the short representation of IDs is correct."""
+        self.assertEqual('req1', self.uid1.short)
+        self.assertEqual('tst2', self.uid2.short)
+        self.assertEqual('sys3', self.uid3.short)
+
+    def test_string(self):
+        """Verify UIDs can be converted to string including stamps."""
+        self.assertEqual("REQ001", self.uid1.string)
+        self.assertEqual("REQ001:abc123", self.uid4.string)
+
     def test_stamp(self):
         """Verify stamps are stored correctly."""
         self.assertEqual('abc123', self.uid4.stamp)
@@ -138,13 +154,8 @@ class TestUID(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(True, UID({'REQ001': 1}).stamp)
         self.assertEqual(True, UID("REQ001:1").stamp)
 
-    def test_string(self):
-        """Verify UIDs can be converted to string including stamps."""
-        self.assertEqual("REQ001", self.uid1.string)
-        self.assertEqual("REQ001:abc123", self.uid4.string)
 
-
-class TestText(unittest.TestCase):  # pylint: disable=R0904
+class TestText(unittest.TestCase):
 
     """Unit tests for the Text class."""  # pylint: disable=W0212
 
@@ -172,7 +183,7 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual("Hello, world!\n", self.text.yaml)
 
 
-class TestLevel(unittest.TestCase):  # pylint: disable=R0904
+class TestLevel(unittest.TestCase):
 
     """Unit tests for the Level class."""  # pylint: disable=W0212
 
@@ -348,7 +359,7 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         self.assertNotEqual(level, self.level_1_2)
 
 
-class TestStamp(unittest.TestCase):  # pylint: disable=R0904
+class TestStamp(unittest.TestCase):
 
     """Unit tests for the Stamp class."""  # pylint: disable=W0212
 
@@ -401,10 +412,3 @@ class TestStamp(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)
-
-
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
-
-    """Unit tests for the doorstop.core.types module."""
-
-    pass
