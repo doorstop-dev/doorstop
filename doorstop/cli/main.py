@@ -8,7 +8,6 @@ import argparse
 
 from doorstop import common
 from doorstop.cli import utilities, commands
-from doorstop.gui.main import _run as gui
 
 log = common.logger(__name__)
 
@@ -46,8 +45,6 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not check for suspect links")
     parser.add_argument('-W', '--no-review-check', action='store_true',
                         help="do not check item review status")
-    parser.add_argument('-g', '--gui', action='store_true',
-                        help="launch the graphical user interface")
 
     # Build sub-parsers
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -75,11 +72,7 @@ def main(args=None):  # pylint: disable=R0915
     utilities.configure_settings(args)
 
     # Run the program
-    if args.gui:
-        log.debug("launching GUI...")
-        function = gui
-    else:
-        function = commands.get(args.command)
+    function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
@@ -121,6 +114,13 @@ def _add(subs, shared):
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
                      help="number of items to create (default: 1)")
+    # server arguments
+    sub.add_argument('-S', '--server', metavar='HOST',
+                     help="IP address or hostname for a running server")
+    sub.add_argument('-P', '--port', metavar='NUM', type=int,
+                     help="use a custom port for the server")
+    sub.add_argument('-f', '--force', action='store_true',
+                     help="perform the action without the server")
 
 
 def _remove(subs, shared):
@@ -279,7 +279,9 @@ def _publish(subs, shared):
     sub.add_argument('-w', '--width', type=int,
                      help="limit line width on text output")
     sub.add_argument('-C', '--no-child-links', action='store_true',
-                     help="do not include child links in published documents")
+                     help="do not include child links on items")
+    sub.add_argument('-L', '--no-body-levels', action='store_true',
+                     help="do not include levels on non-heading items")
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)

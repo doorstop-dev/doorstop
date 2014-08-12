@@ -10,6 +10,9 @@ Changelog
 - Added `Item.review()` to save stamps (hashes) of reviewed items.
 - Added `doorstop reorder ...` to organize a document's structure.
 - Renamed `Item.id` and `identifer` arguments to `uid`
+- Added '--no-body-levels' to `doorstop publish` to hide levels on non-headings.
+- Added `doorstop-server` to launch a REST API for UID reservation.
+- Added '--server' argument to `doorstop add` to specify the server address.
 
 0.7 (2014/07/08)
 ----------------

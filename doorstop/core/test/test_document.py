@@ -37,9 +37,9 @@ settings:
 """.lstrip()
 
 
-@patch('doorstop.settings.REORDER', False)  # pylint: disable=R0904
-@patch('doorstop.core.item.Item', MockItem)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.settings.REORDER', False)
+@patch('doorstop.core.item.Item', MockItem)
+class TestDocument(unittest.TestCase):
 
     """Unit tests for the Document class."""  # pylint: disable=W0212
 
@@ -219,16 +219,16 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
             self.assertEqual(path, self.document.index)
 
     @patch('doorstop.common.write_lines')
-    @patch('doorstop.settings.MAX_LINE_LENGTH', 36)
+    @patch('doorstop.settings.MAX_LINE_LENGTH', 40)
     def test_index_set(self, mock_write_lines):
         """Verify an document's index can be created."""
         lines = ['initial: 1.2.3',
                  'outline:',
-                 '        - REQ001: # The foo shall...',
-                 '    - REQ003: # Unicode: -40° ±1%',
-                 '    - REQ004: # Hello, world!',
-                 '    - REQ002: # Hello, world!',
-                 '    - REQ2-001: # Hello, world!']
+                 '            - REQ001: # The foo shall...',
+                 '        - REQ003: # Unicode: -40° ±1%',
+                 '        - REQ004: # Hello, world!',
+                 '        - REQ002: # Hello, world!',
+                 '        - REQ2-001: # Hello, world!']
         # Act
         self.document.index = True  # create index
         # Assert
@@ -282,6 +282,18 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         mock_new.assert_called_once_with(None, document,
                                          NEW, ROOT, 'NEW001',
                                          level=None)
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_after_header(self, mock_new):
+        """Verify the next item after a header is indented."""
+        mock_item = Mock()
+        mock_item.number = 1
+        mock_item.level = Level('1.0')
+        self.document._iter = Mock(return_value=[mock_item])
+        self.document.add_item()
+        mock_new.assert_called_once_with(None, self.document,
+                                         FILES, ROOT, 'REQ002',
+                                         level=Level('1.1'))
 
     def test_add_item_contains(self):
         """Verify an added item is contained in the document."""
@@ -593,7 +605,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(expected.args, issues[0].args)
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.document module."""
 

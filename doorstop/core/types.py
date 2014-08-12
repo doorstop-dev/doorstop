@@ -1,4 +1,4 @@
-"""Common classes and functions for the doorstop.core package."""
+"""Common classes and functions for the `doorstop.core` package."""
 
 import os
 import re
@@ -13,7 +13,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Prefix(str):  # pylint: disable=R0904
+class Prefix(str):
 
     """Unique document prefixes."""
 
@@ -46,6 +46,11 @@ class Prefix(str):  # pylint: disable=R0904
 
     def __lt__(self, other):
         return self.lower() < other.lower()
+
+    @property
+    def short(self):
+        """Get a shortened version of the prefix."""
+        return self.lower()
 
     @staticmethod
     def load_prefix(value):
@@ -170,6 +175,12 @@ class UID(object):
         return self._number
 
     @property
+    def short(self):
+        """Get a shortened version of the UID."""
+        self.check()
+        return self.prefix.lower() + str(self.number)
+
+    @property
     def string(self):
         """Convert the UID and stamp to a single string."""
         if self.stamp:
@@ -220,7 +231,7 @@ class UID(object):
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-class _Literal(str):  # pylint: disable=R0904
+class _Literal(str):
 
     """Custom type for text which should be dumped in the literal style."""
 
@@ -233,7 +244,7 @@ class _Literal(str):  # pylint: disable=R0904
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):  # pylint: disable=R0904
+class Text(str):
 
     """Markdown text paragraph."""
 

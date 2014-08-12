@@ -11,7 +11,7 @@ from doorstop import settings
 from doorstop.cli.test import SettingsTestCase
 
 
-class TestCapture(unittest.TestCase):  # pylint: disable=R0904
+class TestCapture(unittest.TestCase):
 
     """Unit tests for the `Capture` class."""
 
@@ -38,7 +38,7 @@ class TestCapture(unittest.TestCase):  # pylint: disable=R0904
             self.fail("DoorstopError not raised")
 
 
-class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
+class TestConfigureSettings(SettingsTestCase):
 
     """Unit tests for the `configure_settings` function."""
 
@@ -55,9 +55,10 @@ class TestConfigureSettings(SettingsTestCase):  # pylint: disable=R0904
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
         self.assertFalse(settings.CHECK_SUSPECT_LINKS)
         self.assertFalse(settings.CHECK_REVIEW_STATUS)
+        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
 
 
-class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
+class TestLiteralEval(unittest.TestCase):
 
     """Unit tests for the `literal_eval` function."""
 
@@ -67,9 +68,9 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
 
     def test_literal_eval_invalid_err(self):
         """Verify an invalid literal calls the error function."""
-        err = Mock()
-        utilities.literal_eval("1/", err=err)
-        self.assertEqual(1, err.call_count)
+        error = Mock()
+        utilities.literal_eval("1/", error=error)
+        self.assertEqual(1, error.call_count)
 
     @patch('doorstop.cli.utilities.log.critical')
     def test_literal_eval_invalid_log(self, mock_log):
@@ -78,29 +79,29 @@ class TestLiteralEval(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(1, mock_log.call_count)
 
 
-class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
+class TestGetExt(unittest.TestCase):
 
     """Unit tests for the `get_ext` function."""
 
     def test_get_ext_stdout_document(self):
         """Verify a default output extension can be selected."""
         args = Mock(spec=[])
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.out', ext)
 
     def test_get_ext_stdout_document_override(self):
         """Verify a default output extension can be overridden."""
         args = Mock(spec=['html'])
         args.html = True
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.html', ext)
 
     @patch('os.path.isdir', Mock(return_value=True))
@@ -108,46 +109,46 @@ class TestGetExt(unittest.TestCase):  # pylint: disable=R0904
         """Verify a path is required for a single document."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
     def test_get_ext_file_document(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file.cust'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.cust', ext)
 
     def test_get_ext_file_tree(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', True, err)
+        ext = utilities.get_ext(args, '.out', '.file', True, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.file', ext)
 
     def test_get_ext_file_document_no_extension(self):
         """Verify an extension is required on single file paths."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
 
-class TestAsk(unittest.TestCase):  # pylint: disable=R0904
+class TestAsk(unittest.TestCase):
 
     """Unit tests for the `ask` function."""
 
@@ -175,7 +176,7 @@ class TestAsk(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(response)
 
 
-class TestShow(unittest.TestCase):  # pylint: disable=R0904
+class TestShow(unittest.TestCase):
 
     """Unit tests for the `show` function."""  # pylint: disable=R0201
 
@@ -194,7 +195,7 @@ class TestShow(unittest.TestCase):  # pylint: disable=R0904
         mock_print.assert_never_called()
 
 
-class TestPositiveInt(unittest.TestCase):  # pylint: disable=R0904
+class TestPositiveInt(unittest.TestCase):
 
     """ Unit tests for the `positive_int` function."""
 

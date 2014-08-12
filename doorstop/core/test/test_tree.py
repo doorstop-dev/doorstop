@@ -20,8 +20,8 @@ from doorstop.core.test import FILES, SYS, EMPTY
 from doorstop.core.test import MockDocumentSkip
 
 
-@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
-class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)
+class TestTreeStrings(unittest.TestCase):
 
     """Unit tests for the Tree class using strings."""
 
@@ -189,9 +189,9 @@ class TestTreeStrings(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
 
-@patch('doorstop.core.document.Document', MockDocumentSkip)  # pylint: disable=R0904
-@patch('doorstop.core.tree.Document', MockDocumentSkip)  # pylint: disable=R0904
-class TestTree(unittest.TestCase):  # pylint: disable=R0904
+@patch('doorstop.core.document.Document', MockDocumentSkip)
+@patch('doorstop.core.tree.Document', MockDocumentSkip)
+class TestTree(unittest.TestCase):
 
     """Unit tests for the Tree class."""
 
@@ -287,23 +287,19 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
                           temp, '_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.document.Document.add_item')
-    def test_add_item(self, mock_add_item, mock_lock):
+    def test_add_item(self, mock_add_item):
         """Verify an item can be added to a document."""
         self.tree.add_item('REQ')
-        mock_add_item.assert_called_once_with(level=None, reorder=True)
-        path = os.path.join(FILES, '.doorstop.yml')
-        mock_lock.assert_called_once_with(path)
+        mock_add_item.assert_called_once_with(number=None, level=None,
+                                              reorder=True)
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.document.Document.add_item')
-    def test_add_item_level(self, mock_add, mock_lock):
+    def test_add_item_level(self, mock_add):
         """Verify an item can be added to a document with a level."""
         self.tree.add_item('REQ', level='1.2.3')
-        mock_add.assert_called_once_with(level='1.2.3', reorder=True)
-        path = os.path.join(FILES, '.doorstop.yml')
-        mock_lock.assert_called_once_with(path)
+        mock_add.assert_called_once_with(number=None, level='1.2.3',
+                                         reorder=True)
 
     def test_add_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (item)."""
@@ -428,6 +424,6 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.tree.delete()  # ensure a second delete is ignored
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.tree module."""

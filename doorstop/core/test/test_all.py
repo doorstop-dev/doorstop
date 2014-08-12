@@ -37,8 +37,8 @@ CHECK_EXPORTED_CONTENT = True
 CHECK_PUBLISHED_CONTENT = True
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestItem(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestItem(unittest.TestCase):
 
     """Integration tests for the Item class."""
 
@@ -80,8 +80,8 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestDocument(unittest.TestCase):
 
     """Integration tests for the Document class."""
 
@@ -151,23 +151,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                      EMPTY, FILES,
                                      prefix='TMP')
         item_1_0 = document.add_item()
-        item_3_0 = document.add_item()  # will get displaced
-        item_2_0 = document.add_item(level='2.0')
+        item_1_2 = document.add_item()  # will get displaced
+        item_1_1 = document.add_item(level='1.1')
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
-        self.assertEqual((3, 0), item_3_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
+        self.assertEqual((1, 2), item_1_2.level)
 
     def test_remove_item_with_reordering(self):
-        """Verify an item can be removed fraom a document."""
+        """Verify an item can be removed from a document."""
         document = core.Document.new(None,
                                      EMPTY, FILES,
                                      prefix='TMP')
         item_1_0 = document.add_item()
-        item_3_0 = document.add_item()  # to be removed
-        item_2_0 = document.add_item()  # will get relocated
-        document.remove_item(item_3_0)
+        item_1_2 = document.add_item()  # to be removed
+        item_1_1 = document.add_item(level='1.1')  # will get relocated
+        document.remove_item(item_1_2)
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
@@ -233,8 +233,8 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual(expected, actual)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestTree(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestTree(unittest.TestCase):
 
     """Integration tests for the core.Tree class."""
 
@@ -264,14 +264,14 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.validate())
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestEditor(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestEditor(unittest.TestCase):
 
     """Integrations tests for the editor module."""
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
-class TestImporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902
+class TestImporter(unittest.TestCase):
 
     """Integrations tests for the importer module."""
 
@@ -417,8 +417,8 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
-class TestExporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
+class TestExporter(unittest.TestCase):
 
     """Integration tests for the doorstop.core.exporter module."""
 
@@ -489,8 +489,8 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
             move_file(temp, path)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
-class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)
+class TestPublisher(unittest.TestCase):
 
     """Integration tests for the doorstop.core.publisher module."""
 
@@ -617,8 +617,8 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         common.write_text(text, path)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestModule(unittest.TestCase):
 
     """Integration tests for the doorstop.core module."""
 

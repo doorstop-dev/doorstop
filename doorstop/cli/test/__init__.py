@@ -15,7 +15,7 @@ ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
 
-class SettingsTestCase(unittest.TestCase):  # pylint: disable=R0904
+class SettingsTestCase(unittest.TestCase):
 
     """Base test case class that backs up settings."""
 
@@ -27,7 +27,8 @@ class SettingsTestCase(unittest.TestCase):  # pylint: disable=R0904
                        settings.CHECK_LEVELS,
                        settings.PUBLISH_CHILD_LINKS,
                        settings.CHECK_SUSPECT_LINKS,
-                       settings.CHECK_REVIEW_STATUS)
+                       settings.CHECK_REVIEW_STATUS,
+                       settings.PUBLISH_BODY_LEVELS)
 
     def tearDown(self):
         (settings.REFORMAT,
@@ -37,4 +38,5 @@ class SettingsTestCase(unittest.TestCase):  # pylint: disable=R0904
          settings.CHECK_LEVELS,
          settings.PUBLISH_CHILD_LINKS,
          settings.CHECK_SUSPECT_LINKS,
-         settings.CHECK_REVIEW_STATUS) = self.backup
+         settings.CHECK_REVIEW_STATUS,
+         settings.PUBLISH_BODY_LEVELS) = self.backup

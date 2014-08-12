@@ -14,8 +14,8 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
     IGNORES = ('.gitignore',)
 
     def lock(self, path):
+        log.info("`git` does not support locking: {}".format(path))
         self.call('git', 'pull')
-        log.warning("git does not support locking: {}".format(path))
 
     def save(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141

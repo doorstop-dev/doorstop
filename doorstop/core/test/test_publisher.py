@@ -11,7 +11,7 @@ from doorstop.core import publisher
 from doorstop.core.test import FILES, EMPTY, MockDataMixIn
 
 
-class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):
 
     """Unit tests for the doorstop.core.publisher module."""
 
@@ -214,6 +214,19 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
+    def test_lines_markdown_item_normative(self):
+        """Verify Markdown can be published from an item (normative)."""
+        expected = ("## 1.2 req4" + '\n\n'
+                    "This shall..." + '\n\n'
+                    "> `Doorstop.sublime-project`" + '\n\n'
+                    "*Links: sys4*" + '\n\n')
+        # Act
+        lines = publisher.publish_lines(self.item3, '.md', linkify=False)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_markdown_item_with_child_links(self):
         """Verify Markdown can be published from an item w/ child links."""
@@ -232,10 +245,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
         # Assert
         self.assertNotIn("Child links", text)
 
+    @patch('doorstop.settings.PUBLISH_BODY_LEVELS', False)
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
-    def test_lines_markdown_item_normative(self):
-        """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4" + '\n\n'
+    def test_lines_markdown_item_without_body_levels(self):
+        """Verify Markdown can be published from an item (no body levels)."""
+        expected = ("## req4" + '\n\n'
                     "This shall..." + '\n\n'
                     "> `Doorstop.sublime-project`" + '\n\n'
                     "*Links: sys4*" + '\n\n')

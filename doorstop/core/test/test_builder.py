@@ -10,7 +10,7 @@ from doorstop.core.test import FILES, EMPTY
 from doorstop.core.test import MockDocumentSkip, MockDocumentNoSkip
 
 
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+class TestModule(unittest.TestCase):
 
     """Unit tests for the doorstop.core.builder module."""
 
