@@ -8,8 +8,6 @@ import argparse
 
 from doorstop import common
 from doorstop.cli import utilities, commands
-from doorstop.gui.main import run as gui
-from doorstop.server.main import run as server
 
 log = common.logger(__name__)
 
@@ -22,13 +20,6 @@ def main(args=None):  # pylint: disable=R0915
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-j', '--project', metavar='PATH',
                        help="path to the root of the project")
-    # TODO: move the server options to 'add' only via a 'server' parser?
-    debug.add_argument('-u', '--server', metavar='HOST',
-                       help="IP address or hostname for a running server")
-    debug.add_argument('-P', '--port', metavar='NUM', type=int,
-                       help="use a custom port for the server")
-    debug.add_argument('-f', '--force', action='store_true',
-                       help="perform the action without the server")
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     group = debug.add_mutually_exclusive_group()
     group.add_argument('-v', '--verbose', action='count', default=0,
@@ -54,10 +45,6 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not check for suspect links")
     parser.add_argument('-W', '--no-review-check', action='store_true',
                         help="do not check item review status")
-    parser.add_argument('-g', '--gui', action='store_true',
-                        help="launch the graphical user interface")
-    parser.add_argument('-s', '--serve', action='store_true',
-                        help="start a server")
 
     # Build sub-parsers
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
@@ -85,14 +72,7 @@ def main(args=None):  # pylint: disable=R0915
     utilities.configure_settings(args)
 
     # Run the program
-    if args.gui:
-        log.debug("launching GUI...")
-        function = gui
-    elif args.serve:
-        log.debug("launching server...")
-        function = server
-    else:
-        function = commands.get(args.command)
+    function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
@@ -134,6 +114,13 @@ def _add(subs, shared):
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
                      help="number of items to create (default: 1)")
+    # server arguments
+    sub.add_argument('-S', '--server', metavar='HOST',
+                     help="IP address or hostname for a running server")
+    sub.add_argument('-P', '--port', metavar='NUM', type=int,
+                     help="use a custom port for the server")
+    sub.add_argument('-f', '--force', action='store_true',
+                     help="perform the action without the server")
 
 
 def _remove(subs, shared):

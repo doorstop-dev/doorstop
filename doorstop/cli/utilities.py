@@ -94,11 +94,12 @@ def configure_settings(args):
         settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
     if args.no_review_check is not None:
         settings.CHECK_REVIEW_STATUS = not args.no_review_check
-    if args.server is not None:
+    # Parse `add` settings
+    if hasattr(args, 'server') and args.server is not None:
         settings.SERVER_HOST = args.server
-    if args.port is not None:
+    if hasattr(args, 'port') and args.port is not None:
         settings.SERVER_PORT = args.port
-    # Parse subcommand settings
+    # Parse `publish` settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = not args.no_child_links
     if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
