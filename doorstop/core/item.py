@@ -625,9 +625,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Search for the external reference
         log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        log.debug("regex: {}".format(pattern))
+        log.trace("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        log.debug("search path: {}".format(root))
+        log.trace("search path: {}".format(root))
         for root, _, filenames in os.walk(root):
             for filename in filenames:  # pragma: no cover (integration test)
                 path = os.path.join(root, filename)

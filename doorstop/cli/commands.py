@@ -155,7 +155,7 @@ def run_edit(args, cwd, error, catch=True):
 
     """
     item = document = None
-    ext = utilities.get_ext(args, '.yml', '.yml', whole_tree=False, error=error)
+    ext = utilities.get_ext(args, error, '.yml', '.yml', whole_tree=False)
 
     with utilities.capture(catch=catch) as success:
         tree = build(cwd=cwd, root=args.project)
@@ -331,7 +331,7 @@ def run_import(args, cwd, error, catch=True, _tree=None):
             error("'--document' cannot be used with [path] [prefix]")
         elif args.item:
             error("'--item' cannot be used with [path] [prefix]")
-        ext = utilities.get_ext(args, None, None, False, error)
+        ext = utilities.get_ext(args, error, None, None)
     elif not (args.document or args.item):
         error("specify [path], '--document', or '--item' to import")
 
@@ -376,7 +376,7 @@ def run_export(args, cwd, error, catch=True):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, '.yml', '.csv', whole_tree, error)
+    ext = utilities.get_ext(args, error, '.yml', '.csv', whole_tree=whole_tree)
 
     # Export documents
     with utilities.capture(catch=catch) as success:
@@ -421,7 +421,7 @@ def run_publish(args, cwd, error, catch=True):
     """
     # Parse arguments
     whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, '.txt', '.html', whole_tree, error)
+    ext = utilities.get_ext(args, error, '.txt', '.html', whole_tree)
 
     # Publish documents
     with utilities.capture(catch=catch) as success:

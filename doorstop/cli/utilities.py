@@ -131,14 +131,14 @@ def literal_eval(literal, error=None, default=None):
             log.critical(msg)
 
 
-def get_ext(args, ext_stdout, ext_file, whole_tree, error):
+def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
     """Determine the output file extensions from input arguments.
 
     :param args: Namespace of CLI arguments
+    :param error: function to call for CLI errors
     :param ext_stdout: default extension for standard output
     :param ext_file: default extension for file output
     :param whole_tree: indicates the path is a directory for the whole tree
-    :param error: function to call for CLI errors
 
     :return: chosen extension
 
