@@ -1,4 +1,4 @@
-"""Common classes and functions for the doorstop.core package."""
+"""Common classes and functions for the `doorstop.core` package."""
 
 import os
 import re
@@ -46,6 +46,11 @@ class Prefix(str):
 
     def __lt__(self, other):
         return self.lower() < other.lower()
+
+    @property
+    def short(self):
+        """Get a shortened version of the prefix."""
+        return self.lower()
 
     @staticmethod
     def load_prefix(value):
@@ -168,6 +173,12 @@ class UID(object):
         """Get the UID's number."""
         self.check()
         return self._number
+
+    @property
+    def short(self):
+        """Get a shortened version of the UID."""
+        self.check()
+        return self.prefix.lower() + str(self.number)
 
     @property
     def string(self):

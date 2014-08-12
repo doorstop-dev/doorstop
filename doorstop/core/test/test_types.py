@@ -50,6 +50,11 @@ class TestPrefix(unittest.TestCase):
         prefixes = [Prefix('a'), Prefix('B'), Prefix('c')]
         self.assertListEqual(prefixes, sorted(prefixes))
 
+    def test_short(self):
+        """Verify the short representation of prefixes is correct."""
+        self.assertEqual('req', self.prefix1.short)
+        self.assertEqual('tst', self.prefix2.short)
+
 
 class TestUID(unittest.TestCase):
 
@@ -130,6 +135,17 @@ class TestUID(unittest.TestCase):
         self.assertEqual(2, self.uid2.number)
         self.assertEqual(3, self.uid3.number)
 
+    def test_short(self):
+        """Verify the short representation of IDs is correct."""
+        self.assertEqual('req1', self.uid1.short)
+        self.assertEqual('tst2', self.uid2.short)
+        self.assertEqual('sys3', self.uid3.short)
+
+    def test_string(self):
+        """Verify UIDs can be converted to string including stamps."""
+        self.assertEqual("REQ001", self.uid1.string)
+        self.assertEqual("REQ001:abc123", self.uid4.string)
+
     def test_stamp(self):
         """Verify stamps are stored correctly."""
         self.assertEqual('abc123', self.uid4.stamp)
@@ -137,11 +153,6 @@ class TestUID(unittest.TestCase):
         self.assertEqual('def456', UID(self.uid4, stamp='def456').stamp)
         self.assertEqual(True, UID({'REQ001': 1}).stamp)
         self.assertEqual(True, UID("REQ001:1").stamp)
-
-    def test_string(self):
-        """Verify UIDs can be converted to string including stamps."""
-        self.assertEqual("REQ001", self.uid1.string)
-        self.assertEqual("REQ001:abc123", self.uid4.string)
 
 
 class TestText(unittest.TestCase):

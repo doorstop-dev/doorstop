@@ -31,14 +31,15 @@ def main(args=None):
     """Process command-line arguments and run the program."""
     from doorstop import GUI, VERSION
 
-    # Main parser
+    # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     debug.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **shared)
-    # Hidden argument to override the root sharing directory path
+
+    # Build main parser
     parser.add_argument('-j', '--project', metavar="PATH",
                         help="path to the root of the project")
 
@@ -50,7 +51,7 @@ def main(args=None):
 
     # Run the program
     try:
-        success = _run(args, os.getcwd(), parser.error)
+        success = run(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
         log.debug("program interrupted")
         success = False
@@ -79,7 +80,7 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, error):
+def run(args, cwd, error):
     """Start the GUI.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)

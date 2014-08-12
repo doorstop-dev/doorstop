@@ -68,9 +68,9 @@ class TestLiteralEval(unittest.TestCase):
 
     def test_literal_eval_invalid_err(self):
         """Verify an invalid literal calls the error function."""
-        err = Mock()
-        utilities.literal_eval("1/", err=err)
-        self.assertEqual(1, err.call_count)
+        error = Mock()
+        utilities.literal_eval("1/", error=error)
+        self.assertEqual(1, error.call_count)
 
     @patch('doorstop.cli.utilities.log.critical')
     def test_literal_eval_invalid_log(self, mock_log):
@@ -86,22 +86,22 @@ class TestGetExt(unittest.TestCase):
     def test_get_ext_stdout_document(self):
         """Verify a default output extension can be selected."""
         args = Mock(spec=[])
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.out', ext)
 
     def test_get_ext_stdout_document_override(self):
         """Verify a default output extension can be overridden."""
         args = Mock(spec=['html'])
         args.html = True
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.html', ext)
 
     @patch('os.path.isdir', Mock(return_value=True))
@@ -109,43 +109,43 @@ class TestGetExt(unittest.TestCase):
         """Verify a path is required for a single document."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
     def test_get_ext_file_document(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file.cust'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, err)
+        ext = utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.cust', ext)
 
     def test_get_ext_file_tree(self):
         """Verify a specified file extension can be selected."""
         args = Mock(spec=['path'])
         args.path = 'path/to/directory'
-        err = Mock()
+        error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', True, err)
+        ext = utilities.get_ext(args, '.out', '.file', True, error)
         # Assert
-        self.assertEqual(0, err.call_count)
+        self.assertEqual(0, error.call_count)
         self.assertEqual('.file', ext)
 
     def test_get_ext_file_document_no_extension(self):
         """Verify an extension is required on single file paths."""
         args = Mock(spec=['path'])
         args.path = 'path/to/file'
-        err = Mock()
+        error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, err)
+        utilities.get_ext(args, '.out', '.file', False, error)
         # Assert
-        self.assertNotEqual(0, err.call_count)
+        self.assertNotEqual(0, error.call_count)
 
 
 class TestAsk(unittest.TestCase):

@@ -224,10 +224,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         return document
 
     # @cache_item decorates `Document.add_item()`
-    def add_item(self, value, level=None, reorder=True):
+    def add_item(self, value, number=None, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
         :param value: document or prefix
+        :param number: desired item number
         :param level: desired item level
         :param reorder: update levels of document items
 
@@ -239,8 +240,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         prefix = Prefix(value)
         document = self.find_document(prefix)
-        self.vcs.lock(document.config)  # prevents duplicate item UIDs
-        item = document.add_item(level=level, reorder=reorder)
+        item = document.add_item(number=number, level=level, reorder=reorder)
         return item
 
     # @expunge_item decorates `Document.remove_item()`

@@ -37,3 +37,7 @@ PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 # Caching settings
 CACHE_ITEMS = True
 CACHE_DOCUMENTS = True
+
+# Server settings
+SERVER_HOST = None  # '' = server not specified, None = no server in use
+SERVER_PORT = 7867

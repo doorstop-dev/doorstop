@@ -5,6 +5,7 @@ __version__ = '0.8-dev'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
+SERVER = 'doorstop-server'
 VERSION = __project__ + '-' + __version__
 DESCRIPTION = "Requirements management using version control."
 

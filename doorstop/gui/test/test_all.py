@@ -14,17 +14,17 @@ class TestMain(unittest.TestCase):
 
     """Integration tests for the 'doorstop-gui' command."""
 
-    @patch('doorstop.gui.main._run', Mock(return_value=True))
+    @patch('doorstop.gui.main.run', Mock(return_value=True))
     def test_gui(self):
         """Verify 'doorstop-gui' launches the GUI."""
         self.assertIs(None, main([]))
 
-    @patch('doorstop.gui.main._run', Mock(return_value=False))
+    @patch('doorstop.gui.main.run', Mock(return_value=False))
     def test_exit(self):
         """Verify 'doorstop-gui' treats False as an error ."""
         self.assertRaises(SystemExit, main, [])
 
-    @patch('doorstop.gui.main._run', Mock(side_effect=KeyboardInterrupt))
+    @patch('doorstop.gui.main.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify 'doorstop-gui' treats KeyboardInterrupt as an error."""
         self.assertRaises(SystemExit, main, [])
@@ -38,11 +38,11 @@ class TestImport(unittest.TestCase):
         """Verify tkinter import errors are handled."""
         sys.modules['tkinter'] = Mock(side_effect=ImportError)
         imp.reload(gui)
-        self.assertFalse(gui._run(None, None, lambda x: False))  # pylint: disable=W0212
+        self.assertFalse(gui.run(None, None, lambda x: False))  # pylint: disable=W0212
         self.assertIsInstance(gui.tk, Mock)
 
 
-@patch('doorstop.gui.main._run', Mock(return_value=True))
+@patch('doorstop.gui.main.run', Mock(return_value=True))
 class TestLogging(unittest.TestCase):
 
     """Integration tests for the Doorstop GUI logging."""

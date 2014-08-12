@@ -30,6 +30,7 @@ else
 		OPEN := cygstart
 	else
 		OPEN := open
+		SUDO := sudo
 	endif
 endif
 
@@ -92,6 +93,10 @@ doorstop: env
 .PHONY: gui
 gui: env
 	$(BIN)/doorstop-gui
+
+.PHONY: serve
+serve: env
+	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
 
 # Documentation ##############################################################
 

@@ -149,6 +149,7 @@ def get_next_number():
     return number
 
 
+@patch('doorstop.settings.SERVER_HOST', None)
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestAdd(unittest.TestCase):
 
@@ -193,6 +194,43 @@ class TestAdd(unittest.TestCase):
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestAddServer(unittest.TestCase):
+
+    """Integration tests for the 'doorstop add' command using a server."""
+
+    @classmethod
+    def setUpClass(cls):
+        number = get_next_number()
+        filename = "TUT{}.yml".format(str(number).zfill(3))
+        cls.path = os.path.join(TUTORIAL, filename)
+
+    def tearDown(self):
+        common.delete(self.path)
+
+    @patch('doorstop.settings.SERVER_HOST', '')
+    def test_add(self):
+        """Verify 'doorstop add' expects a server."""
+        self.assertRaises(SystemExit, main, ['add', 'TUT'])
+
+    @patch('doorstop.settings.SERVER_HOST', None)
+    def test_add_no_server(self):
+        """Verify 'doorstop add' can be called if there is no server."""
+        self.assertIs(None, main(['add', 'TUT']))
+
+    @patch('doorstop.server.check', Mock())
+    @patch('doorstop.server.get_next_number', Mock(side_effect=[1, 42]))
+    @patch('doorstop.core.document.Document.add_item')
+    def test_add_custom_server(self, mock_add_item):
+        """Verify 'doorstop add' can be called with a custom server."""
+        self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
+        mock_add_item.assert_called_once_with(number=42, level=None)
+
+    def test_add_force(self):
+        """Verify 'doorstop add' can be called with a missing server."""
+        self.assertIs(None, main(['add', 'TUT', '--force']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
