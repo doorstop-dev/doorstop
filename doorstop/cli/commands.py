@@ -37,7 +37,7 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
         tree = build(cwd=cwd, root=args.project)
         show("loading documents...", flush=True)
         tree.load()
-        show("validating items...", flush=True)
+        show("validating items..." + '\n', flush=True)
         valid = tree.validate()
     if not success:
         return False

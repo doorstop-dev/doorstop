@@ -182,9 +182,17 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
 
 
 def show(message, flush=False):
-    """Print (optionally flushed) text to the display."""
+    """Print (optionally flushed) text to the display.
+
+    :param message: text to print
+    :param flush: indicates the message is progress text
+
+    """
+    # show messages when enabled
     if common.verbosity >= common.PRINT_VERBOSITY:
-        print(message, flush=flush)
+        # unless they are progress messages and logging is enabled
+        if common.verbosity == 0 or not flush:
+            print(message, flush=flush)
 
 
 def ask(question, default=None):

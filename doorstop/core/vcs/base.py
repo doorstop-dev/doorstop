@@ -19,7 +19,8 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     def __init__(self, path):
         self.path = path
-        self._ignores = []
+        self._ignores_cache = None
+        self._path_cache = None
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
@@ -43,19 +44,33 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @property
     def ignores(self):  # pragma: no cover (abstract method)
         """Get a list of glob expressions to ignore."""
-        if not self._ignores:
+        if self._ignores_cache is None:
+            self._ignores_cache = []
+            log.debug("reading and caching the ignore patterns...")
             for filename in self.IGNORES:
                 path = os.path.join(self.path, filename)
                 if os.path.isfile(path):
                     self._update_ignores_from_file(path)
-        return self._ignores
+        return self._ignores_cache
 
-    def _update_ignores_from_file(self, path):  # pragma: no cover (integration test)
-        """Parse and append patterns from a standard ignores file."""
-        for line in common.read_lines(path):
-            pattern = line.strip(" @\\/*\n")
-            if pattern and not pattern.startswith('#'):
-                self._ignores.append('*' + pattern + '*')
+    @property
+    def paths(self):
+        """Yield non-ignored paths in the working copy."""
+        if self._path_cache is None:
+            log.debug("reading and caching all file paths...")
+            self._path_cache = []
+            for dirpath, _, filenames in os.walk(self.path):
+                for filename in filenames:
+                    path = os.path.join(dirpath, filename)
+                    # Skip ignored paths
+                    if self.ignored(path):
+                        continue
+                    # Skip hidden paths
+                    if os.path.sep + '.' in path:
+                        continue
+                    relpath = os.path.relpath(path, self.path)
+                    self._path_cache.append((path, filename, relpath))
+        yield from self._path_cache
 
     def ignored(self, path):
         """Indicate if a path should be considered ignored."""
@@ -64,3 +79,10 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
                 if fnmatch.fnmatch(path, pattern):
                     return True
         return False
+
+    def _update_ignores_from_file(self, path):  # pragma: no cover (integration test)
+        """Parse and append patterns from a standard ignores file."""
+        for line in common.read_lines(path):
+            pattern = line.strip(" @\\/*\n")
+            if pattern and not pattern.startswith('#'):
+                self._ignores_cache.append('*' + pattern + '*')

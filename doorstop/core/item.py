@@ -3,6 +3,8 @@
 import os
 import re
 
+import pyficache
+
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import BaseValidatable, cache_item, expunge_item
@@ -627,35 +629,29 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
         log.trace("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        log.trace("search path: {}".format(root))
-        for root, _, filenames in os.walk(root):
-            for filename in filenames:  # pragma: no cover (integration test)
-                path = os.path.join(root, filename)
-                relpath = os.path.relpath(path, self.root)
-                # Skip the item's file while searching
-                if path == self.path:
-                    continue
-                # Skip hidden directories
-                if os.path.sep + '.' in path:
-                    continue
-                # Skip ignored paths
-                if ignored(path) or (skip and skip(path)):
-                    continue
-                # Check for a matching filename
-                if filename == self.ref:
-                    return relpath, None
-                # Skip extensions that should not be considered text
-                if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
-                    continue
-                # Search for the reference in the file
-                try:
-                    with open(path, 'r') as external:
-                        for index, line in enumerate(external):
-                            if regex.search(line):
-                                log.debug("found ref: {}".format(relpath))
-                                return relpath, index + 1
-                except UnicodeDecodeError:
-                    pass
+        for path, filename, relpath in self.tree.vcs.paths:
+            # Skip the item's file while searching
+            if path == self.path:
+                continue
+            # Skip selected paths
+            if skip and skip(path):
+                continue
+            # Check for a matching filename
+            if filename == self.ref:
+                return relpath, None
+            # Skip extensions that should not be considered text
+            if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
+                continue
+            # Search for the reference in the file
+            lines = pyficache.getlines(path)
+            if lines is None:
+                log.trace("unable to read lines from: {}".format(path))
+                continue
+            for lineno, line in enumerate(lines, start=1):
+                if regex.search(line):
+                    log.debug("found ref: {}".format(relpath))
+                    return relpath, lineno
+
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 

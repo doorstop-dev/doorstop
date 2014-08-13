@@ -192,7 +192,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     self._items.append(item)
                     if reload:
                         item.load(reload=reload)
-                    if settings.CACHE_ITEMS and self.tree:
+                    if self.tree:
                         self.tree._item_cache[item.uid] = item  # pylint: disable=W0212
                         log.trace("cached item: {}".format(item))
         # Set meta attributes
@@ -632,6 +632,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             item.delete()
         super().delete(self.config)
         common.delete(self.path)
-        if settings.CACHE_DOCUMENTS and self.tree:
+        if self.tree:
             self.tree._document_cache[prefix] = None  # pylint: disable=W0212
             log.trace("expunged document: {}".format(prefix))

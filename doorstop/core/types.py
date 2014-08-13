@@ -4,6 +4,7 @@ import os
 import re
 import textwrap
 import hashlib
+
 import yaml
 
 from doorstop import common

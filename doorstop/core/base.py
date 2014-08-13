@@ -8,7 +8,6 @@ import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import settings
 
 log = common.logger(__name__)
 
@@ -22,7 +21,7 @@ def cache_item(func):
         # pylint: disable=W0212
         if item.document and item not in item.document._items:
             item.document._items.append(item)
-        if settings.CACHE_ITEMS and item.tree:
+        if item.tree:
             item.tree._item_cache[item.uid] = item
             log.trace("cached item: {}".format(item))
         return item
@@ -38,7 +37,7 @@ def expunge_item(func):
         # pylint: disable=W0212
         if item.document and item in item.document._items:
             item.document._items.remove(item)
-        if settings.CACHE_ITEMS and item.tree:
+        if item.tree:
             item.tree._item_cache[item.uid] = None
             log.trace("expunged item: {}".format(item))
         return item
@@ -52,7 +51,7 @@ def cache_document(func):
         """Wrapped method to cache the returned document."""
         document = func(self, *args, **kwargs) or self
         # pylint: disable=W0212
-        if settings.CACHE_DOCUMENTS and document.tree:
+        if document.tree:
             document.tree._document_cache[document.prefix] = document
             log.trace("cached document: {}".format(document))
         return document
