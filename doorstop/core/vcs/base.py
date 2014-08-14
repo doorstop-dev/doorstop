@@ -33,27 +33,27 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @abstractmethod
     def lock(self, path):  # pragma: no cover (abstract method)
         """Pull, update, and lock a file for editing."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def edit(self, path):  # pragma: no cover (abstract method)
         """Mark a file as modified."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def add(self, path):  # pragma: no cover (abstract method)
         """Start tracking a file."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def delete(self, path):  # pragma: no cover (abstract method)
         """Stop tracking a file."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def commit(self, message=None):  # pragma: no cover (abstract method)
         """Unlock files, commit, and push."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def ignores(self):  # pragma: no cover (abstract method)

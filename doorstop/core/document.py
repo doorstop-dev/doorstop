@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import cache_document, BaseValidatable
+from doorstop.core.base import add_document, edit_document, remove_document, BaseValidatable
 from doorstop.core.base import auto_load, auto_save, BaseFileObject
 from doorstop.core.types import Prefix, UID, Level
 from doorstop.core.item import Item
@@ -72,7 +72,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return True
 
     @staticmethod
-    @cache_document
+    @add_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
@@ -137,6 +137,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if reload:
             list(self._iter(reload=reload))
 
+    @edit_document
     def save(self):
         """Save the document's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
@@ -310,7 +311,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     # actions ################################################################
 
-    # @cache_item decorates `Item.new()`
+    # decorators are applied to methods in the associated classes
     def add_item(self, number=None, level=None, reorder=True):
         """Create a new item for the document and return it.
 
@@ -344,7 +345,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.reorder(keep=item)
         return item
 
-    # @expunge_item decorates `Item.delete()`
+    # decorators are applied to methods in the associated classes
     def remove_item(self, value, reorder=True):
         """Remove an item by its UID.
 
@@ -364,6 +365,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.reorder()
         return item
 
+    # decorators are applied to methods in the associated classes
     def reorder(self, manual=True, automatic=True, start=None, keep=None,
                 _items=None):
         """Reorder a document's items.
@@ -625,6 +627,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     break
             prev = item
 
+    @remove_document
     def delete(self, path=None):
         """Delete the document and its items."""
         prefix = Prefix(str(self.prefix))

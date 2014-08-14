@@ -20,6 +20,7 @@ from doorstop.core.test import FILES, SYS, EMPTY
 from doorstop.core.test import MockDocumentSkip
 
 
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 class TestTreeStrings(unittest.TestCase):
 
@@ -189,6 +190,7 @@ class TestTreeStrings(unittest.TestCase):
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
 
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 @patch('doorstop.core.tree.Document', MockDocumentSkip)
 class TestTree(unittest.TestCase):

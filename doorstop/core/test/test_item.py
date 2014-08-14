@@ -26,6 +26,7 @@ text: ''
 """.lstrip()
 
 
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestItem(unittest.TestCase):
 
     """Unit tests for the Item class."""  # pylint: disable=W0212
@@ -785,6 +786,7 @@ class TestItem(unittest.TestCase):
         self.assertIs(None, self.item.tree._item_cache[self.item.uid])
 
 
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestFormatting(unittest.TestCase):
 
     """Unit tests for text formatting in Items."""

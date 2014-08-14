@@ -37,6 +37,7 @@ settings:
 """.lstrip()
 
 
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
 class TestDocument(unittest.TestCase):

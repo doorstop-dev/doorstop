@@ -13,12 +13,14 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-def cache_item(func):
-    """Decorator for methods that add returned item to cache."""
+def add_item(func):
+    """Decorator for methods that return a new item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to cache the returned item."""
+        """Wrapped method to add and cache the returned item."""
         item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            item.tree.vcs.add(item.path)
         # pylint: disable=W0212
         if item.document and item not in item.document._items:
             item.document._items.append(item)
@@ -29,12 +31,26 @@ def cache_item(func):
     return wrapped
 
 
-def expunge_item(func):
-    """Decorator for methods that expunge the returned item from cache."""
+def edit_item(func):
+    """Decorator for methods that return a modified item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to expunge the returned item."""
+        """Wrapped method to mark the returned item as modified."""
         item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            item.tree.vcs.edit(item.path)
+        return item
+    return wrapped
+
+
+def remove_item(func):
+    """Decorator for methods that return a deleted item."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned item."""
+        item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            item.tree.vcs.remove(item.path)
         # pylint: disable=W0212
         if item.document and item in item.document._items:
             item.document._items.remove(item)
@@ -45,16 +61,46 @@ def expunge_item(func):
     return wrapped
 
 
-def cache_document(func):
-    """Decorator for methods that add the returned document to cache."""
+def add_document(func):
+    """Decorator for methods that return a new document."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to cache the returned document."""
+        """Wrapped method to add and cache the returned document."""
         document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            document.tree.vcs.add(document.config)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = document
             log.trace("cached document: {}".format(document))
+        return document
+    return wrapped
+
+
+def edit_document(func):
+    """Decorator for methods that return a modified document."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to mark the returned document as modified."""
+        document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            document.tree.vcs.edit(document.config)
+        return document
+    return wrapped
+
+
+def remove_document(func):
+    """Decorator for methods that return a deleted document."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned document."""
+        document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES:
+            document.tree.vcs.remove(document.path)
+        # pylint: disable=W0212
+        if settings.CACHE_DOCUMENTS and document.tree:
+            document.tree._document_cache[document.prefix] = None
+            log.trace("expunged document: {}".format(document))
         return document
     return wrapped
 

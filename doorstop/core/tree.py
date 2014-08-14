@@ -192,6 +192,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # actions ################################################################
 
+    # decorators are applied to methods in the associated classes
     def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -223,7 +224,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             log.info("added to tree: {}".format(document))
         return document
 
-    # @cache_item decorates `Document.add_item()`
+    # decorators are applied to methods in the associated classes
     def add_item(self, value, number=None, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
@@ -243,7 +244,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         item = document.add_item(number=number, level=level, reorder=reorder)
         return item
 
-    # @expunge_item decorates `Document.remove_item()`
+    # decorators are applied to methods in the associated classes
     def remove_item(self, value, reorder=True):
         """Remove an item from a document by UID.
 
@@ -268,6 +269,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
 
+    # decorators are applied to methods in the associated classes
     def link_items(self, cid, pid):
         """Add a new link between two items by UIDs.
 
@@ -290,6 +292,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         child.link(parent.uid)
         return child, parent
 
+    # decorators are applied to methods in the associated classes`
     def unlink_items(self, cid, pid):
         """Remove a link between two items by UIDs.
 
@@ -312,6 +315,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         child.unlink(parent.uid)
         return child, parent
 
+    # decorators are applied to methods in the associated classes
     def edit_item(self, uid, tool=None, launch=False):
         """Open an item for editing by UID.
 
@@ -589,6 +593,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             encoding = ASCII
         return BOX[name][encoding]
 
+    # decorators are applied to methods in the associated classes
     def delete(self):
         """Delete the tree and its documents and items."""
         for document in self:
