@@ -6,10 +6,7 @@ import datetime
 from collections import defaultdict
 
 import yaml
-# TODO: track: openpyxl has false positives with pylint
-# pylint: disable=E1101,E1120,E1123
-import openpyxl  # pylint: disable=F0401
-from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
+import openpyxl
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -205,6 +202,8 @@ def _get_xlsx(obj):
     :return: new workbook
 
     """
+    # pylint: disable=E1101,E1120,E1123
+
     col_widths = defaultdict(int)
     col = 'A'
 
@@ -219,12 +218,13 @@ def _get_xlsx(obj):
             cell = worksheet.cell('%s%s' % (col, row))
 
             # wrap text in every cell
-            alignment = Alignment(vertical='top', horizontal='left',
-                                  wrap_text=True)
+            alignment = openpyxl.styles.Alignment(vertical='top',
+                                                  horizontal='left',
+                                                  wrap_text=True)
             style = cell.style.copy(alignment=alignment)
             # and bold header rows
             if row == 1:
-                style = style.copy(font=Font(bold=True))
+                style = style.copy(font=openpyxl.styles.Font(bold=True))
             cell.style = style
 
             # convert incompatible Excel types:

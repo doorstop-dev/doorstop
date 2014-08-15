@@ -14,7 +14,7 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
     IGNORES = ('.sgignores', '.vvignores')
 
     def lock(self, path):
-        # TODO: track: http://veracity-scm.com/qa/questions/2034
+        # track: http://veracity-scm.com/qa/questions/2034
         msg = "veracity does not support scripted locking: {}".format(path)
         log.info(msg)
         self.call('vv', 'pull')

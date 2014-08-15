@@ -11,7 +11,6 @@ import pprint
 import logging
 
 import yaml
-# TODO: track: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
 from doorstop import common

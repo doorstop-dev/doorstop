@@ -172,3 +172,10 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                                   "long: " + ('"' + '0' * 66 + '"') + '\n'
                                   "level: 1.1.0" + '\n'
                                   "normative: false"))
+
+    item5 = MockItemAndVCS('path/to/req3.yml',
+                           _file=("links: [sys3]" + '\n'
+                                  "text: 'Heading'" + '\n'
+                                  "level: 2.1.2" + '\n'
+                                  "normative: false" + '\n'
+                                  "ref: 'abc123'"))

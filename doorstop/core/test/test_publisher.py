@@ -138,19 +138,14 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""
-        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
-        self.item.heading = False  # TODO: other tests shouldn't have modified this
-        # Act
-        with patch.object(self.item, 'find_ref',
+        with patch.object(self.item5, 'find_ref',
                           Mock(return_value=('path/to/mock/file', 42))):
-            lines = publisher.publish_lines(self.item, '.txt')
+            lines = publisher.publish_lines(self.item5, '.txt')
             text = ''.join(line + '\n' for line in lines)
-        # Assert
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
 
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""
-        self.item.heading = True  # TODO: other tests shouldn't have modified this
         expected = "1.1     Heading\n\n"
         lines = publisher.publish_lines(self.item, '.txt')
         # Act
@@ -175,12 +170,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.CHECK_REF', False)
     def test_lines_text_item_no_ref(self):
         """Verify text can be published without checking references."""
-        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
-        self.item.heading = False  # TODO: other tests shouldn't have modified this
-        # Act
-        lines = publisher.publish_lines(self.item, '.txt')
+        lines = publisher.publish_lines(self.item5, '.txt')
         text = ''.join(line + '\n' for line in lines)
-        # Assert
         self.assertIn("Reference: 'abc123'", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
@@ -194,19 +185,14 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_markdown_item(self):
         """Verify Markdown can be published from an item."""
-        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
-        self.item.heading = False  # TODO: other tests shouldn't have modified this
-        # Act
-        with patch.object(self.item, 'find_ref',
+        with patch.object(self.item5, 'find_ref',
                           Mock(return_value=('path/to/mock/file', 42))):
-            lines = publisher.publish_lines(self.item, '.md')
+            lines = publisher.publish_lines(self.item5, '.md')
             text = ''.join(line + '\n' for line in lines)
-        # Assert
         self.assertIn("> `path/to/mock/file` (line 42)", text)
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
-        self.item.heading = True  # TODO: other tests shouldn't have modified this
         expected = "## 1.1 Heading {: #req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
@@ -262,12 +248,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.CHECK_REF', False)
     def test_lines_markdown_item_no_ref(self):
         """Verify Markdown can be published without checking references."""
-        self.item.ref = 'abc123'  # TODO: other tests shouldn't have modified this
-        self.item.heading = False  # TODO: other tests shouldn't have modified this
-        # Act
-        lines = publisher.publish_lines(self.item, '.md')
+        lines = publisher.publish_lines(self.item5, '.md')
         text = ''.join(line + '\n' for line in lines)
-        # Assert
         self.assertIn("> 'abc123'", text)
 
     def test_lines_html_item(self):
