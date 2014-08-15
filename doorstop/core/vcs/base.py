@@ -22,7 +22,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         self.path = path
         self._ignores_cache = None
         self._path_cache = None
-        self._ci = True  # flag to indicate CI warning should be shown
+        self._show_ci_warning = True
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
@@ -96,9 +96,10 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
             if fnmatch.fnmatch(path, pattern):
-                if pattern == '*build*' and os.getenv('CI') and self._ci:
-                    log.critical("cannot ignore 'build' on the CI server")
-                    self._ci = False
-                    continue
-                return True
+                if pattern == '*build*' and os.getenv('CI'):
+                    if self._show_ci_warning:
+                        log.critical("cannot ignore 'build' on the CI server")
+                        self._show_ci_warning = False
+                else:
+                    return True
         return False
