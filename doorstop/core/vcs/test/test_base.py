@@ -37,6 +37,7 @@ class TestSampleWorkingCopy(unittest.TestCase):
     def setUp(self):
         self.wc = SampleWorkingCopy(None)
 
+    @patch('os.environ', {})
     def test_ignored(self):
         """Verify ignored paths are detected."""
         self.assertTrue(self.wc.ignored("ignored.txt"))
