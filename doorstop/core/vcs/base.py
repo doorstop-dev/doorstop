@@ -35,17 +35,17 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @abstractmethod
     def lock(self, path):  # pragma: no cover (abstract method)
         """Pull, update, and lock a file for editing."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def save(self, message=None):  # pragma: no cover (abstract method)
         """Unlock files, commit, and push."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
-    def ignores(self):  # pragma: no cover (abstract method)
+    def ignores(self):
         """Yield glob expressions to ignore."""
-        if self._ignores_cache is None:
+        if self._ignores_cache is None:  # pragma: no cover (integration test)
             self._ignores_cache = []
             log.debug("reading and caching the ignore patterns...")
             for filename in self.IGNORES:
@@ -79,7 +79,9 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     def ignored(self, path):
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
-            if pattern not in ('*build*',):  # CI always runs under build
-                if fnmatch.fnmatch(path, pattern):
-                    return True
+            if fnmatch.fnmatch(path, pattern):
+                if os.getenv('CI') and pattern == '*build*':  # pragma: no cover (integration test)
+                    log.critical("cannot ignore 'build' on the CI server")
+                    continue
+                return True
         return False
