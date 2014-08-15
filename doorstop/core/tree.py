@@ -12,6 +12,7 @@ from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, UID
 from doorstop.core.document import Document
 from doorstop.core import vcs
+from doorstop import settings
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
@@ -356,12 +357,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             for document in self:
                 if document.prefix == prefix:
                     log.trace("found document: {}".format(document))
-                    self._document_cache[prefix] = document
-                    log.trace("cached document: {}".format(document))
+                    if settings.CACHE_DOCUMENTS:
+                        self._document_cache[prefix] = document
+                        log.trace("cached document: {}".format(document))
                     return document
             log.debug("could not find document: {}".format(prefix))
-            self._document_cache[prefix] = None
-            log.trace("cached unknown: {}".format(prefix))
+            if settings.CACHE_DOCUMENTS:
+                self._document_cache[prefix] = None
+                log.trace("cached unknown: {}".format(prefix))
 
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
@@ -394,12 +397,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     pass  # item not found in that document
                 else:
                     log.trace("found item: {}".format(item))
-                    self._item_cache[uid] = item
-                    log.trace("cached item: {}".format(item))
+                    if settings.CACHE_ITEMS:
+                        self._item_cache[uid] = item
+                        log.trace("cached item: {}".format(item))
                     return item
             log.debug("could not find item: {}".format(uid))
-            self._item_cache[uid] = None
-            log.trace("cached unknown: {}".format(uid))
+            if settings.CACHE_ITEMS:
+                self._item_cache[uid] = None
+                log.trace("cached unknown: {}".format(uid))
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
