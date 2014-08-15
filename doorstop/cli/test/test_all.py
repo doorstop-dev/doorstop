@@ -15,6 +15,9 @@ from doorstop import settings
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
 
+REQ_COUNT = 14
+ALL_COUNT = 44
+
 
 class TempTestCase(unittest.TestCase):
 
@@ -69,38 +72,6 @@ class TestMain(SettingsTestCase):
         """Verify 'doorstop' can be provided a custom root path."""
         os.chdir(self.temp)
         self.assertIs(None, main(['--project', '.']))
-
-    def test_empty(self):
-        """Verify 'doorstop' can be run in a working copy with no docs."""
-        os.mkdir(os.path.join(self.temp, '.mockvcs'))
-        os.chdir(self.temp)
-        self.assertIs(None, main([]))
-        self.assertTrue(settings.REFORMAT)
-        self.assertTrue(settings.CHECK_REF)
-        self.assertTrue(settings.CHECK_CHILD_LINKS)
-        self.assertFalse(settings.REORDER)
-        self.assertTrue(settings.CHECK_LEVELS)
-        self.assertTrue(settings.CHECK_SUSPECT_LINKS)
-        self.assertTrue(settings.CHECK_REVIEW_STATUS)
-
-    def test_options(self):
-        """Verify 'doorstop' can be run with options."""
-        os.mkdir(os.path.join(self.temp, '.mockvcs'))
-        os.chdir(self.temp)
-        self.assertIs(None, main(['--no-reformat',
-                                  '--no-ref-check',
-                                  '--no-child-check',
-                                  '--reorder',
-                                  '--no-level-check',
-                                  '--no-suspect-check',
-                                  '--no-review-check']))
-        self.assertFalse(settings.REFORMAT)
-        self.assertFalse(settings.CHECK_REF)
-        self.assertFalse(settings.CHECK_CHILD_LINKS)
-        self.assertTrue(settings.REORDER)
-        self.assertFalse(settings.CHECK_LEVELS)
-        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
-        self.assertFalse(settings.CHECK_REVIEW_STATUS)
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -448,7 +419,7 @@ class TestClear(unittest.TestCase):
     def test_clear_document(self, mock_clear):
         """Verify 'doorstop clear' can be called with a document"""
         self.assertIs(None, main(['clear', 'tut']))
-        self.assertEqual(14, mock_clear.call_count)
+        self.assertEqual(REQ_COUNT, mock_clear.call_count)
 
     def test_clear_document_unknown(self):
         """Verify 'doorstop clear' returns an error on an unknown document."""
@@ -458,7 +429,7 @@ class TestClear(unittest.TestCase):
     def test_clear_tree(self, mock_clear):
         """Verify 'doorstop clear' can be called with a tree"""
         self.assertIs(None, main(['clear', 'all']))
-        self.assertEqual(41, mock_clear.call_count)
+        self.assertEqual(ALL_COUNT, mock_clear.call_count)
 
     def test_clear_tree_item(self):
         """Verify 'doorstop clear' returns an error with tree and item."""
@@ -492,7 +463,7 @@ class TestReview(unittest.TestCase):
     def test_review_document(self, mock_review):
         """Verify 'doorstop review' can be called with a document"""
         self.assertIs(None, main(['review', 'tut']))
-        self.assertEqual(14, mock_review.call_count)
+        self.assertEqual(REQ_COUNT, mock_review.call_count)
 
     def test_review_document_unknown(self):
         """Verify 'doorstop review' returns an error on an unknown document."""
@@ -502,7 +473,7 @@ class TestReview(unittest.TestCase):
     def test_review_tree(self, mock_review):
         """Verify 'doorstop review' can be called with a tree"""
         self.assertIs(None, main(['review', 'all']))
-        self.assertEqual(41, mock_review.call_count)
+        self.assertEqual(ALL_COUNT, mock_review.call_count)
 
     def test_review_tree_item(self):
         """Verify 'doorstop review' returns an error with tree and item."""

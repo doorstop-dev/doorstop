@@ -1,9 +1,10 @@
 active: true
 derived: false
-level: 2
+level: 1.2
 links:
 - REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
 normative: true
 ref: Verify Markdown can be published from a document.
-reviewed: 1b2d8a630e37134bf98859fe25d7f242
-text: ''
+reviewed: ac1b90d6b6404a0c4b6f512bf8c4644a
+text: |
+  Test publishing Markdown:

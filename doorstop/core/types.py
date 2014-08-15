@@ -4,6 +4,7 @@ import os
 import re
 import textwrap
 import hashlib
+
 import yaml
 
 from doorstop import common
@@ -650,6 +651,11 @@ class Stamp(object):
         for value in values:
             md5.update(str(value).encode())
         return md5.hexdigest()
+
+
+class Reference(object):
+
+    """External reference to a file or lines in a file."""
 
 
 def to_bool(obj):

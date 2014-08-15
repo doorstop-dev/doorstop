@@ -22,9 +22,9 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
 
     @property
     def ignores(self):
-        if not self._ignores:
+        if not self._ignores_cache:
             os.chdir(self.path)
             for line in self.call('svn', 'pg', '-R', 'svn:ignore', '.',
                                   return_stdout=True).splitlines():
-                self._ignores.append(line)
-        return self._ignores
+                self._ignores_cache.append(line)
+        return self._ignores_cache

@@ -1,6 +1,6 @@
 active: true
 derived: false
-level: 6
+level: 2.1
 links:
 - REQ009: 2bc459e9afb3ac656fb94ba680b799ff
 - REQ011: e58a22974b6610a0698866fce6c1ad14
@@ -10,10 +10,8 @@ links:
 - REQ015: 5057c48dd88b53fe5e639e1e33126714
 normative: true
 ref: ''
-reviewed: a24d6130220a7e3e8d3cd417a6597b17
+reviewed: caef4185ae89672f87a9daa3815feaf6
 text: |
-  **Inspection Tests**
-
   These checks ensure the version control system (VCS) meets the needs of
   requirements management:
 

@@ -88,7 +88,7 @@ class TestGetExt(unittest.TestCase):
         args = Mock(spec=[])
         error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, error)
+        ext = utilities.get_ext(args, error, '.out', '.file')
         # Assert
         self.assertEqual(0, error.call_count)
         self.assertEqual('.out', ext)
@@ -99,7 +99,7 @@ class TestGetExt(unittest.TestCase):
         args.html = True
         error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, error)
+        ext = utilities.get_ext(args, error, '.out', '.file')
         # Assert
         self.assertEqual(0, error.call_count)
         self.assertEqual('.html', ext)
@@ -111,7 +111,7 @@ class TestGetExt(unittest.TestCase):
         args.path = 'path/to/directory'
         error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, error)
+        utilities.get_ext(args, error, '.out', '.file')
         # Assert
         self.assertNotEqual(0, error.call_count)
 
@@ -121,7 +121,7 @@ class TestGetExt(unittest.TestCase):
         args.path = 'path/to/file.cust'
         error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', False, error)
+        ext = utilities.get_ext(args, error, '.out', '.file')
         # Assert
         self.assertEqual(0, error.call_count)
         self.assertEqual('.cust', ext)
@@ -132,7 +132,7 @@ class TestGetExt(unittest.TestCase):
         args.path = 'path/to/directory'
         error = Mock()
         # Act
-        ext = utilities.get_ext(args, '.out', '.file', True, error)
+        ext = utilities.get_ext(args, error, '.out', '.file', whole_tree=True)
         # Assert
         self.assertEqual(0, error.call_count)
         self.assertEqual('.file', ext)
@@ -143,7 +143,7 @@ class TestGetExt(unittest.TestCase):
         args.path = 'path/to/file'
         error = Mock()
         # Act
-        utilities.get_ext(args, '.out', '.file', False, error)
+        utilities.get_ext(args, error, '.out', '.file')
         # Assert
         self.assertNotEqual(0, error.call_count)
 

@@ -2,6 +2,9 @@
 
 import os
 import re
+import functools
+
+import pyficache
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
@@ -12,6 +15,33 @@ from doorstop.core import editor
 from doorstop import settings
 
 log = common.logger(__name__)
+
+
+def requires_tree(func):
+    """Decorator for methods that require a tree reference."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a tree reference."""
+        if not self.tree:
+            name = func.__name__
+            log.critical("`{}` can only be called with a tree".format(name))
+            return None
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+def requires_document(func):
+    """Decorator for methods that require a document reference."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a document reference."""
+        if not self.document:
+            name = func.__name__
+            msg = "`{}` can only be called with a document".format(name)
+            log.critical(msg)
+            return None
+        return func(self, *args, **kwargs)
+    return wrapped
 
 
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
@@ -404,6 +434,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.links = value  # alias
 
     @property
+    @requires_tree
     def parent_items(self):
         """Get a list of items that this item links to."""
         items = []
@@ -417,6 +448,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return items
 
     @property
+    @requires_tree
+    @requires_document
     def parent_documents(self):
         """Get a list of documents that this item's document should link to.
 
@@ -441,7 +474,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         # Lock the item
-        self.tree.vcs.lock(self.path)
+        if self.tree:
+            self.tree.vcs.lock(self.path)
         # Open in an editor
         editor.edit(self.path, tool=tool)
         # Force reloaded
@@ -494,7 +528,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if settings.REFORMAT:
             self.auto = False
         # Check text
-        if not self.text and not self.ref:
+        if not self.text:
             yield DoorstopWarning("no text")
         # Check external references
         if settings.CHECK_REF:
@@ -599,12 +633,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
-    def find_ref(self, skip=None, root=None, ignored=None):
+    @requires_tree
+    def find_ref(self):
         """Get the external file reference and line number.
-
-        :param skip: function to determine if a path is ignored
-        :param root: override path to the working copy (for testing)
-        :param ignored: override VCS ignore function (for testing)
 
         :raises: :class:`~doorstop.common.DoorstopError` when no
             reference is found
@@ -615,47 +646,38 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             filename) or None (when no reference set)
 
         """
-        root = root or self.root
-        ignored = ignored or \
-            self.tree.vcs.ignored if self.tree else (lambda _: False)
         # Return immediately if no external reference
         if not self.ref:
             log.debug("no external reference to search for")
             return None, None
+        # Update the cache
+        if not settings.CACHE_PATHS:
+            pyficache.clear_file_cache()
         # Search for the external reference
         log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        log.debug("regex: {}".format(pattern))
+        log.trace("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        log.debug("search path: {}".format(root))
-        for root, _, filenames in os.walk(root):
-            for filename in filenames:  # pragma: no cover (integration test)
-                path = os.path.join(root, filename)
-                relpath = os.path.relpath(path, self.root)
-                # Skip the item's file while searching
-                if path == self.path:
-                    continue
-                # Skip hidden directories
-                if os.path.sep + '.' in path:
-                    continue
-                # Skip ignored paths
-                if ignored(path) or (skip and skip(path)):
-                    continue
-                # Check for a matching filename
-                if filename == self.ref:
-                    return relpath, None
-                # Skip extensions that should not be considered text
-                if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
-                    continue
-                # Search for the reference in the file
-                try:
-                    with open(path, 'r') as external:
-                        for index, line in enumerate(external):
-                            if regex.search(line):
-                                log.debug("found ref: {}".format(relpath))
-                                return relpath, index + 1
-                except UnicodeDecodeError:
-                    pass
+        for path, filename, relpath in self.tree.vcs.paths:
+            # Skip the item's file while searching
+            if path == self.path:
+                continue
+            # Check for a matching filename
+            if filename == self.ref:
+                return relpath, None
+            # Skip extensions that should not be considered text
+            if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
+                continue
+            # Search for the reference in the file
+            lines = pyficache.getlines(path)
+            if lines is None:
+                log.trace("unable to read lines from: {}".format(path))
+                continue
+            for lineno, line in enumerate(lines, start=1):
+                if regex.search(line):
+                    log.debug("found ref: {}".format(relpath))
+                    return relpath, lineno
+
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 

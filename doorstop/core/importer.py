@@ -4,10 +4,7 @@ import os
 import re
 import csv
 
-# TODO: track: openpyxl has false positives with pylint
-# pylint: disable=E1101
-import openpyxl  # pylint: disable=F0401
-from openpyxl import load_workbook  # pylint: disable=F0401
+import openpyxl
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -191,12 +188,12 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = load_workbook(path)
+    workbook = openpyxl.load_workbook(path)
     worksheet = workbook.active
 
     # Locate the bottom right cell in the workbook that contains cell info
     _highest_column = worksheet.get_highest_column()
-    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)
+    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)  # pylint: disable=E1101
     _highest_row = worksheet.get_highest_row()
     last_cell = _highest_letter + str(_highest_row)
 

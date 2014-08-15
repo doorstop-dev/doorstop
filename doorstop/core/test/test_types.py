@@ -3,7 +3,7 @@
 import unittest
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, UID, Text, Level, Stamp
+from doorstop.core.types import Prefix, UID, Text, Level, Stamp, Reference
 
 
 class TestPrefix(unittest.TestCase):
@@ -412,3 +412,14 @@ class TestStamp(unittest.TestCase):
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)
+
+
+class TestReference(unittest.TestCase):
+
+    """Unit tests for the Reference class."""
+
+    def setUp(self):
+        self.ref1 = Reference('abc123')
+        self.ref2 = Reference('path/to/external.txt', 5, 10)
+        self.ref2 = Reference('path/to/external.dat', None, None)
+        self.ref3 = Reference()

@@ -35,8 +35,9 @@ PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 
 # Caching settings
-CACHE_ITEMS = True
-CACHE_DOCUMENTS = True
+CACHE_ITEMS = True  # cache items in documents and trees
+CACHE_DOCUMENTS = True  # cache documents in trees
+CACHE_PATHS = True  # cache file/directory paths and contents
 
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use

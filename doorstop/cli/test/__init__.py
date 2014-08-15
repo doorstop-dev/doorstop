@@ -28,7 +28,10 @@ class SettingsTestCase(unittest.TestCase):
                        settings.PUBLISH_CHILD_LINKS,
                        settings.CHECK_SUSPECT_LINKS,
                        settings.CHECK_REVIEW_STATUS,
-                       settings.PUBLISH_BODY_LEVELS)
+                       settings.PUBLISH_BODY_LEVELS,
+                       settings.CACHE_DOCUMENTS,
+                       settings.CACHE_ITEMS,
+                       settings.CACHE_PATHS)
 
     def tearDown(self):
         (settings.REFORMAT,
@@ -39,4 +42,7 @@ class SettingsTestCase(unittest.TestCase):
          settings.PUBLISH_CHILD_LINKS,
          settings.CHECK_SUSPECT_LINKS,
          settings.CHECK_REVIEW_STATUS,
-         settings.PUBLISH_BODY_LEVELS) = self.backup
+         settings.PUBLISH_BODY_LEVELS,
+         settings.CACHE_DOCUMENTS,
+         settings.CACHE_ITEMS,
+         settings.CACHE_PATHS) = self.backup

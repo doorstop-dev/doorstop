@@ -1,9 +1,10 @@
 active: true
 derived: false
-level: 3
+level: 1.3
 links:
 - REQ007: 1b2201126b830e4ea9f57c77dbd6a38e
 normative: true
 ref: Verify text can be published from a document.
-reviewed: 40b659737f0655566624a7ce3fe98a30
-text: ''
+reviewed: bbe335058ebdee8d5d3740ae8e601120
+text: |
+  Test publishing text:
