@@ -10,7 +10,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
-CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
+DEFAULT_CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
 log = common.logger(__name__)
@@ -106,7 +106,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield ('<meta http-equiv="content-type" content="text/html; '
            'charset={charset}">'.format(charset=charset))
     yield '<style type="text/css">'
-    yield from _lines_css()
+    yield from _lines_css(DEFAULT_CSS)
     yield '</style>'
     yield '</head>'
     yield '<body>'
@@ -169,11 +169,25 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '</html>'
 
 
-def _lines_css():
+def _lines_css(css):
     """Yield lines of CSS to embedded in HTML."""
     yield ''
-    for line in common.read_lines(CSS):
+    for line in common.read_lines(css):
         yield line.rstrip()
+    yield ''
+
+
+def _wrapped_lines_css(css):
+    """Wrap CSS lines in HTML tags"""
+    yield ''
+    yield '<style type="text/css">'
+    if not css or os.path.isfile(css):
+        yield '/* Begin CSS from {} */'.format(css)
+        yield from _lines_css(css)
+        yield '/* End CSS from {} */'.format(css)
+    else:
+        yield '/* No such file: {} */'.format(css)
+    yield '</style>'
     yield ''
 
 
@@ -413,14 +427,23 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
     else:
         document = True
     # Generate HTML
+    PROJECT_CSS = os.path.join(obj.root, settings.PROJECT_CSS or 'project.css')
+
+    try:
+        doc_css = getattr(settings, '{}_CSS'.format(obj.prefix))
+    except AttributeError:
+        doc_css = '{}.css'.format(obj.prefix)
+    finally:
+        DOCUMENT_CSS = os.path.join(obj.path, doc_css)
+
     if document:
         yield '<!DOCTYPE html>'
         yield '<head>'
         yield ('<meta http-equiv="content-type" content="text/html; '
                'charset={charset}">'.format(charset=charset))
-        yield '<style type="text/css">'
-        yield from _lines_css()
-        yield '</style>'
+        yield from _wrapped_lines_css(DEFAULT_CSS)
+        yield from _wrapped_lines_css(PROJECT_CSS)
+        yield from _wrapped_lines_css(DOCUMENT_CSS)
         yield '</head>'
         yield '<body>'
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
