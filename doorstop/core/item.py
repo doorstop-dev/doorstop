@@ -8,8 +8,9 @@ import pyficache
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import BaseValidatable, add_item, edit_item, remove_item
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import (add_item, edit_item, delete_item,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
 from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
@@ -789,10 +790,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
-    @remove_item
+    @delete_item
     def delete(self, path=None):
         """Delete the item."""
-        super().delete(self.path)
+        pass  # the item is deleted in the decorated method
 
 
 class UnknownItem(object):

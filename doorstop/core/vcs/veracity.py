@@ -15,7 +15,7 @@ class WorkingCopy(BaseWorkingCopy):
 
     def lock(self, path):
         # track: http://veracity-scm.com/qa/questions/2034
-        log.info("`vv` does not support scripted locking: {}".format(path))
+        log.debug("`vv` does not support scripted locking: {}".format(path))
         self.call('vv', 'pull')
         self.call('vv', 'update')
 

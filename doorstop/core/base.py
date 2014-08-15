@@ -19,7 +19,7 @@ def add_item(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to add and cache the returned item."""
         item = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
+        if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.add(item.path)
         # pylint: disable=W0212
         if item.document and item not in item.document._items:
@@ -37,26 +37,27 @@ def edit_item(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to mark the returned item as modified."""
         item = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
+        if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.edit(item.path)
         return item
     return wrapped
 
 
-def remove_item(func):
+def delete_item(func):
     """Decorator for methods that return a deleted item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         """Wrapped method to remove and expunge the returned item."""
         item = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
-            item.tree.vcs.remove(item.path)
+        if settings.ADDREMOVE_FILES and item.tree:
+            item.tree.vcs.delete(item.path)
         # pylint: disable=W0212
         if item.document and item in item.document._items:
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = None
             log.trace("expunged item: {}".format(item))
+        BaseFileObject.delete(item, item.path)
         return item
     return wrapped
 
@@ -67,7 +68,7 @@ def add_document(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to add and cache the returned document."""
         document = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
+        if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.add(document.config)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
@@ -83,24 +84,25 @@ def edit_document(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to mark the returned document as modified."""
         document = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
+        if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.edit(document.config)
         return document
     return wrapped
 
 
-def remove_document(func):
+def delete_document(func):
     """Decorator for methods that return a deleted document."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         """Wrapped method to remove and expunge the returned document."""
         document = func(self, *args, **kwargs) or self
-        if settings.ADDREMOVE_FILES:
-            document.tree.vcs.remove(document.path)
+        if settings.ADDREMOVE_FILES and document.tree:
+            document.tree.vcs.delete(document.path)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = None
             log.trace("expunged document: {}".format(document))
+        BaseFileObject.delete(document, document.path)
         return document
     return wrapped
 

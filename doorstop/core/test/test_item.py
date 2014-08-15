@@ -27,7 +27,6 @@ text: ''
 """.lstrip()
 
 
-@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestItem(unittest.TestCase):
 
     """Unit tests for the Item class."""  # pylint: disable=W0212
@@ -341,6 +340,7 @@ class TestItem(unittest.TestCase):
         self.item.edit(tool='mock_editor')
         # Assert
         self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
+        self.item.tree.vcs.edit.assert_called_once_with(self.item.path)
         mock_launch.assert_called_once_with(self.item.path, tool='mock_editor')
 
     def test_link(self):
@@ -560,6 +560,7 @@ class TestItem(unittest.TestCase):
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         self.assertEqual(item, mock_tree._item_cache[item.uid])
+        mock_tree.vcs.add.assert_called_once_with(item.path)
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_special(self):
@@ -806,10 +807,10 @@ class TestItem(unittest.TestCase):
         self.item.tree = Mock()
         self.item.tree._item_cache = {self.item.uid: self.item}
         self.item.delete()
+        self.item.tree.vcs.delete.assert_called_once_with(self.item.path)
         self.assertIs(None, self.item.tree._item_cache[self.item.uid])
 
 
-@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestFormatting(unittest.TestCase):
 
     """Unit tests for text formatting in Items."""

@@ -20,7 +20,6 @@ from doorstop.core.test import FILES, SYS, EMPTY
 from doorstop.core.test import MockDocumentSkip
 
 
-@patch('doorstop.settings.ADDREMOVE_FILES', False)
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 class TestTreeStrings(unittest.TestCase):
 
@@ -190,7 +189,6 @@ class TestTreeStrings(unittest.TestCase):
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
 
-@patch('doorstop.settings.ADDREMOVE_FILES', False)
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 @patch('doorstop.core.tree.Document', MockDocumentSkip)
 class TestTree(unittest.TestCase):
@@ -204,6 +202,7 @@ class TestTree(unittest.TestCase):
         document = Document(FILES)
         self.tree._place(document)  # pylint: disable=W0212
         document.tree = self.tree
+        self.tree._vcs = Mock()
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
@@ -377,14 +376,12 @@ class TestTree(unittest.TestCase):
         self.assertRaises(DoorstopError,
                           self.tree.unlink_items, 'req3', 'req9999')
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.editor.launch')
-    def test_edit_item(self, mock_launch, mock_lock):
+    def test_edit_item(self, mock_launch):
         """Verify an item can be edited in a tree."""
         self.tree.edit_item('req2', launch=True)
         path = os.path.join(FILES, 'REQ002.yml')
         mock_launch.assert_called_once_with(path, tool=None)
-        mock_lock.assert_called_once_with(path)
 
     def test_edit_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (document)."""

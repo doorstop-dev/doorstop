@@ -18,17 +18,16 @@ class WorkingCopy(BaseWorkingCopy):
         self._ignores_cache = ["*/env/*", "*/apidocs/*", "*/build/lib/*"]
 
     def lock(self, path):
-        log.info("simulated lock on: {}...".format(path))
+        log.debug("$ simulated lock on: {}...".format(path))
 
     def edit(self, path):
-        log.info("simulated edit on: {}...".format(path))
+        log.debug("$ simulated edit on: {}...".format(path))
 
     def add(self, path):
-        log.info("simulated add on: {}...".format(path))
+        log.debug("$ simulated add on: {}...".format(path))
 
     def delete(self, path):
-        log.info("simulated delete on: {}...".format(path))
+        log.debug("$ simulated delete on: {}...".format(path))
 
     def commit(self, message=None):
-        log.info("simulated save")
-
+        log.debug("$ simulated commit")

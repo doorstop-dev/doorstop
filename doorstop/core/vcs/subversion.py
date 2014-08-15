@@ -20,7 +20,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('svn', 'lock', path)
 
     def edit(self, path):
-        log.info("`svn` adds all changes")
+        log.debug("`svn` adds all changes")
 
     def add(self, path):
         self.call('svn', 'add', path)

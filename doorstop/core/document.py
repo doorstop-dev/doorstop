@@ -6,8 +6,9 @@ from collections import OrderedDict
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import add_document, edit_document, remove_document, BaseValidatable
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import (add_document, edit_document, delete_document,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
 from doorstop.core.types import Prefix, UID, Level
 from doorstop.core.item import Item
 from doorstop import settings
@@ -170,7 +171,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if self._itered and not reload:
             msg = "iterating document {}'s loaded items...".format(self)
             log.debug(msg)
-            yield from self._items
+            yield from list(self._items)
             return
         log.info("loading document {}'s items...".format(self))
         # Reload the document's item
@@ -199,7 +200,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Set meta attributes
         self._itered = True
         # Yield items
-        yield from self._items
+        yield from list(self._items)
 
     # properties #############################################################
 
@@ -627,14 +628,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     break
             prev = item
 
-    @remove_document
+    @delete_document
     def delete(self, path=None):
         """Delete the document and its items."""
-        prefix = Prefix(str(self.prefix))
         for item in self:
             item.delete()
-        super().delete(self.config)
-        common.delete(self.path)
-        if settings.CACHE_DOCUMENTS and self.tree:
-            self.tree._document_cache[prefix] = None  # pylint: disable=W0212
-            log.trace("expunged document: {}".format(prefix))
+        # the document is deleted in the decorated method

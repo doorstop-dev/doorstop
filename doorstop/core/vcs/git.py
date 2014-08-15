@@ -14,7 +14,7 @@ class WorkingCopy(BaseWorkingCopy):
     IGNORES = ('.gitignore',)
 
     def lock(self, path):
-        log.info("`git` does not support locking: {}".format(path))
+        log.debug("`git` does not support locking: {}".format(path))
         self.call('git', 'pull')
 
     def edit(self, path):
