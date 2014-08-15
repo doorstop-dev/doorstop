@@ -43,7 +43,10 @@ def build(cwd=None, root=None):
         log.info("no documents found in: {}".format(root))
     log.info("building tree...")
     tree = Tree.from_list(documents, root=root)
-    log.info("built tree: {}".format(tree))
+    if len(tree):
+        log.info("built tree: {}".format(tree))
+    else:
+        log.info("tree is empty")
     return tree
 
 
