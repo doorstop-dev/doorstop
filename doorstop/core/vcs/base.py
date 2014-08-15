@@ -60,7 +60,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @property
     def ignores(self):
         """Yield glob expressions to ignore."""
-        if self._ignores_cache is None:  # pragma: no cover (integration test)
+        if self._ignores_cache is None:
             self._ignores_cache = []
             log.debug("reading and caching the ignore patterns...")
             for filename in self.IGNORES:
@@ -95,7 +95,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
             if fnmatch.fnmatch(path, pattern):
-                if os.getenv('CI') and pattern == '*build*':  # pragma: no cover (integration test)
+                if os.getenv('CI') and pattern == '*build*':
                     log.critical("cannot ignore 'build' on the CI server")
                     continue
                 return True
