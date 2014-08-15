@@ -609,10 +609,3 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
-
-
-class TestModule(unittest.TestCase):
-
-    """Unit tests for the doorstop.core.document module."""
-
-    pass

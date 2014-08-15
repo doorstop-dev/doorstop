@@ -202,7 +202,7 @@ class TestTree(unittest.TestCase):
         document = Document(FILES)
         self.tree._place(document)  # pylint: disable=W0212
         document.tree = self.tree
-        self.tree._vcs = Mock()
+        self.tree._vcs = Mock()  # pylint: disable=W0212
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
@@ -421,8 +421,3 @@ class TestTree(unittest.TestCase):
         self.assertEqual(0, len(self.tree))
         self.assertEqual(2, mock_delete.call_count)
         self.tree.delete()  # ensure a second delete is ignored
-
-
-class TestModule(unittest.TestCase):
-
-    """Unit tests for the doorstop.core.tree module."""

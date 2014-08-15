@@ -33,7 +33,7 @@ def build(cwd=None, root=None):
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
     _document_from_path(root, root, documents)
-    for dirpath, dirnames, _filenames in os.walk(root):
+    for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
             _document_from_path(path, root, documents)

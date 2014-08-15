@@ -224,12 +224,11 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     @abc.abstractmethod
     def load(self, reload=False):  # pragma: no cover (abstract method)
         """Load the object's properties from its file."""
-        # Start implementations of this method with:
+        # 1. Start implementations of this method with:
         if self._loaded and not reload:
             return
-        # Call self._read() and update properties here:
-        pass  # pylint: disable=W0107
-        # End implementations of this method with:
+        # 2. Call self._read() and update properties here
+        # 3. End implementations of this method with:
         self._loaded = True
 
     def _read(self, path):  # pragma: no cover (integration test)
@@ -260,9 +259,8 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     @abc.abstractmethod
     def save(self):  # pragma: no cover (abstract method)
         """Format and save the object's properties to its file."""
-        # Call self._write() with the current properties here:
-        pass  # pylint: disable=W0107
-        # End implementations of this method with:
+        # 1. Call self._write() with the current properties here
+        # 2. End implementations of this method with:
         self._loaded = False
         self.auto = True
 

@@ -14,19 +14,19 @@ class SampleWorkingCopy(BaseWorkingCopy):
         self._ignores_cache = ["ignored.*", "*published*"]
 
     def lock(self, *args, **kwargs):
-        pass
+        pass  # no implementation
 
     def edit(self, *args, **kwargs):
-        pass
+        pass  # no implementation
 
     def add(self, *args, **kwargs):
-        pass
+        pass  # no implementation
 
     def delete(self, *args, **kwargs):
-        pass
+        pass  # no implementation
 
     def commit(self, *args, **kwargs):
-        pass
+        pass  # no implementation
 
 
 class TestSampleWorkingCopy(unittest.TestCase):

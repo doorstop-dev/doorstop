@@ -896,10 +896,3 @@ class TestUnknownItem(unittest.TestCase):
     def test_stamp(self):
         """Verify an unknown item has no stamp."""
         self.assertEqual(Stamp(None), self.item.stamp())
-
-
-class TestModule(unittest.TestCase):
-
-    """Unit tests for the doorstop.core.item module."""
-
-    pass

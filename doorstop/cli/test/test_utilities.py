@@ -18,7 +18,7 @@ class TestCapture(unittest.TestCase):
     def test_success(self):
         """Verify a success can be captured."""
         with utilities.capture() as success:
-            pass
+            pass  # no exception raised
         self.assertTrue(success)
 
     def test_failure(self):
