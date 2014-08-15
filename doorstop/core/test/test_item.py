@@ -9,6 +9,7 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
+from doorstop.core.vcs.mockvcs import WorkingCopy
 
 from doorstop.core.test import FILES, EMPTY, EXTERNAL
 from doorstop.core.test import MockItem
@@ -408,7 +409,6 @@ class TestItem(unittest.TestCase):
 
     def test_parent_documents(self):
         """Verify 'parent_documents' exists to mirror the child behavior."""
-        # Arrange
         mock_tree = Mock()
         mock_tree.find_document = Mock(return_value='mock_document')
         self.item.tree = mock_tree
@@ -422,7 +422,6 @@ class TestItem(unittest.TestCase):
 
     def test_parent_documents_unknown(self):
         """Verify 'parent_documents' can handle unknown documents."""
-        # Arrange
         mock_tree = Mock()
         mock_tree.find_document = Mock(side_effect=DoorstopError)
         self.item.tree = mock_tree
@@ -434,32 +433,55 @@ class TestItem(unittest.TestCase):
         # Assert
         self.assertEqual([], documents)
 
+    def test_parent_documents_no_document(self):
+        """Verify 'parent_documents' is only valid with a document."""
+        self.item.tree = Mock()
+        self.assertIs(None, self.item.parent_documents)
+
     def test_find_ref(self):
         """Verify an item's reference can be found."""
-        self.item.ref = "REF" + "123"  # to avoid matching in this file
-        relpath, line = self.item.find_ref(root=EXTERNAL)
+        self.item.ref = "REF" "123"  # space to avoid matching in this file
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EXTERNAL)
+        # Act
+        relpath, line = self.item.find_ref()
+        # Assert
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
     def test_find_ref_filename(self):
         """Verify an item's reference can also be a filename."""
-
-        def skip(path):
-            """Skip generated files."""
-            return "published" in path
-
         self.item.ref = "text.txt"
-        relpath, line = self.item.find_ref(root=FILES, skip=skip)
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(FILES)
+        self.item.tree.vcs._ignores_cache = ["*published*"]
+        # Act
+        relpath, line = self.item.find_ref()
+        # Assert
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(None, line)
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
-        self.assertRaises(DoorstopError, self.item.find_ref, root=EMPTY)
+        self.item.ref = "not" "found"  # space to avoid matching in this file
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_ref)
+
+    def test_find_skip_self(self):
+        """Verify reference searches skip the item's file."""
+        self.item.path = __file__
+        self.item.ref = "148710938710289248"  # random and unique to this file
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        self.item.tree.vcs._path_cache = [(__file__, 'filename', 'relpath')]
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_ref)
 
     def test_find_ref_none(self):
         """Verify nothing returned when no external reference is specified."""
+        self.item.tree = Mock()
         self.assertEqual((None, None), self.item.find_ref())
 
     def test_find_child_objects(self):

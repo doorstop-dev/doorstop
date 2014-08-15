@@ -13,12 +13,12 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
 
     DIRECTORY = '.mockvcs'
 
+    def __init__(self, path):
+        super().__init__(path)
+        self._ignores_cache = ["*/env/*", "*/apidocs/*", "*/build/lib/*"]
+
     def lock(self, path):
         log.info("simulated lock on: {}...".format(path))
 
     def save(self, message=None):
         log.info("simulated save")
-
-    @property
-    def ignores(self):
-        return ("*/env/*", "*/apidocs/*", "*/build/lib/*")

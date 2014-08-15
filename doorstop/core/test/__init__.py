@@ -162,7 +162,9 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     _mock_item3.document.prefix = 'sys'
     item3.tree = Mock()
     item3.tree.find_item = Mock(return_value=_mock_item3)
-    item3.tree.vcs.ignored = (lambda _: False)
+    item3.tree.vcs.paths = [("Doorstop.sublime-project",
+                             "Doorstop.sublime-project",
+                             "Doorstop.sublime-project")]
 
     item4 = MockItemAndVCS('path/to/req3.yml',
                            _file=("links: [sys3]" + '\n'

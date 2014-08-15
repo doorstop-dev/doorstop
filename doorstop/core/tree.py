@@ -12,7 +12,6 @@ from doorstop.core.base import BaseValidatable
 from doorstop.core.types import Prefix, UID
 from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop import settings
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
