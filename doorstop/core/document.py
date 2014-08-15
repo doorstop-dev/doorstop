@@ -6,16 +6,17 @@ from collections import OrderedDict
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import cache_document, BaseValidatable
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Prefix, ID, Level
+from doorstop.core.base import (add_document, edit_document, delete_document,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
+from doorstop.core.types import Prefix, UID, Level
 from doorstop.core.item import Item
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
-class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
+class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents a document directory containing an outline of items."""
 
@@ -57,7 +58,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return "Document('{}')".format(self.path)
 
     def __str__(self):
-        if common.VERBOSITY < common.STR_VERBOSITY:
+        if common.verbosity < common.STR_VERBOSITY:
             return self.prefix
         else:
             return "{} ({})".format(self.prefix, self.relpath)
@@ -72,7 +73,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return True
 
     @staticmethod
-    @cache_document
+    @add_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
@@ -84,7 +85,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param sep: separator between prefix and numbers
         :param digits: number of digits for the new document
-        :param parent: parent ID for the new document
+        :param parent: parent UID for the new document
         :param auto: automatically save the document
 
         :raises: :class:`~doorstop.common.DoorstopError` if the document
@@ -137,6 +138,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if reload:
             list(self._iter(reload=reload))
 
+    @edit_document
     def save(self):
         """Save the document's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
@@ -169,7 +171,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if self._itered and not reload:
             msg = "iterating document {}'s loaded items...".format(self)
             log.debug(msg)
-            yield from self._items
+            yield from list(self._items)
             return
         log.info("loading document {}'s items...".format(self))
         # Reload the document's item
@@ -193,12 +195,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     if reload:
                         item.load(reload=reload)
                     if settings.CACHE_ITEMS and self.tree:
-                        self.tree._item_cache[item.id] = item  # pylint: disable=W0212
+                        self.tree._item_cache[item.uid] = item  # pylint: disable=W0212
                         log.trace("cached item: {}".format(item))
         # Set meta attributes
         self._itered = True
         # Yield items
-        yield from self._items
+        yield from list(self._items)
 
     # properties #############################################################
 
@@ -224,14 +226,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def sep(self):
-        """Get the prefix-number separator to use for new item IDs."""
+        """Get the prefix-number separator to use for new item UIDs."""
         return self._data['sep']
 
     @sep.setter
     @auto_save
     @auto_load
     def sep(self, value):
-        """Set the prefix-number separator to use for new item IDs."""
+        """Set the prefix-number separator to use for new item UIDs."""
         # TODO: raise a specific exception for invalid separator characters?
         assert not value or value in settings.SEP_CHARS
         self._data['sep'] = value.strip()
@@ -240,14 +242,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def digits(self):
-        """Get the number of digits to use for new item IDs."""
+        """Get the number of digits to use for new item UIDs."""
         return self._data['digits']
 
     @digits.setter
     @auto_save
     @auto_load
     def digits(self, value):
-        """Set the number of digits to use for new item IDs."""
+        """Set the number of digits to use for new item UIDs."""
         self._data['digits'] = value
         # TODO: should the new digits be applied to all items?
 
@@ -310,7 +312,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     # actions ################################################################
 
-    # @cache_item decorates `Item.new()`
+    # decorators are applied to methods in the associated classes
     def add_item(self, number=None, level=None, reorder=True):
         """Create a new item for the document and return it.
 
@@ -321,28 +323,34 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :return: added :class:`~doorstop.core.item.Item`
 
         """
-        number = number or self.next
+        number = max(number or 0, self.next)
         log.debug("next number: {}".format(number))
         try:
             last = self.items[-1]
         except IndexError:
-            nlevel = level
+            next_level = level
         else:
-            nlevel = level or last.level + 1
-        log.debug("next level: {}".format(nlevel))
-        identifier = ID(self.prefix, self.sep, number, self.digits)
+            if level:
+                next_level = level
+            elif last.level.heading:
+                next_level = last.level >> 1
+                next_level.heading = False
+            else:
+                next_level = last.level + 1
+        log.debug("next level: {}".format(next_level))
+        uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self,
-                        self.path, self.root, identifier,
-                        level=nlevel)
+                        self.path, self.root, uid,
+                        level=next_level)
         if level and reorder:
             self.reorder(keep=item)
         return item
 
-    # @expunge_item decorates `Item.delete()`
+    # decorators are applied to methods in the associated classes
     def remove_item(self, value, reorder=True):
-        """Remove an item by its ID.
+        """Remove an item by its UID.
 
-        :param value: item or ID
+        :param value: item or UID
         :param reorder: update levels of document items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
@@ -351,13 +359,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :return: removed :class:`~doorstop.core.item.Item`
 
         """
-        identifier = ID(value)
-        item = self.find_item(identifier)
+        uid = UID(value)
+        item = self.find_item(uid)
         item.delete()
         if reorder:
             self.reorder()
         return item
 
+    # decorators are applied to methods in the associated classes
     def reorder(self, manual=True, automatic=True, start=None, keep=None,
                 _items=None):
         """Reorder a document's items.
@@ -371,7 +380,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param automatic: enable automatic ordering (after manual ordering)
         :param start: level to start numbering (None = use current start)
-        :param keep: item or ID to keep over duplicates
+        :param keep: item or UID to keep over duplicates
 
         """
         # Reorder manually
@@ -398,9 +407,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
         for item in items:
-            space = "    " * (item.depth - 1)
+            space = "    " * item.depth
             comment = item.text.replace('\n', ' ') or item.ref
-            line = space + "- {i}: # {c}".format(i=item.id, c=comment)
+            line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
             yield line
@@ -430,20 +439,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         if isinstance(section, dict):  # a section
 
             # Get the item and subsection
-            identifier = list(section.keys())[0]
+            uid = list(section.keys())[0]
             try:
-                item = document.find_item(identifier)
+                item = document.find_item(uid)
             except DoorstopError as exc:
                 log.debug(exc)
                 item = None
-            subsection = section[identifier]
+            subsection = section[uid]
 
             # An item is a header if it has a subsection
             level.heading = bool(subsection)
 
             # Apply the new level
             if item is None:
-                log.info("({}): {}".format(identifier, level))
+                log.info("({}): {}".format(uid, level))
             elif item.level == level:
                 log.info("{}: {}".format(item, level))
             else:
@@ -538,9 +547,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 yield level, item
 
     def find_item(self, value, _kind=''):
-        """Return an item by its ID.
+        """Return an item by its UID.
 
-        :param value: item or ID
+        :param value: item or UID
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             cannot be found
@@ -548,12 +557,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :return: matching :class:`~doorstop.core.item.Item`
 
         """
-        identifier = ID(value)
+        uid = UID(value)
         for item in self:
-            if item.id == identifier:
+            if item.uid == uid:
                 return item
 
-        raise DoorstopError("no matching{} ID: {}".format(_kind, identifier))
+        raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
     def get_issues(self, item_hook=None, **kwargs):
         """Yield all the document's issues.
@@ -583,24 +592,24 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
                                item.get_issues()):
-                # Prepend the item's ID to yielded exceptions
+                # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
-                    yield type(issue)("{}: {}".format(item.id, issue))
+                    yield type(issue)("{}: {}".format(item.uid, issue))
 
     @staticmethod
     def _get_issues_level(items):
         """Yield all the document's issues related to item level."""
         prev = items[0] if items else None
         for item in items[1:]:
-            pid = prev.id
+            puid = prev.uid
             plev = prev.level
-            nid = item.id
+            nuid = item.uid
             nlev = item.level
             log.debug("checking level {} to {}...".format(plev, nlev))
             # Duplicate level
             if plev == nlev:
-                ids = sorted((pid, nid))
-                msg = "duplicate level: {} ({}, {})".format(plev, *ids)
+                uids = sorted((puid, nuid))
+                msg = "duplicate level: {} ({}, {})".format(plev, *uids)
                 yield DoorstopWarning(msg)
             # Skipped level
             length = min(len(plev.value), len(nlev.value))
@@ -613,19 +622,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                         (plev.value[index] != nlev.value[index] and
                          index + 1 < length and
                          nlev.value[index + 1] not in (0, 1))):
-                    msg = "skipped level: {} ({}), {} ({})".format(plev, pid,
-                                                                   nlev, nid)
+                    msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
+                                                                   nlev, nuid)
                     yield DoorstopWarning(msg)
                     break
             prev = item
 
+    @delete_document
     def delete(self, path=None):
         """Delete the document and its items."""
-        prefix = Prefix(str(self.prefix))
         for item in self:
             item.delete()
-        super().delete(self.config)
-        common.delete(self.path)
-        if settings.CACHE_DOCUMENTS and self.tree:
-            self.tree._document_cache[prefix] = None  # pylint: disable=W0212
-            log.trace("expunged document: {}".format(prefix))
+        # the document is deleted in the decorated method

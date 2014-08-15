@@ -3,10 +3,10 @@
 from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
-class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
+class WorkingCopy(BaseWorkingCopy):
 
     """Git working copy."""
 
@@ -14,10 +14,19 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
     IGNORES = ('.gitignore',)
 
     def lock(self, path):
+        log.debug("`git` does not support locking: {}".format(path))
         self.call('git', 'pull')
-        log.warning("git does not support locking: {}".format(path))
 
-    def save(self, message=None):
+    def edit(self, path):
+        self.call('git', 'add', path)
+
+    def add(self, path):
+        self.call('git', 'add', path)
+
+    def delete(self, path):
+        self.call('git', 'rm', path)
+
+    def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
-        self.call('git', 'commit', '-a', '-m', message)
+        self.call('git', 'commit', '--all', '--message', message)
         self.call('git', 'push')

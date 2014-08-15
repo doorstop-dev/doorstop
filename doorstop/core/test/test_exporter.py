@@ -12,9 +12,9 @@ from doorstop.core import exporter
 from doorstop.core.test import MockDataMixIn
 
 
-class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
+class TestModule(MockDataMixIn, unittest.TestCase):
 
-    """Unit tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
+    """Unit tests for the doorstop.core.exporter module."""
 
     @patch('os.makedirs')
     @patch('doorstop.core.exporter.export_file')
@@ -41,13 +41,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):  # pylint: disable=R0904
     def test_export_tree(self, mock_open, mock_makedirs):
         """Verify a tree can be exported."""
         dirpath = os.path.join('mock', 'directory')
-        mock_document = MagicMock()
-        mock_document.prefix = 'MOCK'
-        mock_document.items = []
-        mock_tree = MagicMock()
-        mock_tree.documents = [mock_document]
         # Act
-        dirpath2 = exporter.export(mock_tree, dirpath)
+        dirpath2 = exporter.export(self.mock_tree, dirpath)
         # Assert
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(1, mock_makedirs.call_count)

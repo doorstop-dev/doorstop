@@ -7,6 +7,7 @@ DEFAULT_LOGGING_FORMAT = "%(message)s"
 LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
 VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
+QUIET_LOGGING_LEVEL = logging.WARNING
 TIMED_LOGGING_FORMAT = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
@@ -32,7 +33,16 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
+PUBLISH_BODY_LEVELS = True  # include levels on non-header items
+
+# Version control settings
+ADDREMOVE_FILES = True
 
 # Caching settings
-CACHE_ITEMS = True
-CACHE_DOCUMENTS = True
+CACHE_ITEMS = True  # cache items in documents and trees
+CACHE_DOCUMENTS = True  # cache documents in trees
+CACHE_PATHS = True  # cache file/directory paths and contents
+
+# Server settings
+SERVER_HOST = None  # '' = server not specified, None = no server in use
+SERVER_PORT = 7867

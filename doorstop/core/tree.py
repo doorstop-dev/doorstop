@@ -9,7 +9,7 @@ from itertools import chain
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import BaseValidatable
-from doorstop.core.types import Prefix, ID
+from doorstop.core.types import Prefix, UID
 from doorstop.core.document import Document
 from doorstop.core import vcs
 from doorstop import settings
@@ -34,7 +34,7 @@ BOX = {'end': {UTF8: '│   ',
                  CP437: '    ',
                  ASCII: '    '}}
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -173,7 +173,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             msg = "no parent specified for {}".format(document)
             log.info(msg)
             prefixes = ', '.join(document.prefix for document in self)
-            log.info("parent options: {}".format(document, prefixes))
+            log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
 
     # attributes #############################################################
@@ -192,6 +192,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # actions ################################################################
 
+    # decorators are applied to methods in the associated classes
     def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -223,11 +224,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             log.info("added to tree: {}".format(document))
         return document
 
-    # @cache_item decorates `Document.add_item()`
-    def add_item(self, value, level=None, reorder=True):
+    # decorators are applied to methods in the associated classes
+    def add_item(self, value, number=None, level=None, reorder=True):
         """Add a new item to an existing document by prefix.
 
         :param value: document or prefix
+        :param number: desired item number
         :param level: desired item level
         :param reorder: update levels of document items
 
@@ -239,15 +241,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         prefix = Prefix(value)
         document = self.find_document(prefix)
-        self.vcs.lock(document.config)  # prevents duplicate item IDs
-        item = document.add_item(level=level, reorder=reorder)
+        item = document.add_item(number=number, level=level, reorder=reorder)
         return item
 
-    # @expunge_item decorates `Document.remove_item()`
+    # decorators are applied to methods in the associated classes
     def remove_item(self, value, reorder=True):
-        """Remove an item from a document by ID.
+        """Remove an item from a document by UID.
 
-        :param value: item or ID
+        :param value: item or UID
         :param reorder: update levels of document items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
@@ -256,23 +257,24 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: removed :class:`~doorstop.core.item.Item`
 
         """
-        identifier = ID(value)
+        uid = UID(value)
         for document in self:
             try:
-                document.find_item(identifier)
+                document.find_item(uid)
             except DoorstopError:
                 pass  # item not found in that document
             else:
-                item = document.remove_item(identifier, reorder=reorder)
+                item = document.remove_item(uid, reorder=reorder)
                 return item
 
-        raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k='', i=identifier))
+        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
 
+    # decorators are applied to methods in the associated classes
     def link_items(self, cid, pid):
-        """Add a new link between two items by IDs.
+        """Add a new link between two items by UIDs.
 
-        :param cid: child item's ID (or child item)
-        :param pid: parent item's ID (or parent item)
+        :param cid: child item's UID (or child item)
+        :param pid: parent item's UID (or parent item)
 
         :raises: :class:`~doorstop.common.DoorstopError` if the link
             cannot be created
@@ -287,14 +289,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
         # Add link
-        child.link(parent.id)
+        child.link(parent.uid)
         return child, parent
 
+    # decorators are applied to methods in the associated classes`
     def unlink_items(self, cid, pid):
-        """Remove a link between two items by IDs.
+        """Remove a link between two items by UIDs.
 
-        :param cid: child item's ID (or child item)
-        :param pid: parent item's ID (or parent item)
+        :param cid: child item's UID (or child item)
+        :param pid: parent item's UID (or parent item)
 
         :raises: :class:`~doorstop.common.DoorstopError` if the link
             cannot be removed
@@ -309,13 +312,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
         # Remove link
-        child.unlink(parent.id)
+        child.unlink(parent.uid)
         return child, parent
 
-    def edit_item(self, identifier, tool=None, launch=False):
-        """Open an item for editing by ID.
+    # decorators are applied to methods in the associated classes
+    def edit_item(self, uid, tool=None, launch=False):
+        """Open an item for editing by UID.
 
-        :param identifier: item's ID (or item)
+        :param uid: item's UID (or item)
         :param tool: alternative text editor to open the item
         :param launch: open the text editor
 
@@ -326,7 +330,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         # Find the item
-        item = self.find_item(identifier)
+        item = self.find_item(uid)
         # Edit the item
         if launch:
             item.edit(tool=tool)
@@ -369,9 +373,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
     def find_item(self, value, _kind=''):
-        """Get an item by its ID.
+        """Get an item by its UID.
 
-        :param value: item or ID
+        :param value: item or UID
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             cannot be found
@@ -379,34 +383,34 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: matching :class:`~doorstop.core.item.Item`
 
         """
-        identifier = ID(value)
+        uid = UID(value)
         _kind = (' ' + _kind) if _kind else _kind  # for logging messages
-        log.debug("looking for{} item '{}'...".format(_kind, identifier))
+        log.debug("looking for{} item '{}'...".format(_kind, uid))
         try:
-            item = self._item_cache[identifier]
+            item = self._item_cache[uid]
             if item:
                 log.trace("found cached item: {}".format(item))
                 return item
             else:
-                log.trace("found cached unknown: {}".format(identifier))
+                log.trace("found cached unknown: {}".format(uid))
         except KeyError:
             for document in self:
                 try:
-                    item = document.find_item(identifier, _kind=_kind)
+                    item = document.find_item(uid, _kind=_kind)
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
                     log.trace("found item: {}".format(item))
                     if settings.CACHE_ITEMS:
-                        self._item_cache[identifier] = item
+                        self._item_cache[uid] = item
                         log.trace("cached item: {}".format(item))
                     return item
-            log.debug("could not find item: {}".format(identifier))
+            log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
-                self._item_cache[identifier] = None
-                log.trace("cached unknown: {}".format(identifier))
+                self._item_cache[uid] = None
+                log.trace("cached unknown: {}".format(uid))
 
-        raise DoorstopError(ID.UNKNOWN_MESSAGE.format(k=_kind, i=identifier))
+        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
     def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
@@ -438,12 +442,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
 
         """
-        def by_id(row):
-            """Helper function to sort rows by ID."""
+        def by_uid(row):
+            """Helper function to sort rows by UID."""
             row2 = []
             for item in row:
                 if item:
-                    row2.append('0' + str(item.id))
+                    row2.append('0' + str(item.uid))
                 else:
                     row2.append('1')  # force `None` to sort after items
             return row2
@@ -462,7 +466,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     rows.add(row)
 
         # Sort rows
-        return sorted(rows, key=by_id)
+        return sorted(rows, key=by_uid)
 
     def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
         """Generate all traceability row slices.
@@ -589,6 +593,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             encoding = ASCII
         return BOX[name][encoding]
 
+    # decorators are applied to methods in the associated classes
     def delete(self):
         """Delete the tree and its documents and items."""
         for document in self:

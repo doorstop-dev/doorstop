@@ -3,10 +3,10 @@
 from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
-class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
+class WorkingCopy(BaseWorkingCopy):
 
     """Veracity working copy."""
 
@@ -14,13 +14,21 @@ class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
     IGNORES = ('.sgignores', '.vvignores')
 
     def lock(self, path):
+        # track: http://veracity-scm.com/qa/questions/2034
+        log.debug("`vv` does not support scripted locking: {}".format(path))
         self.call('vv', 'pull')
         self.call('vv', 'update')
-        # TODO: track: http://veracity-scm.com/qa/questions/2034
-        msg = "veracity does not support scripted locking: {}".format(path)
-        log.warning(msg)
 
-    def save(self, message=None):
+    def edit(self, path):
+        log.info("`vv` adds all changes")
+
+    def add(self, path):
+        self.call('vv', 'add', path)
+
+    def delete(self, path):
+        self.call('vv', 'remove', path)
+
+    def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
-        self.call('vv', 'commit', '-m', message)
+        self.call('vv', 'commit', '--message', message)
         self.call('vv', 'push')

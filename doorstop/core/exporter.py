@@ -6,10 +6,7 @@ import datetime
 from collections import defaultdict
 
 import yaml
-# TODO: track: openpyxl has false positives with pylint
-# pylint: disable=E1101,E1120,E1123
-import openpyxl  # pylint: disable=F0401
-from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
+import openpyxl
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -20,7 +17,7 @@ LIST_SEP = '\n'  # string separating list values when joined in a string
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -112,7 +109,7 @@ def _lines_yaml(obj):
     """
     for item in iter_items(obj):
 
-        data = {str(item.id): item.data}
+        data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
 
@@ -138,11 +135,11 @@ def _tabulate(obj, sep=LIST_SEP):
             for value in sorted(data.keys()):
                 if value not in header:
                     header.append(value)
-            yield ['id'] + header
+            yield ['uid'] + header
             yield_header = False
 
         # Yield row
-        row = [item.id]
+        row = [item.uid]
         for key in header:
             value = data.get(key)
             if key == 'level':
@@ -150,7 +147,7 @@ def _tabulate(obj, sep=LIST_SEP):
                 value = str(value)
             elif key == 'links':
                 # separate identifiers with a delimiter
-                value = sep.join(identifier.text for identifier in item.links)
+                value = sep.join(uid.string for uid in item.links)
             elif value is None:
                 value = ''
             row.append(value)
@@ -205,6 +202,8 @@ def _get_xlsx(obj):
     :return: new workbook
 
     """
+    # pylint: disable=E1101,E1120,E1123
+
     col_widths = defaultdict(int)
     col = 'A'
 
@@ -219,12 +218,13 @@ def _get_xlsx(obj):
             cell = worksheet.cell('%s%s' % (col, row))
 
             # wrap text in every cell
-            alignment = Alignment(vertical='top', horizontal='left',
-                                  wrap_text=True)
+            alignment = openpyxl.styles.Alignment(vertical='top',
+                                                  horizontal='left',
+                                                  wrap_text=True)
             style = cell.style.copy(alignment=alignment)
             # and bold header rows
             if row == 1:
-                style = style.copy(font=Font(bold=True))
+                style = style.copy(font=openpyxl.styles.Font(bold=True))
             cell.style = style
 
             # convert incompatible Excel types:

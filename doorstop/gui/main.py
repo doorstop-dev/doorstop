@@ -10,8 +10,8 @@ try:  # pragma: no cover (manual test)
     from tkinter import font, filedialog
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
-    tk = Mock()  # pylint: disable=C0103
-    ttk = Mock()  # pylint: disable=C0103
+    tk = Mock()
+    ttk = Mock()
 import os
 import argparse
 import functools
@@ -24,21 +24,22 @@ from doorstop.core import vcs
 from doorstop.core import builder
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def main(args=None):
     """Process command-line arguments and run the program."""
     from doorstop import GUI, VERSION
 
-    # Main parser
+    # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     debug.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **shared)
-    # Hidden argument to override the root sharing directory path
+
+    # Build main parser
     parser.add_argument('-j', '--project', metavar="PATH",
                         help="path to the root of the project")
 
@@ -50,7 +51,7 @@ def main(args=None):
 
     # Run the program
     try:
-        success = _run(args, os.getcwd(), parser.error)
+        success = run(args, os.getcwd(), parser.error)
     except KeyboardInterrupt:
         log.debug("program interrupted")
         success = False
@@ -83,7 +84,7 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def _run(args, cwd, error):
+def run(args, cwd, error):
     """Start the GUI.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
@@ -123,7 +124,7 @@ def _log(func):  # pragma: no cover (manual test)
     return wrapped
 
 
-class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901,R0904
+class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
 
     """Listbox class with automatic width adjustment."""
 
@@ -142,7 +143,7 @@ class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R
             self.config(width=width + shift)
 
 
-class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902,R0904
+class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
 
     """Graphical application for Doorstop."""
 
@@ -206,7 +207,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         width_outline = 20
         width_text = 30
         width_code = 30
-        width_id = 10
+        width_uid = 10
         height_text = 10
         height_ext = 5
         height_code = 3
@@ -358,9 +359,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
             ttk.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp)
             ttk.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
-            self.listbox_links = tk.Listbox(frame, width=width_id, height=6)
+            self.listbox_links = tk.Listbox(frame, width=width_uid, height=6)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            ttk.Entry(frame, width=width_id, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
+            ttk.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
             ttk.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
             ttk.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
@@ -459,16 +460,26 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
-            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.id)
+            level = '.'.join(str(l) for l in item.level)
+            value = "{s}{l} {i}".format(s=indent, l=level, i=item.uid)
+            level = '.'.join(str(l) for l in item.level)
+            value = "{s}{l} {u}".format(s=indent, l=level, u=item.uid)
+            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.uid)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
-            value = "{t} [{i}]\n\n".format(t=item.text or item.ref or '???',
-                                           i=item.id)
+            value = "{t} [{u}]\n\n".format(t=item.text or item.ref or '???',
+                                           u=item.uid)
             self.text_items.insert('end', value)
         self.listbox_outline.autowidth()
 
         # Select the first item
+        self.listbox_outline.selection_set(self.index or 0)
+        identifier = self.listbox_outline.selection_get()
+        self.stringvar_item.set(identifier)  # manual call
+        self.listbox_outline.selection_set(self.index or 0)
+        uid = self.listbox_outline.selection_get()
+        self.stringvar_item.set(uid)  # manual call
         if len(self.document):
             self.listbox_outline.selection_set(self.index or 0)
             identifier = self.listbox_outline.selection_get()
@@ -482,8 +493,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.ignore = True
 
         # Set the current item
-        identifier = self.stringvar_item.get().rsplit(' ', 1)[-1]
-        self.item = self.tree.find_item(identifier)
+        uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
+        self.item = self.tree.find_item(uid)
         self.index = int(self.listbox_outline.curselection()[0])
         log.info("displaying item {}...".format(self.item))
 
@@ -499,8 +510,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Display the item's links
         self.listbox_links.delete(0, tk.END)
-        for identifier in self.item.links:
-            self.listbox_links.insert(tk.END, identifier)
+        for uid in self.item.links:
+            self.listbox_links.insert(tk.END, uid)
         self.stringvar_link.set('')
 
         # Display the item's external reference
@@ -513,25 +524,25 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Display the items this item links to
         self.text_parents.delete('1.0', 'end')
-        for identifier in self.item.links:
+        for uid in self.item.links:
             try:
-                item = self.tree.find_item(identifier)
+                item = self.tree.find_item(uid)
             except DoorstopError:
                 text = "???"
             else:
                 text = item.text or item.ref or '???'
-                identifier = item.id
-            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
+                uid = item.uid
+            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
             self.text_parents.insert('end', chars)
 
         # Display the items this item has links from
         self.text_children.delete('1.0', 'end')
         identifiers = self.item.find_child_links()
-        for identifier in identifiers:
-            item = self.tree.find_item(identifier)
+        for uid in identifiers:
+            item = self.tree.find_item(uid)
             text = item.text or item.ref or '???'
-            identifier = item.id
-            chars = "{t} [{i}]\n\n".format(t=text, i=identifier)
+            uid = item.uid
+            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
             self.text_children.insert('end', chars)
 
         self.ignore = False
@@ -589,7 +600,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.display_document()
 
     @_log
-    def up(self):  # pylint: disable=C0103
+    def up(self):
         """Decrement the current item's level."""
         self.item.level -= 1
         self.document.reorder(keep=self.item)
@@ -629,9 +640,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     def link(self):
         """Add the specified link to the current item."""
         # Add the specified link to the list
-        identifier = self.stringvar_link.get()
-        if identifier:
-            self.listbox_links.insert(tk.END, identifier)
+        uid = self.stringvar_link.get()
+        if uid:
+            self.listbox_links.insert(tk.END, uid)
             self.stringvar_link.set('')
 
             # Update the current item

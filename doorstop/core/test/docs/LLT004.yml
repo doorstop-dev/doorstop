@@ -1,9 +1,10 @@
 active: true
 derived: false
-level: 4
+level: 1.4
 links:
 - REQ008: 0bcefd81b9d92145690ac5ab7d6e2ca0
 normative: true
 ref: Verify the items in a document can be accessed.
-reviewed: 8d23154bf2701cfda40df3ca5de0c2cb
-text: ''
+reviewed: a97970c0bc91f349e54211023345a67a
+text: |
+  Test getting items from a document:

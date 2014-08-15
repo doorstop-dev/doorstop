@@ -1,19 +1,20 @@
-"""Common classes and functions for the doorstop.core package."""
+"""Common classes and functions for the `doorstop.core` package."""
 
 import os
 import re
 import textwrap
 import hashlib
+
 import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop import settings
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
-class Prefix(str):  # pylint: disable=R0904
+class Prefix(str):
 
     """Unique document prefixes."""
 
@@ -47,6 +48,11 @@ class Prefix(str):  # pylint: disable=R0904
     def __lt__(self, other):
         return self.lower() < other.lower()
 
+    @property
+    def short(self):
+        """Get a shortened version of the prefix."""
+        return self.lower()
+
     @staticmethod
     def load_prefix(value):
         """Convert a value to a prefix.
@@ -57,29 +63,29 @@ class Prefix(str):  # pylint: disable=R0904
         return str(value).split(' ')[0]
 
 
-class ID(object):
+class UID(object):
 
-    """Unique item identifier."""
+    """Unique item ID built from document prefix and number."""
 
-    UNKNOWN_MESSAGE = "no{k} item with ID: {i}"  # k='parent'|'child'|'', i=ID
+    UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
 
     def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
-        if args and isinstance(args[0], ID):
+        if args and isinstance(args[0], UID):
             return args[0]
         else:
             return super().__new__(cls)
 
     def __init__(self, *values, stamp=None):
-        """Initialize an ID using a string, dictionary, or set of parts.
+        """Initialize an UID using a string, dictionary, or set of parts.
 
         Option 1:
 
-        :param *values: identifier + optional stamp ("id:stamp")
+        :param *values: UID + optional stamp ("UID:stamp")
         :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 2:
 
-        :param *values: {identifier: stamp}
+        :param *values: {UID: stamp}
         :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         Option 3:
@@ -88,7 +94,7 @@ class ID(object):
         param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
         """
-        if values and isinstance(values[0], ID):
+        if values and isinstance(values[0], UID):
             self.stamp = stamp or values[0].stamp
             return
         self.stamp = stamp or Stamp()
@@ -98,7 +104,7 @@ class ID(object):
         elif len(values) == 1:
             value = values[0]
             if isinstance(value, str) and ':' in value:
-                # split identifier:stamp into a dictionary
+                # split UID:stamp into a dictionary
                 pair = value.rsplit(':', 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
@@ -108,25 +114,25 @@ class ID(object):
             else:
                 self.value = str(value)
         elif len(values) == 4:
-            self.value = ID.join_id(*values)
+            self.value = UID.join_uid(*values)
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
         # Split values
         try:
-            parts = ID.split_id(self.value)
+            parts = UID.split_uid(self.value)
             self._prefix = Prefix(parts[0])
             self._number = parts[1]
         except ValueError:
             self._prefix = self._number = None
-            self._exc = DoorstopError("invalid ID: {}".format(self.value))
+            self._exc = DoorstopError("invalid UID: {}".format(self.value))
         else:
             self._exc = None
 
     def __repr__(self):
         if self.stamp:
-            return "ID('{}', stamp='{}')".format(self.value, self.stamp)
+            return "UID('{}', stamp='{}')".format(self.value, self.stamp)
         else:
-            return "ID('{}')".format(self.value)
+            return "UID('{}')".format(self.value)
 
     def __str__(self):
         return self.value
@@ -137,8 +143,8 @@ class ID(object):
     def __eq__(self, other):
         if not other:
             return False
-        if not isinstance(other, ID):
-            other = ID(other)
+        if not isinstance(other, UID):
+            other = UID(other)
         try:
             return all((self.prefix == other.prefix,
                         self.number == other.number))
@@ -159,68 +165,74 @@ class ID(object):
 
     @property
     def prefix(self):
-        """Get the ID's prefix."""
+        """Get the UID's prefix."""
         self.check()
         return self._prefix
 
     @property
     def number(self):
-        """Get the ID's number."""
+        """Get the UID's number."""
         self.check()
         return self._number
 
     @property
-    def text(self):
-        """Convert the ID and stamp to a single string."""
+    def short(self):
+        """Get a shortened version of the UID."""
+        self.check()
+        return self.prefix.lower() + str(self.number)
+
+    @property
+    def string(self):
+        """Convert the UID and stamp to a single string."""
         if self.stamp:
             return "{}:{}".format(self.value, self.stamp)
         else:
             return "{}".format(self.value)
 
     def check(self):
-        """Verify an ID is valid."""
+        """Verify an UID is valid."""
         if self._exc:
             raise self._exc
 
     @staticmethod
-    def split_id(text):
-        """Split an item's ID string into a prefix and number.
+    def split_uid(text):
+        """Split an item's UID string into a prefix and number.
 
-        >>> ID.split_id('ABC00123')
+        >>> UID.split_uid('ABC00123')
         ('ABC', 123)
 
-        >>> ID.split_id('ABC.HLR_01-00123')
+        >>> UID.split_uid('ABC.HLR_01-00123')
         ('ABC.HLR_01', 123)
 
-        >>> ID.split_id('REQ2-001')
+        >>> UID.split_uid('REQ2-001')
         ('REQ2', 1)
 
         """
         match = re.match(r"([\w.-]*\D)(\d+)", text)
         if not match:
-            raise ValueError("unable to parse ID: {}".format(text))
+            raise ValueError("unable to parse UID: {}".format(text))
         prefix = match.group(1).rstrip(settings.SEP_CHARS)
         number = int(match.group(2))
         return prefix, number
 
     @staticmethod
-    def join_id(prefix, sep, number, digits):
-        """Join the parts of an item's ID into a string.
+    def join_uid(prefix, sep, number, digits):
+        """Join the parts of an item's UID into a string.
 
-        >>> ID.join_id('ABC', '', 123, 5)
+        >>> UID.join_uid('ABC', '', 123, 5)
         'ABC00123'
 
-        >>> ID.join_id('REQ.H', '-', 42, 4)
+        >>> UID.join_uid('REQ.H', '-', 42, 4)
         'REQ.H-0042'
 
-        >>> ID.join_id('ABC', '-', 123, 0)
+        >>> UID.join_uid('ABC', '-', 123, 0)
         'ABC-123'
 
         """
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
 
-class _Literal(str):  # pylint: disable=R0904
+class _Literal(str):
 
     """Custom type for text which should be dumped in the literal style."""
 
@@ -233,7 +245,7 @@ class _Literal(str):  # pylint: disable=R0904
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):  # pylint: disable=R0904
+class Text(str):
 
     """Markdown text paragraph."""
 
@@ -393,7 +405,7 @@ class Level(object):
     def __repr__(self):
         if self.heading:
             level = '.'.join(str(n) for n in self._parts)
-            return "Level('{}', heading=True)".format(level, self.heading)
+            return "Level('{}', heading=True)".format(level)
         else:
             return "Level('{}')".format(str(self))
 
@@ -639,6 +651,11 @@ class Stamp(object):
         for value in values:
             md5.update(str(value).encode())
         return md5.hexdigest()
+
+
+class Reference(object):
+
+    """External reference to a file or lines in a file."""
 
 
 def to_bool(obj):

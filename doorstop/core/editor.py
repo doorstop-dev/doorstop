@@ -11,7 +11,7 @@ from doorstop.common import DoorstopError
 
 LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
 
-log = common.logger(__name__)  # pylint: disable=C0103
+log = common.logger(__name__)
 
 
 def edit(path, tool=None):  # pragma: no cover (integration test)
@@ -28,7 +28,7 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
         try:
             process.wait()
         except KeyboardInterrupt:
-            pass
+            log.debug("user cancelled")
         finally:
             if process.returncode is None:
                 process.terminate()
