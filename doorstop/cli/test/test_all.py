@@ -73,38 +73,6 @@ class TestMain(SettingsTestCase):
         os.chdir(self.temp)
         self.assertIs(None, main(['--project', '.']))
 
-    def test_empty(self):
-        """Verify 'doorstop' can be run in a working copy with no docs."""
-        os.mkdir(os.path.join(self.temp, '.mockvcs'))
-        os.chdir(self.temp)
-        self.assertIs(None, main([]))
-        self.assertTrue(settings.REFORMAT)
-        self.assertTrue(settings.CHECK_REF)
-        self.assertTrue(settings.CHECK_CHILD_LINKS)
-        self.assertFalse(settings.REORDER)
-        self.assertTrue(settings.CHECK_LEVELS)
-        self.assertTrue(settings.CHECK_SUSPECT_LINKS)
-        self.assertTrue(settings.CHECK_REVIEW_STATUS)
-
-    def test_options(self):
-        """Verify 'doorstop' can be run with options."""
-        os.mkdir(os.path.join(self.temp, '.mockvcs'))
-        os.chdir(self.temp)
-        self.assertIs(None, main(['--no-reformat',
-                                  '--no-ref-check',
-                                  '--no-child-check',
-                                  '--reorder',
-                                  '--no-level-check',
-                                  '--no-suspect-check',
-                                  '--no-review-check']))
-        self.assertFalse(settings.REFORMAT)
-        self.assertFalse(settings.CHECK_REF)
-        self.assertFalse(settings.CHECK_CHILD_LINKS)
-        self.assertTrue(settings.REORDER)
-        self.assertFalse(settings.CHECK_LEVELS)
-        self.assertFalse(settings.CHECK_SUSPECT_LINKS)
-        self.assertFalse(settings.CHECK_REVIEW_STATUS)
-
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestCreate(TempTestCase):

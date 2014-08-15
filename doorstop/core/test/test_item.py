@@ -438,6 +438,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = Mock()
         self.assertIs(None, self.item.parent_documents)
 
+    @patch('doorstop.settings.CACHE_PATHS', False)
     def test_find_ref(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" "123"  # space to avoid matching in this file

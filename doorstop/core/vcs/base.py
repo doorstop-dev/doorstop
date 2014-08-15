@@ -6,6 +6,7 @@ import subprocess
 from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
 
 from doorstop import common
+from doorstop import settings
 
 log = common.logger(__name__)
 
@@ -59,7 +60,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @property
     def paths(self):
         """Yield non-ignored paths in the working copy."""
-        if self._path_cache is None:
+        if self._path_cache is None or not settings.CACHE_PATHS:
             log.debug("reading and caching all file paths...")
             self._path_cache = []
             for dirpath, _, filenames in os.walk(self.path):

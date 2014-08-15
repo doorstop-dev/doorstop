@@ -94,6 +94,10 @@ def configure_settings(args):
         settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
     if args.no_review_check is not None:
         settings.CHECK_REVIEW_STATUS = not args.no_review_check
+    if args.no_cache is not None:
+        settings.CACHE_DOCUMENTS = not args.no_cache
+        settings.CACHE_ITEMS = not args.no_cache
+        settings.CACHE_PATHS = not args.no_cache
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:
         settings.SERVER_HOST = args.server

@@ -650,6 +650,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if not self.ref:
             log.debug("no external reference to search for")
             return None, None
+        # Update the cache
+        if not settings.CACHE_PATHS:
+            pyficache.clear_file_cache()
         # Search for the external reference
         log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))

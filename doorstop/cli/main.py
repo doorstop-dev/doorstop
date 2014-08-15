@@ -17,16 +17,20 @@ def main(args=None):  # pylint: disable=R0915
     from doorstop import CLI, VERSION, DESCRIPTION
 
     # Shared options
+    project = argparse.ArgumentParser(add_help=False)
+    project.add_argument('-j', '--project', metavar='PATH',
+                         help="path to the root of the project")
+    project.add_argument('--no-cache', action='store_true',
+                         help=argparse.SUPPRESS)
     debug = argparse.ArgumentParser(add_help=False)
-    debug.add_argument('-j', '--project', metavar='PATH',
-                       help="path to the root of the project")
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     group = debug.add_mutually_exclusive_group()
     group.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
     group.add_argument('-q', '--quiet', action='store_const', const=-1,
                        dest='verbose', help="only display errors and prompts")
-    shared = {'formatter_class': common.HelpFormatter, 'parents': [debug]}
+    shared = {'formatter_class': common.HelpFormatter,
+              'parents': [project, debug]}
 
     # Build main parser
     parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION,
