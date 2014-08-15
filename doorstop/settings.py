@@ -43,6 +43,7 @@ STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
+PROJECT_CSS = None  # custom CSS to apply to all documents
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
