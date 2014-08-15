@@ -208,8 +208,8 @@ clean-all: clean .clean-env
 
 .PHONY: .clean-build
 .clean-build:
-	find . -name '*.pyc' -delete
-	find . -name '__pycache__' -delete
+	find . -name '*.pyc' -not -path "*/env/*" -delete
+	find . -name '__pycache__' -not -path "*/env/*" -delete
 	rm -rf *.egg-info
 
 .PHONY: .clean-doc
