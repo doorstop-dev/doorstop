@@ -22,6 +22,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         self.path = path
         self._ignores_cache = None
         self._path_cache = None
+        self._show_ci_warning = True
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
@@ -38,14 +39,29 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         raise NotImplementedError
 
     @abstractmethod
-    def save(self, message=None):  # pragma: no cover (abstract method)
+    def edit(self, path):  # pragma: no cover (abstract method)
+        """Mark a file as modified."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def add(self, path):  # pragma: no cover (abstract method)
+        """Start tracking a file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete(self, path):  # pragma: no cover (abstract method)
+        """Stop tracking a file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def commit(self, message=None):  # pragma: no cover (abstract method)
         """Unlock files, commit, and push."""
         raise NotImplementedError
 
     @property
     def ignores(self):
         """Yield glob expressions to ignore."""
-        if self._ignores_cache is None:  # pragma: no cover (integration test)
+        if self._ignores_cache is None:
             self._ignores_cache = []
             log.debug("reading and caching the ignore patterns...")
             for filename in self.IGNORES:
@@ -80,8 +96,10 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
             if fnmatch.fnmatch(path, pattern):
-                if os.getenv('CI') and pattern == '*build*':  # pragma: no cover (integration test)
-                    log.critical("cannot ignore 'build' on the CI server")
-                    continue
-                return True
+                if pattern == '*build*' and os.getenv('CI'):
+                    if self._show_ci_warning:
+                        log.critical("cannot ignore 'build' on the CI server")
+                        self._show_ci_warning = False
+                else:
+                    return True
         return False

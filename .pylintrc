@@ -17,4 +17,4 @@ msg-template={msg_id}:{line:3d},{column}:{msg}
 
 max-line-length=79
 
-ignore-long-lines=^(\s*(# )?(<?https?://\S+>?))|(.* (pragma:)|(TODO:) \S+.*)$
+ignore-long-lines=^.*#+.*((https?:)|(pragma:)|(TODO:)).*$

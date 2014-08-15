@@ -28,7 +28,7 @@ def edit(path, tool=None):  # pragma: no cover (integration test)
         try:
             process.wait()
         except KeyboardInterrupt:
-            pass
+            log.debug("user cancelled")
         finally:
             if process.returncode is None:
                 process.terminate()

@@ -6,8 +6,9 @@ from collections import OrderedDict
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import cache_document, BaseValidatable
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import (add_document, edit_document, delete_document,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
 from doorstop.core.types import Prefix, UID, Level
 from doorstop.core.item import Item
 from doorstop import settings
@@ -72,7 +73,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return True
 
     @staticmethod
-    @cache_document
+    @add_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
         """Internal method to create a new document.
 
@@ -137,6 +138,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if reload:
             list(self._iter(reload=reload))
 
+    @edit_document
     def save(self):
         """Save the document's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
@@ -169,7 +171,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if self._itered and not reload:
             msg = "iterating document {}'s loaded items...".format(self)
             log.debug(msg)
-            yield from self._items
+            yield from list(self._items)
             return
         log.info("loading document {}'s items...".format(self))
         # Reload the document's item
@@ -198,7 +200,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Set meta attributes
         self._itered = True
         # Yield items
-        yield from self._items
+        yield from list(self._items)
 
     # properties #############################################################
 
@@ -310,7 +312,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     # actions ################################################################
 
-    # @cache_item decorates `Item.new()`
+    # decorators are applied to methods in the associated classes
     def add_item(self, number=None, level=None, reorder=True):
         """Create a new item for the document and return it.
 
@@ -344,7 +346,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.reorder(keep=item)
         return item
 
-    # @expunge_item decorates `Item.delete()`
+    # decorators are applied to methods in the associated classes
     def remove_item(self, value, reorder=True):
         """Remove an item by its UID.
 
@@ -364,6 +366,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.reorder()
         return item
 
+    # decorators are applied to methods in the associated classes
     def reorder(self, manual=True, automatic=True, start=None, keep=None,
                 _items=None):
         """Reorder a document's items.
@@ -625,13 +628,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     break
             prev = item
 
+    @delete_document
     def delete(self, path=None):
         """Delete the document and its items."""
-        prefix = Prefix(str(self.prefix))
         for item in self:
             item.delete()
-        super().delete(self.config)
-        common.delete(self.path)
-        if settings.CACHE_DOCUMENTS and self.tree:
-            self.tree._document_cache[prefix] = None  # pylint: disable=W0212
-            log.trace("expunged document: {}".format(prefix))
+        # the document is deleted in the decorated method

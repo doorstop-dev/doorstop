@@ -123,7 +123,7 @@ def _file_yml(path, document, **_):
         try:
             item = document.find_item(uid)
         except DoorstopError:
-            pass
+            pass  # no matching item
         else:
             item.delete()
         add_item(document.prefix, uid, attrs=attrs, document=document)

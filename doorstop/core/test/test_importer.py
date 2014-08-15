@@ -344,6 +344,7 @@ class TestModuleAddItem(unittest.TestCase):
                                          self.path, self.root, self.uid,
                                          auto=False)
 
+    @patch('doorstop.settings.ADDREMOVE_FILES', False)
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
     def test_add_item_with_attrs(self):
         """Verify an item can be imported with attributes."""

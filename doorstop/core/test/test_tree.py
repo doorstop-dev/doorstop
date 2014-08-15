@@ -202,6 +202,7 @@ class TestTree(unittest.TestCase):
         document = Document(FILES)
         self.tree._place(document)  # pylint: disable=W0212
         document.tree = self.tree
+        self.tree._vcs = Mock()  # pylint: disable=W0212
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
     def test_palce_empty(self):
@@ -375,14 +376,12 @@ class TestTree(unittest.TestCase):
         self.assertRaises(DoorstopError,
                           self.tree.unlink_items, 'req3', 'req9999')
 
-    @patch('doorstop.core.vcs.git.WorkingCopy.lock')
     @patch('doorstop.core.editor.launch')
-    def test_edit_item(self, mock_launch, mock_lock):
+    def test_edit_item(self, mock_launch):
         """Verify an item can be edited in a tree."""
         self.tree.edit_item('req2', launch=True)
         path = os.path.join(FILES, 'REQ002.yml')
         mock_launch.assert_called_once_with(path, tool=None)
-        mock_lock.assert_called_once_with(path)
 
     def test_edit_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (document)."""
@@ -422,8 +421,3 @@ class TestTree(unittest.TestCase):
         self.assertEqual(0, len(self.tree))
         self.assertEqual(2, mock_delete.call_count)
         self.tree.delete()  # ensure a second delete is ignored
-
-
-class TestModule(unittest.TestCase):
-
-    """Unit tests for the doorstop.core.tree module."""

@@ -8,8 +8,9 @@ import pyficache
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import BaseValidatable, cache_item, expunge_item
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
+from doorstop.core.base import (add_item, edit_item, delete_item,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
 from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
@@ -113,7 +114,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             return self.level < other.level
 
     @staticmethod
-    @cache_item
+    @add_item
     def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
         """Internal method to create a new item.
 
@@ -181,6 +182,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Set meta attributes
         self._loaded = True
 
+    @edit_item
     def save(self):
         """Format and save the item's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
@@ -788,10 +790,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.info("marking item as reviewed...")
         self._data['reviewed'] = self.stamp(links=True)
 
-    @expunge_item
+    @delete_item
     def delete(self, path=None):
         """Delete the item."""
-        super().delete(self.path)
+        pass  # the item is deleted in the decorated method
 
 
 class UnknownItem(object):

@@ -85,9 +85,12 @@ class TestDocument(unittest.TestCase):
 
     def test_save_empty(self):
         """Verify saving calls write."""
+        self.document.tree = Mock()
         self.document.save()
         self.document._write.assert_called_once_with(YAML_DEFAULT,
                                                      self.document.config)
+        self.document.tree.vcs.edit.assert_called_once_with(
+            self.document.config)
 
     def test_save_parent(self):
         """Verify a document can be saved with a parent."""
@@ -175,6 +178,7 @@ class TestDocument(unittest.TestCase):
         mock_tree._document_cache = {}
         document = MockDocument.new(mock_tree,
                                     EMPTY, root=FILES, prefix='NEW', digits=2)
+        mock_tree.vcs.add.assert_called_once_with(document.config)
         self.assertEqual(document, mock_tree._document_cache[document.prefix])
 
     def test_invalid(self):
@@ -525,7 +529,7 @@ class TestDocument(unittest.TestCase):
     def test_delete(self, mock_common_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        self.assertEqual(2, mock_common_delete.call_count)
+        self.assertEqual(1, mock_common_delete.call_count)
         self.assertEqual(5, mock_item_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
@@ -537,8 +541,10 @@ class TestDocument(unittest.TestCase):
         self.document.tree._item_cache = {}
         self.document.tree._document_cache = {}
         self.document.delete()
-        self.assertIs(None,
-                      self.document.tree._document_cache[self.document.prefix])
+        self.document.tree.vcs.delete.assert_called_once_with(
+            self.document.path)
+        self.assertIs(
+            None, self.document.tree._document_cache[self.document.prefix])
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):
@@ -603,10 +609,3 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
-
-
-class TestModule(unittest.TestCase):
-
-    """Unit tests for the doorstop.core.document module."""
-
-    pass

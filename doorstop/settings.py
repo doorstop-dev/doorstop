@@ -34,6 +34,9 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 
+# Version control settings
+ADDREMOVE_FILES = True
+
 # Caching settings
 CACHE_ITEMS = True  # cache items in documents and trees
 CACHE_DOCUMENTS = True  # cache documents in trees
