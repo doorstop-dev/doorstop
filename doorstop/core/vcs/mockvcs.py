@@ -13,6 +13,10 @@ class WorkingCopy(BaseWorkingCopy):
 
     DIRECTORY = '.mockvcs'
 
+    def __init__(self, path):
+        super().__init__(path)
+        self._ignores_cache = ["*/env/*", "*/apidocs/*", "*/build/lib/*"]
+
     def lock(self, path):
         log.info("simulated lock on: {}...".format(path))
 
@@ -28,6 +32,3 @@ class WorkingCopy(BaseWorkingCopy):
     def commit(self, message=None):
         log.info("simulated save")
 
-    @property
-    def ignores(self):  # pragma: no cover (manual test)
-        return ("*/env/*", "*/apidocs/*", "*/build/lib/*")

@@ -14,7 +14,7 @@ class WorkingCopy(BaseWorkingCopy):
     IGNORES = ('.sgignores', '.vvignores')
 
     def lock(self, path):
-        # TODO: track: http://veracity-scm.com/qa/questions/2034
+        # track: http://veracity-scm.com/qa/questions/2034
         log.info("`vv` does not support scripted locking: {}".format(path))
         self.call('vv', 'pull')
         self.call('vv', 'update')

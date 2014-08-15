@@ -9,9 +9,9 @@ class SampleWorkingCopy(BaseWorkingCopy):
 
     """Sample WorkingCopy implementation."""
 
-    @property
-    def ignores(self):
-        return ["ignored.*"]
+    def __init__(self, path):
+        super().__init__(path)
+        self._ignores_cache = ["ignored.*", "*published*"]
 
     def lock(self, *args, **kwargs):
         pass
@@ -40,3 +40,4 @@ class TestSampleWorkingCopy(unittest.TestCase):
         """Verify ignored paths are detected."""
         self.assertTrue(self.wc.ignored("ignored.txt"))
         self.assertFalse(self.wc.ignored("not_ignored.txt"))
+        self.assertTrue(self.wc.ignored("path/to/published.html"))

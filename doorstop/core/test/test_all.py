@@ -11,13 +11,13 @@ import pprint
 import logging
 
 import yaml
-# TODO: track: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
 from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
 from doorstop import core
 from doorstop.core.builder import _get_tree, _clear_tree
+from doorstop.core.vcs import mockvcs
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 from doorstop.core.test import DocumentNoSkip
@@ -46,6 +46,8 @@ class TestItem(unittest.TestCase):
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
+        self.item.tree = Mock()
+        self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
     def tearDown(self):
         common.write_text(self.backup, self.path)
@@ -62,13 +64,10 @@ class TestItem(unittest.TestCase):
 
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-
-        def skip(path):
-            """Skip exported content."""
-            return path.endswith(".csv") or path.endswith(".tsv")
-
         item = core.Item(os.path.join(FILES, 'REQ003.yml'))
-        path, line = item.find_ref(skip=skip)
+        item.tree = Mock()
+        item.tree.vcs = mockvcs.WorkingCopy(ROOT)
+        path, line = item.find_ref()
         relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
                                   ROOT)
         self.assertEqual(relpath, path)
@@ -76,7 +75,7 @@ class TestItem(unittest.TestCase):
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
+        self.item.ref = "not" "found"  # space avoids self match
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 

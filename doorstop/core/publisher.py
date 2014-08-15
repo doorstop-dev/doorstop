@@ -227,7 +227,7 @@ def _lines_text(obj, indent=8, width=79, **_):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                ref = _format_ref(item)
+                ref = _format_text_ref(item)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -295,7 +295,7 @@ def _lines_markdown(obj, linkify=False):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _format_ref(item)
+                yield _format_md_ref(item)
 
             # Parent links
             if item.links:
@@ -335,14 +335,30 @@ def _format_md_attr_list(item, linkify):
     return " {{: #{u} }}".format(u=item.uid) if linkify else ''
 
 
-def _format_ref(item):
-    """Format an external reference for publishing."""
+def _format_text_ref(item):
+    """Format an external reference in text."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
-        return "Reference: {p} (line {l})".format(p=path, l=line)
+        if line:
+            return "Reference: {p} (line {l})".format(p=path, l=line)
+        else:
+            return "Reference: {p}".format(p=path)
     else:
         return "Reference: '{r}'".format(r=item.ref)
+
+
+def _format_md_ref(item):
+    """Format an external reference in Markdown."""
+    if settings.CHECK_REF:
+        path, line = item.find_ref()
+        path = path.replace('\\', '/')  # always use unix-style paths
+        if line:
+            return "> `{p}` (line {l})".format(p=path, l=line)
+        else:
+            return "> `{p}`".format(p=path)
+    else:
+        return "> '{r}'".format(r=item.ref)
 
 
 def _format_md_links(items, linkify):

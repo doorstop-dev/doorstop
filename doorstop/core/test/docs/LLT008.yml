@@ -1,14 +1,12 @@
 active: true
 derived: false
-level: 7
+level: 2.2
 links:
 - REQ015: 5057c48dd88b53fe5e639e1e33126714
 normative: true
 ref: ''
-reviewed: e5f32a3d0b66bfa81c659b5f093eb76c
+reviewed: 4d93196743f8385e752efddd8ca6e672
 text: |
-  **Inspection Tests**
-
   These checks ensure the Python package is distributed properly:
 
   - Verify the installation can be performed on a new computer in fewer than 10
