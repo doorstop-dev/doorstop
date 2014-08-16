@@ -45,6 +45,7 @@ class MockTestCase(TempTestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestMain(SettingsTestCase):
 
     """Integration tests for the 'doorstop' command."""
@@ -120,8 +121,9 @@ def get_next_number():
     return number
 
 
-@patch('doorstop.settings.SERVER_HOST', None)
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestAdd(unittest.TestCase):
 
     """Integration tests for the 'doorstop add' command."""
@@ -168,6 +170,7 @@ class TestAdd(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestAddServer(unittest.TestCase):
 
     """Integration tests for the 'doorstop add' command using a server."""
@@ -205,6 +208,7 @@ class TestAddServer(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestRemove(unittest.TestCase):
 
     """Integration tests for the 'doorstop remove' command."""
@@ -228,6 +232,7 @@ class TestRemove(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestReorder(unittest.TestCase):
 
     """Integration tests for the 'doorstop reorder' command."""
@@ -291,6 +296,7 @@ class TestReorder(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestEdit(unittest.TestCase):
 
     """Integration tests for the 'doorstop edit' command."""
@@ -344,6 +350,7 @@ class TestEdit(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestLink(unittest.TestCase):
 
     """Integration tests for the 'doorstop link' command."""
@@ -372,6 +379,7 @@ class TestLink(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestUnlink(unittest.TestCase):
 
     """Integration tests for the 'doorstop unlink' command."""
@@ -380,7 +388,8 @@ class TestUnlink(unittest.TestCase):
 
     def setUp(self):
         self.backup = common.read_text(self.ITEM)
-        main(['link', 'tut3', 'req2'])  # create a temporary link
+        with patch('doorstop.settings.ADDREMOVE_FILES', False):
+            main(['link', 'tut3', 'req2'])  # create a temporary link
 
     def tearDown(self):
         common.write_text(self.backup, self.ITEM)
@@ -489,6 +498,7 @@ class TestReview(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestImport(unittest.TestCase):
 
     """Integration tests for the 'doorstop import' command."""
