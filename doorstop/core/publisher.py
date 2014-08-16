@@ -105,9 +105,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '<head>'
     yield ('<meta http-equiv="content-type" content="text/html; '
            'charset={charset}">'.format(charset=charset))
-    yield '<style type="text/css">'
-    yield from _lines_css(DEFAULT_CSS)
-    yield '</style>'
+    yield from _wrapped_lines_css(DEFAULT_CSS)
     yield '</head>'
     yield '<body>'
     # Tree structure
@@ -178,17 +176,10 @@ def _lines_css(css):
 
 
 def _wrapped_lines_css(css):
-    """Wrap CSS lines in HTML tags"""
-    yield ''
+    """Wrap CSS lines in HTML tags."""
     yield '<style type="text/css">'
-    if not css or os.path.isfile(css):
-        yield '/* Begin CSS from {} */'.format(css)
-        yield from _lines_css(css)
-        yield '/* End CSS from {} */'.format(css)
-    else:
-        yield '/* No such file: {} */'.format(css)
+    yield from _lines_css(css)
     yield '</style>'
-    yield ''
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
@@ -429,12 +420,12 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
     # Generate HTML
     PROJECT_CSS = os.path.join(obj.root, settings.PROJECT_CSS or 'project.css')
 
+    doc_css = '{}.css'.format(obj.prefix)
     try:
         doc_css = getattr(settings, '{}_CSS'.format(obj.prefix))
     except AttributeError:
-        doc_css = '{}.css'.format(obj.prefix)
-    finally:
-        DOCUMENT_CSS = os.path.join(obj.path, doc_css)
+        pass
+    DOCUMENT_CSS = os.path.join(obj.path, doc_css)
 
     if document:
         yield '<!DOCTYPE html>'
@@ -442,8 +433,10 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield ('<meta http-equiv="content-type" content="text/html; '
                'charset={charset}">'.format(charset=charset))
         yield from _wrapped_lines_css(DEFAULT_CSS)
-        yield from _wrapped_lines_css(PROJECT_CSS)
-        yield from _wrapped_lines_css(DOCUMENT_CSS)
+        if os.path.isfile(PROJECT_CSS):
+            yield from _wrapped_lines_css(PROJECT_CSS)
+        if os.path.isfile(DOCUMENT_CSS):
+            yield from _wrapped_lines_css(DOCUMENT_CSS)
         yield '</head>'
         yield '<body>'
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
