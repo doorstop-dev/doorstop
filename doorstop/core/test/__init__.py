@@ -155,7 +155,6 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     document.prefix = 'doc'
     document.path = os.path.join(document.root, document.prefix)
 
-
     item3 = MockItem('path/to/req4.yml', _file=(
         "links: [sys4]" + '\n'
         "text: 'This shall...'" + '\n'
