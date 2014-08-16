@@ -18,6 +18,8 @@ class TestPrefix(unittest.TestCase):  # pylint: disable=R0904
         """Verify prefixes are parsed correctly."""
         self.assertIs(self.prefix1, Prefix(self.prefix1))
         self.assertEqual(Prefix(''), Prefix())
+        self.assertEqual(Prefix(''), Prefix(None))
+        self.assertEqual(Prefix(''), Prefix(''))
 
     def test_init_reseved(self):
         """Verify an exception is raised for a reserved word."""
@@ -67,7 +69,8 @@ class TestID(unittest.TestCase):  # pylint: disable=R0904
         self.assertRaises(TypeError, ID, 'REQ', '-')
         self.assertRaises(TypeError, ID, 'REQ', '-', 42)
         self.assertRaises(TypeError, ID, 'REQ', '-', 42, 3, 'extra')
-        self.assertEqual(ID(""), ID())
+        self.assertEqual(ID(''), ID())
+        self.assertEqual(ID(''), ID(None))
 
     def test_repr(self):
         """Verify IDs can be represented."""
@@ -118,6 +121,8 @@ class TestText(unittest.TestCase):  # pylint: disable=R0904
     def test_init(self):
         """Verify Text is parsed correctly."""
         self.assertEqual(Text(""), Text())
+        self.assertEqual(Text(""), Text(None))
+        self.assertEqual(Text(""), Text(""))
 
     def test_repr(self):
         """Verify text can be represented."""
@@ -150,10 +155,17 @@ class TestLevel(unittest.TestCase):  # pylint: disable=R0904
         """Verify levels can be parsed."""
         self.assertEqual((1, 0), Level((1, 0)).value)
         self.assertEqual((1,), Level((1)).value)
-        self.assertEqual((1,), Level(()).value)
         self.assertEqual((1, 0), Level(Level('1.0')).value)
         self.assertEqual((1, 0), Level(1, heading=True).value)
         self.assertEqual((1,), Level((1, 0), heading=False).value)
+        self.assertEqual((1,), Level())
+        self.assertEqual((1,), Level(None))
+        self.assertEqual((1,), Level(()).value)
+        self.assertEqual((1,), Level(0).value)
+        self.assertEqual((1,), Level('').value)
+        self.assertEqual((0,), Level((0,)).value)
+        self.assertEqual((0,), Level('0').value)
+        self.assertEqual((0,), Level('0.0').value)
 
     def test_repr(self):
         """Verify levels can be represented."""
