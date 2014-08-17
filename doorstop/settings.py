@@ -33,7 +33,10 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
-PROJECT_CSS = None  # custom CSS to apply to all documents
+DEFUALT_CSS = 'doorstop.css'
+PROJECT_CSS = 'project.css'
+DOCUMENT_CSS = 'document.css'
+ASSET_DIRECTORY = 'assets'
 
 # Version control settings
 ADDREMOVE_FILES = True

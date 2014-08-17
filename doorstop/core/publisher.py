@@ -167,18 +167,13 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '</html>'
 
 
-def _lines_css(css):
+def _wrapped_lines_css(css):
     """Yield lines of CSS to embedded in HTML."""
+    yield '<style type="text/css">'
     yield ''
     for line in common.read_lines(css):
         yield line.rstrip()
     yield ''
-
-
-def _wrapped_lines_css(css):
-    """Wrap CSS lines in HTML tags."""
-    yield '<style type="text/css">'
-    yield from _lines_css(css)
     yield '</style>'
 
 
@@ -418,14 +413,8 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
     else:
         document = True
     # Generate HTML
-    PROJECT_CSS = os.path.join(obj.root, settings.PROJECT_CSS or 'project.css')
-
-    doc_css = '{}.css'.format(obj.prefix)
-    try:
-        doc_css = getattr(settings, '{}_CSS'.format(obj.prefix))
-    except AttributeError:
-        pass
-    DOCUMENT_CSS = os.path.join(obj.path, doc_css)
+    PROJECT_CSS = os.path.join(obj.root, settings.PROJECT_CSS)
+    DOCUMENT_CSS = os.path.join(obj.path, settings.DOCUMENT_CSS)
 
     if document:
         yield '<!DOCTYPE html>'
