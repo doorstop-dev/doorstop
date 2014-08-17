@@ -114,7 +114,7 @@ def run_add(args, cwd, _, catch=True):
                 if args.force:
                     number = None
                 else:
-                    number = server.get_next_number(args.prefix)
+                    number = server.get_next_number(document.prefix)
             item = document.add_item(number=number, level=args.level)
             show("added item: {} ({})".format(item.uid, item.relpath))
 

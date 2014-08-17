@@ -220,6 +220,25 @@ class TestModule(unittest.TestCase):
                                               attrs=expected_attrs,
                                               document=mock_document)
 
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_new_rows(self, mock_add_item):
+        """Verify items can be added from item data blank UIDs."""
+        header = ['uid', 'text', 'links', 'ext1']
+        data = [
+            ['req1', 'text1', '', 'val1'],
+            ['req2', '', 'sys1,sys2', False],
+            ['', 'A new item.', '', ''],  # blank UID
+            ['', '', '', ''],  # skipped
+            ['(auto)', 'Another new item.', '', ''],  # placeholder UID
+        ]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        mock_document.next = 3
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(4, mock_add_item.call_count)
+
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):
         """Verify item data can include invalid values."""
