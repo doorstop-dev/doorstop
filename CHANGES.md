@@ -14,7 +14,7 @@ Changelog
 - Added `doorstop-server` to launch a REST API for UID reservation.
 - Added '--server' argument to `doorstop add` to specify the server address.
 
-0.7.1 (2014/10/18)
+0.7.1 (2014/08/18)
 ------------------
 
 - Fixed bug importing items with empty attributes.
