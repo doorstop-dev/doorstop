@@ -3,43 +3,107 @@
 import os
 import abc
 import functools
-import logging
 
 import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
+from doorstop import settings
+
+log = common.logger(__name__)
 
 
-def clear_document_cache(func):
-    """Decorator for methods that should clear the document cache."""
+def add_item(func):
+    """Decorator for methods that return a new item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear document cache after execution."""
-        result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._document_cache.clear()  # pylint: disable=W0212
-        return result
+        """Wrapped method to add and cache the returned item."""
+        item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and item.tree:
+            item.tree.vcs.add(item.path)
+        # pylint: disable=W0212
+        if item.document and item not in item.document._items:
+            item.document._items.append(item)
+        if settings.CACHE_ITEMS and item.tree:
+            item.tree._item_cache[item.uid] = item
+            log.trace("cached item: {}".format(item))
+        return item
     return wrapped
 
 
-def clear_item_cache(func):
-    """Decorator for methods that should clear the item cache."""
+def edit_item(func):
+    """Decorator for methods that return a modified item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to clear item cache after execution."""
-        result = func(self, *args, **kwargs)
-        try:
-            tree = self.tree  # document or item method was decorated
-        except AttributeError:
-            tree = self  # tree method was decorated
-        if tree:
-            tree._item_cache.clear()  # pylint: disable=W0212
-        return result
+        """Wrapped method to mark the returned item as modified."""
+        item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and item.tree:
+            item.tree.vcs.edit(item.path)
+        return item
+    return wrapped
+
+
+def delete_item(func):
+    """Decorator for methods that return a deleted item."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned item."""
+        item = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and item.tree:
+            item.tree.vcs.delete(item.path)
+        # pylint: disable=W0212
+        if item.document and item in item.document._items:
+            item.document._items.remove(item)
+        if settings.CACHE_ITEMS and item.tree:
+            item.tree._item_cache[item.uid] = None
+            log.trace("expunged item: {}".format(item))
+        BaseFileObject.delete(item, item.path)
+        return item
+    return wrapped
+
+
+def add_document(func):
+    """Decorator for methods that return a new document."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to add and cache the returned document."""
+        document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and document.tree:
+            document.tree.vcs.add(document.config)
+        # pylint: disable=W0212
+        if settings.CACHE_DOCUMENTS and document.tree:
+            document.tree._document_cache[document.prefix] = document
+            log.trace("cached document: {}".format(document))
+        return document
+    return wrapped
+
+
+def edit_document(func):
+    """Decorator for methods that return a modified document."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to mark the returned document as modified."""
+        document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and document.tree:
+            document.tree.vcs.edit(document.config)
+        return document
+    return wrapped
+
+
+def delete_document(func):
+    """Decorator for methods that return a deleted document."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned document."""
+        document = func(self, *args, **kwargs) or self
+        if settings.ADDREMOVE_FILES and document.tree:
+            document.tree.vcs.delete(document.path)
+        # pylint: disable=W0212
+        if settings.CACHE_DOCUMENTS and document.tree:
+            document.tree._document_cache[document.prefix] = None
+            log.trace("expunged document: {}".format(document))
+        BaseFileObject.delete(document, document.path)
+        return document
     return wrapped
 
 
@@ -62,12 +126,12 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         for issue in self.get_issues(document_hook=document_hook,
                                      item_hook=item_hook):
             if isinstance(issue, DoorstopInfo):
-                logging.info(issue)
+                log.info(issue)
             elif isinstance(issue, DoorstopWarning):
-                logging.warning(issue)
+                log.warning(issue)
             else:
                 assert isinstance(issue, DoorstopError)
-                logging.error(issue)
+                log.error(issue)
                 valid = False
         # Return the result
         return valid
@@ -142,7 +206,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return not self == other
 
     @staticmethod
-    def _new(path, name):  # pragma: no cover (integration test)
+    def _create(path, name):  # pragma: no cover (integration test)
         """Create a new file for the object.
 
         :param path: path to new file
@@ -154,21 +218,17 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if os.path.exists(path):
             raise DoorstopError("{} already exists: {}".format(name, path))
-        dirpath = os.path.dirname(path)
-        if not os.path.isdir(dirpath):
-            os.makedirs(dirpath)
-        with open(path, 'w'):
-            pass  # just touch the file
+        common.create_dirname(path)
+        common.touch(path)
 
     @abc.abstractmethod
     def load(self, reload=False):  # pragma: no cover (abstract method)
         """Load the object's properties from its file."""
-        # Start implementations of this method with:
+        # 1. Start implementations of this method with:
         if self._loaded and not reload:
             return
-        # Call self._read() and update properties here:
-        pass  # pylint: disable=W0107
-        # End implementations of this method with:
+        # 2. Call self._read() and update properties here
+        # 3. End implementations of this method with:
         self._loaded = True
 
     def _read(self, path):  # pragma: no cover (integration test)
@@ -182,8 +242,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if not self._exists:
             msg = "cannot read from deleted: {}".format(self.path)
             raise DoorstopError(msg)
-        with open(path, 'rb') as stream:
-            return stream.read().decode('utf-8')
+        return common.read_text(path)
 
     @staticmethod
     def _load(text, path):
@@ -195,24 +254,13 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         :return: dictionary of YAML data
 
         """
-        # Load the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(path, exc)
-            raise DoorstopError(msg) from None
-        # Ensure data is a dictionary
-        if not isinstance(data, dict):
-            msg = "invalid contents: {}".format(path)
-            raise DoorstopError(msg)
-        return data
+        return common.load_yaml(text, path)
 
     @abc.abstractmethod
     def save(self):  # pragma: no cover (abstract method)
         """Format and save the object's properties to its file."""
-        # Call self._write() with the current properties here:
-        pass  # pylint: disable=W0107
-        # End implementations of this method with:
+        # 1. Call self._write() with the current properties here
+        # 2. End implementations of this method with:
         self._loaded = False
         self.auto = True
 
@@ -225,8 +273,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        with open(path, 'wb') as outfile:
-            outfile.write(text.encode('utf-8'))
+        common.write_text(text, path)
 
     @staticmethod
     def _dump(data):
@@ -272,7 +319,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
+            log.info(msg)
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -289,7 +336,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            logging.info(msg)
+            log.info(msg)
             return setattr(self, name, value)
         else:
             self._data[name] = value
@@ -299,18 +346,9 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def delete(self, path):
         """Delete the object's file from the file system."""
         if self._exists:
-            logging.info("deleting {}...".format(self))
-            logging.debug("deleting file {}...".format(path))
+            log.info("deleting {}...".format(self))
             common.delete(path)
             self._loaded = False  # force the object to reload
             self._exists = False  # but, prevent future access
         else:
-            logging.warning("already deleted: {}".format(self))
-
-
-def write_lines(lines, path, end='\n', encoding='utf-8'):  # pragma: no cover (integration test)
-    """Write lines of text to a file."""
-    logging.debug("writing lines to {}...".format(path))
-    with open(path, 'wb') as stream:
-        for line in lines:
-            stream.write((line + end).encode(encoding))
+            log.warning("already deleted: {}".format(self))

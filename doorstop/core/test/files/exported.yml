@@ -3,21 +3,23 @@ REQ001:
   derived: false
   level: 1.2.3
   links:
-  - SYS001
-  - SYS002
+  - SYS001: null
+  - SYS002: abc123
   normative: true
   ref: ''
+  reviewed: null
   text: |
-    Hello, world!
+    The foo shall bar all night long!
 
 REQ003:
   active: true
   derived: false
   level: 1.4
   links:
-  - REQ001
+  - REQ001: null
   normative: true
   ref: REF123
+  reviewed: null
   text: |
     Unicode: -40° ±1%
 
@@ -28,6 +30,7 @@ REQ004:
   links: []
   normative: true
   ref: ''
+  reviewed: null
   text: |
     Hello, world!
 
@@ -38,6 +41,7 @@ REQ002:
   links: []
   normative: true
   ref: ''
+  reviewed: b5fbcc355112791bbcd2ea881c7c5f81
   text: |
     Hello, world!
 
@@ -46,9 +50,10 @@ REQ2-001:
   derived: false
   level: 2.1
   links:
-  - REQ001
+  - REQ001: null
   normative: true
   ref: ''
+  reviewed: null
   text: |
     Hello, world!
 

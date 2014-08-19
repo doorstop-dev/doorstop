@@ -10,7 +10,7 @@ Doorstop
 
 Doorstop is a tool to manage the storage of textual requirements alongside source code in version control.
 
-Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. Document items can be linked to one another to form a tree hierarchy. Doorstop provides mechanisms for modifying this hierarchy, checking the tree for consistency, and publishing documents in several formats.
+Each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Additional reading:
 
@@ -80,7 +80,7 @@ Items can be added to the document and edited:
 
 Additional documents can be created that link to other documents:
 
-    $ doorstop new TST ./reqs/tests --parent REQ
+    $ doorstop create TST ./reqs/tests --parent REQ
     created document: TST (@/reqs/tests)
 
 Items can be added and linked to parent items:

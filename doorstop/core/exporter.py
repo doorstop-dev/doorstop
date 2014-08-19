@@ -4,22 +4,20 @@ import os
 import csv
 import datetime
 from collections import defaultdict
-import logging
 
 import yaml
-# TODO: track pylint update to resolve openpyxl false positives
-# pylint: disable=E1101,E1120,E1123
-import openpyxl  # pylint: disable=F0401
-from openpyxl.styles import Alignment, Font  # pylint: disable=F0401
+import openpyxl
 
-from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.base import write_lines
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
 
-LIST_SEP = ',\n'  # string separating list values when joined in a string
+LIST_SEP = '\n'  # string separating list values when joined in a string
 
 XLSX_MAX_WIDTH = 65  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
+
+log = common.logger(__name__)
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -49,21 +47,21 @@ def export(obj, path, ext=None, **kwargs):
         count += 1
 
         # Export content to the specified path
-        create_dirname(path2)
-        logging.info("exporting to {}...".format(path2))
+        common.create_dirname(path2)
+        log.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
             lines = export_lines(obj2, ext, **kwargs)
-            write_lines(lines, path2)
+            common.write_lines(lines, path2)
         else:
             export_file(obj2, path2, ext, **kwargs)
 
     # Return the exported path
     if count:
         msg = "exported to {} file{}".format(count, 's' if count > 1 else '')
-        logging.info(msg)
+        log.info(msg)
         return path
     else:
-        logging.warning("nothing to export")
+        log.warning("nothing to export")
         return None
 
 
@@ -79,7 +77,7 @@ def export_lines(obj, ext='.yml', **kwargs):
 
     """
     gen = check(ext, get_lines_gen=True)
-    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    log.debug("yielding {} as lines of {}...".format(obj, ext))
     yield from gen(obj, **kwargs)
 
 
@@ -97,7 +95,7 @@ def export_file(obj, path, ext=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext, get_file_func=True)
-    logging.debug("converting {} to file format {}...".format(obj, ext))
+    log.debug("converting {} to file format {}...".format(obj, ext))
     return func(obj, path, **kwargs)
 
 
@@ -111,7 +109,7 @@ def _lines_yaml(obj):
     """
     for item in iter_items(obj):
 
-        data = {str(item.id): item.data}
+        data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text
 
@@ -137,21 +135,22 @@ def _tabulate(obj, sep=LIST_SEP):
             for value in sorted(data.keys()):
                 if value not in header:
                     header.append(value)
-            yield ['id'] + header
+            yield ['uid'] + header
             yield_header = False
 
         # Yield row
-        row = [item.id]
+        row = [item.uid]
         for key in header:
             value = data.get(key)
             if key == 'level':
                 # some levels are floats for YAML presentation
                 value = str(value)
-            elif isinstance(value, list):
-                # separate lists with commas
-                value = sep.join(str(p) for p in value)
+            elif key == 'links':
+                # separate identifiers with a delimiter
+                value = sep.join(uid.string for uid in item.links)
+            elif value is None:
+                value = ''
             row.append(value)
-
         yield row
 
 
@@ -203,6 +202,8 @@ def _get_xlsx(obj):
     :return: new workbook
 
     """
+    # pylint: disable=E1101,E1120,E1123
+
     col_widths = defaultdict(int)
     col = 'A'
 
@@ -217,12 +218,13 @@ def _get_xlsx(obj):
             cell = worksheet.cell('%s%s' % (col, row))
 
             # wrap text in every cell
-            alignment = Alignment(vertical='top', horizontal='left',
-                                  wrap_text=True)
+            alignment = openpyxl.styles.Alignment(vertical='top',
+                                                  horizontal='left',
+                                                  wrap_text=True)
             style = cell.style.copy(alignment=alignment)
             # and bold header rows
             if row == 1:
-                style = style.copy(font=Font(bold=True))
+                style = style.copy(font=openpyxl.styles.Font(bold=True))
             cell.style = style
 
             # convert incompatible Excel types:
@@ -292,7 +294,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
             exc = DoorstopError(fmt.format("lines export", lines_exts))
             raise exc from None
         else:
-            logging.debug("found lines generator for: {}".format(ext))
+            log.debug("found lines generator for: {}".format(ext))
             return gen
 
     if get_file_func:
@@ -302,7 +304,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
             exc = DoorstopError(fmt.format("file export", file_exts))
             raise exc from None
         else:
-            logging.debug("found file creator for: {}".format(ext))
+            log.debug("found file creator for: {}".format(ext))
             return func
 
     if ext not in FORMAT:

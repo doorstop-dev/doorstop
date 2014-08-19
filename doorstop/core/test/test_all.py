@@ -11,12 +11,13 @@ import pprint
 import logging
 
 import yaml
-# TODO: openpyxl has false positives with pylint
 import openpyxl  # pylint: disable=F0401
 
-from doorstop import core
+from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError
+from doorstop import core
 from doorstop.core.builder import _get_tree, _clear_tree
+from doorstop.core.vcs import mockvcs
 
 from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
 from doorstop.core.test import DocumentNoSkip
@@ -36,20 +37,20 @@ CHECK_EXPORTED_CONTENT = True
 CHECK_PUBLISHED_CONTENT = True
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestItem(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestItem(unittest.TestCase):
 
-    """Integration tests for the Item class."""  # pylint: disable=C0103
+    """Integration tests for the Item class."""
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
+        self.item.tree = Mock()
+        self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.path)
 
     def test_save_load(self):
         """Verify an item can be saved and loaded from a file."""
@@ -63,13 +64,10 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-
-        def skip(path):
-            """Skip exported content."""
-            return path.endswith(".csv") or path.endswith(".tsv")
-
         item = core.Item(os.path.join(FILES, 'REQ003.yml'))
-        path, line = item.find_ref(skip=skip)
+        item.tree = Mock()
+        item.tree.vcs = mockvcs.WorkingCopy(ROOT)
+        path, line = item.find_ref()
         relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
                                   ROOT)
         self.assertEqual(relpath, path)
@@ -77,14 +75,14 @@ class TestItem(unittest.TestCase):  # pylint: disable=R0904
 
     def test_find_ref_error(self):
         """Verify an error occurs when no external reference found."""
-        self.item.ref = "not found".replace(' ', '')  # avoids self match
+        self.item.ref = "not" "found"  # space avoids self match
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestDocument(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestDocument(unittest.TestCase):
 
-    """Integration tests for the Document class."""  # pylint: disable=C0103
+    """Integration tests for the Document class."""
 
     def setUp(self):
         self.document = core.Document(FILES, root=ROOT)
@@ -93,7 +91,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         """Clean up temporary files."""
         for filename in os.listdir(EMPTY):
             path = os.path.join(EMPTY, filename)
-            os.remove(path)
+            common.delete(path)
 
     def test_load(self):
         """Verify a document can be loaded from a directory."""
@@ -122,7 +120,7 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(8, len(issues))
+        self.assertEqual(12, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     def test_issues_duplicate_level(self):
@@ -152,23 +150,23 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
                                      EMPTY, FILES,
                                      prefix='TMP')
         item_1_0 = document.add_item()
-        item_3_0 = document.add_item()  # will get displaced
-        item_2_0 = document.add_item(level='2.0')
+        item_1_2 = document.add_item()  # will get displaced
+        item_1_1 = document.add_item(level='1.1')
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
-        self.assertEqual((3, 0), item_3_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
+        self.assertEqual((1, 2), item_1_2.level)
 
     def test_remove_item_with_reordering(self):
-        """Verify an item can be removed fraom a document."""
+        """Verify an item can be removed from a document."""
         document = core.Document.new(None,
                                      EMPTY, FILES,
                                      prefix='TMP')
         item_1_0 = document.add_item()
-        item_3_0 = document.add_item()  # to be removed
-        item_2_0 = document.add_item()  # will get relocated
-        document.remove_item(item_3_0)
+        item_1_2 = document.add_item()  # to be removed
+        item_1_1 = document.add_item(level='1.1')  # will get relocated
+        document.remove_item(item_1_2)
         self.assertEqual((1, 0), item_1_0.level)
-        self.assertEqual((2, 0), item_2_0.level)
+        self.assertEqual((1, 1), item_1_1.level)
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
@@ -234,22 +232,20 @@ class TestDocument(unittest.TestCase):  # pylint: disable=R0904
         self.assertListEqual(expected, actual)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestTree(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestTree(unittest.TestCase):
 
     """Integration tests for the core.Tree class."""
 
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
-        with open(self.path, 'r') as item:
-            self.backup = item.read()
+        self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
         self.tree = core.Tree(core.Document(SYS))
         self.tree._place(core.Document(FILES))  # pylint: disable=W0212
 
     def tearDown(self):
-        with open(self.path, 'w') as item:
-            item.write(self.backup)
+        common.write_text(self.backup, self.path)
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
@@ -267,30 +263,30 @@ class TestTree(unittest.TestCase):  # pylint: disable=R0904
         self.assertTrue(self.tree.validate())
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestEditor(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestEditor(unittest.TestCase):
 
-    """Integrations tests for the editor module."""  # pylint: disable=C0103
+    """Integrations tests for the editor module."""
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902,R0904
-class TestImporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902
+class TestImporter(unittest.TestCase):
 
-    """Integrations tests for the importer module."""  # pylint: disable=C0103
+    """Integrations tests for the importer module."""
 
     def setUp(self):
         # Create a temporary mock working copy
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
         os.chdir(self.temp)
-        open(".mockvcs", 'w').close()
+        common.touch('.mockvcs')
         # Create default document attributes
         self.prefix = 'PREFIX'
         self.root = self.temp
         self.path = os.path.join(self.root, 'DIRECTORY')
         self.parent = 'PARENT_PREFIX'
         # Create default item attributes
-        self.identifier = 'PREFIX-00042'
+        self.uid = 'PREFIX-00042'
         # Load an actual document
         self.document = core.Document(FILES, root=ROOT)
         # Ensure the tree is reloaded
@@ -394,13 +390,13 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         # Create a document
         core.importer.create_document(self.prefix, self.path)
         # Verify the item does not already exist
-        self.assertRaises(DoorstopError, core.find_item, self.identifier)
+        self.assertRaises(DoorstopError, core.find_item, self.uid)
         # Import an item
-        item = core.importer.add_item(self.prefix, self.identifier)
+        item = core.importer.add_item(self.prefix, self.uid)
         # Verify the item's attributes are correct
-        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(self.uid, item.uid)
         # Verify the item can be found
-        item2 = core.find_item(self.identifier)
+        item2 = core.find_item(self.uid)
         self.assertIs(item, item2)
         # Verify the item is contained in the document
         document = core.find_document(self.prefix)
@@ -412,18 +408,18 @@ class TestImporter(unittest.TestCase):  # pylint: disable=R0904
         core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(self.prefix, self.identifier,
+        item = core.importer.add_item(self.prefix, self.uid,
                                       attrs=attrs)
         # Verify the item is correct
-        self.assertEqual(self.identifier, item.id)
+        self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)  # pylint: disable=R0904
-class TestExporter(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
+class TestExporter(unittest.TestCase):
 
-    """Integration tests for the doorstop.core.exporter module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core.exporter module."""
 
     maxDiff = None
 
@@ -492,10 +488,10 @@ class TestExporter(unittest.TestCase):  # pylint: disable=R0904
             move_file(temp, path)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)  # pylint: disable=R0904
-class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)
+class TestPublisher(unittest.TestCase):
 
-    """Integration tests for the doorstop.core.publisher module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core.publisher module."""
 
     maxDiff = None
 
@@ -546,61 +542,57 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
     def test_lines_text_document(self):
         """Verify text can be published from a document."""
         path = os.path.join(FILES, 'published.txt')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_document_without_child_links(self):
         """Verify text can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.txt')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.txt')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
         path = os.path.join(FILES, 'published.md')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_document_without_child_links(self):
         """Verify Markdown can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.md')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, 'published.html')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html',
                                              linkify=True)
@@ -608,28 +600,26 @@ class TestPublisher(unittest.TestCase):  # pylint: disable=R0904
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_html_document_without_child_links(self):
         """Verify HTML can be published from a document w/o child links."""
         path = os.path.join(FILES, 'published2.html')
-        expected = open(path, encoding='utf-8').read()
+        expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
             self.assertEqual(expected, text)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            outfile.write(text)
+        common.write_text(text, path)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0904
-class TestModule(unittest.TestCase):  # pylint: disable=R0904
+@unittest.skipUnless(os.getenv(ENV), REASON)
+class TestModule(unittest.TestCase):
 
-    """Integration tests for the doorstop.core module."""  # pylint: disable=C0103
+    """Integration tests for the doorstop.core module."""
 
     def setUp(self):
         """Reset the internal tree."""
@@ -668,8 +658,7 @@ def log_data(expected, actual):
 
 def read_yml(path):
     """Return a dictionary of items from a YAML file."""
-    with open(path, 'r', encoding='utf-8') as stream:
-        text = stream.read()
+    text = common.read_text(path)
     data = yaml.load(text)
     return data
 
@@ -710,8 +699,5 @@ def read_xlsx(path):
 
 def move_file(src, dst):
     """Move a file from one path to another."""
-    try:
-        os.remove(dst)
-    except FileNotFoundError:
-        pass
+    common.delete(dst)
     shutil.move(src, dst)

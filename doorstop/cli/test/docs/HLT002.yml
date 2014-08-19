@@ -1,9 +1,11 @@
 active: true
 derived: false
-level: 2
+level: 1.2
 links:
-- TUT009
-- TUT010
+- TUT009: 49abe5f194cc21ad59a12973f320e93e
+- TUT010: 8617d77ba54ccf850c3e590dd6fa0222
 normative: true
 ref: test_tutorial_section_2
-text: ''
+reviewed: ff6c3f091c35d597121a1466bf157b7a
+text: |
+  Tutorial Section 2.0:

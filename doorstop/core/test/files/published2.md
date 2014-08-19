@@ -1,6 +1,6 @@
 ### 1.2.3 REQ001
 
-Hello, world!
+The foo shall bar all night long!
 
 *Links: SYS001, SYS002*
 
@@ -8,7 +8,7 @@ Hello, world!
 
 Unicode: -40° ±1%
 
-Reference: external/text.txt (line 3)
+> `external/text.txt` (line 3)
 
 *Links: REQ001*
 

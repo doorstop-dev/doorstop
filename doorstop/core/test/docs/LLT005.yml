@@ -1,8 +1,10 @@
 active: true
 derived: false
-level: 5
+level: 1.5
 links:
-- REQ001
+- REQ001: 37a3faae380b4e466aaf18c31f2184c0
 normative: true
 ref: Verify an item's reference can also be a filename.
-text: ''
+reviewed: 3d708f9247d638ef3580312c99a873e7
+text: |
+  Test referencing an external file by name:

@@ -2,17 +2,18 @@
 
 import os
 import textwrap
-import logging
 
 import markdown
 
-from doorstop.common import DoorstopError, create_dirname
-from doorstop.core.base import write_lines
+from doorstop import common
+from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
+
+log = common.logger(__name__)
 
 
 def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
@@ -48,10 +49,10 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         count += 1
 
         # Publish content to the specified path
-        create_dirname(path2)
-        logging.info("publishing to {}...".format(path2))
+        common.create_dirname(path2)
+        log.info("publishing to {}...".format(path2))
         lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
-        write_lines(lines, path2)
+        common.write_lines(lines, path2)
 
     # Create index
     if index and count:
@@ -60,10 +61,10 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     # Return the published path
     if count:
         msg = "published to {} file{}".format(count, 's' if count > 1 else '')
-        logging.info(msg)
+        log.info(msg)
         return path
     else:
-        logging.warning("nothing to publish")
+        log.warning("nothing to publish")
         return None
 
 
@@ -85,11 +86,11 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     # Create the index
     if filenames:
         path = os.path.join(directory, index)
-        logging.info("creating an {}...".format(index))
+        log.info("creating an {}...".format(index))
         lines = _lines_index(filenames, tree=tree)
-        write_lines(lines, path)
+        common.write_lines(lines, path)
     else:
-        logging.warning("no files for {}".format(index))
+        log.warning("no files for {}".format(index))
 
 
 def _lines_index(filenames, charset='UTF-8', tree=None):
@@ -171,9 +172,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
 def _lines_css():
     """Yield lines of CSS to embedded in HTML."""
     yield ''
-    with open(CSS) as stream:
-        for line in stream:
-            yield line.rstrip()
+    for line in common.read_lines(CSS):
+        yield line.rstrip()
     yield ''
 
 
@@ -187,7 +187,7 @@ def publish_lines(obj, ext='.txt', **kwargs):
 
     """
     gen = check(ext)
-    logging.debug("yielding {} as lines of {}...".format(obj, ext))
+    log.debug("yielding {} as lines of {}...".format(obj, ext))
     yield from gen(obj, **kwargs)
 
 
@@ -212,8 +212,8 @@ def _lines_text(obj, indent=8, width=79, **_):
 
         else:
 
-            # Level and ID
-            yield "{l:<{s}}{i}".format(l=level, s=indent, i=item.id)
+            # Level and UID
+            yield "{l:<{s}}{u}".format(l=level, s=indent, u=item.uid)
 
             # Text
             if item.text:
@@ -227,7 +227,7 @@ def _lines_text(obj, indent=8, width=79, **_):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                ref = _format_ref(item)
+                ref = _format_text_ref(item)
                 yield from _chunks(ref, width, indent)
 
             # Links
@@ -279,8 +279,11 @@ def _lines_markdown(obj, linkify=False):
 
         else:
 
-            # Level and ID
-            standard = "{h} {l} {i}".format(h=heading, l=level, i=item.id)
+            # Level and UID
+            if settings.PUBLISH_BODY_LEVELS:
+                standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+            else:
+                standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
@@ -292,7 +295,7 @@ def _lines_markdown(obj, linkify=False):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _format_ref(item)
+                yield _format_md_ref(item)
 
             # Parent links
             if item.links:
@@ -329,17 +332,33 @@ def _format_level(level):
 
 def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
-    return " {{: #{i} }}".format(i=item.id) if linkify else ''
+    return " {{: #{u} }}".format(u=item.uid) if linkify else ''
 
 
-def _format_ref(item):
-    """Format an external reference for publishing."""
+def _format_text_ref(item):
+    """Format an external reference in text."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
-        return "Reference: {p} (line {l})".format(p=path, l=line)
+        if line:
+            return "Reference: {p} (line {l})".format(p=path, l=line)
+        else:
+            return "Reference: {p}".format(p=path)
     else:
         return "Reference: '{r}'".format(r=item.ref)
+
+
+def _format_md_ref(item):
+    """Format an external reference in Markdown."""
+    if settings.CHECK_REF:
+        path, line = item.find_ref()
+        path = path.replace('\\', '/')  # always use unix-style paths
+        if line:
+            return "> `{p}` (line {l})".format(p=path, l=line)
+        else:
+            return "> `{p}`".format(p=path)
+    else:
+        return "> '{r}'".format(r=item.ref)
 
 
 def _format_md_links(items, linkify):
@@ -351,28 +370,22 @@ def _format_md_links(items, linkify):
     return ', '.join(links)
 
 
-# TODO: delete this function if not used
-def _format_md_document_link(document):  # pragma: no cover
-    """Format a document link in Markdown."""
-    return "[{p}]({p}.html)".format(p=document.prefix)
-
-
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
-        return "[{i}]({p}.html#{i})".format(i=item.id, p=item.document.prefix)
+        return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
     else:
-        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
 
 def _format_html_item_link(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
-        link = '<a href="{p}.html#{i}">{i}</a>'.format(i=item.id,
+        link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid,
                                                        p=item.document.prefix)
         return link
     else:
-        return str(item.id)  # if not `Item`, assume this is an `UnknownItem`
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
 
 def _format_md_label_links(label, links, linkify):
@@ -441,5 +454,5 @@ def check(ext):
     except KeyError:
         raise exc from None
     else:
-        logging.debug("found lines generator for: {}".format(ext))
+        log.debug("found lines generator for: {}".format(ext))
         return gen

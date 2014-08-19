@@ -2,18 +2,50 @@
 
 import os
 import re
-import logging
+import functools
+
+import pyficache
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import BaseValidatable, clear_item_cache
-from doorstop.core.base import auto_load, auto_save, BaseFileObject
-from doorstop.core.types import Prefix, ID, Text, Level, to_bool
+from doorstop.core.base import (add_item, edit_item, delete_item,
+                                auto_load, auto_save,
+                                BaseValidatable, BaseFileObject)
+from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
 
+log = common.logger(__name__)
 
-class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
+
+def requires_tree(func):
+    """Decorator for methods that require a tree reference."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a tree reference."""
+        if not self.tree:
+            name = func.__name__
+            log.critical("`{}` can only be called with a tree".format(name))
+            return None
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+def requires_document(func):
+    """Decorator for methods that require a document reference."""
+    @functools.wraps(func)
+    def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a document reference."""
+        if not self.document:
+            name = func.__name__
+            msg = "`{}` can only be called with a document".format(name)
+            log.critical(msg)
+            return None
+        return func(self, *args, **kwargs)
+    return wrapped
+
+
+class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""
 
@@ -23,6 +55,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
+    DEFAULT_REVIEWED = Stamp()
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
 
@@ -41,7 +74,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         filename = os.path.basename(path)
         name, ext = os.path.splitext(filename)
         try:
-            ID(name).check()
+            UID(name).check()
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
@@ -60,6 +93,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         self._data['active'] = Item.DEFAULT_ACTIVE
         self._data['normative'] = Item.DEFAULT_NORMATIVE
         self._data['derived'] = Item.DEFAULT_DERIVED
+        self._data['reviewed'] = Item.DEFAULT_REVIEWED
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
@@ -68,19 +102,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         return "Item('{}')".format(self.path)
 
     def __str__(self):
-        if common.VERBOSITY < common.STR_VERBOSITY:
-            return str(self.id)
+        if common.verbosity < common.STR_VERBOSITY:
+            return str(self.uid)
         else:
-            return "{} ({})".format(self.id, self.relpath)
+            return "{} ({})".format(self.uid, self.relpath)
 
     def __lt__(self, other):
         if self.level == other.level:
-            return self.id < other.id
+            return self.uid < other.uid
         else:
             return self.level < other.level
 
     @staticmethod
-    def new(tree, document, path, root, identifier, level=None, auto=None):  # pylint: disable=R0913
+    @add_item
+    def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
         """Internal method to create a new item.
 
         :param tree: reference to the tree that contains this item
@@ -88,7 +123,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         :param path: path to directory for the new item
         :param root: path to root of the project
-        :param identifier: ID for the new item
+        :param uid: UID for the new item
 
         :param level: level for the new item
         :param auto: automatically save the item
@@ -99,12 +134,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         :return: new :class:`~doorstop.core.item.Item`
 
         """
-        ID(identifier).check()
-        filename = str(identifier) + Item.EXTENSIONS[0]
+        UID(uid).check()
+        filename = str(uid) + Item.EXTENSIONS[0]
         path2 = os.path.join(path, filename)
         # Create the initial item file
-        logging.debug("creating item file at {}...".format(path2))
-        Item._new(path2, name='item')
+        log.debug("creating item file at {}...".format(path2))
+        Item._create(path2, name='item')
         # Initialize the item
         item = Item(path2, root=root, document=document, tree=tree, auto=False)
         item.level = level if level is not None else item.level
@@ -117,7 +152,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """Load the item's properties from its file."""
         if self._loaded and not reload:
             return
-        logging.debug("loading {}...".format(repr(self)))
+        log.debug("loading {}...".format(repr(self)))
         # Read text from file
         text = self._read(self.path)
         # Parse YAML data from text
@@ -125,29 +160,32 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                self._data['level'] = Level(value)
+                value = Level(value)
             elif key == 'active':
-                self._data['active'] = to_bool(value)
+                value = to_bool(value)
             elif key == 'normative':
-                self._data['normative'] = to_bool(value)
+                value = to_bool(value)
             elif key == 'derived':
-                self._data['derived'] = to_bool(value)
+                value = to_bool(value)
+            elif key == 'reviewed':
+                value = Stamp(value)
             elif key == 'text':
-                self._data['text'] = Text(value)
+                value = Text(value)
             elif key == 'ref':
-                self._data['ref'] = value.strip()
+                value = value.strip()
             elif key == 'links':
-                self._data['links'] = set(ID(v) for v in value)
+                value = set(UID(part) for part in value)
             else:
                 if isinstance(value, str):
                     value = Text(value)
-                self._data[key] = value
+            self._data[key] = value
         # Set meta attributes
         self._loaded = True
 
+    @edit_item
     def save(self):
         """Format and save the item's properties to its file."""
-        logging.debug("saving {}...".format(repr(self)))
+        log.debug("saving {}...".format(repr(self)))
         # Format the data items
         data = self.data
         # Dump the data to YAML
@@ -163,44 +201,46 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def data(self):
-        """Get all the item's data formatted for dumping."""
+        """Get all the item's data formatted for YAML dumping."""
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                data['level'] = value.yaml
+                value = value.yaml
             elif key == 'text':
-                data['text'] = value.yaml
+                value = value.yaml
             elif key == 'ref':
-                data['ref'] = value.strip()
+                value = value.strip()
             elif key == 'links':
-                data['links'] = sorted(str(v) for v in value)
+                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+            elif key == 'reviewed':
+                value = value.yaml
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
-                    lenth = len(key) + 2 + len(value)
-                    if lenth > settings.MAX_LINE_LENTH or '\n' in value:
+                    length = len(key) + 2 + len(value)
+                    if length > settings.MAX_LINE_LENGTH or '\n' in value:
                         end = '\n' if value.endswith('\n') else ''
                         value = Text.save_text(value, end=end)
                     else:
                         value = str(value)  # line is short enough as a string
-                data[key] = value
+            data[key] = value
         return data
 
     @property
-    def id(self):  # pylint: disable=C0103
-        """Get the item's ID."""
+    def uid(self):
+        """Get the item's UID."""
         filename = os.path.basename(self.path)
-        return ID(os.path.splitext(filename)[0])
+        return UID(os.path.splitext(filename)[0])
 
     @property
     def prefix(self):
-        """Get the item ID's prefix."""
-        return self.id.prefix
+        """Get the item UID's prefix."""
+        return self.uid.prefix
 
     @property
     def number(self):
-        """Get the item ID's number."""
-        return self.id.number
+        """Get the item UID's number."""
+        return self.uid.number
 
     @property
     @auto_load
@@ -308,6 +348,41 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     @property
     @auto_load
+    def cleared(self):
+        """Indicate if no links are suspect."""
+        items = self.parent_items
+        for uid in self.links:
+            for item in items:
+                if uid == item.uid:
+                    if uid.stamp != item.stamp():
+                        return False
+        return True
+
+    @cleared.setter
+    @auto_save
+    @auto_load
+    def cleared(self, value):
+        """Set the item's suspect link status."""
+        self.clear(_inverse=not to_bool(value))
+
+    @property
+    @auto_load
+    def reviewed(self):
+        """Indicate if the item has been reviewed."""
+        stamp = self.stamp(links=True)
+        if self._data['reviewed'] == Stamp(True):
+            self._data['reviewed'] = stamp
+        return self._data['reviewed'] == stamp
+
+    @reviewed.setter
+    @auto_save
+    @auto_load
+    def reviewed(self, value):
+        """Set the item's review status."""
+        self._data['reviewed'] = Stamp(value)
+
+    @property
+    @auto_load
     def text(self):
         """Get the item's text."""
         return self._data['text']
@@ -340,40 +415,43 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @property
     @auto_load
     def links(self):
-        """Get a list of the item IDs this item links to."""
+        """Get a list of the item UIDs this item links to."""
         return sorted(self._data['links'])
 
     @links.setter
     @auto_save
     @auto_load
     def links(self, value):
-        """Set the list of item IDs this item links to."""
-        self._data['links'] = set(value)
+        """Set the list of item UIDs this item links to."""
+        self._data['links'] = set(UID(v) for v in value)
 
     @property
     def parent_links(self):
-        """Get a list of the item IDs this item links to."""
+        """Get a list of the item UIDs this item links to."""
         return self.links  # alias
 
     @parent_links.setter
     def parent_links(self, value):
-        """Set the list of item IDs this item links to."""
+        """Set the list of item UIDs this item links to."""
         self.links = value  # alias
 
     @property
+    @requires_tree
     def parent_items(self):
         """Get a list of items that this item links to."""
         items = []
-        for identifier in self.links:
+        for uid in self.links:
             try:
-                item = self.tree.find_item(identifier)
+                item = self.tree.find_item(uid)
             except DoorstopError:
-                item = UnknownItem(identifier)
-                logging.warning(item.exception)
+                item = UnknownItem(uid)
+                log.warning(item.exception)
             items.append(item)
         return items
 
     @property
+    @requires_tree
+    @requires_document
     def parent_documents(self):
         """Get a list of documents that this item's document should link to.
 
@@ -382,11 +460,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
            A document only has one parent.
 
         """
-        # TODO: determine if an `UnknownDocument` class is needed
         try:
             return [self.tree.find_document(self.document.prefix)]
         except DoorstopError:
-            logging.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
+            log.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
             return []
 
     # actions ################################################################
@@ -399,7 +476,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
         """
         # Lock the item
-        self.tree.vcs.lock(self.path)
+        if self.tree:
+            self.tree.vcs.lock(self.path)
         # Open in an editor
         editor.edit(self.path, tool=tool)
         # Force reloaded
@@ -408,27 +486,28 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
     @auto_save
     @auto_load
     def link(self, value):
-        """Add a new link to another item ID.
+        """Add a new link to another item UID.
 
-        :param value: item or ID
+        :param value: item or UID
 
         """
-        identifier = ID(value)
-        self._data['links'].add(identifier)
+        uid = UID(value)
+        log.info("linking to '{}'...".format(uid))
+        self._data['links'].add(uid)
 
     @auto_save
     @auto_load
     def unlink(self, value):
-        """Remove an existing link by item ID.
+        """Remove an existing link by item UID.
 
-        :param value: item or ID
+        :param value: item or UID
 
         """
-        identifier = ID(value)
+        uid = UID(value)
         try:
-            self._data['links'].remove(identifier)
+            self._data['links'].remove(uid)
         except KeyError:
-            logging.warning("link to {0} does not exist".format(identifier))
+            log.warning("link to {0} does not exist".format(uid))
 
     def get_issues(self, **kwargs):
         """Yield all the item's issues.
@@ -440,25 +519,23 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         """
         assert kwargs.get('document_hook') is None
         assert kwargs.get('item_hook') is None
-        logging.info("checking item {}...".format(self))
+        log.info("checking item {}...".format(self))
         # Verify the file can be parsed
         self.load()
         # Skip inactive items
         if not self.active:
-            logging.info("skipped inactive item: {}".format(self))
+            log.info("skipped inactive item: {}".format(self))
             return
         # Delay item save if reformatting
         if settings.REFORMAT:
             self.auto = False
         # Check text
-        if not self.text and not self.ref:
+        if not self.text:
             yield DoorstopWarning("no text")
         # Check external references
         if settings.CHECK_REF:
             try:
-                # TODO: find_ref should get 'self.tree.vcs.ignored' internally
-                self.find_ref(ignored=self.tree.vcs.ignored
-                              if self.tree else None)
+                self.find_ref()
             except DoorstopError as exc:
                 yield exc
         # Check links
@@ -473,14 +550,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
         # Check links against both document and tree
         if self.document and self.tree:
             yield from self._get_issues_both(self.document, self.tree)
+        # Check review status
+        if not self.reviewed:
+            if settings.CHECK_REVIEW_STATUS:
+                yield DoorstopWarning("unreviewed changes")
         # Reformat the file
         if settings.REFORMAT:
+            log.debug("reformatting item {}...".format(self))
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
-        logging.debug("getting issues against document: {}".format(document))
-        # Verify an item's ID matches its document's prefix
+        log.debug("getting issues against document...")
+        # Verify an item's UID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
@@ -491,11 +573,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             msg = "no links to parent document: {}".format(document.parent)
             yield DoorstopWarning(msg)
         # Verify an item's links are to the correct parent
-        for identifier in self.links:
+        for uid in self.links:
             try:
-                prefix = identifier.prefix
+                prefix = uid.prefix
             except DoorstopError:
-                msg = "invalid ID in links: {}".format(identifier)
+                msg = "invalid UID in links: {}".format(uid)
                 yield DoorstopError(msg)
             else:
                 if document.parent and prefix != document.parent:
@@ -503,53 +585,59 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                     # to contain items with a different prefix, but
                     # Doorstop will not create items like this
                     msg = "parent is '{}', but linked to: {}".format(
-                        document.parent, identifier)
+                        document.parent, uid)
                     yield DoorstopInfo(msg)
 
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
-        logging.debug("getting issues against tree: {}".format(tree))
+        log.debug("getting issues against tree...")
         # Verify an item's links are valid
         identifiers = set()
-        for identifier in self.links:
+        for uid in self.links:
             try:
-                item = tree.find_item(identifier)
+                item = tree.find_item(uid)
             except DoorstopError:
-                identifiers.add(identifier)  # keep the invalid ID
-                msg = "linked to unknown item: {}".format(identifier)
+                identifiers.add(uid)  # keep the invalid UID
+                msg = "linked to unknown item: {}".format(uid)
                 yield DoorstopError(msg)
             else:
+                # check the linked item
                 if not item.active:
                     msg = "linked to inactive item: {}".format(item)
                     yield DoorstopInfo(msg)
                 if not item.normative:
                     msg = "linked to non-normative item: {}".format(item)
                     yield DoorstopWarning(msg)
-                identifier = item.id  # reformat the item's ID
-                logging.debug("found linked item: {}".format(identifier))
-                identifiers.add(identifier)
-        # Apply the reformatted item IDs
+                # check the link status
+                if uid.stamp == Stamp(True):
+                    uid.stamp = item.stamp()  # convert True to a stamp
+                elif uid.stamp != item.stamp():
+                    if settings.CHECK_SUSPECT_LINKS:
+                        msg = "suspect link: {}".format(item)
+                        yield DoorstopWarning(msg)
+                # reformat the item's UID
+                identifier2 = UID(item.uid, stamp=uid.stamp)
+                identifiers.add(identifier2)
+        # Apply the reformatted item UIDs
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
-        logging.debug("getting issues against both: {} & {}".format(document,
-                                                                    tree))
+        log.debug("getting issues against document and tree...")
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
-            items, documents = self._find_child_objects(find_all=False)
+            items, documents = self._find_child_objects(document=document,
+                                                        tree=tree,
+                                                        find_all=False)
             if not items:
                 for document in documents:
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
-    def find_ref(self, skip=None, root=None, ignored=None):
+    @requires_tree
+    def find_ref(self):
         """Get the external file reference and line number.
-
-        :param skip: function to determine if a path is ignored
-        :param root: override path to the working copy (for testing)
-        :param ignored: override VCS ignore function (for testing)
 
         :raises: :class:`~doorstop.common.DoorstopError` when no
             reference is found
@@ -560,60 +648,51 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
             filename) or None (when no reference set)
 
         """
-        root = root or self.root
-        ignored = ignored or \
-            self.tree.vcs.ignored if self.tree else (lambda _: False)
         # Return immediately if no external reference
         if not self.ref:
-            logging.debug("no external reference to search for")
+            log.debug("no external reference to search for")
             return None, None
+        # Update the cache
+        if not settings.CACHE_PATHS:
+            pyficache.clear_file_cache()
         # Search for the external reference
-        logging.debug("seraching for ref '{}'...".format(self.ref))
+        log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        logging.debug("regex: {}".format(pattern))
+        log.trace("regex: {}".format(pattern))
         regex = re.compile(pattern)
-        logging.debug("search path: {}".format(root))
-        for root, _, filenames in os.walk(root):
-            for filename in filenames:  # pragma: no cover (integration test)
-                path = os.path.join(root, filename)
-                relpath = os.path.relpath(path, self.root)
-                # Skip the item's file while searching
-                if path == self.path:
-                    continue
-                # Skip hidden directories
-                if os.path.sep + '.' in path:
-                    continue
-                # Skip ignored paths
-                if ignored(path) or (skip and skip(path)):
-                    continue
-                # Check for a matching filename
-                if filename == self.ref:
-                    return relpath, None
-                # Skip extensions that should not be considered text
-                if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
-                    continue
-                # Search for the reference in the file
-                try:
-                    with open(path, 'r') as external:
-                        for index, line in enumerate(external):
-                            if regex.search(line):
-                                logging.debug("found ref: {}".format(relpath))
-                                return relpath, index + 1
-                except UnicodeDecodeError:
-                    pass
+        for path, filename, relpath in self.tree.vcs.paths:
+            # Skip the item's file while searching
+            if path == self.path:
+                continue
+            # Check for a matching filename
+            if filename == self.ref:
+                return relpath, None
+            # Skip extensions that should not be considered text
+            if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
+                continue
+            # Search for the reference in the file
+            lines = pyficache.getlines(path)
+            if lines is None:
+                log.trace("unable to read lines from: {}".format(path))
+                continue
+            for lineno, line in enumerate(lines, start=1):
+                if regex.search(line):
+                    log.debug("found ref: {}".format(relpath))
+                    return relpath, lineno
+
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
     def find_child_links(self, find_all=True):
-        """Get a list of item IDs that link to this item (reverse links).
+        """Get a list of item UIDs that link to this item (reverse links).
 
         :param find_all: find all items (not just the first) before returning
 
-        :return: list of found item IDs
+        :return: list of found item UIDs
 
         """
         items, _ = self._find_child_objects(find_all=find_all)
-        identifiers = [item.id for item in items]
+        identifiers = [item.uid for item in items]
         return identifiers
 
     child_links = property(find_child_links)
@@ -642,29 +721,32 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
 
     child_documents = property(find_child_documents)
 
-    def _find_child_objects(self, find_all=True):
+    def _find_child_objects(self, document=None, tree=None, find_all=True):
         """Get lists of child items and child documents.
 
+        :param document: document containing the current item
+        :param tree: tree containing the current item
         :param find_all: find all items (not just the first) before returning
 
-        :return: list of found items, list of all child Documents
+        :return: list of found items, list of all child documents
 
         """
         child_items = []
         child_documents = []
-        # Check for parent references
-        if not self.document or not self.tree:
-            logging.warning("document and tree required to find children")
+        document = document or self.document
+        tree = tree or self.tree
+        if not document or not tree:
             return child_items, child_documents
         # Find child objects
-        for document2 in self.tree:
-            if document2.parent == self.document.prefix:
+        log.debug("finding item {}'s child objects...".format(self))
+        for document2 in tree:
+            if document2.parent == document.prefix:
                 child_documents.append(document2)
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:
-                    for item in document2:
-                        if self.id in item.links:
-                            child_items.append(item)
+                    for item2 in document2:
+                        if self.uid in item2.links:
+                            child_items.append(item2)
                             if not find_all:
                                 break
         # Display found links
@@ -674,18 +756,44 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902,R0904
                 msg = "child items: {}".format(joined)
             else:
                 msg = "first child item: {}".format(child_items[0])
-            logging.debug(msg)
+            log.debug(msg)
             joined = ', '.join(str(d) for d in child_documents)
-            logging.debug("child documents: {}".format(joined))
+            log.debug("child documents: {}".format(joined))
         return sorted(child_items), child_documents
 
-    @clear_item_cache
+    @auto_load
+    def stamp(self, links=False):
+        """Hash the item's key content for later comparison."""
+        values = [self.uid, self.text, self.ref]
+        if links:
+            values.extend(self.links)
+        return Stamp(*values)
+
+    @auto_save
+    @auto_load
+    def clear(self, _inverse=False):
+        """Clear suspect links."""
+        log.info("clearing suspect links...")
+        items = self.parent_items
+        for uid in self.links:
+            for item in items:
+                if uid == item.uid:
+                    if _inverse:
+                        uid.stamp = Stamp()
+                    else:
+                        uid.stamp = item.stamp()
+
+    @auto_save
+    @auto_load
+    def review(self):
+        """Mark the item as reviewed."""
+        log.info("marking item as reviewed...")
+        self._data['reviewed'] = self.stamp(links=True)
+
+    @delete_item
     def delete(self, path=None):
         """Delete the item."""
-        # TODO: #65: move this to a decorator and remove pylint comments
-        if self.document and self in self.document._items:  # pylint:disable=W0212
-            self.document._items.remove(self)  # pylint:disable=W0212
-        super().delete(self.path)
+        pass  # the item is deleted in the decorated method
 
 
 class UnknownItem(object):
@@ -697,9 +805,9 @@ class UnknownItem(object):
     normative = False  # do not include unknown items in traceability
 
     def __init__(self, value, spec=Item):
-        self._id = ID(value)
+        self._uid = UID(value)
         self._spec = dir(spec)  # list of attribute names for warnings
-        msg = ID.UNKNOWN_MESSAGE.format(k='', i=self.id)
+        msg = UID.UNKNOWN_MESSAGE.format(k='', u=self.uid)
         self.exception = DoorstopError(msg)
 
     def __str__(self):
@@ -707,13 +815,13 @@ class UnknownItem(object):
 
     def __getattr__(self, name):
         if name in self._spec:
-            logging.debug(self.exception)
+            log.debug(self.exception)
         return self.__getattribute__(name)
 
     @property
-    def id(self):  # pylint: disable=C0103
-        """Get the item's ID."""
-        return self._id
+    def uid(self):
+        """Get the item's UID."""
+        return self._uid
 
     prefix = Item.prefix
     number = Item.number
@@ -722,3 +830,7 @@ class UnknownItem(object):
     def relpath(self):
         """Get the unknown item's relative path string."""
         return "@{}???".format(os.sep, self.UNKNOWN_PATH)
+
+    def stamp(self):  # pylint: disable=R0201
+        """Return an empty stamp."""
+        return Stamp(None)

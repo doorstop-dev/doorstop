@@ -1,15 +1,15 @@
 """Functions to build a tree and access documents and items."""
 
 import os
-import logging
 
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core import vcs
 from doorstop.core.tree import Tree
 from doorstop.core.document import Document
 
-
-_TREE = None  # implicit tree for convenience functions
+log = common.logger(__name__)
+_tree = None  # implicit tree for convenience functions
 
 
 def build(cwd=None, root=None):
@@ -19,7 +19,7 @@ def build(cwd=None, root=None):
     :param root: path to root of the working copy
 
     :raises: :class:`~doorstop.common.DoorstopError` when the tree
-    `cannot be built
+        cannot be built
 
     :return: new :class:`~doorstop.core.tree.Tree`
 
@@ -31,7 +31,7 @@ def build(cwd=None, root=None):
     root = root or vcs.find_root(cwd)
 
     # Find all documents in the working copy
-    logging.info("looking for documents in {}...".format(root))
+    log.info("looking for documents in {}...".format(root))
     _document_from_path(root, root, documents)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
@@ -40,10 +40,13 @@ def build(cwd=None, root=None):
 
     # Build the tree
     if not documents:
-        logging.info("no documents found in: {}".format(root))
-    logging.info("building tree...")
+        log.info("no documents found in: {}".format(root))
+    log.info("building tree...")
     tree = Tree.from_list(documents, root=root)
-    logging.info("built tree: {}".format(tree))
+    if len(tree):
+        log.info("built tree: {}".format(tree))
+    else:
+        log.info("tree is empty")
     return tree
 
 
@@ -62,9 +65,9 @@ def _document_from_path(path, root, documents):
         pass  # no document in directory
     else:
         if document.skip:
-            logging.debug("skipping document: {}".format(document))
+            log.debug("skipped document: {}".format(document))
         else:
-            logging.info("found document: {}".format(document))
+            log.info("found document: {}".format(document))
             documents.append(document)
 
 
@@ -75,28 +78,28 @@ def find_document(prefix):
     return document
 
 
-def find_item(identifier):
+def find_item(uid):
     """Find an item without an explicitly building a tree."""
     tree = _get_tree()
-    item = tree.find_item(identifier)
+    item = tree.find_item(uid)
     return item
 
 
 def _get_tree():
     """Get a shared tree for convenience functions."""
-    global _TREE  # pylint: disable=W0603
-    if _TREE is None:
-        _TREE = build()
-    return _TREE
+    global _tree  # pylint: disable=W0603
+    if _tree is None:
+        _tree = build()
+    return _tree
 
 
 def _set_tree(value):
     """Set the shared tree to a specific value (for testing)."""
-    global _TREE  # pylint: disable=W0603
-    _TREE = value
+    global _tree  # pylint: disable=W0603
+    _tree = value
 
 
 def _clear_tree():
     """Force the shared tree to be rebuilt."""
-    global _TREE  # pylint: disable=W0603
-    _TREE = None
+    global _tree  # pylint: disable=W0603
+    _tree = None

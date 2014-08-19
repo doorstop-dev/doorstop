@@ -17,6 +17,8 @@ docs/*.html
 *.rst
 docs/*.png
 docs/sphinx/_build
+pages/docs/
+pages/reqs/
 
 # Google Drive
 *.gdoc

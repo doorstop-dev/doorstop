@@ -1,22 +1,33 @@
 """Plug-in module to simulate the storage of requirements in a repository."""
 
-import logging
 
+from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
 
+log = common.logger(__name__)
 
-class WorkingCopy(BaseWorkingCopy):  # pragma: no cover (integration test)
+
+class WorkingCopy(BaseWorkingCopy):
 
     """Simulated working copy."""
 
     DIRECTORY = '.mockvcs'
 
+    def __init__(self, path):
+        super().__init__(path)
+        self._ignores_cache = ["*/env/*", "*/apidocs/*", "*/build/lib/*"]
+
     def lock(self, path):
-        logging.info("simulated lock on: {}...".format(path))
+        log.debug("$ simulated lock on: {}...".format(path))
 
-    def save(self, message=None):
-        logging.info("simulated save")
+    def edit(self, path):
+        log.debug("$ simulated edit on: {}...".format(path))
 
-    @property
-    def ignores(self):
-        return ("*/env/*", "*/apidocs/*", "*/build/lib/*")
+    def add(self, path):
+        log.debug("$ simulated add on: {}...".format(path))
+
+    def delete(self, path):
+        log.debug("$ simulated delete on: {}...".format(path))
+
+    def commit(self, message=None):
+        log.debug("$ simulated commit")

@@ -1,16 +1,12 @@
 """Functions to import exiting documents and items."""
 
 import os
-import logging
 import re
 import csv
 
-import yaml
-# TODO: track pylint update to resolve openpyxl false positives
-# pylint: disable=E1101
-import openpyxl  # pylint: disable=F0401
-from openpyxl import load_workbook  # pylint: disable=F0401
+import openpyxl
 
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.document import Document
 from doorstop.core.item import Item
@@ -18,7 +14,9 @@ from doorstop.core.builder import _get_tree
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
-_DOCUMENTS = []  # cache of unplaced documents
+_documents = []  # cache of unplaced documents
+
+log = common.logger(__name__)
 
 
 def import_file(path, document, ext=None, mapping=None, **kwargs):
@@ -34,7 +32,7 @@ def import_file(path, document, ext=None, mapping=None, **kwargs):
     :return: document with imported items
 
     """
-    logging.info("importing {} into {}...".format(path, document))
+    log.info("importing {} into {}...".format(path, document))
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
     func(path, document, mapping=mapping, **kwargs)
@@ -55,7 +53,7 @@ def create_document(prefix, path, parent=None, tree=None):
         tree = _get_tree()
 
     # Attempt to create a document with the given parent
-    logging.info("importing document '{}'...".format(prefix))
+    log.info("importing document '{}'...".format(prefix))
     try:
         document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
@@ -66,22 +64,20 @@ def create_document(prefix, path, parent=None, tree=None):
         document = Document.new(tree,
                                 path, tree.root, prefix,
                                 parent=parent)
-        logging.warning(exc)
-        _DOCUMENTS.append(document)
+        log.warning(exc)
+        _documents.append(document)
 
     # TODO: attempt to place unplaced documents?
 
-    # Cache and return the document
-    logging.info("imported: {}".format(document))
-    tree._document_cache[document.prefix] = document  # pylint: disable=W0212
+    log.info("imported: {}".format(document))
     return document
 
 
-def add_item(prefix, identifier, attrs=None, document=None):
+def add_item(prefix, uid, attrs=None, document=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
-    :param identifier: existing item's unique ID
+    :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
 
@@ -97,19 +93,16 @@ def add_item(prefix, identifier, attrs=None, document=None):
         tree = _get_tree()
         document = tree.find_document(prefix)
 
-    # Add an item using the specified identifier
-    logging.info("importing item '{}'...".format(identifier))
+    # Add an item using the specified UID
+    log.info("importing item '{}'...".format(uid))
     item = Item.new(tree, document,
-                    document.path, document.root, identifier,
+                    document.path, document.root, uid,
                     auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
 
-    # Cache and return the item
-    logging.info("imported: {}".format(item))
-    document._items.append(item)  # pylint: disable=W0212
-    tree._item_cache[item.id] = item  # pylint: disable=W0212
+    log.info("imported: {}".format(item))
     return item
 
 
@@ -121,24 +114,19 @@ def _file_yml(path, document, **_):
 
     """
     # Parse the file
-    logging.info("reading items in {}...".format(path))
-    with open(path, 'r', encoding='utf-8') as stream:
-        text = stream.read()
+    log.info("reading items in {}...".format(path))
+    text = common.read_text(path)
     # Load the YAML data
-        try:
-            data = yaml.load(text) or {}
-        except yaml.scanner.ScannerError as exc:  # pylint: disable=E1101
-            msg = "invalid contents: {}:\n{}".format(path, exc)
-            raise DoorstopError(msg) from None
+    data = common.load_yaml(text, path)
     # Add items
-    for identifier, attrs in data.items():
+    for uid, attrs in data.items():
         try:
-            item = document.find_item(identifier)
+            item = document.find_item(uid)
         except DoorstopError:
-            pass
+            pass  # no matching item
         else:
             item.delete()
-        add_item(document.prefix, identifier, attrs=attrs, document=document)
+        add_item(document.prefix, uid, attrs=attrs, document=document)
 
 
 def _file_csv(path, document, delimiter=',', mapping=None):
@@ -153,7 +141,7 @@ def _file_csv(path, document, delimiter=',', mapping=None):
     rows = []
 
     # Parse the file
-    logging.info("reading rows in {}...".format(path))
+    log.info("reading rows in {}...".format(path))
     with open(path, 'r', encoding='utf-8') as stream:
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
@@ -199,13 +187,13 @@ def _file_xlsx(path, document, mapping=None):
     data = []
 
     # Parse the file
-    logging.debug("reading rows in {}...".format(path))
-    workbook = load_workbook(path)
+    log.debug("reading rows in {}...".format(path))
+    workbook = openpyxl.load_workbook(path)
     worksheet = workbook.active
 
     # Locate the bottom right cell in the workbook that contains cell info
     _highest_column = worksheet.get_highest_column()
-    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)
+    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)  # pylint: disable=E1101
     _highest_row = worksheet.get_highest_row()
     last_cell = _highest_letter + str(_highest_row)
 
@@ -233,14 +221,14 @@ def _itemize(header, data, document, mapping=None):
     :param mapping: dictionary mapping custom to standard attribute names
 
     """
-    logging.info("converting rows to items...")
-    logging.debug("header: {}".format(header))
+    log.info("converting rows to items...")
+    log.debug("header: {}".format(header))
     for row in data:
-        logging.debug("row: {}".format(row))
+        log.debug("row: {}".format(row))
 
         # Parse item attributes
         attrs = {}
-        identifier = None
+        uid = None
         for index, value in enumerate(row):
 
             # Key lookup
@@ -252,13 +240,13 @@ def _itemize(header, data, document, mapping=None):
             for custom, standard in (mapping or {}).items():
                 if key == custom.lower():
                     msg = "mapped: '{}' => '{}'".format(key, standard)
-                    logging.debug(msg)
+                    log.debug(msg)
                     key = standard
                     break
 
             # Convert values for particular keys
-            if key == 'id':
-                identifier = value
+            if key in ('uid', 'id'):  # 'id' for backwards compatibility
+                uid = value
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
@@ -266,23 +254,23 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = value
 
         # Convert the row to an item
-        if identifier:
+        if uid:
 
             # Delete the old item
             try:
-                item = document.find_item(identifier)
+                item = document.find_item(uid)
             except DoorstopError:
-                logging.debug("not yet an item: {}".format(identifier))
+                log.debug("not yet an item: {}".format(uid))
             else:
-                logging.debug("deleting old item: {}".format(identifier))
+                log.debug("deleting old item: {}".format(uid))
                 item.delete()
 
             # Import the item
             try:
-                add_item(document.prefix, identifier,
-                         attrs=attrs, document=document)
+                item = add_item(document.prefix, uid,
+                                attrs=attrs, document=document)
             except DoorstopError as exc:
-                logging.warning(exc)
+                log.warning(exc)
 
 
 def _split_list(value):
@@ -316,5 +304,5 @@ def check(ext):
     except KeyError:
         raise exc from None
     else:
-        logging.debug("found file reader for: {}".format(ext))
+        log.debug("found file reader for: {}".format(ext))
         return func

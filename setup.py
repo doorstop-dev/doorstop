@@ -6,7 +6,7 @@ Setup script for Doorstop.
 
 import setuptools
 
-from doorstop import __project__, __version__, CLI, GUI, DESCRIPTION
+from doorstop import __project__, __version__, CLI, GUI, SERVER, DESCRIPTION
 
 import os
 if os.path.exists('README.rst'):
@@ -27,8 +27,11 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={'doorstop.core': ['files/*']},
 
-    entry_points={'console_scripts': [CLI + ' = doorstop.cli.main:main',
-                                      GUI + ' = doorstop.gui.main:main']},
+    entry_points={
+        'console_scripts': [CLI + ' = doorstop.cli.main:main',
+                            GUI + ' = doorstop.gui.main:main',
+                            SERVER + ' = doorstop.server.main:main']
+    },
 
     long_description=(README + '\n' + CHANGES),
     license='LGPL',
@@ -49,5 +52,8 @@ setuptools.setup(
         "PyYAML >= 3.10, < 4",
         "Markdown >= 2, < 3",
         "openpyxl >= 2, < 3",
+        "bottle >= 0.12, < 0.13",
+        "requests >= 2, < 3",
+        "pyficache >= 0.2.3, < 0.3",
     ],
 )
