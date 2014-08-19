@@ -60,7 +60,7 @@ class Prefix(str):
         >>> Prefix.load_prefix("abc 123")
         'abc'
         """
-        return str(value).split(' ')[0]
+        return str(value).split(' ')[0] if value else ''
 
 
 class UID(object):
@@ -100,7 +100,7 @@ class UID(object):
         self.stamp = stamp or Stamp()
         # Join values
         if len(values) == 0:
-            self.value = ""
+            self.value = ''
         elif len(values) == 1:
             value = values[0]
             if isinstance(value, str) and ':' in value:
@@ -112,7 +112,7 @@ class UID(object):
                 self.value = str(pair[0])
                 self.stamp = self.stamp or Stamp(pair[1])
             else:
-                self.value = str(value)
+                self.value = str(value) if values[0] else ''
         elif len(values) == 4:
             self.value = UID.join_uid(*values)
         else:
@@ -270,7 +270,7 @@ class Text(str):
         'list:\n\n- a\n- b'
 
         """
-        return Text.join(value)
+        return Text.join(value if value else "")
 
     @staticmethod
     def save_text(text, end='\n'):
@@ -380,7 +380,7 @@ class Level(object):
     identifying "heading" levels when written to file.
     """
 
-    def __init__(self, value, heading=None):
+    def __init__(self, value=None, heading=None):
         """Initialize an item level from a sequence of numbers.
 
         :param value: sequence of int, float, or period-delimited string
@@ -542,6 +542,9 @@ class Level(object):
         [1]
 
         """
+        # Correct for default values
+        if not value:
+            value = 1
         # Correct for integers (e.g. 42) and floats (e.g. 4.2) in YAML
         if isinstance(value, (int, float)):
             value = str(value)
@@ -555,7 +558,7 @@ class Level(object):
         # Clean up multiple trailing zeros
         parts = [int(n) for n in nums]
         if parts and parts[-1] == 0:
-            while parts[-1] == 0:
+            while parts and parts[-1] == 0:
                 del parts[-1]
             parts.append(0)
 
