@@ -4,7 +4,7 @@ Changelog
 0.7.1 (dev)
 -----------
 
-- TBD
+- Fixed bug importing items with empty attributes.
 
 0.7 (2014/07/08)
 ----------------
