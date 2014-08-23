@@ -275,7 +275,9 @@ class Text(str):
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        return _Literal(Text.wrap(Text.sbd(str(text), end=end)))
+        split = Text.sbd(str(text), end=end)
+        wrapped = Text.wrap(split)
+        return _Literal(wrapped)
 
     # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
     RE_SENTENCE_BOUNDARIES = re.compile(r"""
