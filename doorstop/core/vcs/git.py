@@ -24,7 +24,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('git', 'add', path)
 
     def delete(self, path):
-        self.call('git', 'rm', path)
+        self.call('git', 'rm', path, '--force', '--quiet')
 
     def commit(self, message=None):
         message = message or input("Commit message: ")  # pylint: disable=W0141
