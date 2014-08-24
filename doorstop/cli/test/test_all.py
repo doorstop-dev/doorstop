@@ -295,6 +295,7 @@ class TestReorder(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 @patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestEdit(unittest.TestCase):
 
@@ -497,6 +498,7 @@ class TestReview(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 @patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestImport(unittest.TestCase):
 
@@ -531,6 +533,7 @@ class TestImport(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 class TestImportFile(MockTestCase):
 
     """Integration tests for the 'doorstop import' command."""
@@ -605,6 +608,22 @@ class TestImportFile(MockTestCase):
         # Assert
         path = os.path.join(dirpath, 'REQ001.yml')
         self.assertTrue(os.path.isfile(path))
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
+class TestImportServer(unittest.TestCase):
+
+    """Integration tests for the 'doorstop import' command using a server."""
+
+    def tearDown(self):
+        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(REQS, 'REQ099.yml'))
+
+    def test_import_item_force(self):
+        """Verify 'doorstop import' can import an item without a server."""
+        self.assertIs(None,
+                      main(['import', '--item', 'REQ', 'REQ099', '--force']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)

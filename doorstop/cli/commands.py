@@ -100,12 +100,13 @@ def run_add(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        tree = build(cwd=cwd, root=args.project)
         if args.force:
             log.warn("creating items without the server...")
         else:
             server.check()
-        tree = build(cwd=cwd, root=args.project)
-        tree._get_next_number = server.get_next_number
+            tree._get_next_number = server.get_next_number
         document = tree.find_document(args.prefix)
         for _ in range(args.count):
             item = document.add_item(level=args.level)
@@ -330,19 +331,16 @@ def run_import(args, cwd, error, catch=True, _tree=None):
 
     # Import document or item
     with utilities.capture(catch=catch) as success:
+        if args.force:
+            log.warn("creating items without the server...")
+            get_next_number = None
+        else:
+            server.check()
+            get_next_number = server.get_next_number
         if args.path:
-            if args.force:
-                log.warn("creating items without the server...")
-            else:
-                server.check()
             tree = _tree or build(cwd=cwd, root=args.project)
-            tree._get_next_number = server.get_next_number
+            tree._get_next_number = get_next_number
             document = tree.find_document(args.prefix)
-            if args.force:
-                log.warn("creating items without the server...")
-            else:
-                server.check()
-                tree._get_next_number = server.get_next_number
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
             show(msg, flush=True)
@@ -354,7 +352,7 @@ def run_import(args, cwd, error, catch=True, _tree=None):
         elif args.item:
             prefix, uid = args.item
             item = importer.add_item(prefix, uid, attrs=attrs,
-                                     get_next_number=server.get_next_number)
+                                     get_next_number=get_next_number)
     if not success:
         return False
 

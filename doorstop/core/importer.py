@@ -76,13 +76,14 @@ def create_document(prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(prefix, uid, attrs=None, document=None):
+def add_item(prefix, uid, attrs=None, document=None, get_next_number=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
     :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
+    :param get_next_number: server method to get the next item number
 
     :return: imported Item
 
@@ -95,6 +96,9 @@ def add_item(prefix, uid, attrs=None, document=None):
         # Get an implicit tree and document
         tree = _get_tree()
         document = tree.find_document(prefix)
+    # TODO: find a better way to do this
+    if get_next_number:  # pragma: no cover
+        tree._get_next_number = get_next_number
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
@@ -255,7 +259,7 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = _split_list(value)
             elif key == 'active':
                 # require explicit disabling
-                attrs['active'] = not value == False
+                attrs['active'] = value is not False
             else:
                 attrs[key] = value
 
