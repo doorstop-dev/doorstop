@@ -15,12 +15,15 @@ class TestPrefix(unittest.TestCase):
         self.prefix2 = Prefix('TST (@/tst)')
 
     def test_init_empty(self):
-        """Verify prefixes are parsed correctly(empty)."""
+        """Verify prefixes are parsed correctly (empty)."""
         self.assertEqual(Prefix(''), Prefix())
+        self.assertEqual(Prefix(''), Prefix(None))
 
     def test_init_instance(self):
         """Verify prefixes are parsed correctly (instance)."""
         self.assertIs(self.prefix1, Prefix(self.prefix1))
+        self.assertEqual(Prefix(''), Prefix(None))
+        self.assertEqual(Prefix(''), Prefix(''))
 
     def test_init_reseved(self):
         """Verify an exception is raised for a reserved word."""
@@ -88,7 +91,8 @@ class TestUID(unittest.TestCase):
 
     def test_init_empty(self):
         """Verify UIDs are parsed correctly (empty)."""
-        self.assertEqual(UID(""), UID())
+        self.assertEqual(UID(''), UID())
+        self.assertEqual(UID(''), UID(None))
 
     def test_init_instance(self):
         """Verify UIDs are parsed correctly (instance)."""
@@ -165,6 +169,8 @@ class TestText(unittest.TestCase):
     def test_init(self):
         """Verify Text is parsed correctly."""
         self.assertEqual(Text(""), Text())
+        self.assertEqual(Text(""), Text(None))
+        self.assertEqual(Text(""), Text(""))
 
     def test_repr(self):
         """Verify text can be represented."""
@@ -197,10 +203,17 @@ class TestLevel(unittest.TestCase):
         """Verify levels can be parsed."""
         self.assertEqual((1, 0), Level((1, 0)).value)
         self.assertEqual((1,), Level((1)).value)
-        self.assertEqual((1,), Level(()).value)
         self.assertEqual((1, 0), Level(Level('1.0')).value)
         self.assertEqual((1, 0), Level(1, heading=True).value)
         self.assertEqual((1,), Level((1, 0), heading=False).value)
+        self.assertEqual((1,), Level())
+        self.assertEqual((1,), Level(None))
+        self.assertEqual((1,), Level(()).value)
+        self.assertEqual((1,), Level(0).value)
+        self.assertEqual((1,), Level('').value)
+        self.assertEqual((0,), Level((0,)).value)
+        self.assertEqual((0,), Level('0').value)
+        self.assertEqual((0,), Level('0.0').value)
 
     def test_repr(self):
         """Verify levels can be represented."""
