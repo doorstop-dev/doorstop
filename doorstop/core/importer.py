@@ -253,6 +253,9 @@ def _itemize(header, data, document, mapping=None):
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
+            elif key == 'active':
+                # require explicit disabling
+                attrs['active'] = not value == False
             else:
                 attrs[key] = value
 

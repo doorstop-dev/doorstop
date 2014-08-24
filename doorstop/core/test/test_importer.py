@@ -182,8 +182,46 @@ class TestModule(unittest.TestCase):
         self.assertIs(mock_document, kwargs['document'])
 
     @patch('doorstop.core.importer.add_item')
+    def test_itemize_implicit_active(self, mock_add_item):
+        """Verify item data can be converted to items (implicit active)."""
+        header = ['uid', 'text', 'links', 'ext1', 'active']
+        data = [['req2', '', '', False, '']]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual('PREFIX', args[0])
+        self.assertEqual('req2', args[1])
+        expected_attrs = {'active': True,
+                          'ext1': False,
+                          'links': [],
+                          'text': ''}
+        self.assertEqual(expected_attrs, kwargs['attrs'])
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_explicit_inactive(self, mock_add_item):
+        """Verify item data can be converted to items (explicit inactive)."""
+        header = ['uid', 'text', 'links', 'ext1', 'active']
+        data = [['req2', '', '', False, False]]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual('PREFIX', args[0])
+        self.assertEqual('req2', args[1])
+        expected_attrs = {'active': False,
+                          'ext1': False,
+                          'links': [],
+                          'text': ''}
+        self.assertEqual(expected_attrs, kwargs['attrs'])
+
+    @patch('doorstop.core.importer.add_item')
     def test_itemize_with_mapping(self, mock_add_item):
-        """Verify item data can be converted to items."""
+        """Verify item data can be converted to items with mapping."""
         header = ['myid', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
                 ['req2', 'text2', 'sys1,sys2', None]]
