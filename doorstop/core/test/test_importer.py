@@ -227,17 +227,20 @@ class TestModule(unittest.TestCase):
         data = [
             ['req1', 'text1', '', 'val1'],
             ['req2', '', 'sys1,sys2', False],
-            ['', 'A new item.', '', ''],  # blank UID
+            [None, 'A new item.', '', ''],  # blank UID: None
+            ['', 'A new item.', '', ''],  # blank UID: empty
+            [' ', 'A new item.', '', ''],  # blank UID: whitespace
             ['', '', '', ''],  # skipped
             ['(auto)', 'Another new item.', '', ''],  # placeholder UID
         ]
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
-        mock_document.next = 3
+        mock_document.next_number = 3
+        mock_document.digits = 3
         # Act
         importer._itemize(header, data, mock_document)  # pylint: disable=W0212
         # Assert
-        self.assertEqual(4, mock_add_item.call_count)
+        self.assertEqual(6, mock_add_item.call_count)
 
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):

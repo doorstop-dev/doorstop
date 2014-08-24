@@ -100,22 +100,15 @@ def run_add(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = build(cwd=cwd, root=args.project)
-        document = tree.find_document(args.prefix)
         if args.force:
             log.warn("creating items without the server...")
         else:
             server.check()
+        tree = build(cwd=cwd, root=args.project)
+        tree._get_next_number = server.get_next_number
+        document = tree.find_document(args.prefix)
         for _ in range(args.count):
-            number = 0
-            while number is not None and number < document.next:
-                if number:
-                    log.warn("server is behind, requesting next number...")
-                if args.force:
-                    number = None
-                else:
-                    number = server.get_next_number(document.prefix)
-            item = document.add_item(number=number, level=args.level)
+            item = document.add_item(level=args.level)
             show("added item: {} ({})".format(item.uid, item.relpath))
 
     if not success:
@@ -338,8 +331,18 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     # Import document or item
     with utilities.capture(catch=catch) as success:
         if args.path:
+            if args.force:
+                log.warn("creating items without the server...")
+            else:
+                server.check()
             tree = _tree or build(cwd=cwd, root=args.project)
+            tree._get_next_number = server.get_next_number
             document = tree.find_document(args.prefix)
+            if args.force:
+                log.warn("creating items without the server...")
+            else:
+                server.check()
+                tree._get_next_number = server.get_next_number
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
             show(msg, flush=True)
@@ -350,7 +353,8 @@ def run_import(args, cwd, error, catch=True, _tree=None):
                                                 parent=args.parent)
         elif args.item:
             prefix, uid = args.item
-            item = importer.add_item(prefix, uid, attrs=attrs)
+            item = importer.add_item(prefix, uid, attrs=attrs,
+                                     get_next_number=server.get_next_number)
     if not success:
         return False
 

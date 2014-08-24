@@ -211,9 +211,15 @@ class TestDocument(unittest.TestCase):
         """Verify the maximum item level depth can be determined."""
         self.assertEqual(3, self.document.depth)
 
-    def test_next(self):
+    def test_next_number(self):
         """Verify the next item number can be determined."""
-        self.assertEqual(5, self.document.next)
+        self.assertEqual(5, self.document.next_number)
+
+    def test_next_number_server(self):
+        """Verify the next item number can be determined with a server."""
+        self.document.tree = MagicMock()
+        self.document.tree._get_next_number = Mock(side_effect=[1, 42])
+        self.assertEqual(42, self.document.next_number)
 
     def test_index_get(self):
         """Verify a document's index can be retrieved."""
@@ -310,6 +316,7 @@ class TestDocument(unittest.TestCase):
         """Verify an added item is cached."""
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
+        self.document.tree._get_next_number = None
         item = self.document.add_item(reorder=False)
         self.assertEqual(item, self.document.tree._item_cache[item.uid])
 

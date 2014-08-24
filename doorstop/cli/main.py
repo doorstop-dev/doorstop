@@ -22,6 +22,13 @@ def main(args=None):  # pylint: disable=R0915
                          help="path to the root of the project")
     project.add_argument('--no-cache', action='store_true',
                          help=argparse.SUPPRESS)
+    server = argparse.ArgumentParser(add_help=False)
+    server.add_argument('--server', metavar='HOST',
+                        help="IP address or hostname for a running server")
+    server.add_argument('--port', metavar='NUM', type=int,
+                        help="use a custom port for the server")
+    server.add_argument('-f', '--force', action='store_true',
+                        help="perform the action without the server")
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
     group = debug.add_mutually_exclusive_group()
@@ -30,7 +37,7 @@ def main(args=None):  # pylint: disable=R0915
     group.add_argument('-q', '--quiet', action='store_const', const=-1,
                        dest='verbose', help="only display errors and prompts")
     shared = {'formatter_class': common.HelpFormatter,
-              'parents': [project, debug]}
+              'parents': [project, server, debug]}
 
     # Build main parser
     parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION,
@@ -118,13 +125,6 @@ def _add(subs, shared):
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
                      help="number of items to create (default: 1)")
-    # server arguments
-    sub.add_argument('-S', '--server', metavar='HOST',
-                     help="IP address or hostname for a running server")
-    sub.add_argument('-P', '--port', metavar='NUM', type=int,
-                     help="use a custom port for the server")
-    sub.add_argument('-f', '--force', action='store_true',
-                     help="perform the action without the server")
 
 
 def _remove(subs, shared):

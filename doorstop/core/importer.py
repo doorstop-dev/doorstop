@@ -257,17 +257,9 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = value
 
         # Get the next UID if the row is a new item
-        if attrs.get('text') and uid in (None, AUTO):
-            # TODO: this code is common with `run_add`
-            number = 0
-            while number is not None and number < document.next:
-                if number:
-                    log.warn("server is behind, requesting next number...")
-                if 0:  # args.force:
-                    number = None
-                else:
-                    number = server.get_next_number(document.prefix)
-            uid = UID(document.prefix, document.sep, number, document.digits)
+        if attrs.get('text') and uid in (None, '', AUTO):
+            uid = UID(document.prefix, document.sep,
+                      document.next_number, document.digits)
 
         # Convert the row to an item
         if uid:

@@ -195,12 +195,11 @@ class TestAddServer(unittest.TestCase):
         self.assertIs(None, main(['add', 'TUT']))
 
     @patch('doorstop.server.check', Mock())
-    @patch('doorstop.server.get_next_number', Mock(side_effect=[1, 42]))
     @patch('doorstop.core.document.Document.add_item')
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
-        mock_add_item.assert_called_once_with(number=42, level=None)
+        mock_add_item.assert_called_once_with(level=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
