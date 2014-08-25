@@ -12,9 +12,9 @@ from doorstop.core.types import UID
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
-from doorstop import server  # TODO: only import server in the CLI
+from doorstop import settings
 
-AUTO = "(auto)"  # placeholder for new item UIDs
+
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
 _documents = []  # cache of unplaced documents
@@ -264,12 +264,12 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = value
 
         # Get the next UID if the row is a new item
-        if attrs.get('text') and uid in (None, '', AUTO):
+        if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
             uid = UID(document.prefix, document.sep,
                       document.next_number, document.digits)
 
         # Convert the row to an item
-        if uid:
+        if uid and uid != settings.PLACEHOLDER:
 
             # Delete the old item
             try:

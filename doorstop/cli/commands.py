@@ -367,13 +367,15 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     return True
 
 
-def run_export(args, cwd, error, catch=True):
+def run_export(args, cwd, error, catch=True, auto=False):
     """Process arguments and run the `doorstop export` subcommand.
 
     :param args: Namespace of CLI arguments
     :param cwd: current working directory
     :param error: function to call for CLI errors
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    :param auto: include placeholders for new items on import
 
     """
     # Parse arguments
@@ -393,12 +395,12 @@ def run_export(args, cwd, error, catch=True):
     if args.path:
         if whole_tree:
             show("exporting tree to '{}'...".format(args.path), flush=True)
-            path = exporter.export(tree, args.path, ext)
+            path = exporter.export(tree, args.path, ext, auto=auto)
         else:
             msg = "exporting document {} to '{}'...".format(document,
                                                             args.path)
             show(msg, flush=True)
-            path = exporter.export(document, args.path, ext)
+            path = exporter.export(document, args.path, ext, auto=auto)
         if path:
             show("exported: {}".format(path))
 
@@ -530,7 +532,7 @@ def _export_import(args, cwd, error, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, error, catch=False)
+    get('export')(args, cwd, error, catch=False, auto=True)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)
