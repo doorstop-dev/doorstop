@@ -17,8 +17,8 @@ VERBOSE3_LOGGING_LEVEL = logging.DEBUG - 1
 SEP_CHARS = "-_."  # valid prefix/number separators
 SKIP_EXTS = ['.yml', '.csv', '.tsv']  # extensions skipped in reference search
 RESERVED_WORDS = 'all',  # keywords that cannot be used for prefixes
-PLACEHOLDER = "(auto)"  # placeholder for new item UIDs on export/import
-PLACEHOLDER_COUNT = 5  # number of placeholders to include on export
+PLACEHOLDER = "..."  # placeholder for new item UIDs on export/import
+PLACEHOLDER_COUNT = 1  # number of placeholders to include on export
 
 # Formatting settings
 MAX_LINE_LENGTH = 79  # line length to trigger multiline on extended attributes

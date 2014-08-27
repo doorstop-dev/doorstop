@@ -174,7 +174,9 @@ def run_edit(args, cwd, error, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the item or document
-        tree = build(cwd=cwd, root=args.project)
+        request_next_number = _request_next_number(args)
+        tree = build(cwd=cwd, root=args.project,
+                     request_next_number=request_next_number)
         if not args.document:
             try:
                 item = tree.find_item(args.label)

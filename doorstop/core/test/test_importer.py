@@ -269,7 +269,7 @@ class TestModule(unittest.TestCase):
             ['', 'A new item.', '', ''],  # blank UID: empty
             [' ', 'A new item.', '', ''],  # blank UID: whitespace
             ['', '', '', ''],  # skipped
-            ['(auto)', 'Another new item.', '', ''],  # placeholder UID
+            ['...', 'Another new item.', '', ''],  # placeholder UID
         ]
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'

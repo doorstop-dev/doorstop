@@ -158,4 +158,4 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         worksheet = workbook.active
         for data in worksheet.rows:
             rows.append([cell.value for cell in data])
-        self.assertEqual("(auto)", rows[-1][0])
+        self.assertEqual("...", rows[-1][0])
