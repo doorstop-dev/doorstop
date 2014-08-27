@@ -285,12 +285,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             number = 1
         log.debug("next number (local): {}".format(number))
 
-        if self.tree and self.tree._get_next_number:
+        if self.tree and self.tree.request_next_number:
             remote_number = 0
             while remote_number is not None and remote_number < number:
                 if remote_number:
                     log.warn("server is behind, requesting next number...")
-                remote_number = self.tree._get_next_number(self.prefix)
+                remote_number = self.tree.request_next_number(self.prefix)
                 log.debug("next number (remote): {}".format(remote_number))
             if remote_number:
                 number = remote_number

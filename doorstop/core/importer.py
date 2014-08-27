@@ -76,14 +76,14 @@ def create_document(prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(prefix, uid, attrs=None, document=None, get_next_number=None):
+def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
     :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
-    :param get_next_number: server method to get the next item number
+    :param request_next_number: server method to get a document's next number
 
     :return: imported Item
 
@@ -94,11 +94,8 @@ def add_item(prefix, uid, attrs=None, document=None, get_next_number=None):
         assert tree  # tree should be set internally
     else:
         # Get an implicit tree and document
-        tree = _get_tree()
+        tree = _get_tree(request_next_number=request_next_number)
         document = tree.find_document(prefix)
-    # TODO: find a better way to do this
-    if get_next_number:  # pragma: no cover
-        tree._get_next_number = get_next_number
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))

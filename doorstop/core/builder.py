@@ -12,11 +12,12 @@ log = common.logger(__name__)
 _tree = None  # implicit tree for convenience functions
 
 
-def build(cwd=None, root=None):
+def build(cwd=None, root=None, request_next_number=None):
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
     :param root: path to root of the working copy
+    :param request_next_number: server method to get a document's next number
 
     :raises: :class:`~doorstop.common.DoorstopError` when the tree
         cannot be built
@@ -43,6 +44,7 @@ def build(cwd=None, root=None):
         log.info("no documents found in: {}".format(root))
     log.info("building tree...")
     tree = Tree.from_list(documents, root=root)
+    tree.request_next_number = request_next_number
     if len(tree):
         log.info("built tree: {}".format(tree))
     else:
@@ -85,11 +87,12 @@ def find_item(uid):
     return item
 
 
-def _get_tree():
+def _get_tree(request_next_number=None):
     """Get a shared tree for convenience functions."""
     global _tree  # pylint: disable=W0603
     if _tree is None:
         _tree = build()
+    _tree.request_next_number = request_next_number
     return _tree
 
 

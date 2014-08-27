@@ -5,7 +5,6 @@ import time
 
 from doorstop import common
 from doorstop.cli import utilities
-from doorstop.cli.utilities import show, ask
 from doorstop.core.builder import build
 from doorstop.core import editor, importer, exporter, publisher
 from doorstop import server
@@ -33,17 +32,21 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
 
     """
     with utilities.capture(catch=catch) as success:
-        show("building tree...", flush=True)
+
+        utilities.show("building tree...", flush=True)
         tree = build(cwd=cwd, root=args.project)
-        show("loading documents...", flush=True)
+
+        utilities.show("loading documents...", flush=True)
         tree.load()
-        show("validating items...", flush=True)
+
+        utilities.show("validating items...", flush=True)
         valid = tree.validate()
+
     if not success:
         return False
 
     if len(tree) > 1 and valid:
-        show('\n' + tree.draw() + '\n')
+        utilities.show('\n' + tree.draw() + '\n')
 
     return valid
 
@@ -58,13 +61,19 @@ def run_create(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        # get the tree
         tree = build(cwd=cwd, root=args.project)
+
+        # create a new document
         document = tree.create_document(args.path, args.prefix,
                                         parent=args.parent, digits=args.digits)
+
     if not success:
         return False
 
-    show("created document: {} ({})".format(document.prefix, document.relpath))
+    utilities.show("created document: {} ({})".format(document.prefix,
+                                                      document.relpath))
     return True
 
 
@@ -78,14 +87,19 @@ def run_delete(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        # get the document
         tree = build(cwd=cwd, root=args.project)
         document = tree.find_document(args.prefix)
+
+        # delete it
         prefix, relpath = document.prefix, document.relpath
         document.delete()
+
     if not success:
         return False
 
-    show("deleted document: {} ({})".format(prefix, relpath))
+    utilities.show("deleted document: {} ({})".format(prefix, relpath))
 
     return True
 
@@ -101,16 +115,17 @@ def run_add(args, cwd, _, catch=True):
     """
     with utilities.capture(catch=catch) as success:
 
-        tree = build(cwd=cwd, root=args.project)
-        if args.force:
-            log.warn("creating items without the server...")
-        else:
-            server.check()
-            tree._get_next_number = server.get_next_number
+        # get the document
+        request_next_number = _request_next_number(args)
+        tree = build(cwd=cwd, root=args.project,
+                     request_next_number=request_next_number)
         document = tree.find_document(args.prefix)
+
+        # add items to it
         for _ in range(args.count):
             item = document.add_item(level=args.level)
-            show("added item: {} ({})".format(item.uid, item.relpath))
+            utilities.show("added item: {} ({})".format(item.uid,
+                                                        item.relpath))
 
     if not success:
         return False
@@ -128,13 +143,18 @@ def run_remove(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        # get the item
         tree = build(cwd=cwd, root=args.project)
         item = tree.find_item(args.uid)
+
+        # delete it
         item.delete()
+
     if not success:
         return False
 
-    show("removed item: {} ({})".format(item.uid, item.relpath))
+    utilities.show("removed item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -152,8 +172,9 @@ def run_edit(args, cwd, error, catch=True):
     ext = utilities.get_ext(args, error, '.yml', '.yml', whole_tree=False)
 
     with utilities.capture(catch=catch) as success:
+
+        # get the item or document
         tree = build(cwd=cwd, root=args.project)
-        # find item or document
         if not args.document:
             try:
                 item = tree.find_item(args.label)
@@ -162,16 +183,18 @@ def run_edit(args, cwd, error, catch=True):
                     raise exc from None
         if not item:
             document = tree.find_document(args.label)
-        # edit item or document
+
+        # edit it
         if item:
             item.edit(tool=args.tool)
         else:
             _export_import(args, cwd, error, document, ext)
+
     if not success:
         return False
 
     if item:
-        show("opened item: {} ({})".format(item.uid, item.relpath))
+        utilities.show("opened item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -188,38 +211,48 @@ def run_reorder(args, cwd, error, catch=True, _tree=None):
     reordered = False
 
     with utilities.capture(catch=catch) as success:
+
+        # get the document
         tree = _tree or build(cwd=cwd, root=args.project)
         document = tree.find_document(args.prefix)
+
     if not success:
         return False
 
     with utilities.capture(catch=catch) as success:
+
         # automatically order
         if args.auto:
-            show("reordering document {}...".format(document), flush=True)
+            msg = "reordering document {}...".format(document)
+            utilities.show(msg, flush=True)
             document.reorder(manual=False)
             reordered = True
+
         # or, reorder from a previously updated index
         elif document.index:
             relpath = os.path.relpath(document.index, cwd)
-            if ask("reorder from '{}'?".format(relpath)):
-                show("reordering document {}...".format(document), flush=True)
+            if utilities.ask("reorder from '{}'?".format(relpath)):
+                msg = "reordering document {}...".format(document)
+                utilities.show(msg, flush=True)
                 document.reorder(automatic=not args.manual)
                 reordered = True
             else:
                 del document.index
+
         # or, create a new index to update
         else:
             document.index = True  # create index
             relpath = os.path.relpath(document.index, cwd)
             editor.edit(relpath, tool=args.tool)
             get('reorder')(args, cwd, error, catch=False, _tree=tree)
+
     if not success:
-        show("after fixing the error: doorstop reorder {}".format(document))
+        msg = "after fixing the error: doorstop reorder {}".format(document)
+        utilities.show(msg)
         return False
 
     if reordered:
-        show("reordered document: {}".format(document))
+        utilities.show("reordered document: {}".format(document))
 
     return True
 
@@ -234,13 +267,21 @@ def run_link(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        # get the tree
         tree = build(cwd=cwd, root=args.project)
+
+        # link items
         child, parent = tree.link_items(args.child, args.parent)
+
     if not success:
         return False
 
-    msg = "linked items: {} ({}) -> {} ({})"
-    show(msg.format(child.uid, child.relpath, parent.uid, parent.relpath))
+    msg = "linked items: {} ({}) -> {} ({})".format(child.uid,
+                                                    child.relpath,
+                                                    parent.uid,
+                                                    parent.relpath)
+    utilities.show(msg)
 
     return True
 
@@ -255,13 +296,21 @@ def run_unlink(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
+        # get the tree
         tree = build(cwd=cwd, root=args.project)
+
+        # unlink items
         child, parent = tree.unlink_items(args.child, args.parent)
+
     if not success:
         return False
 
-    msg = "unlinked items: {} ({}) -> {} ({})"
-    show(msg.format(child.uid, child.relpath, parent.uid, parent.relpath))
+    msg = "unlinked items: {} ({}) -> {} ({})".format(child.uid,
+                                                      child.relpath,
+                                                      parent.uid,
+                                                      parent.relpath)
+    utilities.show(msg)
 
     return True
 
@@ -276,9 +325,12 @@ def run_clear(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
         for item in _iter_items(args, cwd, error):
-            show("clearing item {}'s suspect links...".format(item.uid))
+            msg = "clearing item {}'s suspect links...".format(item.uid)
+            utilities.show(msg)
             item.clear()
+
     if not success:
         return False
 
@@ -295,9 +347,11 @@ def run_review(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+
         for item in _iter_items(args, cwd, error):
-            show("marking item {} as reviewed...".format(item.uid))
+            utilities.show("marking item {} as reviewed...".format(item.uid))
             item.review()
+
     if not success:
         return False
 
@@ -314,8 +368,6 @@ def run_import(args, cwd, error, catch=True, _tree=None):
 
     """
     document = item = None
-
-    # Parse arguments
     attrs = utilities.literal_eval(args.attrs, error)
     mapping = utilities.literal_eval(args.map, error)
     if args.path:
@@ -329,40 +381,40 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     elif not (args.document or args.item):
         error("specify [path], '--document', or '--item' to import")
 
-    # Import document or item
     with utilities.capture(catch=catch) as success:
-        if args.force:
-            log.warn("creating items without the server...")
-            get_next_number = None
-        else:
-            server.check()
-            get_next_number = server.get_next_number
+
         if args.path:
-            tree = _tree or build(cwd=cwd, root=args.project)
-            tree._get_next_number = get_next_number
+
+            # get the document
+            request_next_number = _request_next_number(args)
+            tree = _tree or build(cwd=cwd, root=args.project,
+                                  request_next_number=request_next_number)
             document = tree.find_document(args.prefix)
+
+            # import items into it
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
-            show(msg, flush=True)
+            utilities.show(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
+
         elif args.document:
             prefix, path = args.document
             document = importer.create_document(prefix, path,
                                                 parent=args.parent)
         elif args.item:
             prefix, uid = args.item
+            request_next_number = _request_next_number(args)
             item = importer.add_item(prefix, uid, attrs=attrs,
-                                     get_next_number=get_next_number)
+                                     request_next_number=request_next_number)
     if not success:
         return False
 
-    # Display result
     if document:
-        show("imported document: {} ({})".format(document.prefix,
-                                                 document.relpath))
+        utilities.show("imported document: {} ({})".format(document.prefix,
+                                                           document.relpath))
     else:
         assert item
-        show("imported item: {} ({})".format(item.uid, item.relpath))
+        utilities.show("imported item: {} ({})".format(item.uid, item.relpath))
 
     return True
 
@@ -378,38 +430,40 @@ def run_export(args, cwd, error, catch=True, auto=False):
     :param auto: include placeholders for new items on import
 
     """
-    # Parse arguments
     whole_tree = args.prefix == 'all'
     ext = utilities.get_ext(args, error, '.yml', '.csv', whole_tree=whole_tree)
 
-    # Export documents
+    # Get the tree or document
     with utilities.capture(catch=catch) as success:
+
         exporter.check(ext)
         tree = build(cwd=cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
+
     if not success:
         return False
 
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            show("exporting tree to '{}'...".format(args.path), flush=True)
+            msg = "exporting tree to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
             path = exporter.export(tree, args.path, ext, auto=auto)
         else:
             msg = "exporting document {} to '{}'...".format(document,
                                                             args.path)
-            show(msg, flush=True)
+            utilities.show(msg, flush=True)
             path = exporter.export(document, args.path, ext, auto=auto)
         if path:
-            show("exported: {}".format(path))
+            utilities.show("exported: {}".format(path))
 
-    # Display to standard output
+    # Or, display to standard output
     else:
         if whole_tree:
             error("only single documents can be displayed")
         for line in exporter.export_lines(document, ext):
-            show(line)
+            utilities.show(line)
 
     return True
 
@@ -423,16 +477,17 @@ def run_publish(args, cwd, error, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    # Parse arguments
     whole_tree = args.prefix == 'all'
     ext = utilities.get_ext(args, error, '.txt', '.html', whole_tree)
 
-    # Publish documents
+    # Get the tree or document
     with utilities.capture(catch=catch) as success:
+
         publisher.check(ext)
         tree = build(cwd=cwd, root=args.project)
         if not whole_tree:
             document = tree.find_document(args.prefix)
+
     if not success:
         return False
 
@@ -444,24 +499,35 @@ def run_publish(args, cwd, error, catch=True):
     # Write to output file(s)
     if args.path:
         if whole_tree:
-            show("publishing tree to '{}'...".format(args.path), flush=True)
+            msg = "publishing tree to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
             path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
             msg = "publishing document {} to '{}'...".format(document,
                                                              args.path)
-            show(msg, flush=True)
+            utilities.show(msg, flush=True)
             path = publisher.publish(document, args.path, ext, **kwargs)
         if path:
-            show("published: {}".format(path))
+            utilities.show("published: {}".format(path))
 
-    # Display to standard output
+    # Or, display to standard output
     else:
         if whole_tree:
             error("only single documents can be displayed")
         for line in publisher.publish_lines(document, ext, **kwargs):
-            show(line)
+            utilities.show(line)
 
     return True
+
+
+def _request_next_number(args):
+    """Get the server's "next number" method if a server exists."""
+    if args.force:
+        log.warn("creating items without the server...")
+        return None
+    else:
+        server.check()
+        return server.get_next_number
 
 
 def _iter_items(args, cwd, error):
@@ -538,14 +604,15 @@ def _export_import(args, cwd, error, document, ext):
     editor.edit(path, tool=args.tool)
 
     # Import the file to the same document
-    if ask("import from '{}'?".format(path)):
+    if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
         get('import')(args, cwd, error, catch=False, _tree=document.tree)
         common.delete(path)
     else:
-        show("import canceled")
-        if ask("delete '{}'?".format(path)):
+        utilities.show("import canceled")
+        if utilities.ask("delete '{}'?".format(path)):
             common.delete(path)
         else:
-            show("to manually import: doorstop import {0}".format(path))
+            msg = "to manually import: doorstop import {0}".format(path)
+            utilities.show(msg)
