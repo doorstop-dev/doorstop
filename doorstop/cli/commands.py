@@ -417,7 +417,7 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     return True
 
 
-def run_export(args, cwd, error, catch=True, auto=False):
+def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
     """Process arguments and run the `doorstop export` subcommand.
 
     :param args: Namespace of CLI arguments
@@ -435,7 +435,7 @@ def run_export(args, cwd, error, catch=True, auto=False):
     with utilities.capture(catch=catch) as success:
 
         exporter.check(ext)
-        tree = _get_tree(args, cwd)
+        tree = _tree or _get_tree(args, cwd, load=whole_tree)
         if not whole_tree:
             document = tree.find_document(args.prefix)
 
@@ -482,7 +482,7 @@ def run_publish(args, cwd, error, catch=True):
     with utilities.capture(catch=catch) as success:
 
         publisher.check(ext)
-        tree = _get_tree(args, cwd)
+        tree = _get_tree(args, cwd, load=whole_tree)
         if not whole_tree:
             document = tree.find_document(args.prefix)
 
@@ -618,7 +618,8 @@ def _export_import(args, cwd, error, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, error, catch=False, auto=True)
+    get('export')(args, cwd, error, catch=False, auto=True,
+                  _tree=document.tree)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)
