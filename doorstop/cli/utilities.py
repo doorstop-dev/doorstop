@@ -81,23 +81,27 @@ def configure_settings(args):
     """Update settings based on the command-line options."""
     # Parse common settings
     if args.no_reformat is not None:
-        settings.REFORMAT = not args.no_reformat
+        settings.REFORMAT = args.no_reformat is False
     if args.reorder is not None:
-        settings.REORDER = args.reorder
+        settings.REORDER = args.reorder is True
     if args.no_level_check is not None:
-        settings.CHECK_LEVELS = not args.no_level_check
+        settings.CHECK_LEVELS = args.no_level_check is False
     if args.no_ref_check is not None:
-        settings.CHECK_REF = not args.no_ref_check
+        settings.CHECK_REF = args.no_ref_check is False
     if args.no_child_check is not None:
-        settings.CHECK_CHILD_LINKS = not args.no_child_check
+        settings.CHECK_CHILD_LINKS = args.no_child_check is False
     if args.no_suspect_check is not None:
-        settings.CHECK_SUSPECT_LINKS = not args.no_suspect_check
+        settings.CHECK_SUSPECT_LINKS = args.no_suspect_check is False
     if args.no_review_check is not None:
-        settings.CHECK_REVIEW_STATUS = not args.no_review_check
+        settings.CHECK_REVIEW_STATUS = args.no_review_check is False
     if args.no_cache is not None:
-        settings.CACHE_DOCUMENTS = not args.no_cache
-        settings.CACHE_ITEMS = not args.no_cache
-        settings.CACHE_PATHS = not args.no_cache
+        settings.CACHE_DOCUMENTS = args.no_cache is False
+        settings.CACHE_ITEMS = args.no_cache is False
+        settings.CACHE_PATHS = args.no_cache is False
+    if args.warn_all is not None:
+        settings.WARN_ALL = args.warn_all is True
+    if args.error_all is not None:
+        settings.ERROR_ALL = args.error_all is True
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:
         settings.SERVER_HOST = args.server
@@ -105,9 +109,9 @@ def configure_settings(args):
         settings.SERVER_PORT = args.port
     # Parse `publish` settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
-        settings.PUBLISH_CHILD_LINKS = not args.no_child_links
+        settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
     if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
-        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
+        settings.PUBLISH_BODY_LEVELS = args.no_body_levels is False
 
 
 def literal_eval(literal, error=None, default=None):

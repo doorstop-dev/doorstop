@@ -39,7 +39,7 @@ class DoorstopWarning(DoorstopError, Warning):
     """Generic Doorstop warning."""
 
 
-class DoorstopInfo(DoorstopError, Warning):
+class DoorstopInfo(DoorstopWarning, Warning):
 
     """Generic Doorstop info."""
 

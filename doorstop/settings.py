@@ -29,6 +29,8 @@ CHECK_REF = True  # validate external file references
 CHECK_CHILD_LINKS = True  # validate reverse links
 CHECK_SUSPECT_LINKS = True  # check stamps on links
 CHECK_REVIEW_STATUS = True  # check stamps on items
+WARN_ALL = False  # display info-level issues as warnings
+ERROR_ALL = False  # display warning-level issues as errors
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
