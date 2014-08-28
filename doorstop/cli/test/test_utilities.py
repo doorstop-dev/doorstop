@@ -56,6 +56,8 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.CHECK_SUSPECT_LINKS)
         self.assertFalse(settings.CHECK_REVIEW_STATUS)
         self.assertFalse(settings.PUBLISH_BODY_LEVELS)
+        self.assertFalse(settings.WARN_ALL)
+        self.assertFalse(settings.ERROR_ALL)
 
 
 class TestLiteralEval(unittest.TestCase):

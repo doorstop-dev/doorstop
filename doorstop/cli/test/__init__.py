@@ -31,7 +31,9 @@ class SettingsTestCase(unittest.TestCase):
                        settings.PUBLISH_BODY_LEVELS,
                        settings.CACHE_DOCUMENTS,
                        settings.CACHE_ITEMS,
-                       settings.CACHE_PATHS)
+                       settings.CACHE_PATHS,
+                       settings.WARN_ALL,
+                       settings.ERROR_ALL)
 
     def tearDown(self):
         (settings.REFORMAT,
@@ -45,4 +47,6 @@ class SettingsTestCase(unittest.TestCase):
          settings.PUBLISH_BODY_LEVELS,
          settings.CACHE_DOCUMENTS,
          settings.CACHE_ITEMS,
-         settings.CACHE_PATHS) = self.backup
+         settings.CACHE_PATHS,
+         settings.WARN_ALL,
+         settings.ERROR_ALL) = self.backup

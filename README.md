@@ -15,7 +15,7 @@ Each linkable item (requirement, test case, etc.) is stored as a YAML file in a 
 Additional reading:
 
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
-- conference: [GRDevDay Talk](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control)
+- talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
 - demo: [IPython Notebook](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
 - sample: [Generated HTML](http://doorstop.info/reqs/index)
 

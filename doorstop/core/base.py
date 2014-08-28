@@ -125,9 +125,9 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         # Display all issues
         for issue in self.get_issues(document_hook=document_hook,
                                      item_hook=item_hook):
-            if isinstance(issue, DoorstopInfo):
+            if isinstance(issue, DoorstopInfo) and not settings.WARN_ALL:
                 log.info(issue)
-            elif isinstance(issue, DoorstopWarning):
+            elif isinstance(issue, DoorstopWarning) and not settings.ERROR_ALL:
                 log.warning(issue)
             else:
                 assert isinstance(issue, DoorstopError)

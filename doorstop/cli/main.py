@@ -56,6 +56,10 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not check for suspect links")
     parser.add_argument('-W', '--no-review-check', action='store_true',
                         help="do not check item review status")
+    parser.add_argument('-w', '--warn-all', action='store_true',
+                        help="display all info-level issues as warnings")
+    parser.add_argument('-e', '--error-all', action='store_true',
+                        help="display all warning-level issues as errors")
 
     # Build sub-parsers
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")

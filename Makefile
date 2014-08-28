@@ -88,7 +88,7 @@ $(DEPENDS_DEV): Makefile
 
 .PHONY: doorstop
 doorstop: env
-	$(BIN)/doorstop --quiet
+	$(BIN)/doorstop --warn-all --error-all --quiet
 
 .PHONY: gui
 gui: env
