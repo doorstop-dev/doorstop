@@ -37,6 +37,8 @@ class TestMain(SettingsTestCase):
         self.assertTrue(settings.CACHE_DOCUMENTS)
         self.assertTrue(settings.CACHE_ITEMS)
         self.assertTrue(settings.CACHE_PATHS)
+        self.assertFalse(settings.WARN_ALL)
+        self.assertFalse(settings.ERROR_ALL)
 
     @patch('doorstop.cli.commands.run', Mock())
     def test_options(self):
@@ -48,7 +50,9 @@ class TestMain(SettingsTestCase):
                                        '--no-level-check',
                                        '--no-suspect-check',
                                        '--no-review-check',
-                                       '--no-cache']))
+                                       '--no-cache',
+                                       '--warn-all',
+                                       '--error-all']))
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)
@@ -59,3 +63,5 @@ class TestMain(SettingsTestCase):
         self.assertFalse(settings.CACHE_DOCUMENTS)
         self.assertFalse(settings.CACHE_ITEMS)
         self.assertFalse(settings.CACHE_PATHS)
+        self.assertTrue(settings.WARN_ALL)
+        self.assertTrue(settings.ERROR_ALL)

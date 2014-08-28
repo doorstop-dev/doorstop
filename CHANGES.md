@@ -13,6 +13,7 @@ Changelog
 - Added '--no-body-levels' to `doorstop publish` to hide levels on non-headings.
 - Added `doorstop-server` to launch a REST API for UID reservation.
 - Added '--server' argument to `doorstop add` to specify the server address.
+- Added '--warn-all' and '--error-all' options promote warnings to errors.
 
 0.7.1 (2014/08/18)
 ------------------
@@ -37,19 +38,19 @@ Changelog
 0.6 (2014/05/15)
 ----------------
 
-- Refactored `Item` levels into a `Level` class
-- Refactored `Item` identifiers into an `ID` class
-- Refactored `Item` text into a `Text` class (behaves like `str`)
-- Methods no longer require nor accept 'document' and 'tree' arguments
-- Renamed `Item.find_rlinks()` to `Item.find_child_links()`
-- Changed '--no-rlink-check' to '--no-child-check'
-- Added `Item.find_child_items()` and `Item.find_child_documents()`
-- Added aliases to Item: parent_links, child_links/items/documents
-- Added '--with-child-links' to `doorstop publish` to publish child links
+- Refactored `Item` levels into a `Level` class.
+- Refactored `Item` identifiers into an `ID` class.
+- Refactored `Item` text into a `Text` class (behaves like `str`).
+- Methods no longer require nor accept 'document' and 'tree' arguments.
+- Renamed `Item.find_rlinks()` to `Item.find_child_links()`.
+- Changed '--no-rlink-check' to '--no-child-check'.
+- Added `Item.find_child_items()` and `Item.find_child_documents()`.
+- Added aliases to Item: parent_links, child_links/items/documents.
+- Added '--with-child-links' to `doorstop publish` to publish child links.
 - Added `doorstop import ...` CLI to import documents and items.
-- Refactored `Document` prefixes in a `Prefix` class
-- Added '--no-level-check' to disable document level validation
-- Added '--reorder' option to `doorstop` to enable reordering
+- Refactored `Document` prefixes in a `Prefix` class.
+- Added '--no-level-check' to disable document level validation.
+- Added '--reorder' option to `doorstop` to enable reordering.
 
 0.5 (2014/04/25)
 ----------------
