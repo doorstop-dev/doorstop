@@ -33,12 +33,10 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
     """
     with utilities.capture(catch=catch) as success:
 
-        utilities.show("building tree...", flush=True)
-        tree = build(cwd=cwd, root=args.project)
+        # get the tree
+        tree = _get_tree(args, cwd, load=True)
 
-        utilities.show("loading documents...", flush=True)
-        tree.load()
-
+        # validate it
         utilities.show("validating items...", flush=True)
         valid = tree.validate()
 
@@ -63,7 +61,7 @@ def run_create(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the tree
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
 
         # create a new document
         document = tree.create_document(args.path, args.prefix,
@@ -89,7 +87,7 @@ def run_delete(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the document
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
         document = tree.find_document(args.prefix)
 
         # delete it
@@ -117,8 +115,7 @@ def run_add(args, cwd, _, catch=True):
 
         # get the document
         request_next_number = _request_next_number(args)
-        tree = build(cwd=cwd, root=args.project,
-                     request_next_number=request_next_number)
+        tree = _get_tree(args, cwd, request_next_number=request_next_number)
         document = tree.find_document(args.prefix)
 
         # add items to it
@@ -145,7 +142,7 @@ def run_remove(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the item
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
         item = tree.find_item(args.uid)
 
         # delete it
@@ -175,8 +172,7 @@ def run_edit(args, cwd, error, catch=True):
 
         # get the item or document
         request_next_number = _request_next_number(args)
-        tree = build(cwd=cwd, root=args.project,
-                     request_next_number=request_next_number)
+        tree = _get_tree(args, cwd, request_next_number=request_next_number)
         if not args.document:
             try:
                 item = tree.find_item(args.label)
@@ -215,7 +211,7 @@ def run_reorder(args, cwd, error, catch=True, _tree=None):
     with utilities.capture(catch=catch) as success:
 
         # get the document
-        tree = _tree or build(cwd=cwd, root=args.project)
+        tree = _tree or _get_tree(args, cwd)
         document = tree.find_document(args.prefix)
 
     if not success:
@@ -271,7 +267,7 @@ def run_link(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the tree
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
 
         # link items
         child, parent = tree.link_items(args.child, args.parent)
@@ -300,7 +296,7 @@ def run_unlink(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
 
         # get the tree
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
 
         # unlink items
         child, parent = tree.unlink_items(args.child, args.parent)
@@ -389,8 +385,8 @@ def run_import(args, cwd, error, catch=True, _tree=None):
 
             # get the document
             request_next_number = _request_next_number(args)
-            tree = _tree or build(cwd=cwd, root=args.project,
-                                  request_next_number=request_next_number)
+            tree = _tree or _get_tree(args, cwd,
+                                      request_next_number=request_next_number)
             document = tree.find_document(args.prefix)
 
             # import items into it
@@ -439,7 +435,7 @@ def run_export(args, cwd, error, catch=True, auto=False):
     with utilities.capture(catch=catch) as success:
 
         exporter.check(ext)
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
         if not whole_tree:
             document = tree.find_document(args.prefix)
 
@@ -486,7 +482,7 @@ def run_publish(args, cwd, error, catch=True):
     with utilities.capture(catch=catch) as success:
 
         publisher.check(ext)
-        tree = build(cwd=cwd, root=args.project)
+        tree = _get_tree(args, cwd)
         if not whole_tree:
             document = tree.find_document(args.prefix)
 
@@ -532,6 +528,28 @@ def _request_next_number(args):
         return server.get_next_number
 
 
+def _get_tree(args, cwd, request_next_number=None, load=False):
+    """Build a tree and optionally load all documents.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param request_next_number: server method to get a document's next number
+    :param load: force the early loading of all documents
+
+    :return: built :class:`~doorstop.core.tree.Tree`
+
+    """
+    utilities.show("building tree...", flush=True)
+    tree = build(cwd=cwd, root=args.project,
+                 request_next_number=request_next_number)
+
+    if load:
+        utilities.show("loading documents...", flush=True)
+        tree.load()
+
+    return tree
+
+
 def _iter_items(args, cwd, error):
     """Build a tree and iterate through items.
 
@@ -561,7 +579,7 @@ def _iter_items(args, cwd, error):
     # Build tree
     item = None
     document = None
-    tree = build(cwd=cwd, root=args.project)
+    tree = tree = _get_tree(args, cwd)
 
     # Determine if tree, document, or item was requested
     if args.label != 'all':
