@@ -182,8 +182,46 @@ class TestModule(unittest.TestCase):
         self.assertIs(mock_document, kwargs['document'])
 
     @patch('doorstop.core.importer.add_item')
+    def test_itemize_implicit_active(self, mock_add_item):
+        """Verify item data can be converted to items (implicit active)."""
+        header = ['uid', 'text', 'links', 'ext1', 'active']
+        data = [['req2', '', '', False, '']]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual('PREFIX', args[0])
+        self.assertEqual('req2', args[1])
+        expected_attrs = {'active': True,
+                          'ext1': False,
+                          'links': [],
+                          'text': ''}
+        self.assertEqual(expected_attrs, kwargs['attrs'])
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_explicit_inactive(self, mock_add_item):
+        """Verify item data can be converted to items (explicit inactive)."""
+        header = ['uid', 'text', 'links', 'ext1', 'active']
+        data = [['req2', '', '', False, False]]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual('PREFIX', args[0])
+        self.assertEqual('req2', args[1])
+        expected_attrs = {'active': False,
+                          'ext1': False,
+                          'links': [],
+                          'text': ''}
+        self.assertEqual(expected_attrs, kwargs['attrs'])
+
+    @patch('doorstop.core.importer.add_item')
     def test_itemize_with_mapping(self, mock_add_item):
-        """Verify item data can be converted to items."""
+        """Verify item data can be converted to items with mapping."""
         header = ['myid', 'text', 'links', 'ext1']
         data = [['req1', 'text1', '', 'val1'],
                 ['req2', 'text2', 'sys1,sys2', None]]
@@ -219,6 +257,28 @@ class TestModule(unittest.TestCase):
         mock_add_item.assert_called_once_with(mock_document.prefix, 'req1',
                                               attrs=expected_attrs,
                                               document=mock_document)
+
+    @patch('doorstop.core.importer.add_item')
+    def test_itemize_new_rows(self, mock_add_item):
+        """Verify items can be added from item data blank UIDs."""
+        header = ['uid', 'text', 'links', 'ext1']
+        data = [
+            ['req1', 'text1', '', 'val1'],
+            ['req2', '', 'sys1,sys2', False],
+            [None, 'A new item.', '', ''],  # blank UID: None
+            ['', 'A new item.', '', ''],  # blank UID: empty
+            [' ', 'A new item.', '', ''],  # blank UID: whitespace
+            ['', '', '', ''],  # skipped
+            ['...', 'Another new item.', '', ''],  # placeholder UID
+        ]
+        mock_document = Mock()
+        mock_document.prefix = 'PREFIX'
+        mock_document.next_number = 3
+        mock_document.digits = 3
+        # Act
+        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        # Assert
+        self.assertEqual(6, mock_add_item.call_count)
 
     @patch('doorstop.core.importer.add_item', Mock(side_effect=DoorstopError))
     def test_itemize_invalid(self):

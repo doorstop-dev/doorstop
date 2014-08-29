@@ -277,12 +277,25 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return max(item.depth for item in self)
 
     @property
-    def next(self):
-        """Return the next item number in the document."""
+    def next_number(self):
+        """Get the next item number for the document."""
         try:
-            return max(item.number for item in self) + 1
+            number = max(item.number for item in self) + 1
         except ValueError:
-            return 1
+            number = 1
+        log.debug("next number (local): {}".format(number))
+
+        if self.tree and self.tree.request_next_number:
+            remote_number = 0
+            while remote_number is not None and remote_number < number:
+                if remote_number:
+                    log.warn("server is behind, requesting next number...")
+                remote_number = self.tree.request_next_number(self.prefix)
+                log.debug("next number (remote): {}".format(remote_number))
+            if remote_number:
+                number = remote_number
+
+        return number
 
     @property
     def skip(self):
@@ -323,7 +336,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: added :class:`~doorstop.core.item.Item`
 
         """
-        number = max(number or 0, self.next)
+        number = max(number or 0, self.next_number)
         log.debug("next number: {}".format(number))
         try:
             last = self.items[-1]

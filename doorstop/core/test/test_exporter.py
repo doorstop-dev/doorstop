@@ -125,7 +125,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Act
         exporter._file_tsv(self.item, path)  # pylint:disable=W0212
         # Assert
-        mock_file_csv.assert_called_once_with(self.item, path, delimiter='\t')
+        mock_file_csv.assert_called_once_with(self.item, path, delimiter='\t', auto=False)
 
     @patch('doorstop.core.exporter._get_xlsx')
     def test_file_xlsx(self, mock_get_xlsx):
@@ -135,12 +135,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Act
         exporter._file_xlsx(self.item, path)  # pylint:disable=W0212
         # Assert
-        mock_get_xlsx.assert_called_once_with(self.item)
+        mock_get_xlsx.assert_called_once_with(self.item, False)
 
     def test_get_xlsx(self):
         """Verify an XLSX object can be created."""
         # Act
-        workbook = exporter._get_xlsx(self.item4)  # pylint: disable=W0212
+        workbook = exporter._get_xlsx(self.item4, auto=False)  # pylint: disable=W0212
         # Assert
         rows = []
         worksheet = workbook.active
@@ -148,3 +148,14 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             rows.append([cell.value for cell in data])
         self.assertIn('long', rows[0])
         self.assertEqual('req3', rows[1][0])
+
+    def test_get_xlsx_auto(self):
+        """Verify an XLSX object can be created with placeholder rows."""
+        # Act
+        workbook = exporter._get_xlsx(self.item4, auto=True)  # pylint: disable=W0212
+        # Assert
+        rows = []
+        worksheet = workbook.active
+        for data in worksheet.rows:
+            rows.append([cell.value for cell in data])
+        self.assertEqual("...", rows[-1][0])

@@ -8,9 +8,12 @@ import openpyxl
 
 from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop.core.types import UID
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.builder import _get_tree
+from doorstop import settings
+
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
@@ -73,13 +76,14 @@ def create_document(prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(prefix, uid, attrs=None, document=None):
+def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
     :param uid: existing item's UID
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
+    :param request_next_number: server method to get a document's next number
 
     :return: imported Item
 
@@ -90,7 +94,7 @@ def add_item(prefix, uid, attrs=None, document=None):
         assert tree  # tree should be set internally
     else:
         # Get an implicit tree and document
-        tree = _get_tree()
+        tree = _get_tree(request_next_number=request_next_number)
         document = tree.find_document(prefix)
 
     # Add an item using the specified UID
@@ -250,11 +254,19 @@ def _itemize(header, data, document, mapping=None):
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
+            elif key == 'active':
+                # require explicit disabling
+                attrs['active'] = value is not False
             else:
                 attrs[key] = value
 
+        # Get the next UID if the row is a new item
+        if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
+            uid = UID(document.prefix, document.sep,
+                      document.next_number, document.digits)
+
         # Convert the row to an item
-        if uid:
+        if uid and uid != settings.PLACEHOLDER:
 
             # Delete the old item
             try:

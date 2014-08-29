@@ -11,6 +11,7 @@ import openpyxl
 from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
+from doorstop import settings
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
@@ -99,7 +100,7 @@ def export_file(obj, path, ext=None, **kwargs):
     return func(obj, path, **kwargs)
 
 
-def _lines_yaml(obj):
+def _lines_yaml(obj, **_):
     """Yield lines for a YAML export.
 
     :param obj: Item, list of Items, or Document to export
@@ -114,11 +115,12 @@ def _lines_yaml(obj):
         yield text
 
 
-def _tabulate(obj, sep=LIST_SEP):
+def _tabulate(obj, sep=LIST_SEP, auto=False):
     """Yield lines of header/data for tabular export.
 
     :param obj: Item, list of Items, or Document to export
     :param sep: string separating list values when joined in a string
+    :param auto: include placeholders for new items on import
 
     :return: iterator of rows of data
 
@@ -155,51 +157,64 @@ def _tabulate(obj, sep=LIST_SEP):
             row.append(value)
         yield row
 
+    # Yield placeholders for new items
+    if auto:
+        for _ in range(settings.PLACEHOLDER_COUNT):
+            yield [settings.PLACEHOLDER]
 
-def _file_csv(obj, path, delimiter=','):
+
+def _file_csv(obj, path, delimiter=',', auto=False):
     """Create a CSV file at the given path.
 
     :param obj: Item, list of Items, or Document to export
+    :param path: location to export CSV file
+    :param delimiter: character to delimit fields
+    :param auto: include placeholders for new items on import
 
     :return: path of created file
 
     """
     with open(path, 'w', newline='', encoding='utf-8') as stream:
         writer = csv.writer(stream, delimiter=delimiter)
-        for row in _tabulate(obj):
+        for row in _tabulate(obj, auto=auto):
             writer.writerow(row)
     return path
 
 
-def _file_tsv(obj, path):
+def _file_tsv(obj, path, auto=False):
     """Create a TSV file at the given path.
 
     :param obj: Item, list of Items, or Document to export
+    :param path: location to export TSV file
+    :param auto: include placeholders for new items on import
 
     :return: path of created file
 
     """
-    return _file_csv(obj, path, delimiter='\t')
+    return _file_csv(obj, path, delimiter='\t', auto=auto)
 
 
-def _file_xlsx(obj, path):
+def _file_xlsx(obj, path, auto=False):
     """Create an XLSX file at the given path.
 
     :param obj: Item, list of Items, or Document to export
+    :param path: location to export XLSX file
+    :param auto: include placeholders for new items on import
 
     :return: path of created file
 
     """
-    workbook = _get_xlsx(obj)
+    workbook = _get_xlsx(obj, auto)
     workbook.save(path)
 
     return path
 
 
-def _get_xlsx(obj):
+def _get_xlsx(obj, auto):
     """Create an XLSX workbook object.
 
     :param obj: Item, list of Items, or Document to export
+    :param auto: include placeholders for new items on import
 
     :return: new workbook
 
@@ -214,7 +229,7 @@ def _get_xlsx(obj):
     worksheet = workbook.active
 
     # Populate cells
-    for row, data in enumerate(_tabulate(obj), start=1):
+    for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
         for col_idx, value in enumerate(data, start=1):
             col = openpyxl.cell.get_column_letter(col_idx)
             cell = worksheet.cell('%s%s' % (col, row))

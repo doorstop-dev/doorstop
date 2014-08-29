@@ -195,12 +195,11 @@ class TestAddServer(unittest.TestCase):
         self.assertIs(None, main(['add', 'TUT']))
 
     @patch('doorstop.server.check', Mock())
-    @patch('doorstop.server.get_next_number', Mock(side_effect=[1, 42]))
     @patch('doorstop.core.document.Document.add_item')
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
-        mock_add_item.assert_called_once_with(number=42, level=None)
+        mock_add_item.assert_called_once_with(level=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
@@ -296,6 +295,7 @@ class TestReorder(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 @patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestEdit(unittest.TestCase):
 
@@ -498,6 +498,7 @@ class TestReview(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 @patch('doorstop.settings.ADDREMOVE_FILES', False)
 class TestImport(unittest.TestCase):
 
@@ -532,6 +533,7 @@ class TestImport(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.SERVER_HOST', None)
 class TestImportFile(MockTestCase):
 
     """Integration tests for the 'doorstop import' command."""
@@ -606,6 +608,22 @@ class TestImportFile(MockTestCase):
         # Assert
         path = os.path.join(dirpath, 'REQ001.yml')
         self.assertTrue(os.path.isfile(path))
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)
+@patch('doorstop.settings.ADDREMOVE_FILES', False)
+class TestImportServer(unittest.TestCase):
+
+    """Integration tests for the 'doorstop import' command using a server."""
+
+    def tearDown(self):
+        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(REQS, 'REQ099.yml'))
+
+    def test_import_item_force(self):
+        """Verify 'doorstop import' can import an item without a server."""
+        self.assertIs(None,
+                      main(['import', '--item', 'REQ', 'REQ099', '--force']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)

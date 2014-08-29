@@ -319,7 +319,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            log.info(msg)
+            log.trace(msg)
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -336,7 +336,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            log.info(msg)
+            log.trace(msg)
             return setattr(self, name, value)
         else:
             self._data[name] = value
