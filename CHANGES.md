@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.8 (dev)
----------
+0.8 (2014/08/28)
+----------------
 
 - Added `doorstop clear ...` to absolve items of their suspect link status.
 - Added `doorstop review ...` to absolve items of their unreviewed status.
