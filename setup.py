@@ -55,5 +55,6 @@ setuptools.setup(
         "bottle >= 0.12, < 0.13",
         "requests >= 2, < 3",
         "pyficache >= 0.2.3, < 0.3",
+        "configman >= 1.2.6, < 2",
     ],
 )
