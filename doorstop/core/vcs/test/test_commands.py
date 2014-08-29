@@ -18,7 +18,7 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
     def setUp(self):
         with patch('os.listdir', Mock(return_value=[self.DIRECTORY])):
-            self.wc = load(None)
+            self.wc = load('.')
 
     def lock(self):
         """Lock a file in the working copy."""
