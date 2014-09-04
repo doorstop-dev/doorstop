@@ -4,7 +4,7 @@ Changelog
 0.8.1 (dev)
 -----------
 
-- TBD
+- Fixed a bug requesting new item numbers from the server.
 
 0.8 (2014/08/28)
 ----------------
