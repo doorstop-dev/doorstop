@@ -1,4 +1,4 @@
-"""Unit tests for the doorstop.web.server package."""
+"""Unit tests for the doorstop.server.main module."""
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock
@@ -40,7 +40,7 @@ class BaseTestCase(unittest.TestCase):
 
 class TestModule(BaseTestCase):
 
-    """Unit tests for the doorstop.web.server module."""
+    """Unit tests for the doorstop.server.main module."""
 
     @patch('doorstop.server.main.build')
     @patch('bottle.run')
@@ -64,7 +64,7 @@ class TestModule(BaseTestCase):
 
 class TestRoutesHTML(BaseTestCase):
 
-    """Unit tests for the doorstop.web.server module HTML responses."""
+    """Unit tests for the doorstop.server.main module HTML responses."""
 
     def test_get_index(self):
         """Verify `/` works (HTML)."""
@@ -122,7 +122,7 @@ class TestRoutesHTML(BaseTestCase):
 @patch('doorstop.server.utilities.json_response', Mock(return_value=True))
 class TestRoutesJSON(BaseTestCase):
 
-    """Unit tests for the doorstop.web.server module JSON responses."""
+    """Unit tests for the doorstop.server.main module JSON responses."""
 
     def test_get_documents(self):
         """Verify `/documents` works (JSON)."""

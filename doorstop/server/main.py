@@ -18,6 +18,7 @@ from doorstop import settings
 
 log = common.logger(__name__)
 
+app = utilities.StripPathMiddleware(bottle.app())
 tree = None  # set in `run`, read in the route functions
 numbers = defaultdict(int)  # cache of next document numbers
 
@@ -68,7 +69,8 @@ def run(args, cwd, _):
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
-    bottle.run(host=host, port=port, debug=args.debug, reloader=args.debug)
+    bottle.run(app=app, host=host, port=port,
+               debug=args.debug, reloader=args.debug)
 
 
 @get('/')

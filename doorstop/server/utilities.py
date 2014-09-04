@@ -1,12 +1,28 @@
-"""Shared functions for the `doorstop.web` package."""
+"""Shared functions for the `doorstop.server` package."""
 
+from doorstop import common
 from doorstop import settings
+
+log = common.logger(__name__)
+
+
+class StripPathMiddleware(object):  # pylint: disable=R0903
+
+    """WSGI middleware that strips trailing slashes from all URLs."""
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, e, h):  # pragma: no cover (integration test)
+        e['PATH_INFO'] = e['PATH_INFO'].rstrip('/')
+        return self.app(e, h)
 
 
 def build_url(host=None, port=None, path=None):
     """Build the server's URL with optional path."""
     host = host or settings.SERVER_HOST
     port = port or settings.SERVER_PORT
+    log.debug("building URL: {} + {} + {}".format(host, port, path))
     if not host:
         return None
     url = 'http://{}'.format(host)

@@ -1,4 +1,4 @@
-"""Unit tests for the doorstop.web.client package."""
+"""Unit tests for the doorstop.server.client module."""
 
 import unittest
 from unittest.mock import patch, Mock
@@ -12,7 +12,7 @@ from doorstop.server import client
 @patch('doorstop.settings.SERVER_PORT', 8080)
 class TestModule(unittest.TestCase):
 
-    """Unit tests for the doorstop.web.client module."""
+    """Unit tests for the doorstop.server.client module."""
 
     @patch('doorstop.settings.SERVER_HOST', '1.2.3.4')
     def test_exists(self):
