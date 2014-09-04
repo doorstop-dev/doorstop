@@ -63,7 +63,7 @@ class TestModule(unittest.TestCase):
         self.assertFalse(exists)
 
     @patch('doorstop.settings.SERVER_HOST', '1.2.3.4')
-    def test_check(self):
+    def test_check(self):  # pylint: disable=R0201
         """Verify the client can check a server."""
         with patch('doorstop.server.client.exists', Mock(return_value=True)):
             client.check()
@@ -81,7 +81,7 @@ class TestModule(unittest.TestCase):
             self.assertRaises(DoorstopError, client.check)
 
     @patch('doorstop.settings.SERVER_HOST', None)
-    def test_check_disabled(self):
+    def test_check_disabled(self):  # pylint: disable=R0201
         """Verify the client can check a disabled server."""
         with patch('doorstop.server.client.exists', Mock(return_value=False)):
             client.check()

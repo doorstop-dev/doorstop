@@ -77,7 +77,7 @@ class TestRoutesHTML(BaseTestCase):
         text = server.get_documents()
         self.assertEqual("PREFIX<br>PREFIX2", text)
 
-    def test_get_document(self):
+    def test_get_document(self):  # pylint: disable=R0201
         """Verify `/document/PREFIX` works (HTML)."""
         for line in server.get_document('prefix'):
             print(line)
@@ -87,7 +87,7 @@ class TestRoutesHTML(BaseTestCase):
         text = server.get_items('prefix')
         self.assertEqual("UID<br>UID2", text)
 
-    def test_get_item(self):
+    def test_get_item(self):  # pylint: disable=R0201
         """Verify `/document/PREFIX/items/UID` works (HTML)."""
         for line in server.get_item('prefix', 'uid'):
             print(line)

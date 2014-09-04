@@ -9,7 +9,6 @@ import logging
 
 from doorstop import server
 from doorstop.server import main
-from doorstop import settings
 
 from doorstop.server.test import ENV, REASON
 
