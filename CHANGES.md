@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.8.1 (dev)
------------
+0.8.1 (2014/09/04)
+------------------
 
 - Fixed a bug requesting new item numbers from the server.
 
