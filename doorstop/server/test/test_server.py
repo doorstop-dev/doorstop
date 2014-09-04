@@ -22,7 +22,7 @@ class BaseTestCase(unittest.TestCase):
     mock_document = MagicMock()
     mock_document.__iter__.return_value = [mock_item, mock_item2]
     mock_document.prefix = 'PREFIX'
-    mock_document.next = 42
+    mock_document.next_number = 42
     mock_document.find_item = Mock(return_value=mock_item)
 
     mock_document2 = Mock()

@@ -161,7 +161,7 @@ def get_attr(prefix, uid, name):
 def post_numbers(prefix):
     """Create the next number in a document."""
     document = tree.find_document(prefix)
-    number = max(document.next, numbers[prefix])
+    number = max(document.next_number, numbers[prefix])
     numbers[prefix] = number + 1
     if utilities.json_response(request):
         data = {'next': number}

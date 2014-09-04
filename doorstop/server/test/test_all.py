@@ -22,7 +22,6 @@ class TestServer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        assert settings.SERVER_PORT == 7867
         cls.process = Process(target=main.main, kwargs={'args': []})
         cls.process.start()
         logging.info("delaying for the server to initialize...")
@@ -35,14 +34,14 @@ class TestServer(unittest.TestCase):
         logging.info("delaying for the server to shutdown...")
         time.sleep(1)
 
-    def test_check(self):
+    def test_check(self):  # pylint: disable=R0201
         """Verify the server can be checked."""
         server.check()
 
     def test_get_next_number(self):
         """Verify the next number can be requested from the server."""
-        number = server.get_next_number('req')
+        number1 = server.get_next_number('req')
         number2 = server.get_next_number('req')
-        self.assertIsNot(None, number)
+        self.assertIsNot(None, number1)
         self.assertIsNot(None, number2)
-        self.assertGreater(number, number2)
+        self.assertLess(number1, number2)
