@@ -6,6 +6,11 @@ Changelog
 
 - TBD
 
+0.8.1 (2014/09/04)
+------------------
+
+- Fixed a bug requesting new item numbers from the server.
+
 0.8 (2014/08/28)
 ----------------
 

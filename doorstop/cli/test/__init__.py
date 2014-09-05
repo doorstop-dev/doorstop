@@ -33,7 +33,9 @@ class SettingsTestCase(unittest.TestCase):
                        settings.CACHE_ITEMS,
                        settings.CACHE_PATHS,
                        settings.WARN_ALL,
-                       settings.ERROR_ALL)
+                       settings.ERROR_ALL,
+                       settings.SERVER_HOST,
+                       settings.SERVER_PORT)
 
     def tearDown(self):
         (settings.REFORMAT,
@@ -49,4 +51,6 @@ class SettingsTestCase(unittest.TestCase):
          settings.CACHE_ITEMS,
          settings.CACHE_PATHS,
          settings.WARN_ALL,
-         settings.ERROR_ALL) = self.backup
+         settings.ERROR_ALL,
+         settings.SERVER_HOST,
+         settings.SERVER_PORT) = self.backup
