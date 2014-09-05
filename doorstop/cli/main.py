@@ -25,7 +25,7 @@ def main(args=None):  # pylint: disable=R0915
     server = argparse.ArgumentParser(add_help=False)
     server.add_argument('--server', metavar='HOST',
                         help="IP address or hostname for a running server")
-    server.add_argument('--port', metavar='NUM', type=int,
+    server.add_argument('--port', metavar='NUMBER', type=int,
                         help="use a custom port for the server")
     server.add_argument('-f', '--force', action='store_true',
                         help="perform the action without the server")
