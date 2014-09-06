@@ -22,6 +22,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
+    ASSETS = 'assets'
     INDEX = 'index.yml'
 
     DEFAULT_PREFIX = Prefix('REQ')
@@ -210,6 +211,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return os.path.join(self.path, Document.CONFIG)
 
     @property
+    def assets(self):
+        """Get the path to the document's assets if they exist else `None`."""
+        path = os.path.join(self.path, Document.ASSETS)
+        if os.path.isdir(path):
+            return path
+
+    @property
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
@@ -306,7 +314,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
         path = os.path.join(self.path, Document.INDEX)
-        if os.path.exists(path):
+        if os.path.isfile(path):
             return path
 
     @index.setter
