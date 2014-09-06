@@ -173,7 +173,7 @@ pep8: .depends-ci
 
 .PHONY: pep257
 pep257: .depends-ci
-	$(PEP257) $(PACKAGE) --ignore=E501,D102
+	$(PEP257) $(PACKAGE) --ignore=D102
 
 .PHONY: pylint
 pylint: .depends-dev
