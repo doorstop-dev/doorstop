@@ -219,7 +219,6 @@ def _get_xlsx(obj, auto):
     :return: new workbook
 
     """
-
     col_widths = defaultdict(int)
     col = 'A'
 
