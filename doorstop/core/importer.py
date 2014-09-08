@@ -197,7 +197,7 @@ def _file_xlsx(path, document, mapping=None):
 
     # Locate the bottom right cell in the workbook that contains cell info
     _highest_column = worksheet.get_highest_column()
-    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)  # pylint: disable=E1101
+    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)
     _highest_row = worksheet.get_highest_row()
     last_cell = _highest_letter + str(_highest_row)
 

@@ -11,7 +11,7 @@ import pprint
 import logging
 
 import yaml
-import openpyxl  # pylint: disable=F0401
+import openpyxl
 
 from doorstop import common
 from doorstop.common import DoorstopWarning, DoorstopError

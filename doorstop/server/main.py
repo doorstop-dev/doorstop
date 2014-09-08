@@ -61,7 +61,7 @@ def run(args, cwd, _):
     :param error: function to call for CLI errors
 
     """
-    global tree  # pylint: disable=W0603,C0103
+    global tree  # pylint: disable=W0603
     tree = build(cwd=cwd, root=args.project)
     tree.load()
     host = 'localhost'

@@ -219,13 +219,12 @@ def _get_xlsx(obj, auto):
     :return: new workbook
 
     """
-    # pylint: disable=E1101,E1120,E1123
 
     col_widths = defaultdict(int)
     col = 'A'
 
     # Create a new workbook
-    workbook = openpyxl.Workbook()  # pylint: disable=E1102
+    workbook = openpyxl.Workbook()
     worksheet = workbook.active
 
     # Populate cells

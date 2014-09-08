@@ -610,7 +610,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{'mock_uid': True}]
         self.assertTrue(self.item.validate())
-        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
+        self.assertEqual('abc123', self.item.links[0].stamp)
 
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
@@ -781,12 +781,12 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.link('mock_uid')
         self.assertFalse(self.item.cleared)
-        self.assertEqual(None, self.item.links[0].stamp)  # pylint: disable=E1101
+        self.assertEqual(None, self.item.links[0].stamp)
         # Act
         self.item.clear()
         # Assert
         self.assertTrue(self.item.cleared)
-        self.assertEqual('abc123', self.item.links[0].stamp)  # pylint: disable=E1101
+        self.assertEqual('abc123', self.item.links[0].stamp)
 
     def test_review(self):
         """Verify an item can be marked as reviewed."""

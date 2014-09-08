@@ -828,7 +828,7 @@ class UnknownItem(object):
     @property
     def relpath(self):
         """Get the unknown item's relative path string."""
-        return "@{}???".format(os.sep, self.UNKNOWN_PATH)
+        return "@{}{}".format(os.sep, self.UNKNOWN_PATH)
 
     def stamp(self):  # pylint: disable=R0201
         """Return an empty stamp."""
