@@ -662,6 +662,22 @@ class Reference(object):
 
     """External reference to a file or lines in a file."""
 
+    def __init__(self, path=None, key=None, offset=None, size=None, stamp=None):
+        """Initialize an external reference.
+
+        The method can be called in two ways:
+
+        1. path, key, offset, size
+        2. key (to be located in a file with: offset = 0, size = 1)
+
+        :param path: (1) path to external file or (2) key string
+        :param key: (1) key string in the file
+        :param offset: (1) number of lines the reference starts below the key
+        :param size: (1) number of lines to reference
+
+        """
+        pass
+
 
 def to_bool(obj):
     """Convert a boolean-like object.
