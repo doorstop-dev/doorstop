@@ -9,7 +9,7 @@ import argparse
 import logging
 
 import bottle
-from bottle import get, post, request
+from bottle import get, post, request, hook, response
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
@@ -71,6 +71,11 @@ def run(args, cwd, _):
         webbrowser.open(url)
     bottle.run(app=app, host=host, port=port,
                debug=args.debug, reloader=args.debug)
+
+
+@hook('after_request')
+def enable_cors():
+    response.headers['Access-Control-Allow-Origin'] = '*'
 
 
 @get('/')
