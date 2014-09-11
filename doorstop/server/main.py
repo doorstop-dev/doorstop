@@ -9,7 +9,7 @@ import argparse
 import logging
 
 import bottle
-from bottle import get, post, request
+from bottle import get, post, request, hook, response
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
@@ -73,6 +73,12 @@ def run(args, cwd, _):
                debug=args.debug, reloader=args.debug)
 
 
+@hook('after_request')
+def enable_cors():  # pragma: no cover (manual test)
+    """Allow a webserver running on the same machine to access data. """
+    response.headers['Access-Control-Allow-Origin'] = '*'
+
+
 @get('/')
 def index():
     """Read the tree."""
@@ -89,6 +95,17 @@ def get_documents():
         data = {'prefixes': prefixes}
         return data
     else:
+        return '<br>'.join(prefixes)
+
+
+@get('/documents/all')
+def get_all_documents():
+    """Read the tree's documents."""
+    if utilities.json_response(request):
+        data = {str(document.prefix): {str(item.uid): item.data for item in document} for document in tree}
+        return data
+    else:
+        prefixes = [str(document.prefix) for document in tree]
         return '<br>'.join(prefixes)
 
 
