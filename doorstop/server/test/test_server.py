@@ -25,7 +25,8 @@ class BaseTestCase(unittest.TestCase):
     mock_document.next_number = 42
     mock_document.find_item = Mock(return_value=mock_item)
 
-    mock_document2 = Mock()
+    mock_document2 = MagicMock()
+    mock_document2.__iter__.return_value = []
     mock_document2.prefix = 'PREFIX2'
 
     mock_tree = MagicMock()
@@ -82,6 +83,11 @@ class TestRoutesHTML(BaseTestCase):
         for line in server.get_document('prefix'):
             print(line)
 
+    def test_get_all_documents(self):  # pylint: disable=R0201
+        """Verify `/document/all` works (HTML)."""
+        for line in server.get_all_documents():
+            print(line)
+
     def test_get_items(self):
         """Verify `/document/PREFIX/items` works (HTML)."""
         text = server.get_items('prefix')
@@ -135,6 +141,15 @@ class TestRoutesJSON(BaseTestCase):
         self.assertEqual({'UID': {'links': ['UID3', 'UID4'],
                                   'text': 'TEXT'},
                           'UID2': {}}, data)
+
+    def test_get_all_documents(self):
+        """Verify `/documents/all` works (JSON)."""
+        data = server.get_all_documents()
+        expected = {'PREFIX': {'UID': {'links': ['UID3', 'UID4'],
+                                       'text': 'TEXT'},
+                               'UID2': {}},
+                    'PREFIX2': {}}
+        self.assertEqual(expected, data)
 
     def test_get_items(self):
         """Verify `/document/PREFIX/items` works (JSON)."""
