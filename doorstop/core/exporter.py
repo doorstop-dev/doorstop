@@ -150,8 +150,9 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
             elif key == 'links':
                 # separate identifiers with a delimiter
                 value = sep.join(uid.string for uid in item.links)
-            elif isinstance(value, str):
-                value = value.strip()
+            elif isinstance(value, str) and key not in ('reviewed',):
+                # remove sentence boundaries and line wrapping
+                value = item.get(key)
             elif value is None:
                 value = ''
             row.append(value)
