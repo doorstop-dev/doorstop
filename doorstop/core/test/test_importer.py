@@ -15,6 +15,14 @@ from doorstop.core.builder import _set_tree
 
 from doorstop.core.test.test_document import FILES, MockItem
 
+LOREM_IPSUM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed \
+do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad \
+minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex \
+ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate \
+velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat \
+cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id \
+est laborum."
+
 
 class TestModule(unittest.TestCase):
 
@@ -90,7 +98,7 @@ class TestModule(unittest.TestCase):
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
-            ['REQ001', '1.2.3', 'The foo shall bar all night long!', '', 'SYS001\nSYS002:abc123', True, False, True, ''],
+            ['REQ001', '1.2.3', LOREM_IPSUM, '', 'SYS001\nSYS002:abc123', True, False, True, ''],
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, ''],
             ['REQ004', '1.6', 'Hello, world!', '', '', True, False, True, ''],
             ['REQ002', '2.1', 'Hello, world!', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
@@ -151,7 +159,7 @@ class TestModule(unittest.TestCase):
                            'active', 'derived', 'normative', 'reviewed']
         self.assertEqual(expected_header, header)
         expected_data = [
-            ['REQ001', '1.2.3', 'The foo shall bar all night long!', None, 'SYS001\nSYS002:abc123', True, False, True, None],
+            ['REQ001', '1.2.3', LOREM_IPSUM, None, 'SYS001\nSYS002:abc123', True, False, True, None],
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, None],
             ['REQ004', '1.6', 'Hello, world!', None, None, True, False, True, None],
             ['REQ002', '2.1', 'Hello, world!', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
