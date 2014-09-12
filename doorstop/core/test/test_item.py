@@ -702,6 +702,7 @@ class TestItem(unittest.TestCase):
 
         def mock_iter(seq):
             """Creates a mock __iter__ method."""
+
             def _iter(self):  # pylint: disable=W0613
                 """Mock __iter__method."""
                 yield from seq
@@ -829,6 +830,7 @@ class TestFormatting(unittest.TestCase):
         item.load()
         item.save()
         text = common.read_text(self.ITEM)
+        self.maxDiff = None
         self.assertEqual(self.backup, text)
 
 

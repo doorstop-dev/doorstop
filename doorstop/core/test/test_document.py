@@ -234,7 +234,7 @@ class TestDocument(unittest.TestCase):
         """Verify an document's index can be created."""
         lines = ['initial: 1.2.3',
                  'outline:',
-                 '            - REQ001: # The foo shall...',
+                 '            - REQ001: # Lorem ipsum d...',
                  '        - REQ003: # Unicode: -40° ±1%',
                  '        - REQ004: # Hello, world!',
                  '        - REQ002: # Hello, world!',
