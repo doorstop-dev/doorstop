@@ -40,3 +40,7 @@ env:
   global:
     # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci
     secure: JfVl6zxzhRIEG1VvLqMEPMGOecrzDyb2U0HPyQ4Z4pfKJgFJOdQ1orT9Aztpfr4edXqbCZnEy4WH8+FLBQagkXjT3Ladopv+9j1IkP8v1Gu1O8H2tHQc7wfGxnkQF+h0pFFS6adNAsMliQ5dxTojFYVoWebvZQbiVGYkew+QZ0c=
+
+branches:
+  except:
+    - yorm
