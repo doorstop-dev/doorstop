@@ -4,6 +4,8 @@ import os
 from itertools import chain
 from collections import OrderedDict
 
+import yorm
+
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core.base import (add_document, edit_document, delete_document,
@@ -16,6 +18,8 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
+@yorm.map_attr(settings=yorm.standard.Dictionary)
+@yorm.store_instances("{path}", {'path': 'config'})
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents a document directory containing an outline of items."""
@@ -47,10 +51,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Document.auto)
         # Set default values
-        self._data['prefix'] = Document.DEFAULT_PREFIX
-        self._data['sep'] = Document.DEFAULT_SEP
-        self._data['digits'] = Document.DEFAULT_DIGITS
-        self._data['parent'] = None  # the root document does not have a parent
+        self.settings = {'prefix': Document.DEFAULT_PREFIX,
+                         'sep': Document.DEFAULT_SEP,
+                         'digits': Document.DEFAULT_DIGITS,
+                         'parent': None}
         self._items = []
         self._itered = False
 
@@ -213,21 +217,21 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
-        return self._data['prefix']
+        return self.settings['prefix']
 
     @prefix.setter
     @auto_save
     @auto_load
     def prefix(self, value):
         """Set the document's prefix."""
-        self._data['prefix'] = Prefix(value)
+        self.settings['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
 
     @property
     @auto_load
     def sep(self):
         """Get the prefix-number separator to use for new item UIDs."""
-        return self._data['sep']
+        return self.settings['sep']
 
     @sep.setter
     @auto_save
@@ -236,35 +240,35 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the prefix-number separator to use for new item UIDs."""
         # TODO: raise a specific exception for invalid separator characters?
         assert not value or value in settings.SEP_CHARS
-        self._data['sep'] = value.strip()
+        self.settings['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
 
     @property
     @auto_load
     def digits(self):
         """Get the number of digits to use for new item UIDs."""
-        return self._data['digits']
+        return self.settings['digits']
 
     @digits.setter
     @auto_save
     @auto_load
     def digits(self, value):
         """Set the number of digits to use for new item UIDs."""
-        self._data['digits'] = value
+        self.settings['digits'] = value
         # TODO: should the new digits be applied to all items?
 
     @property
     @auto_load
     def parent(self):
         """Get the document's parent document prefix."""
-        return self._data['parent']
+        return self.settings['parent']
 
     @parent.setter
     @auto_save
     @auto_load
     def parent(self, value):
         """Set the document's parent document prefix."""
-        self._data['parent'] = str(value) if value else ""
+        self.settings['parent'] = str(value) if value else ""
 
     @property
     def items(self):

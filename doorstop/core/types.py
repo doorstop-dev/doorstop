@@ -63,7 +63,7 @@ class Prefix(str):
         return str(value).split(' ')[0] if value else ''
 
 
-class UID(object):
+class UID:
 
     """Unique item ID built from document prefix and number."""
 
@@ -374,7 +374,7 @@ class Text(str):
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
-class Level(object):
+class Level:
 
     """Variable-length numerical outline level values.
 
@@ -596,7 +596,7 @@ class Level(object):
         return Level(self.value)
 
 
-class Stamp(object):
+class Stamp:
 
     """Hashed content for change tracking.
 
@@ -658,7 +658,7 @@ class Stamp(object):
         return md5.hexdigest()
 
 
-class Reference(object):
+class Reference:
 
     """External reference to a file or lines in a file."""
 

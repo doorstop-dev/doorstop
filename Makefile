@@ -62,6 +62,8 @@ ci: doorstop pep8 pep257 test tests tutorial
 env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): Makefile setup.py
 	$(PYTHON) setup.py develop
+	# TODO: remove this line once YORM is working from GitHub
+	cd ../../Libraries/YORM; ../../Desktop/Doorstop/$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
 .PHONY: .virtualenv

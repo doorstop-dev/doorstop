@@ -52,7 +52,7 @@ class HelpFormatter(argparse.HelpFormatter):
         super().__init__(*args, max_help_position=40, **kwargs)
 
 
-class WarningFormatter(logging.Formatter, object):
+class WarningFormatter(logging.Formatter):
 
     """Logging formatter that displays verbose formatting for WARNING+."""
 
