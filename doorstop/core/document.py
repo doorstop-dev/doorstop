@@ -18,7 +18,36 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-@yorm.map_attr(settings=yorm.standard.Dictionary)
+# TODO: use the `map_attr` decorator?
+class Settings(yorm.standard.Dictionary):
+
+    @staticmethod
+    def to_value(data):
+        dictionary = {}
+        for key, value in yorm.standard.Dictionary.to_value(data).items():
+            if key == 'prefix':
+                value = Prefix.to_value(value)
+            elif key == 'sep':
+                value = yorm.standard.String.to_value(value)
+            elif key == 'digits':
+                value = yorm.standard.Integer.to_value(value)
+            elif key == 'parent':
+                value = Prefix.to_value(value)
+            dictionary[key] = value
+        return dictionary
+
+    @staticmethod
+    def to_data(value):
+        data = {'prefix': Prefix.to_data(value['prefix']),
+                'sep': yorm.standard.String.to_data(value['sep']),
+                'digits': yorm.standard.Integer.to_data(value['digits'])}
+        parent = value.get('parent', None)
+        if parent:
+            data['parent'] = Prefix.to_data(parent)
+        return data
+
+
+@yorm.map_attr(settings=Settings)
 @yorm.store_instances("{path}", {'path': 'config'})
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
@@ -261,7 +290,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def parent(self):
         """Get the document's parent document prefix."""
-        return self.settings['parent']
+        return self.settings.get('parent', None)
 
     @parent.setter
     @auto_save

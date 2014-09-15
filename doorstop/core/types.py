@@ -6,6 +6,7 @@ import textwrap
 import hashlib
 
 import yaml
+import yorm
 from yorm import Converter
 
 from doorstop import common
@@ -15,7 +16,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class Prefix(str):
+class Prefix(yorm.standard.String, str):
 
     """Unique document prefixes."""
 
@@ -53,6 +54,14 @@ class Prefix(str):
     def short(self):
         """Get a shortened version of the prefix."""
         return self.lower()
+
+    @staticmethod
+    def to_value(data):
+        return Prefix(data)
+
+    @staticmethod
+    def to_data(value):
+        return str(value)
 
     @staticmethod
     def load_prefix(value):

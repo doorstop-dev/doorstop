@@ -58,6 +58,15 @@ class TestPrefix(unittest.TestCase):
         self.assertEqual('req', self.prefix1.short)
         self.assertEqual('tst', self.prefix2.short)
 
+    def test_to_value(self):
+        """Verify data can be converted back to a prefix."""
+        self.assertEqual(Prefix('REQ'), Text.to_value("REQ"))
+
+    def test_to_data(self):
+        """Verify prefixes can be converted to data."""
+        self.assertEqual("REQ", Prefix.to_data(self.prefix1))
+        self.assertEqual("TST", Prefix.to_data(self.prefix2))
+
 
 class TestUID(unittest.TestCase):
 
