@@ -5,3 +5,7 @@ checks:
 tools:
     external_code_coverage:
         timeout: 720
+    pylint:
+        python_version: 3
+        config_file: '.pylintrc'
+
