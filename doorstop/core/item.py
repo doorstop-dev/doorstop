@@ -45,6 +45,7 @@ def requires_document(func):
         return func(self, *args, **kwargs)
     return wrapped
 
+
 @yorm.map_attr(active=yorm.standard.Boolean)
 @yorm.map_attr(derived=yorm.standard.Boolean)
 @yorm.map_attr(level=Level)
@@ -52,7 +53,7 @@ def requires_document(func):
 @yorm.map_attr(normative=yorm.standard.Boolean)
 @yorm.map_attr(ref=yorm.standard.String)
 @yorm.map_attr(reviwed=Stamp)
-@yorm.map_attr(text=yorm.extended.Markdown)
+@yorm.map_attr(text=Text)
 @yorm.store_instances("{path}", {'path': 'path'})
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
@@ -169,24 +170,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                value = Level(value)
+                value = Level.to_value(value)
             elif key == 'active':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'normative':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'derived':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'reviewed':
-                value = Stamp(value)
+                value = Stamp.to_value(value)
             elif key == 'text':
-                value = Text(value)
+                value = Text.to_value(value)
             elif key == 'ref':
-                value = value.strip()
+                value = yorm.standard.String.to_value(value)
             elif key == 'links':
                 value = set(UID(part) for part in value)
             else:
                 if isinstance(value, str):
-                    value = Text(value)
+                    value = Text.to_value(value)
             self._data[key] = value
         # Set meta attributes
         self._loaded = True
@@ -214,15 +215,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                value = value.yaml
+                value = Level.to_data(value)
             elif key == 'text':
-                value = value.yaml
+                value = Text.to_data(value)
             elif key == 'ref':
-                value = value.strip()
+                value = yorm.standard.String.to_data(value)
             elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+                value = [{str(i): Stamp.to_data(i.stamp)} for i in sorted(value)]
             elif key == 'reviewed':
-                value = value.yaml
+                value = Stamp.to_data(value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"

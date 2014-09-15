@@ -6,6 +6,7 @@ import textwrap
 import hashlib
 
 import yaml
+from yorm import Converter
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -245,7 +246,7 @@ class _Literal(str):
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):
+class Text(Converter, str):
 
     """Markdown text paragraph."""
 
@@ -254,10 +255,13 @@ class Text(str):
         obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return Text.save_text(self)
+    @staticmethod
+    def to_value(data):
+        return Text(data)
+
+    @staticmethod
+    def to_data(value):
+        return Text.save_text(value)
 
     @staticmethod
     def load_text(value):
@@ -374,7 +378,7 @@ class Text(str):
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
-class Level:
+class Level(Converter):
 
     """Variable-length numerical outline level values.
 
@@ -506,11 +510,6 @@ class Level:
         parts = self._parts + ([0] if self.heading else [])
         return tuple(parts)
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.save_level(self.value)
-
     def _adjust(self):
         """Force all non-zero values."""
         old = self
@@ -523,6 +522,16 @@ class Level:
             msg = "minimum level reached, reseting: {} -> {}".format(old, new)
             log.warning(msg)
             self._parts = list(new.value)
+
+    @staticmethod
+    def to_value(data):
+        return Level(data)
+
+    @staticmethod
+    def to_data(value):
+        if isinstance(value, Level):
+            value = value.value
+        return Level.save_level(value)
 
     @staticmethod
     def load_level(value):
@@ -644,11 +653,6 @@ class Stamp:
     def __ne__(self, other):
         return not self == other
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.value
-
     @staticmethod
     def digest(*values):
         """Hash the values for later comparison."""
@@ -656,6 +660,16 @@ class Stamp:
         for value in values:
             md5.update(str(value).encode())
         return md5.hexdigest()
+
+    @staticmethod
+    def to_value(data):
+        return Stamp(data)
+
+    @staticmethod
+    def to_data(value):
+        if isinstance(value, Stamp):
+            value = value.value
+        return value
 
 
 class Reference:
