@@ -16,8 +16,9 @@ Additional reading:
 
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
-- demo: [IPython Notebook](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
-- sample: [Generated HTML](http://doorstop.info/reqs/index)
+- sample: [Generated HTML](http://doorstop.info/reqs/index.html)
+- documentation: [API](http://doorstop.info/docs/index.html), [Demo](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
+
 
 
 Getting Started
