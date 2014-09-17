@@ -27,6 +27,7 @@ after_script: >
     # Rebuild the repository from the generated files and push to GitHub pages
     cd pages ;
     echo "[${TRAVIS_REPO_SLUG}](~${TRAVIS_REPO_SLUG})" | sed -e 's/\//.github.io\//g' | sed -e 's/~/http:\/\//g' > README.md ;
+    touch .nojekyll ;
     git init ;
     git add . ;
     git commit -m "Deploy Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages" ;
