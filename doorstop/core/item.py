@@ -172,7 +172,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'text':
                 value = Text(value)
             elif key == 'ref':
-                value = value.strip()
+                value = Reference(value)
             elif key == 'links':
                 value = set(UID(part) for part in value)
             else:
@@ -209,7 +209,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'text':
                 value = value.yaml
             elif key == 'ref':
-                value = value.strip()
+                value = value.yaml
             elif key == 'links':
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]
             elif key == 'reviewed':
