@@ -53,6 +53,8 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
         log.info("publishing to {}...".format(path2))
         lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
         common.write_lines(lines, path2)
+        if obj2.assets:
+            common.copy(obj2.assets, os.path.join(path2, obj2.ASSETS))
 
     # Create index
     if index and count:

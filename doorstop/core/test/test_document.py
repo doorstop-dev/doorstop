@@ -224,7 +224,7 @@ class TestDocument(unittest.TestCase):
     def test_index_get(self):
         """Verify a document's index can be retrieved."""
         self.assertIs(None, self.document.index)
-        with patch('os.path.exists', Mock(return_value=True)):
+        with patch('os.path.isfile', Mock(return_value=True)):
             path = os.path.join(self.document.path, self.document.INDEX)
             self.assertEqual(path, self.document.index)
 

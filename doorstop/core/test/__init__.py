@@ -109,6 +109,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     mock_document = MagicMock()
     mock_document.prefix = 'MOCK'
     mock_document.items = []
+    mock_document.assets = None
     mock_tree = MagicMock()
     mock_tree.documents = [mock_document]
 
@@ -150,6 +151,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                        _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                        "normative: false"),
     ]
+    document.assets = None
 
     item3 = MockItem('path/to/req4.yml', _file=(
         "links: [sys4]" + '\n'
