@@ -37,6 +37,10 @@ ERROR_ALL = False  # display warning-level issues as errors
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
+DEFUALT_CSS = 'doorstop.css'
+PROJECT_CSS = 'project.css'
+DOCUMENT_CSS = 'document.css'
+ASSET_DIRECTORY = 'assets'
 
 # Version control settings
 ADDREMOVE_FILES = True
