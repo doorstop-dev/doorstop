@@ -6,6 +6,8 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from yorm.base import Mapper, Mappable
+
 from doorstop.core.base import BaseFileObject
 from doorstop.core.item import Item
 from doorstop.core.document import Document
@@ -36,31 +38,34 @@ class DocumentNoSkip(Document):
     SKIP = '__disabled__'  # never skip test Documents
 
 
+class MockMapper(Mapper):
+
+    """Mapped file with stubbed file IO."""
+
+    def __init__(self, path):
+        super().__init__(path)
+        self._mock_file = None
+
+    def read(self):
+        text = self._mock_file
+        logging.debug("mock read:\n{}".format(text.strip()))
+        return text
+
+    def write(self, text):
+        logging.debug("mock write:\n{}".format(text.strip()))
+        self._mock_file = text
+
+
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 
     """Mock FileObject class with stubbed file IO."""
 
     def __init__(self, *args, **kwargs):
-        self._file = kwargs.pop('_file', "")  # mock file system contents
+        text = kwargs.pop('_file', "")
         with patch('os.path.isfile', Mock(return_value=True)):
             super().__init__(*args, **kwargs)
-        self._read = Mock(side_effect=self._mock_read)
-        self._write = Mock(side_effect=self._mock_write)
-
-    _create = Mock()
-
-    def _mock_read(self, path):
-        """Mock read method."""
-        logging.debug("mock read path: {}".format(path))
-        text = self._file
-        logging.debug("mock read text: {}".format(repr(text)))
-        return text
-
-    def _mock_write(self, text, path):
-        """Mock write method."""
-        logging.debug("mock write text: {}".format(repr(text)))
-        logging.debug("mock write path: {}".format(path))
-        self._file = text
+        self.yorm_mapper = MockMapper(self.path)
+        self.yorm_mapper.write(text)
 
     def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
         return True

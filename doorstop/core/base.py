@@ -4,7 +4,6 @@ import os
 import abc
 import functools
 
-import yaml
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
@@ -107,7 +106,7 @@ def delete_document(func):
     return wrapped
 
 
-class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseValidatable(metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     """Abstract Base Class for objects that can be validated."""
 
@@ -161,7 +160,8 @@ def auto_load(func):
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.load() before execution."""
-        self.load()
+        if hasattr(self, 'yorm_mapper'):
+            self.yorm_mapper.retrieve(self)
         return func(self, *args, **kwargs)
     return wrapped
 
@@ -172,29 +172,21 @@ def auto_save(func):
     def wrapped(self, *args, **kwargs):
         """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
-        if self.auto:
-            self.save()
+        if hasattr(self, 'yorm_mapper') and self.auto:
+            self.yorm_mapper.store(self)
         return result
     return wrapped
 
 
-class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseFileObject(metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
-    """Abstract Base Class for objects whose attributes save to a file.
+    """Abstract Base Class for objects whose attributes save to a file."""
 
-    For properties that are saved to a file, decorate their getters
-    with :func:`auto_load` and their setters with :func:`auto_save`.
-
-    """
-
-    auto = True  # set to False to delay automatic save until explicit save
+    auto = True  # TODO: remove this attribute (it's part of YORM now)
 
     def __init__(self):
         self.path = None
         self.root = None
-        self._data = {}
-        self._exists = True
-        self._loaded = False
 
     def __hash__(self):
         return hash(self.path)
@@ -204,87 +196,6 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     def __ne__(self, other):
         return not self == other
-
-    @staticmethod
-    def _create(path, name):  # pragma: no cover (integration test)
-        """Create a new file for the object.
-
-        :param path: path to new file
-        :param name: humanized name for this file
-
-        :raises: :class:`~doorstop.common.DoorstopError` if the file
-            already exists
-
-        """
-        if os.path.exists(path):
-            raise DoorstopError("{} already exists: {}".format(name, path))
-        common.create_dirname(path)
-        common.touch(path)
-
-    @abc.abstractmethod
-    def load(self, reload=False):  # pragma: no cover (abstract method)
-        """Load the object's properties from its file."""
-        # 1. Start implementations of this method with:
-        if self._loaded and not reload:
-            return
-        # 2. Call self._read() and update properties here
-        # 3. End implementations of this method with:
-        self._loaded = True
-
-    def _read(self, path):  # pragma: no cover (integration test)
-        """Read text from the object's file.
-
-        :param path: path to a text file
-
-        :return: contexts of text file
-
-        """
-        if not self._exists:
-            msg = "cannot read from deleted: {}".format(self.path)
-            raise DoorstopError(msg)
-        return common.read_text(path)
-
-    @staticmethod
-    def _load(text, path):
-        """Load YAML data from text.
-
-        :param text: text read from a file
-        :param path: path to the file (for displaying errors)
-
-        :return: dictionary of YAML data
-
-        """
-        return common.load_yaml(text, path)
-
-    @abc.abstractmethod
-    def save(self):  # pragma: no cover (abstract method)
-        """Format and save the object's properties to its file."""
-        # 1. Call self._write() with the current properties here
-        # 2. End implementations of this method with:
-        self._loaded = False
-        self.auto = True
-
-    def _write(self, text, path):  # pragma: no cover (integration test)
-        """Write text to the object's file.
-
-        :param text: text to write to a file
-        :param path: path to the file
-
-        """
-        if not self._exists:
-            raise DoorstopError("cannot save to deleted: {}".format(self))
-        common.write_text(text, path)
-
-    @staticmethod
-    def _dump(data):
-        """Dump YAML data to text.
-
-        :param data: dictionary of YAML data
-
-        :return: text to write to a file
-
-        """
-        return yaml.dump(data, default_flow_style=False, allow_unicode=True)
 
     # properties #############################################################
 
@@ -340,15 +251,3 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
             return setattr(self, name, value)
         else:
             self._data[name] = value
-
-    # actions ################################################################
-
-    def delete(self, path):
-        """Delete the object's file from the file system."""
-        if self._exists:
-            log.info("deleting {}...".format(self))
-            common.delete(path)
-            self._loaded = False  # force the object to reload
-            self._exists = False  # but, prevent future access
-        else:
-            log.warning("already deleted: {}".format(self))

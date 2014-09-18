@@ -4,6 +4,7 @@ import os
 import re
 import functools
 
+import yorm
 import pyficache
 
 from doorstop import common
@@ -45,6 +46,15 @@ def requires_document(func):
     return wrapped
 
 
+@yorm.map_attr(active=yorm.standard.Boolean)
+@yorm.map_attr(derived=yorm.standard.Boolean)
+@yorm.map_attr(level=Level)
+@yorm.map_attr(links=yorm.standard.List)
+@yorm.map_attr(normative=yorm.standard.Boolean)
+@yorm.map_attr(ref=yorm.standard.String)
+@yorm.map_attr(reviwed=Stamp)
+@yorm.map_attr(text=Text)
+@yorm.store_instances("{path}", {'path': 'path'})
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""
@@ -89,14 +99,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Item.auto)
         # Set default values
-        self._data['level'] = Item.DEFAULT_LEVEL
-        self._data['active'] = Item.DEFAULT_ACTIVE
-        self._data['normative'] = Item.DEFAULT_NORMATIVE
-        self._data['derived'] = Item.DEFAULT_DERIVED
-        self._data['reviewed'] = Item.DEFAULT_REVIEWED
-        self._data['text'] = Item.DEFAULT_TEXT
-        self._data['ref'] = Item.DEFAULT_REF
-        self._data['links'] = set()
+        self.level = Item.DEFAULT_LEVEL
+        self.active = Item.DEFAULT_ACTIVE
+        self.normative = Item.DEFAULT_NORMATIVE
+        self.derived = Item.DEFAULT_DERIVED
+        self.reviewed = Item.DEFAULT_REVIEWED
+        self.text = Item.DEFAULT_TEXT
+        self.ref = Item.DEFAULT_REF
+        self.links = set()
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -160,24 +170,24 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Store parsed data
         for key, value in data.items():
             if key == 'level':
-                value = Level(value)
+                value = Level.to_value(value)
             elif key == 'active':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'normative':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'derived':
-                value = to_bool(value)
+                value = yorm.standard.Boolean.to_value(value)
             elif key == 'reviewed':
-                value = Stamp(value)
+                value = Stamp.to_value(value)
             elif key == 'text':
-                value = Text(value)
+                value = Text.to_value(value)
             elif key == 'ref':
-                value = value.strip()
+                value = yorm.standard.String.to_value(value)
             elif key == 'links':
                 value = set(UID(part) for part in value)
             else:
                 if isinstance(value, str):
-                    value = Text(value)
+                    value = Text.to_value(value)
             self._data[key] = value
         # Set meta attributes
         self._loaded = True
@@ -205,15 +215,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                value = value.yaml
+                value = Level.to_data(value)
             elif key == 'text':
-                value = value.yaml
+                value = Text.to_data(value)
             elif key == 'ref':
-                value = value.strip()
+                value = yorm.standard.String.to_data(value)
             elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+                value = [{str(i): Stamp.to_data(i.stamp)} for i in sorted(value)]
             elif key == 'reviewed':
-                value = value.yaml
+                value = Stamp.to_data(value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
@@ -242,86 +252,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return self.uid.number
 
     @property
-    @auto_load
-    def level(self):
-        """Get the item's level."""
-        return self._data['level']
-
-    @level.setter
-    @auto_save
-    @auto_load
-    def level(self, value):
-        """Set the item's level."""
-        self._data['level'] = Level(value)
-
-    @property
     def depth(self):
         """Get the item's heading order based on it's level."""
         return len(self.level)
-
-    @property
-    @auto_load
-    def active(self):
-        """Get the item's active status.
-
-        An inactive item will not be validated. Inactive items are
-        intended to be used for:
-
-        - future requirements
-        - temporarily disabled requirements or tests
-        - externally implemented requirements
-        - etc.
-
-        """
-        return self._data['active']
-
-    @active.setter
-    @auto_save
-    @auto_load
-    def active(self, value):
-        """Set the item's active status."""
-        self._data['active'] = to_bool(value)
-
-    @property
-    @auto_load
-    def derived(self):
-        """Get the item's derived status.
-
-        A derived item does not have links to items in its parent
-        document, but should still be linked to by items in its child
-        documents.
-
-        """
-        return self._data['derived']
-
-    @derived.setter
-    @auto_save
-    @auto_load
-    def derived(self, value):
-        """Set the item's derived status."""
-        self._data['derived'] = to_bool(value)
-
-    @property
-    @auto_load
-    def normative(self):
-        """Get the item's normative status.
-
-        A non-normative item should not have or be linked to.
-        Non-normative items are intended to be used for:
-
-        - headings
-        - comments
-        - etc.
-
-        """
-        return self._data['normative']
-
-    @normative.setter
-    @auto_save
-    @auto_load
-    def normative(self, value):
-        """Set the item's normative status."""
-        self._data['normative'] = to_bool(value)
 
     @property
     def heading(self):
@@ -363,66 +296,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def cleared(self, value):
         """Set the item's suspect link status."""
         self.clear(_inverse=not to_bool(value))
-
-    @property
-    @auto_load
-    def reviewed(self):
-        """Indicate if the item has been reviewed."""
-        stamp = self.stamp(links=True)
-        if self._data['reviewed'] == Stamp(True):
-            self._data['reviewed'] = stamp
-        return self._data['reviewed'] == stamp
-
-    @reviewed.setter
-    @auto_save
-    @auto_load
-    def reviewed(self, value):
-        """Set the item's review status."""
-        self._data['reviewed'] = Stamp(value)
-
-    @property
-    @auto_load
-    def text(self):
-        """Get the item's text."""
-        return self._data['text']
-
-    @text.setter
-    @auto_save
-    @auto_load
-    def text(self, value):
-        """Set the item's text."""
-        self._data['text'] = Text(value)
-
-    @property
-    @auto_load
-    def ref(self):
-        """Get the item's external file reference.
-
-        An external reference can be part of a line in a text file or
-        the filename of any type of file.
-
-        """
-        return self._data['ref']
-
-    @ref.setter
-    @auto_save
-    @auto_load
-    def ref(self, value):
-        """Set the item's external file reference."""
-        self._data['ref'] = str(value) if value else ""
-
-    @property
-    @auto_load
-    def links(self):
-        """Get a list of the item UIDs this item links to."""
-        return sorted(self._data['links'])
-
-    @links.setter
-    @auto_save
-    @auto_load
-    def links(self, value):
-        """Set the list of item UIDs this item links to."""
-        self._data['links'] = set(UID(v) for v in value)
 
     @property
     def parent_links(self):
@@ -795,7 +668,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         pass  # the item is deleted in the decorated method
 
 
-class UnknownItem(object):
+class UnknownItem:
 
     """Represents an unknown item, which doesn't have a path."""
 
