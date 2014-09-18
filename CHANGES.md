@@ -1,10 +1,10 @@
 Changelog
 =========
 
-0.9 (dev)
----------
+0.8.2 (204/09/17)
+-----------------
 
-- TBD
+- Fixed a bug where whitespace was not stripped on export to tabular formats.
 
 0.8.1 (2014/09/04)
 ------------------
