@@ -6,6 +6,7 @@ import textwrap
 import hashlib
 
 import yaml
+import yorm
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -374,7 +375,7 @@ class Text(str):
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
-class Level(object):
+class Level(yorm.Converter):
 
     """Variable-length numerical outline level values.
 
@@ -506,10 +507,14 @@ class Level(object):
         parts = self._parts + ([0] if self.heading else [])
         return tuple(parts)
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.save_level(self.value)
+    @classmethod
+    def to_value(cls, obj):
+        return Level(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        level = cls.to_value(obj)
+        return cls.save_level(level.value)
 
     def _adjust(self):
         """Force all non-zero values."""

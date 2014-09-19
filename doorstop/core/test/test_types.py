@@ -357,12 +357,12 @@ class TestLevel(unittest.TestCase):
         self.assertEqual((1, 2, 0), self.level_1_2_heading.value)
         self.assertEqual((1, 2, 3), self.level_1_2_3.value)
 
-    def test_yaml(self):
-        """Verify levels can be converted to their YAML representation."""
-        self.assertEqual(1, self.level_1.yaml)
-        self.assertEqual(1.2, self.level_1_2.yaml)
-        self.assertEqual('1.2.0', self.level_1_2_heading.yaml)
-        self.assertEqual('1.2.3', self.level_1_2_3.yaml)
+    def test_to_data(self):
+        """Verify levels can be converted to data."""
+        self.assertEqual(1, Level.to_data(self.level_1))
+        self.assertEqual(1.2, Level.to_data(self.level_1_2))
+        self.assertEqual('1.2.0', Level.to_data(self.level_1_2_heading))
+        self.assertEqual('1.2.3', Level.to_data(self.level_1_2_3))
 
     def test_copy(self):
         """Verify levels can be copied."""
