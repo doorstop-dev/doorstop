@@ -55,9 +55,6 @@ setuptools.setup(
         "bottle >= 0.12, < 0.13",
         "requests >= 2, < 3",
         "pyficache >= 0.2.3, < 0.3",
-        "yorm == 0.0.0",
-    ],
-    dependency_links=[
-        "https://github.com/jacebrowning/yorm/tarball/master#egg=yorm-0.0.0",  # pylint: disable=C0301
+        "yorm",  # TODO: add a version
     ],
 )
