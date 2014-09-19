@@ -63,7 +63,7 @@ env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): Makefile setup.py
 
 	# TODO: remove this after a version of YORM is released
-	$(PIP) uninstall YORM --yes
+	- $(PIP) uninstall YORM --yes
 	$(PIP) install https://github.com/jacebrowning/yorm/tarball/master
 
 	$(PYTHON) setup.py develop
