@@ -64,7 +64,7 @@ $(EGG_INFO): Makefile setup.py
 
 	# TODO: remove this after a version of YORM is released
 	- $(PIP) uninstall YORM --yes
-	$(PIP) install https://github.com/jacebrowning/yorm/tarball/master
+	$(PIP) install https://github.com/jacebrowning/yorm/tarball/develop
 
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
