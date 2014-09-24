@@ -184,9 +184,9 @@ class TestText(unittest.TestCase):
         """Verify text can be equated."""
         self.assertEqual(Text("Hello, world!"), self.text)
 
-    def test_yaml(self):
-        """Verify levels can be converted to their YAML representation."""
-        self.assertEqual("Hello, world!\n", self.text.yaml)
+    def test_to_data(self):
+        """Verify levels can be converted to data."""
+        self.assertEqual("Hello, world!\n", Text.to_data(self.text))
 
 
 class TestLevel(unittest.TestCase):

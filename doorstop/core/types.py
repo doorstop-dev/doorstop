@@ -246,19 +246,25 @@ class _Literal(str):
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):
+class Text(yorm.Converter, str):
 
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
-        assert not isinstance(value, Text)
-        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        if isinstance(value, Text):
+            obj = value
+        else:
+            obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return Text.save_text(self)
+    @classmethod
+    def to_value(cls, obj):
+        return Text(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        text = cls.to_value(obj)
+        return Text.save_text(text)
 
     @staticmethod
     def load_text(value):

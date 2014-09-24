@@ -207,7 +207,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if key == 'level':
                 value = Level.to_data(value)
             elif key == 'text':
-                value = value.yaml
+                value = Text.to_data(value)
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
