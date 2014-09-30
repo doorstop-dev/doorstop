@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.8.2 (dev)
------------
+0.8.2 (2014/09/29)
+------------------
 
 - Limit the maximum version of `openpyxl` to 2.1.0 due to deprecation bug.
 
