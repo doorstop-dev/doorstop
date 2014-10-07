@@ -96,7 +96,7 @@ $ python setup.py install
 
 <p>After configuring version control, a new parent document can be created:</p>
 
-<pre><code>$ doorstop new REQ ./reqs
+<pre><code>$ doorstop create REQ ./reqs
 created document: REQ (@/reqs)
 </code></pre>
 
@@ -113,7 +113,7 @@ opened item: REQ001 (@/reqs/REQ001.yml)
 
 <p>Additional documents can be created that link to other documents:</p>
 
-<pre><code>$ doorstop new TST ./reqs/tests --parent REQ
+<pre><code>$ doorstop create TST ./reqs/tests --parent REQ
 created document: TST (@/reqs/tests)
 </code></pre>
 
