@@ -26,7 +26,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
 
     def relpath(self, path):
         """Get a relative path to the working copy root for commands."""
-        return os.path.relpath(path, self.path).replace('\\', '/')
+        return os.path.relpath(path).replace('\\', '/')
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
