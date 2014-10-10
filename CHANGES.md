@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.8.3 (dev)
+-----------
+
+- Fixed a bug running VCS commands in subdirectories.
+
 0.8.2 (2014/09/29)
 ------------------
 
