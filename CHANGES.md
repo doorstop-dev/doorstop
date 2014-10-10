@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.8.3 (dev)
------------
+0.8.3 (2014/10/10)
+------------------
 
 - Fixed a bug running VCS commands in subdirectories.
 - Excluded `openpyxl==2.1.0` as a dependency version.
