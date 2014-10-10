@@ -5,6 +5,7 @@ Changelog
 -----------
 
 - Fixed a bug running VCS commands in subdirectories.
+- Excluded `openpyxl==2.1.0` as a dependency version.
 
 0.8.2 (2014/09/29)
 ------------------
