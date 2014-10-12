@@ -21,17 +21,19 @@ class TestServer(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.process = Process(target=main.main, kwargs={'args': []})
-        cls.process.start()
-        logging.info("delaying for the server to initialize...")
-        time.sleep(3)
-        assert cls.process.is_alive()
+        if os.getenv(ENV):
+            cls.process = Process(target=main.main, kwargs={'args': []})
+            cls.process.start()
+            logging.info("delaying for the server to initialize...")
+            time.sleep(3)
+            assert cls.process.is_alive()
 
     @classmethod
     def tearDownClass(cls):
-        cls.process.terminate()
-        logging.info("delaying for the server to shutdown...")
-        time.sleep(1)
+        if os.getenv(ENV):
+            cls.process.terminate()
+            logging.info("delaying for the server to shutdown...")
+            time.sleep(1)
 
     def test_check(self):  # pylint: disable=R0201
         """Verify the server can be checked."""
