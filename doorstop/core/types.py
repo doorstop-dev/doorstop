@@ -607,7 +607,7 @@ class Level(yorm.Converter):
         return Level(self.value)
 
 
-class Stamp(object):
+class Stamp(yorm.Converter):
 
     """Hashed content for change tracking.
 
@@ -655,11 +655,6 @@ class Stamp(object):
     def __ne__(self, other):
         return not self == other
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.value
-
     @staticmethod
     def digest(*values):
         """Hash the values for later comparison."""
@@ -667,6 +662,18 @@ class Stamp(object):
         for value in values:
             md5.update(str(value).encode())
         return md5.hexdigest()
+
+    @classmethod
+    def to_value(cls, obj):
+        return Stamp(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        if isinstance(obj, Stamp):
+            stamp = obj
+        else:
+            stamp = cls.to_value(obj)
+        return stamp.value
 
 
 class Reference(object):

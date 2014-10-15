@@ -211,9 +211,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+                value = [{str(i): Stamp.to_data(i.stamp)} for i in sorted(value)]
             elif key == 'reviewed':
-                value = value.yaml
+                value = Stamp.to_data(value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"
