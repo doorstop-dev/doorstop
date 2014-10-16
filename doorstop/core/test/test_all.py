@@ -193,7 +193,7 @@ class TestDocument(unittest.TestCase):
         document.add_item(level='1.0', reorder=False)
         document.reorder(keep=item)
         expected = [(1, 0), (2, 0), (3, 0)]
-        actual = [item.level for item in document.items]
+        actual = [i.level for i in document.items]
         self.assertListEqual(expected, actual)
         self.assertEqual((1, 0), item.level)
 
@@ -265,7 +265,6 @@ class TestTree(unittest.TestCase):
 class TestEditor(unittest.TestCase):
 
     """Integrations tests for the editor module."""
-
 
 
 class TestImporter(unittest.TestCase):
@@ -415,7 +414,6 @@ class TestImporter(unittest.TestCase):
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
-
 class TestExporter(unittest.TestCase):
 
     """Integration tests for the doorstop.core.exporter module."""
@@ -486,7 +484,6 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         else:  # binary file always changes, only copy when not checking
             move_file(temp, path)
-
 
 
 class TestPublisher(unittest.TestCase):
