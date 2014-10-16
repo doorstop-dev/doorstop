@@ -719,7 +719,7 @@ def iter_items(obj):
     if is_document(obj):
         # a document
         log.debug("iterating over document...")
-        return (i for i in obj.items if i.active)
+        return (i for i in obj.items)
     try:
         # an iterable (of items)
         log.debug("iterating over document-like object...")

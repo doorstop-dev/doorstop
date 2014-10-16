@@ -462,9 +462,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         rows = set()
         for index, document in enumerate(self.documents):
             for item in document:
-
-                for row in self._iter_rows(item, mapping):
-                    rows.add(row)
+                if item.active:
+                    for row in self._iter_rows(item, mapping):
+                        rows.add(row)
 
         # Sort rows
         return sorted(rows, key=by_uid)

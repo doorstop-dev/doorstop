@@ -67,7 +67,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from self._iter()
 
     def __len__(self):
-        return len(list(self._iter()))
+        return len(list(i for i in self._iter() if i.active))
 
     def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
         return True
@@ -268,8 +268,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @property
     def items(self):
-        """Get an ordered list of items in the document."""
-        return sorted(self._iter())
+        """Get an ordered list of active items in the document."""
+        return sorted(i for i in self._iter() if i.active)
 
     @property
     def depth(self):
