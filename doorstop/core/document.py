@@ -5,7 +5,7 @@ from itertools import chain
 from collections import OrderedDict
 
 from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import (add_document, edit_document, delete_document,
                                 auto_load, auto_save,
                                 BaseValidatable, BaseFileObject)
@@ -637,7 +637,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                          nlev.value[index + 1] not in (0, 1))):
                     msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
                                                                    nlev, nuid)
-                    yield DoorstopWarning(msg)
+                    yield DoorstopInfo(msg)
                     break
             prev = item
 

@@ -40,6 +40,7 @@ PIP := $(BIN)/pip
 RST2HTML := $(BIN)/rst2html.py
 PDOC := $(BIN)/pdoc
 PEP8 := $(BIN)/pep8
+PEP8RADIUS := $(BIN)/pep8radius
 PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint
 PYREVERSE := $(BIN)/pyreverse
@@ -81,7 +82,7 @@ $(DEPENDS_CI): Makefile
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade docutils pdoc pylint wheel sphinx
+	$(PIP) install --upgrade pep8radius docutils pdoc pylint wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -178,6 +179,10 @@ pep257: .depends-ci
 .PHONY: pylint
 pylint: .depends-dev
 	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
+
+.PHONY: fix
+fix: .depends-dev
+	$(PEP8RADIUS) --docformatter --in-place
 
 # Testing ####################################################################
 
