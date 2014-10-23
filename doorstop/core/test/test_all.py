@@ -357,7 +357,7 @@ class TestImporter(unittest.TestCase):
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_import_xlsx_huge(self):
         """Verify huge XLSX files are handled."""
-        path = os.path.join(self.temp, 'exported-huge.xlsx')
+        path = os.path.join(FILES, 'exported-huge.xlsx')
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
         document = _tree.create_document(_path, 'REQ')
