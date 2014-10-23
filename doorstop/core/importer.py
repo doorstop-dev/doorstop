@@ -192,7 +192,7 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path)
+    workbook = openpyxl.load_workbook(path, use_iterators=True)
     worksheet = workbook.active
 
     # Locate the bottom right cell in the workbook that contains cell info
