@@ -76,6 +76,9 @@ def configure_logging(verbosity=0):
     else:
         common.verbosity = verbosity
 
+    # Map warnings to logging
+    logging.captureWarnings(True)
+
 
 def configure_settings(args):
     """Update settings based on the command-line options."""

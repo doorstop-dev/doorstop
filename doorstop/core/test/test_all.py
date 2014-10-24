@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import pprint
 import logging
+import warnings
 
 import yaml
 import openpyxl
@@ -362,8 +363,11 @@ class TestImporter(unittest.TestCase):
         _tree = _get_tree()
         document = _tree.create_document(_path, 'REQ')
         # Act
-        core.importer.import_file(path, document)
-        # Assert
+        with warnings.catch_warnings(record=True) as warns:
+            core.importer.import_file(path, document)
+            # Assert
+        self.assertEqual(1, len(warns))
+        self.assertIn("maximum number of rows", str(warns[0].message))
         expected = []
         actual = [item.data for item in document.items]
         log_data(expected, actual)

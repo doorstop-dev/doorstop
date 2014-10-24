@@ -3,6 +3,7 @@
 import os
 import re
 import csv
+import warnings
 
 import openpyxl
 
@@ -195,14 +196,8 @@ def _file_xlsx(path, document, mapping=None):
     workbook = openpyxl.load_workbook(path, use_iterators=True)
     worksheet = workbook.active
 
-    # Locate the bottom right cell in the workbook that contains cell info
-    _highest_column = worksheet.get_highest_column()
-    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)
-    _highest_row = worksheet.get_highest_row()
-    last_cell = _highest_letter + str(_highest_row)
-
     # Extract header and data rows
-    for index, row in enumerate(worksheet.range('A1:%s' % last_cell)):
+    for index, row in enumerate(worksheet.iter_rows()):
         row2 = []
         for cell in row:
             if index == 0:
@@ -211,6 +206,11 @@ def _file_xlsx(path, document, mapping=None):
                 row2.append(cell.value)
         if index:
             data.append(row2)
+
+    # Warn about workbooks that may be sized incorrectly
+    if index >= 2 ** 20 - 1:  # pragma: no cover (integration test)
+        msg = "workbook contains the maximum number of rows"
+        warnings.warn(msg, Warning)
 
     # Import items from the rows
     _itemize(header, data, document, mapping=mapping)
