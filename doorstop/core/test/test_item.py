@@ -601,6 +601,18 @@ class TestItem(unittest.TestCase):
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item._data['reviewed'])
 
+    def test_validate_reviewed_first(self):
+        """Verify that a missing initial review leaves the stamp empty."""
+        self.item._data['reviewed'] = Stamp(None)
+        self.assertTrue(self.item.validate())
+        self.assertEqual(Stamp(None), self.item._data['reviewed'])
+
+    @patch('doorstop.settings.ERROR_ALL', True)
+    def test_validate_reviewed_second(self):
+        """Verify that a modified stamp fails review."""
+        self.item._data['reviewed'] = Stamp('abc123')
+        self.assertFalse(self.item.validate())
+
     def test_validate_cleared(self):
         """Verify that checking a cleared link updates the stamp."""
         mock_item = Mock()
