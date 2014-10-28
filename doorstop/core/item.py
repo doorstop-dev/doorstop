@@ -552,7 +552,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Check review status
         if not self.reviewed:
             if settings.CHECK_REVIEW_STATUS:
-                yield DoorstopWarning("unreviewed changes")
+                if not self._data['reviewed']:
+                    yield DoorstopInfo("needs initial review")
+                else:
+                    yield DoorstopWarning("unreviewed changes")
+
         # Reformat the file
         if settings.REFORMAT:
             log.debug("reformatting item {}...".format(self))
