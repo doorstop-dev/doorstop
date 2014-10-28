@@ -612,12 +612,24 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
+    def test_validate_cleared_new(self):
+        """Verify that new links are stamped automatically."""
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_uid': None}]
+        self.assertTrue(self.item.validate())
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
         self.item.links = ['a']
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_link_to_inactive(self):
         """Verify a link to an inactive item can be checked."""
         mock_item = Mock()
@@ -628,6 +640,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_link_to_nonnormative(self):
         """Verify a link to an non-normative item can be checked."""
         mock_item = Mock()
@@ -661,6 +674,7 @@ class TestItem(unittest.TestCase):
         self.item.document = mock_document
         self.assertFalse(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_tree(self):
         """Verify an item can be checked against a tree."""
 
@@ -724,6 +738,7 @@ class TestItem(unittest.TestCase):
 
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_both_no_reverse_links(self):
         """Verify an item can be checked against both (no reverse links)."""
 

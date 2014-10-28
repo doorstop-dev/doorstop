@@ -246,6 +246,7 @@ class TestTree(unittest.TestCase):
         common.write_text(self.backup, self.path)
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
