@@ -367,7 +367,7 @@ class TestImporter(unittest.TestCase):
             core.importer.import_file(path, document)
             # Assert
         self.assertEqual(1, len(warns))
-        self.assertIn("maximum number of rows", str(warns[0].message))
+        self.assertIn("maximum number of rows", str(warns[-1].message))
         expected = []
         actual = [item.data for item in document.items]
         log_data(expected, actual)

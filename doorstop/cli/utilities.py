@@ -65,6 +65,7 @@ def configure_logging(verbosity=0):
     # Set a custom formatter
     if not logging.root.handlers:  # pragma: no cover (manual test)
         logging.basicConfig(level=level)
+        logging.captureWarnings(True)
         formatter = common.WarningFormatter(default_format, verbose_format)
         logging.root.handlers[0].setFormatter(formatter)
 
@@ -75,9 +76,6 @@ def configure_logging(verbosity=0):
         common.verbosity = common.MAX_VERBOSITY
     else:
         common.verbosity = verbosity
-
-    # Map warnings to logging
-    logging.captureWarnings(True)
 
 
 def configure_settings(args):
