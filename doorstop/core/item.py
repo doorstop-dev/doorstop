@@ -613,7 +613,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     yield DoorstopWarning(msg)
                 # check the link status
                 if uid.stamp == Stamp(True):
-                    uid.stamp = item.stamp()  # convert True to a stamp
+                    uid.stamp = item.stamp()
+                elif not str(uid.stamp) and settings.STAMP_NEW_LINKS:
+                    uid.stamp = item.stamp()
                 elif uid.stamp != item.stamp():
                     if settings.CHECK_SUSPECT_LINKS:
                         msg = "suspect link: {}".format(item)

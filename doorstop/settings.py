@@ -34,12 +34,15 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 WARN_ALL = False  # display info-level issues as warnings
 ERROR_ALL = False  # display warning-level issues as errors
 
+# Stamping settings
+STAMP_NEW_LINKS = True  # automatically stamp links upon creation
+
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 
 # Version control settings
-ADDREMOVE_FILES = True
+ADDREMOVE_FILES = True  # automatically add/remove new/changed files
 
 # Caching settings
 CACHE_ITEMS = True  # cache items in documents and trees
