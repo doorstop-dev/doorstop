@@ -6,7 +6,6 @@ Doorstop
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
-[![Gittip](http://img.shields.io/badge/gratipay-me-brightgreen.svg)](https://www.gratipay.com/jacebrowning)
 
 Doorstop manages the storage of textual requirements alongside source code in version control.
 
