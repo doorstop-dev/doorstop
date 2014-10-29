@@ -6,7 +6,7 @@ git:
   depth: 1
 install:
 - pip install coveralls scrutinizer-ocular
-script: make ci
+script: travis_wait make ci
 after_success:
 - coveralls
 - ocular

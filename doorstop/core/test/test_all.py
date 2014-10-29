@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import pprint
 import logging
+import warnings
 
 import yaml
 import openpyxl
@@ -351,6 +352,24 @@ class TestImporter(unittest.TestCase):
         core.importer.import_file(path, document)
         # Assert
         expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_import_xlsx_huge(self):
+        """Verify huge XLSX files are handled."""
+        path = os.path.join(FILES, 'exported-huge.xlsx')
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        with warnings.catch_warnings(record=True) as warns:
+            core.importer.import_file(path, document)
+            # Assert
+        self.assertEqual(1, len(warns))
+        self.assertIn("maximum number of rows", str(warns[-1].message))
+        expected = []
         actual = [item.data for item in document.items]
         log_data(expected, actual)
         self.assertListEqual(expected, actual)

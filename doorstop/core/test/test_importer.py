@@ -145,7 +145,7 @@ class TestModule(unittest.TestCase):
 
     @patch('doorstop.core.importer._itemize')
     def test_file_xlsx(self, mock_itemize):
-        """Verify a CSV file can be imported."""  # pylint: disable=C0301
+        """Verify a XLSX file can be imported."""  # pylint: disable=C0301
         path = os.path.join(FILES, 'exported.xlsx')
         mock_document = Mock()
         # Act
