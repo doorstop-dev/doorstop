@@ -357,6 +357,7 @@ class TestImporter(unittest.TestCase):
         self.assertListEqual(expected, actual)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
+    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long on Travis")
     def test_import_xlsx_huge(self):
         """Verify huge XLSX files are handled."""
         path = os.path.join(FILES, 'exported-huge.xlsx')
