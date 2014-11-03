@@ -9,6 +9,7 @@ Doorstop
 
 Doorstop manages the storage of textual requirements alongside source code in version control.
 
+<img align="right" width="200" src="https://raw.githubusercontent.com/jacebrowning/doorstop/feature/doorstop-logo/pages/images/logo-black-white.png"/>
 When a project utilizes this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Additional reading:
