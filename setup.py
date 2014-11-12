@@ -55,6 +55,9 @@ setuptools.setup(
         "bottle >= 0.12, < 0.13",
         "requests >= 2, < 3",
         "pyficache >= 0.2.3, < 0.3",
-        "YORM >= 0.1, < 2",
+        "YORM",
     ],
+    dependency_links = [
+        'https://github.com/jacebrowning/yorm/archive/master.zip#egg=YORM'
+    ]
 )

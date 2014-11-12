@@ -5,6 +5,7 @@ import re
 import functools
 
 import pyficache
+import yorm
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
@@ -45,6 +46,21 @@ def requires_document(func):
     return wrapped
 
 
+@yorm.map_attr(all=yorm.container.List)
+class LinkList(yorm.Converter):
+
+    """A `Link` list container."""
+
+
+@yorm.map_attr(active=yorm.standard.Boolean)
+@yorm.map_attr(derived=yorm.standard.Boolean)
+@yorm.map_attr(level=Level)
+@yorm.map_attr(links=LinksList)
+@yorm.map_attr(normative=yorm.standard.Boolean)
+@yorm.map_attr(ref=Reference)
+@yorm.map_attr(reviwed=Stamp)
+@yorm.map_attr(text=Text)
+@yorm.store_instances("{self.path}")
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""

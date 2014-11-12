@@ -61,6 +61,8 @@ ci: doorstop pep8 pep257 test tests tutorial
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): Makefile setup.py
+	# TODO: remove this line when a released YORM is used
+	- $(PIP) uninstall YORM --yes
 	$(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
