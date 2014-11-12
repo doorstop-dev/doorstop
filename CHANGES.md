@@ -4,7 +4,7 @@ Changelog
 0.9 (dev)
 ---------
 
-- TBD
+- Fixed a bug checking levels across inactive items.
 
 0.8.3 (2014/10/10)
 ------------------

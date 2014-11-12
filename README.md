@@ -6,10 +6,10 @@ Doorstop
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
-[![Gittip](http://img.shields.io/badge/gratipay-me-brightgreen.svg)](https://www.gratipay.com/jacebrowning)
 
 Doorstop manages the storage of textual requirements alongside source code in version control.
 
+<img align="right" width="200" src="pages/images/logo-black-white.png"/>
 When a project utilizes this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Additional reading:

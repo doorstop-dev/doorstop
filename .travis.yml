@@ -2,8 +2,6 @@ language: python
 python:
 - 3.3
 - 3.4
-git:
-  depth: 1
 install:
 - pip install coveralls scrutinizer-ocular
 script: make ci
@@ -12,7 +10,7 @@ after_success:
 - ocular
 after_script: >
   echo $TRAVIS_BRANCH; echo $TRAVIS_PULL_REQUEST; echo $TRAVIS_PYTHON_VERSION;
-  if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_PYTHON_VERSION == '3.3' ]]; then
+  if [[ $TRAVIS_BRANCH == 'develop' && $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_PYTHON_VERSION == '3.3' ]]; then
 
     # Generate Doorstop and Sphinx HTML pages
     make pages ;
@@ -32,6 +30,7 @@ after_script: >
     git add . ;
     git commit -m "Deploy Travis CI build $TRAVIS_BUILD_NUMBER to GitHub pages" ;
     git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
+
   fi
 notifications:
   email:

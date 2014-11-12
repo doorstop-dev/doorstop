@@ -25,6 +25,7 @@ NEW = os.path.join(FILES, 'new')  # new document with no items
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
+
 if not os.path.exists(EMPTY):
     os.makedirs(EMPTY)
 

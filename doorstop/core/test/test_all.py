@@ -9,12 +9,13 @@ import tempfile
 import shutil
 import pprint
 import logging
+import warnings
 
 import yaml
 import openpyxl
 
 from doorstop import common
-from doorstop.common import DoorstopWarning, DoorstopError
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import core
 from doorstop.core.builder import _get_tree, _clear_tree
 from doorstop.core.vcs import mockvcs
@@ -37,7 +38,6 @@ CHECK_EXPORTED_CONTENT = True
 CHECK_PUBLISHED_CONTENT = True
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestItem(unittest.TestCase):
 
     """Integration tests for the Item class."""
@@ -62,6 +62,7 @@ class TestItem(unittest.TestCase):
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
 
+    @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
         item = core.Item(os.path.join(FILES, 'REQ003.yml'))
@@ -79,7 +80,6 @@ class TestItem(unittest.TestCase):
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestDocument(unittest.TestCase):
 
     """Integration tests for the Document class."""
@@ -136,7 +136,7 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.REORDER', False)
     def test_issues_skipped_level(self):
         """Verify skipped item levels are detected."""
-        expect = DoorstopWarning("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
+        expect = DoorstopInfo("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
         for issue in self.document.issues:
             logging.info(repr(issue))
             if type(issue) == type(expect) and issue.args == expect.args:
@@ -194,7 +194,7 @@ class TestDocument(unittest.TestCase):
         document.add_item(level='1.0', reorder=False)
         document.reorder(keep=item)
         expected = [(1, 0), (2, 0), (3, 0)]
-        actual = [item.level for item in document.items]
+        actual = [i.level for i in document.items]
         self.assertListEqual(expected, actual)
         self.assertEqual((1, 0), item.level)
 
@@ -232,7 +232,6 @@ class TestDocument(unittest.TestCase):
         self.assertListEqual(expected, actual)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestTree(unittest.TestCase):
 
     """Integration tests for the core.Tree class."""
@@ -248,6 +247,7 @@ class TestTree(unittest.TestCase):
         common.write_text(self.backup, self.path)
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
@@ -269,7 +269,6 @@ class TestEditor(unittest.TestCase):
     """Integrations tests for the editor module."""
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)  # pylint: disable=R0902
 class TestImporter(unittest.TestCase):
 
     """Integrations tests for the importer module."""
@@ -341,6 +340,7 @@ class TestImporter(unittest.TestCase):
         log_data(expected, actual)
         self.assertListEqual(expected, actual)
 
+    @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_import_xlsx(self):
         """Verify items can be imported from an XLSX file."""
         path = os.path.join(self.temp, 'exported.xlsx')
@@ -352,6 +352,25 @@ class TestImporter(unittest.TestCase):
         core.importer.import_file(path, document)
         # Assert
         expected = [item.data for item in self.document.items]
+        actual = [item.data for item in document.items]
+        log_data(expected, actual)
+        self.assertListEqual(expected, actual)
+
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long on Travis")
+    def test_import_xlsx_huge(self):
+        """Verify huge XLSX files are handled."""
+        path = os.path.join(FILES, 'exported-huge.xlsx')
+        _path = os.path.join(self.temp, 'imports', 'req')
+        _tree = _get_tree()
+        document = _tree.create_document(_path, 'REQ')
+        # Act
+        with warnings.catch_warnings(record=True) as warns:
+            core.importer.import_file(path, document)
+            # Assert
+        self.assertEqual(1, len(warns))
+        self.assertIn("maximum number of rows", str(warns[-1].message))
+        expected = []
         actual = [item.data for item in document.items]
         log_data(expected, actual)
         self.assertListEqual(expected, actual)
@@ -416,7 +435,6 @@ class TestImporter(unittest.TestCase):
         self.assertEqual(attrs['ext1'], item.get('ext1'))
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
 class TestExporter(unittest.TestCase):
 
     """Integration tests for the doorstop.core.exporter module."""
@@ -472,6 +490,7 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         move_file(temp, path)
 
+    @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
     def test_export_xlsx(self):
         """Verify a document can be exported as an XLSX file."""
         path = os.path.join(FILES, 'exported.xlsx')
@@ -488,7 +507,6 @@ class TestExporter(unittest.TestCase):
             move_file(temp, path)
 
 
-@unittest.skipUnless(os.getenv(ENV) or not CHECK_PUBLISHED_CONTENT, REASON)
 class TestPublisher(unittest.TestCase):
 
     """Integration tests for the doorstop.core.publisher module."""
@@ -616,7 +634,6 @@ class TestPublisher(unittest.TestCase):
         common.write_text(text, path)
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestModule(unittest.TestCase):
 
     """Integration tests for the doorstop.core module."""

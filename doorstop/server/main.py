@@ -102,7 +102,7 @@ def get_documents():
 def get_all_documents():
     """Read the tree's documents."""
     if utilities.json_response(request):
-        data = {str(document.prefix): {str(item.uid): item.data for item in document} for document in tree}
+        data = {str(d.prefix): {str(i.uid): i.data for i in d} for d in tree}
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]

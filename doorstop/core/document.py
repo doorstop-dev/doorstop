@@ -5,7 +5,7 @@ from itertools import chain
 from collections import OrderedDict
 
 from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import (add_document, edit_document, delete_document,
                                 auto_load, auto_save,
                                 BaseValidatable, BaseFileObject)
@@ -67,7 +67,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from self._iter()
 
     def __len__(self):
-        return len(list(self._iter()))
+        return len(list(i for i in self._iter() if i.active))
 
     def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
         return True
@@ -268,8 +268,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @property
     def items(self):
-        """Get an ordered list of items in the document."""
-        return sorted(self._iter())
+        """Get an ordered list of active items in the document."""
+        return sorted(i for i in self._iter() if i.active)
 
     @property
     def depth(self):
@@ -637,7 +637,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                          nlev.value[index + 1] not in (0, 1))):
                     msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
                                                                    nlev, nuid)
-                    yield DoorstopWarning(msg)
+                    yield DoorstopInfo(msg)
                     break
             prev = item
 
