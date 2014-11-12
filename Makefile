@@ -73,9 +73,9 @@ ALL := $(ENV)/.all
 # Main Targets ###############################################################
 
 .PHONY: all
-all: depends doc $(ALL)
+all: depends $(ALL)
 $(ALL): $(SOURCES)
-	$(MAKE) pep8 pep257
+	$(MAKE) doc pep8 pep257
 	touch $(ALL)  # flag to indicate all setup steps were successful
 
 .PHONY: ci
