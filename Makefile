@@ -1,57 +1,81 @@
-# Project settings (detected automatically from files/directories)
-PROJECT := $(patsubst ./%.sublime-project,%, $(shell find . -type f -name '*.sublime-p*'))
-PACKAGE := $(patsubst ./%/__init__.py,%, $(shell find . -maxdepth 2 -name '__init__.py'))
+# Python settings
+ifndef TRAVIS
+	PYTHON_MAJOR := 3
+	PYTHON_MINOR := 4
+endif
+
+# Test runner settings
+ifndef TEST_RUNNER
+	# options are: nose, pytest
+	TEST_RUNNER := nose
+endif
+
+# Project settings
+PROJECT := Doorstop
+PACKAGE := doorstop
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
-# virtualenv settings
-ENV := env
-
-# Flags for PHONY targets
-DEPENDS_CI := $(ENV)/.depends-ci
-DEPENDS_DEV := $(ENV)/.depends-dev
-ALL := $(ENV)/.all
-
-# OS-specific paths (detected automatically from the system Python)
+# System paths
 PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
 ifneq ($(findstring win32, $(PLATFORM)), )
-	SYS_PYTHON := C:\\Python34\\python.exe
-	SYS_VIRTUALENV := C:\\Python34\\Scripts\\virtualenv.exe
+	SYS_PYTHON_DIR := C:\\Python$(PYTHON_MAJOR)$(PYTHON_MINOR)
+	SYS_PYTHON := $(SYS_PYTHON_DIR)\\python.exe
+	SYS_VIRTUALENV := $(SYS_PYTHON_DIR)\\Scripts\\virtualenv.exe
+	# https://bugs.launchpad.net/virtualenv/+bug/449537
+	export TCL_LIBRARY=$(SYS_PYTHON_DIR)\\tcl\\tcl8.5
+else
+	SYS_PYTHON := python$(PYTHON_MAJOR)
+	ifdef PYTHON_MINOR
+		SYS_PYTHON := $(SYS_PYTHON).$(PYTHON_MINOR)
+	endif
+	SYS_VIRTUALENV := virtualenv
+endif
+
+# virtualenv paths
+ENV := env
+ifneq ($(findstring win32, $(PLATFORM)), )
 	BIN := $(ENV)/Scripts
 	OPEN := cmd /c start
-	BAT := .bat
-	# https://bugs.launchpad.net/virtualenv/+bug/449537
-	export TCL_LIBRARY=C:\\Python34\\tcl\\tcl8.5
 else
-	SYS_PYTHON := python3
-	SYS_VIRTUALENV := virtualenv
 	BIN := $(ENV)/bin
 	ifneq ($(findstring cygwin, $(PLATFORM)), )
 		OPEN := cygstart
 	else
 		OPEN := open
-		SUDO := sudo
 	endif
 endif
 
 # virtualenv executables
 PYTHON := $(BIN)/python
 PIP := $(BIN)/pip
-RST2HTML := $(BIN)/rst2html.py
-PDOC := $(BIN)/pdoc
+EASY_INSTALL := $(BIN)/easy_install
+RST2HTML := $(PYTHON) $(BIN)/rst2html.py
+PDOC := $(PYTHON) $(BIN)/pdoc
 PEP8 := $(BIN)/pep8
 PEP8RADIUS := $(BIN)/pep8radius
 PEP257 := $(BIN)/pep257
 PYLINT := $(BIN)/pylint
 PYREVERSE := $(BIN)/pyreverse
 NOSE := $(BIN)/nosetests
+PYTEST := $(BIN)/py.test
+COVERAGE := $(BIN)/coverage
+
+# Remove if you don't want pip to cache downloads
+PIP_CACHE_DIR := .cache
+PIP_CACHE := --download-cache $(PIP_CACHE_DIR)
+
+# Flags for PHONY targets
+DEPENDS_CI := $(ENV)/.depends-ci
+DEPENDS_DEV := $(ENV)/.depends-dev
+ALL := $(ENV)/.all
 
 # Main Targets ###############################################################
 
 .PHONY: all
-all: $(ALL)
+all: depends doc $(ALL)
 $(ALL): $(SOURCES)
-	$(MAKE) doc pep8 pep257
+	$(MAKE) pep8 pep257
 	touch $(ALL)  # flag to indicate all setup steps were successful
 
 .PHONY: ci
@@ -62,7 +86,7 @@ ci: doorstop pep8 pep257 test tests tutorial
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
 $(EGG_INFO): Makefile setup.py
-	$(PYTHON) setup.py develop
+	VIRTUAL_ENV=$(ENV) $(PYTHON) setup.py develop
 	touch $(EGG_INFO)  # flag to indicate package is installed
 
 .PHONY: .virtualenv
@@ -76,13 +100,13 @@ depends: .depends-ci .depends-dev
 .PHONY: .depends-ci
 .depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install --upgrade pep8 pep257 nose coverage
+	$(PIP) install $(PIP_CACHE) --upgrade pep8 pep257 $(TEST_RUNNER) coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: .depends-dev
 .depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pep8radius docutils pdoc pylint wheel sphinx
+	$(PIP) install $(PIP_CACHE) --upgrade pep8radius pygments docutils pdoc pylint wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -114,7 +138,7 @@ readme: .depends-dev docs/README-github.html docs/README-pypi.html
 docs/README-github.html: README.md
 	pandoc -f markdown_github -t html -o docs/README-github.html README.md
 docs/README-pypi.html: README.rst
-	$(PYTHON) $(RST2HTML) README.rst docs/README-pypi.html
+	$(RST2HTML) README.rst docs/README-pypi.html
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
@@ -146,7 +170,7 @@ docs/*.png:
 .PHONY: apidocs
 apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PYTHON) $(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
 
 .PHONY: sphinx
 sphinx: .depends-dev docs/sphinx/_build
@@ -187,12 +211,32 @@ fix: .depends-dev
 # Testing ####################################################################
 
 .PHONY: test
-test: .depends-ci
-	$(NOSE) --config=.noserc
+test: test-$(TEST_RUNNER)
 
 .PHONY: tests
-tests: .depends-ci
+tests: tests-$(TEST_RUNNER)
+
+# nosetest commands
+
+.PHONY: test-nose
+test-nose: .depends-ci
+	$(NOSE) --config=.noserc
+
+.PHONY: tests-nose
+tests-nose: .depends-ci
 	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
+
+# pytest commands
+
+.PHONY: test-pytest
+test-pytest: .depends-ci
+	$(COVERAGE) run --source $(PACKAGE) -m py.test $(PACKAGE) --doctest-modules
+	$(COVERAGE) report --show-missing --fail-under=100
+
+.PHONY: tests-pytest
+tests-pytest: .depends-ci
+	TEST_INTEGRATION=1 $(MAKE) test
+	$(COVERAGE) report --show-missing --fail-under=100
 
 .PHONY: tutorial
 tutorial: env
@@ -204,12 +248,12 @@ tutorial: env
 clean: .clean-dist .clean-test .clean-doc .clean-build
 	rm -rf $(ALL)
 
-.PHONY: clean-all
-clean-all: clean .clean-env
-
-.PHONY: .clean-env
-.clean-env:
+.PHONY: clean-env
+clean-env: clean
 	rm -rf $(ENV)
+
+.PHONY: clean-all
+clean-all: clean clean-env .clean-workspace .clean-cache
 
 .PHONY: .clean-build
 .clean-build:
@@ -231,18 +275,19 @@ clean-all: clean .clean-env
 .clean-dist:
 	rm -rf dist build
 
+.PHONY: .clean-cache
+.clean-cache:
+	rm -rf $(PIP_CACHE_DIR)
+
+.PHONY: .clean-workspace
+.clean-workspace:
+	rm -rf *.sublime-workspace
+
 # Release ####################################################################
 
-.PHONY: .git-no-changes
-.git-no-changes:
-	@if git diff --name-only --exit-code;         \
-	then                                          \
-		echo Git working copy is clean...;        \
-	else                                          \
-		echo ERROR: Git working copy is dirty!;   \
-		echo Commit your changes and try again.;  \
-		exit -1;                                  \
-	fi;
+.PHONY: register
+register: doc
+	$(PYTHON) setup.py register
 
 .PHONY: dist
 dist: check doc test tests
@@ -255,15 +300,26 @@ upload: .git-no-changes doc
 	$(PYTHON) setup.py register sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
 
+.PHONY: .git-no-changes
+.git-no-changes:
+	@if git diff --name-only --exit-code;         \
+	then                                          \
+		echo Git working copy is clean...;        \
+	else                                          \
+		echo ERROR: Git working copy is dirty!;   \
+		echo Commit your changes and try again.;  \
+		exit -1;                                  \
+	fi;
+
 # System Installation ########################################################
 
 .PHONY: develop
 develop:
-	python3 setup.py develop
+	$(SYS_PYTHON) setup.py develop
 
 .PHONY: install
 install:
-	python3 setup.py install
+	$(SYS_PYTHON) setup.py install
 
 .PHONY: download
 download:
