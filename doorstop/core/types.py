@@ -164,6 +164,15 @@ class UID(object):
         except DoorstopError:
             return self.value < other.value
 
+    @classmethod
+    def to_value(cls, obj):
+        return UID(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        uid = cls.to_value(obj)
+        return uid.value
+
     @property
     def prefix(self):
         """Get the UID's prefix."""
@@ -676,7 +685,7 @@ class Stamp(yorm.Converter):
         return stamp.value
 
 
-class Reference(object):
+class Reference(yorm.standard.String):
 
     """External reference to a file or lines in a file."""
 

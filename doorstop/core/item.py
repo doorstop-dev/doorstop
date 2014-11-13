@@ -12,7 +12,8 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import (add_item, edit_item, delete_item,
                                 auto_load, auto_save,
                                 BaseValidatable, BaseFileObject)
-from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
+from doorstop.core.types import (Prefix, UID, Text, Level, Stamp, Reference,
+                                 to_bool)
 from doorstop.core import editor
 from doorstop import settings
 
@@ -46,16 +47,16 @@ def requires_document(func):
     return wrapped
 
 
-@yorm.map_attr(all=yorm.container.List)
-class LinkList(yorm.Converter):
+@yorm.map_attr(all=UID)
+class UIDList(yorm.container.List):
 
-    """A `Link` list container."""
+    """A `UID` list container."""
 
 
 @yorm.map_attr(active=yorm.standard.Boolean)
 @yorm.map_attr(derived=yorm.standard.Boolean)
 @yorm.map_attr(level=Level)
-@yorm.map_attr(links=LinksList)
+@yorm.map_attr(links=UIDList)
 @yorm.map_attr(normative=yorm.standard.Boolean)
 @yorm.map_attr(ref=Reference)
 @yorm.map_attr(reviwed=Stamp)
@@ -227,7 +228,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = [{str(i): Stamp.to_data(i.stamp)} for i in sorted(value)]
+                value = [{str(i): Stamp.to_data(i.stamp)}
+                         for i in sorted(value)]
             elif key == 'reviewed':
                 value = Stamp.to_data(value)
             else:
