@@ -110,11 +110,13 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(0, len(document.items))
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate(self):
         """Verify a document can be validated."""
         self.assertTrue(self.document.validate())
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_issues_count(self):
         """Verify a number of issues are found in a document."""
         issues = self.document.issues
@@ -123,6 +125,7 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(12, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_issues_duplicate_level(self):
         """Verify duplicate item levels are detected."""
         expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
@@ -134,6 +137,7 @@ class TestDocument(unittest.TestCase):
             self.fail("issue not found: {}".format(expect))
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_issues_skipped_level(self):
         """Verify skipped item levels are detected."""
         expect = DoorstopInfo("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
@@ -215,6 +219,7 @@ class TestDocument(unittest.TestCase):
         self.assertListEqual(expected, actual)
 
     @patch('doorstop.settings.REORDER', True)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
         document = core.Document.new(None,
@@ -248,6 +253,7 @@ class TestTree(unittest.TestCase):
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def test_validate_invalid_link(self):
         """Verify a tree is invalid with a bad link."""
@@ -257,6 +263,7 @@ class TestTree(unittest.TestCase):
         self.assertFalse(tree.validate())
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_long(self):
         """Verify trees can be checked."""
         logging.info("tree: {}".format(self.tree))
@@ -476,6 +483,7 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         move_file(temp, path)
 
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_export_tsv(self):
         """Verify a document can be exported as a TSV file."""
         path = os.path.join(FILES, 'exported.tsv')
@@ -490,7 +498,6 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         move_file(temp, path)
 
-    @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
     def test_export_xlsx(self):
         """Verify a document can be exported as an XLSX file."""
         path = os.path.join(FILES, 'exported.xlsx')
