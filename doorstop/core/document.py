@@ -573,7 +573,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         uid = UID(value)
         for item in self:
             if item.uid == uid:
-                return item
+                if item.active:
+                    return item
+                else:
+                    log.trace("item is inactive: {}".format(item))
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 

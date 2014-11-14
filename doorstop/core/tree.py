@@ -391,7 +391,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             item = self._item_cache[uid]
             if item:
                 log.trace("found cached item: {}".format(item))
-                return item
+                if item.active:
+                    return item
+                else:
+                    log.trace("item is inactive: {}".format(item))
             else:
                 log.trace("found cached unknown: {}".format(uid))
         except KeyError:
@@ -405,7 +408,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     if settings.CACHE_ITEMS:
                         self._item_cache[uid] = item
                         log.trace("cached item: {}".format(item))
-                    return item
+                    if item.active:
+                        return item
+                    else:
+                        log.trace("item is inactive: {}".format(item))
+
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
                 self._item_cache[uid] = None
