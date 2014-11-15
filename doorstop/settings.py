@@ -34,6 +34,9 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 WARN_ALL = False  # display info-level issues as warnings
 ERROR_ALL = False  # display warning-level issues as errors
 
+# Review settings
+REVIEW_NEW_ITEMS = True  # automatically review new items during validation
+
 # Stamping settings
 STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 

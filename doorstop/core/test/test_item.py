@@ -601,6 +601,7 @@ class TestItem(unittest.TestCase):
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item._data['reviewed'])
 
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_reviewed_first(self):
         """Verify that a missing initial review leaves the stamp empty."""
         self.item._data['reviewed'] = Stamp(None)
@@ -723,6 +724,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.assertFalse(self.item.validate())
 
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both(self):
         """Verify an item can be checked against both."""
 
@@ -751,6 +753,7 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both_no_reverse_links(self):
         """Verify an item can be checked against both (no reverse links)."""
 

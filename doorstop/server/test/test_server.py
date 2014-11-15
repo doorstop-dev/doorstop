@@ -59,7 +59,7 @@ class TestModule(BaseTestCase):
         """Verify the server can started (mock, debug)."""
         self.server.main(['--debug', '--launch'])
         mock_build.assert_called_once()
-        mock_open.assert_called_once_with("http://localhost:8080")
+        mock_open.assert_called_once_with("http://127.0.0.1:8080")
         mock_run.assert_called_once()
 
 
