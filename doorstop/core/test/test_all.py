@@ -498,6 +498,7 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         move_file(temp, path)
 
+    @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
     def test_export_xlsx(self):
         """Verify a document can be exported as an XLSX file."""
         path = os.path.join(FILES, 'exported.xlsx')

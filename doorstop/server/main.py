@@ -64,7 +64,7 @@ def run(args, cwd, _):
     global tree  # pylint: disable=W0603
     tree = build(cwd=cwd, root=args.project)
     tree.load()
-    host = 'localhost'
+    host = '127.0.0.1'
     port = args.port or settings.SERVER_PORT
     if args.launch:
         url = utilities.build_url(host=host, port=port)
