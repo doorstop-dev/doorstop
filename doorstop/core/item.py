@@ -754,9 +754,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if not child_items or find_all:
                     for item2 in document2:
                         if self.uid in item2.links:
-                            child_items.append(item2)
-                            if not find_all:
-                                break
+                            if not item2.active:
+                                item2 = UnknownItem(item2.uid)
+                                log.warning(item2.exception)
+                                child_items.append(item2)
+                            else:
+                                child_items.append(item2)
+                                if not find_all and item2.active:
+                                    break
         # Display found links
         if child_items:
             if find_all:
@@ -811,6 +816,7 @@ class UnknownItem(object):
     UNKNOWN_PATH = '???'  # string to represent an unknown path
 
     normative = False  # do not include unknown items in traceability
+    level = Item.DEFAULT_LEVEL
 
     def __init__(self, value, spec=Item):
         self._uid = UID(value)
@@ -825,6 +831,9 @@ class UnknownItem(object):
         if name in self._spec:
             log.debug(self.exception)
         return self.__getattribute__(name)
+
+    def __lt__(self, other):
+        return self.uid < other.uid
 
     @property
     def uid(self):
