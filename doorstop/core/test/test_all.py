@@ -356,8 +356,11 @@ class TestImporter(unittest.TestCase):
         log_data(expected, actual)
         self.assertListEqual(expected, actual)
 
+    # TODO: determine when this test should be run (if at all)
+    # currently, 'TEST_LONG' isn't set under any condition
     @unittest.skipUnless(os.getenv(ENV), REASON)
-    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long on Travis")
+    @unittest.skipUnless(os.getenv('TEST_LONG'), "this test takes too long")
+    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long")
     def test_import_xlsx_huge(self):
         """Verify huge XLSX files are handled."""
         path = os.path.join(FILES, 'exported-huge.xlsx')
