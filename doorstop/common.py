@@ -43,6 +43,8 @@ class DoorstopInfo(DoorstopWarning, Warning):
 
     """Generic Doorstop info."""
 
+# logging classes ############################################################
+
 
 class HelpFormatter(argparse.HelpFormatter):
 
