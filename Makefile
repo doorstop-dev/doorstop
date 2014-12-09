@@ -14,6 +14,7 @@ endif
 PROJECT := Doorstop
 PACKAGE := doorstop
 SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
+YAML := $(shell find . -name '*.yml' -not -path '*/test/files/*')
 EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
 
 # System paths
@@ -74,7 +75,7 @@ ALL := $(ENV)/.all
 
 .PHONY: all
 all: depends $(ALL)
-$(ALL): $(SOURCES)
+$(ALL): $(SOURCES) $(YAML)
 	$(MAKE) doc pep8 pep257
 	touch $(ALL)  # flag to indicate all setup steps were successful
 
@@ -147,17 +148,17 @@ reqs: doorstop reqs-html reqs-md reqs-txt
 
 .PHONY: reqs-html
 reqs-html: env docs/gen/*.html
-docs/gen/*.html: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+docs/gen/*.html: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --html
 
 .PHONY: reqs-md
 reqs-md: env docs/gen/*.md
-docs/gen/*.md: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+docs/gen/*.md: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --markdown
 
 .PHONY: reqs-txt
 reqs-txt: env docs/gen/*.txt
-docs/gen/*.txt: $(shell find . -name '*.yml' -not -path '*/test/files/*')
+docs/gen/*.txt: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --text
 
 .PHONY: uml
@@ -198,7 +199,7 @@ pep8: .depends-ci
 
 .PHONY: pep257
 pep257: .depends-ci
-	$(PEP257) $(PACKAGE) --ignore=E501,D102
+	$(PEP257) $(PACKAGE) --ignore=D102
 
 .PHONY: pylint
 pylint: .depends-dev

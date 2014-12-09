@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from distutils import dir_util
 import argparse
 import logging
 
@@ -178,6 +179,15 @@ def touch(path):  # pragma: no cover (integration test)
     if not os.path.exists(path):
         log.trace("creating empty '{}'...".format(path))
         write_text('', path)
+
+
+def copy(src, dst):
+    """Copy a file or directory."""
+    if os.path.isfile(src):
+        delete(dst)
+        shutil.copy(src, dst)
+    elif os.path.isdir(src):
+        dir_util.copy_tree(src, dst)
 
 
 def delete(path):  # pragma: no cover (integration test)
