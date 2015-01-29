@@ -69,10 +69,14 @@ def _configure_logging(verbosity=0):
         level = settings.VERBOSE_LOGGING_LEVEL
         default_format = settings.VERBOSE_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
-    else:
+    elif verbosity == 1:
         level = settings.VERBOSE2_LOGGING_LEVEL
         default_format = settings.VERBOSE_LOGGING_FORMAT
         verbose_format = settings.VERBOSE_LOGGING_FORMAT
+    else:
+        level = settings.VERBOSE2_LOGGING_LEVEL
+        default_format = settings.TIMED_LOGGING_FORMAT
+        verbose_format = settings.TIMED_LOGGING_FORMAT
 
     # Set a custom formatter
     logging.basicConfig(level=level)
@@ -97,11 +101,9 @@ def run(args, cwd, error):
 
         root = tk.Tk()
         root.title("{} ({})".format(__project__, __version__))
-        # TODO: set a minimum window size
-        # root.minsize(1000, 600)
-
-        # Start the application
         app = Application(root, cwd, args.project)
+        root.update()
+        root.minsize(root.winfo_width(), root.winfo_height())
         app.mainloop()
 
         return True
@@ -115,9 +117,9 @@ def _log(func):  # pragma: no cover (manual test)
         sargs = "{}, {}".format(', '.join(repr(a) for a in args),
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
-        msg = "{}: {}".format(func.__name__, sargs.strip(", "))
-        if not self.ignore:
-            log.critical(msg.strip())
+        msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
+        if not isinstance(self, ttk.Frame) or not self.ignore:
+            log.debug(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
 
@@ -203,7 +205,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         """Initialize and return the main frame."""  # pylint: disable=C0301
         # Shared arguments
         width_outline = 20
-        width_text = 40
+        width_text = 30
         width_code = 30
         width_uid = 10
         height_text = 10
@@ -241,12 +243,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(0, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=0)
 
             # Place widgets
             ttk.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
             ttk.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
-            ttk.Button(frame, text="...", command=self.browse).grid(row=0, column=2, **kw_gp)
 
             return frame
 
@@ -257,13 +257,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(0, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=0)
 
             # Place widgets
             ttk.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
             self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
-            ttk.Button(frame, text="New...", command=self.new).grid(row=0, column=2, **kw_gp)
 
             return frame
 
@@ -275,7 +273,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(1, weight=5)
             frame.rowconfigure(2, weight=0)
             frame.rowconfigure(3, weight=0)
-            frame.rowconfigure(4, weight=1)
             frame.columnconfigure(0, weight=0)
             frame.columnconfigure(1, weight=0)
             frame.columnconfigure(2, weight=0)
@@ -283,12 +280,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(4, weight=1)
             frame.columnconfigure(5, weight=1)
 
+            @_log
             def listbox_outline_listboxselect(event):
                 """Callback for selecting an item."""
+                if self.ignore:
+                    return
                 widget = event.widget
-                index = int(widget.curselection()[0])
-                value = widget.get(index)
-                self.stringvar_item.set(value)
+                curselection = widget.curselection()
+                if curselection:
+                    index = int(curselection[0])
+                    value = widget.get(index)
+                    self.stringvar_item.set(value)
 
             # Place widgets
             ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
@@ -304,8 +306,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             ttk.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
             ttk.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
             ttk.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
-            ttk.Label(frame, text="Items Filter:").grid(row=3, column=0, columnspan=6, sticky=tk.W, **kw_gp)
-            tk.Text(frame, height=height_code, width=width_code, wrap=tk.WORD, font=fixed).grid(row=4, column=0, columnspan=6, **kw_gsp)
 
             return frame
 
@@ -329,14 +329,23 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(1, weight=1)
             frame.columnconfigure(2, weight=1)
 
+            @_log
+            def text_focusin(_):
+                """Callback for entering a text field."""
+                self.ignore = True
+
+            @_log
             def text_item_focusout(event):
                 """Callback for updating text."""
+                self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_text.set(value)
 
+            @_log
             def text_extendedvalue_focusout(event):
                 """Callback for updating extended attributes."""
+                self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
                 self.stringvar_extendedvalue.set(value)
@@ -344,6 +353,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Place widgets
             ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
             self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
+            self.text_item.bind('<FocusIn>', text_focusin)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
             ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -363,6 +373,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey, font=fixed)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
             self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
+            self.text_extendedvalue.bind('<FocusIn>', text_focusin)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
             self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
@@ -397,6 +408,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         return frame
 
+    @_log
     def find(self):
         """Find the root of the project."""
         if not self.stringvar_project.get():
@@ -415,6 +427,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         if path:
             self.stringvar_project.set(path)
 
+    @_log
     def display_tree(self, *_):
         """Display the currently selected tree."""
         # Set the current tree
@@ -427,8 +440,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.combobox_documents['values'] = values
 
         # Select the first document
-        self.combobox_documents.current(0)
+        if len(self.tree):
+            self.combobox_documents.current(0)
+        else:
+            logging.warning("no documents to display")
 
+    @_log
     def display_document(self, *_):
         """Display the currently selected document."""
         # Set the current document
@@ -444,7 +461,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
+            value = "{s}{l} {i}".format(s=indent, l=level, i=item.uid)
+            level = '.'.join(str(l) for l in item.level)
             value = "{s}{l} {u}".format(s=indent, l=level, u=item.uid)
+            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.uid)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
@@ -455,9 +475,19 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Select the first item
         self.listbox_outline.selection_set(self.index or 0)
+        identifier = self.listbox_outline.selection_get()
+        self.stringvar_item.set(identifier)  # manual call
+        self.listbox_outline.selection_set(self.index or 0)
         uid = self.listbox_outline.selection_get()
         self.stringvar_item.set(uid)  # manual call
+        if len(self.document):
+            self.listbox_outline.selection_set(self.index or 0)
+            identifier = self.listbox_outline.selection_get()
+            self.stringvar_item.set(identifier)  # manual call
+        else:
+            logging.warning("no items to display")
 
+    @_log
     def display_item(self, *_):
         """Display the currently selected item."""
         self.ignore = True
@@ -465,7 +495,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Set the current item
         uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
         self.item = self.tree.find_item(uid)
-        self.index = self.listbox_outline.curselection()[0]
+        self.index = int(self.listbox_outline.curselection()[0])
         log.info("displaying item {}...".format(self.item))
 
         # Display the item's text
@@ -528,9 +558,13 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         self.ignore = False
 
+    @_log
     def update_item(self, *_):
         """Update the current item from the fields."""
         if self.ignore:
+            return
+        if not self.item:
+            logging.warning("no item selected")
             return
 
         # Update the current item
@@ -552,33 +586,57 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.display_document()
 
     @_log
-    def new(self):
-        """Create a new document."""
-
-    @_log
     def left(self):
         """Dedent the current item's level."""
+        self.item.level <<= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def down(self):
         """Increment the current item's level."""
+        self.item.level += 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def up(self):
         """Decrement the current item's level."""
+        self.item.level -= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def right(self):
         """Indent the current item's level."""
+        self.item.level >>= 1
+        self.document.reorder(keep=self.item)
+        self.display_document()
 
     @_log
     def add(self):
         """Add a new item to the document."""
+        logging.info("adding item to {}...".format(self.document))
+        if self.item:
+            level = self.item.level + 1
+        else:
+            level = None
+        item = self.document.add_item(level=level)
+        logging.info("added item: {}".format(item))
+        self.index = self.document.items.index(item)
+        self.display_document()
 
     @_log
     def remove(self):
         """Remove the selected item from the document."""
+        logging.info("removing item {}...".format(self.item))
+        item = self.tree.remove_item(self.item)
+        logging.info("removed item: {}".format(item))
+        self.item = None
+        self.index = max(0, self.index - 1)
+        self.display_document()
 
+    @_log
     def link(self):
         """Add the specified link to the current item."""
         # Add the specified link to the list
@@ -590,6 +648,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Update the current item
             self.update_item()
 
+    @_log
     def unlink(self):
         """Remove the currently selected link from the current item."""
         # Remove the selected link from the list
