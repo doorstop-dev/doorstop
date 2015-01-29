@@ -4,12 +4,6 @@ ifndef TRAVIS
 	PYTHON_MINOR := 4
 endif
 
-# Test runner settings
-ifndef TEST_RUNNER
-	# options are: nose, pytest
-	TEST_RUNNER := nose
-endif
-
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
@@ -62,10 +56,6 @@ NOSE := $(BIN)/nosetests
 PYTEST := $(BIN)/py.test
 COVERAGE := $(BIN)/coverage
 
-# Remove if you don't want pip to cache downloads
-PIP_CACHE_DIR := .cache
-PIP_CACHE := --download-cache $(PIP_CACHE_DIR)
-
 # Flags for PHONY targets
 DEPENDS_CI := $(ENV)/.depends-ci
 DEPENDS_DEV := $(ENV)/.depends-dev
@@ -96,18 +86,18 @@ $(PIP):
 	$(SYS_VIRTUALENV) --python $(SYS_PYTHON) $(ENV)
 
 .PHONY: depends
-depends: .depends-ci .depends-dev
+depends: depends-ci depends-dev
 
-.PHONY: .depends-ci
-.depends-ci: env Makefile $(DEPENDS_CI)
+.PHONY: depends-ci
+depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install $(PIP_CACHE) --upgrade pep8 pep257 $(TEST_RUNNER) coverage
+	$(PIP) install --upgrade pep8 pep257 pylint nose coverage
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
-.PHONY: .depends-dev
-.depends-dev: env Makefile $(DEPENDS_DEV)
+.PHONY: depends-dev
+depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install $(PIP_CACHE) --upgrade pep8radius pygments docutils pdoc pylint wheel sphinx
+	$(PIP) install --upgrade pep8radius pygments docutils pdoc wheel sphinx
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ##########################################################
@@ -135,13 +125,24 @@ pages: reqs-html sphinx
 	cp -r docs/sphinx/_build pages/docs/
 
 .PHONY: readme
-readme: .depends-dev docs/README-github.html docs/README-pypi.html
-docs/README-github.html: README.md
-	pandoc -f markdown_github -t html -o docs/README-github.html README.md
-docs/README-pypi.html: README.rst
-	$(RST2HTML) README.rst docs/README-pypi.html
+readme: depends-dev README-github.html README-pypi.html
+README-github.html: README.md
+	pandoc -f markdown_github -t html -o README-github.html README.md
+README-pypi.html: README.rst
+	$(RST2HTML) README.rst README-pypi.html
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
+
+apidocs: depends-dev apidocs/$(PACKAGE)/index.html
+apidocs/$(PACKAGE)/index.html: $(SOURCES)
+	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+
+.PHONY: sphinx
+sphinx: depends-dev docs/sphinx/_build
+docs/sphinx/_build: $(SOURCES)
+	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
+	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
+	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
 
 .PHONY: reqs
 reqs: doorstop reqs-html reqs-md reqs-txt
@@ -162,31 +163,19 @@ docs/gen/*.txt: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --text
 
 .PHONY: uml
-uml: .depends-dev docs/*.png $(SOURCES)
-docs/*.png:
+uml: depends-dev docs/*.png
+docs/*.png: $(SOURCES)
 	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
 	- mv -f classes_$(PACKAGE).png docs/classes.png
 	- mv -f packages_$(PACKAGE).png docs/packages.png
-
-.PHONY: apidocs
-apidocs: .depends-ci apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-
-.PHONY: sphinx
-sphinx: .depends-dev docs/sphinx/_build
-docs/sphinx/_build: $(SOURCES)
-	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
-	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
-	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
 
 .PHONY: read
 read: doc
 	$(OPEN) docs/gen/index.html
 	$(OPEN) apidocs/$(PACKAGE)/index.html
 	$(OPEN) docs/sphinx/_build/index.html
-	$(OPEN) docs/README-pypi.html
-	$(OPEN) docs/README-github.html
+	$(OPEN) README-pypi.html
+	$(OPEN) README-github.html
 
 # Static Analysis ############################################################
 
@@ -194,50 +183,33 @@ read: doc
 check: pep8 pep257 pylint
 
 .PHONY: pep8
-pep8: .depends-ci
+pep8: depends-ci
+	# E501: line too long (checked by PyLint)
 	$(PEP8) $(PACKAGE) --ignore=E501
 
 .PHONY: pep257
-pep257: .depends-ci
-	$(PEP257) $(PACKAGE) --ignore=D102
+pep257: depends-ci
+	# D102: docstring missing (checked by PyLint)
+	# D202: No blank lines allowed *after* function docstring
+	$(PEP257) $(PACKAGE) --ignore=D102,D202
 
 .PHONY: pylint
-pylint: .depends-dev
+pylint: depends-ci
 	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
 
 .PHONY: fix
-fix: .depends-dev
+fix: depends-dev
 	$(PEP8RADIUS) --docformatter --in-place
 
 # Testing ####################################################################
 
 .PHONY: test
-test: test-$(TEST_RUNNER)
-
-.PHONY: tests
-tests: tests-$(TEST_RUNNER)
-
-# nosetest commands
-
-.PHONY: test-nose
-test-nose: .depends-ci
+test: depends-ci
 	$(NOSE) --config=.noserc
 
-.PHONY: tests-nose
-tests-nose: .depends-ci
+.PHONY: tests
+tests: depends-ci
 	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
-
-# pytest commands
-
-.PHONY: test-pytest
-test-pytest: .depends-ci
-	$(COVERAGE) run --source $(PACKAGE) -m py.test $(PACKAGE) --doctest-modules
-	$(COVERAGE) report --show-missing --fail-under=100
-
-.PHONY: tests-pytest
-tests-pytest: .depends-ci
-	TEST_INTEGRATION=1 $(MAKE) test
-	$(COVERAGE) report --show-missing --fail-under=100
 
 .PHONY: tutorial
 tutorial: env
@@ -254,18 +226,18 @@ clean-env: clean
 	rm -rf $(ENV)
 
 .PHONY: clean-all
-clean-all: clean clean-env .clean-workspace .clean-cache
+clean-all: clean clean-env .clean-workspace
 
 .PHONY: .clean-build
 .clean-build:
-	find . -name '*.pyc' -not -path "*/env/*" -delete
-	find . -name '__pycache__' -not -path "*/env/*" -delete
-	rm -rf *.egg-info
+	find $(PACKAGE) -name '*.pyc' -delete
+	find $(PACKAGE) -name '__pycache__' -delete
+	rm -rf $(EGG_INFO)
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs docs/README*.html README.rst docs/*.png docs/gen
-	rm -rf docs/sphinx/doorstop*.rst docs/sphinx/_build
+	rm -rf apidocs README*.html README.rst docs/*.png docs/gen
+	rm -rf docs/sphinx/modules.rst docs/sphinx/doorstop*.rst docs/sphinx/_build
 	rm -rf pages/docs/ pages/reqs/
 
 .PHONY: .clean-test
@@ -275,10 +247,6 @@ clean-all: clean clean-env .clean-workspace .clean-cache
 .PHONY: .clean-dist
 .clean-dist:
 	rm -rf dist build
-
-.PHONY: .clean-cache
-.clean-cache:
-	rm -rf $(PIP_CACHE_DIR)
 
 .PHONY: .clean-workspace
 .clean-workspace:

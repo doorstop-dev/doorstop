@@ -4,7 +4,11 @@ python:
 - 3.4
 install:
 - pip install coveralls scrutinizer-ocular
-script: make ci
+before_script:
+- make env
+- make depends-ci
+script:
+- make ci
 after_success:
 - coveralls
 - ocular
@@ -35,7 +39,7 @@ after_script: >
 notifications:
   email:
     on_success: never
-    on_failure: always
+    on_failure: change
 env:
   global:
     # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci

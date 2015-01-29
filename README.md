@@ -19,8 +19,6 @@ Additional reading:
 - sample: [Generated HTML](http://doorstop.info/reqs/index.html)
 - documentation: [API](http://doorstop.info/docs/index.html), [Demo](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
 
-
-
 Getting Started
 ===============
 
@@ -30,31 +28,36 @@ Requirements
 * Python 3.3+
 * A version control system for requirements storage
 
-
 Installation
 ------------
 
 Doorstop can be installed with pip:
 
-    $ pip install doorstop
+```
+$ pip install doorstop
+```
 
-Or directly from source:
+or directly from source:
 
-    $ git clone https://github.com/jacebrowning/doorstop.git
-    $ cd doorstop
-    $ python setup.py install
+```
+$ git clone https://github.com/jacebrowning/doorstop.git
+$ cd doorstop
+$ python setup.py install
+```
 
 After installation, Doorstop is available on the command-line:
 
-    $ doorstop --help
+```
+$ doorstop --help
+```
 
 And the package is available under the name 'doorstop':
 
-    $ python
-    >>> import doorstop
-    >>> doorstop.__version__
-
-
+```
+$ python
+>>> import doorstop
+>>> doorstop.__version__
+```
 
 Basic Usage
 ===========
@@ -92,7 +95,6 @@ Items can be added and linked to parent items:
     $ doorstop link TST1 REQ1
     linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
-
 Document Validation
 -------------------
 
@@ -100,7 +102,6 @@ To check a document hierarchy for consistency, run the main command:
 
     $ doorstop
     valid tree: REQ <- [ TST ]
-
 
 Document Publishing
 -------------------
@@ -136,7 +137,6 @@ Supported formats:
 - Text: **.txt**
 - Markdown: **.md**
 - HTML: **.html**
-
 
 Content Interchange
 -------------------
@@ -176,15 +176,13 @@ Items can be created/updated from the export formats:
 
     $ doorstop import path/to/tst.csv TST
 
-
-
 For Contributors
 ================
 
 Requirements
 ------------
 
-* GNU Make:
+* Make:
     * Windows: http://cygwin.com/install.html
     * Mac: https://developer.apple.com/xcode
     * Linux: http://www.gnu.org/software/make (likely already installed)
@@ -192,31 +190,40 @@ Requirements
 * Pandoc: http://johnmacfarlane.net/pandoc/installing.html
 * Graphviz: http://www.graphviz.org/Download.php
 
-
 Installation
 ------------
 
 Create a virtualenv:
 
-    make env
+```
+$ make env
+```
 
 Run the tests:
 
-    make test
-    make tests  # includes integration tests
+```
+$ make test
+$ make tests  # includes integration tests
+```
 
 Build the documentation:
 
-    make doc
+```
+$ make doc
+```
 
 Run static analysis:
 
-    make pep8
-    make pep257
-    make pylint
-    make check  # includes all checks
+```
+$ make pep8
+$ make pep257
+$ make pylint
+$ make check  # includes all checks
+```
 
 Prepare a release:
 
-    make dist  # dry run
-    make upload
+```
+$ make dist  # dry run
+$ make upload
+```
