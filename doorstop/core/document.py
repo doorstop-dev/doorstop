@@ -588,9 +588,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, item_hook=None, **kwargs):
+    def get_issues(self, skip=None, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
+        :param skip: list of document prefixes to skip
         :param item_hook: function to call for custom item validation
 
         :return: generator of :class:`~doorstop.common.DoorstopError`,
@@ -599,23 +600,34 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         assert kwargs.get('document_hook') is None
+        skip = [] if skip is None else skip
         hook = item_hook if item_hook else lambda **kwargs: []
-        log.info("checking document {}...".format(self))
+
+        if self.prefix in skip:
+            log.info("skipping document %s...", self)
+            return
+        else:
+            log.info("checking document %s...", self)
+
         # Check for items
         items = self.items
         if not items:
             yield DoorstopWarning("no items")
             return
+
         # Reorder or check item levels
         if settings.REORDER:
             self.reorder(_items=items)
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
+
         # Check each item
         for item in items:
+
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
-                               item.get_issues()):
+                               item.get_issues(skip=skip)):
+
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.uid, issue))

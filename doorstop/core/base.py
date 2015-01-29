@@ -111,9 +111,10 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
 
     """Abstract Base Class for objects that can be validated."""
 
-    def validate(self, document_hook=None, item_hook=None):
+    def validate(self, skip=None, document_hook=None, item_hook=None):
         """Check the object for validity.
 
+        :param skip: list of document prefixes to skip
         :param document_hook: function to call for custom document
             validation
         :param item_hook: function to call for custom item validation
@@ -123,7 +124,7 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         """
         valid = True
         # Display all issues
-        for issue in self.get_issues(document_hook=document_hook,
+        for issue in self.get_issues(skip=skip, document_hook=document_hook,
                                      item_hook=item_hook):
             if isinstance(issue, DoorstopInfo) and not settings.WARN_ALL:
                 log.info(issue)
@@ -137,9 +138,10 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
         return valid
 
     @abc.abstractmethod
-    def get_issues(self, document_hook=None, item_hook=None):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):
         """Yield all the objects's issues.
 
+        :param skip: list of document prefixes to skip
         :param document_hook: function to call for custom document
             validation
         :param item_hook: function to call for custom item validation
