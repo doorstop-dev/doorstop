@@ -90,6 +90,9 @@ def main(args=None):  # pylint: disable=R0915
     function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
+    except common.DoorstopFileError as exc:
+        log.error(exc)
+        success = False
     except KeyboardInterrupt:
         log.debug("command cancelled")
         success = False

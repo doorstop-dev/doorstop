@@ -35,6 +35,11 @@ class DoorstopError(Exception):
     """Generic Doorstop error."""
 
 
+class DoorstopFileError(DoorstopError, IOError):
+
+    """Raised on IO errors."""
+
+
 class DoorstopWarning(DoorstopError, Warning):
 
     """Generic Doorstop warning."""

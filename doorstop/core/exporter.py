@@ -96,8 +96,12 @@ def export_file(obj, path, ext=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext, get_file_func=True)
-    log.debug("converting {} to file format {}...".format(obj, ext))
-    return func(obj, path, **kwargs)
+    log.debug("converting %s to file format %s...", obj, ext)
+    try:
+        return func(obj, path, **kwargs)
+    except IOError:
+        msg = "unable to write to: {}".format(path)
+        raise common.DoorstopFileError(msg) from None
 
 
 def _lines_yaml(obj, **_):

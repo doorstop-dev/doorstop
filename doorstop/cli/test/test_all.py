@@ -664,6 +664,13 @@ class TestExport(TempTestCase):
         self.assertIs(None, main(['export', 'tut', path]))
         self.assertTrue(os.path.isfile(path))
 
+    @patch('openpyxl.Workbook.save', Mock(side_effect=PermissionError))
+    def test_export_document_xlsx_error(self):
+        """Verify 'doorstop export' can handle IO errors."""
+        path = os.path.join(self.temp, 'tut.xlsx')
+        self.assertRaises(SystemExit, main, ['export', 'tut', path])
+        self.assertFalse(os.path.isfile(path))
+
     def test_export_tree_xlsx(self):
         """Verify 'doorstop export' can create an XLSX directory."""
         path = os.path.join(self.temp, 'all')
