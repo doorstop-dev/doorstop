@@ -508,8 +508,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, **kwargs):
+    def get_issues(self, skip=None, **kwargs):
         """Yield all the item's issues.
+
+        :param skip: list of document prefixes to skip
 
         :return: generator of :class:`~doorstop.common.DoorstopError`,
                               :class:`~doorstop.common.DoorstopWarning`,
@@ -518,37 +520,49 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         assert kwargs.get('document_hook') is None
         assert kwargs.get('item_hook') is None
-        log.info("checking item {}...".format(self))
+        skip = [] if skip is None else skip
+
+        log.info("checking item %s...", self)
+
         # Verify the file can be parsed
         self.load()
+
         # Skip inactive items
         if not self.active:
-            log.info("skipped inactive item: {}".format(self))
+            log.info("skipped inactive item: %s", self)
             return
+
         # Delay item save if reformatting
         if settings.REFORMAT:
             self.auto = False
+
         # Check text
         if not self.text:
             yield DoorstopWarning("no text")
+
         # Check external references
         if settings.CHECK_REF:
             try:
                 self.find_ref()
             except DoorstopError as exc:
                 yield exc
+
         # Check links
         if not self.normative and self.links:
             yield DoorstopWarning("non-normative, but has links")
+
         # Check links against the document
-        if self.document:
+        if self.document and self.document not in skip:
             yield from self._get_issues_document(self.document)
+
         # Check links against the tree
         if self.tree:
             yield from self._get_issues_tree(self.tree)
+
         # Check links against both document and tree
-        if self.document and self.tree:
+        if self.document and self.document not in skip and self.tree:
             yield from self._get_issues_both(self.document, self.tree)
+
         # Check review status
         if not self.reviewed:
             if settings.CHECK_REVIEW_STATUS:
@@ -562,22 +576,25 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Reformat the file
         if settings.REFORMAT:
-            log.debug("reformatting item {}...".format(self))
+            log.debug("reformatting item %s...", self)
             self.save()
 
     def _get_issues_document(self, document):
         """Yield all the item's issues against its document."""
         log.debug("getting issues against document...")
+
         # Verify an item's UID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
+
         # Verify an item has upward links
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
             msg = "no links to parent document: {}".format(document.parent)
             yield DoorstopWarning(msg)
+
         # Verify an item's links are to the correct parent
         for uid in self.links:
             try:
@@ -597,6 +614,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         log.debug("getting issues against tree...")
+
         # Verify an item's links are valid
         identifiers = set()
         for uid in self.links:
@@ -626,6 +644,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 # reformat the item's UID
                 identifier2 = UID(item.uid, stamp=uid.stamp)
                 identifiers.add(identifier2)
+
         # Apply the reformatted item UIDs
         if settings.REFORMAT:
             self._data['links'] = identifiers
@@ -633,6 +652,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def _get_issues_both(self, document, tree):
         """Yield all the item's issues against its document and tree."""
         log.debug("getting issues against document and tree...")
+
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(document=document,
