@@ -552,16 +552,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             yield DoorstopWarning("non-normative, but has links")
 
         # Check links against the document
-        if self.document and self.document not in skip:
-            yield from self._get_issues_document(self.document)
+        if self.document:
+            yield from self._get_issues_document(self.document, skip)
 
         # Check links against the tree
         if self.tree:
             yield from self._get_issues_tree(self.tree)
 
         # Check links against both document and tree
-        if self.document and self.document not in skip and self.tree:
-            yield from self._get_issues_both(self.document, self.tree)
+        if self.document and self.tree:
+            yield from self._get_issues_both(self.document, self.tree, skip)
 
         # Check review status
         if not self.reviewed:
@@ -579,9 +579,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             log.debug("reformatting item %s...", self)
             self.save()
 
-    def _get_issues_document(self, document):
+    def _get_issues_document(self, document, skip):
         """Yield all the item's issues against its document."""
         log.debug("getting issues against document...")
+
+        if document in skip:
+            log.debug("skipping issues against document %s...", document)
+            return
 
         # Verify an item's UID matches its document's prefix
         if self.prefix != document.prefix:
@@ -649,9 +653,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
-    def _get_issues_both(self, document, tree):
+    def _get_issues_both(self, document, tree, skip):
         """Yield all the item's issues against its document and tree."""
         log.debug("getting issues against document and tree...")
+
+        if document.prefix in skip:
+            log.debug("skipping issues against document %s...", document)
+            return
 
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
@@ -660,6 +668,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                                                         find_all=False)
             if not items:
                 for document in documents:
+                    if document.prefix in skip:
+                        msg = "skipping issues against document %s..."
+                        log.debug(msg, document)
+                        continue
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
