@@ -1,5 +1,7 @@
 """Package for doorstop."""
 
+import sys
+
 __project__ = 'Doorstop'
 __version__ = '0.9-dev'
 
@@ -11,7 +13,6 @@ DESCRIPTION = "Requirements management using version control."
 
 MIN_PYTHON_VERSION = 3, 3
 
-import sys
 if not sys.version_info >= MIN_PYTHON_VERSION:  # pragma: no cover (manual test)
     exit("Python {}.{}+ is required.".format(*MIN_PYTHON_VERSION))
 
