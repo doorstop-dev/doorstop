@@ -6,6 +6,7 @@ Changelog
 
 - Fixed a bug checking levels across inactive items.
 - Added error message for all IO errors.
+- Added '--skip' options to disable documents during validation.
 
 0.8.3 (2014/10/10)
 ------------------
