@@ -420,9 +420,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
-    def get_issues(self, document_hook=None, item_hook=None):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
+        :param skip: list of document prefixes to skip
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
@@ -439,7 +440,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Check each document
         for document in documents:
             for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(item_hook=item_hook)):
+                               document.get_issues(skip=skip,
+                                                   item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))

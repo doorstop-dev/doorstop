@@ -252,6 +252,28 @@ class TestTree(unittest.TestCase):
         common.write_text(self.backup, self.path)
 
     @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_issues_count(self):
+        """Verify a number of issues are found in a tree."""
+        issues = self.tree.issues
+        for issue in self.tree.issues:
+            logging.info(repr(issue))
+        self.assertEqual(14, len(issues))
+
+    @patch('doorstop.settings.REORDER', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_issues_count_with_skips(self):
+        """Verify a document can be skipped during validation."""
+        issues = list(self.tree.get_issues(skip=['req']))
+        for issue in self.tree.issues:
+            logging.info(repr(issue))
+        self.assertEqual(2, len(issues))
+
+    @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     @patch('doorstop.core.document.Document', DocumentNoSkip)
