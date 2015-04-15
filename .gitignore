@@ -29,6 +29,7 @@ pages/reqs/
 
 # Testing and coverage results
 .coverage
+htmlcov
 pyunit.xml
 
 # Build and release directories

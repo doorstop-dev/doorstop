@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Setup script for Doorstop.
-"""
+"""Setup script for Doorstop."""
 
 import setuptools
 

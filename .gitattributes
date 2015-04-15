@@ -1,4 +1,7 @@
 * text=auto
+CHANGES.md merge=union
+
+*.xlsx binary
 
 # Python, Git, and Cygwin have different ideas about the correct line endings
 *.yml  -text
@@ -7,5 +10,3 @@
 *.html -text
 *.csv  -text
 *.tsv  -text
-
-*.xlsx binary
