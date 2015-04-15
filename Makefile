@@ -1,15 +1,18 @@
+# Project settings
+PROJECT := Doorstop
+PACKAGE := doorstop
+SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
+EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
+
 # Python settings
 ifndef TRAVIS
 	PYTHON_MAJOR := 3
 	PYTHON_MINOR := 4
 endif
 
-# Project settings
-PROJECT := Doorstop
-PACKAGE := doorstop
-SOURCES := Makefile setup.py $(shell find $(PACKAGE) -name '*.py')
-YAML := $(shell find . -name '*.yml' -not -path '*/test/files/*')
-EGG_INFO := $(subst -,_,$(PROJECT)).egg-info
+# Test settings
+UNIT_TEST_COVERAGE := 98
+INTEGRATION_TEST_COVERAGE := 98
 
 # System paths
 PLATFORM := $(shell python -c 'import sys; print(sys.platform)')
@@ -61,7 +64,7 @@ DEPENDS_CI := $(ENV)/.depends-ci
 DEPENDS_DEV := $(ENV)/.depends-dev
 ALL := $(ENV)/.all
 
-# Main Targets ###############################################################
+# Main Targets #################################################################
 
 .PHONY: all
 all: depends $(ALL)
@@ -72,7 +75,7 @@ $(ALL): $(SOURCES) $(YAML)
 .PHONY: ci
 ci: doorstop pep8 pep257 test tests tutorial
 
-# Development Installation ###################################################
+# Development Installation #####################################################
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
@@ -84,6 +87,7 @@ $(EGG_INFO): Makefile setup.py
 .virtualenv: $(PIP)
 $(PIP):
 	$(SYS_VIRTUALENV) --python $(SYS_PYTHON) $(ENV)
+	$(PIP) install --upgrade pip
 
 .PHONY: depends
 depends: depends-ci depends-dev
@@ -91,16 +95,16 @@ depends: depends-ci depends-dev
 .PHONY: depends-ci
 depends-ci: env Makefile $(DEPENDS_CI)
 $(DEPENDS_CI): Makefile
-	$(PIP) install --upgrade pep8 pep257 pylint nose coverage
+	$(PIP) install --upgrade pep8 pep257 pylint coverage nose
 	touch $(DEPENDS_CI)  # flag to indicate dependencies are installed
 
 .PHONY: depends-dev
 depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pep8radius pygments docutils pdoc wheel sphinx
+	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc sphinx wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
-# Development Usage ##########################################################
+# Development Usage ############################################################
 
 .PHONY: doorstop
 doorstop: env
@@ -114,10 +118,10 @@ gui: env
 serve: env
 	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
 
-# Documentation ##############################################################
+# Documentation ################################################################
 
 .PHONY: doc
-doc: readme reqs uml apidocs sphinx
+doc: readme verify-readme reqs uml apidocs sphinx
 
 .PHONY: pages
 pages: reqs-html sphinx
@@ -133,16 +137,9 @@ README-pypi.html: README.rst
 README.rst: README.md
 	pandoc -f markdown_github -t rst -o README.rst README.md
 
-apidocs: depends-dev apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-
-.PHONY: sphinx
-sphinx: depends-dev docs/sphinx/_build
-docs/sphinx/_build: $(SOURCES)
-	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
-	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
-	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
+.PHONY: verify-readme
+verify-readme: README.rst
+	$(PYTHON) setup.py check --restructuredtext --strict --metadata
 
 .PHONY: reqs
 reqs: doorstop reqs-html reqs-md reqs-txt
@@ -163,11 +160,23 @@ docs/gen/*.txt: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --text
 
 .PHONY: uml
-uml: depends-dev docs/*.png
-docs/*.png: $(SOURCES)
+uml: depends-dev docs/*.png $(SOURCES)
+docs/*.png:
 	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
 	- mv -f classes_$(PACKAGE).png docs/classes.png
 	- mv -f packages_$(PACKAGE).png docs/packages.png
+
+.PHONY: apidocs
+apidocs: depends-ci apidocs/$(PACKAGE)/index.html
+apidocs/$(PACKAGE)/index.html: $(SOURCES)
+	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+
+.PHONY: sphinx
+sphinx: depends-dev docs/sphinx/_build
+docs/sphinx/_build: $(SOURCES)
+	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
+	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
+	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
 
 .PHONY: read
 read: doc
@@ -177,20 +186,20 @@ read: doc
 	$(OPEN) README-pypi.html
 	$(OPEN) README-github.html
 
-# Static Analysis ############################################################
+# Static Analysis ##############################################################
 
 .PHONY: check
 check: pep8 pep257 pylint
 
 .PHONY: pep8
 pep8: depends-ci
-	# E501: line too long (checked by PyLint)
+# E501: line too long (checked by PyLint)
 	$(PEP8) $(PACKAGE) --ignore=E501
 
 .PHONY: pep257
 pep257: depends-ci
-	# D102: docstring missing (checked by PyLint)
-	# D202: No blank lines allowed *after* function docstring
+# D102: docstring missing (checked by PyLint)
+# D202: No blank lines allowed *after* function docstring
 	$(PEP257) $(PACKAGE) --ignore=D102,D202
 
 .PHONY: pylint
@@ -201,21 +210,31 @@ pylint: depends-ci
 fix: depends-dev
 	$(PEP8RADIUS) --docformatter --in-place
 
-# Testing ####################################################################
+# Testing ######################################################################
 
 .PHONY: test
-test: depends-ci
+test: depends-ci .clean-test
 	$(NOSE) --config=.noserc
+ifndef TRAVIS
+	$(COVERAGE) html --directory htmlcov --fail-under=$(UNIT_TEST_COVERAGE)
+endif
 
 .PHONY: tests
-tests: depends-ci
+tests: depends-ci .clean-test
 	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
+ifndef TRAVIS
+	$(COVERAGE) html --directory htmlcov --fail-under=$(INTEGRATION_TEST_COVERAGE)
+endif
 
 .PHONY: tutorial
 tutorial: env
 	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
 
-# Cleanup ####################################################################
+.PHONY: read-coverage
+read-coverage:
+	$(OPEN) htmlcov/index.html
+
+# Cleanup ######################################################################
 
 .PHONY: clean
 clean: .clean-dist .clean-test .clean-doc .clean-build
@@ -236,13 +255,14 @@ clean-all: clean clean-env .clean-workspace
 
 .PHONY: .clean-doc
 .clean-doc:
-	rm -rf apidocs README*.html README.rst docs/*.png docs/gen
-	rm -rf docs/sphinx/modules.rst docs/sphinx/doorstop*.rst docs/sphinx/_build
+	rm -rf README.rst apidocs *.html docs/*.png
+	rm -rf docs/gen
+	rm -rf docs/sphinx/modules.rst docs/sphinx/$(PACKAGE)*.rst docs/sphinx/_build
 	rm -rf pages/docs/ pages/reqs/
 
 .PHONY: .clean-test
 .clean-test:
-	rm -rf .coverage
+	rm -rf .coverage htmlcov
 
 .PHONY: .clean-dist
 .clean-dist:
@@ -252,22 +272,27 @@ clean-all: clean clean-env .clean-workspace
 .clean-workspace:
 	rm -rf *.sublime-workspace
 
-# Release ####################################################################
+# Release ######################################################################
+
+.PHONY: register-test
+register-test: doc
+	$(PYTHON) setup.py register --strict --repository https://testpypi.python.org/pypi
+
+.PHONY: upload-test
+upload-test: .git-no-changes register-test
+	$(PYTHON) setup.py sdist upload --repository https://testpypi.python.org/pypi
+	$(PYTHON) setup.py bdist_wheel upload --repository https://testpypi.python.org/pypi
+	$(OPEN) https://testpypi.python.org/pypi/$(PROJECT)
 
 .PHONY: register
 register: doc
-	$(PYTHON) setup.py register
-
-.PHONY: dist
-dist: check doc test tests
-	$(PYTHON) setup.py sdist
-	$(PYTHON) setup.py bdist_wheel
-	$(MAKE) read
+	$(PYTHON) setup.py register --strict
 
 .PHONY: upload
-upload: .git-no-changes doc
-	$(PYTHON) setup.py register sdist upload
+upload: .git-no-changes register
+	$(PYTHON) setup.py sdist upload
 	$(PYTHON) setup.py bdist_wheel upload
+	$(OPEN) https://pypi.python.org/pypi/$(PROJECT)
 
 .PHONY: .git-no-changes
 .git-no-changes:
@@ -280,7 +305,7 @@ upload: .git-no-changes doc
 		exit -1;                                  \
 	fi;
 
-# System Installation ########################################################
+# System Installation ##########################################################
 
 .PHONY: develop
 develop:

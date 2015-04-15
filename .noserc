@@ -9,7 +9,6 @@ cover-package=doorstop.common,doorstop.core,
     doorstop.cli.main,doorstop.cli.utilities,
     doorstop.gui,doorstop.server
 cover-erase=1
-cover-min-percentage=98
 
 verbosity=1
 logging-level=DEBUG
