@@ -75,7 +75,7 @@ def run(args, cwd, _):
 
 @hook('after_request')
 def enable_cors():  # pragma: no cover (manual test)
-    """Allow a webserver running on the same machine to access data. """
+    """Allow a webserver running on the same machine to access data."""
     response.headers['Access-Control-Allow-Origin'] = '*'
 
 

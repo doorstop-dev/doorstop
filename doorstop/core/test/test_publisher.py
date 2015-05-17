@@ -158,8 +158,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify text can be published from an item (normative)."""
         expected = ("1.2     req4" + '\n\n'
                     "        This shall..." + '\n\n'
-                    "        Reference: Doorstop.sublime-project"
-                    + '\n\n'
+                    "        Reference: Doorstop.sublime-project" + '\n\n'
                     "        Links: sys4" + '\n\n')
         lines = publisher.publish_lines(self.item3, '.txt')
         # Act

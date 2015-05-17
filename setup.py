@@ -49,15 +49,11 @@ setuptools.setup(
     ],
 
     install_requires=[
-        "PyYAML >= 3.10, < 4",
+        "YORM >= 0.4",
         "Markdown >= 2, < 3",
         "openpyxl >= 2, < 3, != 2.1.0",
         "bottle >= 0.12, < 0.13",
         "requests >= 2, < 3",
         "pyficache >= 0.2.3, < 0.3",
-        "YORM",
     ],
-    dependency_links=[
-        'https://github.com/jacebrowning/yorm/archive/develop.zip#egg=YORM'
-    ]
 )

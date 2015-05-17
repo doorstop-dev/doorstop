@@ -47,21 +47,21 @@ def requires_document(func):
     return wrapped
 
 
-@yorm.map_attr(all=UID)
-class UIDList(yorm.container.List):
+@yorm.attr(all=UID)
+class UIDList(yorm.converters.List):
 
-    """A `UID` list container."""
+    """A `UID` list converters."""
 
 
-@yorm.map_attr(active=yorm.standard.Boolean)
-@yorm.map_attr(derived=yorm.standard.Boolean)
-@yorm.map_attr(level=Level)
-@yorm.map_attr(links=UIDList)
-@yorm.map_attr(normative=yorm.standard.Boolean)
-@yorm.map_attr(ref=Reference)
-@yorm.map_attr(reviwed=Stamp)
-@yorm.map_attr(text=Text)
-@yorm.store_instances("{self.path}")
+@yorm.attr(active=yorm.converters.Boolean)
+@yorm.attr(derived=yorm.converters.Boolean)
+@yorm.attr(level=Level)
+@yorm.attr(links=UIDList)
+@yorm.attr(normative=yorm.converters.Boolean)
+@yorm.attr(ref=Reference)
+@yorm.attr(reviwed=Stamp)
+@yorm.attr(text=Text)
+@yorm.sync("{self.path}")
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""

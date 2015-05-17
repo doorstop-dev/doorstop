@@ -70,6 +70,10 @@ class UID(object):
 
     UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
 
+    @classmethod
+    def create_default(cls):
+        None  # TODO: determine if this should be something different
+
     def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
         if args and isinstance(args[0], UID):
             return args[0]
@@ -398,6 +402,10 @@ class Level(yorm.Converter):
     identifying "heading" levels when written to file.
     """
 
+    @classmethod
+    def create_default(cls):
+        return Level(1.0)
+
     def __init__(self, value=None, heading=None):
         """Initialize an item level from a sequence of numbers.
 
@@ -629,6 +637,10 @@ class Stamp(yorm.Converter):
 
     """
 
+    @classmethod
+    def create_default(cls):
+        return Stamp()
+
     def __init__(self, *values):
         if not values:
             self.value = None
@@ -685,7 +697,7 @@ class Stamp(yorm.Converter):
         return stamp.value
 
 
-class Reference(yorm.standard.String):
+class Reference(yorm.converters.String):
 
     """External reference to a file or lines in a file."""
 
