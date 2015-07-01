@@ -195,3 +195,42 @@ class TestVeracity(BaseTestCase):
         calls = [call(("vv", "commit", "--message", self.message)),
                  call(("vv", "push"))]
         mock_call.assert_has_calls(calls)
+
+
+@patch('subprocess.call')  # pylint: disable=R0904
+class TestMercurial(BaseTestCase):
+
+    """Tests for the Mercurial plugin."""
+
+    DIRECTORY = '.hg'
+
+    def test_lock(self, mock_call):
+        """Verify Mercurial can (fake) lock files."""
+        self.lock()
+        calls = [call(("hg", "pull", "-u"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_edit(self, mock_call):
+        """Verify Mercurial can edit files."""
+        self.edit()
+        calls = [call(("hg", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify Mercurial can add files."""
+        self.add()
+        calls = [call(("hg", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify Mercurial can delete files."""
+        self.delete()
+        calls = [call(("hg", "remove", self.path, "--force"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_commit(self, mock_call):
+        """Verify Mercurial can commit files."""
+        self.commit()
+        calls = [call(("hg", "commit", "--message", self.message)),
+                 call(("hg", "push"))]
+        mock_call.assert_has_calls(calls)

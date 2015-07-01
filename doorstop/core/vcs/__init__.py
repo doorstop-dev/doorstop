@@ -5,13 +5,14 @@ import logging
 
 from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core.vcs import git, subversion, veracity, mockvcs
+from doorstop.core.vcs import git, subversion, veracity, mockvcs, mercurial
 
 DEFAULT = mockvcs.WorkingCopy
 DIRECTORIES = {
     git.WorkingCopy.DIRECTORY: git.WorkingCopy,
     subversion.WorkingCopy.DIRECTORY: subversion.WorkingCopy,
     veracity.WorkingCopy.DIRECTORY: veracity.WorkingCopy,
+    mercurial.WorkingCopy.DIRECTORY: mercurial.WorkingCopy,
     DEFAULT.DIRECTORY: DEFAULT,
 }
 
