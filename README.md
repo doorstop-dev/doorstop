@@ -34,7 +34,7 @@ Installation
 Doorstop can be installed with pip:
 
 ```
-$ pip install doorstop
+$ pip3 install doorstop
 ```
 
 or directly from source:
@@ -42,7 +42,7 @@ or directly from source:
 ```
 $ git clone https://github.com/jacebrowning/doorstop.git
 $ cd doorstop
-$ python setup.py install
+$ python3 setup.py install
 ```
 
 After installation, Doorstop is available on the command-line:
@@ -54,7 +54,7 @@ $ doorstop --help
 And the package is available under the name 'doorstop':
 
 ```
-$ python
+$ python3
 >>> import doorstop
 >>> doorstop.__version__
 ```
