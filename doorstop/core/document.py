@@ -422,7 +422,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield '#' * settings.MAX_LINE_LENGTH
         yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
         yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
-        yield '# CHANGES ARE BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
+        yield '# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
         yield '#' * settings.MAX_LINE_LENGTH
         yield ''
         yield "initial: {}".format(items[0].level if items else 1.0)
