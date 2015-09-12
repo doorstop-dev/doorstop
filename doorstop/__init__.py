@@ -8,7 +8,7 @@ __version__ = '0.9dev0'
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
 SERVER = 'doorstop-server'
-VERSION = __project__ + '-' + __version__
+VERSION = "{0} v{1}".format(__project__, __version__)
 DESCRIPTION = "Requirements management using version control."
 
 MIN_PYTHON_VERSION = 3, 3
