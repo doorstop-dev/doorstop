@@ -6,6 +6,7 @@ import textwrap
 import hashlib
 
 import yaml
+import yorm
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -68,6 +69,10 @@ class UID(object):
     """Unique item ID built from document prefix and number."""
 
     UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
+
+    @classmethod
+    def create_default(cls):
+        None  # TODO: determine if this should be something different
 
     def __new__(cls, *args, **kwargs):  # pylint: disable=W0613
         if args and isinstance(args[0], UID):
@@ -163,6 +168,15 @@ class UID(object):
         except DoorstopError:
             return self.value < other.value
 
+    @classmethod
+    def to_value(cls, obj):
+        return UID(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        uid = cls.to_value(obj)
+        return uid.value
+
     @property
     def prefix(self):
         """Get the UID's prefix."""
@@ -245,19 +259,25 @@ class _Literal(str):
 yaml.add_representer(_Literal, _Literal.representer)
 
 
-class Text(str):
+class Text(yorm.Converter, str):
 
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
-        assert not isinstance(value, Text)
-        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        if isinstance(value, Text):
+            obj = value
+        else:
+            obj = super(Text, cls).__new__(cls, Text.load_text(value))
         return obj
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return Text.save_text(self)
+    @classmethod
+    def to_value(cls, obj):
+        return Text(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        text = cls.to_value(obj)
+        return Text.save_text(text)
 
     @staticmethod
     def load_text(value):
@@ -374,13 +394,17 @@ class Text(str):
         return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
-class Level(object):
+class Level(yorm.Converter):
 
     """Variable-length numerical outline level values.
 
     Level values cannot contain zeros. Zeros are reserved for
     identifying "heading" levels when written to file.
     """
+
+    @classmethod
+    def create_default(cls):
+        return Level(1.0)
 
     def __init__(self, value=None, heading=None):
         """Initialize an item level from a sequence of numbers.
@@ -506,10 +530,14 @@ class Level(object):
         parts = self._parts + ([0] if self.heading else [])
         return tuple(parts)
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.save_level(self.value)
+    @classmethod
+    def to_value(cls, obj):
+        return Level(obj)
+
+    @classmethod
+    def to_data(cls, obj):
+        level = cls.to_value(obj)
+        return cls.save_level(level.value)
 
     def _adjust(self):
         """Force all non-zero values."""
@@ -596,7 +624,7 @@ class Level(object):
         return Level(self.value)
 
 
-class Stamp(object):
+class Stamp(yorm.Converter):
 
     """Hashed content for change tracking.
 
@@ -608,6 +636,10 @@ class Stamp(object):
         - `False` | `None` | (nothing) - manually-confirmed mismatching hash
 
     """
+
+    @classmethod
+    def create_default(cls):
+        return Stamp()
 
     def __init__(self, *values):
         if not values:
@@ -644,11 +676,6 @@ class Stamp(object):
     def __ne__(self, other):
         return not self == other
 
-    @property
-    def yaml(self):
-        """Get the value to be used in YAML dumping."""
-        return self.value
-
     @staticmethod
     def digest(*values):
         """Hash the values for later comparison."""
@@ -657,8 +684,20 @@ class Stamp(object):
             md5.update(str(value).encode())
         return md5.hexdigest()
 
+    @classmethod
+    def to_value(cls, obj):
+        return Stamp(obj)
 
-class Reference(object):
+    @classmethod
+    def to_data(cls, obj):
+        if isinstance(obj, Stamp):
+            stamp = obj
+        else:
+            stamp = cls.to_value(obj)
+        return stamp.value
+
+
+class Reference(yorm.converters.String):
 
     """External reference to a file or lines in a file."""
 

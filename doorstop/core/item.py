@@ -5,13 +5,15 @@ import re
 import functools
 
 import pyficache
+import yorm
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import (add_item, edit_item, delete_item,
                                 auto_load, auto_save,
                                 BaseValidatable, BaseFileObject)
-from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
+from doorstop.core.types import (Prefix, UID, Text, Level, Stamp, Reference,
+                                 to_bool)
 from doorstop.core import editor
 from doorstop import settings
 
@@ -45,6 +47,21 @@ def requires_document(func):
     return wrapped
 
 
+@yorm.attr(all=UID)
+class UIDList(yorm.converters.List):
+
+    """A `UID` list converters."""
+
+
+@yorm.attr(active=yorm.converters.Boolean)
+@yorm.attr(derived=yorm.converters.Boolean)
+@yorm.attr(level=Level)
+@yorm.attr(links=UIDList)
+@yorm.attr(normative=yorm.converters.Boolean)
+@yorm.attr(ref=Reference)
+@yorm.attr(reviwed=Stamp)
+@yorm.attr(text=Text)
+@yorm.sync("{self.path}")
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     """Represents an item file with linkable text."""
@@ -205,15 +222,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                value = value.yaml
+                value = Level.to_data(value)
             elif key == 'text':
-                value = value.yaml
+                value = Text.to_data(value)
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+                value = [{str(i): Stamp.to_data(i.stamp)}
+                         for i in sorted(value)]
             elif key == 'reviewed':
-                value = value.yaml
+                value = Stamp.to_data(value)
             else:
                 if isinstance(value, str):
                     # length of "key_text: value_text"

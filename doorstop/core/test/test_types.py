@@ -184,9 +184,9 @@ class TestText(unittest.TestCase):
         """Verify text can be equated."""
         self.assertEqual(Text("Hello, world!"), self.text)
 
-    def test_yaml(self):
-        """Verify levels can be converted to their YAML representation."""
-        self.assertEqual("Hello, world!\n", self.text.yaml)
+    def test_to_data(self):
+        """Verify levels can be converted to data."""
+        self.assertEqual("Hello, world!\n", Text.to_data(self.text))
 
 
 class TestLevel(unittest.TestCase):
@@ -357,12 +357,12 @@ class TestLevel(unittest.TestCase):
         self.assertEqual((1, 2, 0), self.level_1_2_heading.value)
         self.assertEqual((1, 2, 3), self.level_1_2_3.value)
 
-    def test_yaml(self):
-        """Verify levels can be converted to their YAML representation."""
-        self.assertEqual(1, self.level_1.yaml)
-        self.assertEqual(1.2, self.level_1_2.yaml)
-        self.assertEqual('1.2.0', self.level_1_2_heading.yaml)
-        self.assertEqual('1.2.3', self.level_1_2_3.yaml)
+    def test_to_data(self):
+        """Verify levels can be converted to data."""
+        self.assertEqual(1, Level.to_data(self.level_1))
+        self.assertEqual(1.2, Level.to_data(self.level_1_2))
+        self.assertEqual('1.2.0', Level.to_data(self.level_1_2_heading))
+        self.assertEqual('1.2.3', Level.to_data(self.level_1_2_3))
 
     def test_copy(self):
         """Verify levels can be copied."""
@@ -418,13 +418,20 @@ class TestStamp(unittest.TestCase):
         self.assertNotEqual(self.stamp3, self.stamp4)
         self.assertEqual(self.stamp4, self.stamp5)
 
-    def test_yaml(self):
-        """Verify stamps can be converted to their YAML dump format."""
-        self.assertEqual('abc123', self.stamp1.yaml)
-        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2.yaml)
-        self.assertEqual(True, self.stamp3.yaml)
-        self.assertEqual(None, self.stamp4.yaml)
-        self.assertEqual(None, self.stamp5.yaml)
+    def test_to_value(self):
+        """Verify data can be converted to stamps."""
+        self.assertEqual(Stamp('abc123'), Stamp.to_value('abc123'))
+        self.assertEqual(Stamp(True), Stamp.to_value(1))
+        self.assertEqual(Stamp(False), Stamp.to_value(0))
+
+    def test_to_data(self):
+        """Verify stamps can be converted to data."""
+        self.assertEqual('abc123', Stamp.to_data(self.stamp1))
+        self.assertEqual('2645439971b8090da05c7403320afcfa', Stamp.to_data(self.stamp2))
+        self.assertEqual(True, Stamp.to_data(self.stamp3))
+        self.assertEqual(None, Stamp.to_data(self.stamp4))
+        self.assertEqual(None, Stamp.to_data(self.stamp5))
+        self.assertEqual(True, Stamp.to_data(1))
 
 
 class TestReference(unittest.TestCase):

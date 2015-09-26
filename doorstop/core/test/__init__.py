@@ -6,6 +6,8 @@ from unittest.mock import patch, Mock, MagicMock
 import os
 import logging
 
+from yorm.mapper import Mapper
+
 from doorstop.core.base import BaseFileObject
 from doorstop.core.item import Item
 from doorstop.core.document import Document
@@ -37,6 +39,24 @@ class DocumentNoSkip(Document):
     SKIP = '__disabled__'  # never skip test Documents
 
 
+class MockMapper(Mapper):
+
+    """Mapped file with stubbed file IO."""
+
+    def __init__(self, path):
+        super().__init__(path)
+        self._mock_file = ""
+
+    def read(self):
+        text = self._mock_file
+        logging.debug("mock read:\n{}".format(text.strip()))
+        return text
+
+    def write(self, text):
+        logging.debug("mock write:\n{}".format(text.strip()))
+        self._mock_file = text
+
+
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 
     """Mock FileObject class with stubbed file IO."""
@@ -47,6 +67,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
             super().__init__(*args, **kwargs)
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
+        self.yorm_mapper = MockMapper(self.yorm_path)
 
     _create = Mock()
 
