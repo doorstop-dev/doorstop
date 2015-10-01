@@ -67,7 +67,7 @@ Document Creation
 
 **Parent Document**
 
-After configuring version control, a new parent document can be created:
+A document can be created inside a directory that is under version control:
 
     $ doorstop create REQ ./reqs
     created document: REQ (@/reqs)
