@@ -101,7 +101,7 @@ $(DEPENDS_CI): Makefile
 .PHONY: depends-dev
 depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc sphinx wheel
+	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc sphinx markdown wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ############################################################
@@ -121,12 +121,8 @@ serve: env
 # Documentation ################################################################
 
 .PHONY: doc
-doc: readme verify-readme reqs uml apidocs sphinx
+doc: readme verify-readme uml apidocs pages
 
-.PHONY: pages
-pages: reqs-html sphinx
-	cp -r docs/gen/ pages/reqs/
-	cp -r docs/sphinx/_build pages/docs/
 
 .PHONY: readme
 readme: depends-dev README-github.html README-pypi.html
@@ -140,6 +136,23 @@ README.rst: README.md
 .PHONY: verify-readme
 verify-readme: README.rst
 	$(PYTHON) setup.py check --restructuredtext --strict --metadata
+
+.PHONY: uml
+uml: depends-dev docs/*.png $(SOURCES)
+docs/*.png:
+	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
+	- mv -f classes_$(PACKAGE).png docs/classes.png
+	- mv -f packages_$(PACKAGE).png docs/packages.png
+
+.PHONY: apidocs
+apidocs: depends-ci apidocs/$(PACKAGE)/index.html
+apidocs/$(PACKAGE)/index.html: $(SOURCES)
+	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
+
+.PHONY: pages
+pages: reqs sphinx
+	cp -r docs/gen/ pages/reqs/
+	cp -r docs/sphinx/_build pages/docs/
 
 .PHONY: reqs
 reqs: doorstop reqs-html reqs-md reqs-txt
@@ -159,18 +172,6 @@ reqs-txt: env docs/gen/*.txt
 docs/gen/*.txt: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --text
 
-.PHONY: uml
-uml: depends-dev docs/*.png $(SOURCES)
-docs/*.png:
-	$(PYREVERSE) $(PACKAGE) -p $(PACKAGE) -f ALL -o png --ignore test
-	- mv -f classes_$(PACKAGE).png docs/classes.png
-	- mv -f packages_$(PACKAGE).png docs/packages.png
-
-.PHONY: apidocs
-apidocs: depends-ci apidocs/$(PACKAGE)/index.html
-apidocs/$(PACKAGE)/index.html: $(SOURCES)
-	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-
 .PHONY: sphinx
 sphinx: depends-dev docs/sphinx/_build
 docs/sphinx/_build: $(SOURCES)
@@ -180,9 +181,7 @@ docs/sphinx/_build: $(SOURCES)
 
 .PHONY: read
 read: doc
-	$(OPEN) docs/gen/index.html
-	$(OPEN) apidocs/$(PACKAGE)/index.html
-	$(OPEN) docs/sphinx/_build/index.html
+	$(OPEN) pages/index.html
 	$(OPEN) README-pypi.html
 	$(OPEN) README-github.html
 
