@@ -15,7 +15,6 @@ log = common.logger(__name__)
 
 
 class Prefix(str):
-
     """Unique document prefixes."""
 
     UNKNOWN_MESSGE = "no document with prefix: {}"
@@ -64,7 +63,6 @@ class Prefix(str):
 
 
 class UID(object):
-
     """Unique item ID built from document prefix and number."""
 
     UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
@@ -233,7 +231,6 @@ class UID(object):
 
 
 class _Literal(str):
-
     """Custom type for text which should be dumped in the literal style."""
 
     @staticmethod
@@ -246,7 +243,6 @@ yaml.add_representer(_Literal, _Literal.representer)
 
 
 class Text(str):
-
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
@@ -293,7 +289,6 @@ class Text(str):
     (\s)          # any whitespace
 
     (?=\"?[A-Z])  # optional quote + an upppercase letter
-
     """, re.VERBOSE)
 
     @staticmethod
@@ -354,7 +349,6 @@ class Text(str):
     )
 
     ([^\n])  # any character but a newline
-
     """, re.VERBOSE | re.IGNORECASE)
 
     @staticmethod
@@ -375,7 +369,6 @@ class Text(str):
 
 
 class Level(object):
-
     """Variable-length numerical outline level values.
 
     Level values cannot contain zeros. Zeros are reserved for
@@ -597,7 +590,6 @@ class Level(object):
 
 
 class Stamp(object):
-
     """Hashed content for change tracking.
 
     :param values: one of the following:
@@ -659,7 +651,6 @@ class Stamp(object):
 
 
 class Reference(object):
-
     """External reference to a file or lines in a file."""
 
 

@@ -1,0 +1,5 @@
+[pep257]
+
+# D10*: Missing docstring (checked by PyLint)
+# D202: No blank lines allowed *after* function docstring (personal preference)
+add-ignore = D102,D105,D202

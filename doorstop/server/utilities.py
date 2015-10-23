@@ -7,7 +7,6 @@ log = common.logger(__name__)
 
 
 class StripPathMiddleware(object):  # pylint: disable=R0903
-
     """WSGI middleware that strips trailing slashes from all URLs."""
 
     def __init__(self, app):

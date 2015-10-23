@@ -31,14 +31,12 @@ if not os.path.exists(EMPTY):
 
 
 class DocumentNoSkip(Document):
-
     """Document class that is never skipped."""
 
     SKIP = '__disabled__'  # never skip test Documents
 
 
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
-
     """Mock FileObject class with stubbed file IO."""
 
     def __init__(self, *args, **kwargs):
@@ -68,31 +66,26 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 
 
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
-
     """Mock Item class with stubbed file IO."""
 
 
 class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902
-
     """Mock Document class with stubbed file IO."""
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
-
     """Mock Document class that is always skipped in tree placement."""
 
     skip = True
 
 
 class MockDocumentNoSkip(MockDocumentSkip):  # pylint: disable=W0223,R0902
-
     """Mock Document class that is never skipped in tree placement."""
 
     SKIP = '__disabled__'  # never skip mock Documents
 
 
 class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
-
     """Mock item class with stubbed IO and a mock VCS reference."""
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +95,6 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
 
 
 class MockDataMixIn:  # pylint: disable=W0232,R0903
-
     """Data for test cases requiring mock items and documents."""
 
     # purely mock objects

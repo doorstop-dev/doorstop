@@ -8,7 +8,6 @@ from doorstop.server import main as server
 
 
 class BaseTestCase(unittest.TestCase):
-
     """Base test class for server tests."""
 
     mock_item = MagicMock()
@@ -40,7 +39,6 @@ class BaseTestCase(unittest.TestCase):
 
 
 class TestModule(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module."""
 
     @patch('doorstop.server.main.build')
@@ -64,7 +62,6 @@ class TestModule(BaseTestCase):
 
 
 class TestRoutesHTML(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module HTML responses."""
 
     def test_get_index(self):
@@ -127,7 +124,6 @@ class TestRoutesHTML(BaseTestCase):
 
 @patch('doorstop.server.utilities.json_response', Mock(return_value=True))
 class TestRoutesJSON(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module JSON responses."""
 
     def test_get_documents(self):

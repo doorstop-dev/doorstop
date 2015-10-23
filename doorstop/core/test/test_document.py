@@ -40,7 +40,6 @@ settings:
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
 class TestDocument(unittest.TestCase):
-
     """Unit tests for the Document class."""  # pylint: disable=W0212
 
     def setUp(self):

@@ -7,7 +7,6 @@ from doorstop.core.vcs.base import BaseWorkingCopy
 
 
 class SampleWorkingCopy(BaseWorkingCopy):
-
     """Sample WorkingCopy implementation."""
 
     def __init__(self, path):
@@ -31,7 +30,6 @@ class SampleWorkingCopy(BaseWorkingCopy):
 
 
 class TestSampleWorkingCopy(unittest.TestCase):
-
     """Tests for the doorstop.vcs.base module."""
 
     def setUp(self):

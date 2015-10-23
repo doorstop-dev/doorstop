@@ -16,7 +16,6 @@ from doorstop.server.test import ENV, REASON
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch('doorstop.settings.SERVER_HOST', 'localhost')
 class TestServer(unittest.TestCase):
-
     """Integration tests for the client/server feature."""
 
     @classmethod

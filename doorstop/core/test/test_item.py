@@ -28,7 +28,6 @@ text: ''
 
 
 class TestItem(unittest.TestCase):
-
     """Unit tests for the Item class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -843,7 +842,6 @@ class TestItem(unittest.TestCase):
 
 
 class TestFormatting(unittest.TestCase):
-
     """Unit tests for text formatting in Items."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
@@ -865,7 +863,6 @@ class TestFormatting(unittest.TestCase):
 
 
 class TestUnknownItem(unittest.TestCase):
-
     """Unit tests for the UnknownItem class."""  # pylint: disable= W0212
 
     def setUp(self):

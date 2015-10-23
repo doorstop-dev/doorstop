@@ -38,7 +38,6 @@ log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
-
     """A bidirectional tree structure to store a hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
@@ -489,7 +488,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         class Row(list):
-
             """List type that tracks upper and lower boundaries."""
 
             def __init__(self, *args, parent=False, child=False, **kwargs):

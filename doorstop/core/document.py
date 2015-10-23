@@ -17,7 +17,6 @@ log = common.logger(__name__)
 
 
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
-
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'

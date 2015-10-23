@@ -31,29 +31,24 @@ log = logger(__name__)
 
 
 class DoorstopError(Exception):
-
     """Generic Doorstop error."""
 
 
 class DoorstopFileError(DoorstopError, IOError):
-
     """Raised on IO errors."""
 
 
 class DoorstopWarning(DoorstopError, Warning):
-
     """Generic Doorstop warning."""
 
 
 class DoorstopInfo(DoorstopWarning, Warning):
-
     """Generic Doorstop info."""
 
 # logging classes ############################################################
 
 
 class HelpFormatter(argparse.HelpFormatter):
-
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
@@ -61,7 +56,6 @@ class HelpFormatter(argparse.HelpFormatter):
 
 
 class WarningFormatter(logging.Formatter, object):
-
     """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):

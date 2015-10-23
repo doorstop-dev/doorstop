@@ -22,7 +22,6 @@ from doorstop.core.test import MockDocumentSkip
 
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 class TestTreeStrings(unittest.TestCase):
-
     """Unit tests for the Tree class using strings."""
 
     @classmethod
@@ -192,7 +191,6 @@ class TestTreeStrings(unittest.TestCase):
 @patch('doorstop.core.document.Document', MockDocumentSkip)
 @patch('doorstop.core.tree.Document', MockDocumentSkip)
 class TestTree(unittest.TestCase):
-
     """Unit tests for the Tree class."""
 
     def setUp(self):

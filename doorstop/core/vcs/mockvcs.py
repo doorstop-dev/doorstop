@@ -8,7 +8,6 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
-
     """Simulated working copy."""
 
     DIRECTORY = '.mockvcs'

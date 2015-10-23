@@ -46,7 +46,6 @@ def requires_document(func):
 
 
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
-
     """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -842,7 +841,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
 
 class UnknownItem(object):
-
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path

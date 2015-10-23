@@ -8,7 +8,6 @@ from doorstop.core.vcs.test import ROOT
 
 
 class TestWorkingCopy(unittest.TestCase):
-
     """Integration tests for a working copy."""
 
     @classmethod

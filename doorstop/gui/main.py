@@ -123,7 +123,6 @@ def _log(func):  # pragma: no cover (manual test)
 
 
 class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
-
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):
@@ -142,7 +141,6 @@ class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R
 
 
 class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
-
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):

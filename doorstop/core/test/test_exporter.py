@@ -13,7 +13,6 @@ from doorstop.core.test import MockDataMixIn
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
-
     """Unit tests for the doorstop.core.exporter module."""
 
     @patch('os.makedirs')

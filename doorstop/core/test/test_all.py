@@ -39,7 +39,6 @@ CHECK_PUBLISHED_CONTENT = True
 
 
 class TestItem(unittest.TestCase):
-
     """Integration tests for the Item class."""
 
     def setUp(self):
@@ -81,7 +80,6 @@ class TestItem(unittest.TestCase):
 
 
 class TestDocument(unittest.TestCase):
-
     """Integration tests for the Document class."""
 
     def setUp(self):
@@ -238,7 +236,6 @@ class TestDocument(unittest.TestCase):
 
 
 class TestTree(unittest.TestCase):
-
     """Integration tests for the core.Tree class."""
 
     def setUp(self):
@@ -294,12 +291,10 @@ class TestTree(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestEditor(unittest.TestCase):
-
     """Integrations tests for the editor module."""
 
 
 class TestImporter(unittest.TestCase):
-
     """Integrations tests for the importer module."""
 
     def setUp(self):
@@ -468,7 +463,6 @@ class TestImporter(unittest.TestCase):
 
 
 class TestExporter(unittest.TestCase):
-
     """Integration tests for the doorstop.core.exporter module."""
 
     maxDiff = None
@@ -541,7 +535,6 @@ class TestExporter(unittest.TestCase):
 
 
 class TestPublisher(unittest.TestCase):
-
     """Integration tests for the doorstop.core.publisher module."""
 
     maxDiff = None
@@ -668,7 +661,6 @@ class TestPublisher(unittest.TestCase):
 
 
 class TestModule(unittest.TestCase):
-
     """Integration tests for the doorstop.core module."""
 
     def setUp(self):

@@ -25,7 +25,6 @@ est laborum."
 
 
 class TestModule(unittest.TestCase):
-
     """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201
 
     maxDiff = None
@@ -299,7 +298,6 @@ class TestModule(unittest.TestCase):
 
 
 class TestModuleCreateDocument(unittest.TestCase):
-
     """Unit tests for the doorstop.core.importer:create_document function."""
 
     def setUp(self):
@@ -359,7 +357,6 @@ class TestModuleCreateDocument(unittest.TestCase):
 
 @patch('doorstop.core.item.Item', MockItem)
 class TestModuleAddItem(unittest.TestCase):
-
     """Unit tests for the doorstop.core.importer:add_item function."""
 
     prefix = 'PREFIX'

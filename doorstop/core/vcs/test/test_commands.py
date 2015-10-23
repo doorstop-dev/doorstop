@@ -7,7 +7,6 @@ from doorstop.core.vcs import load
 
 
 class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
-
     """Base TestCase for tests that need a working copy."""
 
     DIRECTORY = None
@@ -43,7 +42,6 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestGit(BaseTestCase):
-
     """Tests for the Git plugin."""
 
     DIRECTORY = '.git'
@@ -82,7 +80,6 @@ class TestGit(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestMockVCS(BaseTestCase):
-
     """Tests for the placeholder VCS plugin."""
 
     DIRECTORY = '.mockvcs'
@@ -120,7 +117,6 @@ class TestMockVCS(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestSubversion(BaseTestCase):
-
     """Tests for the Subversion plugin."""
 
     DIRECTORY = '.svn'
@@ -159,7 +155,6 @@ class TestSubversion(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestVeracity(BaseTestCase):
-
     """Tests for the Veracity plugin."""
 
     DIRECTORY = '.sgdrawer'
@@ -199,7 +194,6 @@ class TestVeracity(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestMercurial(BaseTestCase):
-
     """Tests for the Mercurial plugin."""
 
     DIRECTORY = '.hg'

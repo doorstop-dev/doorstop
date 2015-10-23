@@ -7,7 +7,6 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
-
     """Mercurial working copy."""
 
     DIRECTORY = '.hg'

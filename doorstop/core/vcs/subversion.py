@@ -9,7 +9,6 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
-
     """Subversion working copy."""
 
     DIRECTORY = '.svn'
