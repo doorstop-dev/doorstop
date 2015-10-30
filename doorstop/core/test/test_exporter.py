@@ -72,7 +72,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(dirpath)
-        mock_write_lines.assert_called_once()
+        self.assertEqual(1, mock_write_lines.call_count)
 
     def test_lines(self):
         """Verify an item can be exported as lines."""
