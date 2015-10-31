@@ -36,11 +36,14 @@ setuptools.setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',  # pylint: disable=C0301
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
         'Natural Language :: English',
         'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Documentation',
         'Topic :: Text Editors :: Documentation',
         'Topic :: Text Processing :: Markup',

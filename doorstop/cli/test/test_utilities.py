@@ -188,7 +188,7 @@ class TestShow(unittest.TestCase):
     def test_show_hidden(self, mock_print):
         """Verify prints are hidden when verbosity is quiet."""
         utilities.show("This won't be printed.")
-        mock_print.assert_never_called()
+        self.assertEqual(0, mock_print.call_count)
 
 
 class TestPositiveInt(unittest.TestCase):

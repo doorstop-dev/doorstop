@@ -89,7 +89,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(None, path2)
-        mock_index.assert_never_called()
+        self.assertEqual(0, mock_index.call_count)
 
     def test_index(self):
         """Verify an HTML index can be created."""
