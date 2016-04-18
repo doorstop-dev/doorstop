@@ -1,3 +1,7 @@
+**STATUS:** As of the 1.0 release, this project is no longer under active development. I still plan on accepting any passing pull requests to become part of future 2.x releases.
+
+-----
+
 Doorstop
 ========
 

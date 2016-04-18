@@ -1,8 +1,8 @@
 Revision History
 ================
 
-0.9 (dev)
----------
+1.0 (2016/04/17)
+----------------
 
 - Fixed a bug checking levels across inactive items.
 - Added error message for all IO errors.

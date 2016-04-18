@@ -34,10 +34,9 @@ setuptools.setup(
     long_description=(README + '\n' + CHANGES),
     license='LGPL',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
-        'Natural Language :: English',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
