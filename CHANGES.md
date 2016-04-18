@@ -1,5 +1,13 @@
-Changelog
-=========
+Revision History
+================
+
+1.0 (2016/04/17)
+----------------
+
+- Fixed a bug checking levels across inactive items.
+- Added error message for all IO errors.
+- Added '--skip' options to disable documents during validation.
+- Added Mercurial support. (credit: [@tjasz](https://github.com/tjasz))
 
 0.8.4 (2015/03/12)
 ------------------

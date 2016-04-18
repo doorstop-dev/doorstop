@@ -13,7 +13,6 @@ ROOT = os.path.join(DIR, '..', '..', '..', '..')
 
 
 class TestFunctions(unittest.TestCase):
-
     """Unit tests for top-level VCS functions."""
 
     @patch('os.listdir', Mock(return_value=['.git']))

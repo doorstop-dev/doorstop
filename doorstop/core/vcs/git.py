@@ -7,7 +7,6 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
-
     """Git working copy."""
 
     DIRECTORY = '.git'

@@ -1,3 +1,7 @@
+**STATUS:** As of the 1.0 release, this project is no longer under active development. I still plan on accepting any passing pull requests to become part of future 2.x releases.
+
+-----
+
 Doorstop
 ========
 
@@ -6,10 +10,10 @@ Doorstop
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
-[![Gittip](http://img.shields.io/badge/gittip-me-brightgreen.svg)](https://www.gittip.com/jacebrowning)
 
 Doorstop manages the storage of textual requirements alongside source code in version control.
 
+<img align="right" width="200" src="https://github.com/jacebrowning/doorstop/blob/develop/pages/images/logo-black-white.png"/>
 When a project utilizes this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Additional reading:
@@ -18,8 +22,6 @@ Additional reading:
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
 - sample: [Generated HTML](http://doorstop.info/reqs/index.html)
 - documentation: [API](http://doorstop.info/docs/index.html), [Demo](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
-
-
 
 Getting Started
 ===============
@@ -30,31 +32,36 @@ Requirements
 * Python 3.3+
 * A version control system for requirements storage
 
-
 Installation
 ------------
 
 Doorstop can be installed with pip:
 
-    $ pip install doorstop
+```
+$ pip3 install doorstop
+```
 
-Or directly from source:
+or directly from source:
 
-    $ git clone https://github.com/jacebrowning/doorstop.git
-    $ cd doorstop
-    $ python setup.py install
+```
+$ git clone https://github.com/jacebrowning/doorstop.git
+$ cd doorstop
+$ python3 setup.py install
+```
 
 After installation, Doorstop is available on the command-line:
 
-    $ doorstop --help
+```
+$ doorstop --help
+```
 
 And the package is available under the name 'doorstop':
 
-    $ python
-    >>> import doorstop
-    >>> doorstop.__version__
-
-
+```
+$ python3
+>>> import doorstop
+>>> doorstop.__version__
+```
 
 Basic Usage
 ===========
@@ -64,9 +71,9 @@ Document Creation
 
 **Parent Document**
 
-After configuring version control, a new parent document can be created:
+A document can be created inside a directory that is under version control:
 
-    $ doorstop new REQ ./reqs
+    $ doorstop create REQ ./reqs
     created document: REQ (@/reqs)
 
 Items can be added to the document and edited:
@@ -92,7 +99,6 @@ Items can be added and linked to parent items:
     $ doorstop link TST1 REQ1
     linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
-
 Document Validation
 -------------------
 
@@ -100,7 +106,6 @@ To check a document hierarchy for consistency, run the main command:
 
     $ doorstop
     valid tree: REQ <- [ TST ]
-
 
 Document Publishing
 -------------------
@@ -136,7 +141,6 @@ Supported formats:
 - Text: **.txt**
 - Markdown: **.md**
 - HTML: **.html**
-
 
 Content Interchange
 -------------------
@@ -175,48 +179,3 @@ Supported formats:
 Items can be created/updated from the export formats:
 
     $ doorstop import path/to/tst.csv TST
-
-
-
-For Contributors
-================
-
-Requirements
-------------
-
-* GNU Make:
-    * Windows: http://cygwin.com/install.html
-    * Mac: https://developer.apple.com/xcode
-    * Linux: http://www.gnu.org/software/make (likely already installed)
-* virtualenv: https://pypi.python.org/pypi/virtualenv#installation
-* Pandoc: http://johnmacfarlane.net/pandoc/installing.html
-* Graphviz: http://www.graphviz.org/Download.php
-
-
-Installation
-------------
-
-Create a virtualenv:
-
-    make env
-
-Run the tests:
-
-    make test
-    make tests  # includes integration tests
-
-Build the documentation:
-
-    make doc
-
-Run static analysis:
-
-    make pep8
-    make pep257
-    make pylint
-    make check  # includes all checks
-
-Prepare a release:
-
-    make dist  # dry run
-    make upload

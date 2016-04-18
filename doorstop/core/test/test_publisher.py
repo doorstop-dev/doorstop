@@ -12,7 +12,6 @@ from doorstop.core.test import FILES, EMPTY, MockDataMixIn
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
-
     """Unit tests for the doorstop.core.publisher module."""
 
     @patch('os.makedirs')
@@ -90,7 +89,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(None, path2)
-        mock_index.assert_never_called()
+        self.assertEqual(0, mock_index.call_count)
 
     def test_index(self):
         """Verify an HTML index can be created."""

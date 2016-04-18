@@ -16,7 +16,6 @@ REASON = "'{0}' variable not set".format(ENV)
 
 
 class SettingsTestCase(unittest.TestCase):
-
     """Base test case class that backs up settings."""
 
     def setUp(self):

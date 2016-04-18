@@ -46,7 +46,6 @@ def requires_document(func):
 
 
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
-
     """Represents an item file with linkable text."""
 
     EXTENSIONS = '.yml', '.yaml'
@@ -508,8 +507,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, **kwargs):
+    def get_issues(self, skip=None, **kwargs):
         """Yield all the item's issues.
+
+        :param skip: list of document prefixes to skip
 
         :return: generator of :class:`~doorstop.common.DoorstopError`,
                               :class:`~doorstop.common.DoorstopWarning`,
@@ -518,59 +519,85 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         assert kwargs.get('document_hook') is None
         assert kwargs.get('item_hook') is None
-        log.info("checking item {}...".format(self))
+        skip = [] if skip is None else skip
+
+        log.info("checking item %s...", self)
+
         # Verify the file can be parsed
         self.load()
+
         # Skip inactive items
         if not self.active:
-            log.info("skipped inactive item: {}".format(self))
+            log.info("skipped inactive item: %s", self)
             return
+
         # Delay item save if reformatting
         if settings.REFORMAT:
             self.auto = False
+
         # Check text
         if not self.text:
             yield DoorstopWarning("no text")
+
         # Check external references
         if settings.CHECK_REF:
             try:
                 self.find_ref()
             except DoorstopError as exc:
                 yield exc
+
         # Check links
         if not self.normative and self.links:
             yield DoorstopWarning("non-normative, but has links")
+
         # Check links against the document
         if self.document:
-            yield from self._get_issues_document(self.document)
+            yield from self._get_issues_document(self.document, skip)
+
         # Check links against the tree
         if self.tree:
             yield from self._get_issues_tree(self.tree)
+
         # Check links against both document and tree
         if self.document and self.tree:
-            yield from self._get_issues_both(self.document, self.tree)
+            yield from self._get_issues_both(self.document, self.tree, skip)
+
         # Check review status
         if not self.reviewed:
             if settings.CHECK_REVIEW_STATUS:
-                yield DoorstopWarning("unreviewed changes")
+                if not self._data['reviewed']:
+                    if settings.REVIEW_NEW_ITEMS:
+                        self.review()
+                    else:
+                        yield DoorstopInfo("needs initial review")
+                else:
+                    yield DoorstopWarning("unreviewed changes")
+
         # Reformat the file
         if settings.REFORMAT:
-            log.debug("reformatting item {}...".format(self))
+            log.debug("reformatting item %s...", self)
             self.save()
 
-    def _get_issues_document(self, document):
+    def _get_issues_document(self, document, skip):
         """Yield all the item's issues against its document."""
         log.debug("getting issues against document...")
+
+        if document in skip:
+            log.debug("skipping issues against document %s...", document)
+            return
+
         # Verify an item's UID matches its document's prefix
         if self.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
+
         # Verify an item has upward links
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
             msg = "no links to parent document: {}".format(document.parent)
             yield DoorstopWarning(msg)
+
         # Verify an item's links are to the correct parent
         for uid in self.links:
             try:
@@ -590,6 +617,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def _get_issues_tree(self, tree):
         """Yield all the item's issues against its tree."""
         log.debug("getting issues against tree...")
+
         # Verify an item's links are valid
         identifiers = set()
         for uid in self.links:
@@ -609,7 +637,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     yield DoorstopWarning(msg)
                 # check the link status
                 if uid.stamp == Stamp(True):
-                    uid.stamp = item.stamp()  # convert True to a stamp
+                    uid.stamp = item.stamp()
+                elif not str(uid.stamp) and settings.STAMP_NEW_LINKS:
+                    uid.stamp = item.stamp()
                 elif uid.stamp != item.stamp():
                     if settings.CHECK_SUSPECT_LINKS:
                         msg = "suspect link: {}".format(item)
@@ -617,13 +647,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 # reformat the item's UID
                 identifier2 = UID(item.uid, stamp=uid.stamp)
                 identifiers.add(identifier2)
+
         # Apply the reformatted item UIDs
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
-    def _get_issues_both(self, document, tree):
+    def _get_issues_both(self, document, tree, skip):
         """Yield all the item's issues against its document and tree."""
         log.debug("getting issues against document and tree...")
+
+        if document.prefix in skip:
+            log.debug("skipping issues against document %s...", document)
+            return
+
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(document=document,
@@ -631,6 +667,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                                                         find_all=False)
             if not items:
                 for document in documents:
+                    if document.prefix in skip:
+                        msg = "skipping issues against document %s..."
+                        log.debug(msg, document)
+                        continue
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
 
@@ -745,9 +785,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if not child_items or find_all:
                     for item2 in document2:
                         if self.uid in item2.links:
-                            child_items.append(item2)
-                            if not find_all:
-                                break
+                            if not item2.active:
+                                item2 = UnknownItem(item2.uid)
+                                log.warning(item2.exception)
+                                child_items.append(item2)
+                            else:
+                                child_items.append(item2)
+                                if not find_all and item2.active:
+                                    break
         # Display found links
         if child_items:
             if find_all:
@@ -796,12 +841,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
 
 class UnknownItem(object):
-
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path
 
     normative = False  # do not include unknown items in traceability
+    level = Item.DEFAULT_LEVEL
 
     def __init__(self, value, spec=Item):
         self._uid = UID(value)
@@ -816,6 +861,9 @@ class UnknownItem(object):
         if name in self._spec:
             log.debug(self.exception)
         return self.__getattribute__(name)
+
+    def __lt__(self, other):
+        return self.uid < other.uid
 
     @property
     def uid(self):

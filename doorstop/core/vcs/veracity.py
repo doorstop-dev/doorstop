@@ -7,7 +7,6 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
-
     """Veracity working copy."""
 
     DIRECTORY = '.sgdrawer'

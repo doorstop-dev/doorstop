@@ -38,7 +38,7 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
 
         # validate it
         utilities.show("validating items...", flush=True)
-        valid = tree.validate()
+        valid = tree.validate(skip=args.skip)
 
     if not success:
         return False

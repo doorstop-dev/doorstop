@@ -40,7 +40,6 @@ settings:
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
 class TestDocument(unittest.TestCase):
-
     """Unit tests for the Document class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -151,7 +150,7 @@ class TestDocument(unittest.TestCase):
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
         print(self.document.items)
-        self.assertEqual(5, len(self.document.tree._item_cache))
+        self.assertEqual(6, len(self.document.tree._item_cache))
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -213,7 +212,7 @@ class TestDocument(unittest.TestCase):
 
     def test_next_number(self):
         """Verify the next item number can be determined."""
-        self.assertEqual(5, self.document.next_number)
+        self.assertEqual(6, self.document.next_number)
 
     def test_next_number_server(self):
         """Verify the next item number can be determined with a server."""
@@ -224,7 +223,7 @@ class TestDocument(unittest.TestCase):
     def test_index_get(self):
         """Verify a document's index can be retrieved."""
         self.assertIs(None, self.document.index)
-        with patch('os.path.exists', Mock(return_value=True)):
+        with patch('os.path.isfile', Mock(return_value=True)):
             path = os.path.join(self.document.path, self.document.INDEX)
             self.assertEqual(path, self.document.index)
 
@@ -260,7 +259,7 @@ class TestDocument(unittest.TestCase):
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
         mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ005',
+                                         FILES, ROOT, 'REQ006',
                                          level=Level('2.2'))
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -271,7 +270,7 @@ class TestDocument(unittest.TestCase):
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
         mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ005',
+                                         FILES, ROOT, 'REQ006',
                                          level='4.2')
         mock_reorder.assert_called_once_with(keep=item)
 
@@ -537,7 +536,7 @@ class TestDocument(unittest.TestCase):
         """Verify a document can be deleted."""
         self.document.delete()
         self.assertEqual(1, mock_common_delete.call_count)
-        self.assertEqual(5, mock_item_delete.call_count)
+        self.assertEqual(6, mock_item_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
     @patch('doorstop.core.item.Item.delete', Mock())

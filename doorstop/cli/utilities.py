@@ -12,7 +12,6 @@ log = common.logger(__name__)
 
 
 class capture(object):  # pylint: disable=R0903
-
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 
     def __init__(self, catch=True):
@@ -65,6 +64,7 @@ def configure_logging(verbosity=0):
     # Set a custom formatter
     if not logging.root.handlers:  # pragma: no cover (manual test)
         logging.basicConfig(level=level)
+        logging.captureWarnings(True)
         formatter = common.WarningFormatter(default_format, verbose_format)
         logging.root.handlers[0].setFormatter(formatter)
 

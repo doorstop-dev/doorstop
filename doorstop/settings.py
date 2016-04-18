@@ -8,6 +8,7 @@ LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
 VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
 QUIET_LOGGING_LEVEL = logging.WARNING
+TIMED_LOGGING_FORMAT = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
 VERBOSE2_LOGGING_LEVEL = logging.DEBUG
@@ -34,12 +35,18 @@ CHECK_REVIEW_STATUS = True  # check stamps on items
 WARN_ALL = False  # display info-level issues as warnings
 ERROR_ALL = False  # display warning-level issues as errors
 
+# Review settings
+REVIEW_NEW_ITEMS = True  # automatically review new items during validation
+
+# Stamping settings
+STAMP_NEW_LINKS = True  # automatically stamp links upon creation
+
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 
 # Version control settings
-ADDREMOVE_FILES = True
+ADDREMOVE_FILES = True  # automatically add/remove new/changed files
 
 # Caching settings
 CACHE_ITEMS = True  # cache items in documents and trees

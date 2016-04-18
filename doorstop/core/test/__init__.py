@@ -25,19 +25,18 @@ NEW = os.path.join(FILES, 'new')  # new document with no items
 ENV = 'TEST_INTEGRATION'  # environment variable to enable integration tests
 REASON = "'{0}' variable not set".format(ENV)
 
+
 if not os.path.exists(EMPTY):
     os.makedirs(EMPTY)
 
 
 class DocumentNoSkip(Document):
-
     """Document class that is never skipped."""
 
     SKIP = '__disabled__'  # never skip test Documents
 
 
 class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
-
     """Mock FileObject class with stubbed file IO."""
 
     def __init__(self, *args, **kwargs):
@@ -67,31 +66,26 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 
 
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
-
     """Mock Item class with stubbed file IO."""
 
 
 class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902
-
     """Mock Document class with stubbed file IO."""
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
-
     """Mock Document class that is always skipped in tree placement."""
 
     skip = True
 
 
 class MockDocumentNoSkip(MockDocumentSkip):  # pylint: disable=W0223,R0902
-
     """Mock Document class that is never skipped in tree placement."""
 
     SKIP = '__disabled__'  # never skip mock Documents
 
 
 class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
-
     """Mock item class with stubbed IO and a mock VCS reference."""
 
     def __init__(self, *args, **kwargs):
@@ -101,7 +95,6 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
 
 
 class MockDataMixIn:  # pylint: disable=W0232,R0903
-
     """Data for test cases requiring mock items and documents."""
 
     # purely mock objects
@@ -109,6 +102,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     mock_document = MagicMock()
     mock_document.prefix = 'MOCK'
     mock_document.items = []
+    mock_document.assets = None
     mock_tree = MagicMock()
     mock_tree.documents = [mock_document]
 
@@ -150,6 +144,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                        _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                        "normative: false"),
     ]
+    document.assets = None
 
     item3 = MockItem('path/to/req4.yml', _file=(
         "links: [sys4]" + '\n'

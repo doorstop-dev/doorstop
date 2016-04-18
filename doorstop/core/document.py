@@ -5,7 +5,7 @@ from itertools import chain
 from collections import OrderedDict
 
 from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning
+from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.base import (add_document, edit_document, delete_document,
                                 auto_load, auto_save,
                                 BaseValidatable, BaseFileObject)
@@ -17,11 +17,11 @@ log = common.logger(__name__)
 
 
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
-
     """Represents a document directory containing an outline of items."""
 
     CONFIG = '.doorstop.yml'
     SKIP = '.doorstop.skip'  # indicates this document should be skipped
+    ASSETS = 'assets'
     INDEX = 'index.yml'
 
     DEFAULT_PREFIX = Prefix('REQ')
@@ -67,7 +67,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from self._iter()
 
     def __len__(self):
-        return len(list(self._iter()))
+        return len(list(i for i in self._iter() if i.active))
 
     def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
         return True
@@ -210,6 +210,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return os.path.join(self.path, Document.CONFIG)
 
     @property
+    def assets(self):
+        """Get the path to the document's assets if they exist else `None`."""
+        path = os.path.join(self.path, Document.ASSETS)
+        if os.path.isdir(path):
+            return path
+
+    @property
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
@@ -268,8 +275,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @property
     def items(self):
-        """Get an ordered list of items in the document."""
-        return sorted(self._iter())
+        """Get an ordered list of active items in the document."""
+        return sorted(i for i in self._iter() if i.active)
 
     @property
     def depth(self):
@@ -306,7 +313,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
         path = os.path.join(self.path, Document.INDEX)
-        if os.path.exists(path):
+        if os.path.isfile(path):
             return path
 
     @index.setter
@@ -414,7 +421,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield '#' * settings.MAX_LINE_LENGTH
         yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
         yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
-        yield '# CHANGES ARE BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
+        yield '# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
         yield '#' * settings.MAX_LINE_LENGTH
         yield ''
         yield "initial: {}".format(items[0].level if items else 1.0)
@@ -573,13 +580,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         uid = UID(value)
         for item in self:
             if item.uid == uid:
-                return item
+                if item.active:
+                    return item
+                else:
+                    log.trace("item is inactive: {}".format(item))
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, item_hook=None, **kwargs):
+    def get_issues(self, skip=None, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
+        :param skip: list of document prefixes to skip
         :param item_hook: function to call for custom item validation
 
         :return: generator of :class:`~doorstop.common.DoorstopError`,
@@ -588,23 +599,34 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         assert kwargs.get('document_hook') is None
+        skip = [] if skip is None else skip
         hook = item_hook if item_hook else lambda **kwargs: []
-        log.info("checking document {}...".format(self))
+
+        if self.prefix in skip:
+            log.info("skipping document %s...", self)
+            return
+        else:
+            log.info("checking document %s...", self)
+
         # Check for items
         items = self.items
         if not items:
             yield DoorstopWarning("no items")
             return
+
         # Reorder or check item levels
         if settings.REORDER:
             self.reorder(_items=items)
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
+
         # Check each item
         for item in items:
+
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
-                               item.get_issues()):
+                               item.get_issues(skip=skip)):
+
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.uid, issue))
@@ -637,7 +659,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                          nlev.value[index + 1] not in (0, 1))):
                     msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
                                                                    nlev, nuid)
-                    yield DoorstopWarning(msg)
+                    yield DoorstopInfo(msg)
                     break
             prev = item
 

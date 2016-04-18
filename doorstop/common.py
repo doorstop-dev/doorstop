@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from distutils import dir_util
 import argparse
 import logging
 
@@ -30,22 +31,24 @@ log = logger(__name__)
 
 
 class DoorstopError(Exception):
-
     """Generic Doorstop error."""
 
 
-class DoorstopWarning(DoorstopError, Warning):
+class DoorstopFileError(DoorstopError, IOError):
+    """Raised on IO errors."""
 
+
+class DoorstopWarning(DoorstopError, Warning):
     """Generic Doorstop warning."""
 
 
 class DoorstopInfo(DoorstopWarning, Warning):
-
     """Generic Doorstop info."""
+
+# logging classes ############################################################
 
 
 class HelpFormatter(argparse.HelpFormatter):
-
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +56,6 @@ class HelpFormatter(argparse.HelpFormatter):
 
 
 class WarningFormatter(logging.Formatter, object):
-
     """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):
@@ -176,6 +178,15 @@ def touch(path):  # pragma: no cover (integration test)
     if not os.path.exists(path):
         log.trace("creating empty '{}'...".format(path))
         write_text('', path)
+
+
+def copy(src, dst):
+    """Copy a file or directory."""
+    if os.path.isfile(src):
+        delete(dst)
+        shutil.copy(src, dst)
+    elif os.path.isdir(src):
+        dir_util.copy_tree(src, dst)
 
 
 def delete(path):  # pragma: no cover (integration test)

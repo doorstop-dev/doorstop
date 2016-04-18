@@ -12,7 +12,6 @@ log = common.logger(__name__)
 
 
 class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
-
     """Abstract base class for VCS working copies."""
 
     DIRECTORY = None  # special hidden directory for the working copy
@@ -24,7 +23,8 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
         self._path_cache = None
         self._show_ci_warning = True
 
-    def relpath(self, path):
+    @staticmethod
+    def relpath(path):
         """Get a relative path to the working copy root for commands."""
         return os.path.relpath(path).replace('\\', '/')
 

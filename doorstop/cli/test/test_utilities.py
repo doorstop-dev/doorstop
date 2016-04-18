@@ -12,7 +12,6 @@ from doorstop.cli.test import SettingsTestCase
 
 
 class TestCapture(unittest.TestCase):
-
     """Unit tests for the `Capture` class."""
 
     def test_success(self):
@@ -39,7 +38,6 @@ class TestCapture(unittest.TestCase):
 
 
 class TestConfigureSettings(SettingsTestCase):
-
     """Unit tests for the `configure_settings` function."""
 
     def test_configure_settings(self):
@@ -61,7 +59,6 @@ class TestConfigureSettings(SettingsTestCase):
 
 
 class TestLiteralEval(unittest.TestCase):
-
     """Unit tests for the `literal_eval` function."""
 
     def test_literal_eval(self):
@@ -82,7 +79,6 @@ class TestLiteralEval(unittest.TestCase):
 
 
 class TestGetExt(unittest.TestCase):
-
     """Unit tests for the `get_ext` function."""
 
     def test_get_ext_stdout_document(self):
@@ -151,7 +147,6 @@ class TestGetExt(unittest.TestCase):
 
 
 class TestAsk(unittest.TestCase):
-
     """Unit tests for the `ask` function."""
 
     def test_ask_yes(self):
@@ -179,7 +174,6 @@ class TestAsk(unittest.TestCase):
 
 
 class TestShow(unittest.TestCase):
-
     """Unit tests for the `show` function."""  # pylint: disable=R0201
 
     @patch('builtins.print')
@@ -194,11 +188,10 @@ class TestShow(unittest.TestCase):
     def test_show_hidden(self, mock_print):
         """Verify prints are hidden when verbosity is quiet."""
         utilities.show("This won't be printed.")
-        mock_print.assert_never_called()
+        self.assertEqual(0, mock_print.call_count)
 
 
 class TestPositiveInt(unittest.TestCase):
-
     """ Unit tests for the `positive_int` function."""
 
     def test_positive_int(self):

@@ -11,7 +11,6 @@ from doorstop.core.test import MockDocumentSkip, MockDocumentNoSkip
 
 
 class TestModule(unittest.TestCase):
-
     """Unit tests for the doorstop.core.builder module."""
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))

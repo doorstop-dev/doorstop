@@ -11,7 +11,6 @@ from doorstop.server import client
 
 @patch('doorstop.settings.SERVER_PORT', 8080)
 class TestModule(unittest.TestCase):
-
     """Unit tests for the doorstop.server.client module."""
 
     @patch('doorstop.settings.SERVER_HOST', '1.2.3.4')

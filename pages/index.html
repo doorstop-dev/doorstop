@@ -26,7 +26,10 @@
     <div id="header_wrap" class="outer">
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/jacebrowning/doorstop">View on GitHub</a>
-          <h1 id="project_title">Doorstop</h1>
+          <div class="header">
+            <img src="images/logo-white-transparent.png"/>
+            <h1 id="project_title">Doorstop</h1>
+          </div>
           <h2 id="project_tagline">Requirements management using version control.</h2>
         </header>
     </div>
@@ -64,14 +67,14 @@
 
 <p>Doorstop can be installed with pip:</p>
 
-<pre><code>$ pip install doorstop
+<pre><code>$ pip3 install doorstop
 </code></pre>
 
 <p>or directly from source:</p>
 
 <pre><code>$ git clone https://github.com/jacebrowning/doorstop.git
 $ cd doorstop
-$ python setup.py install
+$ python3 setup.py install
 </code></pre>
 
 <p>After installation, Doorstop is available as a command-line program:</p>
@@ -81,7 +84,7 @@ $ python setup.py install
 
 <p>and Python package:</p>
 
-<pre><code>$ python
+<pre><code>$ python3
 &gt;&gt;&gt; import doorstop
 &gt;&gt;&gt; doorstop.__version__
 </code></pre>
@@ -94,9 +97,9 @@ $ python setup.py install
 
 <p><strong>Parent Document</strong></p>
 
-<p>After configuring version control, a new parent document can be created:</p>
+<p>A document can be created inside a directory that is under version control:</p>
 
-<pre><code>$ doorstop new REQ ./reqs
+<pre><code>$ doorstop create REQ ./reqs
 created document: REQ (@/reqs)
 </code></pre>
 
@@ -113,7 +116,7 @@ opened item: REQ001 (@/reqs/REQ001.yml)
 
 <p>Additional documents can be created that link to other documents:</p>
 
-<pre><code>$ doorstop new TST ./reqs/tests --parent REQ
+<pre><code>$ doorstop create TST ./reqs/tests --parent REQ
 created document: TST (@/reqs/tests)
 </code></pre>
 

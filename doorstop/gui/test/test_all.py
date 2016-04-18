@@ -11,7 +11,6 @@ from doorstop.gui import main as gui
 
 
 class TestMain(unittest.TestCase):
-
     """Integration tests for the 'doorstop-gui' command."""
 
     @patch('doorstop.gui.main.run', Mock(return_value=True))
@@ -31,7 +30,6 @@ class TestMain(unittest.TestCase):
 
 
 class TestImport(unittest.TestCase):
-
     """Integration tests for importing the GUI module."""
 
     def test_import(self):
@@ -44,7 +42,6 @@ class TestImport(unittest.TestCase):
 
 @patch('doorstop.gui.main.run', Mock(return_value=True))
 class TestLogging(unittest.TestCase):
-
     """Integration tests for the Doorstop GUI logging."""
 
     def test_verbose_1(self):

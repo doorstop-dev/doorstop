@@ -7,7 +7,6 @@ from doorstop.core.vcs import load
 
 
 class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
-
     """Base TestCase for tests that need a working copy."""
 
     DIRECTORY = None
@@ -43,7 +42,6 @@ class BaseTestCase(unittest.TestCase):  # pylint: disable=R0904
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestGit(BaseTestCase):
-
     """Tests for the Git plugin."""
 
     DIRECTORY = '.git'
@@ -82,7 +80,6 @@ class TestGit(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestMockVCS(BaseTestCase):
-
     """Tests for the placeholder VCS plugin."""
 
     DIRECTORY = '.mockvcs'
@@ -120,7 +117,6 @@ class TestMockVCS(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestSubversion(BaseTestCase):
-
     """Tests for the Subversion plugin."""
 
     DIRECTORY = '.svn'
@@ -159,7 +155,6 @@ class TestSubversion(BaseTestCase):
 
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestVeracity(BaseTestCase):
-
     """Tests for the Veracity plugin."""
 
     DIRECTORY = '.sgdrawer'
@@ -194,4 +189,42 @@ class TestVeracity(BaseTestCase):
         self.commit()
         calls = [call(("vv", "commit", "--message", self.message)),
                  call(("vv", "push"))]
+        mock_call.assert_has_calls(calls)
+
+
+@patch('subprocess.call')  # pylint: disable=R0904
+class TestMercurial(BaseTestCase):
+    """Tests for the Mercurial plugin."""
+
+    DIRECTORY = '.hg'
+
+    def test_lock(self, mock_call):
+        """Verify Mercurial can (fake) lock files."""
+        self.lock()
+        calls = [call(("hg", "pull", "-u"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_edit(self, mock_call):
+        """Verify Mercurial can edit files."""
+        self.edit()
+        calls = [call(("hg", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_add(self, mock_call):
+        """Verify Mercurial can add files."""
+        self.add()
+        calls = [call(("hg", "add", self.path))]
+        mock_call.assert_has_calls(calls)
+
+    def test_delete(self, mock_call):
+        """Verify Mercurial can delete files."""
+        self.delete()
+        calls = [call(("hg", "remove", self.path, "--force"))]
+        mock_call.assert_has_calls(calls)
+
+    def test_commit(self, mock_call):
+        """Verify Mercurial can commit files."""
+        self.commit()
+        calls = [call(("hg", "commit", "--message", self.message)),
+                 call(("hg", "push"))]
         mock_call.assert_has_calls(calls)

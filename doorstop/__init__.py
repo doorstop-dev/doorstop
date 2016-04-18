@@ -3,12 +3,12 @@
 import sys
 
 __project__ = 'Doorstop'
-__version__ = '0.8.4'
+__version__ = '1.0'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
 SERVER = 'doorstop-server'
-VERSION = __project__ + '-' + __version__
+VERSION = "{0} v{1}".format(__project__, __version__)
 DESCRIPTION = "Requirements management using version control."
 
 MIN_PYTHON_VERSION = 3, 3

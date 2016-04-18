@@ -56,6 +56,8 @@ def main(args=None):  # pylint: disable=R0915
                         help="do not check for suspect links")
     parser.add_argument('-W', '--no-review-check', action='store_true',
                         help="do not check item review status")
+    parser.add_argument('-s', '--skip', metavar='PREFIX', action='append',
+                        help="skip a document during validation")
     parser.add_argument('-w', '--warn-all', action='store_true',
                         help="display all info-level issues as warnings")
     parser.add_argument('-e', '--error-all', action='store_true',
@@ -90,6 +92,9 @@ def main(args=None):  # pylint: disable=R0915
     function = commands.get(args.command)
     try:
         success = function(args, os.getcwd(), parser.error)
+    except common.DoorstopFileError as exc:
+        log.error(exc)
+        success = False
     except KeyboardInterrupt:
         log.debug("command cancelled")
         success = False

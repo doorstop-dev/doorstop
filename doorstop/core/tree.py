@@ -38,7 +38,6 @@ log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
-
     """A bidirectional tree structure to store a hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
@@ -391,7 +390,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             item = self._item_cache[uid]
             if item:
                 log.trace("found cached item: {}".format(item))
-                return item
+                if item.active:
+                    return item
+                else:
+                    log.trace("item is inactive: {}".format(item))
             else:
                 log.trace("found cached unknown: {}".format(uid))
         except KeyError:
@@ -405,7 +407,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     if settings.CACHE_ITEMS:
                         self._item_cache[uid] = item
                         log.trace("cached item: {}".format(item))
-                    return item
+                    if item.active:
+                        return item
+                    else:
+                        log.trace("item is inactive: {}".format(item))
+
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
                 self._item_cache[uid] = None
@@ -413,9 +419,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
-    def get_issues(self, document_hook=None, item_hook=None):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
+        :param skip: list of document prefixes to skip
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
@@ -432,7 +439,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Check each document
         for document in documents:
             for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(item_hook=item_hook)):
+                               document.get_issues(skip=skip,
+                                                   item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
@@ -462,9 +470,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         rows = set()
         for index, document in enumerate(self.documents):
             for item in document:
-
-                for row in self._iter_rows(item, mapping):
-                    rows.add(row)
+                if item.active:
+                    for row in self._iter_rows(item, mapping):
+                        rows.add(row)
 
         # Sort rows
         return sorted(rows, key=by_uid)
@@ -480,7 +488,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         class Row(list):
-
             """List type that tracks upper and lower boundaries."""
 
             def __init__(self, *args, parent=False, child=False, **kwargs):

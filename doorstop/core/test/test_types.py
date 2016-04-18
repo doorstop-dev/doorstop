@@ -7,7 +7,6 @@ from doorstop.core.types import Prefix, UID, Text, Level, Stamp, Reference
 
 
 class TestPrefix(unittest.TestCase):
-
     """Unit tests for the Prefix class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -60,7 +59,6 @@ class TestPrefix(unittest.TestCase):
 
 
 class TestUID(unittest.TestCase):
-
     """Unit tests for the UID class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -160,7 +158,6 @@ class TestUID(unittest.TestCase):
 
 
 class TestText(unittest.TestCase):
-
     """Unit tests for the Text class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -190,7 +187,6 @@ class TestText(unittest.TestCase):
 
 
 class TestLevel(unittest.TestCase):
-
     """Unit tests for the Level class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -373,7 +369,6 @@ class TestLevel(unittest.TestCase):
 
 
 class TestStamp(unittest.TestCase):
-
     """Unit tests for the Stamp class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -428,7 +423,6 @@ class TestStamp(unittest.TestCase):
 
 
 class TestReference(unittest.TestCase):
-
     """Unit tests for the Reference class."""
 
     def setUp(self):

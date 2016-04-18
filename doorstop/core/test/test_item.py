@@ -28,7 +28,6 @@ text: ''
 
 
 class TestItem(unittest.TestCase):
-
     """Unit tests for the Item class."""  # pylint: disable=W0212
 
     def setUp(self):
@@ -601,6 +600,19 @@ class TestItem(unittest.TestCase):
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item._data['reviewed'])
 
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
+    def test_validate_reviewed_first(self):
+        """Verify that a missing initial review leaves the stamp empty."""
+        self.item._data['reviewed'] = Stamp(None)
+        self.assertTrue(self.item.validate())
+        self.assertEqual(Stamp(None), self.item._data['reviewed'])
+
+    @patch('doorstop.settings.ERROR_ALL', True)
+    def test_validate_reviewed_second(self):
+        """Verify that a modified stamp fails review."""
+        self.item._data['reviewed'] = Stamp('abc123')
+        self.assertFalse(self.item.validate())
+
     def test_validate_cleared(self):
         """Verify that checking a cleared link updates the stamp."""
         mock_item = Mock()
@@ -612,12 +624,24 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
+    def test_validate_cleared_new(self):
+        """Verify that new links are stamped automatically."""
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_uid': None}]
+        self.assertTrue(self.item.validate())
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
         self.item.links = ['a']
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_link_to_inactive(self):
         """Verify a link to an inactive item can be checked."""
         mock_item = Mock()
@@ -628,6 +652,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_link_to_nonnormative(self):
         """Verify a link to an non-normative item can be checked."""
         mock_item = Mock()
@@ -661,6 +686,7 @@ class TestItem(unittest.TestCase):
         self.item.document = mock_document
         self.assertFalse(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_tree(self):
         """Verify an item can be checked against a tree."""
 
@@ -697,6 +723,7 @@ class TestItem(unittest.TestCase):
         self.item.tree = mock_tree
         self.assertFalse(self.item.validate())
 
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both(self):
         """Verify an item can be checked against both."""
 
@@ -724,6 +751,8 @@ class TestItem(unittest.TestCase):
 
         self.assertTrue(self.item.validate())
 
+    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
+    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both_no_reverse_links(self):
         """Verify an item can be checked against both (no reverse links)."""
 
@@ -813,7 +842,6 @@ class TestItem(unittest.TestCase):
 
 
 class TestFormatting(unittest.TestCase):
-
     """Unit tests for text formatting in Items."""
 
     ITEM = os.path.join(FILES, 'REQ001.yml')
@@ -835,7 +863,6 @@ class TestFormatting(unittest.TestCase):
 
 
 class TestUnknownItem(unittest.TestCase):
-
     """Unit tests for the UnknownItem class."""  # pylint: disable= W0212
 
     def setUp(self):

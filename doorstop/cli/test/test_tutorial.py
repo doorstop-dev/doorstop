@@ -29,7 +29,6 @@ if __name__ == '__main__':
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestBase(unittest.TestCase):
-
     """Base class for tutorial tests."""
 
     def setUp(self):
@@ -55,7 +54,6 @@ class TestBase(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestSection1(TestBase):
-
     """Integration tests for section 1.0 of the tutorial."""
 
     def test_tutorial_section_1(self):

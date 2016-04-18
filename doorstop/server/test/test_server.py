@@ -8,7 +8,6 @@ from doorstop.server import main as server
 
 
 class BaseTestCase(unittest.TestCase):
-
     """Base test class for server tests."""
 
     mock_item = MagicMock()
@@ -40,7 +39,6 @@ class BaseTestCase(unittest.TestCase):
 
 
 class TestModule(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module."""
 
     @patch('doorstop.server.main.build')
@@ -48,8 +46,8 @@ class TestModule(BaseTestCase):
     def test_main(self, mock_run, mock_build):
         """Verify the server can started (mock)."""
         self.server.main([])
-        mock_build.assert_called_once()
-        mock_run.assert_called_once()
+        self.assertEqual(1, mock_build.call_count)
+        self.assertEqual(1, mock_run.call_count)
 
     @patch('doorstop.settings.SERVER_PORT', 8080)
     @patch('doorstop.server.main.build')
@@ -58,13 +56,12 @@ class TestModule(BaseTestCase):
     def test_main_debug(self, mock_run, mock_open, mock_build):
         """Verify the server can started (mock, debug)."""
         self.server.main(['--debug', '--launch'])
-        mock_build.assert_called_once()
-        mock_open.assert_called_once_with("http://localhost:8080")
-        mock_run.assert_called_once()
+        self.assertEqual(1, mock_build.call_count)
+        mock_open.assert_called_once_with("http://127.0.0.1:8080")
+        self.assertEqual(1, mock_run.call_count)
 
 
 class TestRoutesHTML(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module HTML responses."""
 
     def test_get_index(self):
@@ -127,7 +124,6 @@ class TestRoutesHTML(BaseTestCase):
 
 @patch('doorstop.server.utilities.json_response', Mock(return_value=True))
 class TestRoutesJSON(BaseTestCase):
-
     """Unit tests for the doorstop.server.main module JSON responses."""
 
     def test_get_documents(self):
