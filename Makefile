@@ -142,11 +142,11 @@ README-github.html: README.md
 	pandoc -f markdown_github -t html -o README-github.html README.md
 README-pypi.html: README.rst
 	$(RST2HTML) README.rst README-pypi.html
-README.rst: README.md
-	pandoc -f markdown_github -t rst -o README.rst README.md
+%.rst: %.md
+	pandoc -f markdown_github -t rst -o $@ $<
 
 .PHONY: verify-readme
-verify-readme: README.rst
+verify-readme: README.rst CHANGELOG.rst
 	$(PYTHON) setup.py check --restructuredtext --strict --metadata
 
 .PHONY: uml
@@ -275,7 +275,7 @@ register-test: doc
 	$(PYTHON) setup.py register --strict --repository https://testpypi.python.org/pypi
 
 .PHONY: upload-test
-upload-test: .git-no-changes register-test
+upload-test: register-test
 	$(PYTHON) setup.py sdist upload --repository https://testpypi.python.org/pypi
 	$(PYTHON) setup.py bdist_wheel upload --repository https://testpypi.python.org/pypi
 	$(OPEN) https://testpypi.python.org/pypi/$(PROJECT)
@@ -292,7 +292,7 @@ upload: .git-no-changes register
 
 .PHONY: .git-no-changes
 .git-no-changes:
-	@if git diff --name-only --exit-code;         \
+	@ if git diff --name-only --exit-code;        \
 	then                                          \
 		echo Git working copy is clean...;        \
 	else                                          \
@@ -313,4 +313,4 @@ install:
 
 .PHONY: download
 download:
-	pip install $(PROJECT)
+	$(SYS_PYTHON) -m pip install $(PROJECT)

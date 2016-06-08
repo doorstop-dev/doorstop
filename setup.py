@@ -9,8 +9,8 @@ from doorstop import __project__, __version__, CLI, GUI, SERVER, DESCRIPTION
 try:
     README = open("README.rst").read()
     CHANGELOG = open("CHANGELOG.rst").read()
-except IOError:
-    LONG_DESCRIPTION = "Coming soon..."
+except FileNotFoundError:
+    LONG_DESCRIPTION = "<placeholder>"
 else:
     LONG_DESCRIPTION = README + '\n' + CHANGELOG
 
