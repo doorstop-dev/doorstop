@@ -1,0 +1,14 @@
+site_name: Doorstop
+site_description: A sample project templated from jacebrowning/template-python.
+site_author: Jace Browning
+repo_url: https://github.com/jacebrowning/template-python-demo
+# google_analytics: ['XX-XXXXXXXX-XX', 'auto']
+
+theme: mkdocs
+
+pages:
+- Home: index.md
+- About:
+  - 'Release Notes': about/changelog.md
+  - Contributing: about/contributing.md
+  - License: about/license.md
