@@ -7,7 +7,7 @@ from doorstop.cli.main import main
 from doorstop import settings
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-REQS = os.path.join(ROOT, 'docs', 'reqs')
+REQS = os.path.join(ROOT, 'reqs')
 TUTORIAL = os.path.join(REQS, 'tutorial')
 FILES = os.path.join(os.path.dirname(__file__), 'files')
 
