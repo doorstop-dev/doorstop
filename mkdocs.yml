@@ -7,6 +7,13 @@ theme: readthedocs
 
 pages:
 - Home: index.md
+- Command-line Interface:
+  - Creating Documents: cli/creation.md
+  - Validating Requirements: cli/validation.md
+  - Publishing Documents: cli/publishing.md
+  - Importing and Exporting: cli/interchange.md
+- Graphical Interface: gui/coming-soon.md
+- Scripting Interface: api/scripting.md
 - About:
   - 'Release Notes': about/changelog.md
   - Contributing: about/contributing.md

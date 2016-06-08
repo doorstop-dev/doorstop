@@ -2,8 +2,7 @@
 
 -----
 
-Doorstop
-========
+# Doorstop
 
 [![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
 [![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
@@ -21,19 +20,15 @@ Additional reading:
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
 - sample: [Generated HTML](http://jacebrowning.github.io/doorstop/index.html)
-- documentation: [API](http://doorstop.info/docs/index.html), [Demo](http://nbviewer.ipython.org/gist/jacebrowning/9754157)
 
-Getting Started
-===============
+# Getting Started
 
-Requirements
-------------
+## Requirements
 
 * Python 3.3+
 * A version control system for requirements storage
 
-Installation
-------------
+## Installation
 
 Doorstop can be installed with pip:
 
@@ -63,119 +58,55 @@ $ python
 >>> doorstop.__version__
 ```
 
-Basic Usage
-===========
+# Basic Usage
 
-Document Creation
------------------
+Switch to an existing version control working directory, or create one:
 
-**Parent Document**
+```
+$ git init .
+```
 
-A document can be created inside a directory that is under version control:
+## Create a document
 
-    $ doorstop create REQ ./reqs
-    created document: REQ (@/reqs)
+Create a new parent requirements document:
 
-Items can be added to the document and edited:
+```
+$ doorstop create SRD ./reqs/srd
+```
 
-    $ doorstop add REQ
-    added item: REQ001 (@/reqs/REQ001.yml)
+Add a few items to that document:
 
-    $ doorstop edit REQ1
-    opened item: REQ001 (@/reqs/REQ001.yml)
+```
+$ doorstop add SRD
+$ doorstop add SRD
+$ doorstop add SRD
+```
 
-**Child Documents**
+## Links items
 
-Additional documents can be created that link to other documents:
+Create a child document to link to the parent:
 
-    $ doorstop create TST ./reqs/tests --parent REQ
-    created document: TST (@/reqs/tests)
+```
+$ doorstop create HLTC ./tests/hl --parent SRD
+$ doorstop add HLTC
+```
 
-Items can be added and linked to parent items:
+Link items between documents:
 
-    $ doorstop add TST
-    added item: TST001 (@/reqs/tests/TST001.yml)
+```
+$ doorstop link HLTC001 SRD002
+```
 
-    $ doorstop link TST1 REQ1
-    linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
+## Publish reports
 
-Document Validation
--------------------
+Run integrity checks on the document tree:
 
-To check a document hierarchy for consistency, run the main command:
+```
+$ doorstop
+```
 
-    $ doorstop
-    valid tree: REQ <- [ TST ]
+Publish the documents as HTML:
 
-Document Publishing
--------------------
-
-A text report of a document can be displayed:
-
-    $ doorstop publish TST
-    1       TST001
-
-            Verify the foobar will foo and bar.
-
-            Links: REQ001
-
-Other formats are also supported:
-
-    $ doorstop publish TST --html
-    <!DOCTYPE html>
-    ...
-    <body>
-    <h1>1 (TST001)</h1>
-    <p>Verify the foobar will foo and bar.</p>
-    <p><em>Links: REQ001</em></p>
-    </body>
-    </html>
-
-Or a file can be created using one of the supported extensions:
-
-    $ doorstop publish TST path/to/tst.md
-    publishing TST to path/to/tst.md...
-
-Supported formats:
-
-- Text: **.txt**
-- Markdown: **.md**
-- HTML: **.html**
-
-Content Interchange
--------------------
-
-**Export**
-
-Documents can be exported for editing or to exchange with other systems:
-
-    $ doorstop export TST
-    TST001:
-      active: true
-      dervied: false
-      level: 1
-      links:
-      - REQ001
-      normative: true
-      ref: ''
-      text: |
-        Verify the foobar will foo and bar.
-
-Or a file can be created using one of the supported extensions:
-
-    $ doorstop export TST path/to/tst.csv
-    exporting TST to path/to/tst.csv...
-    exported: path/to/tst.csv
-
-Supported formats:
-
-- YAML: **.yml**
-- Comma-Separated Values: **.csv**
-- Tab-Separated Values: **.tsv**
-- Microsoft Office Excel: **.xlsx**
-
-**Import**
-
-Items can be created/updated from the export formats:
-
-    $ doorstop import path/to/tst.csv TST
+```
+$ doorstop publish all ./public
+```
