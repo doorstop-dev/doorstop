@@ -1,5 +1,9 @@
 # Revision History
 
+## 1.0.1 (2016/06/08)
+
+- Moved the documentation to [ReadTheDocs](http://doorstop.readthedocs.io).
+
 ## 1.0 (2016/04/17)
 
 - Fixed a bug checking levels across inactive items.
