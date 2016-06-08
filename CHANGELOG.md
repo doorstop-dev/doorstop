@@ -1,6 +1,6 @@
 # Revision History
 
-## 1.0.1 (2016/06/08)
+## 1.0.2 (2016/06/08)
 
 - Moved the documentation to [ReadTheDocs](http://doorstop.readthedocs.io).
 
