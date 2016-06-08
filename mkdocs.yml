@@ -1,10 +1,9 @@
 site_name: Doorstop
-site_description: A sample project templated from jacebrowning/template-python.
+site_description: Requirements management using version control.
 site_author: Jace Browning
-repo_url: https://github.com/jacebrowning/template-python-demo
-# google_analytics: ['XX-XXXXXXXX-XX', 'auto']
+repo_url: https://github.com/jacebrowning/doorstop
 
-theme: mkdocs
+theme: readthedocs
 
 pages:
 - Home: index.md
