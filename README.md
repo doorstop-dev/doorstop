@@ -66,7 +66,7 @@ Switch to an existing version control working directory, or create one:
 $ git init .
 ```
 
-## Create a document
+## Create documents
 
 Create a new parent requirements document:
 
@@ -82,7 +82,7 @@ $ doorstop add SRD
 $ doorstop add SRD
 ```
 
-## Links items
+## Link items
 
 Create a child document to link to the parent:
 
