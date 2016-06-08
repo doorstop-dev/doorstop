@@ -3,7 +3,7 @@
 import sys
 
 __project__ = 'Doorstop'
-__version__ = '2.0.dev'
+__version__ = '1.0'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'
