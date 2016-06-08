@@ -58,6 +58,7 @@ PYREVERSE := $(BIN)/pyreverse
 NOSE := $(BIN)/nosetests
 PYTEST := $(BIN)/py.test
 COVERAGE := $(BIN)/coverage
+MKDOCS := $(BIN)/mkdocs
 
 # Flags for PHONY targets
 DEPENDS_CI := $(ENV)/.depends-ci
@@ -101,7 +102,7 @@ $(DEPENDS_CI): Makefile
 .PHONY: depends-dev
 depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc sphinx markdown wheel
+	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc mkdocs markdown wheel
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
 # Development Usage ############################################################
@@ -121,8 +122,19 @@ serve: env
 # Documentation ################################################################
 
 .PHONY: doc
-doc: readme verify-readme uml apidocs pages
+doc: readme verify-readme uml apidocs mkdocs
 
+.PHONY: doc-live
+doc-live: doc
+	eval "sleep 3; open http://127.0.0.1:8000" &
+	$(MKDOCS) serve
+
+.PHONY: read
+read: doc
+	$(OPEN) site/index.html
+	$(OPEN) apidocs/$(PACKAGE)/index.html
+	$(OPEN) README-pypi.html
+	$(OPEN) README-github.html
 
 .PHONY: readme
 readme: depends-dev README-github.html README-pypi.html
@@ -130,11 +142,11 @@ README-github.html: README.md
 	pandoc -f markdown_github -t html -o README-github.html README.md
 README-pypi.html: README.rst
 	$(RST2HTML) README.rst README-pypi.html
-README.rst: README.md
-	pandoc -f markdown_github -t rst -o README.rst README.md
+%.rst: %.md
+	pandoc -f markdown_github -t rst -o $@ $<
 
 .PHONY: verify-readme
-verify-readme: README.rst
+verify-readme: README.rst CHANGELOG.rst
 	$(PYTHON) setup.py check --restructuredtext --strict --metadata
 
 .PHONY: uml
@@ -148,11 +160,6 @@ docs/*.png:
 apidocs: depends-ci apidocs/$(PACKAGE)/index.html
 apidocs/$(PACKAGE)/index.html: $(SOURCES)
 	$(PDOC) --html --overwrite $(PACKAGE) --html-dir apidocs
-
-.PHONY: pages
-pages: reqs sphinx
-	cp -r docs/gen/ pages/reqs/
-	cp -r docs/sphinx/_build pages/docs/
 
 .PHONY: reqs
 reqs: doorstop reqs-html reqs-md reqs-txt
@@ -172,18 +179,10 @@ reqs-txt: env docs/gen/*.txt
 docs/gen/*.txt: $(YAML)
 	$(BIN)/doorstop publish all docs/gen --text
 
-.PHONY: sphinx
-sphinx: depends-dev docs/sphinx/_build
-docs/sphinx/_build: $(SOURCES)
-	$(BIN)/sphinx-apidoc -o docs/sphinx/ doorstop
-	$(BIN)/sphinx-build -b html docs/sphinx docs/sphinx/_build
-	touch docs/sphinx/_build  # flag to indicate sphinx docs generated
-
-.PHONY: read
-read: doc
-	$(OPEN) pages/index.html
-	$(OPEN) README-pypi.html
-	$(OPEN) README-github.html
+.PHONY: mkdocs
+mkdocs: depends-dev site/index.html
+site/index.html: mkdocs.yml docs/*.md
+	$(MKDOCS) build --clean --strict
 
 # Static Analysis ##############################################################
 
@@ -276,7 +275,7 @@ register-test: doc
 	$(PYTHON) setup.py register --strict --repository https://testpypi.python.org/pypi
 
 .PHONY: upload-test
-upload-test: .git-no-changes register-test
+upload-test: register-test
 	$(PYTHON) setup.py sdist upload --repository https://testpypi.python.org/pypi
 	$(PYTHON) setup.py bdist_wheel upload --repository https://testpypi.python.org/pypi
 	$(OPEN) https://testpypi.python.org/pypi/$(PROJECT)
@@ -293,7 +292,7 @@ upload: .git-no-changes register
 
 .PHONY: .git-no-changes
 .git-no-changes:
-	@if git diff --name-only --exit-code;         \
+	@ if git diff --name-only --exit-code;        \
 	then                                          \
 		echo Git working copy is clean...;        \
 	else                                          \
@@ -314,4 +313,4 @@ install:
 
 .PHONY: download
 download:
-	pip install $(PROJECT)
+	$(SYS_PYTHON) -m pip install $(PROJECT)

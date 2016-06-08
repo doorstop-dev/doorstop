@@ -6,19 +6,20 @@ import setuptools
 
 from doorstop import __project__, __version__, CLI, GUI, SERVER, DESCRIPTION
 
-import os
-if os.path.exists('README.rst'):
-    README = open('README.rst').read()
+try:
+    README = open("README.rst").read()
+    CHANGELOG = open("CHANGELOG.rst").read()
+except FileNotFoundError:
+    LONG_DESCRIPTION = "<placeholder>"
 else:
-    README = ""  # a placeholder, readme is generated on release
-CHANGES = open('CHANGES.md').read()
+    LONG_DESCRIPTION = README + '\n' + CHANGELOG
 
 setuptools.setup(
     name=__project__,
     version=__version__,
 
     description=DESCRIPTION,
-    url='http://doorstop.info',
+    url='http://doorstop.readthedocs.io/',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
 
@@ -31,7 +32,7 @@ setuptools.setup(
                             SERVER + ' = doorstop.server.main:main']
     },
 
-    long_description=(README + '\n' + CHANGES),
+    long_description=LONG_DESCRIPTION,
     license='LGPL',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
