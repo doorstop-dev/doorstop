@@ -266,7 +266,7 @@ class Text(str):
         'list:\n\n- a\n- b\n'
 
         """
-        return Text
+        return value
 
     @staticmethod
     def save_text(text, end='\n'):
