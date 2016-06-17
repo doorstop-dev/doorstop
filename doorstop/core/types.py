@@ -260,13 +260,13 @@ class Text(str):
         r"""Convert dumped text to the original string.
 
         >>> Text.load_text("abc\ndef")
-        'abc def'
+        'abc\ndef'
 
         >>> Text.load_text("list:\n\n- a\n- b\n")
-        'list:\n\n- a\n- b'
+        'list:\n\n- a\n- b\n'
 
         """
-        return Text.join(value if value else "")
+        return Text
 
     @staticmethod
     def save_text(text, end='\n'):
@@ -351,21 +351,6 @@ class Text(str):
     ([^\n])  # any character but a newline
     """, re.VERBOSE | re.IGNORECASE)
 
-    @staticmethod
-    def join(text):
-        r"""Convert single newlines (ignored by Markdown) to spaces.
-
-        >>> Text.join("abc\n123")
-        'abc 123'
-
-        >>> Text.join("abc\n\n123")
-        'abc\n\n123'
-
-        >>> Text.join("abc \n123")
-        'abc 123'
-
-        """
-        return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
 
 
 class Level(object):
