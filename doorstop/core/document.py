@@ -195,9 +195,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     if reload:
                         try:
                             item.load(reload=reload)
-                        except Exception as e:
-                            print("!! Exception loading %s" % item)
-                            raise e
+                        except Exception:
+                            log.error("Unable to load: %s", item)
+                            raise
                     if settings.CACHE_ITEMS and self.tree:
                         self.tree._item_cache[item.uid] = item  # pylint: disable=W0212
                         log.trace("cached item: {}".format(item))
