@@ -1,8 +1,6 @@
-**STATUS:** As of the 1.0 release, this project is no longer under active development. I still plan on accepting any passing pull requests to become part of future 2.x releases.
+**STATUS:** As of the 1.0 release, this project is no longer under active development. Passing pull requests will be considered for future 1.x and 2.x releases.
 
 -----
-
-# Doorstop
 
 [![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
 [![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
@@ -10,9 +8,12 @@
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![PyPI Downloads](http://img.shields.io/pypi/dm/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 
+# Overview
+
 Doorstop manages the storage of textual requirements alongside source code in version control.
 
-<img align="right" width="200" src="https://raw.githubusercontent.com/jacebrowning/doorstop/develop/docs/images/logo-black-white.png"/>
+<img align="left" width="140" src="https://raw.githubusercontent.com/jacebrowning/doorstop/develop/docs/images/logo-black-white.png"/>
+
 When a project utilizes this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Additional reading:
@@ -21,7 +22,7 @@ Additional reading:
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
 - sample: [Generated HTML](http://jacebrowning.github.io/doorstop/index.html)
 
-# Getting Started
+# Setup
 
 ## Requirements
 
@@ -30,7 +31,7 @@ Additional reading:
 
 ## Installation
 
-Doorstop can be installed with pip:
+Install Doorstop with pip:
 
 ```
 $ pip install doorstop
@@ -58,7 +59,7 @@ $ python
 >>> doorstop.__version__
 ```
 
-# Basic Usage
+# Usage
 
 Switch to an existing version control working directory, or create one:
 
