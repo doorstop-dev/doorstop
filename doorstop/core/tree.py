@@ -151,6 +151,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
                 # Current document is the parent
                 node = Tree(document, self)
+                log.info("Set document %s.tree to %s", document, node)
                 self.children.append(node)
 
             else:
@@ -438,12 +439,11 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             yield DoorstopWarning("no documents")
         # Check each document
         trees = [self]
+        trees.extend(self.children)
         for branch in trees:
             document = branch.document
             for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(children=[child.document.prefix for child
-                                                             in branch.children],
-                                                   skip=skip,
+                               document.get_issues(skip=skip,
                                                    item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
@@ -480,6 +480,16 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         # Sort rows
         return sorted(rows, key=by_uid)
+
+    def get_prefix_of_children(self, document):
+        """Return the prefixes of the children of this document
+        """
+        for child in self.children:
+            if child.document == document:
+                children = [c.document.prefix for c in child.children]
+                return children
+        children = [c.document.prefix for c in self.children]
+        return children
 
     def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
         """Generate all traceability row slices.

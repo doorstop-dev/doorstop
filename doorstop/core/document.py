@@ -316,6 +316,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if os.path.isfile(path):
             return path
 
+    @property
+    def children(self):
+        """Get the prefix of child documents that link to this document"""
+        children = self.tree.get_prefix_of_children(self)
+        return children
+
     @index.setter
     def index(self, value):
         """Create or update the document's index."""
@@ -587,7 +593,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, children, skip=None, item_hook=None, **kwargs):
+    def get_issues(self, skip=None, item_hook=None, **kwargs):
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
@@ -625,7 +631,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
             # Check item
             for issue in chain(hook(item=item, document=self, tree=self.tree),
-                               item.get_issues(children, skip=skip)):
+                               item.get_issues(skip=skip)):
 
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
