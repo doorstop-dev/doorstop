@@ -152,7 +152,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 # Current document is the parent
                 node = Tree(document, self)
                 self.children.append(node)
-
+                
             else:
 
                 # Search for the parent
@@ -437,9 +437,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         if not documents:
             yield DoorstopWarning("no documents")
         # Check each document
-        for document in documents:
+        trees = [self]
+        trees.extend(self.children)
+        for branch in trees:
+            document = branch.document
             for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(skip=skip,
+                               document.get_issues(children=[child.document.prefix for child in branch.children],
+                                                   skip=skip,
                                                    item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):

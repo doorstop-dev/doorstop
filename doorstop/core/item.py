@@ -507,7 +507,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, **kwargs):
+    def get_issues(self, children, skip=None, **kwargs):
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
@@ -560,7 +560,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Check links against both document and tree
         if self.document and self.tree:
-            yield from self._get_issues_both(self.document, self.tree, skip)
+            yield from self._get_issues_both(self.document, self.tree, skip, children)
 
         # Check review status
         if not self.reviewed:
@@ -652,7 +652,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if settings.REFORMAT:
             self._data['links'] = identifiers
 
-    def _get_issues_both(self, document, tree, skip):
+    def _get_issues_both(self, document, tree, skip, children):
         """Yield all the item's issues against its document and tree."""
         log.debug("getting issues against document and tree...")
 
@@ -673,6 +673,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         continue
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
+            else:
+                prefix = [item.prefix for item in items]
+                for child in children:
+                    if child in skip:
+                        continue
+                    if child not in prefix:
+                        yield DoorstopWarning('no links from document: {}'.format(child))
+                
 
     @requires_tree
     def find_ref(self):
