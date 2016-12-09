@@ -438,11 +438,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             yield DoorstopWarning("no documents")
         # Check each document
         trees = [self]
-        trees.extend(self.children)
+        #trees.extend(self.children)
         for branch in trees:
             document = branch.document
             for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(children=[child.document.prefix for child in branch.children],
+                               document.get_issues(children=[child.document.prefix for child \
+                                                             in branch.children],
                                                    skip=skip,
                                                    item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions

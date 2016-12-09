@@ -560,7 +560,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Check links against both document and tree
         if self.document and self.tree:
-            yield from self._get_issues_both(self.document, self.tree, skip, children)
+            yield from self._get_issues_both(self.document, self.tree, 
+                                             skip, children)
 
         # Check review status
         if not self.reviewed:
@@ -664,7 +665,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if settings.CHECK_CHILD_LINKS and self.normative:
             items, documents = self._find_child_objects(document=document,
                                                         tree=tree,
-                                                        find_all=False)
+                                                        find_all=True)
+            
             if not items:
                 for document in documents:
                     if document.prefix in skip:
@@ -679,7 +681,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     if child in skip:
                         continue
                     if child not in prefix:
-                        yield DoorstopWarning('no links from document: {}'.format(child))
+                        msg = 'no links from document: {}'.format(child)
+                        yield DoorstopWarning(msg)
                 
 
     @requires_tree
