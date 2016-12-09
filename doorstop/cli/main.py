@@ -53,7 +53,7 @@ def main(args=None):  # pylint: disable=R0915
     parser.add_argument('-C', '--no-child-check', action='store_true',
                         help="do not validate child (reverse) links")
     parser.add_argument('-Z', '--strict-child-check', action='store_true',
-                        help="Strictly validate (reverse) links from every child document")
+                        help="require child (reverse) links from every document")
     parser.add_argument('-S', '--no-suspect-check', action='store_true',
                         help="do not check for suspect links")
     parser.add_argument('-W', '--no-review-check', action='store_true',
