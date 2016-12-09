@@ -442,6 +442,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         trees.extend(self.children)
         for branch in trees:
             document = branch.document
+            if not document:
+                continue
             for issue in chain(hook(document=document, tree=self),
                                document.get_issues(skip=skip,
                                                    item_hook=item_hook)):
