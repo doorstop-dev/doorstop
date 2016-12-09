@@ -675,7 +675,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         continue
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
-            else:
+            elif settings.CHECK_CHILD_LINKS_STRICT:
                 prefix = [item.prefix for item in items]
                 for child in children:
                     if child in skip:
