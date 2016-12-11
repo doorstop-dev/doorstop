@@ -663,9 +663,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
+            find_all = settings.CHECK_CHILD_LINKS_STRICT or False
             items, documents = self._find_child_objects(document=document,
                                                         tree=tree,
-                                                        find_all=True)
+                                                        find_all=find_all)
 
             if not items:
                 for document in documents:
