@@ -53,6 +53,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['parent'] = None  # the root document does not have a parent
         self._items = []
         self._itered = False
+        self.children = []
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -315,12 +316,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         path = os.path.join(self.path, Document.INDEX)
         if os.path.isfile(path):
             return path
-
-    @property
-    def children(self):
-        """Get the prefix of child documents that link to this document"""
-        children = self.tree.get_prefix_of_children(self)
-        return children
 
     @index.setter
     def index(self, value):
