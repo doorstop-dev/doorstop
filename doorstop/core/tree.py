@@ -177,7 +177,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             raise DoorstopError(msg)
 
         for document in self:
-            self.get_prefix_of_children(document)
+            children = self._get_prefix_of_children(document)
+            document.children = children
     # attributes #############################################################
 
     @property
@@ -479,15 +480,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Sort rows
         return sorted(rows, key=by_uid)
 
-    def get_prefix_of_children(self, document):
+    def _get_prefix_of_children(self, document):
         """Return the prefixes of the children of this document."""
         for child in self.children:
             if child.document == document:
                 children = [c.document.prefix for c in child.children]
-                document.children = children
-                return
+                return children
         children = [c.document.prefix for c in self.children]
-        document.children = children
+        return children
 
     def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
         """Generate all traceability row slices.
