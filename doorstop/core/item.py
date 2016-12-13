@@ -560,7 +560,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Check links against both document and tree
         if self.document and self.tree:
-            yield from self._get_issues_both(self.document, self.tree, skip)
+            yield from self._get_issues_both(self.document, self.tree,
+                                             skip)
 
         # Check review status
         if not self.reviewed:
@@ -662,9 +663,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
+            find_all = settings.CHECK_CHILD_LINKS_STRICT or False
             items, documents = self._find_child_objects(document=document,
                                                         tree=tree,
-                                                        find_all=False)
+                                                        find_all=find_all)
+
             if not items:
                 for document in documents:
                     if document.prefix in skip:
@@ -673,6 +676,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         continue
                     msg = "no links from child document: {}".format(document)
                     yield DoorstopWarning(msg)
+            elif settings.CHECK_CHILD_LINKS_STRICT:
+                prefix = [item.prefix for item in items]
+                for child in document.children:
+                    if child in skip:
+                        continue
+                    if child not in prefix:
+                        msg = 'no links from document: {}'.format(child)
+                        yield DoorstopWarning(msg)
 
     @requires_tree
     def find_ref(self):

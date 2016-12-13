@@ -30,6 +30,7 @@ REORDER = False  # reorder document levels during validation
 CHECK_LEVELS = True  # validate document levels during validation
 CHECK_REF = True  # validate external file references
 CHECK_CHILD_LINKS = True  # validate reverse links
+CHECK_CHILD_LINKS_STRICT = False  # require child (reverse) links from every document
 CHECK_SUSPECT_LINKS = True  # check stamps on links
 CHECK_REVIEW_STATUS = True  # check stamps on items
 WARN_ALL = False  # display info-level issues as warnings

@@ -53,6 +53,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['parent'] = None  # the root document does not have a parent
         self._items = []
         self._itered = False
+        self.children = []
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
