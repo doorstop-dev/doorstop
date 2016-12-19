@@ -112,8 +112,11 @@ def configure_settings(args):
     # Parse `publish` settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
-    if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
-        settings.PUBLISH_BODY_LEVELS = args.no_body_levels is False
+    if hasattr(args, 'no_body_levels'):
+        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
+    if hasattr(args, 'no_levels') and args.no_levels is not None:
+        settings.PUBLISH_BODY_LEVELS = False
+        settings.PUBLISH_HEADING_LEVELS = args.no_levels != 'all'
 
 
 def literal_eval(literal, error=None, default=None):

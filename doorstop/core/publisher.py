@@ -277,7 +277,10 @@ def _lines_markdown(obj, linkify=False):
         if item.heading:
 
             # Level and Text
-            standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            if settings.PUBLISH_HEADING_LEVELS:
+                standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            else:
+                standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
 
