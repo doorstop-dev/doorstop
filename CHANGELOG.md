@@ -1,6 +1,6 @@
 # Revision History
 
-## 1.1 (unreleased)
+## 1.1 (2017/01/09)
 
 - Added '--strict-child-check' option to ensure links from every child document. 
 
