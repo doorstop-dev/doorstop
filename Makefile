@@ -65,7 +65,7 @@ DEPENDS_CI := $(ENV)/.depends-ci
 DEPENDS_DEV := $(ENV)/.depends-dev
 ALL := $(ENV)/.all
 
-# Main Targets #################################################################
+# MAIN TASKS ###################################################################
 
 .PHONY: all
 all: depends $(ALL)
@@ -76,7 +76,19 @@ $(ALL): $(SOURCES) $(YAML)
 .PHONY: ci
 ci: doorstop pep8 pep257 test tests tutorial
 
-# Development Installation #####################################################
+.PHONY: doorstop
+doorstop: env
+	$(BIN)/doorstop --warn-all --error-all --quiet
+
+.PHONY: gui
+gui: env
+	$(BIN)/doorstop-gui
+
+.PHONY: serve
+serve: env
+	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
+
+# PROJECT DEPENDENCIES #########################################################
 
 .PHONY: env
 env: .virtualenv $(EGG_INFO)
@@ -102,24 +114,56 @@ $(DEPENDS_CI): Makefile
 .PHONY: depends-dev
 depends-dev: env Makefile $(DEPENDS_DEV)
 $(DEPENDS_DEV): Makefile
-	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc mkdocs markdown wheel
+	$(PIP) install --upgrade pip pep8radius pygments docutils readme pdoc mkdocs markdown wheel twine
 	touch $(DEPENDS_DEV)  # flag to indicate dependencies are installed
 
-# Development Usage ############################################################
+# CHECKS #######################################################################
 
-.PHONY: doorstop
-doorstop: env
-	$(BIN)/doorstop --warn-all --error-all --quiet
+.PHONY: check
+check: pep8 pep257 pylint
 
-.PHONY: gui
-gui: env
-	$(BIN)/doorstop-gui
+.PHONY: pep8
+pep8: depends-ci
+# E501: line too long (checked by PyLint)
+	$(PEP8) $(PACKAGE) --ignore=E501
 
-.PHONY: serve
-serve: env
-	$(SUDO) $(BIN)/doorstop-server --debug --launch --port 80
+.PHONY: pep257
+pep257: depends-ci
+	$(PEP257) $(PACKAGE)
 
-# Documentation ################################################################
+.PHONY: pylint
+pylint: depends-ci
+	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
+
+.PHONY: fix
+fix: depends-dev
+	$(PEP8RADIUS) --docformatter --in-place
+
+# TESTS ########################################################################
+
+.PHONY: test
+test: depends-ci .clean-test
+	$(NOSE) --config=.noserc
+ifndef TRAVIS
+	$(COVERAGE) html --directory htmlcov --fail-under=$(UNIT_TEST_COVERAGE)
+endif
+
+.PHONY: tests
+tests: depends-ci .clean-test
+	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
+ifndef TRAVIS
+	$(COVERAGE) html --directory htmlcov --fail-under=$(INTEGRATION_TEST_COVERAGE)
+endif
+
+.PHONY: tutorial
+tutorial: env
+	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
+
+.PHONY: read-coverage
+read-coverage:
+	$(OPEN) htmlcov/index.html
+
+# DOCUMENTATION ################################################################
 
 .PHONY: doc
 doc: readme verify-readme uml apidocs mkdocs
@@ -184,53 +228,62 @@ mkdocs: depends-dev site/index.html
 site/index.html: mkdocs.yml docs/*.md
 	$(MKDOCS) build --clean --strict
 
-# Static Analysis ##############################################################
+# BUILD ########################################################################
 
-.PHONY: check
-check: pep8 pep257 pylint
+PYINSTALLER := $(BIN)/pyinstaller
+PYINSTALLER_MAKESPEC := $(BIN)/pyi-makespec
 
-.PHONY: pep8
-pep8: depends-ci
-# E501: line too long (checked by PyLint)
-	$(PEP8) $(PACKAGE) --ignore=E501
+DIST_FILES := dist/*.tar.gz dist/*.whl
+EXE_FILES := dist/$(PROJECT).*
 
-.PHONY: pep257
-pep257: depends-ci
-	$(PEP257) $(PACKAGE)
+.PHONY: dist
+dist: depends-dev $(DIST_FILES)
+$(DIST_FILES): $(MODULES) README.rst CHANGELOG.rst
+	rm -f $(DIST_FILES)
+	$(PYTHON) setup.py check --restructuredtext --strict --metadata
+	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py bdist_wheel
 
-.PHONY: pylint
-pylint: depends-ci
-	$(PYLINT) $(PACKAGE) --rcfile=.pylintrc
+%.rst: %.md
+	pandoc -f markdown_github -t rst -o $@ $<
 
-.PHONY: fix
-fix: depends-dev
-	$(PEP8RADIUS) --docformatter --in-place
+.PHONY: exe
+exe: depends-dev $(EXE_FILES)
+$(EXE_FILES): $(MODULES) $(PROJECT).spec
+	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
+	$(PYINSTALLER) $(PROJECT).spec --noconfirm --clean
 
-# Testing ######################################################################
+$(PROJECT).spec:
+	$(PYINSTALLER_MAKESPEC) $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
 
-.PHONY: test
-test: depends-ci .clean-test
-	$(NOSE) --config=.noserc
-ifndef TRAVIS
-	$(COVERAGE) html --directory htmlcov --fail-under=$(UNIT_TEST_COVERAGE)
-endif
+# RELEASE ######################################################################
 
-.PHONY: tests
-tests: depends-ci .clean-test
-	TEST_INTEGRATION=1 $(NOSE) --config=.noserc --cover-package=$(PACKAGE) -xv
-ifndef TRAVIS
-	$(COVERAGE) html --directory htmlcov --fail-under=$(INTEGRATION_TEST_COVERAGE)
-endif
+TWINE := $(BIN)/twine
 
-.PHONY: tutorial
-tutorial: env
-	$(PYTHON) $(PACKAGE)/cli/test/test_tutorial.py
+.PHONY: register
+register: dist ## Register the project on PyPI
+	@ echo NOTE: your project must be registered manually
+	@ echo https://github.com/pypa/python-packaging-user-guide/issues/263
+	# TODO: switch to twine when the above issue is resolved
+	# $(TWINE) register dist/*.whl
 
-.PHONY: read-coverage
-read-coverage:
-	$(OPEN) htmlcov/index.html
+.PHONY: upload
+upload: .git-no-changes register ## Upload the current version to PyPI
+	$(TWINE) upload dist/*
+	$(OPEN) https://pypi.python.org/pypi/$(PROJECT)
 
-# Cleanup ######################################################################
+.PHONY: .git-no-changes
+.git-no-changes:
+	@ if git diff --name-only --exit-code;        \
+	then                                          \
+		echo Git working copy is clean...;        \
+	else                                          \
+		echo ERROR: Git working copy is dirty!;   \
+		echo Commit your changes and try again.;  \
+		exit -1;                                  \
+	fi;
+
+# CLEANUP ######################################################################
 
 .PHONY: clean
 clean: .clean-dist .clean-test .clean-doc .clean-build
@@ -268,49 +321,10 @@ clean-all: clean clean-env .clean-workspace
 .clean-workspace:
 	rm -rf *.sublime-workspace
 
-# Release ######################################################################
+# HELP #########################################################################
 
-.PHONY: register-test
-register-test: doc
-	$(PYTHON) setup.py register --strict --repository https://testpypi.python.org/pypi
+.PHONY: help
+help: all
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: upload-test
-upload-test: register-test
-	$(PYTHON) setup.py sdist upload --repository https://testpypi.python.org/pypi
-	$(PYTHON) setup.py bdist_wheel upload --repository https://testpypi.python.org/pypi
-	$(OPEN) https://testpypi.python.org/pypi/$(PROJECT)
-
-.PHONY: register
-register: doc
-	$(PYTHON) setup.py register --strict
-
-.PHONY: upload
-upload: .git-no-changes register
-	$(PYTHON) setup.py sdist upload
-	$(PYTHON) setup.py bdist_wheel upload
-	$(OPEN) https://pypi.python.org/pypi/$(PROJECT)
-
-.PHONY: .git-no-changes
-.git-no-changes:
-	@ if git diff --name-only --exit-code;        \
-	then                                          \
-		echo Git working copy is clean...;        \
-	else                                          \
-		echo ERROR: Git working copy is dirty!;   \
-		echo Commit your changes and try again.;  \
-		exit -1;                                  \
-	fi;
-
-# System Installation ##########################################################
-
-.PHONY: develop
-develop:
-	$(SYS_PYTHON) setup.py develop
-
-.PHONY: install
-install:
-	$(SYS_PYTHON) setup.py install
-
-.PHONY: download
-download:
-	$(SYS_PYTHON) -m pip install $(PROJECT)
+.DEFAULT_GOAL := help

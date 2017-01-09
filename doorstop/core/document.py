@@ -53,6 +53,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['parent'] = None  # the root document does not have a parent
         self._items = []
         self._itered = False
+        self.children = []
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -193,7 +194,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 else:
                     self._items.append(item)
                     if reload:
-                        item.load(reload=reload)
+                        try:
+                            item.load(reload=reload)
+                        except Exception:
+                            log.error("Unable to load: %s", item)
+                            raise
                     if settings.CACHE_ITEMS and self.tree:
                         self.tree._item_cache[item.uid] = item  # pylint: disable=W0212
                         log.trace("cached item: {}".format(item))

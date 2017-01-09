@@ -33,7 +33,8 @@ class WorkingCopy(BaseWorkingCopy):
 
     @property
     def ignores(self):  # pragma: no cover (manual test)
-        if not self._ignores_cache:
+        if self._ignores_cache is None:
+            self._ignores_cache = []
             os.chdir(self.path)
             for line in self.call('svn', 'pg', '-R', 'svn:ignore', '.',
                                   return_stdout=True).splitlines():

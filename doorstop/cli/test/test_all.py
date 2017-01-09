@@ -230,7 +230,7 @@ class TestReorder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.prefix = 'tut'
-        cls.path = os.path.join('docs', 'reqs', 'tutorial', 'index.yml')
+        cls.path = os.path.join('reqs', 'tutorial', 'index.yml')
 
     def tearDown(self):
         common.delete(self.path)

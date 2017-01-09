@@ -1,5 +1,9 @@
 # Revision History
 
+## 1.1 (2017/01/09)
+
+- Added '--strict-child-check' option to ensure links from every child document. 
+
 ## 1.0.2 (2016/06/08)
 
 - Moved the documentation to [ReadTheDocs](http://doorstop.readthedocs.io).

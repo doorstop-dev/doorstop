@@ -90,6 +90,8 @@ def configure_settings(args):
         settings.CHECK_REF = args.no_ref_check is False
     if args.no_child_check is not None:
         settings.CHECK_CHILD_LINKS = args.no_child_check is False
+    if args.strict_child_check is not None:
+        settings.CHECK_CHILD_LINKS_STRICT = args.strict_child_check is True
     if args.no_suspect_check is not None:
         settings.CHECK_SUSPECT_LINKS = args.no_suspect_check is False
     if args.no_review_check is not None:
