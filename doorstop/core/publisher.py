@@ -294,7 +294,7 @@ def _lines_markdown(obj, linkify=False):
             # Text
             if item.text:
                 yield ""  # break before text
-                yield from item.text.splitlines()
+                yield item.text
 
             # Reference
             if item.ref:
@@ -428,7 +428,7 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield '</head>'
         yield '<body>'
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
-    html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
+    html = markdown.markdown(text, extensions=['extra', 'sane_lists', 'tables'])
     yield from html.splitlines()
     if document:
         yield '</body>'
