@@ -6,6 +6,8 @@ import os
 import sys
 import argparse
 
+import configman
+
 from doorstop import common
 from doorstop.cli import utilities, commands
 
@@ -17,7 +19,7 @@ def main(args=None):  # pylint: disable=R0915
     from doorstop import CLI, VERSION, DESCRIPTION
 
     # Shared options
-    project = argparse.ArgumentParser(add_help=False)
+    project = configman.ArgumentParser(add_help=False)
     project.add_argument('-j', '--project', metavar='PATH',
                          help="path to the root of the project")
     project.add_argument('--no-cache', action='store_true',
