@@ -152,6 +152,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_text_item_heading_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = "Heading\n\n"
+        lines = publisher.publish_lines(self.item, '.txt')
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_item_normative(self):
         """Verify text can be published from an item (normative)."""
@@ -192,6 +202,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
         expected = "## 1.1 Heading {: #req3 }\n\n"
+        # Act
+        lines = publisher.publish_lines(self.item, '.md', linkify=True)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_markdown_item_heading_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = "## Heading {: #req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -253,6 +273,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
         expected = '<h2>1.1 Heading</h2>\n'
+        # Act
+        lines = publisher.publish_lines(self.item, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_html_item_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = '<h2>Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)

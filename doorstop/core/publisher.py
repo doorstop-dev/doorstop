@@ -212,8 +212,11 @@ def _lines_text(obj, indent=8, width=79, **_):
         if item.heading:
 
             # Level and Text
-            yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
-
+            if settings.PUBLISH_HEADING_LEVELS:
+                yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
+            else:
+                yield "{t}".format(t=item.text)
+                
         else:
 
             # Level and UID
