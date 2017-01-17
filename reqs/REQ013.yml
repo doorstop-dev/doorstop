@@ -4,7 +4,7 @@ level: 4.3
 links: []
 normative: true
 ref: ''
-reviewed: 349b2ab15cc29256da564fd7b4fac3a4
+reviewed: 3dce36a426be6e9901feac6de75c1d71
 text: |
   Doorstop **shall** associate requirements changes to existing developer
   identification.
