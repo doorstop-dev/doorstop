@@ -270,7 +270,8 @@ class Text(str):
             return ""
         text_value = re.sub('^\n+', '', value)
         text_value = re.sub('\n+$', '', text_value)
-        return text_value.rstrip(' ')
+        text_value = '\n'.join([s.rstrip() for s in text_value.split('\n')])
+        return text_value
 
     @staticmethod
     def save_text(text, end='\n'):
