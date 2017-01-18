@@ -216,7 +216,7 @@ def _lines_text(obj, indent=8, width=79, **_):
                 yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
             else:
                 yield "{t}".format(t=item.text)
-                
+
         else:
 
             # Level and UID
