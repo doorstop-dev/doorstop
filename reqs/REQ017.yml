@@ -4,7 +4,7 @@ level: 2.5
 links: []
 normative: true
 ref: ''
-reviewed: aa9935ea65498cbbb8194f4a84070dea
+reviewed: 4a5e03f8a2525f73633f078aa67e29e7
 text: |
   Doorstop **shall** be able to export content to interact with common
   text/document tools.

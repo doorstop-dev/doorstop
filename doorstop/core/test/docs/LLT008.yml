@@ -5,7 +5,7 @@ links:
 - REQ015: 5057c48dd88b53fe5e639e1e33126714
 normative: true
 ref: ''
-reviewed: 4d93196743f8385e752efddd8ca6e672
+reviewed: 05bcc369bcf9b1869049674546b41dba
 text: |
   These checks ensure the Python package is distributed properly:
 
