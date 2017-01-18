@@ -266,6 +266,8 @@ class Text(str):
         'list:\n\n- a\n- b'
 
         """
+        if not value:
+            return ""
         text_value = re.sub('^\n+', '', value)
         text_value = re.sub('\n+$', '', text_value)
         return text_value.rstrip(' ')
