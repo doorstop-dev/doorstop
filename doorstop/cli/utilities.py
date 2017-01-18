@@ -4,6 +4,7 @@ import os
 import ast
 from argparse import ArgumentTypeError
 import logging
+import warnings
 
 from doorstop import common
 from doorstop import settings
@@ -114,6 +115,8 @@ def configure_settings(args):
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
     if hasattr(args, 'no_body_levels'):
         settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
+        msg = "'--no-body-levels' option will be removed in a future release"
+        warnings.warn(msg, DeprecationWarning)
     if hasattr(args, 'no_levels') and args.no_levels is not None:
         settings.PUBLISH_BODY_LEVELS = False
         settings.PUBLISH_HEADING_LEVELS = args.no_levels != 'all'
