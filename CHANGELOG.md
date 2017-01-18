@@ -1,5 +1,12 @@
 # Revision History
 
+## 1.2 (unreleased)
+
+- Disabled excessive text cleanup in items.
+  - Running `doorstop review all` will be required due to whitespace changes.
+- Added `--no-levels={all,body}` publishing options.
+- **DEPRECATION WARNING:** `--no-body-levels` will not be supported in a future release.
+
 ## 1.1 (2017/01/09)
 
 - Added '--strict-child-check' option to ensure links from every child document. 

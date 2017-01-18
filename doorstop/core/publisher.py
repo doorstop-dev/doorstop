@@ -10,6 +10,11 @@ from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
+EXTENSIONS = [
+    'markdown.extensions.extra',
+    'markdown.extensions.nl2br',
+    'markdown.extensions.sane_lists',
+]
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
@@ -406,7 +411,7 @@ def _format_md_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def _lines_html(obj, linkify=False, charset='UTF-8'):
+def _lines_html(obj, linkify=False, extensions=EXTENSIONS, charset='UTF-8'):
     """Yield lines for an HTML report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -434,7 +439,7 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield '</head>'
         yield '<body>'
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
-    html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
+    html = markdown.markdown(text, extensions=extensions)
     yield from html.splitlines()
     if document:
         yield '</body>'

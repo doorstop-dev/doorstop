@@ -53,9 +53,9 @@ setuptools.setup(
     install_requires=[
         "PyYAML >= 3.10, < 4",
         "Markdown >= 2, < 3",
-        "openpyxl >= 2.1, < 2.2, != 2.1.0",
-        "bottle >= 0.12, < 0.13",
+        "openpyxl >= 2.1, < 3, != 2.1.0",
+        "bottle == 0.12.13",
         "requests >= 2, < 3",
-        "pyficache >= 0.2.3, < 0.3",
+        "pyficache == 0.3.1",
     ],
 )
