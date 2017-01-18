@@ -295,7 +295,7 @@ def _publish(subs, shared):
                      help="limit line width on text output")
     sub.add_argument('-C', '--no-child-links', action='store_true',
                      help="do not include child links on items")
-    sub.add_argument('-L', dest='no_body_levels', action='store_true',
+    sub.add_argument('-L', '--no-body-levels', dest='no_body_levels', action='store_true',
                      default=False,
                      help="do not include levels on non-heading items")
     sub.add_argument('--no-levels', choices=['all', 'body'],
