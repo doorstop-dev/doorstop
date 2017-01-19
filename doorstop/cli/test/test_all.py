@@ -15,8 +15,8 @@ from doorstop import settings
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
 
-REQ_COUNT = 14
-ALL_COUNT = 46
+REQ_COUNT = 17
+ALL_COUNT = 49
 
 
 class TempTestCase(unittest.TestCase):
