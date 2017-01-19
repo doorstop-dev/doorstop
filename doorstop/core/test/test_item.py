@@ -276,7 +276,7 @@ class TestItem(unittest.TestCase):
     def test_text_non_heading(self):
         """Verify newlines are preserved around non-headings."""
         self.item.text = "break (before \n#2) symbol should not be a heading."
-        expected = "break (before \n#2) symbol should not be a heading."
+        expected = "break (before\n#2) symbol should not be a heading."
         self.assertEqual(expected, self.item.text)
 
     def test_text_heading(self):
