@@ -5,6 +5,7 @@
 - Disabled excessive text cleanup in items. (credit: [@michaelnt](https://github.com/michaelnt))
   - Running `doorstop review all` will be required due to whitespace changes.
 - Added `--no-levels={all,body}` publishing options. (credit: [@michaelnt](https://github.com/michaelnt))
+- Removed unnecessary line breaks (`<br>`) in generated HTML. (credit: [@michaelnt](https://github.com/michaelnt))
 - **DEPRECATION WARNING:** `--no-body-levels` will not be supported in a future release.
 
 ## 1.1 (2017/01/09)
