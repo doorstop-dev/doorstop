@@ -12,7 +12,6 @@ from doorstop import settings
 
 EXTENSIONS = [
     'markdown.extensions.extra',
-    'markdown.extensions.nl2br',
     'markdown.extensions.sane_lists',
 ]
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
