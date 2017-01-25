@@ -95,7 +95,7 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     if filenames:
         path = os.path.join(directory, index)
         log.info("creating an {}...".format(index))
-        lines = _lines_index(filenames, tree=tree)
+        lines = _lines_index(sorted(filenames), tree=tree)
         common.write_lines(lines, path)
     else:
         log.warning("no files for {}".format(index))
