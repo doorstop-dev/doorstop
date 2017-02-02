@@ -43,7 +43,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     ext = ext or os.path.splitext(path)[-1] or '.html'
     check(ext)
     if linkify is None:
-        linkify = is_tree(obj) and ext == '.html'
+        linkify = is_tree(obj) and ext in ['.html', '.md']
     if index is None:
         index = is_tree(obj) and ext == '.html'
 
@@ -346,7 +346,7 @@ def _format_level(level):
 
 def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
-    return " {{: #{u} }}".format(u=item.uid) if linkify else ''
+    return " {{#{u} }}".format(u=item.uid) if linkify else ''
 
 
 def _format_text_ref(item):
