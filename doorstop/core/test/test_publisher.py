@@ -201,7 +201,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
-        expected = "## 1.1 Heading {: #req3 }\n\n"
+        expected = "## 1.1 Heading {#req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -211,7 +211,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_lines_markdown_item_heading_no_heading_levels(self):
         """Verify an item heading level can be ommitted."""
-        expected = "## Heading {: #req3 }\n\n"
+        expected = "## Heading {#req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
