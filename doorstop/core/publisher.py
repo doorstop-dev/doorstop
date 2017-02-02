@@ -282,15 +282,15 @@ def _lines_markdown(obj, linkify=False):
         level = _format_level(item.level)
 
         if item.heading:
-
+            text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0])
             else:
                 standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
-
+            yield from text_lines[1:]
         else:
 
             # Level and UID
