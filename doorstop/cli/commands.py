@@ -496,17 +496,18 @@ def run_publish(args, cwd, error, catch=True):
 
     # Write to output file(s)
     if args.path:
+        path = os.path.abspath(os.path.join(cwd, args.path))
         if whole_tree:
-            msg = "publishing tree to '{}'...".format(args.path)
+            msg = "publishing tree to '{}'...".format(path)
             utilities.show(msg, flush=True)
-            path = publisher.publish(tree, args.path, ext, **kwargs)
+            published_path = publisher.publish(tree, path, ext, **kwargs)
         else:
             msg = "publishing document {} to '{}'...".format(document,
-                                                             args.path)
+                                                             path)
             utilities.show(msg, flush=True)
-            path = publisher.publish(document, args.path, ext, **kwargs)
-        if path:
-            utilities.show("published: {}".format(path))
+            published_path = publisher.publish(document, path, ext, **kwargs)
+        if published_path:
+            utilities.show("published: {}".format(published_path))
 
     # Or, display to standard output
     else:
