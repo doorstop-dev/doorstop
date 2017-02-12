@@ -10,6 +10,10 @@ from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 
+EXTENSIONS = [
+    'markdown.extensions.extra',
+    'markdown.extensions.sane_lists',
+]
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 INDEX = 'index.html'
 
@@ -39,7 +43,7 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     ext = ext or os.path.splitext(path)[-1] or '.html'
     check(ext)
     if linkify is None:
-        linkify = is_tree(obj) and ext == '.html'
+        linkify = is_tree(obj) and ext in ['.html', '.md']
     if index is None:
         index = is_tree(obj) and ext == '.html'
 
@@ -91,7 +95,7 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
     if filenames:
         path = os.path.join(directory, index)
         log.info("creating an {}...".format(index))
-        lines = _lines_index(filenames, tree=tree)
+        lines = _lines_index(sorted(filenames), tree=tree)
         common.write_lines(lines, path)
     else:
         log.warning("no files for {}".format(index))
@@ -212,7 +216,10 @@ def _lines_text(obj, indent=8, width=79, **_):
         if item.heading:
 
             # Level and Text
-            yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
+            if settings.PUBLISH_HEADING_LEVELS:
+                yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
+            else:
+                yield "{t}".format(t=item.text)
 
         else:
 
@@ -275,12 +282,15 @@ def _lines_markdown(obj, linkify=False):
         level = _format_level(item.level)
 
         if item.heading:
-
+            text_lines = item.text.splitlines()
             # Level and Text
-            standard = "{h} {l} {t}".format(h=heading, l=level, t=item.text)
+            if settings.PUBLISH_HEADING_LEVELS:
+                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0])
+            else:
+                standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
             yield standard + attr_list
-
+            yield from text_lines[1:]
         else:
 
             # Level and UID
@@ -336,7 +346,7 @@ def _format_level(level):
 
 def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
-    return " {{: #{u} }}".format(u=item.uid) if linkify else ''
+    return " {{#{u} }}".format(u=item.uid) if linkify else ''
 
 
 def _format_text_ref(item):
@@ -400,7 +410,7 @@ def _format_md_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def _lines_html(obj, linkify=False, charset='UTF-8'):
+def _lines_html(obj, linkify=False, extensions=EXTENSIONS, charset='UTF-8'):
     """Yield lines for an HTML report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -428,7 +438,7 @@ def _lines_html(obj, linkify=False, charset='UTF-8'):
         yield '</head>'
         yield '<body>'
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
-    html = markdown.markdown(text, extensions=['extra', 'nl2br', 'sane_lists'])
+    html = markdown.markdown(text, extensions=extensions)
     yield from html.splitlines()
     if document:
         yield '</body>'

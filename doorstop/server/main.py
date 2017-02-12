@@ -15,12 +15,20 @@ from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
 from doorstop.server import utilities
 from doorstop import settings
+from doorstop.core import vcs
 
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
 tree = None  # set in `run`, read in the route functions
 numbers = defaultdict(int)  # cache of next document numbers
+
+
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
+    """Command-line help text formatter with wider help text."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, max_help_position=40, **kwargs)
 
 
 def main(args=None):
@@ -37,10 +45,16 @@ def main(args=None):
     # Build main parser
     parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
                                      **shared)
-    parser.add_argument('-j', '--project', metavar="PATH",
+    cwd = os.getcwd()
+    root = vcs.find_root(cwd)
+
+    parser.add_argument('-j', '--project', default=root,
                         help="path to the root of the project")
     parser.add_argument('-P', '--port', metavar='NUM', type=int,
+                        default=settings.SERVER_PORT,
                         help="use a custom port for the server")
+    parser.add_argument('-H', '--host', default='127.0.0.1',
+                        help="IP address to listen")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -64,7 +78,7 @@ def run(args, cwd, _):
     global tree  # pylint: disable=W0603
     tree = build(cwd=cwd, root=args.project)
     tree.load()
-    host = '127.0.0.1'
+    host = args.host
     port = args.port or settings.SERVER_PORT
     if args.launch:
         url = utilities.build_url(host=host, port=port)

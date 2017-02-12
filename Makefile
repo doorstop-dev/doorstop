@@ -11,7 +11,7 @@ ifndef TRAVIS
 endif
 
 # Test settings
-UNIT_TEST_COVERAGE := 98
+UNIT_TEST_COVERAGE := 97
 INTEGRATION_TEST_COVERAGE := 98
 
 # System paths

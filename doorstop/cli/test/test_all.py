@@ -15,8 +15,8 @@ from doorstop import settings
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
 
-REQ_COUNT = 14
-ALL_COUNT = 46
+REQ_COUNT = 17
+ALL_COUNT = 49
 
 
 class TempTestCase(unittest.TestCase):
@@ -701,6 +701,17 @@ class TestPublish(TempTestCase):
         """Verify 'doorstop publish' can create output without body levels."""
         self.assertIs(None, main(['publish', 'tut', '--no-body-levels']))
         self.assertFalse(settings.PUBLISH_BODY_LEVELS)
+
+    def test_publish_document_no_body_levels(self):
+        """Verify 'doorstop publish' can create output without body levels."""
+        self.assertIs(None, main(['publish', 'tut', '--no-levels=body']))
+        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
+
+    def test_publish_document_no_body_or_heading_levels(self):
+        """Verify 'doorstop publish' can create output without heading or body levels."""
+        self.assertIs(None, main(['publish', 'tut', '--no-levels=all']))
+        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
+        self.assertFalse(settings.PUBLISH_HEADING_LEVELS)
 
     def test_publish_document_error_empty(self):
         """Verify 'doorstop publish' returns an error in an empty folder."""

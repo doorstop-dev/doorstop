@@ -4,6 +4,7 @@ import os
 import ast
 from argparse import ArgumentTypeError
 import logging
+import warnings
 
 from doorstop import common
 from doorstop import settings
@@ -79,6 +80,7 @@ def configure_logging(verbosity=0):
 
 def configure_settings(args):
     """Update settings based on the command-line options."""
+
     # Parse common settings
     if args.no_reformat is not None:
         settings.REFORMAT = args.no_reformat is False
@@ -104,16 +106,24 @@ def configure_settings(args):
         settings.WARN_ALL = args.warn_all is True
     if args.error_all is not None:
         settings.ERROR_ALL = args.error_all is True
+
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:
         settings.SERVER_HOST = args.server
     if hasattr(args, 'port') and args.port is not None:
         settings.SERVER_PORT = args.port
+
     # Parse `publish` settings
     if hasattr(args, 'no_child_links') and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
     if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
-        settings.PUBLISH_BODY_LEVELS = args.no_body_levels is False
+        warnings.simplefilter('default')
+        msg = "'--no-body-levels' option will be removed in a future release"
+        warnings.warn(msg, DeprecationWarning)
+        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
+    if hasattr(args, 'no_levels') and args.no_levels is not None:
+        settings.PUBLISH_BODY_LEVELS = False
+        settings.PUBLISH_HEADING_LEVELS = args.no_levels != 'all'
 
 
 def literal_eval(literal, error=None, default=None):

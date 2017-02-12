@@ -296,7 +296,10 @@ def _publish(subs, shared):
     sub.add_argument('-C', '--no-child-links', action='store_true',
                      help="do not include child links on items")
     sub.add_argument('-L', '--no-body-levels', action='store_true',
+                     default=None,
                      help="do not include levels on non-heading items")
+    sub.add_argument('--no-levels', choices=['all', 'body'],
+                     help="do not include levels on heading and non-heading or non-heading items")
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)

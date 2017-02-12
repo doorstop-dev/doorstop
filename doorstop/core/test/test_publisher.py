@@ -8,7 +8,7 @@ import os
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 
-from doorstop.core.test import FILES, EMPTY, MockDataMixIn
+from doorstop.core.test import FILES, EMPTY, MockDataMixIn, MockItemAndVCS
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -152,6 +152,39 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, text)
 
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_text_item_heading_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = "Heading\n\n"
+        lines = publisher.publish_lines(self.item, '.txt')
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    def test_single_line_heading_to_markdown(self):
+        """A single line heading is published as a heading with an attribute equal to the item id"""
+        expected = "## 1.1 Heading {#req3 }\n\n"
+        lines = publisher.publish_lines(self.item, '.md', linkify=True)
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    def test_multi_line_heading_to_markdown(self):
+        """A multi line heading is published as a heading with an attribute equal to the item id"""
+        item = MockItemAndVCS('path/to/req3.yml',
+                              _file=("links: [sys3]" + '\n'
+                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                                     "level: 1.1.0" + '\n'
+                                     "normative: false"))
+        expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
+        lines = publisher.publish_lines(item, '.md', linkify=True)
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_item_normative(self):
         """Verify text can be published from an item (normative)."""
@@ -191,7 +224,17 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
-        expected = "## 1.1 Heading {: #req3 }\n\n"
+        expected = "## 1.1 Heading {#req3 }\n\n"
+        # Act
+        lines = publisher.publish_lines(self.item, '.md', linkify=True)
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_markdown_item_heading_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = "## Heading {#req3 }\n\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -253,6 +296,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
         expected = '<h2>1.1 Heading</h2>\n'
+        # Act
+        lines = publisher.publish_lines(self.item, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_lines_html_item_no_heading_levels(self):
+        """Verify an item heading level can be ommitted."""
+        expected = '<h2>Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)

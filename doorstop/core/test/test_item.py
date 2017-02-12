@@ -234,15 +234,11 @@ class TestItem(unittest.TestCase):
         """Verify newlines separate sentences in an item's text."""
         value = ("A sentence. Another sentence! Hello? Hi.\n"
                  "A new line (here). And another sentence.")
-        text = ("A sentence. Another sentence! Hello? Hi. "
+        text = ("A sentence. Another sentence! Hello? Hi.\n"
                 "A new line (here). And another sentence.")
         yaml = ("text: |\n"
-                "  A sentence.\n"
-                "  Another sentence!\n"
-                "  Hello?\n"
-                "  Hi.\n"
-                "  A new line (here).\n"
-                "  And another sentence.\n")
+                "  A sentence. Another sentence! Hello? Hi.\n"
+                "  A new line (here). And another sentence.\n")
         self.item.text = value
         self.assertEqual(text, self.item.text)
         self.assertIn(yaml, self.item._write.call_args[0][0])
@@ -260,9 +256,9 @@ class TestItem(unittest.TestCase):
         self.assertEqual(expected, self.item.text)
 
     def test_text_split_numbers(self):
-        """Verify lines ending in numbers are joined correctly."""
+        """Verify lines ending in numbers aren't changed."""
         self.item.text = "Split at a number: 1\n42 or punctuation.\nHere."
-        expected = "Split at a number: 1 42 or punctuation. Here."
+        expected = "Split at a number: 1\n42 or punctuation.\nHere."
         self.assertEqual(expected, self.item.text)
 
     def test_text_newlines(self):
@@ -272,15 +268,15 @@ class TestItem(unittest.TestCase):
         self.assertEqual(expected, self.item.text)
 
     def test_text_formatting(self):
-        """Verify newlines are removed around formatting."""
+        """Verify newlines are not removed around formatting."""
         self.item.text = "The thing\n**_SHALL_** do this.\n"
-        expected = "The thing **_SHALL_** do this."
+        expected = "The thing\n**_SHALL_** do this."
         self.assertEqual(expected, self.item.text)
 
     def test_text_non_heading(self):
-        """Verify newlines are removed around non-headings."""
+        """Verify newlines are preserved around non-headings."""
         self.item.text = "break (before \n#2) symbol should not be a heading."
-        expected = "break (before #2) symbol should not be a heading."
+        expected = "break (before\n#2) symbol should not be a heading."
         self.assertEqual(expected, self.item.text)
 
     def test_text_heading(self):

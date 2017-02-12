@@ -1,0 +1,10 @@
+active: true
+derived: false
+level: 1.6.1
+links:
+- REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
+normative: true
+ref: ''
+reviewed: e48e28000b262f0165edd2e4cbf7914d
+text: |
+  Sub headings can be created by a level that ends in .0

@@ -1,6 +1,7 @@
 """Unit tests for the doorstop.core.types module."""
 
 import unittest
+import yaml
 
 from doorstop.common import DoorstopError
 from doorstop.core.types import Prefix, UID, Text, Level, Stamp, Reference
@@ -171,19 +172,36 @@ class TestText(unittest.TestCase):
 
     def test_repr(self):
         """Verify text can be represented."""
-        self.assertEqual("'Hello, world!'", repr(self.text))
+        self.assertEqual("'Hello,\\nworld!'", repr(self.text))
 
     def test_str(self):
         """Verify text can be converted to strings."""
-        self.assertEqual("Hello, world!", str(self.text))
+        self.assertEqual("Hello,\nworld!", str(self.text))
 
     def test_eq(self):
         """Verify text can be equated."""
-        self.assertEqual(Text("Hello, world!"), self.text)
+        self.assertEqual(Text("Hello,\nworld!"), self.text)
 
     def test_yaml(self):
         """Verify levels can be converted to their YAML representation."""
-        self.assertEqual("Hello, world!\n", self.text.yaml)
+        self.assertEqual('Hello,\nworld!\n', self.text.yaml)
+
+    def test_dump_yaml(self):
+        """Verify levels can be converted to their YAML representation."""
+        text = Text('Hello,\n World!\n')
+        self.assertEqual('|\n  Hello,\n   World!\n', yaml.dump(text.yaml))
+
+    def test_dump_yaml_space(self):
+        """Text starting with a space is encoded to a yaml literal string
+        with a hint as to the indent."""
+        text = Text(' abc ')
+        self.assertEqual('|2\n   abc\n', yaml.dump(text.yaml))
+
+    def test_dump_yaml_space_before_newline(self):
+        """Text starting with a space is encoded to a yaml literal string
+        with a hint as to the indent."""
+        text = Text('hello \nworld\n')
+        self.assertEqual('|\n  hello\n  world\n', yaml.dump(text.yaml))
 
 
 class TestLevel(unittest.TestCase):
