@@ -1,6 +1,6 @@
 # Revision History
 
-## 1.2 (unreleased)
+## 1.2 (2017/02/11)
 
 - Disabled excessive text cleanup in items. (credit: [@michaelnt](https://github.com/michaelnt))
   - Running `doorstop review all` will be required due to whitespace changes.
