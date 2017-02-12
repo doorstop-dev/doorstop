@@ -8,7 +8,7 @@ import os
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 
-from doorstop.core.test import FILES, EMPTY, MockDataMixIn
+from doorstop.core.test import FILES, EMPTY, MockDataMixIn, MockItemAndVCS
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -157,6 +157,29 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify an item heading level can be ommitted."""
         expected = "Heading\n\n"
         lines = publisher.publish_lines(self.item, '.txt')
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    def test_single_line_heading_to_markdown(self):
+        """A single line heading is published as a heading with an attribute equal to the item id"""
+        expected = "## 1.1 Heading {#req3 }\n\n"
+        lines = publisher.publish_lines(self.item, '.md', linkify=True)
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    def test_multi_line_heading_to_markdown(self):
+        """A multi line heading is published as a heading with an attribute equal to the item id"""
+        item = MockItemAndVCS('path/to/req3.yml',
+                              _file=("links: [sys3]" + '\n'
+                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                                     "level: 1.1.0" + '\n'
+                                     "normative: false"))
+        expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
+        lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
         text = ''.join(line + '\n' for line in lines)
         # Assert
