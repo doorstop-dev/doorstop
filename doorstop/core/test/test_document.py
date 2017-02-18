@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.document module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock, call
 
 import os
 import logging
@@ -615,3 +615,33 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
+
+    @patch('os.path.isdir', Mock(return_value=True))
+    def test_assets_exist(self):
+        """Verify a document can report the existence of the assets folder."""
+        path = os.path.join(self.document.path, self.document.ASSETS)
+        self.assertEqual(path, self.document.assets)
+
+    @patch('os.path.isdir', Mock(return_value=False))
+    def test_assets_missing(self):
+        """Verify a document can report the existence of the assets folder."""
+        self.assertEqual(None, self.document.assets)
+
+    @patch('os.path.isdir', Mock(return_value=True))
+    @patch('glob.glob')
+    @patch('shutil.copytree')
+    def test_copy_assets(self, mock_copytree, mock_glob):
+        """Verify a document can copy its assets"""
+        assets = ['css', 'logo.png']
+        assets_full_path = [os.path.join(self.document.path, self.document.ASSETS, dir) for dir in assets]
+        mock_glob.return_value = assets_full_path
+        dst = os.path.join('publishdir', 'assets')
+        expected_calls = [call(assets_full_path[0], os.path.join(dst, assets[0])),
+                          call(assets_full_path[1], os.path.join(dst, assets[1]))]
+        # Act]
+        self.document.copy_assets(dst)
+        print(self.document.path)
+        print(mock_copytree.call_args_list)
+        print(expected_calls)
+        # Assert
+        self.assertEqual(expected_calls, mock_copytree.call_args_list)

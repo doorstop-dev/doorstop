@@ -9,6 +9,7 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
+from doorstop.core import Document
 
 EXTENSIONS = [
     'markdown.extensions.extra',
@@ -47,20 +48,28 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     if index is None:
         index = is_tree(obj) and ext == '.html'
 
+    if is_tree(obj):
+        assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
+    else:
+        assets_dir = os.path.join(os.path.dirname(path), Document.ASSETS)  # path is a filename
+
+    if os.path.isdir(assets_dir):
+        log.info('Deleting contents of assets directory %s', assets_dir)
+        common.delete_contents(assets_dir)
+    else:
+        os.makedirs(assets_dir)
+
     # Publish documents
     count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
 
         # Publish content to the specified path
-        common.create_dirname(path2)
         log.info("publishing to {}...".format(path2))
         lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
         common.write_lines(lines, path2)
-        if obj2.assets:
-            src = obj2.assets
-            dst = os.path.join(os.path.dirname(path2), obj2.ASSETS)
-            common.copy(src, dst)
+        if obj2.copy_assets(assets_dir):
+            log.info('Copied assets from %s to %s', obj.assets, assets_dir)
 
     # Create index
     if index and count:

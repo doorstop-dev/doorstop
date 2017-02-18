@@ -1,19 +1,21 @@
 """Unit tests for the doorstop.core.publisher module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock, call
 
 import os
+import shutil
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-
-from doorstop.core.test import FILES, EMPTY, MockDataMixIn, MockItemAndVCS
+from doorstop.core.document import Document
+from doorstop.core.test import FILES, EMPTY, MockDataMixIn, MockItemAndVCS, MockDocument
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher module."""
 
+    @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
     @patch('builtins.open')
     def test_publish_document(self, mock_open, mock_makedirs):
@@ -25,9 +27,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
+        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         mock_open.assert_called_once_with(path, 'wb')
 
+    @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
     @patch('builtins.open')
     @patch('doorstop.core.publisher.publish_lines')
@@ -39,10 +42,48 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, '.html')
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
+        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         mock_open.assert_called_once_with(path, 'wb')
         mock_lines.assert_called_once_with(self.document, '.html',
                                            linkify=False)
+
+    @patch('os.path.isdir', Mock(return_value=True))
+    @patch('shutil.rmtree')
+    @patch('glob.glob')
+    @patch('builtins.open')
+    @patch('doorstop.core.publisher.publish_lines')
+    def test_publish_document_deletes_the_contents_of_assets_folder(self, mock_lines, mock_open, mock_glob, mock_rm):
+        """Verify that the contents of an assets directory next to the published file is deleted"""
+        dirpath = os.path.abspath(os.path.join('mock', 'directory'))
+        path = os.path.join(dirpath, 'published.custom')
+        assets = [os.path.join(dirpath, Document.ASSETS, dir) for dir in ['css', 'logo.png']]
+        mock_glob.return_value = assets
+        # Act
+        path2 = publisher.publish(self.document, path, '.html')
+        # Assert
+        self.assertIs(path, path2)
+        mock_open.assert_called_once_with(path, 'wb')
+        mock_lines.assert_called_once_with(self.document, '.html',
+                                           linkify=False)
+        calls = [call(assets[0]), call(assets[1])]
+        self.assertEquals(calls, mock_rm.call_args_list)
+
+    @patch('os.path.isdir', Mock(return_value=False))
+    @patch('doorstop.core.document.Document.copy_assets')
+    @patch('os.makedirs')
+    @patch('builtins.open')
+    def test_publish_document_copies_assets(self, mock_open, mock_makedirs, mock_copyassets):
+        """Verify that assets are published"""
+        dirpath = os.path.join('mock', 'directory')
+        assets_path = os.path.join(dirpath, 'assets')
+        path = os.path.join(dirpath, 'published.custom')
+        document = MockDocument('/some/path')
+        # Act
+        path2 = publisher.publish(document, path, '.html')
+        # Assert
+        self.assertIs(path, path2)
+        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        mock_copyassets.assert_called_once_with(assets_path)
 
     def test_publish_document_unknown(self):
         """Verify an exception is raised when publishing unknown formats."""
@@ -52,30 +93,27 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                           publisher.publish, self.document, 'a.txt', '.a')
 
     @patch('doorstop.core.publisher._index')
-    @patch('os.makedirs')
     @patch('builtins.open')
-    def test_publish_tree(self, mock_open, mock_makedirs, mock_index):
+    def test_publish_tree(self, mock_open, mock_index):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath)
         # Assert
         self.assertIs(dirpath, dirpath2)
-        self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
         mock_index.assert_called_once_with(dirpath, tree=self.mock_tree)
 
+    @patch('os.path.isdir', Mock(return_value=True))
     @patch('doorstop.core.publisher._index')
-    @patch('os.makedirs')
     @patch('builtins.open')
-    def test_publish_tree_no_index(self, mock_open, mock_makedirs, mock_index):
+    def test_publish_tree_no_index(self, mock_open, mock_index):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(dirpath, dirpath2)
-        self.assertEqual(1, mock_makedirs.call_count)
         self.assertEqual(2, mock_open.call_count)
         self.assertEqual(0, mock_index.call_count)
 
