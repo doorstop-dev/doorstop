@@ -781,23 +781,13 @@ class TestPublishCommand(TempTestCase):
     """Tests 'doorstop publish' options toc and template"""
 
     @patch('doorstop.core.publisher.publish')
-    def test_publish_document_no_toc(self, mock_publish):
-        """Verify 'doorstop publish' is called with toc False."""
-        path = os.path.join(self.temp, 'req.html')
-        self.assertIs(None, main(['publish', '--no-toc', 'req', path]))
-
-        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
-                                             path, '.html', toc=False,
-                                             template=None)
-
-    @patch('doorstop.core.publisher.publish')
     def test_publish_document_template(self, mock_publish):
         """Verify 'doorstop publish' is called with template."""
         path = os.path.join(self.temp, 'req.html')
         self.assertIs(None, main(['publish', '--template',
                                   'my_template.html', 'req', path]))
         mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
-                                             path, '.html', toc=True,
+                                             path, '.html',
                                              template='my_template.html')
 
     @patch('doorstop.core.publisher.publish_lines')

@@ -500,13 +500,13 @@ def run_publish(args, cwd, error, catch=True):
         if whole_tree:
             msg = "publishing tree to '{}'...".format(path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(tree, path, ext, toc=args.toc,
+            published_path = publisher.publish(tree, path, ext,
                                                template=args.template, **kwargs)
         else:
             msg = "publishing document {} to '{}'...".format(document,
                                                              path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(document, path, ext, toc=args.toc,
+            published_path = publisher.publish(document, path, ext,
                                                template=args.template, **kwargs)
         if published_path:
             utilities.show("published: {}".format(published_path))
