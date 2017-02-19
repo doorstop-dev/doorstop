@@ -2,14 +2,15 @@
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock, call
+from unittest import mock
 
 import os
-import shutil
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
-from doorstop.core.test import FILES, EMPTY, MockDataMixIn, MockItemAndVCS, MockDocument
+from doorstop.core.test import (FILES, EMPTY, ROOT, MockDataMixIn,
+                                MockItemAndVCS, MockItem, MockDocument)
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -45,10 +46,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         mock_open.assert_called_once_with(path, 'wb')
         mock_lines.assert_called_once_with(self.document, '.html',
+                                           template=publisher.HTMLTEMPLATE, toc=True,
                                            linkify=False)
 
-    @patch('os.path.isdir', Mock(return_value=True))
-    @patch('shutil.rmtree')
+    @patch('os.path.isdir', Mock(side_effect=[True, False, False, False]))
+    @patch('os.remove')
     @patch('glob.glob')
     @patch('builtins.open')
     @patch('doorstop.core.publisher.publish_lines')
@@ -64,9 +66,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertIs(path, path2)
         mock_open.assert_called_once_with(path, 'wb')
         mock_lines.assert_called_once_with(self.document, '.html',
+                                           template=publisher.HTMLTEMPLATE,
+                                           toc=True,
                                            linkify=False)
         calls = [call(assets[0]), call(assets[1])]
-        self.assertEquals(calls, mock_rm.call_args_list)
+        self.assertEqual(calls, mock_rm.call_args_list)
 
     @patch('os.path.isdir', Mock(return_value=False))
     @patch('doorstop.core.document.Document.copy_assets')
@@ -78,6 +82,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         assets_path = os.path.join(dirpath, 'assets')
         path = os.path.join(dirpath, 'published.custom')
         document = MockDocument('/some/path')
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
         # Act
         path2 = publisher.publish(document, path, '.html')
         # Assert
@@ -92,42 +97,38 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertRaises(DoorstopError,
                           publisher.publish, self.document, 'a.txt', '.a')
 
+    @patch('os.path.isdir', Mock(return_value=False))
+    @patch('os.makedirs')
     @patch('doorstop.core.publisher._index')
     @patch('builtins.open')
-    def test_publish_tree(self, mock_open, mock_index):
+    def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
+        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb'), call(publisher.HTMLTEMPLATE, 'r')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath)
         # Assert
         self.assertIs(dirpath, dirpath2)
-        self.assertEqual(2, mock_open.call_count)
+        self.assertEqual(expected_calls, mock_open.call_args_list)
         mock_index.assert_called_once_with(dirpath, tree=self.mock_tree)
 
-    @patch('os.path.isdir', Mock(return_value=True))
+    @patch('os.path.isdir', Mock(return_value=False))
+    @patch('os.makedirs')
     @patch('doorstop.core.publisher._index')
     @patch('builtins.open')
-    def test_publish_tree_no_index(self, mock_open, mock_index):
+    def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
+        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb'), call(publisher.HTMLTEMPLATE, 'r')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
         # Assert
         self.assertIs(dirpath, dirpath2)
-        self.assertEqual(2, mock_open.call_count)
         self.assertEqual(0, mock_index.call_count)
-
-    @patch('doorstop.core.publisher._index')
-    def test_publish_tree_no_documents(self, mock_index):
-        """Verify a tree can be published with no documents."""
-        dirpath = os.path.join('mock', 'directory')
-        mock_tree = MagicMock()
-        mock_tree.documents = []
-        # Act
-        path2 = publisher.publish(mock_tree, dirpath, index=False)
-        # Assert
-        self.assertIs(None, path2)
-        self.assertEqual(0, mock_index.call_count)
+        print(mock_open.call_args_list)
+        self.assertEqual(expected_calls, mock_open.call_args_list)
 
     def test_index(self):
         """Verify an HTML index can be created."""
@@ -201,7 +202,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     def test_single_line_heading_to_markdown(self):
-        """A single line heading is published as a heading with an attribute equal to the item id"""
+        """Verify a single line heading is published as a heading with an attribute equal to the item id"""
         expected = "## 1.1 Heading {#req3 }\n\n"
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         # Act
@@ -210,7 +211,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     def test_multi_line_heading_to_markdown(self):
-        """A multi line heading is published as a heading with an attribute equal to the item id"""
+        """Verify a multi line heading is published as a heading with an attribute equal to the item id"""
         item = MockItemAndVCS('path/to/req3.yml',
                               _file=("links: [sys3]" + '\n'
                                      "text: 'Heading\n\nThis section describes publishing.'" + '\n'
@@ -393,3 +394,50 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         gen = publisher.publish_lines(self.document, '.a')
         # Assert
         self.assertRaises(DoorstopError, list, gen)
+
+
+@patch('doorstop.core.item.Item', MockItem)
+class TestTableOfContents(unittest.TestCase):
+    """Unit tests for the Document class."""  # pylint: disable=W0212
+
+    def setUp(self):
+        self.document = MockDocument(FILES, root=ROOT)
+
+    def test_toc_no_links_or_heading_levels(self):
+        """Verify the table of contents is generated with heading levels"""
+        expected = '''### Table of Contents
+
+        * 1.2.3 REQ001
+    * 1.4 REQ003
+    * 1.6 REQ004
+    * 2.1 REQ002
+    * 2.1 REQ2-001\n'''
+        toc = publisher._table_of_contents_md(self.document, linkify=None)
+        print(toc)
+        self.assertEqual(expected, toc)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_toc_no_links(self):
+        """Verify the table of contents is generated without heading levels"""
+        expected = '''### Table of Contents
+
+        * REQ001
+    * REQ003
+    * REQ004
+    * REQ002
+    * REQ2-001\n'''
+        toc = publisher._table_of_contents_md(self.document, linkify=None)
+        print(toc)
+        self.assertEqual(expected, toc)
+
+    def test_toc(self):
+        """Verify the table of contents is generated with an ID for the heading"""
+        expected = '''### Table of Contents
+
+        * [1.2.3 REQ001](#REQ001)
+    * [1.4 REQ003](#REQ003)
+    * [1.6 REQ004](#REQ004)
+    * [2.1 REQ002](#REQ002)
+    * [2.1 REQ2-001](#REQ2-001)\n'''
+        toc = publisher._table_of_contents_md(self.document, linkify=True)
+        self.assertEqual(expected, toc)

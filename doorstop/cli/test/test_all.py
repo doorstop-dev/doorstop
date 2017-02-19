@@ -11,6 +11,7 @@ from doorstop.cli.main import main
 from doorstop import common
 from doorstop.core.builder import _clear_tree
 from doorstop import settings
+from doorstop.core.document import Document
 
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
@@ -774,6 +775,37 @@ class TestPublish(TempTestCase):
     def test_publish_tree_no_path(self):
         """Verify 'doorstop publish' returns an error with no path."""
         self.assertRaises(SystemExit, main, ['publish', 'all'])
+
+
+class TestPublishCommand(TempTestCase):
+    """Tests 'doorstop publish' options toc and template"""
+
+    @patch('doorstop.core.publisher.publish')
+    def test_publish_document_no_toc(self, mock_publish):
+        """Verify 'doorstop publish' is called with toc False."""
+        path = os.path.join(self.temp, 'req.html')
+        self.assertIs(None, main(['publish', '--no-toc', 'req', path]))
+
+        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
+                                             path, '.html', toc=False,
+                                             template=None)
+
+    @patch('doorstop.core.publisher.publish')
+    def test_publish_document_template(self, mock_publish):
+        """Verify 'doorstop publish' is called with template."""
+        path = os.path.join(self.temp, 'req.html')
+        self.assertIs(None, main(['publish', '--template',
+                                  'my_template.html', 'req', path]))
+        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
+                                             path, '.html', toc=True,
+                                             template='my_template.html')
+
+    @patch('doorstop.core.publisher.publish_lines')
+    def test_publish_document_to_stdout(self, mock_publish_lines):
+        """Verify 'doorstop publish_lines' is called when no output path specified"""
+        self.assertIs(None, main(['publish', 'req']))
+        mock_publish_lines.assert_called_once_with(Document(os.path.abspath(REQS)),
+                                                   '.txt')
 
 
 @patch('doorstop.cli.commands.run', Mock(return_value=True))

@@ -300,7 +300,8 @@ def _publish(subs, shared):
                      help="do not include levels on non-heading items")
     sub.add_argument('--no-levels', choices=['all', 'body'],
                      help="do not include levels on heading and non-heading or non-heading items")
-
+    sub.add_argument('--template', help="template file")
+    sub.add_argument('--no-toc', dest='toc', default=True, action='store_false', help="Don't generate a table of contents")
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

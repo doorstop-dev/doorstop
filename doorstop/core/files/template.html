@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="assets/_css/bootstrap.min.css">
+  <link type="text/css" rel="stylesheet" href="assets/_css/sidebar.css" />
+</head>
+<body>
+<div class="container">
+    <div class="row">
+      <div class="col-lg-3 hidden-xs hidden-sm hidden-md">
+          <nav id="TOC" class="nav nav-stacked fixed sidebar">
+              $toc
+          </nav>
+      </div>
+      <div class="col-lg-9" id="main">
+        $body
+      </div>
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="assets/_js/jquery.min.js"></script>
+<script src="assets/_js/bootstrap.min.js"></script>
+<script>
+    $$(function() {
+        $$("table").addClass("table");
+        $$("nav ul").addClass("nav nav-stacked");
+        $$("nav").affix();
+        $$('body').scrollspy({
+          target: '.sidebar'
+        });
+        $$("#main a").attr("target", "${parent}");
+
+  $$(window).on('hashchange', function() {
+    $$(window).scrollTop($$(location.hash.toLowerCase()).offset().top);});        
+  });
+</script>
+</body>
+</html>
