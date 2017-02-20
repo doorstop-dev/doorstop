@@ -24,13 +24,6 @@ tree = None  # set in `run`, read in the route functions
 numbers = defaultdict(int)  # cache of next document numbers
 
 
-class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
-    """Command-line help text formatter with wider help text."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, max_help_position=40, **kwargs)
-
-
 def main(args=None):
     """Process command-line arguments and run the program."""
     from doorstop import SERVER, VERSION
