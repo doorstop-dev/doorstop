@@ -240,16 +240,16 @@ class TestReorder(unittest.TestCase):
     @patch('builtins.input', Mock(return_value='yes'))
     def test_reorder_document_yes(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (yes)."""
-        self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertIs(None, main(['reorder', self.prefix, '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(self.path, tool='my_editor')
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
     @patch('builtins.input', Mock(return_value='no'))
     def test_reorder_document_no(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (no)."""
-        self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertIs(None, main(['reorder', self.prefix, '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(self.path, tool='my_editor')
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -263,8 +263,8 @@ class TestReorder(unittest.TestCase):
     @patch('builtins.input', Mock(return_value='no'))
     def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
         """Verify 'doorstop reorder' can be called with a document (manual)."""
-        self.assertIs(None, main(['reorder', self.prefix, '--manual']))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        self.assertIs(None, main(['reorder', self.prefix, '--manual', '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(self.path, tool='my_editor')
         self.assertEqual(0, mock_reorder_auto.call_count)
         self.assertFalse(os.path.exists(self.path))
 
@@ -295,9 +295,9 @@ class TestEdit(unittest.TestCase):
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
         """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2']))
+        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     def test_edit_item_unknown(self):
         """Verify 'doorstop edit' returns an error on an unknown item."""
@@ -309,8 +309,8 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_yes_yes(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (yes, yes)."""
         path = "TUT-123.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     @patch('time.time', Mock(return_value=456))
     @patch('doorstop.core.editor.launch')
@@ -318,9 +318,9 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_no_no(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (no, no)."""
         path = "TUT-456.yml"
-        self.assertIs(None, main(['edit', 'tut']))
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
         common.delete(path)
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     @patch('time.time', Mock(return_value=789))
     @patch('doorstop.core.editor.launch')
@@ -328,8 +328,8 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_no_yes(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (no, yes)."""
         path = "TUT-789.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     def test_edit_document_unknown(self):
         """Verify 'doorstop edit' returns an error on an unknown document."""
