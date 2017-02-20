@@ -19,9 +19,13 @@ def main(args=None):  # pylint: disable=R0915
 
     # Shared options
     project = argparse.ArgumentParser(add_help=False)
+    try:
+        root = vcs.find_root(os.getcwd())
+    except common.DoorstopInfo:
+        root = None
     project.add_argument('-j', '--project', metavar='PATH',
                          help="path to the root of the project",
-                         default=vcs.find_root(os.getcwd()))
+                         default=root)
     project.add_argument('--no-cache', action='store_true',
                          help=argparse.SUPPRESS)
     server = argparse.ArgumentParser(add_help=False)
