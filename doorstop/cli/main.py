@@ -21,7 +21,7 @@ def main(args=None):  # pylint: disable=R0915
     project = argparse.ArgumentParser(add_help=False)
     try:
         root = vcs.find_root(os.getcwd())
-    except common.DoorstopInfo:
+    except common.DoorstopError:
         root = None
     project.add_argument('-j', '--project', metavar='PATH',
                          help="path to the root of the project",
@@ -193,10 +193,8 @@ def _reorder(subs, shared):
                        help="only perform automatic item reordering")
     group.add_argument('-m', '--manual', action='store_true',
                        help="do not automatically reorder the items")
-    required = sub.add_argument_group('required arguments')
-    required.add_argument('-T', '--tool', metavar='PROGRAM',
-                          help="text editor to open the document index",
-                          required=True)
+    sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                     help="text editor to open the document index")
 
 
 def _link(subs, shared):

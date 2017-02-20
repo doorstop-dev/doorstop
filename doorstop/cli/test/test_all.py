@@ -240,16 +240,16 @@ class TestReorder(unittest.TestCase):
     @patch('builtins.input', Mock(return_value='yes'))
     def test_reorder_document_yes(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (yes)."""
-        self.assertIs(None, main(['reorder', self.prefix, '-T', 'my_editor']))
-        mock_launch.assert_called_once_with(self.path, tool='my_editor')
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
     @patch('builtins.input', Mock(return_value='no'))
     def test_reorder_document_no(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (no)."""
-        self.assertIs(None, main(['reorder', self.prefix, '-T', 'my_editor']))
-        mock_launch.assert_called_once_with(self.path, tool='my_editor')
+        self.assertIs(None, main(['reorder', self.prefix]))
+        mock_launch.assert_called_once_with(self.path, tool=None)
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -263,8 +263,8 @@ class TestReorder(unittest.TestCase):
     @patch('builtins.input', Mock(return_value='no'))
     def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
         """Verify 'doorstop reorder' can be called with a document (manual)."""
-        self.assertIs(None, main(['reorder', self.prefix, '--manual', '-T', 'my_editor']))
-        mock_launch.assert_called_once_with(self.path, tool='my_editor')
+        self.assertIs(None, main(['reorder', self.prefix, '--manual']))
+        mock_launch.assert_called_once_with(self.path, tool=None)
         self.assertEqual(0, mock_reorder_auto.call_count)
         self.assertFalse(os.path.exists(self.path))
 
