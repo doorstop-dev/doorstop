@@ -62,13 +62,13 @@ def publish(obj, path, ext=None, linkify=None, index=None,
     else:
         os.makedirs(assets_dir)
 
-    if ext == '.html':
-        if not template:
-            template = HTMLTEMPLATE
-        template_assets = os.path.join(os.path.dirname(template), 'assets')
-        if os.path.isdir(template_assets):
-            log.info("Copying %s to %s", template_assets, assets_dir)
-            common.copy_dir_contents(template_assets, assets_dir)
+    # If publish html and then markdown ensure that the html template are still available
+    if not template:
+        template = HTMLTEMPLATE
+    template_assets = os.path.join(os.path.dirname(template), 'assets')
+    if os.path.isdir(template_assets):
+        log.info("Copying %s to %s", template_assets, assets_dir)
+        common.copy_dir_contents(template_assets, assets_dir)
 
     # Publish documents
     count = 0
