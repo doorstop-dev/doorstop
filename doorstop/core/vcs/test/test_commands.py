@@ -41,9 +41,11 @@ class BaseTestCase():  # pylint: disable=R0904
         self.wc.commit(self.message)
 
     def test_missing_command(self, mock_call):
-        mock_call.side_effect=FileNotFoundError
+        """Verify that a missing command raises a DoorstopError"""
+        mock_call.side_effect = FileNotFoundError
         self.assertRaises(DoorstopError, self.add)
-        
+
+
 @patch('subprocess.call')  # pylint: disable=R0904
 class TestGit(BaseTestCase, unittest.TestCase):
     """Tests for the Git plugin."""

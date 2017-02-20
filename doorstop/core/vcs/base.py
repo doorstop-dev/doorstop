@@ -38,7 +38,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
             else:
                 return subprocess.call(args)
         except FileNotFoundError:
-            raise common.DoorstopError("Command not found: {}".format(args[0])) 
+            raise common.DoorstopError("Command not found: {}".format(args[0]))
 
     @abstractmethod
     def lock(self, path):  # pragma: no cover (abstract method)
