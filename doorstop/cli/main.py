@@ -6,8 +6,9 @@ import os
 import sys
 import argparse
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.cli import utilities, commands
+from doorstop.core import publisher, vcs, document
 
 log = common.logger(__name__)
 
@@ -19,14 +20,17 @@ def main(args=None):  # pylint: disable=R0915
     # Shared options
     project = argparse.ArgumentParser(add_help=False)
     project.add_argument('-j', '--project', metavar='PATH',
-                         help="path to the root of the project")
+                         help="path to the root of the project",
+                         default=vcs.find_root(os.getcwd()))
     project.add_argument('--no-cache', action='store_true',
                          help=argparse.SUPPRESS)
     server = argparse.ArgumentParser(add_help=False)
     server.add_argument('--server', metavar='HOST',
-                        help="IP address or hostname for a running server")
+                        help="IP address or hostname for a running server",
+                        default=settings.SERVER_HOST)
     server.add_argument('--port', metavar='NUMBER', type=int,
-                        help="use a custom port for the server")
+                        help="use a custom port for the server",
+                        default=settings.SERVER_PORT)
     server.add_argument('-f', '--force', action='store_true',
                         help="perform the action without the server")
     debug = argparse.ArgumentParser(add_help=False)
@@ -115,7 +119,8 @@ def _create(subs, shared):
     sub.add_argument('prefix', help="document prefix for new item UIDs")
     sub.add_argument('path', help="path to a directory for item files")
     sub.add_argument('-p', '--parent', help="prefix of parent document")
-    sub.add_argument('-d', '--digits', help="number of digits in item UIDs")
+    sub.add_argument('-d', '--digits', help="number of digits in item UIDs",
+                     default=document.Document.DEFAULT_DIGITS)
 
 
 def _delete(subs, shared):
@@ -135,7 +140,7 @@ def _add(subs, shared):
                      help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
-                     help="number of items to create (default: 1)")
+                     help="number of items to create")
 
 
 def _remove(subs, shared):
@@ -167,8 +172,10 @@ def _edit(subs, shared):
                        help="edit document as exported TSV")
     group.add_argument('-x', '--xlsx', action='store_true',
                        help="edit document as exported XLSX")
-    sub.add_argument('-T', '--tool', metavar='PROGRAM',
-                     help="text editor to open the document item")
+    required = sub.add_argument_group('required arguments')
+    required.add_argument('-T', '--tool', metavar='PROGRAM',
+                          help="text editor to open the document item",
+                          required=True)
 
 
 def _reorder(subs, shared):
@@ -182,8 +189,10 @@ def _reorder(subs, shared):
                        help="only perform automatic item reordering")
     group.add_argument('-m', '--manual', action='store_true',
                        help="do not automatically reorder the items")
-    sub.add_argument('-T', '--tool', metavar='PROGRAM',
-                     help="text editor to open the document index")
+    required = sub.add_argument_group('required arguments')
+    required.add_argument('-T', '--tool', metavar='PROGRAM',
+                          help="text editor to open the document index",
+                          required=True)
 
 
 def _link(subs, shared):
@@ -300,7 +309,7 @@ def _publish(subs, shared):
                      help="do not include levels on non-heading items")
     sub.add_argument('--no-levels', choices=['all', 'body'],
                      help="do not include levels on heading and non-heading or non-heading items")
-    sub.add_argument('--template', help="template file")
+    sub.add_argument('--template', help="template file", default=publisher.HTMLTEMPLATE)
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

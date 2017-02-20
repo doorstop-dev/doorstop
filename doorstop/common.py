@@ -48,7 +48,7 @@ class DoorstopInfo(DoorstopWarning, Warning):
 # logging classes ############################################################
 
 
-class HelpFormatter(argparse.HelpFormatter):
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
