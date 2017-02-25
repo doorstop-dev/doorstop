@@ -73,7 +73,7 @@ class TestGit(BaseTestCase, unittest.TestCase):
     def test_delete(self, mock_call):
         """Verify Git can delete files."""
         self.delete()
-        calls = [call(("git", "rm", "-r", self.path, "--force", "--quiet"))]
+        calls = [call(("git", "rm", self.path, "--force", "--quiet"))]
         mock_call.assert_has_calls(calls)
 
     def test_commit(self, mock_call):
