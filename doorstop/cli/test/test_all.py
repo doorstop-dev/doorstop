@@ -11,6 +11,7 @@ from doorstop.cli.main import main
 from doorstop import common
 from doorstop.core.builder import _clear_tree
 from doorstop import settings
+from doorstop.core.document import Document
 
 from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
 from doorstop.cli.test import SettingsTestCase
@@ -294,9 +295,9 @@ class TestEdit(unittest.TestCase):
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
         """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2']))
+        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     def test_edit_item_unknown(self):
         """Verify 'doorstop edit' returns an error on an unknown item."""
@@ -308,8 +309,8 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_yes_yes(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (yes, yes)."""
         path = "TUT-123.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     @patch('time.time', Mock(return_value=456))
     @patch('doorstop.core.editor.launch')
@@ -317,9 +318,9 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_no_no(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (no, no)."""
         path = "TUT-456.yml"
-        self.assertIs(None, main(['edit', 'tut']))
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
         common.delete(path)
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     @patch('time.time', Mock(return_value=789))
     @patch('doorstop.core.editor.launch')
@@ -327,8 +328,8 @@ class TestEdit(unittest.TestCase):
     def test_edit_document_no_yes(self, mock_launch):
         """Verify 'doorstop edit' can be called with a document (no, yes)."""
         path = "TUT-789.yml"
-        self.assertIs(None, main(['edit', 'tut']))
-        mock_launch.assert_called_once_with(os.path.normpath(path), tool=None)
+        self.assertIs(None, main(['edit', 'tut', '-T', 'my_editor']))
+        mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
     def test_edit_document_unknown(self):
         """Verify 'doorstop edit' returns an error on an unknown document."""
@@ -774,6 +775,27 @@ class TestPublish(TempTestCase):
     def test_publish_tree_no_path(self):
         """Verify 'doorstop publish' returns an error with no path."""
         self.assertRaises(SystemExit, main, ['publish', 'all'])
+
+
+class TestPublishCommand(TempTestCase):
+    """Tests 'doorstop publish' options toc and template"""
+
+    @patch('doorstop.core.publisher.publish')
+    def test_publish_document_template(self, mock_publish):
+        """Verify 'doorstop publish' is called with template."""
+        path = os.path.join(self.temp, 'req.html')
+        self.assertIs(None, main(['publish', '--template',
+                                  'my_template.html', 'req', path]))
+        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
+                                             path, '.html',
+                                             template='my_template.html')
+
+    @patch('doorstop.core.publisher.publish_lines')
+    def test_publish_document_to_stdout(self, mock_publish_lines):
+        """Verify 'doorstop publish_lines' is called when no output path specified"""
+        self.assertIs(None, main(['publish', 'req']))
+        mock_publish_lines.assert_called_once_with(Document(os.path.abspath(REQS)),
+                                                   '.txt')
 
 
 @patch('doorstop.cli.commands.run', Mock(return_value=True))

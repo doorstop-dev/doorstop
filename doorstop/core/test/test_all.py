@@ -559,17 +559,6 @@ class TestPublisher(unittest.TestCase):
         self.assertIs(path, path2)
         self.assertTrue(os.path.isfile(path))
 
-    def test_publish_empty_tree(self):
-        """Verify a directory is not created when no documents to publish"""
-        mock_tree = Mock()
-        mock_tree.documents = []
-        dirpath = os.path.join(self.temp, 'gen')
-        # Act
-        path2 = core.publisher.publish(mock_tree, dirpath, index=True)
-        # Assert
-        self.assertIs(None, path2)
-        self.assertFalse(os.path.exists(dirpath))
-
     def test_publish_bad_link(self):
         """Verify a tree can be published with bad links."""
         item = self.document.add_item()

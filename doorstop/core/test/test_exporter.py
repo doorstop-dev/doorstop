@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.exporter module."""
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 
 import os
 import tempfile
@@ -15,6 +15,7 @@ from doorstop.core.test import MockDataMixIn
 class TestModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.exporter module."""
 
+    @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
     @patch('doorstop.core.exporter.export_file')
     def test_export_document(self, mock_export_file, mock_makedirs):
@@ -35,6 +36,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertRaises(DoorstopError,
                           exporter.export, self.document, 'a.yml', '.a')
 
+    @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
     @patch('builtins.open')
     def test_export_tree(self, mock_open, mock_makedirs):
@@ -61,6 +63,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(0, mock_makedirs.call_count)
         self.assertEqual(0, mock_open.call_count)
 
+    @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
     @patch('doorstop.common.write_lines')
     def test_export_document_lines(self, mock_write_lines, mock_makedirs):

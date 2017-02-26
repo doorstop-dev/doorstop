@@ -2,9 +2,9 @@
 
 import os
 import shutil
-from distutils import dir_util
 import argparse
 import logging
+import glob
 
 import yaml
 
@@ -48,7 +48,7 @@ class DoorstopInfo(DoorstopWarning, Warning):
 # logging classes ############################################################
 
 
-class HelpFormatter(argparse.HelpFormatter):
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
@@ -180,13 +180,14 @@ def touch(path):  # pragma: no cover (integration test)
         write_text('', path)
 
 
-def copy(src, dst):
-    """Copy a file or directory."""
-    if os.path.isfile(src):
-        delete(dst)
-        shutil.copy(src, dst)
-    elif os.path.isdir(src):
-        dir_util.copy_tree(src, dst)
+def copy_dir_contents(src, dst):
+    """Copy the contents of a directory."""
+    for fpath in glob.glob('{}/*'.format(src)):
+        dest_path = os.path.join(dst, os.path.split(fpath)[-1])
+        if os.path.isdir(fpath):
+            shutil.copytree(fpath, dest_path)
+        else:
+            shutil.copyfile(fpath, dest_path)
 
 
 def delete(path):  # pragma: no cover (integration test)
@@ -202,3 +203,16 @@ def delete(path):  # pragma: no cover (integration test)
     elif os.path.isfile(path):
         log.trace("deleting '{}'...".format(path))
         os.remove(path)
+
+
+def delete_contents(dirname):
+    """Delete the contents of a directory."""
+    for file in glob.glob('{}/*'.format(dirname)):
+        if os.path.isdir(file):
+            shutil.rmtree(os.path.join(dirname, file))
+        else:
+            try:
+                os.remove(os.path.join(dirname, file))
+            except FileExistsError:
+                log.warn("Two assets folders have files or directories with the same name")
+                raise

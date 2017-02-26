@@ -1,7 +1,7 @@
 """Unit tests for the doorstop.core.document module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock, call
 
 import os
 import logging
@@ -531,12 +531,22 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(5, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
-    @patch('doorstop.common.delete')
-    def test_delete(self, mock_common_delete, mock_item_delete):
+    @patch('os.rmdir')
+    def test_delete(self, mock_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        self.assertEqual(1, mock_common_delete.call_count)
         self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(1, mock_delete.call_count)
+        self.document.delete()  # ensure a second delete is ignored
+
+    @patch('doorstop.core.item.Item.delete')
+    @patch('os.rmdir')
+    def test_delete_with_assets(self, mock_delete, mock_item_delete):
+        """Verify a document's assets aren't deleted."""
+        mock_delete.side_effect = OSError
+        self.document.delete()
+        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
     @patch('doorstop.core.item.Item.delete', Mock())
@@ -548,7 +558,7 @@ class TestDocument(unittest.TestCase):
         self.document.tree._document_cache = {}
         self.document.delete()
         self.document.tree.vcs.delete.assert_called_once_with(
-            self.document.path)
+            self.document.config)
         self.assertIs(
             None, self.document.tree._document_cache[self.document.prefix])
 
@@ -615,3 +625,33 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(1, len(issues))
         self.assertIsInstance(issues[0], type(expected))
         self.assertEqual(expected.args, issues[0].args)
+
+    @patch('os.path.isdir', Mock(return_value=True))
+    def test_assets_exist(self):
+        """Verify a document can report the existence of the assets folder."""
+        path = os.path.join(self.document.path, self.document.ASSETS)
+        self.assertEqual(path, self.document.assets)
+
+    @patch('os.path.isdir', Mock(return_value=False))
+    def test_assets_missing(self):
+        """Verify a document can report the existence of the assets folder."""
+        self.assertEqual(None, self.document.assets)
+
+    @patch('os.path.isdir', Mock(return_value=True))
+    @patch('glob.glob')
+    @patch('shutil.copytree')
+    def test_copy_assets(self, mock_copytree, mock_glob):
+        """Verify a document can copy its assets"""
+        assets = ['css', 'logo.png']
+        assets_full_path = [os.path.join(self.document.path, self.document.ASSETS, dir) for dir in assets]
+        mock_glob.return_value = assets_full_path
+        dst = os.path.join('publishdir', 'assets')
+        expected_calls = [call(assets_full_path[0], os.path.join(dst, assets[0])),
+                          call(assets_full_path[1], os.path.join(dst, assets[1]))]
+        # Act]
+        self.document.copy_assets(dst)
+        print(self.document.path)
+        print(mock_copytree.call_args_list)
+        print(expected_calls)
+        # Assert
+        self.assertEqual(expected_calls, mock_copytree.call_args_list)

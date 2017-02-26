@@ -97,12 +97,16 @@ def delete_document(func):
         """Wrapped method to remove and expunge the returned document."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
-            document.tree.vcs.delete(document.path)
+            document.tree.vcs.delete(document.config)
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = None
             log.trace("expunged document: {}".format(document))
-        BaseFileObject.delete(document, document.path)
+        try:
+            os.rmdir(document.path)
+        except OSError:
+            # Directory wasn't empty
+            pass
         return document
     return wrapped
 
@@ -346,7 +350,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
     def delete(self, path):
         """Delete the object's file from the file system."""
         if self._exists:
-            log.info("deleting {}...".format(self))
+            log.info("deleting {}...".format(path))
             common.delete(path)
             self._loaded = False  # force the object to reload
             self._exists = False  # but, prevent future access
