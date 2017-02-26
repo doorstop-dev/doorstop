@@ -67,7 +67,7 @@ class TestGit(BaseTestCase):
     def test_delete(self, mock_call):
         """Verify Git can delete files."""
         self.delete()
-        calls = [call(("git", "rm", "-r", self.path, "--force", "--quiet"))]
+        calls = [call(("git", "rm", self.path, "--force", "--quiet"))]
         mock_call.assert_has_calls(calls)
 
     def test_commit(self, mock_call):
@@ -102,11 +102,13 @@ class TestMockVCS(BaseTestCase):
         calls = []
         mock_call.assert_has_calls(calls)
 
-    def test_delete(self, mock_call):
-        """Verify the placeholder VCS does not delete files."""
+    @patch('os.remove')
+    def test_delete(self, mock_remove, mock_call):
+        """Verify the placeholder VCS deletes files, as required by document.delete."""
         self.delete()
         calls = []
         mock_call.assert_has_calls(calls)
+        mock_remove.assert_called_once_with(self.path)
 
     def test_commit(self, mock_call):
         """Verify the placeholder VCS does not commit files."""

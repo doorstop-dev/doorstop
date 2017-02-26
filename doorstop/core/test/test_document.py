@@ -531,12 +531,22 @@ class TestDocument(unittest.TestCase):
         self.assertEqual(5, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
-    @patch('doorstop.common.delete')
-    def test_delete(self, mock_common_delete, mock_item_delete):
+    @patch('os.rmdir')
+    def test_delete(self, mock_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        self.assertEqual(1, mock_common_delete.call_count)
         self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(1, mock_delete.call_count)
+        self.document.delete()  # ensure a second delete is ignored
+
+    @patch('doorstop.core.item.Item.delete')
+    @patch('os.rmdir')
+    def test_delete_with_assets(self, mock_delete, mock_item_delete):
+        """Verify a document's assets aren't deleted."""
+        mock_delete.side_effect = OSError
+        self.document.delete()
+        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
     @patch('doorstop.core.item.Item.delete', Mock())
@@ -548,7 +558,7 @@ class TestDocument(unittest.TestCase):
         self.document.tree._document_cache = {}
         self.document.delete()
         self.document.tree.vcs.delete.assert_called_once_with(
-            self.document.path)
+            self.document.config)
         self.assertIs(
             None, self.document.tree._document_cache[self.document.prefix])
 

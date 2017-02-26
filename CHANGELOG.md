@@ -1,5 +1,9 @@
 # Revision History
 
+## 1.2.1 (2017/02/25)
+
+- Fixed issue where could `doorstop create` deleting the whole project.
+
 ## 1.2 (2017/02/11)
 
 - Disabled excessive text cleanup in items. (credit: [@michaelnt](https://github.com/michaelnt))
