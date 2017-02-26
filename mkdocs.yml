@@ -14,6 +14,7 @@ pages:
   - Importing and Exporting: cli/interchange.md
 - Graphical Interface: gui/coming-soon.md
 - Scripting Interface: api/scripting.md
+- Item reference: reference/items.md
 - About:
   - Release Notes: about/changelog.md
   - Contributing: about/contributing.md
