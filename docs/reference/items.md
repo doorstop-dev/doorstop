@@ -19,6 +19,7 @@ text: |
 ```
 
 ## Standard attributes
+
 ### active
 
 Determines if the item is active (true) or not (false). Only active items are
@@ -29,13 +30,19 @@ excluded from validation.
 
 Indicates if the item is derived (true) or not (false).
 
+[AcqNotes](http://www.acqnotes.com/acqnote/tasks/derived-requirements) defines derived requirements as:
+
+> '...requirements that are not explicitly stated in the set of stakeholder requirements yet is required to satisfy one or more of them. They also arise from constraints, consideration of issues implied but not explicitly stated in the requirements baseline, factors introduced by the selected architecture, Information Assurance (IA) requirements and the design.'
+
+Doorstop does not expect parent links on derived items.
+
 ### normative
 
 Indicates if the item is normative (true) or non-normative (false).
 
-[Wikipedia on Normative ](https://en.wikipedia.org/wiki/Normative) in standards documents:
-> 'In standards terminology still used by some organisations, "normative" means
-> "considered to be a prescriptive part of the standard". It characterises
+[Wikipedia on Normative](https://en.wikipedia.org/wiki/Normative) in standards documents:
+> 'In standards terminology still used by some organizations, "normative" means
+> "considered to be a prescriptive part of the standard". It characterizes
 > that part of the standard which describes what ought (see philosophy above) to
 > be done within the application of that standard. It is implicit that
 > application of that standard will result in a valuable outcome (ibid.). For
