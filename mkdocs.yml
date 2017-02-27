@@ -4,6 +4,8 @@ site_author: Jace Browning
 repo_url: https://github.com/jacebrowning/doorstop
 
 theme: readthedocs
+extra_css: []
+extra_javascript: []
 
 pages:
 - Home: index.md
