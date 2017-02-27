@@ -24,7 +24,7 @@ setuptools.setup(
     author_email='jacebrowning@gmail.com',
 
     packages=setuptools.find_packages(),
-    package_data={'doorstop.core': ['files/*']},
+    package_data={'doorstop.core': ['files/*', 'files/assets/_css/*', 'files/assets/_js/*']},
 
     entry_points={
         'console_scripts': [CLI + ' = doorstop.cli.main:main',
