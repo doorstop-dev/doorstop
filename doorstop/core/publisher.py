@@ -306,7 +306,7 @@ def _lines_markdown(obj, linkify=False, **kwargs):
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0])
+                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0] if text_lines else '')
             else:
                 standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
@@ -442,7 +442,8 @@ def _table_of_contents_md(obj, linkify=None):
             prefix += '* '
 
         if item.heading:
-            heading = item.text.splitlines()[0]
+            lines = item.text.splitlines()
+            heading = lines[0] if lines else ''
         else:
             heading = item.uid
 

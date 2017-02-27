@@ -9,6 +9,7 @@ pages:
 - Home: index.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
+  - Reordering Documents: cli/reordering.md
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
