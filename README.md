@@ -10,7 +10,7 @@
 
 # Overview
 
-Doorstop manages the storage of textual requirements alongside source code in version control.
+Doorstop is a [requirements management](http://alternativeto.net/software/doorstop/) tool that facilitates the storage of textual requirements alongside source code in version control.
 
 <img align="left" width="140" src="https://raw.githubusercontent.com/jacebrowning/doorstop/develop/docs/images/logo-black-white.png"/>
 
