@@ -8,7 +8,7 @@ from doorstop.cli import utilities
 from doorstop import common
 from doorstop import settings
 
-from doorstop.cli.test import SettingsTestCase
+from doorstop.cli.tests import SettingsTestCase
 
 
 class TestCapture(unittest.TestCase):

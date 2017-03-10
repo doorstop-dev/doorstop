@@ -13,7 +13,7 @@ from doorstop.core.tree import Tree
 from doorstop.core import importer
 from doorstop.core.builder import _set_tree
 
-from doorstop.core.test.test_document import FILES, MockItem
+from doorstop.core.tests.test_document import FILES, MockItem
 
 LOREM_IPSUM = '''Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua.

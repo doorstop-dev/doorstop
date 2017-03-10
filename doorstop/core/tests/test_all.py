@@ -20,8 +20,8 @@ from doorstop import core
 from doorstop.core.builder import _get_tree, _clear_tree
 from doorstop.core.vcs import mockvcs
 
-from doorstop.core.test import ENV, REASON, ROOT, FILES, EMPTY, SYS
-from doorstop.core.test import DocumentNoSkip
+from doorstop.core.tests import ENV, REASON, ROOT, FILES, EMPTY, SYS
+from doorstop.core.tests import DocumentNoSkip
 
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False

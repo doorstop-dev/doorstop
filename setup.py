@@ -2,23 +2,49 @@
 
 """Setup script for Doorstop."""
 
+import os
+import sys
 import setuptools
 
-from doorstop import __project__, __version__, CLI, GUI, SERVER, DESCRIPTION
+PACKAGE_NAME = 'doorstop'
+MINIMUM_PYTHON_VERSION = 3, 5
 
-try:
-    README = open("README.rst").read()
-    CHANGELOG = open("CHANGELOG.rst").read()
-except FileNotFoundError:
-    LONG_DESCRIPTION = "<placeholder>"
-else:
-    LONG_DESCRIPTION = README + '\n' + CHANGELOG
+
+def check_python_version():
+    """Exit when the Python version is too low."""
+    if sys.version_info < MINIMUM_PYTHON_VERSION:
+        sys.exit("Python {0}.{1}+ is required.".format(*MINIMUM_PYTHON_VERSION))
+
+
+def read_package_variable(key, filename='__init__.py'):
+    """Read the value of a variable from the package without importing."""
+    module_path = os.path.join(PACKAGE_NAME, filename)
+    with open(module_path) as module:
+        for line in module:
+            parts = line.strip().split(' ', 2)
+            if parts[:-1] == [key, '=']:
+                return parts[-1].strip("'")
+    sys.exit("'{0}' not found in '{1}'".format(key, module_path))
+
+
+def build_description():
+    """Build a description for the project from documentation files."""
+    try:
+        readme = open("README.rst").read()
+        changelog = open("CHANGELOG.rst").read()
+    except IOError:
+        return "<placeholder>"
+    else:
+        return readme + '\n' + changelog
+
+
+check_python_version()
 
 setuptools.setup(
-    name=__project__,
-    version=__version__,
+    name=read_package_variable('__project__'),
+    version=read_package_variable('__version__'),
 
-    description=DESCRIPTION,
+    description=read_package_variable('DESCRIPTION'),
     url='http://doorstop.readthedocs.io/',
     author='Jace Browning',
     author_email='jacebrowning@gmail.com',
@@ -27,12 +53,14 @@ setuptools.setup(
     package_data={'doorstop.core': ['files/*', 'files/assets/_css/*', 'files/assets/_js/*']},
 
     entry_points={
-        'console_scripts': [CLI + ' = doorstop.cli.main:main',
-                            GUI + ' = doorstop.gui.main:main',
-                            SERVER + ' = doorstop.server.main:main']
+        'console_scripts': [
+            read_package_variable('CLI') + ' = doorstop.cli.main:main',
+            read_package_variable('GUI') + ' = doorstop.gui.main:main',
+            read_package_variable('SERVER') + ' = doorstop.server.main:main',
+        ]
     },
 
-    long_description=LONG_DESCRIPTION,
+    long_description=build_description(),
     license='LGPL',
     classifiers=[
         'Development Status :: 5 - Production/Stable',

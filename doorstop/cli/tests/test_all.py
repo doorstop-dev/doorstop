@@ -13,8 +13,8 @@ from doorstop.core.builder import _clear_tree
 from doorstop import settings
 from doorstop.core.document import Document
 
-from doorstop.cli.test import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
-from doorstop.cli.test import SettingsTestCase
+from doorstop.cli.tests import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
+from doorstop.cli.tests import SettingsTestCase
 
 REQ_COUNT = 17
 ALL_COUNT = 49
