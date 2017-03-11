@@ -8,7 +8,7 @@
         ],
         "requires": {},
         "hash": {
-            "sha256": "4998d6a6c8ea63a7f7d204bd7ee5728b2a6c3c03ad02098c77c1de2cdf59175f"
+            "sha256": "a3c2fa02fe8bcbc72d1f43d6ad4aacde087c426594adb6dbcfd02913a4ecf8f6"
         }
     },
     "default": {},
@@ -28,6 +28,10 @@
         "nose-cov": {
             "hash": "sha256:8bec0335598f1cc69e3262cc50d7678c1a6010fa44625ce343c4ec1500774412",
             "version": "==1.6"
+        },
+        "nose-capturestderr": {
+            "hash": "sha256:3a9d3986f44490a1286d9eacd66879dbb059b575f6660a228b2051a8617a89ab",
+            "version": "==1.2"
         },
         "expecter": {
             "hash": "sha256:4d2cab9d9c80620456231106b989c9a6c70f8f7f3a9725a6644097bd3017705a",
