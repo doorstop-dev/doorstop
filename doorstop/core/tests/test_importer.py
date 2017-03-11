@@ -4,6 +4,7 @@
 
 import unittest
 from unittest.mock import patch, Mock, MagicMock
+from warnings import catch_warnings
 
 import os
 import logging
@@ -149,7 +150,8 @@ class TestModule(unittest.TestCase):
         path = os.path.join(FILES, 'exported.xlsx')
         mock_document = Mock()
         # Act
-        importer._file_xlsx(path, mock_document)  # pylint: disable=W0212
+        with catch_warnings(record=True) as warnings:
+            importer._file_xlsx(path, mock_document)  # pylint: disable=W0212
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -167,6 +169,7 @@ class TestModule(unittest.TestCase):
         ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
+        self.assertIn("range with reserved name", str(warnings[-1].message))
 
     @patch('doorstop.core.importer.add_item')
     def test_itemize(self, mock_add_item):

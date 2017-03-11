@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import patch, Mock
 from argparse import ArgumentTypeError
+from warnings import catch_warnings
 
 from doorstop.cli import utilities
 from doorstop import common
@@ -44,7 +45,10 @@ class TestConfigureSettings(SettingsTestCase):
         """Verify settings are parsed correctly."""
         args = Mock()
         args.reorder = False
-        utilities.configure_settings(args)
+        # Act
+        with catch_warnings(record=True) as warnings:
+            utilities.configure_settings(args)
+        # Assert
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.REORDER)
         self.assertFalse(settings.CHECK_LEVELS)
@@ -56,6 +60,7 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.PUBLISH_BODY_LEVELS)
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
+        self.assertIn("--no-body-levels", str(warnings[-1].message))
 
 
 class TestLiteralEval(unittest.TestCase):
