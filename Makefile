@@ -145,7 +145,10 @@ COVERAGE_SPACE := pipenv run coverage.space
 
 RANDOM_SEED ?= $(shell date +%s)
 
-NOSE_OPTIONS := --with-doctest --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+NOSE_OPTIONS := --with-doctest
+ifndef DISABLE_COVERAGE
+NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+endif
 
 .PHONY: test
 test: test-all ## Run unit and integration tests
@@ -153,7 +156,9 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install .clean-test
 	$(NOSE) $(PACKAGE) $(NOSE_OPTIONS)
+ifndef DISABLE_COVERAGE
 	$(COVERAGE_SPACE) $(REPOSITORY) unit
+endif
 
 .PHONY: test-int
 test-int: test-all
@@ -161,7 +166,9 @@ test-int: test-all
 .PHONY: test-all
 test-all: install .clean-test
 	TEST_INTEGRATION=true $(NOSE) $(PACKAGES) $(NOSE_OPTIONS)
+ifndef DISABLE_COVERAGE
 	$(COVERAGE_SPACE) $(REPOSITORY) overall
+endif
 
 .PHONY: read-coverage
 read-coverage:
