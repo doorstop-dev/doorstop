@@ -8,7 +8,7 @@
         ],
         "requires": {},
         "hash": {
-            "sha256": "a3c2fa02fe8bcbc72d1f43d6ad4aacde087c426594adb6dbcfd02913a4ecf8f6"
+            "sha256": "78d8be77ad016acc4dbb8d9e26b604c0e797ffd88f8146fcf50b8a43ca319c7c"
         }
     },
     "default": {},
@@ -42,8 +42,8 @@
             "version": "==4.3.4"
         },
         "coverage.space": {
-            "hash": "sha256:d16252a604e4be15e4cd89b2adef2e8ded0350dd3faf4a6e2342387f5a72847e",
-            "version": "==0.7.1"
+            "hash": "sha256:607edd10808e8e9faa52e8e04cc9ad81772ce78aa3ab5ea53d4758df32c32974",
+            "version": "==0.7.2.post4"
         },
         "mkdocs": {
             "hash": "sha256:eb3d2a20d7a48b3275a2308baa8827d9d681c051ce5dc6745171986dcd128880",
