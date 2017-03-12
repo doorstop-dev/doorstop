@@ -79,7 +79,12 @@ demo: install
 .PHONY: setup
 setup:
 	pip install pipenv==3.5.0
+ifdef TRAVIS
+	rm Pipfile.lock
+else
 	pipenv lock
+	cat Pipfile.lock
+endif
 	touch Pipfile
 
 .PHONY: doctor
