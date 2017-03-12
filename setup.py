@@ -7,7 +7,7 @@ import sys
 import setuptools
 
 PACKAGE_NAME = 'doorstop'
-MINIMUM_PYTHON_VERSION = 3, 5
+MINIMUM_PYTHON_VERSION = 3, 3
 
 
 def check_python_version():
