@@ -1,29 +1,32 @@
-sudo: false
-
 language: python
 python:
-- 3.3
-- 3.4
-- 3.5
+  - 3.3
+  - 3.4
+  - 3.5
+
+cache:
+  pip: true
+  directories:
+    - .venv
 
 env:
   global:
+    - RANDOM_SEED=0
+    - PIPENV_NOSPIN=true
     # Encrypted GH_TOKEN token: http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci
-    secure: JfVl6zxzhRIEG1VvLqMEPMGOecrzDyb2U0HPyQ4Z4pfKJgFJOdQ1orT9Aztpfr4edXqbCZnEy4WH8+FLBQagkXjT3Ladopv+9j1IkP8v1Gu1O8H2tHQc7wfGxnkQF+h0pFFS6adNAsMliQ5dxTojFYVoWebvZQbiVGYkew+QZ0c=
+    - secure: JfVl6zxzhRIEG1VvLqMEPMGOecrzDyb2U0HPyQ4Z4pfKJgFJOdQ1orT9Aztpfr4edXqbCZnEy4WH8+FLBQagkXjT3Ladopv+9j1IkP8v1Gu1O8H2tHQc7wfGxnkQF+h0pFFS6adNAsMliQ5dxTojFYVoWebvZQbiVGYkew+QZ0c=
+
+before_install:
+  - make setup
+  - make doctor
 
 install:
-- pip install coveralls scrutinizer-ocular
-
-before_script:
-- make env
-- make depends-ci
+  - make install
 
 script:
-- make ci
-
-after_success:
-- coveralls
-- ocular
+  - make check
+  - make test
+  - make demo
 
 after_script: >
   echo $TRAVIS_BRANCH; echo $TRAVIS_PULL_REQUEST; echo $TRAVIS_PYTHON_VERSION;
@@ -49,6 +52,11 @@ after_script: >
     git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} master:gh-pages ;
 
   fi
+
+after_success:
+  - pip install coveralls scrutinizer-ocular
+  - coveralls
+  - ocular
 
 notifications:
   email:

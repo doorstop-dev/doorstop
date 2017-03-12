@@ -16,8 +16,8 @@ from doorstop.core.tree import Tree
 from doorstop.core.document import Document
 from doorstop.core.builder import build
 
-from doorstop.core.test import FILES, SYS, EMPTY
-from doorstop.core.test import MockDocumentSkip
+from doorstop.core.tests import FILES, SYS, EMPTY
+from doorstop.core.tests import MockDocumentSkip
 
 
 @patch('doorstop.core.document.Document', MockDocumentSkip)

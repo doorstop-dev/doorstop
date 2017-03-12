@@ -5,7 +5,7 @@ from unittest.mock import patch, Mock
 from doorstop.cli import main
 from doorstop import settings
 
-from doorstop.cli.test import SettingsTestCase
+from doorstop.cli.tests import SettingsTestCase
 
 
 class TestMain(SettingsTestCase):

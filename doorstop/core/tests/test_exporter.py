@@ -9,7 +9,7 @@ import tempfile
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
 
-from doorstop.core.test import MockDataMixIn
+from doorstop.core.tests import MockDataMixIn
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):

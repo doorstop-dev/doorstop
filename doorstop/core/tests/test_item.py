@@ -11,8 +11,8 @@ from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
-from doorstop.core.test import FILES, EMPTY, EXTERNAL
-from doorstop.core.test import MockItem
+from doorstop.core.tests import FILES, EMPTY, EXTERNAL
+from doorstop.core.tests import MockItem
 
 
 YAML_DEFAULT = """

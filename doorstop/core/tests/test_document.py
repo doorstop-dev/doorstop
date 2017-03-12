@@ -12,8 +12,8 @@ from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core.types import Level
 from doorstop.core.document import Document
 
-from doorstop.core.test import ROOT, FILES, EMPTY, NEW
-from doorstop.core.test import MockItem, MockDocument
+from doorstop.core.tests import ROOT, FILES, EMPTY, NEW
+from doorstop.core.tests import MockItem, MockDocument
 
 YAML_DEFAULT = """
 settings:

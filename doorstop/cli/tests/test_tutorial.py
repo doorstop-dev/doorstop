@@ -10,16 +10,16 @@ import tempfile
 import subprocess
 import logging
 
-from doorstop.cli.test import ROOT, FILES
+from doorstop.cli.tests import ROOT, FILES
 
 ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
 REASON = "'{0}' variable not set".format(ENV)
 
 if os.name == 'nt':
-    PATH = os.path.join(ROOT, 'env', 'Scripts', 'doorstop.exe')
+    PATH = os.path.join(ROOT, '.venv', 'Scripts', 'doorstop.exe')
     DOORSTOP = os.path.normpath(PATH)
 else:
-    PATH = os.path.join(ROOT, 'env', 'bin', 'doorstop')
+    PATH = os.path.join(ROOT, '.venv', 'bin', 'doorstop')
     DOORSTOP = os.path.normpath(PATH)
 
 

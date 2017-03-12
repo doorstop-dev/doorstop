@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pycodestyle = "*"
+pydocstyle = "*"
+nose = "*"
+nose-cov = "*"
+nose-capturestderr = "*"
+expecter = "*"
+coverage = "*"
+"coverage.space" = ">=0.7.1"
+mkdocs = "*"
+docutils = "*"
+wheel = "*"
+twine = "*"
+sniffer = "*"
+Pygments = "*"
+PyInstaller = "*"
+
+[dev-packages.pylint]
+git = "https://github.com/PyCQA/pylint.git"
+ref = "e0fdd25c214e60bef10fbaa46252f4aaa74de8c2"
+
+[dev-packages.astroid]
+git = "https://github.com/PyCQA/astroid.git"
+ref = "4e7d9fee4080d2e0db67a3e0463be8b196e56a95"

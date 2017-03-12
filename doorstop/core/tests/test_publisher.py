@@ -9,8 +9,8 @@ import os
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
-from doorstop.core.test import (FILES, EMPTY, ROOT, MockDataMixIn,
-                                MockItemAndVCS, MockItem, MockDocument)
+from doorstop.core.tests import (FILES, EMPTY, ROOT, MockDataMixIn,
+                                 MockItemAndVCS, MockItem, MockDocument)
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):

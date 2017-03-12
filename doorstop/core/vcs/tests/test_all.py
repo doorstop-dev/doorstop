@@ -4,7 +4,7 @@ import unittest
 
 from doorstop.core.vcs import load
 
-from doorstop.core.vcs.test import ROOT
+from doorstop.core.vcs.tests import ROOT
 
 
 class TestWorkingCopy(unittest.TestCase):
