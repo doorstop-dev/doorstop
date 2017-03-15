@@ -601,13 +601,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 levels[item.level] = [item]
         # Reorder levels
-        for level, items in levels.items():
+        for level, items_at_level in levels.items():
             # Reorder items at this level
-            if keep in items:
+            if keep in items_at_level:
                 # move the kept item to the front of the list
                 log.debug("keeping {} level over duplicates".format(keep))
-                items = [items.pop(items.index(keep))] + items
-            for item in items:
+                items_at_level.remove(keep)
+                items_at_level.insert(0, keep)
+            for item in items_at_level:
                 yield level, item
 
     def find_item(self, value, _kind=''):
