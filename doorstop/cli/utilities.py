@@ -72,7 +72,7 @@ def configure_logging(verbosity=0):
     # Warn about excessive verbosity
     if verbosity > common.MAX_VERBOSITY:
         msg = "maximum verbosity level is {}".format(common.MAX_VERBOSITY)
-        logging.warn(msg)
+        logging.warning(msg)
         common.verbosity = common.MAX_VERBOSITY
     else:
         common.verbosity = verbosity

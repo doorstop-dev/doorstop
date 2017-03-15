@@ -524,7 +524,7 @@ def run_publish(args, cwd, error, catch=True):
 def _request_next_number(args):
     """Get the server's "next number" method if a server exists."""
     if args.force:
-        log.warn("creating items without the server...")
+        log.warning("creating items without the server...")
         return None
     else:
         server.check()
