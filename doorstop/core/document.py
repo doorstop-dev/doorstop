@@ -455,7 +455,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             text = stream.read()
         yaml_text = []
         for line in text.split('\n'):
-            m = re.search('(\s+)(- [\w\d-]+\s*): # (.+)$', line)
+            m = re.search(r'(\s+)(- [\w\d-]+\s*): # (.+)$', line)
             if m:
                 prefix = m.group(1)
                 uid = m.group(2)
