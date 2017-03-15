@@ -176,9 +176,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
 
+        self.regenerate_children()
+
+    def regenerate_children(self):
         for document in self:
             children = self._get_prefix_of_children(document)
             document.children = children
+
     # attributes #############################################################
 
     @property
