@@ -438,7 +438,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.combobox_documents['values'] = values
 
         # Select the first document
-        if len(self.tree):
+        if len(self.tree):  # pylint: disable=len-as-condition
             self.combobox_documents.current(0)
         else:
             logging.warning("no documents to display")
@@ -478,7 +478,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.listbox_outline.selection_set(self.index or 0)
         uid = self.listbox_outline.selection_get()
         self.stringvar_item.set(uid)  # manual call
-        if len(self.document):
+        if len(self.document):   # pylint: disable=len-as-condition
             self.listbox_outline.selection_set(self.index or 0)
             identifier = self.listbox_outline.selection_get()
             self.stringvar_item.set(identifier)  # manual call

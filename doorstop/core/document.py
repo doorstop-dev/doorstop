@@ -71,7 +71,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def __len__(self):
         return len(list(i for i in self._iter() if i.active))
 
-    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
+    def __bool__(self):
+        """Even empty documents should be considered truthy."""
         return True
 
     @staticmethod

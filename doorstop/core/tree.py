@@ -116,7 +116,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return 0
 
-    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
+    def __bool__(self):
+        """Even empty trees should be considered truthy."""
         return True
 
     def __getitem__(self, key):
