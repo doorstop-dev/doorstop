@@ -240,7 +240,7 @@ def ask(question, default=None):
             choice = input(message).lower().strip() or default
         except KeyboardInterrupt as exc:
             print()
-            raise exc from None
+            raise exc from None  # pylint: disable=raising-bad-type
         try:
             return valid[choice]
         except KeyError:
@@ -260,7 +260,7 @@ def positive_int(value):
     try:
         ival = int(value)
     except ValueError:
-        raise exc from None
+        raise exc from None  # pylint: disable=raising-bad-type
     else:
         if ival < 1:
             raise exc

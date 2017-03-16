@@ -62,7 +62,7 @@ def create_document(prefix, path, parent=None, tree=None):
         document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
-            raise exc from None
+            raise exc from None  # pylint: disable=raising-bad-type
 
         # Create the document despite an unavailable parent
         document = Document.new(tree,

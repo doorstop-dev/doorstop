@@ -178,7 +178,7 @@ def run_edit(args, cwd, error, catch=True):
                 item = tree.find_item(args.label)
             except common.DoorstopError as exc:
                 if args.item:
-                    raise exc from None
+                    raise exc from None  # pylint: disable=raising-bad-type
         if not item:
             document = tree.find_document(args.label)
 
@@ -591,7 +591,7 @@ def _iter_items(args, cwd, error):
                 document = tree.find_document(args.label)
             except common.DoorstopError as exc:
                 if args.document:
-                    raise exc from None
+                    raise exc from None  # pylint: disable=raising-bad-type
         if not document:
             item = tree.find_item(args.label)
 
