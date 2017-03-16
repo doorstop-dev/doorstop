@@ -50,7 +50,7 @@ setuptools.setup(
     author_email='jacebrowning@gmail.com',
 
     packages=setuptools.find_packages(),
-    package_data={'doorstop.core': ['files/*', 'files/assets/_css/*', 'files/assets/_js/*']},
+    package_data={'doorstop.core': ['files/*.html', 'files/*.css', 'files/assets/doorstop/*']},
 
     entry_points={
         'console_scripts': [
