@@ -199,16 +199,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Start the application
         root.after(500, self.find)
 
-    def init(self, root):  # pylint: disable=R0912,R0914
-        """Initialize and return the main frame."""  # pylint: disable=C0301
+    def init(self, root):
+        """Initialize and return the main frame."""
         # Shared arguments
         width_outline = 20
         width_text = 30
-        width_code = 30
         width_uid = 10
         height_text = 10
         height_ext = 5
-        height_code = 3
 
         # Shared keyword arguments
         kw_f = {'padding': 5}  # constructor arguments for frames

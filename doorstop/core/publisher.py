@@ -12,10 +12,10 @@ from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 from doorstop.core import Document
 
-EXTENSIONS = [
+EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
-]
+)
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = os.path.join(os.path.dirname(__file__), 'files', 'sidebar_template.html')
 INDEX = 'index.html'
@@ -288,7 +288,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def _lines_markdown(obj, linkify=False, **kwargs):
+def _lines_markdown(obj, linkify=False):
     """Yield lines for a Markdown report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -464,7 +464,7 @@ def _table_of_contents_md(obj, linkify=None):
     return toc
 
 
-def _lines_html(obj, linkify=False, extensions=EXTENSIONS, charset='UTF-8',
+def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
                 template=HTMLTEMPLATE, toc=True):
     """Yield lines for an HTML report.
 
