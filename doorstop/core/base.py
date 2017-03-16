@@ -111,7 +111,7 @@ def delete_document(func):
     return wrapped
 
 
-class BaseValidatable(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseValidatable(object, metaclass=abc.ABCMeta):
     """Abstract Base Class for objects that can be validated."""
 
     def validate(self, skip=None, document_hook=None, item_hook=None):
@@ -183,7 +183,7 @@ def auto_save(func):
     return wrapped
 
 
-class BaseFileObject(object, metaclass=abc.ABCMeta):  # pylint:disable=R0921
+class BaseFileObject(object, metaclass=abc.ABCMeta):
     """Abstract Base Class for objects whose attributes save to a file.
 
     For properties that are saved to a file, decorate their getters

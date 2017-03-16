@@ -669,12 +669,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                                                         find_all=find_all)
 
             if not items:
-                for document in documents:
+                for child_document in documents:
                     if document.prefix in skip:
                         msg = "skipping issues against document %s..."
-                        log.debug(msg, document)
+                        log.debug(msg, child_document)
                         continue
-                    msg = "no links from child document: {}".format(document)
+                    msg = ("no links from child document: {}".
+                           format(child_document))
                     yield DoorstopWarning(msg)
             elif settings.CHECK_CHILD_LINKS_STRICT:
                 prefix = [item.prefix for item in items]

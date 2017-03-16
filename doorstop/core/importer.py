@@ -196,6 +196,8 @@ def _file_xlsx(path, document, mapping=None):
     workbook = openpyxl.load_workbook(path, use_iterators=True)
     worksheet = workbook.active
 
+    index = 0
+
     # Extract header and data rows
     for index, row in enumerate(worksheet.iter_rows()):
         row2 = []
