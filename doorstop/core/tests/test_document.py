@@ -1,5 +1,7 @@
 """Unit tests for the doorstop.core.document module."""
 
+# pylint: disable=unused-argument,protected-access
+
 import unittest
 from unittest.mock import patch, Mock, MagicMock, call
 from unittest import mock
@@ -41,7 +43,7 @@ settings:
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
 class TestDocument(unittest.TestCase):
-    """Unit tests for the Document class."""  # pylint: disable=W0212
+    """Unit tests for the Document class."""
 
     def setUp(self):
         self.document = MockDocument(FILES, root=ROOT)
@@ -657,7 +659,7 @@ outline:
 
 @patch('doorstop.core.item.Item', MockItem)
 class TestDocumentReorder(unittest.TestCase):
-    """Unit tests for the Document class."""  # pylint: disable=W0212
+    """Unit tests for the Document class."""
 
     def setUp(self):
         def mock_find_item(uid):

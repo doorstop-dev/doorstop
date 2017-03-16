@@ -1,5 +1,7 @@
 """Unit tests for the doorstop.core.publisher module."""
 
+# pylint: disable=unused-argument,protected-access
+
 import unittest
 from unittest.mock import patch, Mock, MagicMock, call
 from unittest import mock
@@ -135,7 +137,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Arrange
         path = os.path.join(FILES, 'index.html')
         # Act
-        publisher._index(FILES)  # pylint: disable=W0212
+        publisher._index(FILES)
         # Assert
         self.assertTrue(os.path.isfile(path))
 
@@ -143,7 +145,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify an HTML index is only created when files exist."""
         path = os.path.join(EMPTY, 'index.html')
         # Act
-        publisher._index(EMPTY)  # pylint: disable=W0212
+        publisher._index(EMPTY)
         # Assert
         self.assertFalse(os.path.isfile(path))
 
@@ -170,7 +172,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         ]
         mock_tree.get_traceability = lambda: mock_trace
         # Act
-        publisher._index(FILES, index="index2.html", tree=mock_tree)  # pylint: disable=W0212
+        publisher._index(FILES, index="index2.html", tree=mock_tree)
         # Assert
         self.assertTrue(os.path.isfile(path))
 
@@ -398,7 +400,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
 @patch('doorstop.core.item.Item', MockItem)
 class TestTableOfContents(unittest.TestCase):
-    """Unit tests for the Document class."""  # pylint: disable=W0212
+    """Unit tests for the Document class."""
 
     def setUp(self):
         self.document = MockDocument(FILES, root=ROOT)
