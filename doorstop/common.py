@@ -184,10 +184,17 @@ def copy_dir_contents(src, dst):
     """Copy the contents of a directory."""
     for fpath in glob.glob('{}/*'.format(src)):
         dest_path = os.path.join(dst, os.path.split(fpath)[-1])
-        if os.path.isdir(fpath):
-            shutil.copytree(fpath, dest_path)
+        if os.path.exists(dest_path):
+            if os.path.basename(fpath) == "doorstop":
+                msg = "Skipping '{}' as this directory name is required by doorstop".format(fpath)
+            else:
+                msg = "Skipping '{}' as a file or directory with this name already exists".format(fpath)
+            log.warning(msg)
         else:
-            shutil.copyfile(fpath, dest_path)
+            if os.path.isdir(fpath):
+                shutil.copytree(fpath, dest_path)
+            else:
+                shutil.copyfile(fpath, dest_path)
 
 
 def delete(path):  # pragma: no cover (integration test)

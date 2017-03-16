@@ -209,7 +209,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from list(self._items)
 
     def copy_assets(self, dest):
-        """Copy the contents of the assets folder to the published assets folder."""
+        """Copy the contents of the assets directory."""
         if not self.assets:
             return
         common.copy_dir_contents(self.assets, dest)

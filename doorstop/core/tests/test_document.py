@@ -636,11 +636,23 @@ outline:
                           call(assets_full_path[1], os.path.join(dst, assets[1]))]
         # Act]
         self.document.copy_assets(dst)
-        print(self.document.path)
-        print(mock_copytree.call_args_list)
-        print(expected_calls)
         # Assert
         self.assertEqual(expected_calls, mock_copytree.call_args_list)
+
+    @patch('os.path.exists', Mock(return_value=True))
+    @patch('os.path.isdir', Mock(return_value=True))
+    @patch('glob.glob')
+    @patch('shutil.copytree')
+    def test_copy_assets_skipping(self, mock_copytree, mock_glob):
+        """Verify duplicate file or directory names are skipped """
+        assets = ['doorstop']
+        mock_glob.return_value = assets
+        mock_copytree.side_effect = FileExistsError
+        dst = os.path.join('publishdir', 'assets')
+        # Act]
+        self.document.copy_assets(dst)
+        # Assert
+        self.assertEqual([], mock_copytree.call_args_list)
 
 
 @patch('doorstop.core.item.Item', MockItem)
