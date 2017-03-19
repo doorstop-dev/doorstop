@@ -443,7 +443,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield "outline:"
         for item in items:
             space = "    " * item.depth
-            comment = item.text.replace('\n', ' ') or item.ref
+            lines = item.text.strip().splitlines()
+            comment = lines[0] if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
@@ -460,18 +461,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if m:
                 prefix = m.group(1)
                 uid = m.group(2)
-                item_text = m.group(3)
+                item_text = m.group(3).replace('"', '\\"')
                 yaml_text.append('{p}{u}:'.format(p=prefix, u=uid))
                 yaml_text.append('    {p}- text: "{t}"'.format(p=prefix, t=item_text))
             else:
                 yaml_text.append(line)
-        return '\n'.join(yaml_text)
+        return common.load_yaml('\n'.join(yaml_text), path)
 
     @staticmethod
     def _reorder_from_index(document, path):
         """Reorder a document's item from the index."""
-        text = document._read_index(path)
-        data = common.load_yaml(text, path)
+        data = document._read_index(path)
         # Read updated values
         initial = data.get('initial', 1.0)
         outline = data.get('outline', [])
