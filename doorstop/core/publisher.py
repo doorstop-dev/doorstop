@@ -288,7 +288,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def _lines_markdown(obj, linkify=False):
+def _lines_markdown(obj, **kwargs):
     """Yield lines for a Markdown report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -297,6 +297,7 @@ def _lines_markdown(obj, linkify=False):
     :return: iterator of lines of text
 
     """
+    linkify = kwargs.get('linkify', False)
     for item in iter_items(obj):
 
         heading = '#' * item.depth
