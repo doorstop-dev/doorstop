@@ -15,6 +15,7 @@ from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
 
+
 log = common.logger(__name__)
 
 
@@ -507,7 +508,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None): # pylint: disable=unused-argument
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
