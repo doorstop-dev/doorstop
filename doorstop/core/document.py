@@ -471,7 +471,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     def _reorder_from_index(document, path):
         """Reorder a document's item from the index."""
-        data = document._read_index(path)
+        data = document._read_index(path)  # pylint: disable=protected-access
         # Read updated values
         initial = data.get('initial', 1.0)
         outline = data.get('outline', [])
