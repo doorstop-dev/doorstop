@@ -507,7 +507,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, **kwargs):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None): # pylint: disable=unused-argument
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
@@ -517,8 +517,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                               :class:`~doorstop.common.DoorstopInfo`
 
         """
-        assert kwargs.get('document_hook') is None
-        assert kwargs.get('item_hook') is None
+        assert document_hook is None
+        assert item_hook is None
         skip = [] if skip is None else skip
 
         log.info("checking item %s...", self)
