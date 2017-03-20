@@ -28,7 +28,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('svn', 'delete', path)
 
     def commit(self, message=None):
-        message = message or input("Commit message: ")  # pylint: disable=W0141
+        message = message or input("Commit message: ")
         self.call('svn', 'commit', '--message', message)
 
     @property

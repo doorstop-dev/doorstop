@@ -26,6 +26,6 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('hg', 'remove', path, '--force')
 
     def commit(self, message=None):
-        message = message or input("Commit message: ")  # pylint: disable=W0141
+        message = message or input("Commit message: ")
         self.call('hg', 'commit', '--message', message)
         self.call('hg', 'push')
