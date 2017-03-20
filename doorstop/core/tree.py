@@ -177,9 +177,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
 
-        for document in self:
-            children = self._get_prefix_of_children(document)
-            document.children = children
+        for document2 in self:
+            children = self._get_prefix_of_children(document2)
+            document2.children = children
+
     # attributes #############################################################
 
     @property
