@@ -11,7 +11,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
+class BaseWorkingCopy(object, metaclass=ABCMeta):
     """Abstract base class for VCS working copies."""
 
     DIRECTORY = None  # special hidden directory for the working copy

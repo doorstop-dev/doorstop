@@ -96,7 +96,7 @@ class UID(object):
             return
         self.stamp = stamp or Stamp()
         # Join values
-        if len(values) == 0:
+        if not values:
             self.value = ''
         elif len(values) == 1:
             value = values[0]
@@ -111,7 +111,8 @@ class UID(object):
             else:
                 self.value = str(value) if values[0] else ''
         elif len(values) == 4:
-            self.value = UID.join_uid(*values)
+            (prefix, sep, number, digits) = values
+            self.value = UID.join_uid(prefix, sep, number, digits)
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
         # Split values

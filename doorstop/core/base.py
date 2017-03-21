@@ -141,7 +141,8 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):
         return valid
 
     @abc.abstractmethod
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None,
+                   **kwargs):
         """Yield all the objects's issues.
 
         :param skip: list of document prefixes to skip
