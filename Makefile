@@ -126,13 +126,14 @@ $(PIP):
 PYLINT := pipenv run pylint
 PYCODESTYLE := pipenv run pycodestyle
 PYDOCSTYLE := pipenv run pydocstyle
+PYLINTOPTIONS := --load-plugins=pylint.extensions.bad_builtin
 
 .PHONY: check
 check: pylint pycodestyle pydocstyle ## Run linters and static analysis
 
 .PHONY: pylint
 pylint: install
-	$(PYLINT) $(PACKAGES) $(CONFIG) --rcfile=.pylint.ini
+	$(PYLINT) $(PYLINTOPTIONS) $(PACKAGES) $(CONFIG) --rcfile=.pylint.ini
 
 .PHONY: pycodestyle
 pycodestyle: install
