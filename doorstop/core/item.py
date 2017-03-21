@@ -507,7 +507,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, **kwargs):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None,
+                   **kwargs):
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
