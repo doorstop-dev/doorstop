@@ -94,7 +94,7 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
         self.tree.vcs = WorkingCopy(None)
 
 
-class MockDataMixIn:  # pylint: disable=W0232,R0903
+class MockDataMixIn:  # pylint: disable=W0232,R0903,E0602
     """Data for test cases requiring mock items and documents."""
 
     # purely mock objects
