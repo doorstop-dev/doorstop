@@ -129,6 +129,7 @@ class TestDocument(unittest.TestCase):
         expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
         for issue in self.document.issues:
             logging.info(repr(issue))
+            # pylint: disable=C0123
             if type(issue) == type(expect) and issue.args == expect.args:
                 break
         else:
@@ -141,6 +142,7 @@ class TestDocument(unittest.TestCase):
         expect = DoorstopInfo("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
         for issue in self.document.issues:
             logging.info(repr(issue))
+            # pylint: disable=C0123
             if type(issue) == type(expect) and issue.args == expect.args:
                 break
         else:
