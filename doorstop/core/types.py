@@ -96,7 +96,7 @@ class UID(object):
             return
         self.stamp = stamp or Stamp()
         # Join values
-        if len(values) == 0:
+        if not values:
             self.value = ''
         elif len(values) == 1:
             value = values[0]
