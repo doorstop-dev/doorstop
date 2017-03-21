@@ -13,19 +13,19 @@ class SampleWorkingCopy(BaseWorkingCopy):
         super().__init__(path)
         self._ignores_cache = ["*build*", "ignored.*", "*published*"]
 
-    def lock(self, *args, **kwargs):
+    def lock(self, *args, **kwargs): # pylint: disable=W0221
         pass  # no implementation
 
-    def edit(self, *args, **kwargs):
+    def edit(self, *args, **kwargs): # pylint: disable=W0221
         pass  # no implementation
 
-    def add(self, *args, **kwargs):
+    def add(self, *args, **kwargs): # pylint: disable=W0221
         pass  # no implementation
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs): # pylint: disable=W0221
         pass  # no implementation
 
-    def commit(self, *args, **kwargs):
+    def commit(self, *args, **kwargs): # pylint: disable=W0221
         pass  # no implementation
 
 
