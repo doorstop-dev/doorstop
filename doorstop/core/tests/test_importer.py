@@ -2,6 +2,8 @@
 
 """Unit tests for the doorstop.core.importer module."""
 
+# pylint: disable=no-self-use,protected-access
+
 import unittest
 from unittest.mock import patch, Mock, MagicMock
 from warnings import catch_warnings
@@ -27,7 +29,7 @@ deserunt mollit anim id est laborum.'''
 
 
 class TestModule(unittest.TestCase):
-    """Unit tests for the doorstop.core.importer module."""  # pylint: disable=R0201
+    """Unit tests for the doorstop.core.importer module."""
 
     maxDiff = None
 
@@ -64,7 +66,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.find_item = Mock(side_effect=DoorstopError)
         # Act
-        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        importer._file_yml(path, mock_document)
         # Assert
         self.assertEqual(5, mock_add_item.call_count)
 
@@ -74,22 +76,22 @@ class TestModule(unittest.TestCase):
         path = os.path.join(FILES, 'exported.yml')
         mock_document = Mock()
         # Act
-        importer._file_yml(path, mock_document)  # pylint: disable=W0212
+        importer._file_yml(path, mock_document)
         # Assert
         self.assertEqual(5, mock_add_item.call_count)
 
     def test_file_yml_bad_format(self):
         """Verify YAML file import can handle bad data."""
         path = os.path.join(FILES, 'exported.csv')
-        self.assertRaises(DoorstopError, importer._file_yml, path, None)  # pylint: disable=W0212
+        self.assertRaises(DoorstopError, importer._file_yml, path, None)
 
     @patch('doorstop.core.importer._itemize')
     def test_file_csv(self, mock_itemize):
-        """Verify a CSV file can be imported."""  # pylint: disable=C0301
+        """Verify a CSV file can be imported."""
         path = os.path.join(FILES, 'exported.csv')
         mock_document = Mock()
         # Act
-        importer._file_csv(path, mock_document)  # pylint: disable=W0212
+        importer._file_csv(path, mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -110,11 +112,11 @@ class TestModule(unittest.TestCase):
 
     @patch('doorstop.core.importer._itemize')
     def test_file_csv_modified(self, mock_itemize):
-        """Verify a CSV file (with modifications) can be imported."""  # pylint: disable=C0301
+        """Verify a CSV file (with modifications) can be imported."""
         path = os.path.join(FILES, 'exported-modified.csv')
         mock_document = Mock()
         # Act
-        importer._file_csv(path, mock_document)  # pylint: disable=W0212
+        importer._file_csv(path, mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -139,19 +141,19 @@ class TestModule(unittest.TestCase):
         mock_path = 'path/to/file.tsv'
         mock_document = Mock()
         # Act
-        importer._file_tsv(mock_path, mock_document)  # pylint: disable=W0212
+        importer._file_tsv(mock_path, mock_document)
         # Assert
         mock_file_csv.assert_called_once_with(mock_path, mock_document,
                                               delimiter='\t', mapping=None)
 
     @patch('doorstop.core.importer._itemize')
     def test_file_xlsx(self, mock_itemize):
-        """Verify a XLSX file can be imported."""  # pylint: disable=C0301
+        """Verify a XLSX file can be imported."""
         path = os.path.join(FILES, 'exported.xlsx')
         mock_document = Mock()
         # Act
-        with catch_warnings(record=True) as warnings:
-            importer._file_xlsx(path, mock_document)  # pylint: disable=W0212
+        with catch_warnings():
+            importer._file_xlsx(path, mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -169,7 +171,6 @@ class TestModule(unittest.TestCase):
         ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
-        self.assertIn("range with reserved name", str(warnings[-1].message))
 
     @patch('doorstop.core.importer.add_item')
     def test_itemize(self, mock_add_item):
@@ -180,7 +181,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
         args, kwargs = mock_add_item.call_args
@@ -200,7 +201,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
         self.assertEqual('PREFIX', args[0])
@@ -219,7 +220,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
         self.assertEqual('PREFIX', args[0])
@@ -239,7 +240,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mapping = {'MyID': 'uid'}
         # Act
-        importer._itemize(header, data, mock_document, mapping=mapping)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document, mapping=mapping)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 
@@ -252,7 +253,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.find_item = Mock(side_effect=DoorstopError)
         # Act
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 
@@ -263,7 +264,7 @@ class TestModule(unittest.TestCase):
         data = [['req1', 'text1', 'blank', '', 'val1']]
         mock_document = Mock()
         mock_document.prefix = 'prefix'
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         expected_attrs = {'links': [], 'ext1': 'val1', 'text': 'text1'}
         mock_add_item.assert_called_once_with(mock_document.prefix, 'req1',
                                               attrs=expected_attrs,
@@ -287,7 +288,7 @@ class TestModule(unittest.TestCase):
         mock_document.next_number = 3
         mock_document.digits = 3
         # Act
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
         # Assert
         self.assertEqual(6, mock_add_item.call_count)
 
@@ -298,7 +299,7 @@ class TestModule(unittest.TestCase):
         data = [['req1', 'text1', '', 'val1'],
                 ['invalid']]
         mock_document = Mock()
-        importer._itemize(header, data, mock_document)  # pylint: disable=W0212
+        importer._itemize(header, data, mock_document)
 
 
 class TestModuleCreateDocument(unittest.TestCase):
@@ -369,7 +370,7 @@ class TestModuleAddItem(unittest.TestCase):
     parent = 'PARENT_PREFIX'
 
     mock_document = Mock()
-    mock_document._items = []  # pylint: disable=W0212
+    mock_document._items = []
 
     def setUp(self):
         # Create default item attributes
@@ -406,7 +407,7 @@ class TestModuleAddItem(unittest.TestCase):
         """Verify an item can be imported into an explicit document."""
         mock_document = self.mock_document
         mock_tree = mock_document.tree
-        mock_document.tree._item_cache = MagicMock()  # pylint:disable=W0212
+        mock_document.tree._item_cache = MagicMock()
         importer.add_item(self.prefix, self.uid, document=mock_document)
         self.assertFalse(mock_get_tree.called)
         mock_new.assert_called_once_with(mock_tree, mock_document,
