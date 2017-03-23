@@ -168,7 +168,7 @@ test-int: test-all
 
 .PHONY: test-all
 test-all: install .clean-test
-	TEST_INTEGRATION=true $(NOSE) $(PACKAGES) $(NOSE_OPTIONS)
+	TEST_INTEGRATION=true $(NOSE) $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
 	$(COVERAGE_SPACE) $(REPOSITORY) overall
 
 .PHONY: read-coverage
