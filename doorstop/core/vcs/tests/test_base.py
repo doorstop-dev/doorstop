@@ -13,20 +13,20 @@ class SampleWorkingCopy(BaseWorkingCopy):
         super().__init__(path)
         self._ignores_cache = ["*build*", "ignored.*", "*published*"]
 
-    def lock(self, *args, **kwargs):
-        pass  # no implementation
+    def lock(self, path):
+        print(path)
 
-    def edit(self, *args, **kwargs):
-        pass  # no implementation
+    def edit(self, path):
+        print(path)
 
-    def add(self, *args, **kwargs):
-        pass  # no implementation
+    def add(self, path):
+        print(path)
 
-    def delete(self, *args, **kwargs):
-        pass  # no implementation
+    def delete(self, path):
+        print(path)
 
-    def commit(self, *args, **kwargs):
-        pass  # no implementation
+    def commit(self, message=None):
+        print(message)
 
 
 class TestSampleWorkingCopy(unittest.TestCase):

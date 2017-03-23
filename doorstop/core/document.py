@@ -471,7 +471,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     def _reorder_from_index(document, path):
         """Reorder a document's item from the index."""
-        data = document._read_index(path)
+        data = document._read_index(path)  # pylint: disable=protected-access
         # Read updated values
         initial = data.get('initial', 1.0)
         outline = data.get('outline', [])
@@ -633,7 +633,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, skip=None, item_hook=None, **kwargs):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
@@ -644,7 +644,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                               :class:`~doorstop.common.DoorstopInfo`
 
         """
-        assert kwargs.get('document_hook') is None
+        assert document_hook is None
         skip = [] if skip is None else skip
         hook = item_hook if item_hook else lambda **kwargs: []
 

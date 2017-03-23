@@ -313,5 +313,6 @@ def _publish(subs, shared):
                      help="do not include levels on heading and non-heading or non-heading items")
     sub.add_argument('--template', help="template file", default=publisher.HTMLTEMPLATE)
 
+
 if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

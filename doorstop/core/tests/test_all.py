@@ -1,5 +1,7 @@
 """Tests for the doorstop.core package."""
 
+# pylint: disable=protected-access,unidiomatic-typecheck
+
 import unittest
 from unittest.mock import patch, Mock
 
@@ -243,7 +245,7 @@ class TestTree(unittest.TestCase):
         self.backup = common.read_text(self.path)
         self.item = core.Item(self.path)
         self.tree = core.Tree(core.Document(SYS))
-        self.tree._place(core.Document(FILES))  # pylint: disable=W0212
+        self.tree._place(core.Document(FILES))
 
     def tearDown(self):
         common.write_text(self.backup, self.path)

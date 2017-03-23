@@ -126,6 +126,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     _mock_item2 = Mock()
     _mock_item2.uid = 'tst1'
     _mock_item2.document.prefix = 'tst'
+    # pylint: disable=undefined-variable
     item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]
     item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
 
