@@ -206,6 +206,30 @@ mkdocs-live: mkdocs
 	eval "sleep 3; open http://127.0.0.1:8000" &
 	$(MKDOCS) serve
 
+# REQUIREMENTS #################################################################
+
+DOORSTOP := pipenv run doorstop
+
+YAML := $(wildcard */*.yml */*/*.yml */*/*/*/*.yml)
+
+.PHONY: reqs
+reqs: doorstop reqs-html reqs-md reqs-txt
+
+.PHONY: reqs-html
+reqs-html: install docs/gen/*.html
+docs/gen/*.html: $(YAML)
+	$(DOORSTOP) publish all docs/gen --html
+
+.PHONY: reqs-md
+reqs-md: install docs/gen/*.md
+docs/gen/*.md: $(YAML)
+	$(DOORSTOP) publish all docs/gen --markdown
+
+.PHONY: reqs-txt
+reqs-txt: install docs/gen/*.txt
+docs/gen/*.txt: $(YAML)
+	$(DOORSTOP) publish all docs/gen --text
+
 # BUILD ########################################################################
 
 PYINSTALLER := pipenv run pyinstaller
