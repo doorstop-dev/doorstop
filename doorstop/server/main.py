@@ -47,6 +47,8 @@ def main(args=None):
                         help="use a custom port for the server")
     parser.add_argument('-H', '--host', default='127.0.0.1',
                         help="IP address to listen")
+    parser.add_argument('-w', '--wsgi', action='store_true',
+                        help="Run as a WSGI process")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -80,9 +82,9 @@ def run(args, cwd, _):
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
-    bottle.run(app=app, host=host, port=port,
-               debug=args.debug, reloader=args.debug)
-
+    if not args.wsgi:
+        bottle.run(app=app, host=host, port=port,
+                   debug=args.debug, reloader=args.debug)
 
 @hook('after_request')
 def enable_cors():  # pragma: no cover (manual test)
