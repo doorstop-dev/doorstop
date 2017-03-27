@@ -39,9 +39,8 @@ def main(args=None):
     parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
                                      **shared)
     cwd = os.getcwd()
-    root = vcs.find_root(cwd)
 
-    parser.add_argument('-j', '--project', default=root,
+    parser.add_argument('-j', '--project', default=None,
                         help="path to the root of the project")
     parser.add_argument('-P', '--port', metavar='NUM', type=int,
                         default=settings.SERVER_PORT,
@@ -51,6 +50,11 @@ def main(args=None):
 
     # Parse arguments
     args = parser.parse_args(args=args)
+
+    if args.project:
+        root = args.project
+    else:
+        root = vcs.find_root(cwd)
 
     # Configure logging
     logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
