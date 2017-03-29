@@ -3,11 +3,8 @@
 ## Conventional bottle webserver
 
 Doorstop can be run as a standalone web server by running
-`python3 doorstop/server/main.py`.  It will use the current working
-directory as the document source by default. You may need to install
-the [Python Bottle framework](https://bottlepy.org/docs/dev/), which
-can be done with `pip install bottle` or `apt install python-bottle`
-on Debian/Ubuntu systems.
+`doorstop-server`. It will use the current working directory as the
+document source by default.
 
 ## WSGI
 
