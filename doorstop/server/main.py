@@ -186,6 +186,14 @@ def get_attr(prefix, uid, name):
             return str(value)
 
 
+@get('/assets/doorstop/<filename>')
+def get_assets(filename):
+    """Serve static files. Mainly used to serve CSS files and javascript."""
+    public_dir = os.path.join(os.path.dirname(__file__),
+                              '..', 'core', 'files', 'assets', 'doorstop')
+    return bottle.static_file(filename, root=public_dir)
+
+
 @post('/documents/<prefix>/numbers')
 def post_numbers(prefix):
     """Create the next number in a document."""
