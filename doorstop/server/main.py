@@ -9,7 +9,7 @@ import argparse
 import logging
 
 import bottle
-from bottle import get, post, request, hook, response
+from bottle import get, post, request, hook, response, template
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
@@ -77,6 +77,8 @@ def run(args, cwd, _):
     tree.load()
     host = args.host
     port = args.port or settings.SERVER_PORT
+    bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
+                                                '..', '..', 'views'))
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
@@ -94,9 +96,7 @@ def enable_cors():  # pragma: no cover (manual test)
 @get('/')
 def index():
     """Read the tree."""
-    yield '<pre><code>'
-    yield tree.draw()
-    yield '</pre></code>'
+    yield template('index', tree_code=tree.draw(html_links=True))
 
 
 @get('/documents')
@@ -107,7 +107,7 @@ def get_documents():
         data = {'prefixes': prefixes}
         return data
     else:
-        return '<br>'.join(prefixes)
+        return template('document_list', prefixes=prefixes)
 
 
 @get('/documents/all')
@@ -118,7 +118,7 @@ def get_all_documents():
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]
-        return '<br>'.join(prefixes)
+        return template('document_list', prefixes=prefixes)
 
 
 @get('/documents/<prefix>')
@@ -141,7 +141,7 @@ def get_items(prefix):
         data = {'uids': uids}
         return data
     else:
-        return '<br>'.join(uids)
+        return template('item_list', prefix=prefix, items=uids)
 
 
 @get('/documents/<prefix>/items/<uid>')
