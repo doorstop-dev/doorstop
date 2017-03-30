@@ -2,7 +2,6 @@
 
 import os
 import textwrap
-from string import Template
 
 import markdown
 
@@ -12,12 +11,15 @@ from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
 from doorstop.core import Document
 
+from bottle import template as bottle_template
+import bottle
+
 EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
-HTMLTEMPLATE = os.path.join(os.path.dirname(__file__), 'files', 'sidebar_template.html')
+HTMLTEMPLATE = 'sidebar'
 INDEX = 'index.html'
 
 log = common.logger(__name__)
@@ -494,11 +496,12 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
         toc_html = ''
 
     if document:
-        with open(template, 'r') as fh:
-            template_str = fh.read()
-        s = Template(template_str)
         try:
-            html = s.substitute(body=body, toc=toc_html, parent=obj.parent)
+            bottle.TEMPLATE_PATH.insert(0,
+                                        os.path.join(os.path.dirname(__file__),
+                                                     '..', '..', 'views'))
+
+            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent)
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise
