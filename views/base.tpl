@@ -7,6 +7,7 @@
   <link type="text/css" rel="stylesheet" href="/assets/doorstop/sidebar.css" />
 </head>
 <body>
-{{!base}}
+<P>Navigation: <a href="/">Home</a> &bull; <a href="/documents/">Documents</a>
+  {{!base}}
 </body>
 </html>
