@@ -84,6 +84,7 @@ def run(args, cwd, _):
         bottle.run(app=app, host=host, port=port,
                    debug=args.debug, reloader=args.debug)
 
+
 @hook('after_request')
 def enable_cors():  # pragma: no cover (manual test)
     """Allow a webserver running on the same machine to access data."""
