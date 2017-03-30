@@ -39,18 +39,22 @@ def main(args=None):
     parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
                                      **shared)
     cwd = os.getcwd()
-    root = vcs.find_root(cwd)
 
-    parser.add_argument('-j', '--project', default=root,
+    parser.add_argument('-j', '--project', default=None,
                         help="path to the root of the project")
     parser.add_argument('-P', '--port', metavar='NUM', type=int,
                         default=settings.SERVER_PORT,
                         help="use a custom port for the server")
     parser.add_argument('-H', '--host', default='127.0.0.1',
                         help="IP address to listen")
+    parser.add_argument('-w', '--wsgi', action='store_true',
+                        help="Run as a WSGI process")
 
     # Parse arguments
     args = parser.parse_args(args=args)
+
+    if args.project is None:
+        args.project = vcs.find_root(cwd)
 
     # Configure logging
     logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
@@ -76,8 +80,9 @@ def run(args, cwd, _):
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
-    bottle.run(app=app, host=host, port=port,
-               debug=args.debug, reloader=args.debug)
+    if not args.wsgi:
+        bottle.run(app=app, host=host, port=port,
+                   debug=args.debug, reloader=args.debug)
 
 
 @hook('after_request')
