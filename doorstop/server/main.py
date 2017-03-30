@@ -53,10 +53,8 @@ def main(args=None):
     # Parse arguments
     args = parser.parse_args(args=args)
 
-    if args.project:
-        root = args.project
-    else:
-        root = vcs.find_root(cwd)
+    if args.project is None:
+        args.project = vcs.find_root(cwd)
 
     # Configure logging
     logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
