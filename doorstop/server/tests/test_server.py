@@ -68,7 +68,7 @@ class TestRoutesHTML(BaseTestCase):
         """Verify `/` works (HTML)."""
         for line in self.server.index():
             print(line)
-        self.mock_tree.draw.assert_called_once_with()
+        self.mock_tree.draw.assert_called_once_with(html_links=True)
 
     def test_get_documents(self):
         """Verify `/documents` works (HTML)."""

@@ -559,7 +559,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Set meta attributes
         self._loaded = True
 
-    def draw(self, encoding=None):
+    def draw(self, encoding=None, html_links=False):
         """Get the tree structure as text.
 
         :param encoding: limit character set to:
@@ -571,7 +571,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         encoding = encoding or getattr(sys.stdout, 'encoding', None)
         encoding = encoding.lower() if encoding else None
-        return '\n'.join(self._draw_lines(encoding))
+        return '\n'.join(self._draw_lines(encoding, html_links))
 
     def _draw_line(self):
         """Get the tree structure in one line."""
@@ -585,10 +585,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return "{}".format(prefix)
 
-    def _draw_lines(self, encoding):
+    def _draw_lines(self, encoding, html_links=False):
         """Generate lines of the tree structure."""
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, 'prefix', '') or str(self.document)
+        if html_links:
+            prefix = '<a href="/documents/{0}">{0}</a>'.format(prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):
@@ -602,7 +604,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             else:
                 base = self._symbol('space', encoding)
                 indent = self._symbol('bend', encoding)
-            for index, line in enumerate(child._draw_lines(encoding)):  # pylint: disable=W0212
+            for index, line in enumerate(child._draw_lines(encoding, html_links)):  # pylint: disable=W0212
                 if index == 0:
                     yield indent + line
                 else:
