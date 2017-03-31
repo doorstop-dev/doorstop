@@ -92,6 +92,11 @@ def run(args, cwd, _):
                    debug=args.debug, reloader=args.debug)
 
 
+@hook('before_request')
+def strip_path():
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+
+
 @hook('after_request')
 def enable_cors():  # pragma: no cover (manual test)
     """Allow a webserver running on the same machine to access data."""
