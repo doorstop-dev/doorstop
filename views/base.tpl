@@ -1,3 +1,4 @@
+%setdefault('stylesheet', None)
 <!DOCTYPE html>
 <html>
 <head><title>{{title or 'Doorstop'}}</title>
