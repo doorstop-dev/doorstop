@@ -1,4 +1,4 @@
-% rebase('base.tpl', title='Doorstop')
+% rebase('base.tpl', title='Doorstop', stylesheet='sidebar.css')
 <div class="container-fluid">
     <div class="row">
       <div class="col-lg-2 hidden-sm hidden-xs">
