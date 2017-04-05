@@ -68,12 +68,13 @@ class TestRoutesHTML(BaseTestCase):
         """Verify `/` works (HTML)."""
         for line in self.server.index():
             print(line)
-        self.mock_tree.draw.assert_called_once_with()
+        self.mock_tree.draw.assert_called_once_with(html_links=True)
 
     def test_get_documents(self):
         """Verify `/documents` works (HTML)."""
         text = server.get_documents()
-        self.assertEqual("PREFIX<br>PREFIX2", text)
+        self.assertIn("PREFIX", text)
+        self.assertIn("PREFIX2", text)
 
     def test_get_document(self):  # pylint: disable=R0201
         """Verify `/document/PREFIX` works (HTML)."""
@@ -88,7 +89,8 @@ class TestRoutesHTML(BaseTestCase):
     def test_get_items(self):
         """Verify `/document/PREFIX/items` works (HTML)."""
         text = server.get_items('prefix')
-        self.assertEqual("UID<br>UID2", text)
+        self.assertIn("UID", text)
+        self.assertIn("UID2", text)
 
     def test_get_item(self):  # pylint: disable=R0201
         """Verify `/document/PREFIX/items/UID` works (HTML)."""

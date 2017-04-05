@@ -107,7 +107,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
-        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb'), call(publisher.HTMLTEMPLATE, 'r')]
+        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath)
         # Assert
@@ -123,7 +123,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
-        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb'), call(publisher.HTMLTEMPLATE, 'r')]
+        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
         # Assert
