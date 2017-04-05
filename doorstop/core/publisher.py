@@ -500,7 +500,8 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
             bottle.TEMPLATE_PATH.insert(0,
                                         os.path.join(os.path.dirname(__file__),
                                                      '..', '..', 'views'))
-
+            if 'baseurl' not in bottle.SimpleTemplate.defaults:
+                bottle.SimpleTemplate.defaults['baseurl'] = ''
             html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent)
         except Exception:
             log.error("Problem parsing the template %s", template)
