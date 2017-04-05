@@ -83,6 +83,7 @@ def run(args, cwd, _):
                                                 '..', '..', 'views'))
 
     bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
+    bottle.SimpleTemplate.defaults['navigation'] = True
 
     if args.launch:
         url = utilities.build_url(host=host, port=port)
