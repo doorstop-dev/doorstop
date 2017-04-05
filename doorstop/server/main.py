@@ -49,6 +49,8 @@ def main(args=None):
                         help="IP address to listen")
     parser.add_argument('-w', '--wsgi', action='store_true',
                         help="Run as a WSGI process")
+    parser.add_argument('-b', '--baseurl', default='',
+                        help="Base URL this is served at (Usually only necessary for WSGI)")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -79,6 +81,9 @@ def run(args, cwd, _):
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
                                                 '..', '..', 'views'))
+
+    bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
+
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)

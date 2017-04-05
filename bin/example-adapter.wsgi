@@ -15,8 +15,11 @@ def application(environ, start_response):
         os.chdir(os.path.dirname(__file__))
 
         project_path = environ['DOORSTOP_PROJECT_DIR']
+        baseurl = environ['DOORSTOP_BASE_URL']
+
         parameters = [
             '--project', project_path,
+            '--baseurl', baseurl
             '--wsgi'
         ]
 

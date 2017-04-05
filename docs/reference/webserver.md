@@ -20,6 +20,7 @@ configuration and add something similar to this:
     WSGIScriptAlias /doorstop /var/www/doorstop/adapter.wsgi
     <Directory /var/www/doorstop>
       SetEnv DOORSTOP_PROJECT_DIR /path/to/your/document
+      SetEnv DOORSTOP_BASE_URL /doorstop
       WSGIProcessGroup doorstop
       WSGIApplicationGroup %{GLOBAL}
       Require all granted
