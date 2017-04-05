@@ -12,8 +12,8 @@
     </div>
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="assets/doorstop/jquery.min.js"></script>
-<script src="assets/doorstop/bootstrap.min.js"></script>
+<script src="{{baseurl}}/assets/doorstop/jquery.min.js"></script>
+<script src="{{baseurl}}/assets/doorstop/bootstrap.min.js"></script>
 <script>
     $(function() {
         $("table").addClass("table");
