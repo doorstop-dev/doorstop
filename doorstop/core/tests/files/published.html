@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" href="assets/doorstop/bootstrap.min.css">
-  <link type="text/css" rel="stylesheet" href="assets/doorstop/sidebar.css" />
+<html>
+<head><title>Doorstop</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="/assets/doorstop/bootstrap.min.css" />
+  <link rel="stylesheet" href="/assets/doorstop/general.css" />
+  <link type="text/css" rel="stylesheet" href="/assets/doorstop/sidebar.css" />
 </head>
 <body>
-<div class="container-fluid">
+
+  <div class="container-fluid">
     <div class="row">
       <div class="col-lg-2 hidden-sm hidden-xs">
           <nav id="TOC" class="nav nav-stacked fixed sidebar">
@@ -48,8 +52,8 @@ deserunt mollit anim id est laborum.</p>
     </div>
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="assets/doorstop/jquery.min.js"></script>
-<script src="assets/doorstop/bootstrap.min.js"></script>
+<script src="/assets/doorstop/jquery.min.js"></script>
+<script src="/assets/doorstop/bootstrap.min.js"></script>
 <script>
     $(function() {
         $("table").addClass("table");
@@ -61,7 +65,7 @@ deserunt mollit anim id est laborum.</p>
         $("#main a").attr("target", "parent");
 
   $(window).on('hashchange', function() {
-    $(window).scrollTop($(location.hash.toLowerCase()).offset().top);});        
+    $(window).scrollTop($(location.hash.toLowerCase()).offset().top);});
   });
 </script>
 </body>
