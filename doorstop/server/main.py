@@ -95,6 +95,7 @@ def run(args, cwd, _):
 @hook('before_request')
 def strip_path():
     request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('.html')
 
 
 @hook('after_request')
