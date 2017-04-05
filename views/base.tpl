@@ -1,4 +1,5 @@
 %setdefault('stylesheet', None)
+%setdefault('navigation', False)
 <!DOCTYPE html>
 <html>
 <head><title>{{title or 'Doorstop'}}</title>
@@ -9,7 +10,7 @@
   {{! '<link type="text/css" rel="stylesheet" href="%s" />'%(baseurl+'/assets/doorstop/'+stylesheet) if stylesheet else "" }}
 </head>
 <body>
-  <P>Navigation: <a href="{{baseurl}}/">Home</a> &bull; <a href="{{baseurl}}/documents/">Documents</a>
+{{! '<P>Navigation: <a href="{0}/">Home</a> &bull; <a href="{0}/documents/">Documents</a>'.format(baseurl) if navigation else ''}}
   {{!base}}
 </body>
 </html>
