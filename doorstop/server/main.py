@@ -82,6 +82,14 @@ def run(args, cwd, _):
     bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
                                                 '..', '..', 'views'))
 
+    # If you started without WSGI, the base will be '/'.
+    if args.baseurl == '' and not args.wsgi:
+        args.baseurl = '/'
+
+    # If you specified a base URL, make sure it ends with '/'.
+    if args.baseurl != '' and not args.baseurl.endswith('/'):
+        args.baseurl += '/'
+
     bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
     bottle.SimpleTemplate.defaults['navigation'] = True
 
