@@ -1,0 +1,9 @@
+{
+  "scripts": {
+  },
+  "env": {
+  },
+  "buildpacks": [
+    "https://github.com/jacebrowning/heroku-buildpack-pipenv.git#0057b47294fd4d8c8877b7d4f724f5c58f5b7406"
+  ]
+}
