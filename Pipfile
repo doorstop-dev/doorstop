@@ -2,6 +2,9 @@
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 
+[packages]
+sappy = "*"
+
 [dev-packages]
 pycodestyle = "*"
 pydocstyle = "*"
