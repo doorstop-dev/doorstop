@@ -17,4 +17,5 @@ puts-step "Installing Doorstop"
 python setup.py install | indent
 
 puts-step "Generating HTML from requirements"
+touch .mockvcs
 doorstop publish all public | indent
