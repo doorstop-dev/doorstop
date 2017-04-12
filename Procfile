@@ -1,1 +1,1 @@
-web: sappy --port=${PORT}
+web: sappy public --port=${PORT}
