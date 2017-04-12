@@ -1,1 +1,1 @@
-web: doorstop publish all public && sappy --port=${PORT}
+web: sappy --port=${PORT}
