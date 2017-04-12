@@ -9,7 +9,7 @@ import argparse
 import logging
 
 import bottle
-from bottle import get, post, request, hook, response
+from bottle import get, post, request, hook, response, template
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
@@ -49,6 +49,8 @@ def main(args=None):
                         help="IP address to listen")
     parser.add_argument('-w', '--wsgi', action='store_true',
                         help="Run as a WSGI process")
+    parser.add_argument('-b', '--baseurl', default='',
+                        help="Base URL this is served at (Usually only necessary for WSGI)")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -77,12 +79,32 @@ def run(args, cwd, _):
     tree.load()
     host = args.host
     port = args.port or settings.SERVER_PORT
+    bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
+                                                '..', '..', 'views'))
+
+    # If you started without WSGI, the base will be '/'.
+    if args.baseurl == '' and not args.wsgi:
+        args.baseurl = '/'
+
+    # If you specified a base URL, make sure it ends with '/'.
+    if args.baseurl != '' and not args.baseurl.endswith('/'):
+        args.baseurl += '/'
+
+    bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
+    bottle.SimpleTemplate.defaults['navigation'] = True
+
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
     if not args.wsgi:
         bottle.run(app=app, host=host, port=port,
                    debug=args.debug, reloader=args.debug)
+
+
+@hook('before_request')
+def strip_path():
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('.html')
 
 
 @hook('after_request')
@@ -94,9 +116,7 @@ def enable_cors():  # pragma: no cover (manual test)
 @get('/')
 def index():
     """Read the tree."""
-    yield '<pre><code>'
-    yield tree.draw()
-    yield '</pre></code>'
+    yield template('index', tree_code=tree.draw(html_links=True))
 
 
 @get('/documents')
@@ -107,7 +127,7 @@ def get_documents():
         data = {'prefixes': prefixes}
         return data
     else:
-        return '<br>'.join(prefixes)
+        return template('document_list', prefixes=prefixes)
 
 
 @get('/documents/all')
@@ -118,7 +138,7 @@ def get_all_documents():
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]
-        return '<br>'.join(prefixes)
+        return template('document_list', prefixes=prefixes)
 
 
 @get('/documents/<prefix>')
@@ -129,7 +149,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext='.html')
+        return publisher.publish_lines(document, ext='.html', linkify=True)
 
 
 @get('/documents/<prefix>/items')
@@ -141,7 +161,7 @@ def get_items(prefix):
         data = {'uids': uids}
         return data
     else:
-        return '<br>'.join(uids)
+        return template('item_list', prefix=prefix, items=uids)
 
 
 @get('/documents/<prefix>/items/<uid>')
@@ -184,6 +204,14 @@ def get_attr(prefix, uid, name):
             return '<br>'.join(str(e) for e in value)
         except TypeError:
             return str(value)
+
+
+@get('/assets/doorstop/<filename>')
+def get_assets(filename):
+    """Serve static files. Mainly used to serve CSS files and javascript."""
+    public_dir = os.path.join(os.path.dirname(__file__),
+                              '..', 'core', 'files', 'assets', 'doorstop')
+    return bottle.static_file(filename, root=public_dir)
 
 
 @post('/documents/<prefix>/numbers')
