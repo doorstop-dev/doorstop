@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2574f83d6951a84ddcac0bdcb79e2160782427ec879f50670d01de91940d4044"
+            "sha256": "0be2f7daf49b3c4d19a15f793642347b520dc34b3c5a9b5c59bad3737471da24"
         },
         "requires": {},
         "sources": [
@@ -11,11 +11,20 @@
             }
         ]
     },
-    "default": {},
+    "default": {
+        "click": {
+            "hash": "sha256:561a954a8740f1fc9c101679f43f3b75499192de1c44fbc05a5c27877047a76f",
+            "version": "==6.0"
+        },
+        "sappy": {
+            "hash": "sha256:c35e4e21cc618d5a3b19722ff421e9c827a60d1d1752f257777338063733a29f",
+            "version": "==1.1"
+        }
+    },
     "develop": {
         "Jinja2": {
-            "hash": "sha256:a7b7438120dbe76a8e735ef7eba6048eaf4e0b7dbc530e100812f8ec462a4d50",
-            "version": "==2.9.5"
+            "hash": "sha256:2231bace0dfd8d2bf1e5d7e41239c06c9e0ded46e70cc1094a0aa64b0afeb054",
+            "version": "==2.9.6"
         },
         "Markdown": {
             "hash": "sha256:0ac8a81e658167da95d063a9279c9c1b2699f37c7c4153256a458b3a43860e33",
@@ -94,8 +103,8 @@
             "version": "==2.5.1"
         },
         "mkdocs": {
-            "hash": "sha256:3485e07069158804a82373eba0f50798be99926ddcafbcd152c0b8cd34c78301",
-            "version": "==0.16.2"
+            "hash": "sha256:005b87441084aacd67ada15843c4ed2746bf324103a5bd94c02d36d9b307310f",
+            "version": "==0.16.3"
         },
         "nose": {
             "hash": "sha256:9ff7c6cc443f8c51994b34a667bbcf45afd6d945be7477b52e97516fd17c53ac",
@@ -150,8 +159,8 @@
             "version": "==0.7.1"
         },
         "setuptools": {
-            "hash": "sha256:6483f8412313ec787fa71379147a4605d3b1cc303c3648d02542a9160d3db72b",
-            "version": "==34.3.2"
+            "hash": "sha256:1f7aac8b778446406ec5dcd5cc9305b375e7935e38f2fd3b1b70168c21a079d0",
+            "version": "==34.4.1"
         },
         "six": {
             "hash": "sha256:0ff78c403d9bccf5a425a6d31a12aa6b47f1c21ca4dc2573a7e2f32a97335eb1",
@@ -162,8 +171,8 @@
             "version": "==0.4.0"
         },
         "tornado": {
-            "hash": "sha256:2898f992f898cd41eeb8d53b6df75495f2f423b6672890aadaf196ea1448edcc",
-            "version": "==4.4.2"
+            "hash": "sha256:f267acc96d5cf3df0fd8a7bfb5a91c2eb4ec81d5962d1a7386ceb34c655634a8",
+            "version": "==4.4.3"
         },
         "twine": {
             "hash": "sha256:3202d943a144962a821d9c5e92e07f9442dbbe6d6f18eae74e2a725b9980c559",
