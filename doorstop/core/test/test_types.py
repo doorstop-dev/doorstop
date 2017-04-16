@@ -445,6 +445,22 @@ class TestReference(unittest.TestCase):
 
     def setUp(self):
         self.ref1 = Reference('abc123')
-        self.ref2 = Reference('path/to/external.txt', 5, 10)
-        self.ref2 = Reference('path/to/external.dat', None, None)
-        self.ref3 = Reference()
+        self.ref2 = Reference('@/path/to/external.txt', 'abc123', 1, 4)
+        self.ref3 = Reference('@/path/to/external.txt', None, 42, 7)
+        self.ref4 = Reference('@/path/to/external.txt', None, None, 7)
+        self.ref5 = Reference('@/path/to/external.txt', None, None, None)
+        self.ref6 = Reference('@/path/to/external.dat', None, None, None)
+        self.ref7 = Reference()
+        self.ref8 = Reference(None)
+
+    def test_yaml(self):
+        """Verify references can be converted to their YAML dump format."""
+        self.assertEqual('abc123', self.ref1.yaml)
+        # TODO: update expected values
+        self.assertEqual({}, self.ref2.yaml)
+        self.assertEqual({}, self.ref3.yaml)
+        self.assertEqual({}, self.ref4.yaml)
+        self.assertEqual({}, self.ref5.yaml)
+        self.assertEqual({}, self.ref6.yaml)
+        self.assertEqual(None, self.ref7.yaml)
+        self.assertEqual(None, self.ref8.yaml)
