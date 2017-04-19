@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0be2f7daf49b3c4d19a15f793642347b520dc34b3c5a9b5c59bad3737471da24"
+            "sha256": "baf97972c2d8fb045c6179cb067c9e54f41880bba3a5dfa43cfaa792686c2844"
         },
         "requires": {},
         "sources": [
@@ -79,12 +79,12 @@
             "version": "==1.15.0"
         },
         "coverage": {
-            "hash": "sha256:8b282292973a1dc4eccfcc0776e0fde75b5b3de2e35164c2d854f7dd80149e4b",
+            "hash": "sha256:57c0c217270e628380f4befbbf8c5312b88ba7d81fd3d1b2218a25a2608f603c",
             "version": "==4.3.4"
         },
         "coverage.space": {
-            "hash": "sha256:607edd10808e8e9faa52e8e04cc9ad81772ce78aa3ab5ea53d4758df32c32974",
-            "version": "==0.7.2.post4"
+            "hash": "sha256:54f0e5bf3cfec621b5625969351207f937668bea9159a4c635f722c997bfe546",
+            "version": "==0.8"
         },
         "docopt": {
             "hash": "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491",
@@ -159,8 +159,8 @@
             "version": "==0.7.1"
         },
         "setuptools": {
-            "hash": "sha256:1f7aac8b778446406ec5dcd5cc9305b375e7935e38f2fd3b1b70168c21a079d0",
-            "version": "==34.4.1"
+            "hash": "sha256:33a7b7910651bea57164c6c6dd66a2b1c5196c0f78ee2ff7319ce7bd031714c0",
+            "version": "==35.0.1"
         },
         "six": {
             "hash": "sha256:0ff78c403d9bccf5a425a6d31a12aa6b47f1c21ca4dc2573a7e2f32a97335eb1",
@@ -171,8 +171,8 @@
             "version": "==0.4.0"
         },
         "tornado": {
-            "hash": "sha256:f267acc96d5cf3df0fd8a7bfb5a91c2eb4ec81d5962d1a7386ceb34c655634a8",
-            "version": "==4.4.3"
+            "hash": "sha256:8861cce3c081557cfca2623507290ed647978ea275c29e2e3dfeeb63ca61e855",
+            "version": "==4.5"
         },
         "twine": {
             "hash": "sha256:3202d943a144962a821d9c5e92e07f9442dbbe6d6f18eae74e2a725b9980c559",
