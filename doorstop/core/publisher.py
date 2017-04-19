@@ -178,7 +178,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield '  <th height="25" align="center"> {l} </th>'.format(l=link)
+            yield ('  <th height="25" align="center"> {link} </th>'.
+                   format(link=link))
         yield '</tr>'
         # data
         for index, row in enumerate(tree.get_traceability()):
@@ -240,14 +241,14 @@ def _lines_text(obj, indent=8, width=79, **_):
 
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
+                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=item.text)
             else:
                 yield "{t}".format(t=item.text)
 
         else:
 
             # Level and UID
-            yield "{l:<{s}}{u}".format(l=level, s=indent, u=item.uid)
+            yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
 
             # Text
             if item.text:
@@ -309,7 +310,9 @@ def _lines_markdown(obj, **kwargs):
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0] if text_lines else '')
+                standard = "{h} {lev} {t}".format(
+                    h=heading, lev=level,
+                    t=text_lines[0] if text_lines else '')
             else:
                 standard = "{h} {t}".format(h=heading, t=item.text)
             attr_list = _format_md_attr_list(item, linkify)
@@ -319,7 +322,8 @@ def _lines_markdown(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+                standard = "{h} {lev} {u}".format(h=heading,
+                                                  lev=level, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, linkify)
@@ -379,7 +383,7 @@ def _format_text_ref(item):
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
         if line:
-            return "Reference: {p} (line {l})".format(p=path, l=line)
+            return "Reference: {p} (line {line})".format(p=path, line=line)
         else:
             return "Reference: {p}".format(p=path)
     else:
@@ -392,7 +396,7 @@ def _format_md_ref(item):
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
         if line:
-            return "> `{p}` (line {l})".format(p=path, l=line)
+            return "> `{p}` (line {line})".format(p=path, line=line)
         else:
             return "> `{p}`".format(p=path)
     else:
@@ -452,7 +456,7 @@ def _table_of_contents_md(obj, linkify=None):
 
         if settings.PUBLISH_HEADING_LEVELS:
             level = _format_level(item.level)
-            lbl = '{l} {h}'.format(l=level, h=heading)
+            lbl = '{lev} {h}'.format(lev=level, h=heading)
         else:
             lbl = heading
 
