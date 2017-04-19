@@ -457,10 +457,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {i}".format(s=indent, l=level, i=item.uid)
+            value = "{s}{lev} {i}".format(s=indent, lev=level, i=item.uid)
             level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {u}".format(s=indent, l=level, u=item.uid)
-            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.uid)
+            value = "{s}{lev} {u}".format(s=indent, lev=level, u=item.uid)
+            value = "{s}{lev} {i}".format(s=indent, lev=item.level, i=item.uid)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
