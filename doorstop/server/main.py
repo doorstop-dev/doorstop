@@ -16,13 +16,12 @@ from doorstop.common import HelpFormatter
 from doorstop.server import utilities
 from doorstop import settings
 from doorstop.core import vcs
+from doorstop.core import types
 
-log = common.logger(__name__)
-
-app = utilities.StripPathMiddleware(bottle.app())
+app = bottle.Bottle()
 tree = None  # set in `run`, read in the route functions
 numbers = defaultdict(int)  # cache of next document numbers
-
+TEMPLATE = 'server'
 
 def main(args=None):
     """Process command-line arguments and run the program."""
@@ -51,6 +50,8 @@ def main(args=None):
                         help="Run as a WSGI process")
     parser.add_argument('-b', '--baseurl', default='',
                         help="Base URL this is served at (Usually only necessary for WSGI)")
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+                       help="enable verbose logging")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -58,15 +59,17 @@ def main(args=None):
     if args.project is None:
         args.project = vcs.find_root(cwd)
 
-    # Configure logging
-    logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
-                        level=settings.VERBOSE_LOGGING_LEVEL)
-
+    if args.verbose == 0:
+        logging_level = settings.VERBOSE_LOGGING_LEVEL
+        logging_format = settings.VERBOSE_LOGGING_FORMAT
+    else:
+        logging_level = settings.VERBOSE2_LOGGING_LEVEL
+        logging_format = settings.VERBOSE2_LOGGING_FORMAT
     # Run the program
-    run(args, os.getcwd(), parser.error)
+    run(args, os.getcwd())
 
 
-def run(args, cwd, _):
+def run(args, cwd):
     """Start the server.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
@@ -233,6 +236,26 @@ def post_numbers(prefix):
     else:
         return str(number)
 
+
+@app.post('/documents/<prefix>/items/<uid>')
+def save_item(prefix, uid):
+    """Update a document's item."""
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+
+    itemtext = request.forms.itemtext
+    item.text = itemtext
+
+    link_text = request.forms.links
+    if ',' in link_text:
+        links = link_text.split(',')
+    else:
+        links = link_text.split()
+    links = [l.strip() for l in links]
+
+    if links:
+        item.links = links
+    return {'result':'ok'}
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
     main()
