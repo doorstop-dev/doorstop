@@ -28,8 +28,30 @@
                     <textarea class="form-control" rows=10 name="itemtext" id="itemtext"></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="level">Level</label>
+                    <input class="form-control" name="level" id="level"></input>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="normative" id="normative"> Normative
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="derived" id="derived"> Derived
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="links">Item Links</label>
                     <input class="form-control" name="links" id="links"></input>
+                </div>
+                <div class="form-group">
+                    <label for="message">Commit message</label>
+                    <input class="form-control" name="message" id="message"></input>
                 </div>
             </form>
         </div>
@@ -56,7 +78,6 @@
         // $("#main a").attr("target", "parent");
 
         $(window).on('hashchange', function() {
-            console.log(location.hash)
             $(window).scrollTop($(location.hash).offset().top)});        
 
         $('#editItemModal').on('show.bs.modal', function (event) {
@@ -69,15 +90,16 @@
             var url = "/documents/" + prefix + "/items/" + uid + '?format=json'
             $.ajax({url:url,
                     context:modal}).done(function(data){
-                        console.log(data)
                         var textarea = modal.find('.modal-body texarea')
                         $("#editItemModal textarea").val(data.text)
                         $("#editItemModal #links").val(data.links)
+                        $("#editItemModal #level").val(data.level)
+                        if (data.normative){$("#normative").prop("checked", true)}
+                        if (data.derived){$("#derived").prop("checked", true)}
                     })
         })
 
         $('button#submit').click(function () {
-            console.log("Submitting")
             //Save the edits
             var modal = $("#editItemModal")
             var uid = modal.find('#uid').val()
@@ -103,12 +125,12 @@
                     })
         });
 
-        $( ":header" ).each(function(){
-            var uid = $(this).attr("id")
-            $(this).nextUntil(":header").wrapAll('<div class="item" id="' + uid + '"></div>')
-            })
+//        $( ":header" ).each(function(){
+//            var uid = $(this).attr("id")
+//            $(this).nextUntil(":header").wrapAll('<div class="item" id="' + uid + '"></div>')
+//            })
 
-        $(".item").each(function(){
+        $(":header").each(function(){
             var button = '<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal" '
             button = button + 'data-uid="' + $(this).attr("id") +'">Edit</button>'
             $(this).append(button)

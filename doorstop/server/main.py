@@ -175,6 +175,9 @@ def get_item(prefix, uid):
     if utilities.json_response(request):
         children = ", ".join([str(child) for child in item.find_child_links()])[2:]
         return {'text': item.text,
+                'level': str(item.level),
+                'normative': item.normative,
+                'derived': item.derived,
                 'links': ", ".join([str(uid) for uid in item.parent_links]),
                 'children': children}
     else:
@@ -255,6 +258,16 @@ def save_item(prefix, uid):
 
     if links:
         item.links = links
+    if request.forms.normative=="on":
+        item.normative = True
+    else:
+        item.normative = False
+    if request.forms.derived=="on":
+        item.derived = True
+    else:
+        item.derived = False
+    
+    item.level = request.forms.level
     return {'result':'ok'}
 
 if __name__ == '__main__':  # pragma: no cover (manual test)

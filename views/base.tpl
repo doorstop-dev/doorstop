@@ -1,8 +1,9 @@
 %setdefault('stylesheet', None)
 %setdefault('navigation', False)
+%setdefault('prefix', 'Doorstop')
 <!DOCTYPE html>
 <html>
-<head><title>{{prefix or 'Doorstop'}}</title>
+<head><title>{{prefix}}</title>
   <meta charset="utf-8" />
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <link rel="stylesheet" href="{{baseurl}}assets/doorstop/bootstrap.min.css" />
