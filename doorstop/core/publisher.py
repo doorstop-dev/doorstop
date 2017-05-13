@@ -315,7 +315,7 @@ def _lines_markdown(obj, **kwargs):
                     t=text_lines[0] if text_lines else '')
             else:
                 standard = "{h} {t}".format(h=heading, t=item.text)
-            attr_list = _format_md_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
         else:
@@ -326,7 +326,7 @@ def _lines_markdown(obj, **kwargs):
                                                   lev=level, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
-            attr_list = _format_md_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
 
             # Text
@@ -494,7 +494,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
     body = markdown.markdown(text, extensions=extensions)
 
     if toc:
-        toc_md = _table_of_contents_md(obj, linkify)
+        toc_md = _table_of_contents_md(obj, True)
         toc_html = markdown.markdown(toc_md, extensions=extensions)
     else:
         toc_html = ''
