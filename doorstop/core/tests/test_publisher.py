@@ -285,7 +285,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4" + '\n\n'
+        expected = ("## 1.2 req4 {#req4 }" + '\n\n'
                     "This shall..." + '\n\n'
                     "> `Doorstop.sublime-project`" + '\n\n'
                     "*Links: sys4*" + '\n\n')
@@ -317,7 +317,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_without_body_levels(self):
         """Verify Markdown can be published from an item (no body levels)."""
-        expected = ("## req4" + '\n\n'
+        expected = ("## req4 {#req4 }" + '\n\n'
                     "This shall..." + '\n\n'
                     "> `Doorstop.sublime-project`" + '\n\n'
                     "*Links: sys4*" + '\n\n')
@@ -336,7 +336,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = '<h2>1.1 Heading</h2>\n'
+        expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -346,7 +346,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_lines_html_item_no_heading_levels(self):
         """Verify an item heading level can be ommitted."""
-        expected = '<h2>Heading</h2>\n'
+        expected = '<h2 id="req3">Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
