@@ -65,8 +65,8 @@
 
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="{{baseurl}}assets/doorstop/jquery.min.js"></script>
-<script src="{{baseurl}}assets/doorstop/bootstrap.min.js"></script>
+<script src="{{baseurl}}assets/doorstop/js/jquery.min.js"></script>
+<script src="{{baseurl}}assets/doorstop/js/bootstrap.min.js"></script>
 <script>
     $( document ).ready(function() {
         $("table").addClass("table")
@@ -108,33 +108,44 @@
             $.ajax({url:url,
                     method:'POST',
                     data: $('#editItemForm').serialize()}).done(function(data){
-                        console.log("Submitted edits")
-
-                        //Reload the html
-                        url = "/documents/" + prefix + "/items/" + uid
-                        $.get(url, function(data){
-                            var item = $("#" + uid)
-                            item.nextUntil(':header').remove();
-                            item.replaceWith(data)
-                            var button = '<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal" '
-                            button = button + 'data-uid="' + uid +'">Edit</button>'
-                            $("#" + uid).append(button)
-                            $("table").addClass("table")
-                        })
-                        $('#editItemModal').modal('hide')
+                        if (data.result == "ok") { location.reload() }
                     })
         });
 
-//        $( ":header" ).each(function(){
-//            var uid = $(this).attr("id")
-//            $(this).nextUntil(":header").wrapAll('<div class="item" id="' + uid + '"></div>')
-//            })
+        $('[data-tooltip="tooltip"]').tooltip();
 
-        $(":header").each(function(){
-            var button = '<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editItemModal" '
-            button = button + 'data-uid="' + $(this).attr("id") +'">Edit</button>'
+        $("#main :header").each(function(){
+            
+            var button = '<div class="btn-group" role="group">'
+            button = button + '<button type="button" class="btn btn-default" data-toggle="modal" data-tooltip="tooltip" title="Edit item" data-target="#editItemModal" '
+            button = button + 'data-uid="' + $(this).attr("id") +'"><span class="glyphicon glyphicon-pencil"></span></button>'
+            button = button + '<button type="button" class="btn btn-default insert" data-tooltip="tooltip" title="Insert after"'
+            button = button + 'id="' + $(this).attr("id") +'"><span class="glyphicon glyphicon-plus"></span></button>'
+            button = button + '<button type="button" class="btn btn-default delete" data-tooltip="tooltip" title="Delete"'
+            button = button + 'id="' + $(this).attr("id") +'"><span class="glyphicon glyphicon-remove"></span></button>'
+            button = button + '</div>'
             $(this).append(button)
         })
+
+       $('.insert').on('click', function (e) {
+        console.log($(this).attr("id"))
+        var prefix = $("body").attr("prefix")
+        $.ajax({url:"/documents/" + prefix + "/items",
+                method:'POST',
+                data: {uid:$(this).attr("id")}}).done(function(data){
+                    console.log(data)
+                    if (data.result == "ok") { location.reload() }
+                    })
+        });
+
+       $('.delete').on('click', function (e) {
+        var prefix = $("body").attr("prefix")
+        $.ajax({url:"/documents/" + prefix + "/items/" + $(this).attr("id"),
+                method:'DELETE'}).done(function(data){
+                    if (data.result == "ok") { location.reload() }
+                    else alert("Delete failed")
+                    })
+        });
     });
 
 

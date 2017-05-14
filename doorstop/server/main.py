@@ -155,7 +155,7 @@ def get_document(prefix):
                                        baseurl='/documents/doorstop/')
 
 
-@app.route('/documents/<prefix>/items')
+@app.get('/documents/<prefix>/items')
 def get_items(prefix):
     """Read a document's items."""
     document = tree.find_document(prefix)
@@ -166,6 +166,15 @@ def get_items(prefix):
     else:
         return template('item_list', prefix=prefix, items=uids)
 
+@app.post('/documents/<prefix>/items')
+def insert_item(prefix):
+    """Create a new item at the level"""
+    uid = request.forms.get('uid')
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+    level = item.level + 1
+    item = document.add_item(level=level)
+    return {'result':'ok'}
 
 @app.route('/documents/<prefix>/items/<uid>')
 def get_item(prefix, uid):
@@ -223,7 +232,6 @@ def get_assets(prefix, filepath):
         document = tree.find_document(prefix)
         root = os.path.join(document.path, 'assets')
     print("static file %s/%s" % (root, filepath))
-    #app.log.info("static file %s/%s", root, filepath)
     return static_file(filepath, root=root)
 
 
@@ -238,6 +246,15 @@ def post_numbers(prefix):
         return data
     else:
         return str(number)
+
+
+@app.delete('/documents/<prefix>/items/<uid>')
+def delete_item(prefix, uid):
+    """Delete document item."""
+    document = tree.find_document(prefix)
+    item = document.find_item(uid)
+    item.delete()
+    return {'result':'ok'}
 
 
 @app.post('/documents/<prefix>/items/<uid>')
@@ -267,7 +284,9 @@ def save_item(prefix, uid):
     else:
         item.derived = False
     
-    item.level = request.forms.level
+    if item.level != request.forms.level:
+        item.level = request.forms.level
+        document.reorder(manual=False, keep=item)
     return {'result':'ok'}
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
