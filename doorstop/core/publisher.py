@@ -510,7 +510,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise
-        yield html
+        yield '\n'.join(html.split(os.linesep))
     else:
         yield body
 
