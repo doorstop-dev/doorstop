@@ -34,7 +34,6 @@ class WorkingCopy(BaseWorkingCopy):
         if password:
             args.extend(['--password', password])
         args.append(path)
-        print(args)
         return self.call(*args, return_stdout=True)
 
     @property

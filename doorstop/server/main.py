@@ -53,6 +53,8 @@ def main(args=None):
                         help="Base URL this is served at (Usually only necessary for WSGI)")
     parser.add_argument('-v', '--verbose', action='count', default=0,
                        help="enable verbose logging")
+    parser.add_argument('-c', '--commit', action='store_true',
+                        help="(VCS) commit items when saving")
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -81,6 +83,8 @@ def run(args, cwd):
     global tree  # pylint: disable=W0603
     tree = build(cwd=cwd, root=args.project)
     tree.load()
+
+    app.config['commit'] = args.commit
     host = args.host
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
@@ -299,13 +303,15 @@ def save_item(prefix, uid):
     if not message:
         message = "Change by {}".format(request.auth[0])
 
-    try:
-        stdout = tree.vcs.commit(path=item.path, 
-                                 message=message,
-                                 username=request.auth[0],
-                                 password=request.auth[1])
-    except subprocess.CalledProcessError:
-        abort(401)
+    if app.config['commit']:
+        try:
+            stdout = tree.vcs.commit(path=item.path,
+                                     message=message,
+                                     username=request.auth[0],
+                                     password=request.auth[1])
+        except subprocess.CalledProcessError:
+            print(stdout)
+            abort(401)
 
     return {'result':'ok'}
 
