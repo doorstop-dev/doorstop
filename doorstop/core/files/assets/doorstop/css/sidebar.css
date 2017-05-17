@@ -5,6 +5,10 @@
 
 #img {width: 100%}
 
+#itemtext { font-family:monospace }
+
+.code { font-family:monospace}
+
 /* sidebar */
 .sidebar {
     padding-left: 20px;

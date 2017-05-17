@@ -109,6 +109,10 @@
                     method:'POST',
                     data: $('#editItemForm').serialize()}).done(function(data){
                         if (data.result == "ok") { location.reload() }
+                    }).error(function(xhr, textStatus, errorThrown){
+                        console.log("Login Failed")
+                        alert('Login Failed')
+                        location.reload()
                     })
         });
 

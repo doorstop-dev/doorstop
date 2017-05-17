@@ -27,9 +27,15 @@ class WorkingCopy(BaseWorkingCopy):
     def delete(self, path):
         self.call('svn', 'delete', path)
 
-    def commit(self, message=None):
-        message = message or input("Commit message: ")
-        self.call('svn', 'commit', '--message', message)
+    def commit(self, path, message=None, username=None, password=None):
+        args = ['svn', 'commit', '--non-interactive', '--message', message]
+        if username:
+            args.extend(['--username', username])
+        if password:
+            args.extend(['--password', password])
+        args.append(path)
+        print(args)
+        return self.call(*args, return_stdout=True)
 
     @property
     def ignores(self):  # pragma: no cover (manual test)

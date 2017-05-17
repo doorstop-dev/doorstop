@@ -7,9 +7,10 @@ from collections import defaultdict
 import webbrowser
 import argparse
 import logging
+import subprocess
 
 import bottle
-from bottle import get, post, request, hook, response, static_file, template
+from bottle import get, post, request, hook, response, static_file, template, auth_basic, abort
 
 from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
@@ -102,7 +103,6 @@ def run(args, cwd):
     if not args.wsgi:
         bottle.run(app=app, host=host, port=port,
                    debug=args.debug, reloader=args.debug)
-
 
 @hook('before_request')
 def strip_path():
@@ -256,13 +256,17 @@ def delete_item(prefix, uid):
     item.delete()
     return {'result':'ok'}
 
+def check(user, password):
+    "Dummy authentication"
+    return True
 
 @app.post('/documents/<prefix>/items/<uid>')
+@auth_basic(check)
 def save_item(prefix, uid):
     """Update a document's item."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
-
+    item.auto = False
     itemtext = request.forms.itemtext
     item.text = itemtext
 
@@ -275,19 +279,36 @@ def save_item(prefix, uid):
 
     if links:
         item.links = links
-    if request.forms.normative=="on":
+
+    if request.forms.normative == "on":
         item.normative = True
     else:
         item.normative = False
-    if request.forms.derived=="on":
+
+    if request.forms.derived == "on":
         item.derived = True
     else:
         item.derived = False
-    
+
     if item.level != request.forms.level:
         item.level = request.forms.level
         document.reorder(manual=False, keep=item)
+
+    item.save()
+    message = request.forms.message
+    if not message:
+        message = "Change by {}".format(request.auth[0])
+
+    try:
+        stdout = tree.vcs.commit(path=item.path, 
+                                 message=message,
+                                 username=request.auth[0],
+                                 password=request.auth[1])
+    except subprocess.CalledProcessError:
+        abort(401)
+
     return {'result':'ok'}
+
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
     main()
