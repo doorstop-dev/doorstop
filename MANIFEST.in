@@ -3,3 +3,4 @@ recursive-include docs *.rst *.txt *.md
 graft */files
 graft */*/files
 graft doorstop/core/files/assets
+graft views
