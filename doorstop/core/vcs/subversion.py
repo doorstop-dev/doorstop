@@ -29,10 +29,10 @@ class WorkingCopy(BaseWorkingCopy):
 
     def commit(self, path, message=None, username=None, password=None):
         args = ['svn', 'commit', '--non-interactive', '--message', message]
-        if username:
+        if username or password:
             args.extend(['--username', username])
-        if password:
             args.extend(['--password', password])
+            args.extend(['--no-auth-cache'])
         args.append(path)
         return self.call(*args, return_stdout=True)
 
