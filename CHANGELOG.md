@@ -1,5 +1,10 @@
 # Revision History
 
+## 1.3 (2017/07/29)
+
+- Updated HTML templates.
+- Bug fixes.
+
 ## 1.2.1 (2017/02/25)
 
 - Fixed issue where could `doorstop create` deleting the whole project.
