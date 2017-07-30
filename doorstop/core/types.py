@@ -2,7 +2,6 @@
 
 import os
 import re
-import textwrap
 import hashlib
 
 import yaml
@@ -31,7 +30,7 @@ class Prefix(str):
     def __repr__(self):
         return "Prefix('{}')".format(self)
 
-    def __hash__(self):
+    def __hash__(self):  # pylint: disable=useless-super-delegation
         return super().__hash__()
 
     def __eq__(self, other):
@@ -97,7 +96,7 @@ class UID(object):
             return
         self.stamp = stamp or Stamp()
         # Join values
-        if len(values) == 0:
+        if len(values) == 0:  # pylint: disable=len-as-condition
             self.value = ''
         elif len(values) == 1:
             value = values[0]
@@ -112,7 +111,7 @@ class UID(object):
             else:
                 self.value = str(value) if values[0] else ''
         elif len(values) == 4:
-            self.value = UID.join_uid(*values)
+            self.value = UID.join_uid(*values)  # pylint: disable=no-value-for-parameter
         else:
             raise TypeError("__init__() takes 1 or 4 positional arguments")
         # Split values
@@ -238,6 +237,7 @@ class _Literal(str):
         """Return a custom dumper that formats str in the literal style."""
         return dumper.represent_scalar('tag:yaml.org,2002:str', data,
                                        style='|' if data else '')
+
 
 yaml.add_representer(_Literal, _Literal.representer)
 

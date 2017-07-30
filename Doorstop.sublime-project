@@ -31,11 +31,7 @@
             },
             "pylint": {
                 "@disable": false,
-                "args": ["--max-line-length=79"],
-                "disable": "I0011,W0142,W0511,R0801",
-                "enable": "",
-                "excludes": [],
-                "rcfile": ""
+                "rcfile": ".pylint.ini"
             }
         }
     },

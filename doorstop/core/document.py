@@ -3,6 +3,7 @@
 import os
 from itertools import chain
 from collections import OrderedDict
+import re
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
@@ -70,7 +71,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def __len__(self):
         return len(list(i for i in self._iter() if i.active))
 
-    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
+    def __bool__(self):
+        """Even empty documents should be considered truthy."""
         return True
 
     @staticmethod
@@ -207,6 +209,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Yield items
         yield from list(self._items)
 
+    def copy_assets(self, dest):
+        """Copy the contents of the assets directory."""
+        if not self.assets:
+            return
+        common.copy_dir_contents(self.assets, dest)
+
     # properties #############################################################
 
     @property
@@ -301,7 +309,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             remote_number = 0
             while remote_number is not None and remote_number < number:
                 if remote_number:
-                    log.warn("server is behind, requesting next number...")
+                    log.warning("server is behind, requesting next number...")
                 remote_number = self.tree.request_next_number(self.prefix)
                 log.debug("next number (remote): {}".format(remote_number))
             if remote_number:
@@ -426,6 +434,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield '#' * settings.MAX_LINE_LENGTH
         yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
         yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
+        yield '# A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new: '
+        yield '# THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS'
         yield '# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
         yield '#' * settings.MAX_LINE_LENGTH
         yield ''
@@ -433,27 +443,49 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield "outline:"
         for item in items:
             space = "    " * item.depth
-            comment = item.text.replace('\n', ' ') or item.ref
+            lines = item.text.strip().splitlines()
+            comment = lines[0] if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
             yield line
 
     @staticmethod
+    def _read_index(path):
+        """Load the index, converting comments to text entries for each item."""
+        with open(path, 'r', encoding='utf-8') as stream:
+            text = stream.read()
+        yaml_text = []
+        for line in text.split('\n'):
+            m = re.search(r'(\s+)(- [\w\d-]+\s*): # (.+)$', line)
+            if m:
+                prefix = m.group(1)
+                uid = m.group(2)
+                item_text = m.group(3).replace('"', '\\"')
+                yaml_text.append('{p}{u}:'.format(p=prefix, u=uid))
+                yaml_text.append('    {p}- text: "{t}"'.format(p=prefix, t=item_text))
+            else:
+                yaml_text.append(line)
+        return common.load_yaml('\n'.join(yaml_text), path)
+
+    @staticmethod
     def _reorder_from_index(document, path):
         """Reorder a document's item from the index."""
-        # Load and parse index
-        text = common.read_text(path)
-        data = common.load_yaml(text, path)
+        data = document._read_index(path)  # pylint: disable=protected-access
         # Read updated values
         initial = data.get('initial', 1.0)
         outline = data.get('outline', [])
         # Update levels
         level = Level(initial)
-        Document._reorder_section(outline, level, document)
+        ids_after_reorder = []
+        Document._reorder_section(outline, level, document, ids_after_reorder)
+        for item in document.items:
+            if item.uid not in ids_after_reorder:
+                log.info('Deleting %s', item.uid)
+                item.delete()
 
     @staticmethod
-    def _reorder_section(section, level, document):
+    def _reorder_section(section, level, document, list_of_ids):
         """Recursive function to reorder a section of an outline.
 
         :param section: recursive `list` of `dict` loaded from document index
@@ -465,35 +497,43 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
             # Get the item and subsection
             uid = list(section.keys())[0]
-            try:
-                item = document.find_item(uid)
-            except DoorstopError as exc:
-                log.debug(exc)
-                item = None
+            if uid == 'text':
+                return
             subsection = section[uid]
 
             # An item is a header if it has a subsection
-            level.heading = bool(subsection)
+            level.heading = False
+            item_text = ''
+            if isinstance(subsection, str):
+                item_text = subsection
+            elif isinstance(subsection, list):
+                if 'text' in subsection[0]:
+                    item_text = subsection[0]['text']
+                    if len(subsection) > 1:
+                        level.heading = True
 
-            # Apply the new level
-            if item is None:
-                log.info("({}): {}".format(uid, level))
-            elif item.level == level:
-                log.info("{}: {}".format(item, level))
-            else:
-                log.info("{}: {} to {}".format(item, item.level, level))
-            if item:
+            try:
+                item = document.find_item(uid)
                 item.level = level
+                log.info("Found ({}): {}".format(uid, level))
+                list_of_ids.append(uid)
+            except DoorstopError:
+                item = document.add_item(level=level, reorder=False)
+                list_of_ids.append(item.uid)
+                if level.heading:
+                    item.normative = False
+                item.text = item_text
+                log.info("Created ({}): {}".format(item.uid, level))
 
             # Process the heading's subsection
             if subsection:
-                Document._reorder_section(subsection, level >> 1, document)
+                Document._reorder_section(subsection, level >> 1, document, list_of_ids)
 
         elif isinstance(section, list):  # a list of sections
 
             # Process each subsection
             for index, subsection in enumerate(section):
-                Document._reorder_section(subsection, level + index, document)
+                Document._reorder_section(subsection, level + index, document, list_of_ids)
 
     @staticmethod
     def _reorder_automatic(items, start=None, keep=None):
@@ -562,13 +602,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 levels[item.level] = [item]
         # Reorder levels
-        for level, items in levels.items():
+        for level, items_at_level in levels.items():
             # Reorder items at this level
-            if keep in items:
+            if keep in items_at_level:
                 # move the kept item to the front of the list
                 log.debug("keeping {} level over duplicates".format(keep))
-                items = [items.pop(items.index(keep))] + items
-            for item in items:
+                items_at_level.remove(keep)
+                items_at_level.insert(0, keep)
+            for item in items_at_level:
                 yield level, item
 
     def find_item(self, value, _kind=''):
@@ -592,7 +633,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, skip=None, item_hook=None, **kwargs):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
@@ -603,7 +644,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                               :class:`~doorstop.common.DoorstopInfo`
 
         """
-        assert kwargs.get('document_hook') is None
+        assert document_hook is None
         skip = [] if skip is None else skip
         hook = item_hook if item_hook else lambda **kwargs: []
 

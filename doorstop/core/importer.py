@@ -62,7 +62,7 @@ def create_document(prefix, path, parent=None, tree=None):
         document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
-            raise exc from None
+            raise exc from None  # pylint: disable=raising-bad-type
 
         # Create the document despite an unavailable parent
         document = Document.new(tree,
@@ -195,6 +195,8 @@ def _file_xlsx(path, document, mapping=None):
     log.debug("reading rows in {}...".format(path))
     workbook = openpyxl.load_workbook(path, use_iterators=True)
     worksheet = workbook.active
+
+    index = 0
 
     # Extract header and data rows
     for index, row in enumerate(worksheet.iter_rows()):

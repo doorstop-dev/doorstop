@@ -178,7 +178,7 @@ def run_edit(args, cwd, error, catch=True):
                 item = tree.find_item(args.label)
             except common.DoorstopError as exc:
                 if args.item:
-                    raise exc from None
+                    raise exc from None  # pylint: disable=raising-bad-type
         if not item:
             document = tree.find_document(args.label)
 
@@ -500,12 +500,14 @@ def run_publish(args, cwd, error, catch=True):
         if whole_tree:
             msg = "publishing tree to '{}'...".format(path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(tree, path, ext, **kwargs)
+            published_path = publisher.publish(tree, path, ext,
+                                               template=args.template, **kwargs)
         else:
             msg = "publishing document {} to '{}'...".format(document,
                                                              path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(document, path, ext, **kwargs)
+            published_path = publisher.publish(document, path, ext,
+                                               template=args.template, **kwargs)
         if published_path:
             utilities.show("published: {}".format(published_path))
 
@@ -522,7 +524,7 @@ def run_publish(args, cwd, error, catch=True):
 def _request_next_number(args):
     """Get the server's "next number" method if a server exists."""
     if args.force:
-        log.warn("creating items without the server...")
+        log.warning("creating items without the server...")
         return None
     else:
         server.check()
@@ -589,7 +591,7 @@ def _iter_items(args, cwd, error):
                 document = tree.find_document(args.label)
             except common.DoorstopError as exc:
                 if args.document:
-                    raise exc from None
+                    raise exc from None  # pylint: disable=raising-bad-type
         if not document:
             item = tree.find_item(args.label)
 

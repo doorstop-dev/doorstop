@@ -45,7 +45,7 @@ def build(cwd=None, root=None, request_next_number=None):
     log.info("building tree...")
     tree = Tree.from_list(documents, root=root)
     tree.request_next_number = request_next_number
-    if len(tree):
+    if len(tree):  # pylint: disable=len-as-condition
         log.info("built tree: {}".format(tree))
     else:
         log.info("tree is empty")

@@ -3,15 +3,16 @@
 import os
 import fnmatch
 import subprocess
-from abc import ABCMeta, abstractmethod  # pylint: disable=W0611
+from abc import ABCMeta, abstractmethod
 
 from doorstop import common
 from doorstop import settings
 
+
 log = common.logger(__name__)
 
 
-class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
+class BaseWorkingCopy(object, metaclass=ABCMeta):
     """Abstract base class for VCS working copies."""
 
     DIRECTORY = None  # special hidden directory for the working copy
@@ -31,11 +32,14 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):  # pylint: disable=R0921
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
         """Call a command with string arguments."""
-        log.debug("$ {}".format(' '.join(args)))
-        if return_stdout:
-            return subprocess.check_output(args).decode('utf-8')
-        else:
-            return subprocess.call(args)
+        log.debug("$ %s", ' '.join(args))
+        try:
+            if return_stdout:
+                return subprocess.check_output(args).decode('utf-8')
+            else:
+                return subprocess.call(args)
+        except FileNotFoundError:
+            raise common.DoorstopError("Command not found: {}".format(args[0]))
 
     @abstractmethod
     def lock(self, path):  # pragma: no cover (abstract method)

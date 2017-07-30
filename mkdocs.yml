@@ -4,16 +4,20 @@ site_author: Jace Browning
 repo_url: https://github.com/jacebrowning/doorstop
 
 theme: readthedocs
+extra_css: []
+extra_javascript: []
 
 pages:
 - Home: index.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
+  - Reordering Documents: cli/reordering.md
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
 - Graphical Interface: gui/coming-soon.md
 - Scripting Interface: api/scripting.md
+- Item reference: reference/items.md
 - About:
   - Release Notes: about/changelog.md
   - Contributing: about/contributing.md

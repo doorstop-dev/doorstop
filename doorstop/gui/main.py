@@ -199,16 +199,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Start the application
         root.after(500, self.find)
 
-    def init(self, root):  # pylint: disable=R0912,R0914
-        """Initialize and return the main frame."""  # pylint: disable=C0301
+    def init(self, root):
+        """Initialize and return the main frame."""
         # Shared arguments
         width_outline = 20
         width_text = 30
-        width_code = 30
         width_uid = 10
         height_text = 10
         height_ext = 5
-        height_code = 3
 
         # Shared keyword arguments
         kw_f = {'padding': 5}  # constructor arguments for frames
@@ -438,7 +436,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.combobox_documents['values'] = values
 
         # Select the first document
-        if len(self.tree):
+        if len(self.tree):  # pylint: disable=len-as-condition
             self.combobox_documents.current(0)
         else:
             logging.warning("no documents to display")
@@ -459,10 +457,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document outline
             indent = '  ' * (item.depth - 1)
             level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {i}".format(s=indent, l=level, i=item.uid)
+            value = "{s}{lev} {i}".format(s=indent, lev=level, i=item.uid)
             level = '.'.join(str(l) for l in item.level)
-            value = "{s}{l} {u}".format(s=indent, l=level, u=item.uid)
-            value = "{s}{l} {i}".format(s=indent, l=item.level, i=item.uid)
+            value = "{s}{lev} {u}".format(s=indent, lev=level, u=item.uid)
+            value = "{s}{lev} {i}".format(s=indent, lev=item.level, i=item.uid)
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
@@ -478,7 +476,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.listbox_outline.selection_set(self.index or 0)
         uid = self.listbox_outline.selection_get()
         self.stringvar_item.set(uid)  # manual call
-        if len(self.document):
+        if len(self.document):   # pylint: disable=len-as-condition
             self.listbox_outline.selection_set(self.index or 0)
             identifier = self.listbox_outline.selection_get()
             self.stringvar_item.set(identifier)  # manual call

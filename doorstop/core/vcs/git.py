@@ -13,7 +13,7 @@ class WorkingCopy(BaseWorkingCopy):
     IGNORES = ('.gitignore',)
 
     def lock(self, path):
-        log.debug("`git` does not support locking: {}".format(path))
+        log.debug("`git` does not support locking: %s", path)
         self.call('git', 'pull')
 
     def edit(self, path):
@@ -26,6 +26,6 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('git', 'rm', self.relpath(path), '--force', '--quiet')
 
     def commit(self, message=None):
-        message = message or input("Commit message: ")  # pylint: disable=W0141
+        message = message or input("Commit message: ")
         self.call('git', 'commit', '--all', '--message', message)
         self.call('git', 'push')

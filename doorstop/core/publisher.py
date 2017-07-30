@@ -9,18 +9,24 @@ from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
 from doorstop import settings
+from doorstop.core import Document
 
-EXTENSIONS = [
+from bottle import template as bottle_template
+import bottle
+
+EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
-]
+)
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
+HTMLTEMPLATE = 'sidebar'
 INDEX = 'index.html'
 
 log = common.logger(__name__)
 
 
-def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
+def publish(obj, path, ext=None, linkify=None, index=None,
+            template=None, toc=True, **kwargs):
     """Publish an object to a given format.
 
     The function can be called in two ways:
@@ -47,20 +53,37 @@ def publish(obj, path, ext=None, linkify=None, index=None, **kwargs):
     if index is None:
         index = is_tree(obj) and ext == '.html'
 
+    if is_tree(obj):
+        assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
+    else:
+        assets_dir = os.path.join(os.path.dirname(path), Document.ASSETS)  # path is a filename
+
+    if os.path.isdir(assets_dir):
+        log.info('Deleting contents of assets directory %s', assets_dir)
+        common.delete_contents(assets_dir)
+    else:
+        os.makedirs(assets_dir)
+
+    # If publish html and then markdown ensure that the html template are still available
+    if not template:
+        template = HTMLTEMPLATE
+    template_assets = os.path.join(os.path.dirname(__file__), 'files', 'assets')
+    if os.path.isdir(template_assets):
+        log.info("Copying %s to %s", template_assets, assets_dir)
+        common.copy_dir_contents(template_assets, assets_dir)
+
     # Publish documents
     count = 0
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
 
         # Publish content to the specified path
-        common.create_dirname(path2)
         log.info("publishing to {}...".format(path2))
-        lines = publish_lines(obj2, ext, linkify=linkify, **kwargs)
+        lines = publish_lines(obj2, ext, linkify=linkify, template=template,
+                              toc=toc, **kwargs)
         common.write_lines(lines, path2)
-        if obj2.assets:
-            src = obj2.assets
-            dst = os.path.join(os.path.dirname(path2), obj2.ASSETS)
-            common.copy(src, dst)
+        if obj2.copy_assets(assets_dir):
+            log.info('Copied assets from %s to %s', obj.assets, assets_dir)
 
     # Create index
     if index and count:
@@ -155,7 +178,8 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield '  <th height="25" align="center"> {l} </th>'.format(l=link)
+            yield ('  <th height="25" align="center"> {link} </th>'.
+                   format(link=link))
         yield '</tr>'
         # data
         for index, row in enumerate(tree.get_traceability()):
@@ -217,14 +241,14 @@ def _lines_text(obj, indent=8, width=79, **_):
 
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                yield "{l:<{s}}{t}".format(l=level, s=indent, t=item.text)
+                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=item.text)
             else:
                 yield "{t}".format(t=item.text)
 
         else:
 
             # Level and UID
-            yield "{l:<{s}}{u}".format(l=level, s=indent, u=item.uid)
+            yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
 
             # Text
             if item.text:
@@ -267,7 +291,7 @@ def _chunks(text, width, indent):
                              subsequent_indent=' ' * indent)
 
 
-def _lines_markdown(obj, linkify=False):
+def _lines_markdown(obj, **kwargs):
     """Yield lines for a Markdown report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -276,6 +300,7 @@ def _lines_markdown(obj, linkify=False):
     :return: iterator of lines of text
 
     """
+    linkify = kwargs.get('linkify', False)
     for item in iter_items(obj):
 
         heading = '#' * item.depth
@@ -285,20 +310,23 @@ def _lines_markdown(obj, linkify=False):
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {l} {t}".format(h=heading, l=level, t=text_lines[0])
+                standard = "{h} {lev} {t}".format(
+                    h=heading, lev=level,
+                    t=text_lines[0] if text_lines else '')
             else:
                 standard = "{h} {t}".format(h=heading, t=item.text)
-            attr_list = _format_md_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
         else:
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {l} {u}".format(h=heading, l=level, u=item.uid)
+                standard = "{h} {lev} {u}".format(h=heading,
+                                                  lev=level, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
-            attr_list = _format_md_attr_list(item, linkify)
+            attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
 
             # Text
@@ -355,7 +383,7 @@ def _format_text_ref(item):
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
         if line:
-            return "Reference: {p} (line {l})".format(p=path, l=line)
+            return "Reference: {p} (line {line})".format(p=path, line=line)
         else:
             return "Reference: {p}".format(p=path)
     else:
@@ -368,7 +396,7 @@ def _format_md_ref(item):
         path, line = item.find_ref()
         path = path.replace('\\', '/')  # always use unix-style paths
         if line:
-            return "> `{p}` (line {l})".format(p=path, l=line)
+            return "> `{p}` (line {line})".format(p=path, line=line)
         else:
             return "> `{p}`".format(p=path)
     else:
@@ -410,7 +438,41 @@ def _format_md_label_links(label, links, linkify):
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
-def _lines_html(obj, linkify=False, extensions=EXTENSIONS, charset='UTF-8'):
+def _table_of_contents_md(obj, linkify=None):
+    toc = '### Table of Contents\n\n'
+
+    for item in iter_items(obj):
+        if item.depth == 1:
+            prefix = ' * '
+        else:
+            prefix = '    ' * (item.depth - 1)
+            prefix += '* '
+
+        if item.heading:
+            lines = item.text.splitlines()
+            heading = lines[0] if lines else ''
+        else:
+            heading = item.uid
+
+        if settings.PUBLISH_HEADING_LEVELS:
+            level = _format_level(item.level)
+            lbl = '{lev} {h}'.format(lev=level, h=heading)
+        else:
+            lbl = heading
+
+        if linkify:
+            line = '{p}[{lbl}](#{uid})\n'.format(p=prefix,
+                                                 lbl=lbl,
+                                                 uid=item.uid)
+        else:
+            line = '{p}{lbl}\n'.format(p=prefix,
+                                       lbl=lbl)
+        toc += line
+    return toc
+
+
+def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
+                template=HTMLTEMPLATE, toc=True):
     """Yield lines for an HTML report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -427,22 +489,30 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS, charset='UTF-8'):
     else:
         document = True
     # Generate HTML
-    if document:
-        yield '<!DOCTYPE html>'
-        yield '<head>'
-        yield ('<meta http-equiv="content-type" content="text/html; '
-               'charset={charset}">'.format(charset=charset))
-        yield '<style type="text/css">'
-        yield from _lines_css()
-        yield '</style>'
-        yield '</head>'
-        yield '<body>'
+
     text = '\n'.join(_lines_markdown(obj, linkify=linkify))
-    html = markdown.markdown(text, extensions=extensions)
-    yield from html.splitlines()
+    body = markdown.markdown(text, extensions=extensions)
+
+    if toc:
+        toc_md = _table_of_contents_md(obj, True)
+        toc_html = markdown.markdown(toc_md, extensions=extensions)
+    else:
+        toc_html = ''
+
     if document:
-        yield '</body>'
-        yield '</html>'
+        try:
+            bottle.TEMPLATE_PATH.insert(0,
+                                        os.path.join(os.path.dirname(__file__),
+                                                     '..', '..', 'views'))
+            if 'baseurl' not in bottle.SimpleTemplate.defaults:
+                bottle.SimpleTemplate.defaults['baseurl'] = ''
+            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent)
+        except Exception:
+            log.error("Problem parsing the template %s", template)
+            raise
+        yield '\n'.join(html.split(os.linesep))
+    else:
+        yield body
 
 
 # Mapping from file extension to lines generator

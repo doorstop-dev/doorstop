@@ -15,6 +15,7 @@ from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
 from doorstop.core import editor
 from doorstop import settings
 
+
 log = common.logger(__name__)
 
 
@@ -507,7 +508,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, **kwargs):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
@@ -517,8 +518,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                               :class:`~doorstop.common.DoorstopInfo`
 
         """
-        assert kwargs.get('document_hook') is None
-        assert kwargs.get('item_hook') is None
+        assert document_hook is None
+        assert item_hook is None
         skip = [] if skip is None else skip
 
         log.info("checking item %s...", self)
@@ -669,12 +670,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                                                         find_all=find_all)
 
             if not items:
-                for document in documents:
+                for child_document in documents:
                     if document.prefix in skip:
                         msg = "skipping issues against document %s..."
-                        log.debug(msg, document)
+                        log.debug(msg, child_document)
                         continue
-                    msg = "no links from child document: {}".format(document)
+                    msg = ("no links from child document: {}".
+                           format(child_document))
                     yield DoorstopWarning(msg)
             elif settings.CHECK_CHILD_LINKS_STRICT:
                 prefix = [item.prefix for item in items]
