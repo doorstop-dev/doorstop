@@ -51,7 +51,7 @@ setuptools.setup(
 
     packages=setuptools.find_packages(),
     package_data={'doorstop.core': ['files/*.html', 'files/*.css', 'files/assets/doorstop/*'],
-                  'views': ['*.tpl']},
+                  'doorstop': ['views/*.tpl']},
 
     entry_points={
         'console_scripts': [
