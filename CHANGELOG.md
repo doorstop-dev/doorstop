@@ -1,5 +1,9 @@
 # Revision History
 
+## 1.3.1 (2017/08/26)
+
+- Fixed templates location for installation issue.
+
 ## 1.3 (2017/07/29)
 
 - Updated HTML templates.
