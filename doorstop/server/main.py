@@ -80,7 +80,7 @@ def run(args, cwd, _):
     host = args.host
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
-                                                '..', '..', 'views'))
+                                                '..', 'views'))
 
     # If you started without WSGI, the base will be '/'.
     if args.baseurl == '' and not args.wsgi:
