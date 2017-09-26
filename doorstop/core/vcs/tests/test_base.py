@@ -42,11 +42,3 @@ class TestSampleWorkingCopy(unittest.TestCase):
         self.assertFalse(self.wc.ignored("not_ignored.txt"))
         self.assertTrue(self.wc.ignored("path/to/published.html"))
         self.assertTrue(self.wc.ignored("build/path/to/anything"))
-
-    @patch('os.environ', {'CI': 'true'})
-    def test_ignored_on_ci(self):
-        """Verify the build directory is not ignored during CI."""
-        self.assertTrue(self.wc.ignored("ignored.txt"))
-        self.assertFalse(self.wc.ignored("not_ignored.txt"))
-        self.assertTrue(self.wc.ignored("path/to/published.html"))
-        self.assertFalse(self.wc.ignored("build/path/to/anything"))
