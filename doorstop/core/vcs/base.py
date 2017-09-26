@@ -94,7 +94,7 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):
                     if self.ignored(relpath):
                         continue
                     # Skip hidden paths
-                    if os.path.sep + '.' in relpath:
+                    if os.path.sep + '.' in os.path.sep + relpath:
                         continue
                     self._path_cache.append((path, filename, relpath))
         yield from self._path_cache
