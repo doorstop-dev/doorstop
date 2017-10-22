@@ -22,7 +22,6 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):
         self.path = path
         self._ignores_cache = None
         self._path_cache = None
-        self._show_ci_warning = True
 
     @staticmethod
     def relpath(path):
@@ -90,13 +89,13 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):
             for dirpath, _, filenames in os.walk(self.path):
                 for filename in filenames:
                     path = os.path.join(dirpath, filename)
+                    relpath = os.path.relpath(path, self.path)
                     # Skip ignored paths
-                    if self.ignored(path):
+                    if self.ignored(relpath):
                         continue
                     # Skip hidden paths
-                    if os.path.sep + '.' in path:
+                    if os.path.sep + '.' in os.path.sep + relpath:
                         continue
-                    relpath = os.path.relpath(path, self.path)
                     self._path_cache.append((path, filename, relpath))
         yield from self._path_cache
 
@@ -104,10 +103,5 @@ class BaseWorkingCopy(object, metaclass=ABCMeta):
         """Determine if a path matches an ignored pattern."""
         for pattern in self.ignores:
             if fnmatch.fnmatch(path, pattern):
-                if pattern == '*build*' and os.getenv('CI'):
-                    if self._show_ci_warning:
-                        log.critical("cannot ignore 'build' on the CI server")
-                        self._show_ci_warning = False
-                else:
-                    return True
+                return True
         return False

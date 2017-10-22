@@ -1,5 +1,9 @@
 # Revision History
 
+## 1.4 (2017/10/22)
+
+- Fixed issue running doorstop on CI ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
+
 ## 1.3.1 (2017/08/26)
 
 - Fixed templates location for installation issue.

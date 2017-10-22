@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from doorstop.core.vcs.base import BaseWorkingCopy
+from doorstop.core.tests import ROOT
 
 
 class SampleWorkingCopy(BaseWorkingCopy):
@@ -43,10 +44,10 @@ class TestSampleWorkingCopy(unittest.TestCase):
         self.assertTrue(self.wc.ignored("path/to/published.html"))
         self.assertTrue(self.wc.ignored("build/path/to/anything"))
 
-    @patch('os.environ', {'CI': 'true'})
-    def test_ignored_on_ci(self):
-        """Verify the build directory is not ignored during CI."""
-        self.assertTrue(self.wc.ignored("ignored.txt"))
-        self.assertFalse(self.wc.ignored("not_ignored.txt"))
-        self.assertTrue(self.wc.ignored("path/to/published.html"))
-        self.assertFalse(self.wc.ignored("build/path/to/anything"))
+    @patch('os.environ', {})
+    def test_paths(self):
+        """Verify that paths are cached correctly."""
+        wc = SampleWorkingCopy(ROOT)
+        paths = [relpath for path, _, relpath in wc.paths]
+        self.assertEqual([], [x for x in paths if x.startswith('.git/')])
+        self.assertNotEqual([], [x for x in paths if x.startswith('doorstop/')])
