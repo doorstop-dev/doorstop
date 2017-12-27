@@ -58,6 +58,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REVIEWED = Stamp()
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
+    DEFAULT_HEADER = Text()
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -97,6 +98,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
+        self._data['header'] = Item.DEFAULT_HEADER
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -175,6 +177,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 value = value.strip()
             elif key == 'links':
                 value = set(UID(part) for part in value)
+            elif key == 'header':
+                value = Text(value)
             else:
                 if isinstance(value, str):
                     value = Text(value)
@@ -208,6 +212,11 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml
             elif key == 'text':
                 value = value.yaml
+            elif key == 'header':
+                if hasattr(value, 'yaml'):
+                    value = value.yaml
+                else:
+                    value = ''
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
@@ -392,6 +401,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = Text(value)
+
+    @property
+    @auto_load
+    def header(self):
+        """Get the item's header."""
+        return self._data['header']
+
+    @header.setter
+    @auto_save
+    @auto_load
+    def header(self, value):
+        """Set the item's header."""
+        self._data['header'] = Text(value)
 
     @property
     @auto_load
