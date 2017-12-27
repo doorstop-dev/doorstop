@@ -248,7 +248,11 @@ def _lines_text(obj, indent=8, width=79, **_):
         else:
 
             # Level and UID
-            yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
+            if item.header:
+                yield "{lev:<{s}}{u} {header}".format(lev=level, s=indent, u=item.uid, header=item.header)
+            else:
+                yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
+
 
             # Text
             if item.text:
