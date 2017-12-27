@@ -355,7 +355,7 @@ def _lines_markdown(obj, **kwargs):
                 yield ""  # break before links
                 items2 = item.parent_items
                 if settings.PUBLISH_CHILD_LINKS:
-                    label = "Parent links:"
+                    label = "🡩 Parent links: "
                 else:
                     label = "Links:"
                 links = _format_md_links(items2, linkify)
@@ -367,12 +367,13 @@ def _lines_markdown(obj, **kwargs):
                 items2 = item.find_child_items()
                 if items2:
                     yield ""  # break before links
-                    label = "Child links:"
+                    label = "🡫 Child links: "
                     links = _format_md_links(items2, linkify)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
 
         yield ""  # break between items
+        yield "***" # horizontal rule between items
 
 
 def _format_level(level):
@@ -450,13 +451,13 @@ def _format_html_item_link(item, linkify=True):
 def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
-        return "*{lb}* {ls}".format(lb=label, ls=links)
+        return "{lb} {ls}".format(lb=label, ls=links)
     else:
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
 def _table_of_contents_md(obj, linkify=None):
-    toc = '### Table of Contents\n\n'
+    toc = '[🡨 Index](index.html) \n\n **Contents** \n\n'
 
     for item in iter_items(obj):
         if item.depth == 1:
