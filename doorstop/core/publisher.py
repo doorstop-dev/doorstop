@@ -307,7 +307,7 @@ def _lines_markdown(obj, **kwargs):
     linkify = kwargs.get('linkify', False)
     for item in iter_items(obj):
 
-        heading = '#' * item.depth
+        heading = '##' * min(item.depth, 2) # Don't have anything smaller than h4
         level = _format_level(item.level)
 
         if item.heading:
@@ -326,7 +326,7 @@ def _lines_markdown(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {lev} {u}".format(h=heading,
+                standard = "{h} {lev} <small>{u}</small>".format(h=heading,
                                                   lev=level, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
@@ -340,8 +340,8 @@ def _lines_markdown(obj, **kwargs):
 
             # Text
             if item.text:
-                print("item.text: ")
-                print(item.text)
+                # print("item.text: ")
+                # print(item.text)
                 yield ""  # break before text
                 yield from item.text.splitlines()
 
