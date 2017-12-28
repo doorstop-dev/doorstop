@@ -253,7 +253,6 @@ def _lines_text(obj, indent=8, width=79, **_):
             else:
                 yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
 
-
             # Text
             if item.text:
                 yield ""  # break before text
@@ -428,7 +427,6 @@ def _format_md_item_link(item, linkify=True):
     if linkify and is_item(item):
         if item.header:
             return "[{u} {h}]({p}.html#{u})".format(u=item.uid, h=item.header, p=item.document.prefix)
-        
         return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
@@ -438,8 +436,7 @@ def _format_html_item_link(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
         if item.header:
-            link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(u=item.uid,
-                                                    h=item.header, p=item.document.prefix)
+            link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(u=item.uid, h=item.header, p=item.document.prefix)
         else:
             link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid, p=item.document.prefix)
         return link
