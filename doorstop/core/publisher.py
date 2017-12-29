@@ -174,11 +174,11 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<table>'
         # header
         for document in documents:
-            yield '<col width="100">'
+            yield '<col width="140">'
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield ('  <th height="25" align="center"> {link} </th>'.
+            yield ('  <th height="25" align="left"> {link} </th>'.
                    format(link=link))
         yield '</tr>'
         # data
@@ -192,7 +192,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
                     link = ''
                 else:
                     link = _format_html_item_link(item)
-                yield '  <td height="25" align="center"> {} </td>'.format(link)
+                yield '  <td height="25" align="left"> {} </td>'.format(link)
             yield '</tr>'
         yield '</table>'
         yield '</p>'
@@ -355,7 +355,7 @@ def _lines_markdown(obj, **kwargs):
                 yield ""  # break before links
                 items2 = item.parent_items
                 if settings.PUBLISH_CHILD_LINKS:
-                    label = "🡩 Parent links: "
+                    label = "🡩 Parent links"
                 else:
                     label = "Links:"
                 links = _format_md_links(items2, linkify)
@@ -367,7 +367,7 @@ def _lines_markdown(obj, **kwargs):
                 items2 = item.find_child_items()
                 if items2:
                     yield ""  # break before links
-                    label = "🡫 Child links: "
+                    label = "🡫 Child links"
                     links = _format_md_links(items2, linkify)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
@@ -421,7 +421,7 @@ def _format_md_links(items, linkify):
     for item in items:
         link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
-    return ', '.join(links)
+    return '\n - '.join(links)
 
 
 def _format_md_item_link(item, linkify=True):
@@ -451,13 +451,13 @@ def _format_html_item_link(item, linkify=True):
 def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
-        return "{lb} {ls}".format(lb=label, ls=links)
+        return "{lb} \n\n - {ls}".format(lb=label, ls=links)
     else:
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
 
 def _table_of_contents_md(obj, linkify=None):
-    toc = '[🡨 Index](index.html) \n\n **Contents** \n\n'
+    toc = '**Contents** \n\n'
 
     for item in iter_items(obj):
         if item.depth == 1:
@@ -513,6 +513,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
 
     if toc:
         toc_md = _table_of_contents_md(obj, True)
+        toc_md = '[🡨 Index](index.html) \n\n ' + toc_md # Add a link to index
         toc_html = markdown.markdown(toc_md, extensions=extensions)
     else:
         toc_html = ''
