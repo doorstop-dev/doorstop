@@ -98,7 +98,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
-        self._data['header'] = Item.DEFAULT_HEADER
+        if settings.ENABLE_HEADERS:
+            self._data['header'] = Item.DEFAULT_HEADER
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -406,14 +407,17 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def header(self):
         """Get the item's header."""
-        return self._data['header']
+        if settings.ENABLE_HEADERS:
+            return self._data['header']
+        return None
 
     @header.setter
     @auto_save
     @auto_load
     def header(self, value):
         """Set the item's header."""
-        self._data['header'] = Text(value)
+        if settings.ENABLE_HEADERS:
+            self._data['header'] = Text(value)
 
     @property
     @auto_load
