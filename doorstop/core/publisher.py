@@ -136,9 +136,11 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '<head>'
     yield ('<meta http-equiv="content-type" content="text/html; '
            'charset={charset}">'.format(charset=charset))
-    yield '<style type="text/css">'
-    yield from _lines_css()
-    yield '</style>'
+    # yield '<style type="text/css">'
+    # yield from _lines_css()
+    # yield '</style>'
+    yield '<link rel="stylesheet" href="assets/doorstop/bootstrap.min.css" />'
+    yield '<link rel="stylesheet" href="assets/doorstop/general.css" />'
     yield '</head>'
     yield '<body>'
     # Tree structure
@@ -171,7 +173,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         # table
         yield '<h3>Item Traceability:</h3>'
         yield '<p>'
-        yield '<table>'
+        yield '<table class="table table-striped table-condensed">'
         # header
         for document in documents:
             yield '<col width="140">'
@@ -191,7 +193,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
                 if item is None:
                     link = ''
                 else:
-                    link = _format_html_item_link(item)
+                    link = _format_html_item_link_index_table(item)
                 yield '  <td height="25" align="left"> {} </td>'.format(link)
             yield '</tr>'
         yield '</table>'
@@ -444,6 +446,17 @@ def _format_html_item_link(item, linkify=True):
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
+
+def _format_html_item_link_index_table(item, linkify=True):
+    """Format an item link in HTML."""
+    if linkify and is_item(item):
+        if item.header:
+            link = '<a href="{p}.html#{u}">{u}</a><br/>{h}'.format(u=item.uid, h=item.header, p=item.document.prefix)
+        else:
+            link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid, p=item.document.prefix)
+        return link
+    else:
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
 def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
