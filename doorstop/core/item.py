@@ -214,6 +214,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'text':
                 value = value.yaml
             elif key == 'header':
+                # Handle for case if the header is undefined in YAML
                 if hasattr(value, 'yaml'):
                     value = value.yaml
                 else:

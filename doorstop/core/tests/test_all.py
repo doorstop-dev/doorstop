@@ -650,6 +650,21 @@ class TestPublisher(unittest.TestCase):
             self.assertEqual(expected, text)
         common.write_text(text, path)
 
+    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
+    def test_lines_html_document_with_header(self):
+        """Verify HTML can be published from a document with headers, 
+        and that child links also contain header name"""
+        path = os.path.join(FILES, 'published3.html')
+        expected = common.read_text(path)
+        document_with_header = self.tree.find_document('REQHEADER')
+        # Act
+        lines = core.publisher.publish_lines(document_with_header, '.html')
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        if CHECK_PUBLISHED_CONTENT:
+            self.assertEqual(expected, text)
+        common.write_text(text, path)
+
 
 class TestModule(unittest.TestCase):
     """Integration tests for the doorstop.core module."""
