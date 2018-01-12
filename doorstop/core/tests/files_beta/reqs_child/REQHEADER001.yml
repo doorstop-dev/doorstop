@@ -1,0 +1,12 @@
+active: true
+derived: false
+header: |
+  Some Header for this Item
+level: 1.1
+links:
+- SYSHEADER001: null
+normative: true
+ref: ''
+reviewed: null
+text: |
+  This one has a header and its linked parent also has a header.

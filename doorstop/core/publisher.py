@@ -341,8 +341,6 @@ def _lines_markdown(obj, **kwargs):
 
             # Text
             if item.text:
-                # print("item.text: ")
-                # print(item.text)
                 yield ""  # break before text
                 yield from item.text.splitlines()
 
