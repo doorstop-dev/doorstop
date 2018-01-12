@@ -6,7 +6,7 @@
               {{!toc}}
           </nav>
       </div>
-      <div class="col-lg-7 col-md-7" id="main">
+      <div class="col-lg-7 col-md-9" id="main">
         {{!body}}
       </div>
     </div>
