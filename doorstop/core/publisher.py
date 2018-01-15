@@ -248,7 +248,10 @@ def _lines_text(obj, indent=8, width=79, **_):
         else:
 
             # Level and UID
-            yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
+            if item.header:
+                yield "{lev:<{s}}{u} {header}".format(lev=level, s=indent, u=item.uid, header=item.header)
+            else:
+                yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
 
             # Text
             if item.text:
@@ -328,6 +331,11 @@ def _lines_markdown(obj, **kwargs):
                 standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
+
+            # Item Description
+            if item.header:
+                yield ""  # break before text
+                yield heading + item.header
 
             # Text
             if item.text:
@@ -415,6 +423,8 @@ def _format_md_links(items, linkify):
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
+        if item.header:
+            return "[{u} {h}]({p}.html#{u})".format(u=item.uid, h=item.header, p=item.document.prefix)
         return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
@@ -423,8 +433,10 @@ def _format_md_item_link(item, linkify=True):
 def _format_html_item_link(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
-        link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid,
-                                                       p=item.document.prefix)
+        if item.header:
+            link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(u=item.uid, h=item.header, p=item.document.prefix)
+        else:
+            link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid, p=item.document.prefix)
         return link
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
