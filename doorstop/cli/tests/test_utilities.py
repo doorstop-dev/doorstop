@@ -46,6 +46,7 @@ class TestConfigureSettings(SettingsTestCase):
         """Verify settings are parsed correctly."""
         args = Mock()
         args.reorder = False
+        args.beta = None
         # Act
         with catch_warnings(record=True) as warnings:
             utilities.configure_settings(args)
@@ -61,6 +62,7 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.PUBLISH_BODY_LEVELS)
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
+        self.assertFalse(settings.ENABLE_HEADERS)
         if sys.version_info[:2] == (3, 3):
             pass  # warnings appear to be shown inconsistently in Python 3.3
         else:

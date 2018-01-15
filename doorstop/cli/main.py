@@ -28,6 +28,8 @@ def main(args=None):  # pylint: disable=R0915
                          default=root)
     project.add_argument('--no-cache', action='store_true',
                          help=argparse.SUPPRESS)
+    project.add_argument('-b', '--beta', nargs='*',
+                         help="""enable beta features. Refer to documentation on available beta features. """)
     server = argparse.ArgumentParser(add_help=False)
     server.add_argument('--server', metavar='HOST',
                         help="IP address or hostname for a running server",
