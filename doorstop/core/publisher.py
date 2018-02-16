@@ -330,13 +330,12 @@ def _lines_markdown(obj, **kwargs):
                                                   lev=level, u=item.uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=item.uid)
+
+            if item.header:
+                standard = "{s} {h}".format(s=standard, h=item.header)
+
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
-
-            # Item Description
-            if item.header:
-                yield ""  # break before text
-                yield heading + item.header
 
             # Text
             if item.text:
@@ -464,6 +463,8 @@ def _table_of_contents_md(obj, linkify=None):
         if item.heading:
             lines = item.text.splitlines()
             heading = lines[0] if lines else ''
+        elif item.header:
+            heading = "{u} {h}".format(u=item.uid, h=item.header)
         else:
             heading = item.uid
 
