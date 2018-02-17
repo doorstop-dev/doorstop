@@ -17,6 +17,7 @@ import bottle
 EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
+    'mdx_outline',
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
