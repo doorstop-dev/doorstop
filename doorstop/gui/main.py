@@ -110,10 +110,9 @@ def run(args, cwd, error):
 
 
 def _log(func):  # pragma: no cover (manual test)
-    """Decorator for methods that should log calls."""
+    """Log name and arguments."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method to log name and arguments."""
         sargs = "{}, {}".format(', '.join(repr(a) for a in args),
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
@@ -278,7 +277,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             @_log
             def listbox_outline_listboxselect(event):
-                """Callback for selecting an item."""
+                """Handle selecting an item."""
                 if self.ignore:
                     return
                 widget = event.widget
@@ -327,12 +326,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             @_log
             def text_focusin(_):
-                """Callback for entering a text field."""
+                """Handle entering a text field."""
                 self.ignore = True
 
             @_log
             def text_item_focusout(event):
-                """Callback for updating text."""
+                """Handle updated text text."""
                 self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
@@ -340,7 +339,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             @_log
             def text_extendedvalue_focusout(event):
-                """Callback for updating extended attributes."""
+                """Handle updated extended attributes."""
                 self.ignore = False
                 widget = event.widget
                 value = widget.get('1.0', 'end')
