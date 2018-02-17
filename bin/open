@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
+
+COMMANDS = {
+    'linux': "open",
+    'win32': "cmd /c start",
+    'cygwin': "cygstart",
+    'darwin': "open",
+}
+
+
+def run(path):
+    command = COMMANDS.get(sys.platform, "open")
+    os.system(command + ' ' + path)
+
+
+if __name__ == '__main__':
+    run(sys.argv[-1])
