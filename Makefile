@@ -78,7 +78,7 @@ demo: install
 
 .PHONY: setup
 setup:
-	pip install pipenv==3.5.3
+	pip install pipenv
 ifdef TRAVIS
 	rm Pipfile.lock
 else
