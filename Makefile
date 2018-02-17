@@ -52,7 +52,7 @@ endif
 PYTHON := $(BIN)/python
 PIP := $(BIN)/pip
 
-# MAIN TASKS ###################################################################
+# MAIN TASKS ##################################################################
 
 SNIFFER := pipenv run sniffer
 
@@ -74,24 +74,13 @@ run: install
 demo: install
 	$(PYTHON) $(PACKAGE)/cli/tests/test_tutorial.py
 
-# SYSTEM DEPENDENCIES ##########################################################
-
-.PHONY: setup
-setup:
-	pip install pipenv
-ifdef TRAVIS
-	rm Pipfile.lock
-else
-	pipenv lock
-	cat Pipfile.lock
-endif
-	touch Pipfile
+# SYSTEM DEPENDENCIES #########################################################
 
 .PHONY: doctor
 doctor:  ## Confirm system dependencies are available
 	bin/verchew
 
-# PROJECT DEPENDENCIES #########################################################
+# PROJECT DEPENDENCIES ########################################################
 
 export PIPENV_SHELL_COMPAT=true
 export PIPENV_VENV_IN_PROJECT=true
@@ -104,13 +93,6 @@ install: $(DEPENDENCIES) $(METADATA)
 
 $(DEPENDENCIES): $(PIP) Pipfile*
 	pipenv install --dev
-ifdef WINDOWS
-	@ echo "Manually install pywin32: https://sourceforge.net/projects/pywin32/files/pywin32"
-else ifdef MAC
-	$(PIP) install pync MacFSEvents
-else ifdef LINUX
-	$(PIP) install pyinotify
-endif
 	@ touch $@
 
 $(METADATA): $(PIP)
@@ -121,7 +103,7 @@ $(METADATA): $(PIP)
 $(PIP):
 	pipenv --python=$(SYS_PYTHON)
 
-# CHECKS #######################################################################
+# CHECKS ######################################################################
 
 PYLINT := pipenv run pylint
 PYCODESTYLE := pipenv run pycodestyle
@@ -142,7 +124,7 @@ pycodestyle: install
 pydocstyle: install
 	$(PYDOCSTYLE) $(PACKAGES) $(CONFIG)
 
-# TESTS ########################################################################
+# TESTS #######################################################################
 
 NOSE := pipenv run nosetests
 COVERAGE := pipenv run coverage
@@ -175,7 +157,7 @@ test-all: install .clean-test
 read-coverage:
 	$(OPEN) htmlcov/index.html
 
-# DOCUMENTATION ################################################################
+# DOCUMENTATION ###############################################################
 
 PYREVERSE := pipenv run pyreverse
 MKDOCS := pipenv run mkdocs
@@ -206,7 +188,7 @@ mkdocs-live: mkdocs
 	eval "sleep 3; open http://127.0.0.1:8000" &
 	$(MKDOCS) serve
 
-# REQUIREMENTS #################################################################
+# REQUIREMENTS ################################################################
 
 DOORSTOP := pipenv run doorstop
 
@@ -230,7 +212,7 @@ reqs-txt: install docs/gen/*.txt
 docs/gen/*.txt: $(YAML)
 	$(DOORSTOP) publish all docs/gen --text
 
-# BUILD ########################################################################
+# BUILD #######################################################################
 
 PYINSTALLER := pipenv run pyinstaller
 PYINSTALLER_MAKESPEC := pipenv run pyi-makespec
@@ -258,7 +240,7 @@ $(EXE_FILES): $(MODULES) $(PROJECT).spec
 $(PROJECT).spec:
 	$(PYINSTALLER_MAKESPEC) $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
 
-# RELEASE ######################################################################
+# RELEASE #####################################################################
 
 TWINE := pipenv run twine
 
@@ -285,7 +267,7 @@ upload: .git-no-changes register ## Upload the current version to PyPI
 		exit -1;                                  \
 	fi;
 
-# CLEANUP ######################################################################
+# CLEANUP #####################################################################
 
 .PHONY: clean
 clean: .clean-dist .clean-test .clean-doc .clean-build ## Delete all generated and temporary files
@@ -319,7 +301,7 @@ clean-all: clean .clean-env .clean-workspace
 .clean-workspace:
 	rm -rf *.sublime-workspace
 
-# HELP #########################################################################
+# HELP ########################################################################
 
 .PHONY: help
 help: all
