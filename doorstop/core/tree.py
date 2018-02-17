@@ -457,7 +457,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         def by_uid(row):
-            """Helper function to sort rows by UID."""
             row2 = []
             for item in row:
                 if item:
