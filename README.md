@@ -15,7 +15,7 @@ Doorstop is under active development and we welcome contributions.
 
 The project is licensed as GPLv3.
 
-To report a problem or a security vulnerability please raise an [issue](https://github.com/jacebrowning/doorstop/issues)
+To report a problem or a security vulnerability please [raise an issue](https://github.com/jacebrowning/doorstop/issues).
 
 Additional reading:
 
