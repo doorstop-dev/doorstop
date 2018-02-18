@@ -28,7 +28,7 @@ Additional reading:
 
 ## Requirements
 
-* Python 3.3+
+* Python 3.4+
 * A version control system for requirements storage
 
 ## Installation
