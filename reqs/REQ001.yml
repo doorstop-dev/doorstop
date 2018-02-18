@@ -1,5 +1,7 @@
 active: true
 derived: false
+header: |
+  Assets
 level: 2.3
 links: []
 normative: true
