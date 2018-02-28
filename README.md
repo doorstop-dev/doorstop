@@ -3,6 +3,8 @@
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
 [![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754) 
+[![Gitter](https://badges.gitter.im/jacebrowning/doorstop.svg)](https://gitter.im/jacebrowning/doorstop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 # Overview
 
 Doorstop is a [requirements management](http://alternativeto.net/software/doorstop/) tool that facilitates the storage of textual requirements alongside source code in version control.
