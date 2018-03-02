@@ -329,7 +329,7 @@ def _lines_markdown(obj, **kwargs):
                 if item.header:
                     uid = '{h} <small>{u}</small>'.format(h=item.header, u=item.uid)
                 else:
-                    uid = '{u} <small>{u}</small>'.format(u=item.uid)
+                    uid = '{u}'.format(u=item.uid)
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
