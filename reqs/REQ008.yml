@@ -1,5 +1,7 @@
 active: true
 derived: false
+header: |
+  Interactive viewing
 level: 3.2
 links: []
 normative: true
