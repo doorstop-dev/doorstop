@@ -101,7 +101,26 @@ def run(args, cwd, error):
 
         root = tk.Tk()
         root.title("{} ({})".format(__project__, __version__))
+
+        from sys import platform as _platform
+
+        img = None
+        if _platform == "linux" or _platform == "linux2":
+            # linux
+            from doorstop.gui import resources
+            img = tk.PhotoImage(data=resources.b64_doorstopicon_png)
+        elif _platform == "darwin":
+            pass  # MAC OS X
+        elif _platform == "win32":
+            pass  # Windows
+        elif _platform == "win64":
+            pass  # Windows 64-bit
+
+        if img is not None:
+            root.tk.call('wm', 'iconphoto', root._w, img)
+
         app = Application(root, cwd, args.project)
+
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
         app.mainloop()
