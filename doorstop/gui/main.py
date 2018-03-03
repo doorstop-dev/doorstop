@@ -100,6 +100,9 @@ def run(args, cwd, error):
     else:  # pragma: no cover (manual test)
 
         root = tk.Tk()
+        from doorstop.gui import widget
+
+        widget.Tk(root)
         root.title("{} ({})".format(__project__, __version__))
 
         from sys import platform as _platform
@@ -140,24 +143,6 @@ def _log(func):  # pragma: no cover (manual test)
             log.debug(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
-
-
-class Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
-    """Listbox class with automatic width adjustment."""
-
-    def autowidth(self, maxwidth=250):
-        """Resize the widget width to fit contents."""
-        fnt = font.Font(font=self.cget("font"))
-        pixels = 0
-        for item in self.get(0, "end"):
-            pixels = max(pixels, fnt.measure(item))
-        # bump listbox size until all entries fit
-        pixels = pixels + 10
-        width = int(self.cget("width"))
-        for shift in range(0, maxwidth + 1, 5):
-            if self.winfo_reqwidth() >= pixels:
-                break
-            self.config(width=width + shift)
 
 
 class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
@@ -232,13 +217,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         kw_gs = {'sticky': tk.NSEW}  # grid arguments for sticky widgets
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
-        # Shared style
-        if sys.platform == 'darwin':
-            size = 14
-        else:
-            size = 10
-        normal = font.Font(family='TkDefaultFont', size=size)
-        fixed = font.Font(family='Courier New', size=size)
+        from doorstop.gui import widget
+
+        root.bind_all("<Control-minus>", lambda arg: widget.adjustFontSize(-1))
+        root.bind_all("<Control-equal>", lambda arg: widget.adjustFontSize(1))
+        root.bind_all("<Control-0>", lambda arg: widget.resetFontSize())
 
         # Configure grid
         frame = ttk.Frame(root, **kw_f)
@@ -259,8 +242,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(1, weight=1)
 
             # Place widgets
-            ttk.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
-            ttk.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
+            widget.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
+            widget.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
 
             return frame
 
@@ -273,8 +256,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(1, weight=1)
 
             # Place widgets
-            ttk.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
-            self.combobox_documents = ttk.Combobox(frame, textvariable=self.stringvar_document, state='readonly')
+            widget.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
+            self.combobox_documents = widget.Combobox(frame, textvariable=self.stringvar_document, state="readonly")
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
 
             return frame
@@ -307,19 +290,19 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     self.stringvar_item.set(value)
 
             # Place widgets
-            ttk.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
-            ttk.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = Listbox2(frame, width=width_outline, font=normal)
+            widget.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
+            self.listbox_outline = widget.Listbox2(frame, width=width_outline)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
+            self.text_items = widget.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
-            ttk.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
-            ttk.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
-            ttk.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
-            ttk.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
-            ttk.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
-            ttk.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
+            widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
+            widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
+            widget.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
+            widget.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
+            widget.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
 
             return frame
 
@@ -365,28 +348,28 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 self.stringvar_extendedvalue.set(value)
 
             # Place widgets
-            ttk.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.text_item = tk.Text(frame, width=width_text, height=height_text, wrap=tk.WORD, font=fixed)
+            widget.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
+            self.text_item = widget.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
             self.text_item.bind('<FocusIn>', text_focusin)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
-            ttk.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            ttk.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp)
-            ttk.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
-            self.listbox_links = tk.Listbox(frame, width=width_uid, height=6)
+            widget.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp)
+            widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
+            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            ttk.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
-            ttk.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
-            ttk.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
-            ttk.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            ttk.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
-            ttk.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
-            ttk.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            ttk.Entry(frame, width=width_text, textvariable=self.stringvar_ref, font=fixed).grid(row=8, column=0, columnspan=3, **kw_gsp)
-            ttk.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.combobox_extended = ttk.Combobox(frame, textvariable=self.stringvar_extendedkey, font=fixed)
+            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
+            widget.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
+            widget.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
+            widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
+            widget.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
+            widget.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
+            widget.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
+            self.combobox_extended = widget.Combobox(frame, textvariable=self.stringvar_extendedkey)
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            self.text_extendedvalue = tk.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD, font=fixed)
+            self.text_extendedvalue = widget.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD)
             self.text_extendedvalue.bind('<FocusIn>', text_focusin)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
             self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
@@ -404,11 +387,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(0, weight=1)
 
             # Place widgets
-            ttk.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
+            widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
+            self.text_parents = widget.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
-            ttk.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = tk.Text(frame, width=width_text, wrap=tk.WORD, font=normal)
+            widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
+            self.text_children = widget.Text(frame, width=width_text, wrap=tk.WORD)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
