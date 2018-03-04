@@ -106,20 +106,29 @@ def run(args, cwd, error):
 
         from sys import platform as _platform
 
-        img = None
-        if _platform == "linux" or _platform == "linux2":
+        # # Load the icon
+        if _platform in ("linux", "linux2"):
             # linux
             from doorstop.gui import resources
-            img = tk.PhotoImage(data=resources.b64_doorstopicon_png)
+            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))
         elif _platform == "darwin":
-            pass  # MAC OS X
-        elif _platform == "win32":
-            pass  # Windows
-        elif _platform == "win64":
-            pass  # Windows 64-bit
-
-        if img is not None:
-            root.tk.call('wm', 'iconphoto', root._w, img)
+            # MAC OS X
+            pass #TODO
+        elif _platform in ("win32", "win64"):
+            # Windows
+            from doorstop.gui import resources
+            import base64
+            import tempfile
+            try:
+                with tempfile.TemporaryFile(mode='w+b', suffix=".ico", delete=False) as theTempIconFile:
+                    theTempIconFile.write(base64.b64decode(resources.b64_doorstopicon_ico))
+                    theTempIconFile.flush()
+                root.iconbitmap(theTempIconFile.name)
+            finally:
+                try:
+                    os.unlink(theTempIconFile.name)
+                except:
+                    pass
 
         app = Application(root, cwd, args.project)
 
