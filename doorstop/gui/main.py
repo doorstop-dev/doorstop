@@ -12,6 +12,8 @@ except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()
+from doorstop.gui import widget
+
 import os
 import argparse
 import functools
@@ -99,10 +101,7 @@ def run(args, cwd, error):
 
     else:  # pragma: no cover (manual test)
 
-        root = tk.Tk()
-        from doorstop.gui import widget
-
-        widget.Tk(root)
+        root = widget.Tk()
         root.title("{} ({})".format(__project__, __version__))
 
         from sys import platform as _platform
@@ -217,8 +216,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         kw_gs = {'sticky': tk.NSEW}  # grid arguments for sticky widgets
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
 
-        from doorstop.gui import widget
-
         root.bind_all("<Control-minus>", lambda arg: widget.adjustFontSize(-1))
         root.bind_all("<Control-equal>", lambda arg: widget.adjustFontSize(1))
         root.bind_all("<Control-0>", lambda arg: widget.resetFontSize())
@@ -295,7 +292,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             self.listbox_outline = widget.Listbox2(frame, width=width_outline)
             self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
-            self.text_items = widget.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
@@ -388,10 +385,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Place widgets
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = widget.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = widget.Text(frame, width=width_text, wrap=tk.WORD)
+            self.text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -452,7 +449,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
-        self.text_items.delete('1.0', 'end')
+        widget.noUserInput_delete(self.text_items, '1.0', 'end')
         for item in self.document.items:
 
             # Add the item to the document outline
@@ -467,7 +464,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document text
             value = "{t} [{u}]\n\n".format(t=item.text or item.ref or '???',
                                            u=item.uid)
-            self.text_items.insert('end', value)
+            widget.noUserInput_insert(self.text_items, 'end', value)
         self.listbox_outline.autowidth()
 
         # Select the first item
@@ -520,7 +517,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.combobox_extended.current(0)
 
         # Display the items this item links to
-        self.text_parents.delete('1.0', 'end')
+        widget.noUserInput_delete(self.text_parents, '1.0', 'end')
         for uid in self.item.links:
             try:
                 item = self.tree.find_item(uid)
@@ -530,17 +527,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 text = item.text or item.ref or '???'
                 uid = item.uid
             chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-            self.text_parents.insert('end', chars)
+            widget.noUserInput_insert(self.text_parents, 'end', chars)
 
         # Display the items this item has links from
-        self.text_children.delete('1.0', 'end')
+        widget.noUserInput_delete(self.text_children, '1.0', 'end')
         identifiers = self.item.find_child_links()
         for uid in identifiers:
             item = self.tree.find_item(uid)
             text = item.text or item.ref or '???'
             uid = item.uid
             chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-            self.text_children.insert('end', chars)
+            widget.noUserInput_insert(self.text_children, 'end', chars)
 
         self.ignore = False
 
