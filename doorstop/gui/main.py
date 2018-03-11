@@ -477,18 +477,16 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.listbox_outline.autowidth()
 
         # Select the first item
-        self.listbox_outline.selection_set(self.index or 0)
-        identifier = self.listbox_outline.selection_get()
-        self.stringvar_item.set(identifier)  # manual call
-        self.listbox_outline.selection_set(self.index or 0)
-        uid = self.listbox_outline.selection_get()
-        self.stringvar_item.set(uid)  # manual call
-        if len(self.document):   # pylint: disable=len-as-condition
-            self.listbox_outline.selection_set(self.index or 0)
-            identifier = self.listbox_outline.selection_get()
-            self.stringvar_item.set(identifier)  # manual call
+        if (0 < self.listbox_outline.size()):
+            self.index = min(self.index or 0, self.listbox_outline.size() - 1)
+            self.listbox_outline.selection_set(self.index)
+            uid = self.listbox_outline.selection_get()
+            self.stringvar_item.set(uid)  # manual call
         else:
             logging.warning("no items to display")
+            self.index = None
+            self.item = None
+            self.display_item()
 
     @_log
     def display_item(self, *_):
@@ -496,57 +494,64 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.ignore = True
 
         # Set the current item
-        uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
-        self.item = self.tree.find_item(uid)
-        self.index = int(self.listbox_outline.curselection()[0])
+        if self.index is None:
+            # If self.index is None, do not trust the content of stringvar_item
+            self.item = None
+        else:
+            uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
+            self.item = self.tree.find_item(uid)
+            self.index = int(self.listbox_outline.curselection()[0])
         log.info("displaying item {}...".format(self.item))
 
         # Display the item's text
-        self.text_item.replace('1.0', 'end', self.item.text)
+        self.text_item.replace('1.0', 'end', "" if self.item is None else self.item.text)
 
         # Display the item's properties
-        self.stringvar_text.set(self.item.text)  # manual call
-        self.intvar_active.set(self.item.active)
-        self.intvar_derived.set(self.item.derived)
-        self.intvar_normative.set(self.item.normative)
-        self.intvar_heading.set(self.item.heading)
+        self.stringvar_text.set("" if self.item is None else self.item.text)  # manual call
+        self.intvar_active.set(False if self.item is None else self.item.active)
+        self.intvar_derived.set(False if self.item is None else self.item.derived)
+        self.intvar_normative.set(False if self.item is None else self.item.normative)
+        self.intvar_heading.set(False if self.item is None else self.item.heading)
 
         # Display the item's links
         self.listbox_links.delete(0, tk.END)
-        for uid in self.item.links:
-            self.listbox_links.insert(tk.END, uid)
+        if self.item is not None:
+            for uid in self.item.links:
+                self.listbox_links.insert(tk.END, uid)
         self.stringvar_link.set('')
 
         # Display the item's external reference
-        self.stringvar_ref.set(self.item.ref)
+        self.stringvar_ref.set("" if self.item is None else self.item.ref)
 
         # Display the item's extended attributes
-        values = self.item.extended
+        values = None if self.item is None else self.item.extended
         self.combobox_extended['values'] = values or ['']
-        self.combobox_extended.current(0)
+        if self.item is not None:
+            self.combobox_extended.current(0)
 
         # Display the items this item links to
         widget.noUserInput_delete(self.text_parents, '1.0', 'end')
-        for uid in self.item.links:
-            try:
-                item = self.tree.find_item(uid)
-            except DoorstopError:
-                text = "???"
-            else:
-                text = item.text or item.ref or '???'
-                uid = item.uid
-            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-            widget.noUserInput_insert(self.text_parents, 'end', chars)
+        if self.item is not None:
+            for uid in self.item.links:
+                try:
+                    item = self.tree.find_item(uid)
+                except DoorstopError:
+                    text = "???"
+                else:
+                    text = item.text or item.ref or '???'
+                    uid = item.uid
+                chars = "{t} [{u}]\n\n".format(t=text, u=uid)
+                widget.noUserInput_insert(self.text_parents, 'end', chars)
 
         # Display the items this item has links from
         widget.noUserInput_delete(self.text_children, '1.0', 'end')
-        identifiers = self.item.find_child_links()
-        for uid in identifiers:
-            item = self.tree.find_item(uid)
-            text = item.text or item.ref or '???'
-            uid = item.uid
-            chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-            widget.noUserInput_insert(self.text_children, 'end', chars)
+        if self.item is not None:
+            for uid in self.item.find_child_links():
+                item = self.tree.find_item(uid)
+                text = item.text or item.ref or '???'
+                uid = item.uid
+                chars = "{t} [{u}]\n\n".format(t=text, u=uid)
+                widget.noUserInput_insert(self.text_children, 'end', chars)
 
         self.ignore = False
 
@@ -632,12 +637,13 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     @_log
     def remove(self):
         """Remove the selected item from the document."""
-        logging.info("removing item {}...".format(self.item))
-        item = self.tree.remove_item(self.item)
-        logging.info("removed item: {}".format(item))
-        self.item = None
-        self.index = max(0, self.index - 1)
-        self.display_document()
+        if self.item is not None:
+            logging.info("removing item {}...".format(self.item))
+            item = self.tree.remove_item(self.item)
+            logging.info("removed item: {}".format(item))
+            self.item = None
+            self.index = max(0, self.index - 1)
+            self.display_document()
 
     @_log
     def link(self):
