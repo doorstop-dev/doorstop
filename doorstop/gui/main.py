@@ -59,9 +59,10 @@ def main(args=None):
         success = False
     if success:
         log.debug("program exited")
+        return 0
     else:
         log.debug("program exited with error")
-        sys.exit(1)
+        return 1
 
 
 def _configure_logging(verbosity=0):
@@ -127,7 +128,7 @@ def run(args, cwd, error):
             finally:
                 try:
                     os.unlink(theTempIconFile.name)
-                except:
+                except Exception:
                     pass
 
         app = Application(root, cwd, args.project)
@@ -669,4 +670,4 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
-    main()
+    sys.exit(main())
