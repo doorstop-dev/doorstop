@@ -492,80 +492,82 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     @_log
     def display_item(self, *_):
         """Display the currently selected item."""
-        self.ignore = True
+        try:
+            self.ignore = True
 
-        # Set the current item
-        if self.index is None:
-            # If self.index is None, do not trust the content of stringvar_item
-            self.item = None
-        else:
-            uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
-            self.item = self.tree.find_item(uid)
-            self.index = int(self.listbox_outline.curselection()[0])
-        log.info("displaying item {}...".format(self.item))
+            # Set the current item
+            if self.index is None:
+                # If self.index is None, do not trust the content of stringvar_item
+                self.item = None
+            else:
+                uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
+                self.item = self.tree.find_item(uid)
+                self.index = int(self.listbox_outline.curselection()[0])
+            log.info("displaying item {}...".format(self.item))
 
-        # Display the item's text
-        self.text_item.replace('1.0', 'end', "" if self.item is None else self.item.text)
+            # Display the item's text
+            self.text_item.replace('1.0', 'end', "" if self.item is None else self.item.text)
 
-        # Display the item's properties
-        self.stringvar_text.set("" if self.item is None else self.item.text)  # manual call
-        self.intvar_active.set(False if self.item is None else self.item.active)
-        self.intvar_derived.set(False if self.item is None else self.item.derived)
-        self.intvar_normative.set(False if self.item is None else self.item.normative)
-        self.intvar_heading.set(False if self.item is None else self.item.heading)
+            # Display the item's properties
+            self.stringvar_text.set("" if self.item is None else self.item.text)  # manual call
+            self.intvar_active.set(False if self.item is None else self.item.active)
+            self.intvar_derived.set(False if self.item is None else self.item.derived)
+            self.intvar_normative.set(False if self.item is None else self.item.normative)
+            self.intvar_heading.set(False if self.item is None else self.item.heading)
 
-        # Display the item's links
-        self.listbox_links.delete(0, tk.END)
-        if self.item is not None:
-            for uid in self.item.links:
-                self.listbox_links.insert(tk.END, uid)
-        self.stringvar_link.set('')
+            # Display the item's links
+            self.listbox_links.delete(0, tk.END)
+            if self.item is not None:
+                for uid in self.item.links:
+                    self.listbox_links.insert(tk.END, uid)
+            self.stringvar_link.set('')
 
-        # Display the item's external reference
-        self.stringvar_ref.set("" if self.item is None else self.item.ref)
+            # Display the item's external reference
+            self.stringvar_ref.set("" if self.item is None else self.item.ref)
 
-        # Display the item's extended attributes
-        values = None if self.item is None else self.item.extended
-        self.combobox_extended['values'] = values or ['']
-        if self.item is not None:
-            self.combobox_extended.current(0)
+            # Display the item's extended attributes
+            values = None if self.item is None else self.item.extended
+            self.combobox_extended['values'] = values or ['']
+            if self.item is not None:
+                self.combobox_extended.current(0)
 
-        # Display the items this item links to
-        widget.noUserInput_delete(self.text_parents, '1.0', 'end')
-        if self.item is not None:
-            for uid in self.item.links:
-                try:
+            # Display the items this item links to
+            widget.noUserInput_delete(self.text_parents, '1.0', 'end')
+            if self.item is not None:
+                for uid in self.item.links:
+                    try:
+                        item = self.tree.find_item(uid)
+                    except DoorstopError:
+                        text = "???"
+                    else:
+                        text = item.text or item.ref or '???'
+                        uid = item.uid
+                    chars = "{t} [{u}]\n\n".format(t=text, u=uid)
+                    widget.noUserInput_insert(self.text_parents, 'end', chars)
+
+            # Display the items this item has links from
+            widget.noUserInput_delete(self.text_children, '1.0', 'end')
+            if self.item is not None:
+                for uid in self.item.find_child_links():
                     item = self.tree.find_item(uid)
-                except DoorstopError:
-                    text = "???"
-                else:
                     text = item.text or item.ref or '???'
                     uid = item.uid
-                chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-                widget.noUserInput_insert(self.text_parents, 'end', chars)
-
-        # Display the items this item has links from
-        widget.noUserInput_delete(self.text_children, '1.0', 'end')
-        if self.item is not None:
-            for uid in self.item.find_child_links():
-                item = self.tree.find_item(uid)
-                text = item.text or item.ref or '???'
-                uid = item.uid
-                chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-                widget.noUserInput_insert(self.text_children, 'end', chars)
-
-        self.ignore = False
+                    chars = "{t} [{u}]\n\n".format(t=text, u=uid)
+                    widget.noUserInput_insert(self.text_children, 'end', chars)
+        finally:
+            self.ignore = False
 
     @_log
     def display_extended(self, *_):
         """Display the currently selected extended attribute."""
-        self.ignore = True
+        try:
+            self.ignore = True
 
-        name = self.stringvar_extendedkey.get()
-        log.debug("displaying extended attribute '{}'...".format(name))
-        self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
-
-        self.ignore = False
+            name = self.stringvar_extendedkey.get()
+            log.debug("displaying extended attribute '{}'...".format(name))
+            self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
+        finally:
+            self.ignore = False
 
     @_log
     def update_item(self, *_):
