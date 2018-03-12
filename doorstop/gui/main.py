@@ -13,6 +13,7 @@ except ImportError as _exc:  # pragma: no cover (manual test)
     tk = Mock()
     ttk = Mock()
 from doorstop.gui import widget
+from doorstop.gui import utilTkinter
 
 import os
 import argparse
@@ -304,6 +305,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
             self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
+            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)
             widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
             widget.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
@@ -396,9 +398,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Place widgets
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
             self.text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
+            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(self.text_parents)
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
             self.text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
+            self.text_children_hyperlink = utilTkinter.HyperlinkManager(self.text_children)
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -460,6 +464,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Display the items in the document
         self.listbox_outline.delete(0, tk.END)
         widget.noUserInput_delete(self.text_items, '1.0', 'end')
+        self.text_items_hyperlink.reset()
         for item in self.document.items:
 
             # Add the item to the document outline
@@ -472,15 +477,18 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             self.listbox_outline.insert(tk.END, value)
 
             # Add the item to the document text
-            value = "{t} [{u}]\n\n".format(t=item.text or item.ref or '???',
-                                           u=item.uid)
-            widget.noUserInput_insert(self.text_items, 'end', value)
+            widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
+            widget.noUserInput_insert(self.text_items, tk.END, " [")
+            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))
+            widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
         self.listbox_outline.autowidth()
 
         # Select the first item
         if (0 < self.listbox_outline.size()):
             self.index = min(self.index or 0, self.listbox_outline.size() - 1)
+            self.listbox_outline.selection_clear(0, tk.END)
             self.listbox_outline.selection_set(self.index)
+            self.listbox_outline.activate(self.index)
             uid = self.listbox_outline.selection_get()
             self.stringvar_item.set(uid)  # manual call
         else:
@@ -533,6 +541,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Display the items this item links to
             widget.noUserInput_delete(self.text_parents, '1.0', 'end')
+            self.text_parents_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.links:
                     try:
@@ -542,18 +551,27 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     else:
                         text = item.text or item.ref or '???'
                         uid = item.uid
-                    chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-                    widget.noUserInput_insert(self.text_parents, 'end', chars)
+
+                    widget.noUserInput_insert(self.text_parents, tk.END, "{t}".format(t=text))
+                    widget.noUserInput_insert(self.text_parents, tk.END, " [")
+                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))
+                    widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
+
+
 
             # Display the items this item has links from
             widget.noUserInput_delete(self.text_children, '1.0', 'end')
+            self.text_children_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.find_child_links():
                     item = self.tree.find_item(uid)
                     text = item.text or item.ref or '???'
                     uid = item.uid
-                    chars = "{t} [{u}]\n\n".format(t=text, u=uid)
-                    widget.noUserInput_insert(self.text_children, 'end', chars)
+
+                    widget.noUserInput_insert(self.text_children, tk.END, "{t}".format(t=text))
+                    widget.noUserInput_insert(self.text_children, tk.END, " [")
+                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))
+                    widget.noUserInput_insert(self.text_children, tk.END, "]\n\n")
         finally:
             self.ignore = False
 
@@ -669,6 +687,32 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Update the current item
         self.update_item()
+
+    @_log
+    def followlink(self, uid):
+        # Update the current item
+        self.ignore = False
+        self.update_item()
+
+        # Load the good document.
+        document = self.tree.find_document(uid.prefix)
+        index = list(self.tree).index(document)
+        self.combobox_documents.current(index)
+
+        # load the good Item
+        index = -1
+        for x in self.listbox_outline.get(0, tk.END):
+            index += 1
+            if str(uid) == x.rsplit(' ', 1)[-1]:
+                self.index = index
+                self.item = document.find_item(uid)
+                self.listbox_outline.selection_clear(0, tk.END)
+                self.listbox_outline.selection_set(index)
+                self.listbox_outline.activate(index)
+                self.stringvar_item.set(uid)
+                break
+
+        self.display_document()
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
