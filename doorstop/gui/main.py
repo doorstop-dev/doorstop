@@ -7,7 +7,7 @@ from unittest.mock import Mock
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
-    from tkinter import font, filedialog
+    from tkinter import filedialog
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -115,7 +115,7 @@ def run(args, cwd, error):
             root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))
         elif _platform == "darwin":
             # MAC OS X
-            pass #TODO
+            pass  # TODO
         elif _platform in ("win32", "win64"):
             # Windows
             from doorstop.gui import resources
@@ -166,15 +166,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.tree = None
         self.document = None
         self.item = None
-        self.index = None
 
         # Create string variables
         self.stringvar_project = tk.StringVar(value=project or '')
         self.stringvar_project.trace('w', self.display_tree)
         self.stringvar_document = tk.StringVar()
         self.stringvar_document.trace('w', self.display_document)
+
+        # The stringvar_item holds the uid of the main selected item (or empty string if nothing is selected).
         self.stringvar_item = tk.StringVar()
         self.stringvar_item.trace('w', self.display_item)
+
         self.stringvar_text = tk.StringVar()
         self.stringvar_text.trace('w', self.update_item)
         self.intvar_active = tk.IntVar()
@@ -195,7 +197,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Create widget variables
         self.combobox_documents = None
-        self.listbox_outline = None
         self.text_items = None
         self.text_item = None
         self.listbox_links = None
@@ -286,23 +287,39 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(5, weight=1)
 
             @_log
-            def listbox_outline_listboxselect(event):
-                """Handle selecting an item."""
+            def treeview_outline_treeviewselect(event):
+                """Handle selecting an item in the tree view."""
                 if self.ignore:
                     return
                 widget = event.widget
-                curselection = widget.curselection()
+                curselection = widget.selection()
                 if curselection:
-                    index = int(curselection[0])
-                    value = widget.get(index)
-                    self.stringvar_item.set(value)
+                    uid = curselection[0]
+                    self.stringvar_item.set(uid)
+
+            @_log
+            def treeview_outline_delete(event):
+                """Handle deleting an item in the tree view."""
+                if self.ignore:
+                    return
+                self.remove()
 
             # Place widgets
             widget.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             widget.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
-            self.listbox_outline = widget.Listbox2(frame, width=width_outline)
-            self.listbox_outline.bind('<<ListboxSelect>>', listbox_outline_listboxselect)
-            self.listbox_outline.grid(row=1, column=0, columnspan=4, **kw_gsp)
+            c_columnId = ("Id",)
+            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)
+            for col in c_columnId:
+                self.treeview_outline.heading(col, text=col)
+
+            # Add a Vertical scrollbar to the Treeview Outline
+            treeview_outline_verticalScrollBar = widget.ScrollbarV(frame, command=self.treeview_outline.yview)
+            treeview_outline_verticalScrollBar.grid(row=1, column=0, columnspan=1, **kw_gs)
+            self.treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
+
+            self.treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
+            self.treeview_outline.bind("<Delete>", treeview_outline_delete)
+            self.treeview_outline.grid(row=1, column=1, columnspan=3, **kw_gsp)
             self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
             self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)
@@ -345,7 +362,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 """Handle updated text text."""
                 self.ignore = False
                 widget = event.widget
-                value = widget.get('1.0', 'end')
+                value = widget.get('1.0',  tk.END)
                 self.stringvar_text.set(value)
 
             @_log
@@ -353,7 +370,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 """Handle updated extended attributes."""
                 self.ignore = False
                 widget = event.widget
-                value = widget.get('1.0', 'end')
+                value = widget.get('1.0',  tk.END)
                 self.stringvar_extendedvalue.set(value)
 
             # Place widgets
@@ -461,41 +478,53 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.document = list(self.tree)[index]
         log.info("displaying document {}...".format(self.document))
 
-        # Display the items in the document
-        self.listbox_outline.delete(0, tk.END)
-        widget.noUserInput_delete(self.text_items, '1.0', 'end')
+        # Record the currently opened items.
+        c_openItem = []
+        for c_currUID in utilTkinter.getAllChildren(self.treeview_outline):
+            if self.treeview_outline.item(c_currUID)["open"]:
+                c_openItem.append(c_currUID)
+
+        # Record the currently selected items.
+        c_selectedItem = self.treeview_outline.selection()
+
+        # Clear the widgets
+        self.treeview_outline.delete(*self.treeview_outline.get_children())
+        widget.noUserInput_delete(self.text_items, '1.0',  tk.END)
         self.text_items_hyperlink.reset()
+
+        # Display the items in the document
+        c_levelsItem = [""]
         for item in self.document.items:
+            theParent = next(iter(reversed([x for x in c_levelsItem[:item.depth]])), "")
+
+            while len(c_levelsItem) < item.depth:
+                c_levelsItem.append(item.uid)
+            c_levelsItem = c_levelsItem[:item.depth]
+            for x in range(item.depth):
+                c_levelsItem.append(item.uid)
 
             # Add the item to the document outline
-            indent = '  ' * (item.depth - 1)
-            level = '.'.join(str(l) for l in item.level)
-            value = "{s}{lev} {i}".format(s=indent, lev=level, i=item.uid)
-            level = '.'.join(str(l) for l in item.level)
-            value = "{s}{lev} {u}".format(s=indent, lev=level, u=item.uid)
-            value = "{s}{lev} {i}".format(s=indent, lev=item.level, i=item.uid)
-            self.listbox_outline.insert(tk.END, value)
+            self.treeview_outline.insert(theParent, tk.END, item.uid, text=item.level, values=(item.uid,), open=item.uid in c_openItem)
 
             # Add the item to the document text
             widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
             widget.noUserInput_insert(self.text_items, tk.END, " [")
             widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))
             widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
-        self.listbox_outline.autowidth()
 
-        # Select the first item
-        if (0 < self.listbox_outline.size()):
-            self.index = min(self.index or 0, self.listbox_outline.size() - 1)
-            self.listbox_outline.selection_clear(0, tk.END)
-            self.listbox_outline.selection_set(self.index)
-            self.listbox_outline.activate(self.index)
-            uid = self.listbox_outline.selection_get()
-            self.stringvar_item.set(uid)  # manual call
+        # Set tree view selection
+        c_selectedItem = [x for x in c_selectedItem if (x in utilTkinter.getAllChildren(self.treeview_outline))]
+        if c_selectedItem:
+            # Restore selection
+            self.treeview_outline.selection_set(c_selectedItem)
         else:
-            logging.warning("no items to display")
-            self.index = None
-            self.item = None
-            self.display_item()
+            # Select the first item
+            for uid in utilTkinter.getAllChildren(self.treeview_outline):
+                self.stringvar_item.set(uid)
+                break
+            else:
+                logging.warning("no items to display")
+                self.stringvar_item.set("")
 
     @_log
     def display_item(self, *_):
@@ -503,21 +532,27 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         try:
             self.ignore = True
 
-            # Set the current item
-            if self.index is None:
-                # If self.index is None, do not trust the content of stringvar_item
+            # Fetch the current item
+            uid = self.stringvar_item.get()
+            if "" == uid:
                 self.item = None
             else:
-                uid = self.stringvar_item.get().rsplit(' ', 1)[-1]
-                self.item = self.tree.find_item(uid)
-                self.index = int(self.listbox_outline.curselection()[0])
+                try:
+                    self.item = self.tree.find_item(uid)
+                except DoorstopError:
+                    pass
             log.info("displaying item {}...".format(self.item))
 
+            if "" != uid:
+                if uid not in self.treeview_outline.selection():
+                    self.treeview_outline.selection_set((uid, ))
+                self.treeview_outline.see(uid)
+
             # Display the item's text
-            self.text_item.replace('1.0', 'end', "" if self.item is None else self.item.text)
+            self.text_item.replace('1.0',  tk.END, "" if self.item is None else self.item.text)
 
             # Display the item's properties
-            self.stringvar_text.set("" if self.item is None else self.item.text)  # manual call
+            self.stringvar_text.set("" if self.item is None else self.item.text)
             self.intvar_active.set(False if self.item is None else self.item.active)
             self.intvar_derived.set(False if self.item is None else self.item.derived)
             self.intvar_normative.set(False if self.item is None else self.item.normative)
@@ -540,7 +575,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 self.combobox_extended.current(0)
 
             # Display the items this item links to
-            widget.noUserInput_delete(self.text_parents, '1.0', 'end')
+            widget.noUserInput_delete(self.text_parents, '1.0',  tk.END)
             self.text_parents_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.links:
@@ -556,8 +591,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     widget.noUserInput_insert(self.text_parents, tk.END, " [")
                     widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))
                     widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
-
-
 
             # Display the items this item has links from
             widget.noUserInput_delete(self.text_children, '1.0', 'end')
@@ -583,7 +616,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             name = self.stringvar_extendedkey.get()
             log.debug("displaying extended attribute '{}'...".format(name))
-            self.text_extendedvalue.replace('1.0', 'end', self.item.get(name, ''))
+            self.text_extendedvalue.replace('1.0', tk.END, self.item.get(name, ""))
         finally:
             self.ignore = False
 
@@ -652,18 +685,29 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             level = None
         item = self.document.add_item(level=level)
         logging.info("added item: {}".format(item))
-        self.index = self.document.items.index(item)
+        # Refresh the document view
         self.display_document()
+        # Set the new selection
+        self.stringvar_item.set(item.uid)
 
     @_log
     def remove(self):
         """Remove the selected item from the document."""
-        if self.item is not None:
-            logging.info("removing item {}...".format(self.item))
-            item = self.tree.remove_item(self.item)
+        newSelection = ""
+        for c_currUID in self.treeview_outline.selection():
+            # Find the item which should be selected once the current selection is removed.
+            for currNeighbourStrategy in (self.treeview_outline.next, self.treeview_outline.prev, self.treeview_outline.parent):
+                newSelection = currNeighbourStrategy(c_currUID)
+                if "" != newSelection:
+                    break
+            # Remove the item
+            item = self.tree.find_item(c_currUID)
+            logging.info("removing item {}...".format(item))
+            item = self.tree.remove_item(item)
             logging.info("removed item: {}".format(item))
-            self.item = None
-            self.index = max(0, self.index - 1)
+            # Set the new selection
+            self.stringvar_item.set(newSelection)
+            # Refresh the document view
             self.display_document()
 
     @_log
@@ -690,6 +734,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
     @_log
     def followlink(self, uid):
+        """Display a given uid."""
         # Update the current item
         self.ignore = False
         self.update_item()
@@ -698,21 +743,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         document = self.tree.find_document(uid.prefix)
         index = list(self.tree).index(document)
         self.combobox_documents.current(index)
+        self.display_document()
 
         # load the good Item
-        index = -1
-        for x in self.listbox_outline.get(0, tk.END):
-            index += 1
-            if str(uid) == x.rsplit(' ', 1)[-1]:
-                self.index = index
-                self.item = document.find_item(uid)
-                self.listbox_outline.selection_clear(0, tk.END)
-                self.listbox_outline.selection_set(index)
-                self.listbox_outline.activate(index)
-                self.stringvar_item.set(uid)
-                break
-
-        self.display_document()
+        self.stringvar_item.set(uid)
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
