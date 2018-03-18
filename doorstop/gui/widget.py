@@ -36,6 +36,7 @@ styleDsVerticalTScrollbar = None
 styleDsTSeparator = None
 styleDsTSizegrip = None
 styleDsTreeview = None
+styleDsTreeviewHeading = None
 
 # # Widget
 
@@ -97,7 +98,22 @@ def Entry(parent, *args, **kwargs):
 
 
 def Text(parent, *args, **kwargs):
-    result = tk.Text(parent, font=fontFixed, *args, **kwargs)
+    result = tk.Text(parent, *args, **kwargs, font=fontFixed)
+    return result
+
+
+def TreeView(parent, *args, **kwargs):
+    result = ttk.Treeview(parent, *args, **kwargs)
+    return result
+
+
+def ScrollbarH(parent, *args, **kwargs):
+    result = ttk.Scrollbar(parent, *args, **kwargs, orient="horizontal", style="ds.Horizontal.TScrollbar")
+    return result
+
+
+def ScrollbarV(parent, *args, **kwargs):
+    result = ttk.Scrollbar(parent, *args, **kwargs, orient="vertical", style="ds.Vertical.TScrollbar")
     return result
 
 
@@ -203,7 +219,11 @@ def Tk():
     # Style for Treeview
     global styleDsTreeview
     styleDsTreeview = ttk.Style()
-    styleDsTreeview.configure('ds.Treeview', font=fontNormal)
+    styleDsTreeview.configure("Treeview", font=fontNormal)
+
+    global styleDsTreeviewHeading
+    styleDsTreeviewHeading = ttk.Style()
+    styleDsTreeviewHeading.configure("Treeview.Heading", font=fontNormal)
 
     resetFontSize()
     result.option_add('*TCombobox*Listbox.font', fontNormal)
@@ -218,6 +238,7 @@ def adjustFontSize(fontSizeDelta: int) -> None:
             return
         else:
             currFont.configure(size=max(1, abs(currFont["size"]) + fontSizeDelta))
+    styleDsTreeview.configure('Treeview', rowheight=fontNormal.metrics()['linespace'])
 
 
 def resetFontSize() -> None:

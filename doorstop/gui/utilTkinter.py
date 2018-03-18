@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
-import tkinter as tk
+import sys
+from unittest.mock import Mock
+try:  # pragma: no cover (manual test)
+    import tkinter as tk
+    from tkinter import ttk
+except ImportError as _exc:  # pragma: no cover (manual test)
+    sys.stderr.write("WARNING: {}\n".format(_exc))
+    tk = Mock()
+    ttk = Mock()
 
 
 class HyperlinkManager(object):
@@ -50,3 +58,10 @@ class HyperlinkManager(object):
         for tag in self.text.tag_names(tk.CURRENT):
             if tag[:6] == "hyper-":
                 self.links[tag][0](self.links[tag][1])
+
+
+def getAllChildren(treeView, item=None):
+    """Recursive generator of all the children item of the provided ttk.Treeview"""
+    for c_currUID in treeView.get_children(item):
+        yield c_currUID
+        yield from getAllChildren(treeView, c_currUID)
