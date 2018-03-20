@@ -35,7 +35,7 @@ watch: install .clean-test ## Continuously run all CI tasks when files chanage
 
 .PHONY: run ## Start the program
 run: install
-	pipenv run python $(PACKAGE)/__main__.py
+	pipenv run python $(PACKAGE)/gui/main.py
 
 .PHONY: demo
 demo: install

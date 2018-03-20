@@ -1,8 +1,15 @@
 # Revision History
 
+## 1.5 (unreleased)
+
+- Added major enhancements to the Desktop GUI. ([@elarivie ](https://github.com/jacebrowning/doorstop/pull/290))
+  + Converted document outline to a tree view.
+  + Made documents navigable via clicking links.
+  + Added an icon for Linux and Windows.
+
 ## 1.4 (2017/10/22)
 
-- Fixed issue running doorstop on CI ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
+- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
 
 ## 1.3.1 (2017/08/26)
 
@@ -19,10 +26,10 @@
 
 ## 1.2 (2017/02/11)
 
-- Disabled excessive text cleanup in items. (credit: [@michaelnt](https://github.com/michaelnt))
-  - Running `doorstop review all` will be required due to whitespace changes.
-- Added `--no-levels={all,body}` publishing options. (credit: [@michaelnt](https://github.com/michaelnt))
-- Removed unnecessary line breaks (`<br>`) in generated HTML. (credit: [@michaelnt](https://github.com/michaelnt))
+- Disabled excessive text cleanup in items. ([@michaelnt](https://github.com/michaelnt))
+  + Running `doorstop review all` will be required due to whitespace changes.
+- Added `--no-levels={all,body}` publishing options. ([@michaelnt](https://github.com/michaelnt))
+- Removed unnecessary line breaks (`<br>`) in generated HTML. ([@michaelnt](https://github.com/michaelnt))
 - **DEPRECATION WARNING:** `--no-body-levels` will not be supported in a future release.
 
 ## 1.1 (2017/01/09)
@@ -38,7 +45,7 @@
 - Fixed a bug checking levels across inactive items.
 - Added error message for all IO errors.
 - Added '--skip' options to disable documents during validation.
-- Added Mercurial support. (credit: [@tjasz](https://github.com/tjasz))
+- Added Mercurial support. ([@tjasz](https://github.com/tjasz))
 
 ## 0.8.4 (2015/03/12)
 
