@@ -4,7 +4,6 @@ import sys
 from unittest.mock import Mock
 try:  # pragma: no cover (manual test)
     import tkinter as tk
-    from tkinter import ttk
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -28,12 +27,12 @@ class HyperlinkManager(object):
         """ remove all hyperlinks"""
         self.links = {}
 
-    def add(self, action, id, p_Tags=[]):
+    def add(self, action, p_id, p_Tags=[]):  # pylint: disable=W0102
         """
         Add a new hyper link
 
         @param action: method that will be called for this hyperlink
-        @param id: the arbitration id that we are associating this action.
+        @param p_id: the arbitration id that we are associating this action.
         """
         # add an action to the manager.  returns tags to use in
         # associated text widget
@@ -42,16 +41,16 @@ class HyperlinkManager(object):
         thetags.extend(p_Tags)
         thetags.append("hyper")
         thetags.append(uniquetag)
-        self.links[uniquetag] = [action, id]
+        self.links[uniquetag] = [action, p_id]
         return tuple(thetags)
 
-    def _enter(self, event):
+    def _enter(self, event):  # pylint: disable=W0613
         self.text.config(cursor="hand2")
 
-    def _leave(self, event):
+    def _leave(self, event):  # pylint: disable=W0613
         self.text.config(cursor="")
 
-    def _click(self, event):
+    def _click(self, event):  # pylint: disable=W0613
         """
         If somebody clicks on the link it will find the method to call
         """

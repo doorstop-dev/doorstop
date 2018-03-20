@@ -60,17 +60,17 @@ class _Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=
 
 
 def Button(parent, *args, **kwargs):
-    result = ttk.Button(parent, *args, **kwargs, style="ds.TButton")
+    result = ttk.Button(parent, *args, style="ds.TButton", **kwargs)
     return result
 
 
 def Checkbutton(parent, *args, **kwargs):
-    result = ttk.Checkbutton(parent, *args, **kwargs, style="ds.TCheckbutton")
+    result = ttk.Checkbutton(parent, *args, style="ds.TCheckbutton", **kwargs)
     return result
 
 
 def Combobox(parent, *args, **kwargs):
-    result = ttk.Combobox(parent, font=fontNormal, *args, **kwargs)
+    result = ttk.Combobox(parent, *args, font=fontNormal, **kwargs)
     return result
 
 
@@ -93,12 +93,12 @@ def Listbox2(parent, *args, **kwargs):
 
 
 def Entry(parent, *args, **kwargs):
-    result = ttk.Entry(parent, *args, **kwargs, font=fontFixed)
+    result = ttk.Entry(parent, *args, font=fontFixed, **kwargs)
     return result
 
 
 def Text(parent, *args, **kwargs):
-    result = tk.Text(parent, *args, **kwargs, font=fontFixed)
+    result = tk.Text(parent, *args, font=fontFixed, **kwargs)
     return result
 
 
@@ -108,12 +108,12 @@ def TreeView(parent, *args, **kwargs):
 
 
 def ScrollbarH(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, **kwargs, orient="horizontal", style="ds.Horizontal.TScrollbar")
+    result = ttk.Scrollbar(parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs)
     return result
 
 
 def ScrollbarV(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, **kwargs, orient="vertical", style="ds.Vertical.TScrollbar")
+    result = ttk.Scrollbar(parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs)
     return result
 
 
