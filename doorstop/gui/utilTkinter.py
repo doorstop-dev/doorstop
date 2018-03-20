@@ -24,12 +24,12 @@ class HyperlinkManager(object):
         self.reset()
 
     def reset(self):
-        """ remove all hyperlinks"""
+        """Remove all hyperlinks."""
         self.links = {}
 
     def add(self, action, p_id, p_Tags=[]):  # pylint: disable=W0102
         """
-        Add a new hyper link
+        Add a new hyper link.
 
         @param action: method that will be called for this hyperlink
         @param p_id: the arbitration id that we are associating this action.
@@ -51,16 +51,14 @@ class HyperlinkManager(object):
         self.text.config(cursor="")
 
     def _click(self, event):  # pylint: disable=W0613
-        """
-        If somebody clicks on the link it will find the method to call
-        """
+        """If somebody clicks on the link it will find the method to call."""
         for tag in self.text.tag_names(tk.CURRENT):
             if tag[:6] == "hyper-":
                 self.links[tag][0](self.links[tag][1])
 
 
 def getAllChildren(treeView, item=None):
-    """Recursive generator of all the children item of the provided ttk.Treeview"""
+    """Recursive generator of all the children item of the provided ttk.Treeview."""
     for c_currUID in treeView.get_children(item):
         yield c_currUID
         yield from getAllChildren(treeView, c_currUID)
