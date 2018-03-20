@@ -2,7 +2,8 @@
 
 ## 1.5 (unreleased)
 
-- Added major enhancements to the Desktop GUI. ([@elarivie ](https://github.com/jacebrowning/doorstop/pull/290))
+- Added preliminary support for item headers ([@rickeywang](https://github.com/jacebrowning/doorstop/pull/285)
+- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/jacebrowning/doorstop/pull/290))
   + Converted document outline to a tree view.
   + Made documents navigable via clicking links.
   + Added an icon for Linux and Windows.
