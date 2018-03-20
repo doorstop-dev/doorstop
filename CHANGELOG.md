@@ -4,9 +4,9 @@
 
 - Added preliminary support for item headers ([@rickeywang](https://github.com/jacebrowning/doorstop/pull/285)
 - Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/jacebrowning/doorstop/pull/290))
-  + Converted document outline to a tree view.
-  + Made documents navigable via clicking links.
-  + Added an icon for Linux and Windows.
+    + Converted document outline to a tree view.
+    + Made documents navigable via clicking links.
+    + Added an icon for Linux and Windows.
 
 ## 1.4 (2017/10/22)
 
@@ -28,7 +28,7 @@
 ## 1.2 (2017/02/11)
 
 - Disabled excessive text cleanup in items. ([@michaelnt](https://github.com/michaelnt))
-  + Running `doorstop review all` will be required due to whitespace changes.
+    + Running `doorstop review all` will be required due to whitespace changes.
 - Added `--no-levels={all,body}` publishing options. ([@michaelnt](https://github.com/michaelnt))
 - Removed unnecessary line breaks (`<br>`) in generated HTML. ([@michaelnt](https://github.com/michaelnt))
 - **DEPRECATION WARNING:** `--no-body-levels` will not be supported in a future release.
