@@ -46,12 +46,12 @@ class TestLogging(unittest.TestCase):
 
     def test_verbose_1(self):
         """Verify verbose level 1 can be set."""
-        self.assertIs(None, main(['-v']))
+        self.assertIs(0, main(['-v']))
 
     def test_verbose_2(self):
         """Verify verbose level 2 can be set."""
-        self.assertIs(None, main(['-v', '-v']))
+        self.assertIs(0, main(['-v', '-v']))
 
     def test_verbose_3(self):
         """Verify verbose level 1 can be set."""
-        self.assertIs(None, main(['-v', '-v', '-v']))
+        self.assertIs(0, main(['-v', '-v', '-v']))
