@@ -21,12 +21,12 @@ class TestMain(unittest.TestCase):
     @patch('doorstop.gui.main.run', Mock(return_value=False))
     def test_exit(self):
         """Verify 'doorstop-gui' treats False as an error ."""
-        self.assertIs(1, main, [])
+        self.assertIs(1, main([]))
 
     @patch('doorstop.gui.main.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify 'doorstop-gui' treats KeyboardInterrupt as an error."""
-        self.assertIs(1, main, [])
+        self.assertIs(1, main([]))
 
 
 class TestImport(unittest.TestCase):
