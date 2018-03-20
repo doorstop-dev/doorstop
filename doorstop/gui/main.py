@@ -4,7 +4,7 @@
 
 import os
 import sys
-from unittest.mock import Mock  # pylint: disable=R0801
+from unittest.mock import Mock
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
@@ -113,7 +113,7 @@ def run(args, cwd, error):
         if _platform in ("linux", "linux2"):
             # linux
             from doorstop.gui import resources
-            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  #pylint: disable=W0212
+            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  # pylint: disable=W0212
         elif _platform == "darwin":
             # MAC OS X
             pass  # TODO
@@ -130,7 +130,7 @@ def run(args, cwd, error):
             finally:
                 try:
                     os.unlink(theTempIconFile.name)
-                except Exception:  #pylint: disable=W0703
+                except Exception:  # pylint: disable=W0703
                     pass
 
         app = Application(root, cwd, args.project)
@@ -509,7 +509,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document text
             widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
             widget.noUserInput_insert(self.text_items, tk.END, " [")
-            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))  #pylint: disable=W0108
+            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))  # pylint: disable=W0108
             widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
 
         # Set tree view selection
@@ -589,7 +589,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                     widget.noUserInput_insert(self.text_parents, tk.END, "{t}".format(t=text))
                     widget.noUserInput_insert(self.text_parents, tk.END, " [")
-                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  #pylint: disable=W0108
+                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
                     widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
 
             # Display the items this item has links from
@@ -603,7 +603,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                     widget.noUserInput_insert(self.text_children, tk.END, "{t}".format(t=text))
                     widget.noUserInput_insert(self.text_children, tk.END, " [")
-                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  #pylint: disable=W0108
+                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
                     widget.noUserInput_insert(self.text_children, tk.END, "]\n\n")
         finally:
             self.ignore = False
