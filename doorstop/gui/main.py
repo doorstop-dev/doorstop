@@ -2,6 +2,7 @@
 
 """Graphical interface for Doorstop."""
 
+import os
 import sys
 from unittest.mock import Mock
 try:  # pragma: no cover (manual test)
@@ -12,14 +13,14 @@ except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()
-from doorstop.gui import widget
-from doorstop.gui import utilTkinter
 
-import os
 import argparse
 import functools
 from itertools import chain
 import logging
+
+from doorstop.gui import widget
+from doorstop.gui import utilTkinter
 
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
@@ -112,7 +113,7 @@ def run(args, cwd, error):
         if _platform in ("linux", "linux2"):
             # linux
             from doorstop.gui import resources
-            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))
+            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  #pylint: disable=W0212
         elif _platform == "darwin":
             # MAC OS X
             pass  # TODO
@@ -129,7 +130,7 @@ def run(args, cwd, error):
             finally:
                 try:
                     os.unlink(theTempIconFile.name)
-                except Exception:
+                except Exception:  #pylint: disable=W0703
                     pass
 
         app = Application(root, cwd, args.project)
@@ -216,7 +217,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     def init(self, root):
         """Initialize and return the main frame."""
         # Shared arguments
-        width_outline = 20
         width_text = 30
         width_uid = 10
         height_text = 10
@@ -291,14 +291,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 """Handle selecting an item in the tree view."""
                 if self.ignore:
                     return
-                widget = event.widget
-                curselection = widget.selection()
+                thewidget = event.widget
+                curselection = thewidget.selection()
                 if curselection:
                     uid = curselection[0]
                     self.stringvar_item.set(uid)
 
             @_log
-            def treeview_outline_delete(event):
+            def treeview_outline_delete(event):  # pylint: disable=W0613
                 """Handle deleting an item in the tree view."""
                 if self.ignore:
                     return
@@ -361,16 +361,16 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             def text_item_focusout(event):
                 """Handle updated text text."""
                 self.ignore = False
-                widget = event.widget
-                value = widget.get('1.0',  tk.END)
+                thewidget = event.widget
+                value = thewidget.get('1.0', tk.END)
                 self.stringvar_text.set(value)
 
             @_log
             def text_extendedvalue_focusout(event):
                 """Handle updated extended attributes."""
                 self.ignore = False
-                widget = event.widget
-                value = widget.get('1.0',  tk.END)
+                thewidget = event.widget
+                value = thewidget.get('1.0', tk.END)
                 self.stringvar_extendedvalue.set(value)
 
             # Place widgets
@@ -489,7 +489,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         # Clear the widgets
         self.treeview_outline.delete(*self.treeview_outline.get_children())
-        widget.noUserInput_delete(self.text_items, '1.0',  tk.END)
+        widget.noUserInput_delete(self.text_items, '1.0', tk.END)
         self.text_items_hyperlink.reset()
 
         # Display the items in the document
@@ -509,11 +509,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Add the item to the document text
             widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
             widget.noUserInput_insert(self.text_items, tk.END, " [")
-            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))
+            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))  #pylint: disable=W0108
             widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
 
         # Set tree view selection
-        c_selectedItem = [x for x in c_selectedItem if (x in utilTkinter.getAllChildren(self.treeview_outline))]
+        c_selectedItem = [x for x in c_selectedItem if x in utilTkinter.getAllChildren(self.treeview_outline)]
         if c_selectedItem:
             # Restore selection
             self.treeview_outline.selection_set(c_selectedItem)
@@ -534,7 +534,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Fetch the current item
             uid = self.stringvar_item.get()
-            if "" == uid:
+            if uid == "":
                 self.item = None
             else:
                 try:
@@ -543,13 +543,13 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     pass
             log.info("displaying item {}...".format(self.item))
 
-            if "" != uid:
+            if uid != "":
                 if uid not in self.treeview_outline.selection():
                     self.treeview_outline.selection_set((uid, ))
                 self.treeview_outline.see(uid)
 
             # Display the item's text
-            self.text_item.replace('1.0',  tk.END, "" if self.item is None else self.item.text)
+            self.text_item.replace('1.0', tk.END, "" if self.item is None else self.item.text)
 
             # Display the item's properties
             self.stringvar_text.set("" if self.item is None else self.item.text)
@@ -575,7 +575,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 self.combobox_extended.current(0)
 
             # Display the items this item links to
-            widget.noUserInput_delete(self.text_parents, '1.0',  tk.END)
+            widget.noUserInput_delete(self.text_parents, '1.0', tk.END)
             self.text_parents_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.links:
@@ -589,7 +589,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                     widget.noUserInput_insert(self.text_parents, tk.END, "{t}".format(t=text))
                     widget.noUserInput_insert(self.text_parents, tk.END, " [")
-                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))
+                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  #pylint: disable=W0108
                     widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
 
             # Display the items this item has links from
@@ -603,7 +603,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                     widget.noUserInput_insert(self.text_children, tk.END, "{t}".format(t=text))
                     widget.noUserInput_insert(self.text_children, tk.END, " [")
-                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))
+                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  #pylint: disable=W0108
                     widget.noUserInput_insert(self.text_children, tk.END, "]\n\n")
         finally:
             self.ignore = False
@@ -698,7 +698,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Find the item which should be selected once the current selection is removed.
             for currNeighbourStrategy in (self.treeview_outline.next, self.treeview_outline.prev, self.treeview_outline.parent):
                 newSelection = currNeighbourStrategy(c_currUID)
-                if "" != newSelection:
+                if newSelection != "":
                     break
             # Remove the item
             item = self.tree.find_item(c_currUID)
