@@ -4,7 +4,7 @@
 
 import os
 import sys
-from unittest.mock import Mock
+from unittest.mock import Mock  # pylint: disable=R0801
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
@@ -308,7 +308,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             widget.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
             widget.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
             c_columnId = ("Id",)
-            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)
+            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
             for col in c_columnId:
                 self.treeview_outline.heading(col, text=col)
 
@@ -322,7 +322,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             self.treeview_outline.grid(row=1, column=1, columnspan=3, **kw_gsp)
             self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
-            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)
+            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)  # pylint: disable=W0201
             widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
             widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
             widget.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
@@ -415,11 +415,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             # Place widgets
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
             self.text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(self.text_parents)
+            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(self.text_parents)  # pylint: disable=W0201
             self.text_parents.grid(row=1, column=0, **kw_gsp)
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
             self.text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_children_hyperlink = utilTkinter.HyperlinkManager(self.text_children)
+            self.text_children_hyperlink = utilTkinter.HyperlinkManager(self.text_children)  # pylint: disable=W0201
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame

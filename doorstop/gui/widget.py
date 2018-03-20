@@ -3,11 +3,11 @@
 """Graphical Widget creator and controller for doorstop."""
 
 import sys
-from unittest.mock import Mock
+from unittest.mock import Mock  # pylint: disable=R0801
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
-    from tkinter import font, filedialog
+    from tkinter import font
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -235,7 +235,7 @@ def Tk():
 
 def adjustFontSize(fontSizeDelta: int) -> None:
     for currFont in [fontNormal, fontFixed]:
-        if 0 >= abs(currFont["size"]) + fontSizeDelta:
+        if abs(currFont["size"]) + fontSizeDelta <= 0:
             return
         else:
             currFont.configure(size=max(1, abs(currFont["size"]) + fontSizeDelta))
