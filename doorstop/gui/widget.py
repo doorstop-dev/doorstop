@@ -195,6 +195,7 @@ def Tk():
     global styleDsHorizontalTScale
     styleDsHorizontalTScale = ttk.Style()
     styleDsHorizontalTScale.configure('ds.Horizontal.TScale', font=fontNormal)
+    global styleDsVerticalTScale
     styleDsVerticalTScale = ttk.Style()
     styleDsVerticalTScale.configure('ds.Vertical.TScale', font=fontNormal)
 

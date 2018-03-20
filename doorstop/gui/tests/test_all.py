@@ -16,7 +16,7 @@ class TestMain(unittest.TestCase):
     @patch('doorstop.gui.main.run', Mock(return_value=True))
     def test_gui(self):
         """Verify 'doorstop-gui' launches the GUI."""
-        self.assertIs(None, main([]))
+        self.assertIs(0, main([]))
 
     @patch('doorstop.gui.main.run', Mock(return_value=False))
     def test_exit(self):
@@ -26,7 +26,7 @@ class TestMain(unittest.TestCase):
     @patch('doorstop.gui.main.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify 'doorstop-gui' treats KeyboardInterrupt as an error."""
-        self.assertRaises(SystemExit, main, [])
+        self.assertRaises(KeyboardInterrupt, main, [])
 
 
 class TestImport(unittest.TestCase):
