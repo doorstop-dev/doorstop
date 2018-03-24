@@ -23,7 +23,7 @@ nose-show-skipped = "*"
 expecter = "*"
 
 # Reports
-"coverage.space" = "*"
+coverage-space = "*"
 
 # Documentation
 mkdocs = "*"
@@ -39,5 +39,5 @@ twine = "*"
 
 # Tooling
 sniffer = "*"
-pync = {version = "*", sys_platform = "== 'darwin'"}
-MacFSEvents = {version = "*", sys_platform = "== 'darwin'"}
+pync = { version = "<2.0", sys_platform = "== 'darwin'" }
+MacFSEvents = { version = "*", sys_platform = "== 'darwin'" }
