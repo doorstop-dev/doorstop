@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 1024
+doctests = True
+ignore = W191,E701,E731

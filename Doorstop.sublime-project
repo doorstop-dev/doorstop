@@ -31,7 +31,7 @@
             },
             "pylint": {
                 "@disable": false,
-                "rcfile": ".pylint.ini"
+                "rcfile": ".pylintrc"
             }
         }
     },

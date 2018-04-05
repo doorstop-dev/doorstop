@@ -137,7 +137,10 @@ disable=
     no-else-return,
     logging-format-interpolation,
     duplicate-code,
-
+    C0321,
+    C0122,
+    W0201,
+    W0613
 
 [REPORTS]
 
