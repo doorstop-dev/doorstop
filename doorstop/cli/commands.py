@@ -75,6 +75,33 @@ def run_create(args, cwd, _, catch=True):
     return True
 
 
+def run_list(args, cwd, _, catch=True):
+    """Process arguments and run the `doorstop list` subcommand.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    with utilities.capture(catch=catch) as success:
+
+        tree = _get_tree(args, cwd)
+        if args.prefix:
+            # list items in a document
+            for curr_item in tree.find_document(args.prefix):
+                print(curr_item)
+        else:
+            # list documents
+            for curr_document in tree.documents:
+                print(curr_document)
+
+    if not success:
+        return False
+
+    return True
+
+
 def run_delete(args, cwd, _, catch=True):
     """Process arguments and run the `doorstop delete` subcommand.
 

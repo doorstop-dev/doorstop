@@ -93,6 +93,23 @@ class TestCreate(TempTestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
+class TestList(TempTestCase):
+    """Integration tests for the 'doorstop list' command."""
+
+    def test_list_document(self):
+        """Verify 'doorstop list' can be called for documents."""
+        self.assertIs(None, main(['list']))
+
+    def test_list_item(self):
+        """Verify 'doorstop list' can be called for items."""
+        self.assertIs(None, main(['list', 'REQ']))
+
+    def test_list_error(self):
+        """Verify 'doorstop list' returns an error on unknown document."""
+        self.assertRaises(SystemExit, main, ['list', 'UNKNOWN'])
+
+
+@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestDelete(MockTestCase):
     """Integration tests for the 'doorstop delete' command."""
 

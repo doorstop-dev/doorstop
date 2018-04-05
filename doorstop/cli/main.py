@@ -78,6 +78,7 @@ def main(args=None):  # pylint: disable=R0915
     # Build sub-parsers
     subs = parser.add_subparsers(help="", dest='command', metavar="<command>")
     _create(subs, shared)
+    _list(subs, shared)
     _delete(subs, shared)
     _add(subs, shared)
     _remove(subs, shared)
@@ -127,6 +128,15 @@ def _create(subs, shared):
     sub.add_argument('-p', '--parent', help="prefix of parent document")
     sub.add_argument('-d', '--digits', help="number of digits in item UIDs",
                      default=document.Document.DEFAULT_DIGITS)
+
+
+def _list(subs, shared):
+    """Configure the `doorstop list` subparser."""
+    info = "list the document directories"
+    sub = subs.add_parser('list', description=info.capitalize() + '.',
+                          help=info, **shared)
+    sub.add_argument('prefix', nargs='?', default=None,
+                     help="document prefix for items to list, if not specified list the documents")
 
 
 def _delete(subs, shared):
