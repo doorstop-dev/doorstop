@@ -198,7 +198,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def create_document(self, is_auto_save, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         :param path: directory path for the new document
@@ -215,8 +215,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
-        document = Document.new(self,
-                                path, self.root, prefix, sep=sep,
+        document = Document.new(tree=self,
+                                path=path, root=self.root, prefix=prefix, is_auto_save=is_auto_save, sep=sep,
                                 digits=digits, parent=parent)
         try:
             self._place(document)
@@ -290,9 +290,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.info("linking {} to {}...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, _kind='child')
+        child = self.find_item(value=cid, _kind='child')
         # Find parent item
-        parent = self.find_item(pid, _kind='parent')
+        parent = self.find_item(value=pid, _kind='parent')
         # Add link
         child.link(parent.uid)
         return child, parent
@@ -313,9 +313,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.info("unlinking '{}' from '{}'...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, _kind='child')
+        child = self.find_item(value=cid, _kind='child')
         # Find parent item
-        parent = self.find_item(pid, _kind='parent')
+        parent = self.find_item(value=pid, _kind='parent')
         # Remove link
         child.unlink(parent.uid)
         return child, parent
@@ -335,7 +335,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         # Find the item
-        item = self.find_item(uid)
+        item = self.find_item(value=uid)
         # Edit the item
         if launch:
             item.edit(tool=tool)
@@ -395,16 +395,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             item = self._item_cache[uid]
             if item:
                 log.trace("found cached item: {}".format(item))
-                if item.active:
-                    return item
-                else:
-                    log.trace("item is inactive: {}".format(item))
+                return item
             else:
                 log.trace("found cached unknown: {}".format(uid))
         except KeyError:
             for document in self:
                 try:
-                    item = document.find_item(uid, _kind=_kind)
+                    item = document.find_item(value=uid, _kind=_kind)
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
@@ -412,10 +409,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     if settings.CACHE_ITEMS:
                         self._item_cache[uid] = item
                         log.trace("cached item: {}".format(item))
-                    if item.active:
-                        return item
-                    else:
-                        log.trace("item is inactive: {}".format(item))
+                    return item
 
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
@@ -450,7 +444,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
 
-    def get_traceability(self):
+    def get_traceability(self, only_active=True):
         """Return sorted rows of traceability slices.
 
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
@@ -474,7 +468,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         rows = set()
         for index, document in enumerate(self.documents):
             for item in document:
-                if item.active:
+                if (only_active and item.active) or not only_active:
                     for row in self._iter_rows(item, mapping):
                         rows.add(row)
 

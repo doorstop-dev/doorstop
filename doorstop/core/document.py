@@ -29,14 +29,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, root=os.getcwd(), **kwargs):
+    def __init__(self, path, is_auto_save, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
 
         :param path: path to document directory
         :param root: path to root of project
 
         """
-        super().__init__()
+        super().__init__(is_auto_save=is_auto_save)
         # Ensure the directory is valid
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
@@ -46,7 +46,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.path = path
         self.root = root
         self.tree = kwargs.get('tree')
-        self.auto = kwargs.get('auto', Document.auto)
         # Set default values
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
@@ -69,7 +68,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from self._iter()
 
     def __len__(self):
-        return len(list(i for i in self._iter() if i.active))
+        return len(list(i for i in self._iter()))
 
     def __bool__(self):
         """Even empty documents should be considered truthy."""
@@ -77,7 +76,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_document
-    def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
+    def new(is_auto_save, tree, path, root, prefix=None, sep=None, digits=None, parent=None):  # pylint: disable=R0913,C0301
         """Create a new document.
 
         :param tree: reference to tree that contains this document
@@ -89,7 +88,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param sep: separator between prefix and numbers
         :param digits: number of digits for the new document
         :param parent: parent UID for the new document
-        :param auto: automatically save the document
+        :param is_auto_save: automatically save the document
 
         :raises: :class:`~doorstop.common.DoorstopError` if the document
             already exists
@@ -106,13 +105,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Create the document directory
         Document._create(config, name='document')
         # Initialize the document
-        document = Document(path, root=root, tree=tree, auto=False)
+        document = Document(path, root=root, tree=tree, is_auto_save=is_auto_save)
         document.prefix = prefix if prefix is not None else document.prefix
         document.sep = sep if sep is not None else document.sep
         document.digits = digits if digits is not None else document.digits
         document.parent = parent if parent is not None else document.parent
-        if auto or (auto is None and Document.auto):
-            document.save()
+        if is_auto_save: document.save()
         # Return the document
         return document
 
@@ -167,7 +165,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._write(text, self.config)
         # Set meta attributes
         self._loaded = False
-        self.auto = True
 
     def _iter(self, reload=False):
         """Yield the document's items."""
@@ -189,7 +186,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root,
+                    item = Item(path, is_auto_save=self.is_auto_save, root=self.root,
                                 document=self, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
@@ -287,8 +284,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @property
     def items(self):
-        """Get an ordered list of active items in the document."""
-        return sorted(i for i in self._iter() if i.active)
+        """Get a list of items in the document."""
+        return sorted(i for i in self._iter())
 
     @property
     def depth(self):
@@ -370,9 +367,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.tree, self,
-                        self.path, self.root, uid,
-                        level=next_level)
+        item = Item.new(tree=self.tree, document=self,
+                        path=self.path, root=self.root, uid=uid,
+                        level=next_level, is_auto_save=self.is_auto_save)
         if level and reorder:
             self.reorder(keep=item)
         return item
@@ -624,10 +621,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         uid = UID(value)
         for item in self:
             if item.uid == uid:
-                if item.active:
-                    return item
-                else:
-                    log.trace("item is inactive: {}".format(item))
+                return item
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 

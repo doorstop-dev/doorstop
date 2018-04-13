@@ -46,11 +46,11 @@ class TestDocument(unittest.TestCase):
     """Unit tests for the Document class."""
 
     def setUp(self):
-        self.document = MockDocument(FILES, root=ROOT)
+        self.document = MockDocument(is_auto_save=True, path=FILES, root=ROOT)
 
     def test_init_invalid(self):
         """Verify a document cannot be initialized from an invalid path."""
-        self.assertRaises(DoorstopError, Document, 'not/a/path')
+        self.assertRaises(DoorstopError, Document, 'not/a/path', True)
 
     def test_object_references(self):
         """Verify a standalone document does not have object references."""
@@ -124,9 +124,9 @@ class TestDocument(unittest.TestCase):
 
     def test_hash(self):
         """Verify documents can be hashed."""
-        document1 = MockDocument('path/to/fake1')
-        document2 = MockDocument('path/to/fake2')
-        document3 = MockDocument('path/to/fake2')
+        document1 = MockDocument(is_auto_save=True, path='path/to/fake1')
+        document2 = MockDocument(is_auto_save=True, path='path/to/fake2')
+        document3 = MockDocument(is_auto_save=True, path='path/to/fake2')
         my_set = set()
         # Act
         my_set.add(document1)
@@ -137,12 +137,12 @@ class TestDocument(unittest.TestCase):
 
     def test_len(self):
         """Verify a document has a length."""
-        self.assertEqual(5, len(self.document))
+        self.assertEqual(6, len(self.document))
 
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
-        self.assertEqual(5, len(items))
+        self.assertEqual(6, len(items))
         for item in self.document:
             logging.debug("item: {}".format(item))
             self.assertIs(self.document, item.document)
@@ -160,8 +160,8 @@ class TestDocument(unittest.TestCase):
         """Verify a new document can be created with defaults."""
         MockDocument._create.reset_mock()
         path = os.path.join(EMPTY, '.doorstop.yml')
-        document = MockDocument.new(None,
-                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        document = MockDocument.new(tree=None,
+                                    path=EMPTY, root=FILES, prefix='NEW', is_auto_save=True, digits=2)
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
         MockDocument._create.assert_called_once_with(path, name='document')
@@ -169,23 +169,24 @@ class TestDocument(unittest.TestCase):
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
         self.assertRaises(DoorstopError, Document.new,
-                          None,
-                          FILES, ROOT,
-                          prefix='DUPL')
+                          tree=None,
+                          path=FILES, root=ROOT,
+                          prefix='DUPL',
+                          is_auto_save=True)
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new_cache(self):
         """Verify a new documents are cached."""
         mock_tree = Mock()
         mock_tree._document_cache = {}
-        document = MockDocument.new(mock_tree,
-                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        document = MockDocument.new(tree=mock_tree,
+                                    path=EMPTY, root=FILES, prefix='NEW', is_auto_save=True, digits=2)
         mock_tree.vcs.add.assert_called_once_with(document.config)
         self.assertEqual(document, mock_tree._document_cache[document.prefix])
 
     def test_invalid(self):
         """Verify an exception is raised on an invalid document."""
-        self.assertRaises(DoorstopError, Document, EMPTY)
+        self.assertRaises(DoorstopError, Document, path=EMPTY, is_auto_save=True)
 
     def test_relpath(self):
         """Verify the document's relative path string can be determined."""
@@ -240,7 +241,8 @@ class TestDocument(unittest.TestCase):
                  '        - REQ003: # Unicode: -40° ±1%',
                  '        - REQ004: # Hello, world!',
                  '        - REQ002: # Hello, world!',
-                 '        - REQ2-001: # Hello, world!']
+                 '        - REQ2-001: # Hello, world!',
+                 '        - REQ005: # An inative requir...']
         # Act
         self.document.index = True  # create index
         # Assert
@@ -287,9 +289,10 @@ outline:
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ006',
-                                         level=Level('2.2'))
+        mock_new.assert_called_once_with(tree=None, document=self.document,
+                                         path=FILES, root=ROOT, uid='REQ006',
+                                         is_auto_save=True,
+                                         level=Level('9.10'))
         self.assertEqual(0, mock_reorder.call_count)
 
     @patch('doorstop.core.document.Document.reorder')
@@ -298,8 +301,9 @@ outline:
         """Verify an item can be added to a document with a level."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ006',
+        mock_new.assert_called_once_with(tree=None, document=self.document,
+                                         path=FILES, root=ROOT, uid='REQ006',
+                                         is_auto_save=True,
                                          level='4.2')
         mock_reorder.assert_called_once_with(keep=item)
 
@@ -307,18 +311,20 @@ outline:
     def test_add_item_with_number(self, mock_new):
         """Verify an item can be added to a document with a number."""
         self.document.add_item(number=999)
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ999',
-                                         level=Level('2.2'))
+        mock_new.assert_called_once_with(tree=None, document=self.document, path=FILES, root=ROOT,
+                                         uid='REQ999',
+                                         is_auto_save=True,
+                                         level=Level('9.10'))
 
     @patch('doorstop.core.item.Item.new')
     def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""
-        document = MockDocument(NEW, ROOT)
+        document = MockDocument(path=NEW, is_auto_save=True, root=ROOT)
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item(reorder=False))
-        mock_new.assert_called_once_with(None, document,
-                                         NEW, ROOT, 'NEW001',
+        mock_new.assert_called_once_with(tree=None, document=document,
+                                         path=NEW, root=ROOT, uid='NEW001',
+                                         is_auto_save=True,
                                          level=None)
 
     @patch('doorstop.core.item.Item.new')
@@ -329,8 +335,9 @@ outline:
         mock_item.level = Level('1.0')
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ002',
+        mock_new.assert_called_once_with(tree=None, document=self.document,
+                                         path=FILES, root=ROOT, uid='REQ002',
+                                         is_auto_save=True,
                                          level=Level('1.1'))
 
     def test_add_item_contains(self):
@@ -496,7 +503,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.assertTrue(self.document.validate())
         mock_reorder.assert_called_once_with(_items=self.document.items)
-        self.assertEqual(5, mock_get_issues.call_count)
+        self.assertEqual(6, mock_get_issues.call_count)
 
     @patch('doorstop.core.item.Item.get_issues',
            Mock(return_value=[DoorstopError('error'),
@@ -511,7 +518,7 @@ outline:
         """Verify an item hook can be called."""
         mock_hook = MagicMock()
         self.document.validate(item_hook=mock_hook)
-        self.assertEqual(5, mock_hook.call_count)
+        self.assertEqual(6, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
     @patch('os.rmdir')
@@ -624,7 +631,7 @@ outline:
     @patch('glob.glob')
     @patch('shutil.copytree')
     def test_copy_assets(self, mock_copytree, mock_glob):
-        """Verify a document can copy its assets"""
+        """Verify a document can copy its assets."""
         assets = ['css', 'logo.png']
         assets_full_path = [os.path.join(self.document.path, self.document.ASSETS, dir) for dir in assets]
         mock_glob.return_value = assets_full_path
@@ -641,7 +648,7 @@ outline:
     @patch('glob.glob')
     @patch('shutil.copytree')
     def test_copy_assets_skipping(self, mock_copytree, mock_glob):
-        """Verify duplicate file or directory names are skipped """
+        """Verify duplicate file or directory names are skipped."""
         assets = ['doorstop']
         mock_glob.return_value = assets
         mock_copytree.side_effect = FileExistsError

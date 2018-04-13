@@ -2,7 +2,7 @@
 
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop.core import Item, Document, Tree
-from doorstop.core import build, find_document, find_item
+from doorstop.core import build
 from doorstop.core import importer, exporter, builder, editor, publisher
 
 __project__ = 'Doorstop'

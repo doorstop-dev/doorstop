@@ -130,12 +130,12 @@ class TestTreeStrings(unittest.TestCase):
     @patch('doorstop.settings.REORDER', False)
     def test_from_list(self):
         """Verify a tree can be created from a list."""
-        a = MockDocumentSkip(EMPTY)
+        a = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         a.prefix = 'A'
-        b = MockDocumentSkip(EMPTY)
+        b = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         b.prefix = 'B'
         b.parent = 'A'
-        c = MockDocumentSkip(EMPTY)
+        c = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         c.prefix = 'C'
         c.parent = 'B'
         docs = [a, b, c]
@@ -145,10 +145,10 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
-        a = MockDocumentSkip(EMPTY)
+        a = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         a.prefix = 'A'
         a.parent = 'B'
-        b = MockDocumentSkip(EMPTY)
+        b = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         b.prefix = 'B'
         b.parent = 'A'
         docs = [a, b]
@@ -156,9 +156,9 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_from_list_multiple_roots(self):
         """Verify an error occurs when the tree has multiple roots."""
-        a = MockDocumentSkip(EMPTY)
+        a = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         a.prefix = 'A'
-        b = MockDocumentSkip(EMPTY)
+        b = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         b.prefix = 'B'
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
@@ -166,12 +166,12 @@ class TestTreeStrings(unittest.TestCase):
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
 
-        a = MockDocumentSkip(EMPTY)
+        a = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         a.prefix = 'A'
-        b = MockDocumentSkip(EMPTY)
+        b = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         b.prefix = 'B'
         b.parent = 'A'
-        c = MockDocumentSkip(EMPTY)
+        c = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         c.prefix = 'C'
         c.parent = '?'
         docs = [a, b, c]
@@ -180,9 +180,9 @@ class TestTreeStrings(unittest.TestCase):
     def test_place_no_parent(self):
         """Verify an error occurs when a node is missing a parent."""
 
-        a = MockDocumentSkip(EMPTY)
+        a = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         a.prefix = 'A'
-        b = MockDocumentSkip(EMPTY)
+        b = MockDocumentSkip(path=EMPTY, is_auto_save=True)
         b.prefix = 'B'
         tree = Tree(a)
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
@@ -194,10 +194,10 @@ class TestTree(unittest.TestCase):
     """Unit tests for the Tree class."""
 
     def setUp(self):
-        document = Document(SYS)
+        document = Document(path=SYS, is_auto_save=True)
         self.tree = Tree(document)
         document.tree = self.tree
-        document = Document(FILES)
+        document = Document(path=FILES, is_auto_save=True)
         self.tree._place(document)  # pylint: disable=W0212
         document.tree = self.tree
         self.tree._vcs = Mock()  # pylint: disable=W0212
@@ -206,8 +206,8 @@ class TestTree(unittest.TestCase):
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocumentSkip.new(tree,
-                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        doc = MockDocumentSkip.new(tree=tree,
+                                   path=os.path.join(EMPTY, 'temp'), root=EMPTY, prefix='TEMP', is_auto_save=True)
         tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
@@ -215,8 +215,9 @@ class TestTree(unittest.TestCase):
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocumentSkip.new(tree,
-                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
+        doc = MockDocumentSkip.new(tree=tree,
+                                   path=os.path.join(EMPTY, 'temp'), root=EMPTY, prefix='TEMP',
+                                   is_auto_save=True,
                                    parent='REQ')
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
@@ -277,13 +278,12 @@ class TestTree(unittest.TestCase):
 
     def test_new_document(self):
         """Verify a new document can be created on a tree."""
-        self.tree.create_document(EMPTY, '_TEST', parent='REQ')
+        self.tree.create_document(is_auto_save=True, path=EMPTY, value='_TEST', parent='REQ')
 
     def test_new_document_unknown_parent(self):
         """Verify an exception is raised for an unknown parent."""
         temp = tempfile.mkdtemp()
-        self.assertRaises(DoorstopError, self.tree.create_document,
-                          temp, '_TEST', parent='UNKNOWN')
+        self.assertRaises(DoorstopError, self.tree.create_document, is_auto_save=True, path=temp, value='_TEST', parent='UNKNOWN')
         self.assertFalse(os.path.exists(temp))
 
     @patch('doorstop.core.document.Document.add_item')
@@ -399,7 +399,7 @@ class TestTree(unittest.TestCase):
         self.assertIs(item2, item)
 
     def test_find_document(self):
-        """Verify an document can be found by prefix"""
+        """Verify an document can be found by prefix."""
         # Cache miss
         document = self.tree.find_document('req')
         self.assertIsNot(None, document)

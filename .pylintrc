@@ -125,8 +125,10 @@ disable=
     duplicate-code,
     C0321,
     C0122,
+    W0125,
     W0201,
-    W0613
+    W0613,
+    R0201
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

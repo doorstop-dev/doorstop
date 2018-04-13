@@ -75,7 +75,7 @@ def run(args, cwd, _):
 
     """
     global tree  # pylint: disable=W0603
-    tree = build(cwd=cwd, root=args.project)
+    tree = build(is_auto_save=True, cwd=cwd, root=args.project)
     tree.load()
     host = args.host
     port = args.port or settings.SERVER_PORT

@@ -9,10 +9,9 @@ from doorstop.core.tree import Tree
 from doorstop.core.document import Document
 
 log = common.logger(__name__)
-_tree = None  # implicit tree for convenience functions
 
 
-def build(cwd=None, root=None, request_next_number=None):
+def build(is_auto_save, cwd=None, root=None, request_next_number=None):
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
@@ -33,11 +32,11 @@ def build(cwd=None, root=None, request_next_number=None):
 
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
-    _document_from_path(root, root, documents)
+    _document_from_path(root, root, documents, is_auto_save=is_auto_save)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
-            _document_from_path(path, root, documents)
+            _document_from_path(path, root, documents, is_auto_save=is_auto_save)
 
     # Build the tree
     if not documents:
@@ -52,7 +51,7 @@ def build(cwd=None, root=None, request_next_number=None):
     return tree
 
 
-def _document_from_path(path, root, documents):
+def _document_from_path(path, root, documents, is_auto_save):
     """Attempt to create and append a document from the specified path.
 
     :param path: path to a potential document
@@ -62,7 +61,7 @@ def _document_from_path(path, root, documents):
 
     """
     try:
-        document = Document(path, root, tree=None)  # tree attached later
+        document = Document(path=path, is_auto_save=is_auto_save, root=root, tree=None)  # tree attached later
     except DoorstopError:
         pass  # no document in directory
     else:
@@ -71,38 +70,3 @@ def _document_from_path(path, root, documents):
         else:
             log.info("found document: {}".format(document))
             documents.append(document)
-
-
-def find_document(prefix):
-    """Find a document without an explicitly building a tree."""
-    tree = _get_tree()
-    document = tree.find_document(prefix)
-    return document
-
-
-def find_item(uid):
-    """Find an item without an explicitly building a tree."""
-    tree = _get_tree()
-    item = tree.find_item(uid)
-    return item
-
-
-def _get_tree(request_next_number=None):
-    """Get a shared tree for convenience functions."""
-    global _tree  # pylint: disable=W0603
-    if _tree is None:
-        _tree = build()
-    _tree.request_next_number = request_next_number
-    return _tree
-
-
-def _set_tree(value):
-    """Set the shared tree to a specific value (for testing)."""
-    global _tree  # pylint: disable=W0603
-    _tree = value
-
-
-def _clear_tree():
-    """Force the shared tree to be rebuilt."""
-    global _tree  # pylint: disable=W0603
-    _tree = None

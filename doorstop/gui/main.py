@@ -9,6 +9,7 @@ try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
     from tkinter import filedialog
+    from tkinter import messagebox as tkMessageBox
 except ImportError as _exc:  # pragma: no cover (manual test)
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -19,19 +20,46 @@ import functools
 from itertools import chain
 import logging
 
+from typing import Any
+from typing import Optional
+from typing import Sequence
+
 from doorstop.gui import widget
 from doorstop.gui import utilTkinter
 
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
-from doorstop.core import vcs
-from doorstop.core import builder
 from doorstop import settings
+from doorstop.core.types import UID
+
+from doorstop.gui.action import Action_ChangeProjectPath
+from doorstop.gui.action import Action_LoadProject
+from doorstop.gui.action import Action_SaveProject
+from doorstop.gui.action import Action_CloseProject
+from doorstop.gui.action import Action_ChangeCWD
+from doorstop.gui.action import Action_ChangeSelectedDocument
+from doorstop.gui.action import Action_ChangeSelectedItem
+from doorstop.gui.action import Action_ChangeItemText
+from doorstop.gui.action import Action_ChangeItemReference
+from doorstop.gui.action import Action_ChangeItemActive
+from doorstop.gui.action import Action_ChangeItemDerived
+from doorstop.gui.action import Action_ChangeItemNormative
+from doorstop.gui.action import Action_ChangeItemHeading
+from doorstop.gui.action import Action_ChangeLinkInception
+from doorstop.gui.action import Action_ChangeItemAddLink
+from doorstop.gui.action import Action_ChangeSelectedLink
+from doorstop.gui.action import Action_ChangeItemRemoveLink
+from doorstop.gui.action import Action_ChangeExtendedName
+from doorstop.gui.action import Action_ChangeExtendedValue
+
+from doorstop.gui.reducer import Reducer_GUI
+from doorstop.gui.store import Store
+from doorstop.gui.state import State
 
 log = common.logger(__name__)
 
 
-def main(args=None):
+def main(args: Sequence[str] = tuple()) -> int:
     """Process command-line arguments and run the program."""
     from doorstop import GUI, VERSION
 
@@ -67,7 +95,7 @@ def main(args=None):
         return 1
 
 
-def _configure_logging(verbosity=0):
+def _configure_logging(verbosity: int = 0) -> None:
     """Configure logging using the provided verbosity level (0+)."""
     # Configure the logging level and format
     if verbosity == 0:
@@ -89,7 +117,7 @@ def _configure_logging(verbosity=0):
     logging.root.handlers[0].setFormatter(formatter)
 
 
-def run(args, cwd, error):
+def run(args: argparse.Namespace, cwd: str, error):
     """Start the GUI.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
@@ -104,36 +132,52 @@ def run(args, cwd, error):
 
     else:  # pragma: no cover (manual test)
 
+        store = Store(Reducer_GUI(), State())
+
+        # Load values provided by parameters
+        store.dispatch(Action_ChangeCWD(cwd))
+        store.dispatch(Action_ChangeProjectPath(args.project))
+
         root = widget.Tk()
-        root.title("{} ({})".format(__project__, __version__))
 
-        from sys import platform as _platform
-
-        # # Load the icon
-        if _platform in ("linux", "linux2"):
-            # linux
-            from doorstop.gui import resources
-            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  # pylint: disable=W0212
-        elif _platform == "darwin":
-            # MAC OS X
-            pass  # TODO
-        elif _platform in ("win32", "win64"):
-            # Windows
-            from doorstop.gui import resources
-            import base64
-            import tempfile
-            try:
-                with tempfile.TemporaryFile(mode='w+b', suffix=".ico", delete=False) as theTempIconFile:
-                    theTempIconFile.write(base64.b64decode(resources.b64_doorstopicon_ico))
-                    theTempIconFile.flush()
-                root.iconbitmap(theTempIconFile.name)
-            finally:
+        if True:  # Load the icon
+            from sys import platform as _platform
+            if _platform in ("linux", "linux2"):
+                # linux
+                from doorstop.gui import resources
+                root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  # pylint: disable=W0212
+            elif _platform == "darwin":
+                # MAC OS X
+                pass  # TODO
+            elif _platform in ("win32", "win64"):
+                # Windows
+                from doorstop.gui import resources
+                import base64
+                import tempfile
                 try:
-                    os.unlink(theTempIconFile.name)
-                except Exception:  # pylint: disable=W0703
-                    pass
+                    with tempfile.TemporaryFile(mode='w+b', suffix=".ico", delete=False) as theTempIconFile:
+                        theTempIconFile.write(base64.b64decode(resources.b64_doorstopicon_ico))
+                        theTempIconFile.flush()
+                    root.iconbitmap(theTempIconFile.name)
+                finally:
+                    try:
+                        os.unlink(theTempIconFile.name)
+                    except Exception:  # pylint: disable=W0703
+                        pass
 
-        app = Application(root, cwd, args.project)
+        if True:  # Set the application title
+            def refreshTitle(store: Optional[Store]) -> None:
+                project_path = ""
+                pending_change = False
+                if store:
+                    state = store.state
+                    if state:
+                        project_path = state.project_path
+                        pending_change = state.session_pending_change
+                root.title("{} ({}){}{}".format(__project__, __version__, "*" if pending_change else "", (" - " + project_path) if project_path else ""))
+            store.add_observer(lambda store: refreshTitle(store))
+
+        app = Application(root, store)
 
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
@@ -150,7 +194,7 @@ def _log(func):  # pragma: no cover (manual test)
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
         msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
-        if not isinstance(self, ttk.Frame) or not self.ignore:
+        if not isinstance(self, ttk.Frame):
             log.debug(msg.strip())
         return func(self, *args, **kwargs)
     return wrapped
@@ -159,62 +203,97 @@ def _log(func):  # pragma: no cover (manual test)
 class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
     """Graphical application for Doorstop."""
 
-    def __init__(self, root, cwd, project):
-        ttk.Frame.__init__(self, root)
+    def __init__(self, parent: tk.Frame, store: Store) -> None:
+        ttk.Frame.__init__(self, parent)
 
         # Create Doorstop variables
-        self.cwd = cwd
-        self.tree = None
+        self.store = store  # TODO: Remove this attribute
+
+        def do_close_project() -> bool:
+            current_state = store.state
+            if current_state and current_state.session_pending_change:
+                result = tkMessageBox.askyesnocancel("Pending changes", "There are unsaved changes, do you want to save them?", icon='warning', default=tkMessageBox.YES, parent=self)
+                if result is None:  # Cancel
+                    return False
+                elif result:  # Yes
+                    store.dispatch(Action_SaveProject())
+                else:  # NO
+                    pass
+            store.dispatch(Action_CloseProject())
+            return True
+
+        def do_open_project() -> bool:
+            requested_path = filedialog.askdirectory()
+            if requested_path:
+                if do_close_project():
+                    store.dispatch(Action_ChangeProjectPath(requested_path))
+                    return True
+            return False
+
+        def do_load_project() -> bool:
+            if do_close_project():
+                store.dispatch(Action_LoadProject())
+                return True
+            return False
+
+        def do_quit() -> bool:
+            if do_close_project():
+                parent.quit()
+                return True
+            return False
+
+        def do_save_all_project() -> None:
+            store.dispatch(Action_SaveProject())
+
+        if True:  # Set the menu
+            menubar = tk.Menu(parent)
+            filemenu = tk.Menu(menubar, tearoff=0)
+            filemenu.add_command(label="Open Project", command=do_open_project)
+            filemenu.add_command(label="Reload Project", command=do_load_project)
+            filemenu.add_command(label="Save All", command=do_save_all_project)
+            filemenu.add_command(label="Close Project", command=do_close_project)
+            filemenu.add_separator()
+            filemenu.add_command(label="Exit", command=do_quit)
+            menubar.add_cascade(label="File", menu=filemenu)
+
+            viewmenu = tk.Menu(menubar, tearoff=0)
+            viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1))
+            viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1))
+            viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize())
+            menubar.add_cascade(label="View", menu=viewmenu)
+
+            parent.config(menu=menubar)
+
+            def refreshMenu(store: Optional[Store]) -> None:
+                project_path = None
+                state = None
+                if store:
+                    state = store.state
+                    if state:
+                        project_path = state.project_path
+                filemenu.entryconfig("Reload Project", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Save All", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
+            store.add_observer(lambda store: refreshMenu(store))
+
+        # TODO The following variables should be remove (use store instead)
         self.document = None
         self.item = None
 
-        # Create string variables
-        self.stringvar_project = tk.StringVar(value=project or '')
-        self.stringvar_project.trace('w', self.display_tree)
-        self.stringvar_document = tk.StringVar()
-        self.stringvar_document.trace('w', self.display_document)
-
-        # The stringvar_item holds the uid of the main selected item (or empty string if nothing is selected).
-        self.stringvar_item = tk.StringVar()
-        self.stringvar_item.trace('w', self.display_item)
-
-        self.stringvar_text = tk.StringVar()
-        self.stringvar_text.trace('w', self.update_item)
-        self.intvar_active = tk.IntVar()
-        self.intvar_active.trace('w', self.update_item)
-        self.intvar_derived = tk.IntVar()
-        self.intvar_derived.trace('w', self.update_item)
-        self.intvar_normative = tk.IntVar()
-        self.intvar_normative.trace('w', self.update_item)
-        self.intvar_heading = tk.IntVar()
-        self.intvar_heading.trace('w', self.update_item)
-        self.stringvar_link = tk.StringVar()  # no trace event
-        self.stringvar_ref = tk.StringVar()
-        self.stringvar_ref.trace('w', self.update_item)
         self.stringvar_extendedkey = tk.StringVar()
         self.stringvar_extendedkey.trace('w', self.display_extended)
         self.stringvar_extendedvalue = tk.StringVar()
         self.stringvar_extendedvalue.trace('w', self.update_item)
 
         # Create widget variables
-        self.combobox_documents = None
-        self.text_items = None
-        self.text_item = None
-        self.listbox_links = None
         self.combobox_extended = None
         self.text_extendedvalue = None
-        self.text_parents = None
-        self.text_children = None
 
         # Initialize the GUI
-        self.ignore = False  # flag to ignore internal events
-        frame = self.init(root)
+        frame = self.init(parent, store)
         frame.pack(fill=tk.BOTH, expand=1)
 
-        # Start the application
-        root.after(500, self.find)
-
-    def init(self, root):
+    def init(self, root: tk.Frame, store: Store) -> ttk.Frame:
         """Initialize and return the main frame."""
         # Shared arguments
         width_text = 30
@@ -233,102 +312,131 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         root.bind_all("<Control-0>", lambda arg: widget.resetFontSize())
 
         # Configure grid
-        frame = ttk.Frame(root, **kw_f)
-        frame.rowconfigure(0, weight=0)
-        frame.rowconfigure(1, weight=1)
-        frame.columnconfigure(0, weight=2)
-        frame.columnconfigure(1, weight=1)
-        frame.columnconfigure(2, weight=1)
-        frame.columnconfigure(3, weight=2)
+        result_frame = ttk.Frame(root, **kw_f)
+        result_frame.rowconfigure(0, weight=0)
+        result_frame.columnconfigure(0, weight=1)
+        result_frame.columnconfigure(1, weight=1)
+        result_frame.columnconfigure(2, weight=1)
 
-        # Create widgets
-        def frame_project(root):
-            """Frame for the current project."""
+        def frame_document(root) -> ttk.Frame:
+            """Frame for current document's outline."""
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
-            frame.rowconfigure(0, weight=1)
-            frame.columnconfigure(0, weight=0)
+            frame.rowconfigure(0, weight=0)  # Label
+            frame.rowconfigure(1, weight=0)  # Combobox
+            frame.rowconfigure(2, weight=1)  # TreeView
+            frame.rowconfigure(3, weight=0)  # Button
+            frame.columnconfigure(0, weight=0)  # Slider
             frame.columnconfigure(1, weight=1)
-
-            # Place widgets
-            widget.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
-            widget.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
-
-            return frame
-
-        def frame_tree(root):
-            """Frame for the current document."""
-            # Configure grid
-            frame = ttk.Frame(root, **kw_f)
-            frame.rowconfigure(0, weight=1)
-            frame.columnconfigure(0, weight=0)
-            frame.columnconfigure(1, weight=1)
-
-            # Place widgets
-            widget.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
-            self.combobox_documents = widget.Combobox(frame, textvariable=self.stringvar_document, state="readonly")
-            self.combobox_documents.grid(row=0, column=1, **kw_gsp)
-
-            return frame
-
-        def frame_document(root):
-            """Frame for current document's outline and items."""
-            # Configure grid
-            frame = ttk.Frame(root, **kw_f)
-            frame.rowconfigure(0, weight=0)
-            frame.rowconfigure(1, weight=5)
-            frame.rowconfigure(2, weight=0)
-            frame.rowconfigure(3, weight=0)
-            frame.columnconfigure(0, weight=0)
-            frame.columnconfigure(1, weight=0)
-            frame.columnconfigure(2, weight=0)
-            frame.columnconfigure(3, weight=0)
+            frame.columnconfigure(2, weight=1)
+            frame.columnconfigure(3, weight=1)
             frame.columnconfigure(4, weight=1)
             frame.columnconfigure(5, weight=1)
+            frame.columnconfigure(6, weight=1)
 
             @_log
             def treeview_outline_treeviewselect(event):
                 """Handle selecting an item in the tree view."""
-                if self.ignore:
-                    return
-                thewidget = event.widget
-                curselection = thewidget.selection()
-                if curselection:
-                    uid = curselection[0]
-                    self.stringvar_item.set(uid)
-
-            @_log
-            def treeview_outline_delete(event):  # pylint: disable=W0613
-                """Handle deleting an item in the tree view."""
-                if self.ignore:
-                    return
-                self.remove()
+                store.dispatch(Action_ChangeSelectedItem(event.widget.selection()))
 
             # Place widgets
-            widget.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
-            widget.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Document:").grid(row=0, column=0, columnspan=7, sticky=tk.W, **kw_gp)
+
+            combobox_documents = widget.Combobox(frame, state="readonly")
+            combobox_documents.grid(row=1, column=1, columnspan=6, **kw_gsp)
+
+            # Display the information
+            def refreshDocumentComboboxContent(store: Optional[Store]) -> None:
+                state = None
+                project_tree = None
+                if store:
+                    state = store.state
+                    if state:
+                        project_tree = state.project_tree
+                documents = [document for document in project_tree] if project_tree else []
+                combobox_documents['values'] = ["{} ({})".format(document.prefix, document.relpath) for document in documents]
+
+                def handle_document_combobox_selectionchange(*event: Any) -> None:
+                    if store:
+                        store.dispatch(Action_ChangeSelectedDocument(documents[combobox_documents.current()].prefix))
+                combobox_documents.bind("<<ComboboxSelected>>", handle_document_combobox_selectionchange)
+
+                # Set the document Selection
+                selected_document_prefix = state.session_selected_document if state else None
+                for index, item in enumerate(documents):
+                    if selected_document_prefix == item.prefix:
+                        combobox_documents.current(index)
+                        break
+                else:
+                    logging.warning("no documents to display")
+                    combobox_documents.set("")
+
+            store.add_observer(lambda store: refreshDocumentComboboxContent(store))
+
             c_columnId = ("Id",)
-            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
+            treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
             for col in c_columnId:
-                self.treeview_outline.heading(col, text=col)
+                treeview_outline.heading(col, text=col)
+
+            def refresh_document_outline(store: Optional[Store]) -> None:  # Refresh the document outline
+                state = store.state if store else None
+
+                # Record the currently opened items.
+                c_openItem = []
+                for c_currUID in utilTkinter.getAllChildren(treeview_outline):
+                    if treeview_outline.item(c_currUID)["open"]:
+                        c_openItem.append(c_currUID)
+
+                # Clear the widgets
+                treeview_outline.delete(*treeview_outline.get_children())
+
+                # Display the items in the document
+                c_levelsItem = [""]
+                project_tree = None if state is None else state.project_tree
+                for item in [] if project_tree is None else project_tree.find_document(state.session_selected_document).items:
+                    theParent = next(iter(reversed([x for x in c_levelsItem[:item.depth]])), "")
+
+                    while len(c_levelsItem) < item.depth:
+                        c_levelsItem.append(item.uid)
+                    c_levelsItem = c_levelsItem[:item.depth]
+                    for _ in range(item.depth):
+                        c_levelsItem.append(item.uid)
+
+                    # Add the item to the document outline
+                    treeview_outline.insert(theParent, tk.END, item.uid, text=item.level, values=(item.uid,), open=item.uid in c_openItem)
+
+                # Set tree view selection
+                c_selectedItem = state.session_selected_item if state else []
+                if c_selectedItem:
+                    # Restore selection
+                    session_selected_item_principal = state.session_selected_item_principal
+                    treeview_outline.selection_set(c_selectedItem)
+                    treeview_outline.focus(session_selected_item_principal)
+                    treeview_outline.see(session_selected_item_principal)
+                else:
+                    # Select the first item
+                    for uid in utilTkinter.getAllChildren(treeview_outline):
+                        assert False, uid
+                        break
+                    else:
+                        logging.warning("no items to display")
+
+            store.add_observer(lambda store: refresh_document_outline(store))
 
             # Add a Vertical scrollbar to the Treeview Outline
-            treeview_outline_verticalScrollBar = widget.ScrollbarV(frame, command=self.treeview_outline.yview)
-            treeview_outline_verticalScrollBar.grid(row=1, column=0, columnspan=1, **kw_gs)
-            self.treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
+            treeview_outline_verticalScrollBar = widget.ScrollbarV(frame, command=treeview_outline.yview)
+            treeview_outline_verticalScrollBar.grid(row=2, column=0, columnspan=1, **kw_gs)
+            treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
+            treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
+            treeview_outline.bind("<Delete>", self.remove)
+            treeview_outline.grid(row=2, column=1, columnspan=6, **kw_gsp)
 
-            self.treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
-            self.treeview_outline.bind("<Delete>", treeview_outline_delete)
-            self.treeview_outline.grid(row=1, column=1, columnspan=3, **kw_gsp)
-            self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
-            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)  # pylint: disable=W0201
-            widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
-            widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
-            widget.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
-            widget.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
-            widget.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
-            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
+            widget.Button(frame, text="<", width=0, command=self.left).grid(row=3, column=1, sticky=tk.EW, padx=(2, 0))
+            widget.Button(frame, text="v", width=0, command=self.down).grid(row=3, column=2, sticky=tk.EW)
+            widget.Button(frame, text="^", width=0, command=self.up).grid(row=3, column=3, sticky=tk.EW)
+            widget.Button(frame, text=">", width=0, command=self.right).grid(row=3, column=4, sticky=tk.EW, padx=(0, 2))
+            widget.Button(frame, text="Add Item", command=self.add).grid(row=3, column=5, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=3, column=6, sticky=tk.E, **kw_gp)
 
             return frame
 
@@ -353,52 +461,313 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(2, weight=1)
 
             @_log
-            def text_focusin(_):
-                """Handle entering a text field."""
-                self.ignore = True
+            def text_item_focusout(event: Any) -> None:
+                """Handle updated item text."""
+                store = self.store
+                state = store.state
+                if state:
+                    thewidget = event.widget
+                    value = thewidget.get('1.0', tk.END)
+                    item_uid = state.session_selected_item_principal
+                    if item_uid:
+                        self.store.dispatch(Action_ChangeItemText(item_uid, value))
 
             @_log
-            def text_item_focusout(event):
-                """Handle updated text text."""
-                self.ignore = False
-                thewidget = event.widget
-                value = thewidget.get('1.0', tk.END)
-                self.stringvar_text.set(value)
+            def text_item_reference_focusout(event: Any) -> None:
+                """Handle updated item reference text."""
+                store = self.store
+                if store is not None:
+                    state = store.state
+                    if state is not None:
+                        thewidget = event.widget
+                        value = thewidget.get()
+                        item_uid = state.session_selected_item_principal
+                        if item_uid:
+                            self.store.dispatch(Action_ChangeItemReference(item_uid, value))
 
             @_log
-            def text_extendedvalue_focusout(event):
+            def text_extendedvalue_focusout(event) -> None:
                 """Handle updated extended attributes."""
-                self.ignore = False
-                thewidget = event.widget
-                value = thewidget.get('1.0', tk.END)
-                self.stringvar_extendedvalue.set(value)
+                store = self.store
+                if store is not None:
+                    state = store.state
+                    if state is not None:
+                        thewidget = event.widget
+                        value = thewidget.get('1.0', tk.END)
+                        item_uid = state.session_selected_item_principal
+                        if item_uid:
+                            self.store.dispatch(Action_ChangeExtendedValue(item_uid, state.session_extended_name, value))
 
             # Place widgets
             widget.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.text_item = widget.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
-            self.text_item.bind('<FocusIn>', text_focusin)
-            self.text_item.bind('<FocusOut>', text_item_focusout)
-            self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
+
+            if True:  # Item text
+                text_item = widget.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
+                text_item.bind('<FocusOut>', text_item_focusout)
+                text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
+
+                def refreshItemText(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    log.info("displaying item {}...".format(session_selected_item_principal))
+                    text_item.replace('1.0', tk.END, "" if item is None else item.text)
+                store.add_observer(lambda store: refreshItemText(store))
+
             widget.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
             widget.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
-            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
-            self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
-            widget.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
+
+            if True:  # CheckBox active
+                checkbox_active_var = tk.BooleanVar()
+
+                def doChangeActive() -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    if item:
+                        store.dispatch(Action_ChangeItemActive(item, checkbox_active_var.get()))
+                checkbox_active = widget.Checkbutton(frame, command=doChangeActive, variable=checkbox_active_var, text="Active")
+                checkbox_active.grid(row=3, column=0, sticky=tk.W, **kw_gp)
+
+                def refreshCheckButtonActive(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        checkbox_active_var.set(bool(item and item.active))
+                    except DoorstopError:
+                        item = None
+                store.add_observer(lambda store: refreshCheckButtonActive(store))
+
+            if True:  # CheckBox derived
+                checkbox_derived_var = tk.BooleanVar()
+
+                def doChangeDerived() -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    if item:
+                        store.dispatch(Action_ChangeItemDerived(item, checkbox_derived_var.get()))
+
+                checkbox_derived = widget.Checkbutton(frame, command=doChangeDerived, variable=checkbox_derived_var, text="Derived")
+                checkbox_derived.grid(row=4, column=0, sticky=tk.W, **kw_gp)
+
+                def refreshCheckButtonDerived(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        checkbox_derived_var.set(bool(item and item.derived))
+                    except DoorstopError:
+                        item = None
+                store.add_observer(lambda store: refreshCheckButtonDerived(store))
+
+            if True:  # CheckBox normative
+                checkbox_normative_var = tk.BooleanVar()
+
+                def doChangeNormative() -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    if item:
+                        store.dispatch(Action_ChangeItemNormative(item, checkbox_normative_var.get()))
+                checkbox_normative = widget.Checkbutton(frame, command=doChangeNormative, variable=checkbox_normative_var, text="Normative")
+                checkbox_normative.grid(row=5, column=0, sticky=tk.W, **kw_gp)
+
+                def refreshCheckButtonNormative(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        checkbox_normative_var.set(bool(item and item.normative))
+                    except DoorstopError:
+                        item = None
+                store.add_observer(lambda store: refreshCheckButtonNormative(store))
+
+            if True:  # CheckBox heading
+                checkbox_heading_var = tk.BooleanVar()
+
+                def doChangeHeading() -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    if item:
+                        store.dispatch(Action_ChangeItemHeading(item, checkbox_heading_var.get()))
+
+                checkbox_heading = widget.Checkbutton(frame, command=doChangeHeading, variable=checkbox_heading_var, text="Heading")
+                checkbox_heading.grid(row=6, column=0, sticky=tk.W, **kw_gp)
+
+                def refreshCheckButtonHeading(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        checkbox_heading_var.set(bool(item and item.heading))
+                    except DoorstopError:
+                        item = None
+                store.add_observer(lambda store: refreshCheckButtonHeading(store))
+
+            if True:  # Listbox Links
+                listbox_links = widget.Listbox(frame, width=width_uid, height=6, selectmode=tk.EXTENDED, exportselection=tk.OFF)
+                listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
+
+                def refreshListBoxLinks(store: Optional[Store]) -> None:
+                    previous_active_index = listbox_links.index(tk.ACTIVE)
+                    previous_active_item = listbox_links.get(previous_active_index)
+
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    session_selected_link = state.session_selected_link if state else []
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    listbox_links.delete(0, tk.END)
+                    if item is not None:
+                        v_new_index = -1
+                        next_active = None
+                        for uid in sorted([x for x in item.links if (("" == state.session_link_inception) or (state.session_link_inception in str(x)))], key=lambda x: str(x), reverse=False):
+                            v_new_index += 1
+                            listbox_links.insert(tk.END, uid)
+                            if str(uid) in session_selected_link:
+                                listbox_links.selection_set(listbox_links.index(tk.END) - 1)
+                            if str(uid) == str(previous_active_item):
+                                next_active = v_new_index
+
+                        if next_active is None:
+                            next_active = min(previous_active_index, listbox_links.size() - 1)
+                        if 0 <= next_active:
+                            listbox_links.activate(next_active)
+                            listbox_links.see(next_active)
+
+                store.add_observer(lambda store: refreshListBoxLinks(store))
+
+                def handle_document_listbox_selectionchange(evt) -> None:
+                    w = evt.widget
+                    the_selection = w.curselection()
+
+                    a = frozenset([w.get(int(i)) for i in the_selection])
+                    b = frozenset([w.get(int(i)) for i in range(0, w.size()) if i not in [int(j) for j in the_selection]])
+                    store.dispatch(Action_ChangeSelectedLink(selected_link=a, unselected_link=b))
+
+                listbox_links.bind('<<ListboxSelect>>', handle_document_listbox_selectionchange)
+
+            if True:  # Entry link inception
+
+                entry_link_inception = widget.Entry(frame, width=width_uid)
+
+                def doChangeInceptionLink():
+                    store.dispatch(Action_ChangeLinkInception(entry_link_inception.get()))
+                entry_link_inception.bind("<KeyRelease>", lambda event: doChangeInceptionLink())
+                entry_link_inception.grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
+
+                def refreshEntryLinkInception(store: Optional[Store]) -> None:
+                    the_link_inception = ""
+                    state = store.state if store else None
+                    if state is not None:
+                        the_link_inception = state.session_link_inception
+                    if the_link_inception != entry_link_inception.get():
+                        entry_link_inception.delete('0', tk.END)
+                        entry_link_inception.insert('0', state.session_link_inception)
+                store.add_observer(lambda store: refreshEntryLinkInception(store))
+
             widget.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
-            widget.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
             widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
             widget.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            widget.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
+
+            if True:  # Item External Reference
+                text_item_reference = widget.Entry(frame, width=width_text)
+                text_item_reference.bind('<FocusOut>', text_item_reference_focusout)
+                text_item_reference.grid(row=8, column=0, columnspan=3, **kw_gsp)
+
+                def refreshItemReference(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+                    text_item_reference.delete(0, tk.END)
+                    text_item_reference.insert(0, "" if item is None else item.ref)
+                store.add_observer(lambda store: refreshItemReference(store))
+
             widget.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.combobox_extended = widget.Combobox(frame, textvariable=self.stringvar_extendedkey)
-            self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            self.text_extendedvalue = widget.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD)
-            self.text_extendedvalue.bind('<FocusIn>', text_focusin)
-            self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
-            self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
+
+            if True:  # Combobox Extended attribute Name
+                combobox_extended = widget.Combobox(frame)
+                combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
+
+                def refreshComboboxExtendedName(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+
+                    values = None if item is None else item.extended
+                    combobox_extended['values'] = values or []
+                    combobox_extended.delete(0, tk.END)
+                    if state is not None and state.session_extended_name:
+                        combobox_extended.insert(0, state.session_extended_name)
+
+                store.add_observer(lambda store: refreshComboboxExtendedName(store))
+
+                def handle_extended_name_combobox_selectionchange(*event: Any) -> None:
+                    if store:
+                        store.dispatch(Action_ChangeExtendedName(combobox_extended.get()))
+                combobox_extended.bind("<<ComboboxSelected>>", handle_extended_name_combobox_selectionchange)
+                combobox_extended.bind("<KeyRelease>", handle_extended_name_combobox_selectionchange)
+
+            if True:  # Textbox Extended attribute Value
+                text_extendedvalue = widget.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD)
+                text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
+
+                def refreshTextboxExtendedValue(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    session_selected_item_principal = state.session_selected_item_principal if state else None
+                    project_tree = state.project_tree if state else None
+                    try:
+                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                    except DoorstopError:
+                        item = None
+
+                    value = "" if item is None else item.get(state.session_extended_name)
+                    text_extendedvalue.delete(1.0, tk.END)
+                    if state is not None and state.session_extended_name:
+                        if value:
+                            text_extendedvalue.insert(tk.END, value)
+
+                store.add_observer(lambda store: refreshTextboxExtendedValue(store))
+
+                text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
 
             return frame
 
@@ -412,237 +781,90 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(3, weight=1)
             frame.columnconfigure(0, weight=1)
 
-            # Place widgets
+            # Place widgets Text Parents
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(self.text_parents)  # pylint: disable=W0201
-            self.text_parents.grid(row=1, column=0, **kw_gsp)
+            text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
+            text_parents_hyperlink = utilTkinter.HyperlinkManager(text_parents)  # pylint: disable=W0201
+            text_parents.grid(row=1, column=0, **kw_gsp)
+
+            def refresh_text_parents(store: Optional[Store]) -> None:
+                # Display the items this item links to
+                store = self.store
+                state = store.state
+                if state is not None:
+                    widget.noUserInput_delete(text_parents, '1.0', tk.END)
+                    text_parents_hyperlink.reset()
+                    if state.session_selected_item_principal is not None:
+                        for uid in state.project_tree.find_item(state.session_selected_item_principal).links:
+                            try:
+                                item = state.project_tree.find_item(uid)
+                            except DoorstopError:
+                                text = "???"
+                            else:
+                                text = item.text or item.ref or '???'
+                                uid = item.uid
+
+                            widget.noUserInput_insert(text_parents, tk.END, "{t}".format(t=text))
+                            widget.noUserInput_insert(text_parents, tk.END, " [")
+                            widget.noUserInput_insert(text_parents, tk.END, uid, text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                            widget.noUserInput_insert(text_parents, tk.END, "]\n\n")
+            store.add_observer(lambda store: refresh_text_parents(store))
+
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_children_hyperlink = utilTkinter.HyperlinkManager(self.text_children)  # pylint: disable=W0201
-            self.text_children.grid(row=3, column=0, **kw_gsp)
+            text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
+            text_children_hyperlink = utilTkinter.HyperlinkManager(text_children)  # pylint: disable=W0201
+            text_children.grid(row=3, column=0, **kw_gsp)
+
+            def refresh_text_children(store: Optional[Store]) -> None:
+                # Display the items this item links to
+                store = self.store
+                state = store.state
+                if state is not None:
+                    # Display the items this item has links from
+                    widget.noUserInput_delete(text_children, '1.0', 'end')
+                    text_children_hyperlink.reset()
+                    if state.session_selected_item_principal is not None:
+                        parent_item = state.project_tree.find_item(state.session_selected_item_principal)
+                        if parent_item is not None:
+                            for uid in parent_item.find_child_links():
+                                item = state.project_tree.find_item(uid)
+                                text = item.text or item.ref or '???'
+                                uid = item.uid
+
+                                widget.noUserInput_insert(text_children, tk.END, "{t}".format(t=text))
+                                widget.noUserInput_insert(text_children, tk.END, " [")
+                                widget.noUserInput_insert(text_children, tk.END, uid, text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                                widget.noUserInput_insert(text_children, tk.END, "]\n\n")
+            store.add_observer(lambda store: refresh_text_children(store))
 
             return frame
 
         # Place widgets
-        frame_project(frame).grid(row=0, column=0, columnspan=2, **kw_gs)
-        frame_tree(frame).grid(row=0, column=2, columnspan=2, **kw_gs)
-        frame_document(frame).grid(row=1, column=0, **kw_gs)
-        frame_item(frame).grid(row=1, column=1, columnspan=2, **kw_gs)
-        frame_family(frame).grid(row=1, column=3, **kw_gs)
+        frame_document(result_frame).grid(row=0, column=0, columnspan=1, **kw_gs)
+        frame_item(result_frame).grid(row=0, column=1, columnspan=1, **kw_gs)
+        frame_family(result_frame).grid(row=0, column=2, columnspan=1, **kw_gs)
 
-        return frame
-
-    @_log
-    def find(self):
-        """Find the root of the project."""
-        if not self.stringvar_project.get():
-            try:
-                path = vcs.find_root(self.cwd)
-            except DoorstopError as exc:
-                log.error(exc)
-            else:
-                self.stringvar_project.set(path)
-
-    @_log
-    def browse(self):
-        """Browse for the root of a project."""
-        path = filedialog.askdirectory()
-        log.debug("path: {}".format(path))
-        if path:
-            self.stringvar_project.set(path)
-
-    @_log
-    def display_tree(self, *_):
-        """Display the currently selected tree."""
-        # Set the current tree
-        self.tree = builder.build(root=self.stringvar_project.get())
-        log.info("displaying tree...")
-
-        # Display the documents in the tree
-        values = ["{} ({})".format(document.prefix, document.relpath)
-                  for document in self.tree]
-        self.combobox_documents['values'] = values
-
-        # Select the first document
-        if len(self.tree):  # pylint: disable=len-as-condition
-            self.combobox_documents.current(0)
-        else:
-            logging.warning("no documents to display")
-
-    @_log
-    def display_document(self, *_):
-        """Display the currently selected document."""
-        # Set the current document
-        index = self.combobox_documents.current()
-        self.document = list(self.tree)[index]
-        log.info("displaying document {}...".format(self.document))
-
-        # Record the currently opened items.
-        c_openItem = []
-        for c_currUID in utilTkinter.getAllChildren(self.treeview_outline):
-            if self.treeview_outline.item(c_currUID)["open"]:
-                c_openItem.append(c_currUID)
-
-        # Record the currently selected items.
-        c_selectedItem = self.treeview_outline.selection()
-
-        # Clear the widgets
-        self.treeview_outline.delete(*self.treeview_outline.get_children())
-        widget.noUserInput_delete(self.text_items, '1.0', tk.END)
-        self.text_items_hyperlink.reset()
-
-        # Display the items in the document
-        c_levelsItem = [""]
-        for item in self.document.items:
-            theParent = next(iter(reversed([x for x in c_levelsItem[:item.depth]])), "")
-
-            while len(c_levelsItem) < item.depth:
-                c_levelsItem.append(item.uid)
-            c_levelsItem = c_levelsItem[:item.depth]
-            for x in range(item.depth):
-                c_levelsItem.append(item.uid)
-
-            # Add the item to the document outline
-            self.treeview_outline.insert(theParent, tk.END, item.uid, text=item.level, values=(item.uid,), open=item.uid in c_openItem)
-
-            # Add the item to the document text
-            widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
-            widget.noUserInput_insert(self.text_items, tk.END, " [")
-            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))  # pylint: disable=W0108
-            widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
-
-        # Set tree view selection
-        c_selectedItem = [x for x in c_selectedItem if x in utilTkinter.getAllChildren(self.treeview_outline)]
-        if c_selectedItem:
-            # Restore selection
-            self.treeview_outline.selection_set(c_selectedItem)
-        else:
-            # Select the first item
-            for uid in utilTkinter.getAllChildren(self.treeview_outline):
-                self.stringvar_item.set(uid)
-                break
-            else:
-                logging.warning("no items to display")
-                self.stringvar_item.set("")
-
-    @_log
-    def display_item(self, *_):
-        """Display the currently selected item."""
-        try:
-            self.ignore = True
-
-            # Fetch the current item
-            uid = self.stringvar_item.get()
-            if uid == "":
-                self.item = None
-            else:
-                try:
-                    self.item = self.tree.find_item(uid)
-                except DoorstopError:
-                    pass
-            log.info("displaying item {}...".format(self.item))
-
-            if uid != "":
-                if uid not in self.treeview_outline.selection():
-                    self.treeview_outline.selection_set((uid, ))
-                self.treeview_outline.see(uid)
-
-            # Display the item's text
-            self.text_item.replace('1.0', tk.END, "" if self.item is None else self.item.text)
-
-            # Display the item's properties
-            self.stringvar_text.set("" if self.item is None else self.item.text)
-            self.intvar_active.set(False if self.item is None else self.item.active)
-            self.intvar_derived.set(False if self.item is None else self.item.derived)
-            self.intvar_normative.set(False if self.item is None else self.item.normative)
-            self.intvar_heading.set(False if self.item is None else self.item.heading)
-
-            # Display the item's links
-            self.listbox_links.delete(0, tk.END)
-            if self.item is not None:
-                for uid in self.item.links:
-                    self.listbox_links.insert(tk.END, uid)
-            self.stringvar_link.set('')
-
-            # Display the item's external reference
-            self.stringvar_ref.set("" if self.item is None else self.item.ref)
-
-            # Display the item's extended attributes
-            values = None if self.item is None else self.item.extended
-            self.combobox_extended['values'] = values or ['']
-            if self.item is not None:
-                self.combobox_extended.current(0)
-
-            # Display the items this item links to
-            widget.noUserInput_delete(self.text_parents, '1.0', tk.END)
-            self.text_parents_hyperlink.reset()
-            if self.item is not None:
-                for uid in self.item.links:
-                    try:
-                        item = self.tree.find_item(uid)
-                    except DoorstopError:
-                        text = "???"
-                    else:
-                        text = item.text or item.ref or '???'
-                        uid = item.uid
-
-                    widget.noUserInput_insert(self.text_parents, tk.END, "{t}".format(t=text))
-                    widget.noUserInput_insert(self.text_parents, tk.END, " [")
-                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
-                    widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
-
-            # Display the items this item has links from
-            widget.noUserInput_delete(self.text_children, '1.0', 'end')
-            self.text_children_hyperlink.reset()
-            if self.item is not None:
-                for uid in self.item.find_child_links():
-                    item = self.tree.find_item(uid)
-                    text = item.text or item.ref or '???'
-                    uid = item.uid
-
-                    widget.noUserInput_insert(self.text_children, tk.END, "{t}".format(t=text))
-                    widget.noUserInput_insert(self.text_children, tk.END, " [")
-                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
-                    widget.noUserInput_insert(self.text_children, tk.END, "]\n\n")
-        finally:
-            self.ignore = False
+        return result_frame
 
     @_log
     def display_extended(self, *_):
         """Display the currently selected extended attribute."""
-        try:
-            self.ignore = True
-
-            name = self.stringvar_extendedkey.get()
-            log.debug("displaying extended attribute '{}'...".format(name))
-            self.text_extendedvalue.replace('1.0', tk.END, self.item.get(name, ""))
-        finally:
-            self.ignore = False
+        name = self.stringvar_extendedkey.get()
+        log.debug("displaying extended attribute '{}'...".format(name))
+        self.text_extendedvalue.replace('1.0', tk.END, self.item.get(name, ""))
 
     @_log
     def update_item(self, *_):
         """Update the current item from the fields."""
-        if self.ignore:
-            return
         if not self.item:
             logging.warning("no item selected")
             return
 
         # Update the current item
         log.info("updating {}...".format(self.item))
-        self.item.auto = False
-        self.item.text = self.stringvar_text.get()
-        self.item.active = self.intvar_active.get()
-        self.item.derived = self.intvar_derived.get()
-        self.item.normative = self.intvar_normative.get()
-        self.item.heading = self.intvar_heading.get()
-        self.item.links = self.listbox_links.get(0, tk.END)
-        self.item.ref = self.stringvar_ref.get()
         name = self.stringvar_extendedkey.get()
         if name:
             self.item.set(name, self.stringvar_extendedvalue.get())
-        self.item.save()
 
         # Re-select this item
         self.display_document()
@@ -713,41 +935,30 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
     @_log
     def link(self):
         """Add the specified link to the current item."""
-        # Add the specified link to the list
-        uid = self.stringvar_link.get()
-        if uid:
-            self.listbox_links.insert(tk.END, uid)
-            self.stringvar_link.set('')
-
-            # Update the current item
-            self.update_item()
+        store = self.store
+        state = store.state
+        if state:
+            self.store.dispatch(Action_ChangeItemAddLink(state.session_selected_item_principal, state.session_link_inception))
 
     @_log
-    def unlink(self):
+    def unlink(self) -> None:
         """Remove the currently selected link from the current item."""
-        # Remove the selected link from the list
-        index = self.listbox_links.curselection()
-        self.listbox_links.delete(index)
-
-        # Update the current item
-        self.update_item()
+        store = self.store
+        state = store.state
+        if state:
+            uid = state.session_selected_item_principal
+            if uid is not None:
+                self.store.dispatch(Action_ChangeItemRemoveLink(uid, state.session_selected_link))
 
     @_log
-    def followlink(self, uid):
+    def followlink(self, uid: UID) -> None:
         """Display a given uid."""
-        # Update the current item
-        self.ignore = False
-        self.update_item()
-
         # Load the good document.
-        document = self.tree.find_document(uid.prefix)
-        index = list(self.tree).index(document)
-        self.combobox_documents.current(index)
-        self.display_document()
+        self.store.dispatch(Action_ChangeSelectedDocument(uid.prefix))
 
         # load the good Item
-        self.stringvar_item.set(uid)
+        self.store.dispatch(Action_ChangeSelectedItem((uid,)))
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if "__main__" == __name__:  # pragma: no cover (manual test)
     sys.exit(main())

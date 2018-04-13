@@ -19,7 +19,7 @@ import openpyxl
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
 from doorstop import core
-from doorstop.core.builder import _get_tree, _clear_tree
+from doorstop.core.tests.util import _get_tree, find_item, find_document, _clear_tree
 from doorstop.core.vcs import mockvcs
 
 from doorstop.core.tests import ENV, REASON, ROOT, FILES, EMPTY, SYS, FILES_BETA
@@ -44,9 +44,10 @@ class TestItem(unittest.TestCase):
     """Integration tests for the Item class."""
 
     def setUp(self):
+        _clear_tree()
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
+        self.item = core.Item(is_auto_save=True, path=self.path)
         self.item.tree = Mock()
         self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
@@ -58,7 +59,7 @@ class TestItem(unittest.TestCase):
         self.item.level = '1.2.3'
         self.item.text = "Hello, world!"
         self.item.links = ['SYS001', 'SYS002']
-        item2 = core.Item(os.path.join(FILES, 'REQ001.yml'))
+        item2 = core.Item(is_auto_save=True, path=os.path.join(FILES, 'REQ001.yml'))
         self.assertEqual((1, 2, 3), item2.level)
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
@@ -66,7 +67,7 @@ class TestItem(unittest.TestCase):
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-        item = core.Item(os.path.join(FILES, 'REQ003.yml'))
+        item = core.Item(is_auto_save=True, path=os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
         path, line = item.find_ref()
@@ -85,7 +86,8 @@ class TestDocument(unittest.TestCase):
     """Integration tests for the Document class."""
 
     def setUp(self):
-        self.document = core.Document(FILES, root=ROOT)
+        _clear_tree()
+        self.document = core.Document(is_auto_save=True, path=FILES, root=ROOT)
 
     def tearDown(self):
         """Clean up temporary files."""
@@ -95,15 +97,15 @@ class TestDocument(unittest.TestCase):
 
     def test_load(self):
         """Verify a document can be loaded from a directory."""
-        doc = core.Document(FILES)
+        doc = core.Document(is_auto_save=True, path=FILES)
         self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
-        self.assertEqual(5, len(doc.items))
+        self.assertEqual(6, len(doc.items))
 
     def test_new(self):
         """Verify a new document can be created."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
+        document = core.Document.new(is_auto_save=True, tree=None,
+                                     path=EMPTY, root=FILES,
                                      prefix='SYS', digits=4)
         self.assertEqual('SYS', document.prefix)
         self.assertEqual(4, document.digits)
@@ -122,7 +124,7 @@ class TestDocument(unittest.TestCase):
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(12, len(issues))
+        self.assertEqual(13, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
@@ -150,9 +152,11 @@ class TestDocument(unittest.TestCase):
 
     def test_add_item_with_reordering(self):
         """Verify an item can be inserted into a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY,
+                                     root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # will get displaced
         item_1_1 = document.add_item(level='1.1')
@@ -162,9 +166,10 @@ class TestDocument(unittest.TestCase):
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed from a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY, root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # to be removed
         item_1_1 = document.add_item(level='1.1')  # will get relocated
@@ -174,9 +179,10 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY, root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -190,9 +196,10 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_keep(self):
         """Verify a document's order can be corrected with a kept level."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY, root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
@@ -204,9 +211,10 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_start(self):
         """Verify a document's order can be corrected with a given start."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY, root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -222,9 +230,10 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(tree=None,
+                                     path=EMPTY, root=FILES,
+                                     prefix='TMP',
+                                     is_auto_save=True)
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
         document.add_item(level='1.2.0', reorder=False)
@@ -241,11 +250,12 @@ class TestTree(unittest.TestCase):
     """Integration tests for the core.Tree class."""
 
     def setUp(self):
+        _clear_tree()
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
-        self.tree = core.Tree(core.Document(SYS))
-        self.tree._place(core.Document(FILES))
+        self.item = core.Item(path=self.path, is_auto_save=True)
+        self.tree = core.Tree(core.Document(path=SYS, is_auto_save=True))
+        self.tree._place(core.Document(path=FILES, is_auto_save=True))
 
     def tearDown(self):
         common.write_text(self.backup, self.path)
@@ -259,7 +269,7 @@ class TestTree(unittest.TestCase):
         issues = self.tree.issues
         for issue in self.tree.issues:
             logging.info(repr(issue))
-        self.assertEqual(14, len(issues))
+        self.assertEqual(15, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
@@ -300,6 +310,7 @@ class TestImporter(unittest.TestCase):
     """Integrations tests for the importer module."""
 
     def setUp(self):
+        _clear_tree()
         # Create a temporary mock working copy
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
@@ -313,9 +324,7 @@ class TestImporter(unittest.TestCase):
         # Create default item attributes
         self.uid = 'PREFIX-00042'
         # Load an actual document
-        self.document = core.Document(FILES, root=ROOT)
-        # Ensure the tree is reloaded
-        _clear_tree()
+        self.document = core.Document(path=FILES, is_auto_save=True, root=ROOT)
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -327,9 +336,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
+        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(is_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -342,9 +351,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
+        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(is_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -357,9 +366,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
+        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(is_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -373,9 +382,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
+        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(is_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -395,7 +404,7 @@ class TestImporter(unittest.TestCase):
         document = _tree.create_document(_path, 'REQ')
         # Act
         with warnings.catch_warnings(record=True) as warns:
-            core.importer.import_file(path, document)
+            core.importer.import_file(is_auto_save=True, path=path, document=document)
             # Assert
         self.assertEqual(1, len(warns))
         self.assertIn("maximum number of rows", str(warns[-1].message))
@@ -406,57 +415,57 @@ class TestImporter(unittest.TestCase):
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
-        document = core.importer.create_document(self.prefix, self.path)
+        document = core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
 
     def test_create_document_with_unknown_parent(self):
         """Verify a new document can be created with an unknown parent."""
         # Verify the document does not already exist
-        self.assertRaises(DoorstopError, core.find_document, self.prefix)
+        self.assertRaises(DoorstopError, find_document, self.prefix)
         # Import a document
-        document = core.importer.create_document(self.prefix, self.path,
-                                                 parent=self.parent)
+        document = core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path,
+                                                 parent=self.parent, tree=_get_tree())
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
         self.assertEqual(self.parent, document.parent)
         # Verify the imported document can be found
-        document2 = core.find_document(self.prefix)
+        document2 = find_document(self.prefix)
         self.assertIs(document, document2)
 
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         # Create a document
-        core.importer.create_document(self.prefix, self.path)
+        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Attempt to create the same document
         self.assertRaises(DoorstopError, core.importer.create_document,
-                          self.prefix, self.path)
+                          True, self.prefix, self.path, None, _get_tree())
 
     def test_add_item(self):
         """Verify an item can be imported into a document."""
         # Create a document
-        core.importer.create_document(self.prefix, self.path)
+        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Verify the item does not already exist
-        self.assertRaises(DoorstopError, core.find_item, self.uid)
+        self.assertRaises(DoorstopError, find_item, self.uid)
         # Import an item
-        item = core.importer.add_item(self.prefix, self.uid)
+        item = core.importer.add_item(is_auto_save=True, document=find_document(self.prefix), uid=self.uid)
         # Verify the item's attributes are correct
         self.assertEqual(self.uid, item.uid)
         # Verify the item can be found
-        item2 = core.find_item(self.uid)
+        item2 = find_item(self.uid)
         self.assertIs(item, item2)
         # Verify the item is contained in the document
-        document = core.find_document(self.prefix)
+        document = find_document(self.prefix)
         self.assertIn(item, document.items)
 
     def test_add_item_with_attrs(self):
         """Verify an item with attributes can be imported into a document."""
         # Create a document
-        core.importer.create_document(self.prefix, self.path)
+        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(self.prefix, self.uid,
+        item = core.importer.add_item(is_auto_save=True, document=find_document(self.prefix), uid=self.uid,
                                       attrs=attrs)
         # Verify the item is correct
         self.assertEqual(self.uid, item.uid)
@@ -470,7 +479,8 @@ class TestExporter(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.document = core.Document(FILES, root=ROOT)
+        _clear_tree()
+        self.document = core.Document(is_auto_save=True, path=FILES, root=ROOT)
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
@@ -543,7 +553,8 @@ class TestPublisher(unittest.TestCase):
 
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def setUp(self):
-        self.tree = core.build(cwd=FILES, root=FILES)
+        _clear_tree()
+        self.tree = core.build(is_auto_save=True, cwd=FILES, root=FILES)
         # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document('REQ')
         self.temp = tempfile.mkdtemp()
@@ -654,10 +665,10 @@ class TestPublisher(unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     @patch('doorstop.settings.ENABLE_HEADERS', True)
     def test_lines_html_document_with_header(self):
-        """Verify HTML can be published from a document with headers and child links contain header"""
+        """Verify HTML can be published from a document with headers and child links contain header."""
         path = os.path.join(FILES_BETA, 'published3.html')
         expected = common.read_text(path)
-        beta_features_tree = core.build(cwd=FILES_BETA, root=FILES_BETA)
+        beta_features_tree = core.build(is_auto_save=True, cwd=FILES_BETA, root=FILES_BETA)
         document_with_header = beta_features_tree.find_document('REQHEADER')
         # Act
         lines = core.publisher.publish_lines(document_with_header, '.html',
@@ -675,23 +686,24 @@ class TestModule(unittest.TestCase):
     def setUp(self):
         """Reset the internal tree."""
         _clear_tree()
+        self.tree = _get_tree()
 
     def test_find_document(self):
         """Verify documents can be found using a convenience function."""
         # Cache miss
-        document = core.find_document('req')
+        document = find_document('req')
         self.assertIsNot(None, document)
         # Cache hit
-        document2 = core.find_document('req')
+        document2 = find_document('req')
         self.assertIs(document2, document)
 
     def test_find_item(self):
         """Verify items can be found using a convenience function."""
         # Cache miss
-        item = core.find_item('req1')
+        item = find_item('req1')
         self.assertIsNot(None, item)
         # Cache hit
-        item2 = core.find_item('req1')
+        item2 = find_item('req1')
         self.assertIs(item2, item)
 
 

@@ -11,12 +11,22 @@ insert_final_newline = true
 [*.bat]
 end_of_line = crlf
 
+[*.csv]
+indent_style = space
+trim_trailing_whitespace = false
+insert_final_newline = false
+
 [*.md]
 trim_trailing_whitespace = false
 
 [*.py]
 indent_style = space
 indent_size = 4
+
+[*.tsv]
+indent_style = tab
+trim_trailing_whitespace = false
+insert_final_newline = false
 
 [*.yml]
 indent_style = space

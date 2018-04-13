@@ -64,7 +64,7 @@ def run_create(args, cwd, _, catch=True):
         tree = _get_tree(args, cwd)
 
         # create a new document
-        document = tree.create_document(args.path, args.prefix,
+        document = tree.create_document(is_auto_save=True, path=args.path, value=args.prefix,
                                         parent=args.parent, digits=args.digits)
 
     if not success:
@@ -392,7 +392,15 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    document = item = None
+    log.debug("XXX run_import...")
+    log.debug(args)
+    log.debug(cwd)
+    log.debug(error)
+    log.debug(catch)
+    log.debug(_tree)
+
+    document = None
+    item = None
     attrs = utilities.literal_eval(args.attrs, error)
     mapping = utilities.literal_eval(args.map, error)
     if args.path:
@@ -420,16 +428,26 @@ def run_import(args, cwd, error, catch=True, _tree=None):
             msg = "importing '{}' into document {}...".format(args.path,
                                                               document)
             utilities.show(msg, flush=True)
-            importer.import_file(args.path, document, ext, mapping=mapping)
+            importer.import_file(is_auto_save=True, path=args.path, document=document, ext=ext, mapping=mapping)
 
         elif args.document:
+            request_next_number = _request_next_number(args)
+            tree = _tree or _get_tree(args, cwd,
+                                      request_next_number=request_next_number)
+
             prefix, path = args.document
-            document = importer.create_document(prefix, path,
-                                                parent=args.parent)
+
+            document = importer.create_document(is_auto_save=True, prefix=prefix, path=path,
+                                                parent=args.parent,
+                                                tree=tree)
         elif args.item:
             prefix, uid = args.item
             request_next_number = _request_next_number(args)
-            item = importer.add_item(prefix, uid, attrs=attrs,
+
+            tree = _tree or _get_tree(args, cwd,
+                                      request_next_number=request_next_number)
+            document = tree.find_document(prefix)
+            item = importer.add_item(is_auto_save=True, document=document, uid=uid, attrs=attrs,
                                      request_next_number=request_next_number)
     if not success:
         return False
@@ -438,7 +456,7 @@ def run_import(args, cwd, error, catch=True, _tree=None):
         utilities.show("imported document: {} ({})".format(document.prefix,
                                                            document.relpath))
     else:
-        assert item
+        assert item, "Should have an item."
         utilities.show("imported item: {} ({})".format(item.uid, item.relpath))
 
     return True
@@ -570,7 +588,7 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
 
     """
     utilities.show("building tree...", flush=True)
-    tree = build(cwd=cwd, root=args.project,
+    tree = build(cwd=cwd, root=args.project, is_auto_save=True,
                  request_next_number=request_next_number)
 
     if load:

@@ -127,7 +127,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Act
         exporter._file_tsv(self.item, path)  # pylint:disable=W0212
         # Assert
-        mock_file_csv.assert_called_once_with(self.item, path,
+        mock_file_csv.assert_called_once_with(obj=self.item, path=path,
                                               delimiter='\t', auto=False)
 
     @patch('doorstop.core.exporter._get_xlsx')

@@ -9,7 +9,6 @@ import shutil
 
 from doorstop.cli.main import main
 from doorstop import common
-from doorstop.core.builder import _clear_tree
 from doorstop import settings
 from doorstop.core.document import Document
 
@@ -40,7 +39,6 @@ class MockTestCase(TempTestCase):
         super().setUp()
         os.chdir(self.temp)
         common.touch('.mockvcs')
-        _clear_tree()
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -795,7 +793,7 @@ class TestPublish(TempTestCase):
 
 
 class TestPublishCommand(TempTestCase):
-    """Tests 'doorstop publish' options toc and template"""
+    """Tests 'doorstop publish' options toc and template."""
 
     @patch('doorstop.core.publisher.publish')
     def test_publish_document_template(self, mock_publish):
@@ -803,7 +801,7 @@ class TestPublishCommand(TempTestCase):
         path = os.path.join(self.temp, 'req.html')
         self.assertIs(None, main(['publish', '--template',
                                   'my_template.html', 'req', path]))
-        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
+        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS), True),
                                              path, '.html',
                                              template='my_template.html')
 
@@ -811,7 +809,7 @@ class TestPublishCommand(TempTestCase):
     def test_publish_document_to_stdout(self, mock_publish_lines):
         """Verify 'doorstop publish_lines' is called when no output path specified"""
         self.assertIs(None, main(['publish', 'req']))
-        mock_publish_lines.assert_called_once_with(Document(os.path.abspath(REQS)),
+        mock_publish_lines.assert_called_once_with(Document(os.path.abspath(REQS), True),
                                                    '.txt')
 
 

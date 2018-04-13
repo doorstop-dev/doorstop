@@ -44,7 +44,7 @@ styleDsTreeviewHeading = None
 class _Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
     """Listbox class with automatic width adjustment."""
 
-    def autowidth(self, maxwidth=250):
+    def autowidth(self, maxwidth: int = 250) -> None:
         """Resize the widget width to fit contents."""
         fnt = font.Font(font=self.cget("font"))
         pixels = 0
@@ -59,28 +59,28 @@ class _Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=
             self.config(width=width + shift)
 
 
-def Button(parent, *args, **kwargs):
+def Button(parent, *args, **kwargs) -> ttk.Button:
     result = ttk.Button(parent, *args, style="ds.TButton", **kwargs)
     return result
 
 
-def Checkbutton(parent, *args, **kwargs):
+def Checkbutton(parent, *args, **kwargs) -> ttk.Checkbutton:
     result = ttk.Checkbutton(parent, *args, style="ds.TCheckbutton", **kwargs)
     return result
 
 
-def Combobox(parent, *args, **kwargs):
+def Combobox(parent, *args, **kwargs) -> ttk.Combobox:
     result = ttk.Combobox(parent, *args, font=fontNormal, **kwargs)
     return result
 
 
-def Label(parent, *args, **kwargs):
+def Label(parent, *args, **kwargs) -> ttk.Label:
     result = ttk.Label(parent, *args, **kwargs)
     result.configure(font=fontNormal)
     return result
 
 
-def Listbox(parent, *args, **kwargs):
+def Listbox(parent, *args, **kwargs) -> tk.Listbox:
     result = tk.Listbox(parent, *args, **kwargs)
     result.configure(font=fontNormal)
     return result
@@ -92,27 +92,27 @@ def Listbox2(parent, *args, **kwargs):
     return result
 
 
-def Entry(parent, *args, **kwargs):
+def Entry(parent, *args, **kwargs) -> ttk.Entry:
     result = ttk.Entry(parent, *args, font=fontFixed, **kwargs)
     return result
 
 
-def Text(parent, *args, **kwargs):
+def Text(parent, *args, **kwargs) -> tk.Text:
     result = tk.Text(parent, *args, font=fontFixed, **kwargs)
     return result
 
 
-def TreeView(parent, *args, **kwargs):
+def TreeView(parent, *args, **kwargs) -> ttk.Treeview:
     result = ttk.Treeview(parent, *args, **kwargs)
     return result
 
 
-def ScrollbarH(parent, *args, **kwargs):
+def ScrollbarH(parent, *args, **kwargs) -> ttk.Scrollbar:
     result = ttk.Scrollbar(parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs)
     return result
 
 
-def ScrollbarV(parent, *args, **kwargs):
+def ScrollbarV(parent, *args, **kwargs) -> ttk.Scrollbar:
     result = ttk.Scrollbar(parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs)
     return result
 
@@ -259,13 +259,13 @@ def noUserInput_init(widget):
     return widget
 
 
-def noUserInput_delete(widget, *args, **kwargs):
+def noUserInput_delete(widget, *args, **kwargs) -> None:
     widget.configure(state=tk.NORMAL)
     widget.delete(*args, **kwargs)
     widget.configure(state=tk.DISABLED)
 
 
-def noUserInput_insert(widget, *args, **kwargs):
+def noUserInput_insert(widget, *args, **kwargs) -> None:
     widget.configure(state=tk.NORMAL)
     widget.insert(*args, **kwargs)
     widget.configure(state=tk.DISABLED)

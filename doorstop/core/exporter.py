@@ -196,7 +196,7 @@ def _file_tsv(obj, path, auto=False):
     :return: path of created file
 
     """
-    return _file_csv(obj, path, delimiter='\t', auto=auto)
+    return _file_csv(obj=obj, path=path, delimiter='\t', auto=auto)
 
 
 def _file_xlsx(obj, path, auto=False):

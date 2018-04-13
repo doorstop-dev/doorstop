@@ -16,8 +16,8 @@ log = common.logger(__name__)
 def add_item(func):
     """Add and cache the returned item."""
     @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        item = func(self, *args, **kwargs) or self
+    def wrapped(*args, **kwargs):
+        item = func(*args, **kwargs)
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.add(item.path)
         # pylint: disable=W0212
@@ -62,8 +62,8 @@ def delete_item(func):
 def add_document(func):
     """Add and cache the returned document."""
     @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        document = func(self, *args, **kwargs) or self
+    def wrapped(*args, **kwargs):
+        document = func(*args, **kwargs) or kwargs["tree"]
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.add(document.config)
         # pylint: disable=W0212
@@ -169,7 +169,7 @@ def auto_save(func):
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
-        if self.auto:
+        if self.is_auto_save:
             self.save()
         return result
     return wrapped
@@ -183,14 +183,13 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):
 
     """
 
-    auto = True  # set to False to delay automatic save until explicit save
-
-    def __init__(self):
+    def __init__(self, is_auto_save):
         self.path = None
         self.root = None
         self._data = {}
         self._exists = True
         self._loaded = False
+        self.is_auto_save = is_auto_save
 
     def __hash__(self):
         return hash(self.path)
@@ -258,7 +257,6 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):
         # 1. Call self._write() with the current properties here
         # 2. End implementations of this method with:
         self._loaded = False
-        self.auto = True
 
     def _write(self, text, path):  # pragma: no cover (integration test)
         """Write text to the object's file.
@@ -336,6 +334,25 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):
             setattr(self, name, value)
         else:
             self._data[name] = value
+
+    @auto_load
+    @auto_save
+    def remove(self, name):
+        """Remove an extended attribute.
+
+        :param name: name of extended attribute
+
+        """
+        if hasattr(self, name):
+            cname = self.__class__.__name__
+            msg = "'{n}' can't be remove from {c}".format(n=name, c=cname)
+            log.error(msg)
+            assert False, msg
+        else:
+            try:
+                del self._data[name]
+            except KeyError:
+                pass  # Ignore the exception since  the attribute is already not there.
 
     # actions ################################################################
 

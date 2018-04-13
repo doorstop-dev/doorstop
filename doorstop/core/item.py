@@ -58,14 +58,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
 
-    def __init__(self, path, root=os.getcwd(), **kwargs):
+    def __init__(self, path, is_auto_save, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
 
         :param path: path to Item file
         :param root: path to root of project
 
         """
-        super().__init__()
+        super().__init__(is_auto_save=is_auto_save)
         # Ensure the path is valid
         if not os.path.isfile(path):
             raise DoorstopError("item does not exist: {}".format(path))
@@ -86,7 +86,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.root = root
         self.document = kwargs.get('document')
         self.tree = kwargs.get('tree')
-        self.auto = kwargs.get('auto', Item.auto)
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -116,7 +115,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_item
-    def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
+    def new(tree, document, path, root, uid, is_auto_save, level=None):  # pylint: disable=R0913
         """Create a new item.
 
         :param tree: reference to the tree that contains this item
@@ -127,7 +126,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param uid: UID for the new item
 
         :param level: level for the new item
-        :param auto: automatically save the item
+        :param is_auto_save: automatically save the item
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             already exists
@@ -142,9 +141,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
-        item = Item(path2, root=root, document=document, tree=tree, auto=False)
+        item = Item(path2, root=root, document=document, tree=tree, is_auto_save=is_auto_save)
         item.level = level if level is not None else item.level
-        if auto or (auto is None and Item.auto):
+        if is_auto_save:
             item.save()
         # Return the item
         return item
@@ -197,7 +196,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._write(text, self.path)
         # Set meta attributes
         self._loaded = False
-        self.auto = True
 
     # properties #############################################################
 
@@ -330,7 +328,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = to_bool(value)
+        normative = to_bool(value)
+        self._data['normative'] = normative
+        if normative:
+            self.heading = False
 
     @property
     def heading(self):
@@ -339,7 +340,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         Headings have a level that ends in zero and are non-normative.
 
         """
-        return self.level.heading and not self.normative
+        return self.level.heading
 
     @heading.setter
     @auto_save
@@ -347,12 +348,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def heading(self, value):
         """Set the item's heading status."""
         heading = to_bool(value)
-        if heading and not self.heading:
-            self.level.heading = True
-            self.normative = False
-        elif not heading and self.heading:
-            self.level.heading = False
-            self.normative = True
+        if heading != self.heading:
+            self.level.heading = heading
+            if heading:
+                self.normative = False
 
     @property
     @auto_load
@@ -533,10 +532,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
+    def get_issues(self, skip=None, document_hook=None, item_hook=None, only_active=True):  # pylint: disable=unused-argument
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
+
+        :param only_active: only get issues of active items only.
 
         :return: generator of :class:`~doorstop.common.DoorstopError`,
                               :class:`~doorstop.common.DoorstopWarning`,
@@ -553,13 +554,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.load()
 
         # Skip inactive items
-        if not self.active:
+        if only_active and not self.active:
             log.info("skipped inactive item: %s", self)
             return
-
-        # Delay item save if reformatting
-        if settings.REFORMAT:
-            self.auto = False
 
         # Check text
         if not self.text:
@@ -599,11 +596,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         yield DoorstopInfo("needs initial review")
                 else:
                     yield DoorstopWarning("unreviewed changes")
-
-        # Reformat the file
-        if settings.REFORMAT:
-            log.debug("reformatting item %s...", self)
-            self.save()
 
     def _get_issues_document(self, document, skip):
         """Yield all the item's issues against its document."""

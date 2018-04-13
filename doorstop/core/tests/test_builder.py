@@ -4,10 +4,11 @@ import unittest
 from unittest.mock import patch, Mock
 
 from doorstop.core.tree import Tree
-from doorstop.core.builder import build, find_document, find_item, _clear_tree
+from doorstop.core.builder import build
 
 from doorstop.core.tests import FILES, EMPTY
 from doorstop.core.tests import MockDocumentSkip, MockDocumentNoSkip
+from doorstop.core.tests.util import find_document, find_item, _clear_tree
 
 
 class TestModule(unittest.TestCase):
