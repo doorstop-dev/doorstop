@@ -71,17 +71,17 @@ class TestTreeStrings(unittest.TestCase):
         """Verify trees structure can be drawn (UTF-8)."""
         text = ("a" + '\n'
                 "│   " + '\n'
-                "├ ─ b1" + '\n'
+                "├── b1" + '\n'
                 "│   │   " + '\n'
-                "│   └ ─ d" + '\n'
+                "│   └── d" + '\n'
                 "│       │   " + '\n'
-                "│       └ ─ e" + '\n'
+                "│       └── e" + '\n'
                 "│   " + '\n'
-                "└ ─ b2" + '\n'
+                "└── b2" + '\n'
                 "    │   " + '\n'
-                "    ├ ─ c1" + '\n'
+                "    ├── c1" + '\n'
                 "    │   " + '\n'
-                "    └ ─ c2")
+                "    └── c2")
         logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='UTF-8')
         logging.debug('actual:\n%s', text2)
