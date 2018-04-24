@@ -1,5 +1,7 @@
 active: true
 derived: false
+header: |
+  Viewing documents
 level: 3.1
 links: []
 normative: true

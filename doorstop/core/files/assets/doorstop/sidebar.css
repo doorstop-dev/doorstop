@@ -64,3 +64,8 @@
 .sidebar .nav>.active>ul.nav {
     display: block;           
 }
+
+/* don't be affected by <section> indentation */
+.sidebar * {
+    margin-left: 0px;
+}
