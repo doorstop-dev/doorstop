@@ -15,6 +15,7 @@ MAX_VERBOSITY = 4  # maximum verbosity level implemented
 
 
 def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
+    """New logging level, TRACE."""
     if self.isEnabledFor(logging.DEBUG - 1):
         self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
 

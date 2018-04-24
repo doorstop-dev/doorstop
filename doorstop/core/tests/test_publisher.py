@@ -336,7 +336,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -346,7 +346,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_lines_html_item_no_heading_levels(self):
         """Verify an item heading level can be ommitted."""
-        expected = '<section class="section2" id="req3"><h2>Heading</h2>\n</section>\n'
+        expected = '<h2 id="req3">Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -355,7 +355,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item_linkify(self):
         """Verify HTML (hyper) can be published from an item."""
-        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        expected = '<h2 id="req3">1.1 Heading</h2>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)

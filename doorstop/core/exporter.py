@@ -330,5 +330,3 @@ def check(ext, get_lines_gen=False, get_file_func=False):
     if ext not in FORMAT:
         exc = DoorstopError(fmt.format("export", exts))
         raise exc
-
-    return None

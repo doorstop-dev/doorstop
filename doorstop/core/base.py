@@ -14,9 +14,10 @@ log = common.logger(__name__)
 
 
 def add_item(func):
-    """Add and cache the returned item."""
+    """Decorator for methods that return a new item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to add and cache the returned item."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.add(item.path)
@@ -31,9 +32,10 @@ def add_item(func):
 
 
 def edit_item(func):
-    """Mark the returned item as modified."""
+    """Decorator for methods that return a modified item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to mark the returned item as modified."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.edit(item.path)
@@ -42,9 +44,10 @@ def edit_item(func):
 
 
 def delete_item(func):
-    """Remove and expunge the returned item."""
+    """Decorator for methods that return a deleted item."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned item."""
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.delete(item.path)
@@ -60,9 +63,10 @@ def delete_item(func):
 
 
 def add_document(func):
-    """Add and cache the returned document."""
+    """Decorator for methods that return a new document."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to add and cache the returned document."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.add(document.config)
@@ -75,9 +79,10 @@ def add_document(func):
 
 
 def edit_document(func):
-    """Mark the returned document as modified."""
+    """Decorator for methods that return a modified document."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to mark the returned document as modified."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.edit(document.config)
@@ -86,9 +91,10 @@ def edit_document(func):
 
 
 def delete_document(func):
-    """Remove and expunge the returned document."""
+    """Decorator for methods that return a deleted document."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to remove and expunge the returned document."""
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.delete(document.config)
@@ -156,18 +162,20 @@ class BaseValidatable(object, metaclass=abc.ABCMeta):
 
 
 def auto_load(func):
-    """Call self.load() before execution."""
+    """Decorator for methods that should automatically load from file."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to call self.load() before execution."""
         self.load()
         return func(self, *args, **kwargs)
     return wrapped
 
 
 def auto_save(func):
-    """Call self.save() after execution."""
+    """Decorator for methods that should automatically save to file."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method to call self.save() after execution."""
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
@@ -333,7 +341,7 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
             log.trace(msg)
-            setattr(self, name, value)
+            return setattr(self, name, value)
         else:
             self._data[name] = value
 

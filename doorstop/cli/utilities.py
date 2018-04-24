@@ -31,7 +31,6 @@ class capture(object):  # pylint: disable=R0903
             if self.catch:
                 log.error(exc_value)
                 return True
-        return False
 
 
 def configure_logging(verbosity=0):

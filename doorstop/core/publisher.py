@@ -17,7 +17,6 @@ import bottle
 EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
-    'mdx_outline',
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
@@ -324,22 +323,19 @@ def _lines_markdown(obj, **kwargs):
             yield from text_lines[1:]
         else:
 
-            uid = item.uid
-            if settings.ENABLE_HEADERS:
-                if item.header:
-                    uid = '{h} <small>{u}</small>'.format(h=item.header, u=item.uid)
-                else:
-                    uid = '{u}'.format(u=item.uid)
-
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
                 standard = "{h} {lev} {u}".format(h=heading,
-                                                  lev=level, u=uid)
+                                                  lev=level, u=item.uid)
             else:
-                standard = "{h} {u}".format(h=heading, u=uid)
-
+                standard = "{h} {u}".format(h=heading, u=item.uid)
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
+
+            # Item Description
+            if item.header:
+                yield ""  # break before text
+                yield heading + item.header
 
             # Text
             if item.text:
@@ -467,8 +463,6 @@ def _table_of_contents_md(obj, linkify=None):
         if item.heading:
             lines = item.text.splitlines()
             heading = lines[0] if lines else ''
-        elif item.header:
-            heading = "{h}".format(h=item.header)
         else:
             heading = item.uid
 

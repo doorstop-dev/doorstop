@@ -78,7 +78,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
-        """Create a new document.
+        """Internal method to create a new document.
 
         :param tree: reference to tree that contains this document
 
@@ -226,7 +226,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def assets(self):
         """Get the path to the document's assets if they exist else `None`."""
         path = os.path.join(self.path, Document.ASSETS)
-        return path if os.path.isdir(path) else None
+        if os.path.isdir(path):
+            return path
 
     @property
     @auto_load
@@ -325,7 +326,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
         path = os.path.join(self.path, Document.INDEX)
-        return path if os.path.isfile(path) else None
+        if os.path.isfile(path):
+            return path
 
     @index.setter
     def index(self, value):

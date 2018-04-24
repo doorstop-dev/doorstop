@@ -20,9 +20,10 @@ log = common.logger(__name__)
 
 
 def requires_tree(func):
-    """Require a tree reference."""
+    """Decorator for methods that require a tree reference."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a tree reference."""
         if not self.tree:
             name = func.__name__
             log.critical("`{}` can only be called with a tree".format(name))
@@ -32,9 +33,10 @@ def requires_tree(func):
 
 
 def requires_document(func):
-    """Require a document reference."""
+    """Decorator for methods that require a document reference."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
+        """Wrapped method that requires a document reference."""
         if not self.document:
             name = func.__name__
             msg = "`{}` can only be called with a document".format(name)
@@ -117,7 +119,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_item
     def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
-        """Create a new item.
+        """Internal method to create a new item.
 
         :param tree: reference to the tree that contains this item
         :param document: reference to document that contains this item
