@@ -8,16 +8,10 @@ PACKAGES := $(PACKAGE)
 CONFIG := $(wildcard *.py)
 MODULES := $(wildcard $(PACKAGE)/*.py)
 
-# Python settings
-ifndef TRAVIS
-	PYTHON_MAJOR ?= 3
-	PYTHON_MINOR ?= 6
-endif
-
 # Virtual environment paths
 export PIPENV_VENV_IN_PROJECT=true
 export PIPENV_IGNORE_VIRTUALENVS=true
-ENV := .venv
+VENV := .venv
 
 # MAIN TASKS ##################################################################
 
@@ -49,18 +43,14 @@ doctor:  ## Confirm system dependencies are available
 
 # PROJECT DEPENDENCIES ########################################################
 
-DEPENDENCIES := $(ENV)/.pipenv-$(shell bin/checksum Pipfile*)
-METADATA := *.egg-info
+DEPENDENCIES := $(VENV)/.pipenv-$(shell bin/checksum Pipfile* setup.py)
 
 .PHONY: install
-install: $(DEPENDENCIES) $(METADATA)
+install: $(DEPENDENCIES)
 
 $(DEPENDENCIES):
-	pipenv install --dev
-	@ touch $@
-
-$(METADATA): setup.py
 	pipenv run python setup.py develop
+	pipenv install --dev
 	@ touch $@
 
 # CHECKS ######################################################################
@@ -211,7 +201,7 @@ TWINE := pipenv run twine
 upload: dist ## Upload the current version to PyPI
 	git diff --name-only --exit-code
 	$(TWINE) upload dist/*.*
-	bin/open https://pypi.python.org/pypi/$(PROJECT)
+	bin/open https://pypi.org/project/$(PROJECT)
 
 # CLEANUP #####################################################################
 
@@ -220,7 +210,7 @@ clean: .clean-build .clean-docs .clean-test .clean-install ## Delete all generat
 
 .PHONY: clean-all
 clean-all: clean
-	rm -rf $(ENV)
+	rm -rf $(VENV)
 
 .PHONY: .clean-install
 .clean-install:

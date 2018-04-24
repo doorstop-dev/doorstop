@@ -43,7 +43,12 @@ import logging
 __version__ = '1.3'
 
 PY2 = sys.version_info[0] == 2
-CONFIG_FILENAMES = ['.verchew.ini', 'verchew.ini', '.verchew', '.verchewrc']
+CONFIG_FILENAMES = [
+    'verchew.ini',
+    '.verchew.ini',
+    '.verchewrc',
+    '.verchew',
+]
 SAMPLE_CONFIG = """
 [Python]
 
