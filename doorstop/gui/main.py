@@ -245,6 +245,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         def do_save_all_project() -> None:
             store.dispatch(Action_SaveProject())
 
+        if True:  # Set the windows behavior.
+            parent.protocol("WM_DELETE_WINDOW", do_quit)
+
         if True:  # Set the menu
             menubar = tk.Menu(parent)
             filemenu = tk.Menu(menubar, tearoff=0)

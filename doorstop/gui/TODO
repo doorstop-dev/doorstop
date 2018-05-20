@@ -20,7 +20,6 @@
 - Review what is logged, what should vs should not be logged by the GUI
 
 ## User friendliness
-- The X should ask if you want to save pending changes
 - Make view fit in screen (add scroll bar to every widget)
 - Short cut (CTRL+O, ALT+F4, CTRL+S, F1)
  - Show short cut in associated menu item
