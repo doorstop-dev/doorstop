@@ -9,7 +9,6 @@
 ## GUI Improvement
 - Have a view (readonly or something else... like a welcome page) when no document is loaded
 - Make view fit in screen (or add scroll bar)
-- If link inception is empty or already existing, the add link button should be disabled.
 - Make item strikethrough (or italic) in the tree when they are not active.
 - Make item bold in the tree when they are Heading.
 

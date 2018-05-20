@@ -77,7 +77,8 @@ class Reducer_Project(Reducer):
 
         if (new_path != result.project_path) or (new_tree != result.project_tree):
             result = copy.deepcopy(result)
-            result.session_selected_item = tuple()
+            result.session_selected_item = None
+            result.session_selected_link = None
             result.project_tree = None if "" == new_path else builder.build(cwd=state.cwd, root=new_path, is_auto_save=False)
             if result.project_tree is not None:
                 new_path = result.project_tree.root

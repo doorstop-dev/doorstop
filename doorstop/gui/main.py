@@ -695,7 +695,32 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         entry_link_inception.insert('0', state.session_link_inception)
                 store.add_observer(lambda store: refreshEntryLinkInception(store))
 
-            widget.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
+            if True:  # Link item button
+                btn_link_item = widget.Button(frame, text="<< Link Item", command=self.link)
+                btn_link_item.grid(row=4, column=2, **kw_gp)
+
+                def refreshLinkButton(store: Optional[Store]) -> None:
+                    state = store.state if store is not None else None
+                    if state is not None:
+                        session_link_inception = state.session_link_inception
+                        if "" != session_link_inception:
+
+                            session_selected_item_principal = state.session_selected_item_principal if state else None
+                            project_tree = state.project_tree if state else None
+                            try:
+                                item = project_tree.find_item(session_selected_item_principal) if project_tree is not None else None
+                            except DoorstopError:
+                                item = None
+                            if item is not None:
+                                if session_link_inception in [str(x) for x in item.links]:
+                                    btn_link_item.config(state=tk.DISABLED)
+                                else:
+                                    btn_link_item.config(state=tk.NORMAL)
+                            else:
+                                btn_link_item.config(state=tk.DISABLED)
+                        else:
+                            btn_link_item.config(state=tk.DISABLED)
+                store.add_observer(lambda store: refreshLinkButton(store))
 
             if True:  # Unlink item button
                 btn_unlink_item = widget.Button(frame, text=">> Unlink Item", command=self.unlink)
