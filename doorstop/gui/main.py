@@ -231,8 +231,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             return False
 
         def do_load_project() -> bool:
+            state = store.state
+            if state is None: return True
+            project_path = store.state.project_path
             if do_close_project():
-                store.dispatch(Action_LoadProject())
+                store.dispatch(Action_ChangeProjectPath(project_path))
                 return True
             return False
 
@@ -246,23 +249,26 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             store.dispatch(Action_SaveProject())
 
         if True:  # Set the windows behavior.
-            parent.protocol("WM_DELETE_WINDOW", do_quit)
+            parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
+            parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
+            parent.bind_all("<Control-s>", lambda *args, **kw: do_save_all_project())
+            parent.bind_all("<Key-F5>", lambda *args, **kw: do_load_project())
 
         if True:  # Set the menu
             menubar = tk.Menu(parent)
             filemenu = tk.Menu(menubar, tearoff=0)
-            filemenu.add_command(label="Open Project", command=do_open_project)
-            filemenu.add_command(label="Reload Project", command=do_load_project)
-            filemenu.add_command(label="Save All", command=do_save_all_project)
+            filemenu.add_command(label="Open Project", command=do_open_project, accelerator="Ctrl+o")
+            filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
+            filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
             filemenu.add_command(label="Close Project", command=do_close_project)
             filemenu.add_separator()
-            filemenu.add_command(label="Exit", command=do_quit)
+            filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
             menubar.add_cascade(label="File", menu=filemenu)
 
             viewmenu = tk.Menu(menubar, tearoff=0)
-            viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1))
-            viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1))
-            viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize())
+            viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
+            viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
+            viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
             menubar.add_cascade(label="View", menu=viewmenu)
 
             parent.config(menu=menubar)

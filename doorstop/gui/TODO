@@ -1,6 +1,10 @@
 # TODO
 
-**Bunch of improvement left to do related to the DoorStop GUI**
+**Bunch of improvement left to do related to the Doorstop GUI**
+
+## Bug
+- The add Item button does not works anymore (must be implemented)
+- The remove Item button does not works anymore (must be implemented)
 
 ## GUI Improvement
 - Have a view (readonly or something else... like a welcome page) when no document is loaded
@@ -21,8 +25,6 @@
 
 ## User friendliness
 - Make view fit in screen (add scroll bar to every widget)
-- Short cut (CTRL+O, ALT+F4, CTRL+S, F1)
- - Show short cut in associated menu item
 - Make tree node draggable and reorderable with the mouse
  - Remove the Up/Down Arrows Buttons
 - Make click-able links blue to make it more obvious that they are clickeable.
@@ -36,6 +38,7 @@
  - Help > About
  - Help > GUI Help
  - Help > DoorStop project
+ - Short cut (F1)
 - Add Raw Edit in text editor.
 - Add the possibility to add document.
 - Add the possibility to remove document.
