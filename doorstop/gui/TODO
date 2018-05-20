@@ -1,0 +1,54 @@
+# TODO
+
+**Bunch of improvement left to do related to the DoorStop GUI**
+
+## GUI Improvement
+- Have a view (readonly or something else... like a welcome page) when no document is loaded
+- Menu font size does not adjust when increasing/decreasing font size.
+- Make view fit in screen (or add scroll bar)
+- If no links are selected, the unlink button should be disabled.
+- If link inception is empty or already existing, the add link button should be disabled.
+- Make item strikethrough (or italic) in the tree when they are not active.
+- Make item bold in the tree when they are Heading.
+
+## Code quality
+- Add Mypy lint to build process
+ - Add Mypy types to all functions
+- Add python documentation to every method.
+- Review naming convention (use lint tool to identify them.. pep8)
+- Unit test Action, Reducer, Store, State.
+- Test environment corner case situation (readonly folder, ...)
+- Review what is logged, what should vs should not be logged by the GUI
+
+## User friendliness
+- The X should ask if you want to save pending changes
+- Make view fit in screen (add scroll bar to every widget)
+- Short cut (CTRL+O, ALT+F4, CTRL+S, F1)
+ - Show short cut in associated menu item
+- Make tree node draggable and reorderable with the mouse
+ - Remove the Up/Down Arrows Buttons
+- Make click-able links blue to make it more obvious that they are clickeable.
+
+## Missing feature
+- Add preview in menu
+- Add publish in the menu
+- Add export in the menu
+- Add import in the menu
+- Add help in menu
+ - Help > About
+ - Help > GUI Help
+ - Help > DoorStop project
+- Add Raw Edit in text editor.
+- Add the possibility to add document.
+- Add the possibility to remove document.
+- Add a warning/issue list view.
+
+## User Accessibility
+- Isolate all text
+- Add a switch language in the menu.
+- I18n English
+- I18n other languages
+
+## Idea
+- Search feature
+- Unify command line (GUI/CLI able to connect to remote/local data)
