@@ -92,6 +92,12 @@ def Listbox2(parent, *args, **kwargs):
     return result
 
 
+def Menu(parent, *args, **kwargs) -> tk.Menu:
+    result = tk.Menu(*args, **kwargs)
+    result.configure(font=fontNormal)
+    return result
+
+
 def Entry(parent, *args, **kwargs) -> ttk.Entry:
     result = ttk.Entry(parent, *args, font=fontFixed, **kwargs)
     return result

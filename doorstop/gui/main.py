@@ -253,10 +253,13 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
             parent.bind_all("<Control-s>", lambda *args, **kw: do_save_all_project())
             parent.bind_all("<Key-F5>", lambda *args, **kw: do_load_project())
+            parent.bind_all("<Control-minus>", lambda *args, **kw: widget.adjustFontSize(-1))
+            parent.bind_all("<Control-equal>", lambda *args, **kw: widget.adjustFontSize(1))
+            parent.bind_all("<Control-0>", lambda *args, **kw: widget.resetFontSize())
 
         if True:  # Set the menu
-            menubar = tk.Menu(parent)
-            filemenu = tk.Menu(menubar, tearoff=0)
+            menubar = widget.Menu(parent)
+            filemenu = widget.Menu(menubar, tearoff=0)
             filemenu.add_command(label="Open Project", command=do_open_project, accelerator="Ctrl+o")
             filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
             filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
@@ -265,7 +268,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
             menubar.add_cascade(label="File", menu=filemenu)
 
-            viewmenu = tk.Menu(menubar, tearoff=0)
+            viewmenu = widget.Menu(menubar, tearoff=0)
             viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
             viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
             viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
@@ -306,10 +309,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         kw_gp = {'padx': 2, 'pady': 2}  # grid arguments for padded widgets
         kw_gs = {'sticky': tk.NSEW}  # grid arguments for sticky widgets
         kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
-
-        root.bind_all("<Control-minus>", lambda arg: widget.adjustFontSize(-1))
-        root.bind_all("<Control-equal>", lambda arg: widget.adjustFontSize(1))
-        root.bind_all("<Control-0>", lambda arg: widget.resetFontSize())
 
         # Configure grid
         result_frame = ttk.Frame(root, **kw_f)
