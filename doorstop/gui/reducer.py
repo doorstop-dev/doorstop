@@ -216,8 +216,10 @@ class Reducer_Edit(Reducer):
                     new_item = project_tree.find_item(action.item_uid)
                     count_before = len(new_item.links)
                     new_item.links = [x for x in new_item.links if str(x) not in [str(y) for y in item_link]]
+                    result.session_selected_link = frozenset([x for x in result.session_selected_link if str(x) not in [str(y) for y in item_link]])
                     count_after = len(new_item.links)
-                    result.session_pending_change |= count_before != count_after
+                    if count_before != count_after:
+                        result.session_pending_change = True
         elif isinstance(action, Action_ChangeItemAddLink):
             new_link = action.new_link
             if "" != new_link:

@@ -697,7 +697,18 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 store.add_observer(lambda store: refreshEntryLinkInception(store))
 
             widget.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
-            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
+
+            if True:  # Unlink item button
+                btn_unlink_item = widget.Button(frame, text=">> Unlink Item", command=self.unlink)
+                btn_unlink_item.grid(row=6, column=2, **kw_gp)
+
+                def refreshUnlinkButton(store: Optional[Store]) -> None:
+                    state = store.state if store is not None else None
+                    if state is not None:
+                        session_selected_link = state.session_selected_link
+                        btn_unlink_item.config(state=tk.NORMAL if session_selected_link else tk.DISABLED)
+                store.add_observer(lambda store: refreshUnlinkButton(store))
+
             widget.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
 
             if True:  # Item External Reference

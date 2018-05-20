@@ -6,7 +6,6 @@
 - Have a view (readonly or something else... like a welcome page) when no document is loaded
 - Menu font size does not adjust when increasing/decreasing font size.
 - Make view fit in screen (or add scroll bar)
-- If no links are selected, the unlink button should be disabled.
 - If link inception is empty or already existing, the add link button should be disabled.
 - Make item strikethrough (or italic) in the tree when they are not active.
 - Make item bold in the tree when they are Heading.
