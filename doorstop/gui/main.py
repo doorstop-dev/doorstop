@@ -280,15 +280,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         self.document = None
         self.item = None
 
-        self.stringvar_extendedkey = tk.StringVar()
-        self.stringvar_extendedkey.trace('w', self.display_extended)
-        self.stringvar_extendedvalue = tk.StringVar()
-        self.stringvar_extendedvalue.trace('w', self.update_item)
-
-        # Create widget variables
-        self.combobox_extended = None
-        self.text_extendedvalue = None
-
         # Initialize the GUI
         frame = self.init(parent, store)
         frame.pack(fill=tk.BOTH, expand=1)
@@ -858,24 +849,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         return result_frame
 
     @_log
-    def display_extended(self, *_):
-        """Display the currently selected extended attribute."""
-        name = self.stringvar_extendedkey.get()
-        log.debug("displaying extended attribute '{}'...".format(name))
-        self.text_extendedvalue.replace('1.0', tk.END, self.item.get(name, ""))
-
-    @_log
     def update_item(self, *_):
         """Update the current item from the fields."""
         if not self.item:
             logging.warning("no item selected")
             return
-
-        # Update the current item
-        log.info("updating {}...".format(self.item))
-        name = self.stringvar_extendedkey.get()
-        if name:
-            self.item.set(name, self.stringvar_extendedvalue.get())
 
         # Re-select this item
         self.display_document()
