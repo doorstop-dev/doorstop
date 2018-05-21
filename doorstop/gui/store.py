@@ -28,7 +28,6 @@ class Store(object):
 
     def dispatch(self, action: Action) -> None:
         new_state = self.__reducer.reduce(self.state, action)
-        print("Dispatch?... ", end="")
         if new_state != self.__state:
             print(action.__class__.__name__)
             self.__state = new_state

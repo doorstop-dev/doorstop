@@ -33,7 +33,6 @@ from doorstop import settings
 from doorstop.core.types import UID
 
 from doorstop.gui.action import Action_ChangeProjectPath
-from doorstop.gui.action import Action_LoadProject
 from doorstop.gui.action import Action_SaveProject
 from doorstop.gui.action import Action_CloseProject
 from doorstop.gui.action import Action_ChangeCWD
@@ -51,6 +50,7 @@ from doorstop.gui.action import Action_ChangeSelectedLink
 from doorstop.gui.action import Action_ChangeItemRemoveLink
 from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
+from doorstop.gui.action import Action_AddNewItemNextToSelection
 
 from doorstop.gui.reducer import Reducer_GUI
 from doorstop.gui.store import Store
@@ -171,7 +171,7 @@ def run(args: argparse.Namespace, cwd: str, error):
                 pending_change = False
                 if store:
                     state = store.state
-                    if state:
+                    if state is not None:
                         project_path = state.project_path
                         pending_change = state.session_pending_change
                 root.title("{} ({}){}{}".format(__project__, __version__, "*" if pending_change else "", (" - " + project_path) if project_path else ""))
@@ -189,14 +189,13 @@ def run(args: argparse.Namespace, cwd: str, error):
 def _log(func):  # pragma: no cover (manual test)
     """Log name and arguments."""
     @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(*args, **kwargs):
         sargs = "{}, {}".format(', '.join(repr(a) for a in args),
                                 ', '.join("{}={}".format(k, repr(v))
                                           for k, v in kwargs.items()))
         msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
-        if not isinstance(self, ttk.Frame):
-            log.debug(msg.strip())
-        return func(self, *args, **kwargs)
+        log.debug(msg.strip())
+        return func(*args, **kwargs)
     return wrapped
 
 
@@ -205,9 +204,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
     def __init__(self, parent: tk.Frame, store: Store) -> None:
         ttk.Frame.__init__(self, parent)
-
-        # Create Doorstop variables
-        self.store = store  # TODO: Remove this attribute
 
         def do_close_project() -> bool:
             current_state = store.state
@@ -281,7 +277,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 state = None
                 if store:
                     state = store.state
-                    if state:
+                    if state is not None:
                         project_path = state.project_path
                 filemenu.entryconfig("Reload Project", state=tk.NORMAL if project_path else tk.DISABLED)
                 filemenu.entryconfig("Save All", state=tk.NORMAL if project_path else tk.DISABLED)
@@ -350,7 +346,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 project_tree = None
                 if store:
                     state = store.state
-                    if state:
+                    if state is not None:
                         project_tree = state.project_tree
                 documents = [document for document in project_tree] if project_tree else []
                 combobox_documents['values'] = ["{} ({})".format(document.prefix, document.relpath) for document in documents]
@@ -434,7 +430,21 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             widget.Button(frame, text="v", width=0, command=self.down).grid(row=3, column=2, sticky=tk.EW)
             widget.Button(frame, text="^", width=0, command=self.up).grid(row=3, column=3, sticky=tk.EW)
             widget.Button(frame, text=">", width=0, command=self.right).grid(row=3, column=4, sticky=tk.EW, padx=(0, 2))
-            widget.Button(frame, text="Add Item", command=self.add).grid(row=3, column=5, sticky=tk.W, **kw_gp)
+
+            if True:  # Button add item
+                def add_new_item() -> None:
+                    """Add a new item to the document."""
+                    store.dispatch(Action_AddNewItemNextToSelection())
+                btn_add_item = widget.Button(frame, text="Add Item", command=add_new_item)
+                btn_add_item.grid(row=3, column=5, sticky=tk.W, **kw_gp)
+
+                def refresh_btn_add_item(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    btn_add_item.config(state=tk.DISABLED if ((state is None) or (state.project_tree is None)) else tk.NORMAL)
+
+                store.add_observer(lambda store: refresh_btn_add_item(store))
+
+
             widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=3, column=6, sticky=tk.E, **kw_gp)
 
             return frame
@@ -462,19 +472,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             @_log
             def text_item_focusout(event: Any) -> None:
                 """Handle updated item text."""
-                store = self.store
                 state = store.state
-                if state:
+                if state is not None:
                     thewidget = event.widget
                     value = thewidget.get('1.0', tk.END)
                     item_uid = state.session_selected_item_principal
                     if item_uid:
-                        self.store.dispatch(Action_ChangeItemText(item_uid, value))
+                        store.dispatch(Action_ChangeItemText(item_uid, value))
 
             @_log
             def text_item_reference_focusout(event: Any) -> None:
                 """Handle updated item reference text."""
-                store = self.store
                 if store is not None:
                     state = store.state
                     if state is not None:
@@ -482,12 +490,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         value = thewidget.get()
                         item_uid = state.session_selected_item_principal
                         if item_uid:
-                            self.store.dispatch(Action_ChangeItemReference(item_uid, value))
+                            store.dispatch(Action_ChangeItemReference(item_uid, value))
 
             @_log
             def text_extendedvalue_focusout(event) -> None:
                 """Handle updated extended attributes."""
-                store = self.store
                 if store is not None:
                     state = store.state
                     if state is not None:
@@ -495,7 +502,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         value = thewidget.get('1.0', tk.END)
                         item_uid = state.session_selected_item_principal
                         if item_uid:
-                            self.store.dispatch(Action_ChangeExtendedValue(item_uid, state.session_extended_name, value))
+                            store.dispatch(Action_ChangeExtendedValue(item_uid, state.session_extended_name, value))
 
             # Place widgets
             widget.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
@@ -696,7 +703,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 store.add_observer(lambda store: refreshEntryLinkInception(store))
 
             if True:  # Link item button
-                btn_link_item = widget.Button(frame, text="<< Link Item", command=self.link)
+                @_log
+                def do_link():
+                    """Add the specified link to the current item."""
+                    state = store.state
+                    if state is not None:
+                        store.dispatch(Action_ChangeItemAddLink(state.session_selected_item_principal, state.session_link_inception))
+
+                btn_link_item = widget.Button(frame, text="<< Link Item", command=do_link)
                 btn_link_item.grid(row=4, column=2, **kw_gp)
 
                 def refreshLinkButton(store: Optional[Store]) -> None:
@@ -723,7 +737,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 store.add_observer(lambda store: refreshLinkButton(store))
 
             if True:  # Unlink item button
-                btn_unlink_item = widget.Button(frame, text=">> Unlink Item", command=self.unlink)
+
+                @_log
+                def unlink() -> None:
+                    """Remove the currently selected link from the current item."""
+                    state = store.state
+                    if state is not None:
+                        uid = state.session_selected_item_principal
+                        if uid is not None:
+                            store.dispatch(Action_ChangeItemRemoveLink(uid, state.session_selected_link))
+
+                btn_unlink_item = widget.Button(frame, text=">> Unlink Item", command=unlink)
                 btn_unlink_item.grid(row=6, column=2, **kw_gp)
 
                 def refreshUnlinkButton(store: Optional[Store]) -> None:
@@ -816,6 +840,15 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.rowconfigure(3, weight=1)
             frame.columnconfigure(0, weight=1)
 
+            @_log
+            def followlink(uid: UID) -> None:
+                """Display a given uid."""
+                # Load the good document.
+                store.dispatch(Action_ChangeSelectedDocument(uid.prefix))
+
+                # load the good Item
+                store.dispatch(Action_ChangeSelectedItem((uid,)))
+
             # Place widgets Text Parents
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
             text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
@@ -824,7 +857,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             def refresh_text_parents(store: Optional[Store]) -> None:
                 # Display the items this item links to
-                store = self.store
                 state = store.state
                 if state is not None:
                     widget.noUserInput_delete(text_parents, '1.0', tk.END)
@@ -841,7 +873,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                             widget.noUserInput_insert(text_parents, tk.END, "{t}".format(t=text))
                             widget.noUserInput_insert(text_parents, tk.END, " [")
-                            widget.noUserInput_insert(text_parents, tk.END, uid, text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                            widget.noUserInput_insert(text_parents, tk.END, uid, text_parents_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
                             widget.noUserInput_insert(text_parents, tk.END, "]\n\n")
             store.add_observer(lambda store: refresh_text_parents(store))
 
@@ -852,7 +884,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             def refresh_text_children(store: Optional[Store]) -> None:
                 # Display the items this item links to
-                store = self.store
                 state = store.state
                 if state is not None:
                     # Display the items this item has links from
@@ -868,7 +899,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                                 widget.noUserInput_insert(text_children, tk.END, "{t}".format(t=text))
                                 widget.noUserInput_insert(text_children, tk.END, " [")
-                                widget.noUserInput_insert(text_children, tk.END, uid, text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                                widget.noUserInput_insert(text_children, tk.END, uid, text_children_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
                                 widget.noUserInput_insert(text_children, tk.END, "]\n\n")
             store.add_observer(lambda store: refresh_text_children(store))
 
@@ -882,57 +913,28 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         return result_frame
 
     @_log
-    def update_item(self, *_):
-        """Update the current item from the fields."""
-        if not self.item:
-            logging.warning("no item selected")
-            return
-
-        # Re-select this item
-        self.display_document()
-
-    @_log
     def left(self):
         """Dedent the current item's level."""
         self.item.level <<= 1
         self.document.reorder(keep=self.item)
-        self.display_document()
 
     @_log
     def down(self):
         """Increment the current item's level."""
         self.item.level += 1
         self.document.reorder(keep=self.item)
-        self.display_document()
 
     @_log
     def up(self):
         """Decrement the current item's level."""
         self.item.level -= 1
         self.document.reorder(keep=self.item)
-        self.display_document()
 
     @_log
     def right(self):
         """Indent the current item's level."""
         self.item.level >>= 1
         self.document.reorder(keep=self.item)
-        self.display_document()
-
-    @_log
-    def add(self):
-        """Add a new item to the document."""
-        logging.info("adding item to {}...".format(self.document))
-        if self.item:
-            level = self.item.level + 1
-        else:
-            level = None
-        item = self.document.add_item(level=level)
-        logging.info("added item: {}".format(item))
-        # Refresh the document view
-        self.display_document()
-        # Set the new selection
-        self.stringvar_item.set(item.uid)
 
     @_log
     def remove(self):
@@ -951,35 +953,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             logging.info("removed item: {}".format(item))
             # Set the new selection
             self.stringvar_item.set(newSelection)
-            # Refresh the document view
-            self.display_document()
-
-    @_log
-    def link(self):
-        """Add the specified link to the current item."""
-        store = self.store
-        state = store.state
-        if state:
-            self.store.dispatch(Action_ChangeItemAddLink(state.session_selected_item_principal, state.session_link_inception))
-
-    @_log
-    def unlink(self) -> None:
-        """Remove the currently selected link from the current item."""
-        store = self.store
-        state = store.state
-        if state:
-            uid = state.session_selected_item_principal
-            if uid is not None:
-                self.store.dispatch(Action_ChangeItemRemoveLink(uid, state.session_selected_link))
-
-    @_log
-    def followlink(self, uid: UID) -> None:
-        """Display a given uid."""
-        # Load the good document.
-        self.store.dispatch(Action_ChangeSelectedDocument(uid.prefix))
-
-        # load the good Item
-        self.store.dispatch(Action_ChangeSelectedItem((uid,)))
 
 
 if "__main__" == __name__:  # pragma: no cover (manual test)

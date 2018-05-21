@@ -3,8 +3,11 @@
 **Bunch of improvement left to do related to the Doorstop GUI**
 
 ## Bug
-- The add Item button does not works anymore (must be implemented)
 - The remove Item button does not works anymore (must be implemented)
+- The Left Arrow button does not works anymore (must be implemented)
+- The Right Arrow button does not works anymore (must be implemented)
+- The Up Arrow button does not works anymore (must be implemented)
+- The Down Arrow button does not works anymore (must be implemented)
 
 ## GUI Improvement
 - Have a view (readonly or something else... like a welcome page) when no document is loaded

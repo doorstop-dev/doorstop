@@ -217,3 +217,6 @@ class Action_ChangeExtendedValue(Action):
         self.__item_uid = item_uid
         self.__extendedName = extendedName
         self.__extendedValue = extendedValue
+
+
+class Action_AddNewItemNextToSelection(Action): pass

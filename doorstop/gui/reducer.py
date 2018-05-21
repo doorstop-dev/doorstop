@@ -23,6 +23,7 @@ from doorstop.gui.action import Action_ChangeItemAddLink
 from doorstop.gui.action import Action_ChangeItemRemoveLink
 from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
+from doorstop.gui.action import Action_AddNewItemNextToSelection
 
 
 from doorstop.gui.state import State
@@ -254,6 +255,19 @@ class Reducer_Edit(Reducer):
                         else:
                             new_item.remove(action.extendedName)
                         result.session_pending_change = True
+        elif isinstance(action, Action_AddNewItemNextToSelection):
+            project_tree = state.project_tree
+            if project_tree is not None:
+                result = copy.deepcopy(result)
+                project_tree = result.project_tree
+                assert project_tree is not None
+                session_selected_item_principal = state.session_selected_item_principal
+                session_selected_item_principal_item = project_tree.find_item(session_selected_item_principal)
+                document = project_tree.find_document(result.session_selected_document)
+                new_item = document.add_item(level=None if session_selected_item_principal_item is None else session_selected_item_principal_item.level + 1)
+                result.session_pending_change = True
+                result.session_selected_item = (new_item.uid, )
+
         return result
 
 
