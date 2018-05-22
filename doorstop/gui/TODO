@@ -3,11 +3,11 @@
 **Bunch of improvement left to do related to the Doorstop GUI**
 
 ## Bug
-- The remove Item button does not works anymore (must be implemented)
 - The Left Arrow button does not works anymore (must be implemented)
 - The Right Arrow button does not works anymore (must be implemented)
 - The Up Arrow button does not works anymore (must be implemented)
 - The Down Arrow button does not works anymore (must be implemented)
+- Removing an item immediately remove it from disk without explicit save
 
 ## GUI Improvement
 - Have a view (readonly or something else... like a welcome page) when no document is loaded

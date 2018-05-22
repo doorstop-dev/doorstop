@@ -24,7 +24,7 @@ from doorstop.gui.action import Action_ChangeItemRemoveLink
 from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
 from doorstop.gui.action import Action_AddNewItemNextToSelection
-
+from doorstop.gui.action import Action_RemoveSelectedItem
 
 from doorstop.gui.state import State
 
@@ -267,6 +267,76 @@ class Reducer_Edit(Reducer):
                 new_item = document.add_item(level=None if session_selected_item_principal_item is None else session_selected_item_principal_item.level + 1)
                 result.session_pending_change = True
                 result.session_selected_item = (new_item.uid, )
+        elif isinstance(action, Action_RemoveSelectedItem):
+            project_tree = state.project_tree
+            if (project_tree is not None) and (state.session_selected_item_principal is not None):
+                result = copy.deepcopy(result)
+
+                session_selected_item_principal = result.session_selected_item_principal
+                assert session_selected_item_principal is not None
+
+                project_tree = result.project_tree
+                assert project_tree is not None
+
+                document = project_tree.find_document(result.session_selected_document)
+                item_before = None
+                item = None
+                item_after = None
+                found_it = False
+                for curr_neighboor in document.items:
+                    if found_it:
+                        if str(curr_neighboor.uid) not in result.session_selected_item:
+                            item_after = curr_neighboor
+                            break
+                    else:
+                        if str(session_selected_item_principal) == str(curr_neighboor.uid):
+                            item = curr_neighboor
+                            found_it = True
+                        else:
+                            if str(curr_neighboor.uid) not in result.session_selected_item:
+                                item_before = curr_neighboor
+
+                assert item is not None, str(session_selected_item_principal)
+
+                new_selection = None
+                if item_before is None:
+                    if item_after is None:
+                        new_selection = None
+                    else:
+                        new_selection = [item_after.uid]
+                else:
+                    if item_after is None:
+                        new_selection = [item_before.uid]
+                    else:
+                        # Use heuristic to chose the best userfriendly new selection.
+                        item_before_level = item_before.level.value
+                        item_level = item.level.value
+                        item_after_level = item_after.level.value
+
+                        for idx, val in enumerate(item_level):
+                            if val == item_after_level[idx]:
+                                if val == item_before_level[idx]:
+                                    continue  # They are both equaly similar
+                                else:
+                                    # The after looks more similar
+                                    new_selection = [item_after.uid]
+                                    break
+                            else:
+                                if val == item_before_level[idx]:
+                                    # The before looks more similar
+                                    new_selection = [item_before.uid]
+                                    break
+                                else:
+                                    # They are both equaly not similar
+                                    new_selection = [item_after.uid]
+                                    break
+
+                for c_currUID in result.session_selected_item:
+                    item = project_tree.find_item(c_currUID)
+                    if item is not None:
+                        item = project_tree.remove_item(item)
+                        result.session_pending_change |= item is not None
+                        result.session_selected_item = new_selection
 
         return result
 

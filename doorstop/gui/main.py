@@ -51,6 +51,7 @@ from doorstop.gui.action import Action_ChangeItemRemoveLink
 from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
 from doorstop.gui.action import Action_AddNewItemNextToSelection
+from doorstop.gui.action import Action_RemoveSelectedItem
 
 from doorstop.gui.reducer import Reducer_GUI
 from doorstop.gui.store import Store
@@ -423,7 +424,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             treeview_outline_verticalScrollBar.grid(row=2, column=0, columnspan=1, **kw_gs)
             treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
             treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
-            treeview_outline.bind("<Delete>", self.remove)
+            treeview_outline.bind("<Delete>", lambda event: store.dispatch(Action_RemoveSelectedItem()))
             treeview_outline.grid(row=2, column=1, columnspan=6, **kw_gsp)
 
             widget.Button(frame, text="<", width=0, command=self.left).grid(row=3, column=1, sticky=tk.EW, padx=(2, 0))
@@ -444,8 +445,18 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                 store.add_observer(lambda store: refresh_btn_add_item(store))
 
+            if True:  # Button remove item
+                def remove_selected_item() -> None:
+                    """Remove selected item to the document."""
+                    store.dispatch(Action_RemoveSelectedItem())
+                btn_remove_item = widget.Button(frame, text="Remove Selected Item", command=remove_selected_item)
+                btn_remove_item.grid(row=3, column=6, sticky=tk.E, **kw_gp)
 
-            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=3, column=6, sticky=tk.E, **kw_gp)
+                def refresh_btn_remove_item(store: Optional[Store]) -> None:
+                    state = store.state if store else None
+                    btn_remove_item.config(state=tk.DISABLED if ((state is None) or (state.project_tree is None)) else tk.NORMAL)
+
+                store.add_observer(lambda store: refresh_btn_remove_item(store))
 
             return frame
 
@@ -935,24 +946,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         """Indent the current item's level."""
         self.item.level >>= 1
         self.document.reorder(keep=self.item)
-
-    @_log
-    def remove(self):
-        """Remove the selected item from the document."""
-        newSelection = ""
-        for c_currUID in self.treeview_outline.selection():
-            # Find the item which should be selected once the current selection is removed.
-            for currNeighbourStrategy in (self.treeview_outline.next, self.treeview_outline.prev, self.treeview_outline.parent):
-                newSelection = currNeighbourStrategy(c_currUID)
-                if newSelection != "":
-                    break
-            # Remove the item
-            item = self.tree.find_item(c_currUID)
-            logging.info("removing item {}...".format(item))
-            item = self.tree.remove_item(item)
-            logging.info("removed item: {}".format(item))
-            # Set the new selection
-            self.stringvar_item.set(newSelection)
 
 
 if "__main__" == __name__:  # pragma: no cover (manual test)

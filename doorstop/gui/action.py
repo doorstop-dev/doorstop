@@ -220,3 +220,6 @@ class Action_ChangeExtendedValue(Action):
 
 
 class Action_AddNewItemNextToSelection(Action): pass
+
+
+class Action_RemoveSelectedItem(Action): pass
