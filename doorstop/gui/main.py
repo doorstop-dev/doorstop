@@ -52,6 +52,10 @@ from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
 from doorstop.gui.action import Action_AddNewItemNextToSelection
 from doorstop.gui.action import Action_RemoveSelectedItem
+from doorstop.gui.action import Action_SelectedItem_Level_Indent
+from doorstop.gui.action import Action_SelectedItem_Level_Dedent
+from doorstop.gui.action import Action_SelectedItem_Level_Increment
+from doorstop.gui.action import Action_SelectedItem_Level_Decrement
 
 from doorstop.gui.reducer import Reducer_GUI
 from doorstop.gui.store import Store
@@ -427,10 +431,24 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             treeview_outline.bind("<Delete>", lambda event: store.dispatch(Action_RemoveSelectedItem()))
             treeview_outline.grid(row=2, column=1, columnspan=6, **kw_gsp)
 
-            widget.Button(frame, text="<", width=0, command=self.left).grid(row=3, column=1, sticky=tk.EW, padx=(2, 0))
-            widget.Button(frame, text="v", width=0, command=self.down).grid(row=3, column=2, sticky=tk.EW)
-            widget.Button(frame, text="^", width=0, command=self.up).grid(row=3, column=3, sticky=tk.EW)
-            widget.Button(frame, text=">", width=0, command=self.right).grid(row=3, column=4, sticky=tk.EW, padx=(0, 2))
+            if True:  # Level edit buttons
+                btn_Level_Dedent = widget.Button(frame, text="<", width=0, command=lambda: store.dispatch(Action_SelectedItem_Level_Dedent()))
+                btn_Level_Dedent.grid(row=3, column=1, sticky=tk.EW, padx=(2, 0))
+                btn_Level_Increment = widget.Button(frame, text="v", width=0, command=lambda: store.dispatch(Action_SelectedItem_Level_Increment()))
+                btn_Level_Increment.grid(row=3, column=2, sticky=tk.EW)
+                btn_Level_Decrement = widget.Button(frame, text="^", width=0, command=lambda: store.dispatch(Action_SelectedItem_Level_Decrement()))
+                btn_Level_Decrement.grid(row=3, column=3, sticky=tk.EW)
+                btn_Level_Indent = widget.Button(frame, text=">", width=0, command=lambda: store.dispatch(Action_SelectedItem_Level_Indent()))
+                btn_Level_Indent.grid(row=3, column=4, sticky=tk.EW, padx=(0, 2))
+
+                def refresh_btn_Level(store: Optional[Store]) -> None:  # Refresh the buttons level
+                    state = store.state if store is not None else None
+                    btn_Level_Dedent.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
+                    btn_Level_Increment.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
+                    btn_Level_Decrement.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
+                    btn_Level_Indent.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
+
+                store.add_observer(lambda store: refresh_btn_Level(store))
 
             if True:  # Button add item
                 def add_new_item() -> None:
@@ -453,8 +471,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 btn_remove_item.grid(row=3, column=6, sticky=tk.E, **kw_gp)
 
                 def refresh_btn_remove_item(store: Optional[Store]) -> None:
-                    state = store.state if store else None
-                    btn_remove_item.config(state=tk.DISABLED if ((state is None) or (state.project_tree is None)) else tk.NORMAL)
+                    state = store.state if store is not None else None
+                    btn_remove_item.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
 
                 store.add_observer(lambda store: refresh_btn_remove_item(store))
 
@@ -528,11 +546,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     session_selected_item_principal = state.session_selected_item_principal if state else None
                     project_tree = state.project_tree if state else None
                     try:
-                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree is not None else None
                     except DoorstopError:
                         item = None
                     log.info("displaying item {}...".format(session_selected_item_principal))
                     text_item.replace('1.0', tk.END, "" if item is None else item.text)
+                    text_item.config(state=tk.DISABLED if session_selected_item_principal is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshItemText(store))
 
             widget.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -780,11 +799,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     session_selected_item_principal = state.session_selected_item_principal if state else None
                     project_tree = state.project_tree if state else None
                     try:
-                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree is not None else None
                     except DoorstopError:
                         item = None
                     text_item_reference.delete(0, tk.END)
                     text_item_reference.insert(0, "" if item is None else item.ref)
+                    text_item_reference.config(state=tk.DISABLED if session_selected_item_principal is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshItemReference(store))
 
             widget.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
@@ -796,9 +816,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 def refreshComboboxExtendedName(store: Optional[Store]) -> None:
                     state = store.state if store else None
                     session_selected_item_principal = state.session_selected_item_principal if state else None
-                    project_tree = state.project_tree if state else None
+                    project_tree = state.project_tree if state is not None else None
                     try:
-                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree else None
                     except DoorstopError:
                         item = None
 
@@ -807,6 +827,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     combobox_extended.delete(0, tk.END)
                     if state is not None and state.session_extended_name:
                         combobox_extended.insert(0, state.session_extended_name)
+                    combobox_extended.config(state=tk.DISABLED if session_selected_item_principal is None else tk.NORMAL)
 
                 store.add_observer(lambda store: refreshComboboxExtendedName(store))
 
@@ -825,7 +846,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     session_selected_item_principal = state.session_selected_item_principal if state else None
                     project_tree = state.project_tree if state else None
                     try:
-                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree else None
                     except DoorstopError:
                         item = None
 
@@ -834,6 +855,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     if state is not None and state.session_extended_name:
                         if value:
                             text_extendedvalue.insert(tk.END, value)
+                    text_extendedvalue.config(state=tk.DISABLED if session_selected_item_principal is None else tk.NORMAL)
 
                 store.add_observer(lambda store: refreshTextboxExtendedValue(store))
 
@@ -922,30 +944,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         frame_family(result_frame).grid(row=0, column=2, columnspan=1, **kw_gs)
 
         return result_frame
-
-    @_log
-    def left(self):
-        """Dedent the current item's level."""
-        self.item.level <<= 1
-        self.document.reorder(keep=self.item)
-
-    @_log
-    def down(self):
-        """Increment the current item's level."""
-        self.item.level += 1
-        self.document.reorder(keep=self.item)
-
-    @_log
-    def up(self):
-        """Decrement the current item's level."""
-        self.item.level -= 1
-        self.document.reorder(keep=self.item)
-
-    @_log
-    def right(self):
-        """Indent the current item's level."""
-        self.item.level >>= 1
-        self.document.reorder(keep=self.item)
 
 
 if "__main__" == __name__:  # pragma: no cover (manual test)

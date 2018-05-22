@@ -3,6 +3,9 @@
 import copy
 import os
 
+from typing import Generator
+from typing import Set
+
 from doorstop.gui.action import Action
 from doorstop.gui.action import Action_ChangeCWD
 from doorstop.gui.action import Action_ChangeProjectPath
@@ -25,12 +28,20 @@ from doorstop.gui.action import Action_ChangeExtendedName
 from doorstop.gui.action import Action_ChangeExtendedValue
 from doorstop.gui.action import Action_AddNewItemNextToSelection
 from doorstop.gui.action import Action_RemoveSelectedItem
+from doorstop.gui.action import Action_SelectedItem_Level_Indent
+from doorstop.gui.action import Action_SelectedItem_Level_Dedent
+from doorstop.gui.action import Action_SelectedItem_Level_Increment
+from doorstop.gui.action import Action_SelectedItem_Level_Decrement
+
 
 from doorstop.gui.state import State
 
 from doorstop.core.types import UID
 
 from doorstop.core import builder
+
+from doorstop.core.document import Document
+from doorstop.core.item import Item
 
 
 class Reducer(object):
@@ -262,7 +273,7 @@ class Reducer_Edit(Reducer):
                 project_tree = result.project_tree
                 assert project_tree is not None
                 session_selected_item_principal = state.session_selected_item_principal
-                session_selected_item_principal_item = project_tree.find_item(session_selected_item_principal)
+                session_selected_item_principal_item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal)
                 document = project_tree.find_document(result.session_selected_document)
                 new_item = document.add_item(level=None if session_selected_item_principal_item is None else session_selected_item_principal_item.level + 1)
                 result.session_pending_change = True
@@ -341,9 +352,57 @@ class Reducer_Edit(Reducer):
         return result
 
 
+class Reducer_Level(Reducer):
+    def reduce(self, state: State, action: Action) -> State:
+        result = state
+
+        def getNextFromStart(document: Document, uid_to_process: Set[str]) -> Generator[Item, None, None]:
+            uid_to_process_left = set(uid_to_process)
+            while uid_to_process_left:
+                the_next_item_to_process = next((x for x in document.items if str(x.uid) in uid_to_process_left), None)
+                if the_next_item_to_process is None: return
+                yield the_next_item_to_process
+                uid_to_process_left.remove(str(the_next_item_to_process.uid))
+
+        def getNextFromEnd(document: Document, uid_to_process: Set[str]) -> Generator[Item, None, None]:
+            uid_to_process_left = set(uid_to_process)
+            while uid_to_process_left:
+                the_next_item_to_process = next((x for x in reversed(document.items) if str(x.uid) in uid_to_process_left), None)
+                if the_next_item_to_process is None: return
+                yield the_next_item_to_process
+                uid_to_process_left.remove(str(the_next_item_to_process.uid))
+
+        if isinstance(action, (Action_SelectedItem_Level_Indent, Action_SelectedItem_Level_Dedent, Action_SelectedItem_Level_Increment, Action_SelectedItem_Level_Decrement)):
+            project_tree = state.project_tree
+            if (project_tree is not None) and (state.session_selected_item_principal is not None):
+                result = copy.deepcopy(result)
+                session_selected_item = result.session_selected_item
+
+                project_tree = result.project_tree
+                assert project_tree is not None
+
+                document = project_tree.find_document(result.session_selected_document)
+
+                for x in (getNextFromStart if isinstance(action, (Action_SelectedItem_Level_Decrement)) else getNextFromEnd)(document, session_selected_item):
+                    result.session_pending_change = True
+                    if isinstance(action, Action_SelectedItem_Level_Indent):
+                        x.level >>= 1
+                        document.reorder(keep=x)
+                    elif isinstance(action, Action_SelectedItem_Level_Dedent):
+                        x.level <<= 1
+                        document.reorder(keep=x)
+                    elif isinstance(action, Action_SelectedItem_Level_Increment):
+                        x.level += 2
+                        document.reorder(keep=x)
+                    elif isinstance(action, Action_SelectedItem_Level_Decrement):
+                        x.level -= 1
+                        document.reorder(keep=x)
+        return result
+
+
 class Reducer_GUI(Reducer):
     def reduce(self, state: State, action: Action) -> State:
         result = state
-        for curr_reducer in (Reducer_CWD(), Reducer_Project(), Reducer_Session(), Reducer_Edit()):
+        for curr_reducer in (Reducer_CWD(), Reducer_Project(), Reducer_Session(), Reducer_Edit(), Reducer_Level()):
             result = curr_reducer.reduce(result, action)
         return result

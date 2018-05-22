@@ -3,10 +3,6 @@
 **Bunch of improvement left to do related to the Doorstop GUI**
 
 ## Bug
-- The Left Arrow button does not works anymore (must be implemented)
-- The Right Arrow button does not works anymore (must be implemented)
-- The Up Arrow button does not works anymore (must be implemented)
-- The Down Arrow button does not works anymore (must be implemented)
 - Removing an item immediately remove it from disk without explicit save
 
 ## GUI Improvement
@@ -27,7 +23,6 @@
 ## User friendliness
 - Make view fit in screen (add scroll bar to every widget)
 - Make tree node draggable and reorderable with the mouse
- - Remove the Up/Down Arrows Buttons
 - Make click-able links blue to make it more obvious that they are clickeable.
 
 ## Missing feature

@@ -223,3 +223,15 @@ class Action_AddNewItemNextToSelection(Action): pass
 
 
 class Action_RemoveSelectedItem(Action): pass
+
+
+class Action_SelectedItem_Level_Indent(Action): pass
+
+
+class Action_SelectedItem_Level_Dedent(Action): pass
+
+
+class Action_SelectedItem_Level_Increment(Action): pass
+
+
+class Action_SelectedItem_Level_Decrement(Action): pass
