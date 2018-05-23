@@ -579,9 +579,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     project_tree = state.project_tree if state else None
                     try:
                         item = project_tree.find_item(session_selected_item_principal) if project_tree else None
-                        checkbox_active_var.set(bool(item and item.active))
                     except DoorstopError:
                         item = None
+                    checkbox_active_var.set(bool(item is not None and item.active))
+                    checkbox_active.config(state=tk.DISABLED if item is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshCheckButtonActive(store))
 
             if True:  # CheckBox derived
@@ -607,9 +608,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     project_tree = state.project_tree if state else None
                     try:
                         item = project_tree.find_item(session_selected_item_principal) if project_tree else None
-                        checkbox_derived_var.set(bool(item and item.derived))
                     except DoorstopError:
                         item = None
+                    checkbox_derived_var.set(bool(item is not None and item.derived))
+                    checkbox_derived.config(state=tk.DISABLED if item is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshCheckButtonDerived(store))
 
             if True:  # CheckBox normative
@@ -634,9 +636,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     project_tree = state.project_tree if state else None
                     try:
                         item = project_tree.find_item(session_selected_item_principal) if project_tree else None
-                        checkbox_normative_var.set(bool(item and item.normative))
                     except DoorstopError:
                         item = None
+                    checkbox_normative_var.set(bool(item is not None and item.normative))
+                    checkbox_normative.config(state=tk.DISABLED if item is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshCheckButtonNormative(store))
 
             if True:  # CheckBox heading
@@ -662,9 +665,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     project_tree = state.project_tree if state else None
                     try:
                         item = project_tree.find_item(session_selected_item_principal) if project_tree else None
-                        checkbox_heading_var.set(bool(item and item.heading))
                     except DoorstopError:
                         item = None
+                    checkbox_heading_var.set(bool(item is not None and item.heading))
+                    checkbox_heading.config(state=tk.DISABLED if item is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshCheckButtonHeading(store))
 
             if True:  # Listbox Links

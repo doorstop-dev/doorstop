@@ -6,7 +6,6 @@
 - Removing an item immediately remove it from disk without explicit save
 
 ## GUI Improvement
-- Have a view (readonly or something else... like a welcome page) when no document is loaded
 - Make view fit in screen (or add scroll bar)
 - Make item strikethrough (or italic) in the tree when they are not active.
 - Make item bold in the tree when they are Heading.
