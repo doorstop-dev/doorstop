@@ -17,7 +17,6 @@
 - Review naming convention (use lint tool to identify them.. pep8)
 - Unit test Action, Reducer, Store, State.
 - Test environment corner case situation (readonly folder, ...)
-- Review what is logged, what should vs should not be logged by the GUI
 
 ## User friendliness
 - Make view fit in screen (add scroll bar to every widget)

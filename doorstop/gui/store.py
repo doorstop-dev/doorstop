@@ -3,9 +3,13 @@
 from typing import Optional
 from typing import Callable
 
+from doorstop import common
+
 from doorstop.gui.action import Action
 from doorstop.gui.state import State
 from doorstop.gui.reducer import Reducer
+
+log = common.logger(__name__)
 
 
 class Store(object):
@@ -19,19 +23,17 @@ class Store(object):
         self.__state = initial_state
         self.__reducer = reducer
 
-    def add_observer(self, observer: Callable[["Store"], None]):
+    def add_observer(self, observer: Callable[["Store"], None]) -> None:
         self.__observer.append(observer)
         observer(self)
 
-    def remove_observer(self, observer: Callable[["Store"], None]):
+    def remove_observer(self, observer: Callable[["Store"], None]) -> None:
         self.__observer.remove(observer)
 
     def dispatch(self, action: Action) -> None:
         new_state = self.__reducer.reduce(self.state, action)
         if new_state != self.__state:
-            print(action.__class__.__name__)
+            log.info(action.__class__.__name__)
             self.__state = new_state
             for curr_observer in self.__observer:
                 curr_observer(self)
-        else:
-            print()

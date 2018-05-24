@@ -368,7 +368,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         combobox_documents.current(index)
                         break
                 else:
-                    logging.warning("no documents to display")
                     combobox_documents.set("")
 
             store.add_observer(lambda store: refreshDocumentComboboxContent(store))
@@ -413,13 +412,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     treeview_outline.selection_set(c_selectedItem)
                     treeview_outline.focus(session_selected_item_principal)
                     treeview_outline.see(session_selected_item_principal)
-                else:
-                    # Select the first item
-                    for uid in utilTkinter.getAllChildren(treeview_outline):
-                        assert False, uid
-                        break
-                    else:
-                        logging.warning("no items to display")
 
             store.add_observer(lambda store: refresh_document_outline(store))
 
@@ -549,7 +541,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree is not None else None
                     except DoorstopError:
                         item = None
-                    log.info("displaying item {}...".format(session_selected_item_principal))
                     text_item.replace('1.0', tk.END, "" if item is None else item.text)
                     text_item.config(state=tk.DISABLED if session_selected_item_principal is None else tk.NORMAL)
                 store.add_observer(lambda store: refreshItemText(store))

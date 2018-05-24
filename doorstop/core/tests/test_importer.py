@@ -14,7 +14,7 @@ import logging
 from doorstop.common import DoorstopError
 from doorstop.core.tree import Tree
 from doorstop.core import importer
-from doorstop.core.tests.util import _set_tree, _get_tree, find_item, find_document, _clear_tree
+from doorstop.core.tests.util import _set_tree, _get_tree
 
 from doorstop.core.tests.test_document import FILES, MockItem
 
@@ -33,7 +33,7 @@ class TestModule(unittest.TestCase):
 
     maxDiff = None
 
-    def test_import_file_unknown(self):
+    def test_import_file_unknown(self) -> None:
         """Verify an exception is raised when importing unknown formats."""
         mock_document = Mock()
         self.assertRaises(DoorstopError,
@@ -80,7 +80,7 @@ class TestModule(unittest.TestCase):
         # Assert
         self.assertEqual(6, mock_add_item.call_count)
 
-    def test_file_yml_bad_format(self):
+    def test_file_yml_bad_format(self) -> None:
         """Verify YAML file import can handle bad data."""
         path = os.path.join(FILES, 'exported.csv')
         self.assertRaises(DoorstopError, importer._file_yml, True, path, None)
@@ -193,6 +193,7 @@ class TestModule(unittest.TestCase):
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
         args, kwargs = mock_add_item.call_args
+        self.assertEqual(args, ())
         self.assertEqual('PREFIX', kwargs["document"].prefix)
         self.assertEqual('req2', kwargs["uid"])
         expected_attrs = {'ext1': False,
@@ -212,6 +213,7 @@ class TestModule(unittest.TestCase):
         importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
+        self.assertEqual(args, ())
         self.assertEqual(True, kwargs["is_auto_save"])
         self.assertEqual('req2', kwargs["uid"])
         expected_attrs = {'active': True,
@@ -231,6 +233,7 @@ class TestModule(unittest.TestCase):
         importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
+        self.assertEqual(args, ())
         self.assertEqual(mock_document.prefix, kwargs["document"].prefix)
         self.assertEqual('req2', kwargs["uid"])
         expected_attrs = {'active': False,
