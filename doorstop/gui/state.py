@@ -73,12 +73,12 @@ class State(object):
 
     @session_selected_item.setter
     def session_selected_item(self, value: Optional[Tuple[UID, ...]]) -> None:
-        self.__session_selected_item = tuple() if value is None else value
+        self.__session_selected_item = () if value is None else value
 
     @property
     def session_selected_item_principal(self) -> Optional[UID]:
         try:
-            return self.session_selected_item[0]
+            return self.session_selected_item[0]  # pylint: disable=E1136
         except IndexError:
             return None
 
