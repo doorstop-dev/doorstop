@@ -418,7 +418,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):
+    def get_issues(self, skip=None, document_hook=None, item_hook=None, only_active=True):
         """Yield all the tree's issues.
 
         :param skip: list of document prefixes to skip

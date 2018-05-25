@@ -625,7 +625,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
+    def get_issues(self, skip=None, document_hook=None, item_hook=None, only_active=True):  # pylint: disable=unused-argument
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
