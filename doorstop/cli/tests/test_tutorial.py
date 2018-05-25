@@ -48,8 +48,9 @@ class TestBase(unittest.TestCase):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        if subprocess.call(cmd, shell=True, stderr=subprocess.PIPE) != 0:
-            raise AssertionError("command failed: doorstop {}".format(args))
+        theCompletedProcess = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        if theCompletedProcess.returncode != 0:
+            raise AssertionError("command failed: doorstop {}\n**stdout:\n{}\n**stderr:\n{}".format(args, theCompletedProcess.stdout, theCompletedProcess.stderr))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
