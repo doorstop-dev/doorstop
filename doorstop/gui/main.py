@@ -31,6 +31,7 @@ from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
 from doorstop import settings
 from doorstop.core.types import UID
+from doorstop.core.types import Level
 
 from doorstop.gui.action import Action_ChangeProjectPath
 from doorstop.gui.action import Action_SaveProject
@@ -372,10 +373,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             store.add_observer(lambda store: refreshDocumentComboboxContent(store))
 
-            c_columnId = ("Id",)
+            c_columnId = ("Id", "Text")
             treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
+            treeview_outline.heading("#0", text="Level")
             for col in c_columnId:
                 treeview_outline.heading(col, text=col)
+            treeview_outline.column("#0", minwidth=80, stretch=tk.NO)
+            treeview_outline.column("Id", minwidth=120, stretch=tk.NO)
+            treeview_outline.column("Text", minwidth=50, stretch=tk.YES)
 
             def refresh_document_outline(store: Optional[Store]) -> None:  # Refresh the document outline
                 state = store.state if store else None
@@ -402,7 +407,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         c_levelsItem.append(item.uid)
 
                     # Add the item to the document outline
-                    treeview_outline.insert(theParent, tk.END, item.uid, text=item.level, values=(item.uid,), open=item.uid in c_openItem)
+                    def makeSuperscript(aLevel: Level) -> str:
+                        return str(aLevel).strip().translate({48: 0x2070, 49: 0x2079, 50: 0x00B2, 51: 0x00B3, 52: 0x2074, 53: 0x2075, 54: 0x2076, 55: 0x2077, 56: 0x2078, 57: 0x2079})
+                    treeview_outline.insert(theParent, tk.END, item.uid, text=makeSuperscript(item.level) if not item.active else item.level, values=(item.uid, item.text), open=item.uid in c_openItem)
 
                 # Set tree view selection
                 c_selectedItem = state.session_selected_item if state else []
@@ -525,8 +532,18 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         if item_uid:
                             store.dispatch(Action_ChangeExtendedValue(item_uid, state.session_extended_name, value))
 
-            # Place widgets
-            widget.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
+            if True:  # Selected Item label
+                lbl_selected_item = widget.Label(frame, text="No item selected")
+                lbl_selected_item.grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
+
+                def refreshSelectedItemLabel(store: Optional[Store]) -> None:
+                    state = store.state if store is not None else None
+                    session_selected_item_principal = state.session_selected_item_principal if state is not None else None
+                    if session_selected_item_principal is None:
+                        lbl_selected_item.config(text="No item selected")
+                    else:
+                        lbl_selected_item.config(text="Selected Item: " + str(session_selected_item_principal))
+                store.add_observer(lambda store: refreshSelectedItemLabel(store))
 
             if True:  # Item text
                 text_item = widget.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
@@ -881,6 +898,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
             text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             text_parents_hyperlink = utilTkinter.HyperlinkManager(text_parents)  # pylint: disable=W0201
+            text_parents.tag_configure("refLink", foreground="blue")
             text_parents.grid(row=1, column=0, **kw_gsp)
 
             def refresh_text_parents(store: Optional[Store]) -> None:
@@ -908,6 +926,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
             text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
             text_children_hyperlink = utilTkinter.HyperlinkManager(text_children)  # pylint: disable=W0201
+            text_children.tag_configure("refLink", foreground="blue")
             text_children.grid(row=3, column=0, **kw_gsp)
 
             def refresh_text_children(store: Optional[Store]) -> None:

@@ -3,12 +3,21 @@
 **Bunch of improvement left to do related to the Doorstop GUI**
 
 ## Bug
-- Removing an item immediately remove it from disk without explicit save
+- Adding an item, immediately create a file on disk without explicit save
+- Removing an item, immediately remove file from disk without explicit save
 
 ## GUI Improvement
 - Make view fit in screen (or add scroll bar)
-- Make item strikethrough (or italic) in the tree when they are not active.
-- Make item bold in the tree when they are Heading.
+
+### GUI Improvement, No Can Do
+Need investigation, but the following may not be possible to implement:
+ - Make item strikethrough (or italic) in the tree when they are not active.
+ - Make item bold in the tree when they are Heading.
+
+**Since:**
+- A treeview only accepts 1 font (can't specify a font per cell)
+ - Source: https://groups.google.com/forum/#!topic/comp.lang.tcl/85-TWOhcCOA
+- tkinter only accept Unicode character up to FFFFFF
 
 ## Code quality
 - Add Mypy lint to build process
@@ -21,7 +30,6 @@
 ## User friendliness
 - Make view fit in screen (add scroll bar to every widget)
 - Make tree node draggable and reorderable with the mouse
-- Make click-able links blue to make it more obvious that they are clickeable.
 
 ## Missing feature
 - Add preview in menu
