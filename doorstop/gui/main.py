@@ -290,10 +290,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
             store.add_observer(lambda store: refreshMenu(store))
 
-        # TODO The following variables should be remove (use store instead)
-        self.document = None
-        self.item = None
-
         # Initialize the GUI
         frame = self.init(parent, store)
         frame.pack(fill=tk.BOTH, expand=1)
