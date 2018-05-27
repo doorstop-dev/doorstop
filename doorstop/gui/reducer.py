@@ -109,9 +109,15 @@ class Reducer_Session(Reducer):
                 result.session_selected_item = None
         elif isinstance(action, Action_ChangeSelectedItem):
             new_selected_item = action.selected_item
-            if new_selected_item != state.session_selected_item:
+            if set(str(a) for a in new_selected_item) != set(str(b) for b in state.session_selected_item):
                 result = copy.deepcopy(result)
-                result.session_selected_item = new_selected_item
+
+                # Load in the state the selection by putting the freshly selecte item first so that the main selected item becomes one of the freshly selected item.
+                previous_selection = [str(x) for x in state.session_selected_item]
+                freshly_selected = [str(y) for y in new_selected_item if y not in previous_selection]
+                unchanged_selection = [str(z) for z in new_selected_item if z in previous_selection]
+                freshly_selected.extend(unchanged_selection)
+                result.session_selected_item = tuple([UID(aa) for aa in freshly_selected])
         elif isinstance(action, Action_ChangeSelectedLink):
             new_selected_link = frozenset(set([x for x in result.session_selected_link]).union(action.selected_link) - action.unselected_link)
             if new_selected_link != result.session_selected_link:

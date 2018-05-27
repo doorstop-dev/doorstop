@@ -408,8 +408,12 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                     # Add the item to the document outline
                     def makeSuperscript(aLevel: Level) -> str:
-                        return str(aLevel).strip().translate({48: 0x2070, 49: 0x2079, 50: 0x00B2, 51: 0x00B3, 52: 0x2074, 53: 0x2075, 54: 0x2076, 55: 0x2077, 56: 0x2078, 57: 0x2079})
-                    treeview_outline.insert(theParent, tk.END, item.uid, text=makeSuperscript(item.level) if not item.active else item.level, values=(item.uid, item.text), open=item.uid in c_openItem)
+                        return str(aLevel).strip().translate({48: 0x2070, 49: 0x00B9, 50: 0x00B2, 51: 0x00B3, 52: 0x2074, 53: 0x2075, 54: 0x2076, 55: 0x2077, 56: 0x2078, 57: 0x2079})
+                    try:
+                        the_outline_text = item.text.splitlines()[0]
+                    except IndexError:
+                        the_outline_text = ""
+                    treeview_outline.insert(theParent, tk.END, item.uid, text=makeSuperscript(item.level) if not item.active else item.level, values=(item.uid, the_outline_text), open=item.uid in c_openItem)
 
                 # Set tree view selection
                 c_selectedItem = state.session_selected_item if state else []
