@@ -9,6 +9,7 @@ import os
 from doorstop.core.tree import Tree
 from doorstop.core.types import Prefix
 from doorstop.core.types import UID
+from doorstop.common import DoorstopError
 
 
 class State(object):
@@ -66,7 +67,13 @@ class State(object):
         if result: return result
 
         project_tree = self.project_tree
-        for item in [] if project_tree is None else project_tree.find_document(self.session_selected_document).items:
+        the_document = None
+        if project_tree is not None:
+            try:
+                the_document = project_tree.find_document(self.session_selected_document)
+            except DoorstopError:
+                pass  # Document not found.
+        for item in [] if the_document is None else the_document.items:
             # Select the first one
             return (item.uid, )
         return ()

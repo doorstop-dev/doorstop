@@ -369,14 +369,14 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             store.add_observer(lambda store: refreshDocumentComboboxContent(store))
 
-            c_columnId = ("Id", "Text")
+            c_columnId = ("Id", "Text Preview")
             treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
             treeview_outline.heading("#0", text="Level")
             for col in c_columnId:
                 treeview_outline.heading(col, text=col)
             treeview_outline.column("#0", minwidth=80, stretch=tk.NO)
             treeview_outline.column("Id", minwidth=120, stretch=tk.NO)
-            treeview_outline.column("Text", minwidth=50, stretch=tk.YES)
+            treeview_outline.column("Text Preview", minwidth=50, stretch=tk.YES)
 
             def refresh_document_outline(store: Optional[Store]) -> None:  # Refresh the document outline
                 state = store.state if store else None
@@ -393,7 +393,13 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 # Display the items in the document
                 c_levelsItem = [""]
                 project_tree = None if state is None else state.project_tree
-                for item in [] if project_tree is None else project_tree.find_document(state.session_selected_document).items:
+                the_document = None
+                if project_tree is not None:
+                    try:
+                        the_document = project_tree.find_document(state.session_selected_document)
+                    except DoorstopError:
+                        pass  # The document is not found.
+                for item in [] if the_document is None else the_document.items:
                     theParent = next(iter(reversed([x for x in c_levelsItem[:item.depth]])), "")
 
                     while len(c_levelsItem) < item.depth:
