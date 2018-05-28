@@ -32,9 +32,6 @@ Need investigation, but the following may not be possible to implement:
 - Make tree node draggable and reorderable with the mouse
 
 ## Missing feature
-- Add preview in menu
-- Add publish in the menu
-- Add export in the menu
 - Add import in the menu
 - Add help in menu
  - Help > About

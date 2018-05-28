@@ -19,19 +19,24 @@ import argparse
 import functools
 from itertools import chain
 import logging
+import tempfile
 
 from typing import Any
 from typing import Optional
 from typing import Sequence
+from typing import Union
 
 from doorstop.gui import widget
 from doorstop.gui import utilTkinter
 
 from doorstop import common
 from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
+from doorstop.core import exporter, publisher
 from doorstop import settings
 from doorstop.core.types import UID
 from doorstop.core.types import Level
+from doorstop.core.document import Document
+from doorstop.core.tree import Tree
 
 from doorstop.gui.action import Action_ChangeProjectPath
 from doorstop.gui.action import Action_SaveProject
@@ -159,7 +164,6 @@ def run(args: argparse.Namespace, cwd: str, error):
                 # Windows
                 from doorstop.gui import resources
                 import base64
-                import tempfile
                 try:
                     with tempfile.TemporaryFile(mode='w+b', suffix=".ico", delete=False) as theTempIconFile:
                         theTempIconFile.write(base64.b64decode(resources.b64_doorstopicon_ico))
@@ -250,6 +254,120 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         def do_save_all_project() -> None:
             store.dispatch(Action_SaveProject())
 
+        def do_export(element: Optional[Union[Document, Tree]]) -> None:
+            if element is None: return
+
+            state = store.state
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.asksaveasfilename(initialdir=initial, title="Export to", filetypes=(
+                ("Comma-Separated Values", "*.csv"),
+                ("Tab-Separated Values", "*.tsv"),
+                ("YAML", "*.yml"),
+                ("Microsoft Office Excel", ".xlsx")
+            ))
+            if not destination: return
+
+            ext = destination[destination.rfind("."):]
+            try:
+                exporter.check(ext)
+            except DoorstopError:
+                return
+            if isinstance(element, Tree):
+                destination = destination[:destination.rfind(".")]
+            path = exporter.export(element, destination, ext, auto=True)
+
+        def do_export_tree() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            do_export(project_tree)
+
+        def do_export_document() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+            the_document = None
+            try:
+                the_document = project_tree.find_document(state.session_selected_document)
+            except DoorstopError:
+                pass  # The document is not found.
+
+            if the_document is None: return
+            do_export(the_document)
+
+        def do_publish_tree_preview() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+
+            def __show_generate_preview() -> None:
+                with tempfile.TemporaryDirectory() as tmpdirname:
+                    path = publisher.publish(project_tree, tmpdirname, ".html", template="sidebar")
+                    if path:
+                        import webbrowser
+                        webbrowser.open_new(os.path.join(path, "index.html"))
+                        import time
+                        time.sleep(5 * 60)  # 5 minutes preview
+
+            import threading
+            threading.Thread(target=__show_generate_preview, name="PublishPreview", args=(), kwargs={}, daemon=True).start()
+
+        def do_publish_tree() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.askdirectory()
+            if not destination: return
+
+            ext = ".html"
+            try:
+                publisher.check(ext)
+            except DoorstopError:
+                return
+            path = publisher.publish(project_tree, destination, ext, template="sidebar")
+
+        def do_publish_document() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+            the_document = None
+            try:
+                the_document = project_tree.find_document(state.session_selected_document)
+            except DoorstopError:
+                pass  # The document is not found.
+            if the_document is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.asksaveasfilename(initialdir=initial, title="Publish to", filetypes=(
+                ("Text", "*.txt"),
+                ("Markdown", "*.md"),
+                ("HTML", "*.html"),
+            ))
+            if not destination: return
+
+            ext = destination[destination.rfind("."):]
+            if ext in [None, ""]: return
+            try:
+                publisher.check(ext)
+            except DoorstopError:
+                return
+            path = publisher.publish(the_document, destination, ext, template="sidebar")
+
         if True:  # Set the windows behavior.
             parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
             parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
@@ -262,10 +380,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         if True:  # Set the menu
             menubar = widget.Menu(parent)
             filemenu = widget.Menu(menubar, tearoff=0)
-            filemenu.add_command(label="Open Project", command=do_open_project, accelerator="Ctrl+o")
+            filemenu.add_command(label="Open Project…", command=do_open_project, accelerator="Ctrl+o")
             filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
             filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
             filemenu.add_command(label="Close Project", command=do_close_project)
+            filemenu.add_separator()
+            filemenu.add_command(label="Export Tree…", command=do_export_tree)
+            filemenu.add_command(label="Export Document…", command=do_export_document)
+            filemenu.add_separator()
+            filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
+            filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
+            filemenu.add_command(label="Publish Document…", command=do_publish_document)
             filemenu.add_separator()
             filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
             menubar.add_cascade(label="File", menu=filemenu)
@@ -285,9 +410,16 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     state = store.state
                     if state is not None:
                         project_path = state.project_path
+                        project_tree = state.project_tree
+                        project_document = state.session_selected_document
                 filemenu.entryconfig("Reload Project", state=tk.NORMAL if project_path else tk.DISABLED)
-                filemenu.entryconfig("Save All", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Save All", state=tk.NORMAL if project_tree else tk.DISABLED)
                 filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Export Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Export Document…", state=tk.NORMAL if project_document else tk.DISABLED)
+                filemenu.entryconfig("Publish Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Publish Tree (Preview 5 minutes)", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Publish Document…", state=tk.NORMAL if project_document else tk.DISABLED)
             store.add_observer(lambda store: refreshMenu(store))
 
         # Initialize the GUI
