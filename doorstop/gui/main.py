@@ -340,7 +340,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             widget.Label(frame, text="Document:").grid(row=0, column=0, columnspan=7, sticky=tk.W, **kw_gp)
 
             combobox_documents = widget.Combobox(frame, state="readonly")
-            combobox_documents.grid(row=1, column=1, columnspan=6, **kw_gsp)
+            combobox_documents.grid(row=1, column=0, columnspan=7, **kw_gsp)
 
             # Display the information
             def refreshDocumentComboboxContent(store: Optional[Store]) -> None:
