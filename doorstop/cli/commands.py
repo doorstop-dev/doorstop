@@ -392,13 +392,6 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    log.debug("XXX run_import...")
-    log.debug(args)
-    log.debug(cwd)
-    log.debug(error)
-    log.debug(catch)
-    log.debug(_tree)
-
     document = None
     item = None
     attrs = utilities.literal_eval(args.attrs, error)
