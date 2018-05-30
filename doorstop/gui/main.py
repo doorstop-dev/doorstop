@@ -62,6 +62,7 @@ from doorstop.gui.action import Action_SelectedItem_Level_Indent
 from doorstop.gui.action import Action_SelectedItem_Level_Dedent
 from doorstop.gui.action import Action_SelectedItem_Level_Increment
 from doorstop.gui.action import Action_SelectedItem_Level_Decrement
+from doorstop.gui.action import Action_Import
 
 from doorstop.gui.reducer import Reducer_GUI
 from doorstop.gui.store import Store
@@ -237,11 +238,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             return False
 
         def do_load_project() -> bool:
+            if store is None: return True
             state = store.state
             if state is None: return True
-            project_path = store.state.project_path
             if do_close_project():
-                store.dispatch(Action_ChangeProjectPath(project_path))
+                store.dispatch(Action_ChangeProjectPath(state.project_path))
                 return True
             return False
 
@@ -253,6 +254,23 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
         def do_save_all_project() -> None:
             store.dispatch(Action_SaveProject())
+
+        def do_import() -> None:
+            state = store.state
+            if state is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            source = filedialog.askopenfilename(initialdir=initial, title="Select file", filetypes=(
+                ("Comma-Separated Values", "*.csv"),
+                ("Tab-Separated Values", "*.tsv"),
+                ("YAML", "*.yml"),
+                ("Microsoft Office Excel", ".xlsx")
+            ))
+            if not source: return
+            store.dispatch(Action_Import(state.session_selected_document, source))
 
         def do_export(element: Optional[Union[Document, Tree]]) -> None:
             if element is None: return
@@ -278,6 +296,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             if isinstance(element, Tree):
                 destination = destination[:destination.rfind(".")]
             path = exporter.export(element, destination, ext, auto=True)
+            del path
 
         def do_export_tree() -> None:
             state = store.state
@@ -336,6 +355,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             except DoorstopError:
                 return
             path = publisher.publish(project_tree, destination, ext, template="sidebar")
+            del path
 
         def do_publish_document() -> None:
             state = store.state
@@ -367,6 +387,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             except DoorstopError:
                 return
             path = publisher.publish(the_document, destination, ext, template="sidebar")
+            del path
 
         if True:  # Set the windows behavior.
             parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
@@ -387,6 +408,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             filemenu.add_separator()
             filemenu.add_command(label="Export Tree…", command=do_export_tree)
             filemenu.add_command(label="Export Document…", command=do_export_document)
+            filemenu.add_command(label="Import Into Document…", command=do_import)
             filemenu.add_separator()
             filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
             filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
@@ -417,6 +439,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
                 filemenu.entryconfig("Export Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
                 filemenu.entryconfig("Export Document…", state=tk.NORMAL if project_document else tk.DISABLED)
+                filemenu.entryconfig("Import Into Document…", state=tk.NORMAL if project_document else tk.DISABLED)
                 filemenu.entryconfig("Publish Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
                 filemenu.entryconfig("Publish Tree (Preview 5 minutes)", state=tk.NORMAL if project_tree else tk.DISABLED)
                 filemenu.entryconfig("Publish Document…", state=tk.NORMAL if project_document else tk.DISABLED)
@@ -527,6 +550,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 project_tree = None if state is None else state.project_tree
                 the_document = None
                 if project_tree is not None:
+                    assert state is not None
                     try:
                         the_document = project_tree.find_document(state.session_selected_document)
                     except DoorstopError:
@@ -552,6 +576,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 # Set tree view selection
                 c_selectedItem = state.session_selected_item if state else []
                 if c_selectedItem:
+                    assert state is not None
                     # Restore selection
                     session_selected_item_principal = state.session_selected_item_principal
                     treeview_outline.selection_set(c_selectedItem)
@@ -615,7 +640,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             return frame
 
-        def frame_item(root):
+        def frame_item(root) -> ttk.Frame:
             """Frame for the currently selected item."""
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
@@ -825,16 +850,17 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     previous_active_index = listbox_links.index(tk.ACTIVE)
                     previous_active_item = listbox_links.get(previous_active_index)
 
-                    state = store.state if store else None
-                    session_selected_item_principal = state.session_selected_item_principal if state else None
-                    session_selected_link = state.session_selected_link if state else []
-                    project_tree = state.project_tree if state else None
+                    state = None if store is None else store.state
+                    session_selected_item_principal = None if state is None else state.session_selected_item_principal
+                    session_selected_link = [] if state is None else state.session_selected_link
+                    project_tree = None if state is None else state.project_tree
                     try:
-                        item = project_tree.find_item(session_selected_item_principal) if project_tree else None
+                        item = None if project_tree is None else project_tree.find_item(session_selected_item_principal)
                     except DoorstopError:
                         item = None
                     listbox_links.delete(0, tk.END)
                     if item is not None:
+                        assert state is not None
                         v_new_index = -1
                         next_active = None
                         for uid in sorted([x for x in item.links if (("" == state.session_link_inception) or (state.session_link_inception in str(x)))], key=lambda x: str(x), reverse=False):
@@ -847,6 +873,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                         if next_active is None:
                             next_active = min(previous_active_index, listbox_links.size() - 1)
+                        assert next_active is not None
                         if 0 <= next_active:
                             listbox_links.activate(next_active)
                             listbox_links.see(next_active)
@@ -873,22 +900,24 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 entry_link_inception.grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
 
                 def refreshEntryLinkInception(store: Optional[Store]) -> None:
-                    the_link_inception = ""
-                    state = store.state if store else None
-                    if state is not None:
-                        the_link_inception = state.session_link_inception
+                    state = None if store is None else store.state
+                    the_link_inception = "" if state is None else state.session_link_inception
                     if the_link_inception != entry_link_inception.get():
                         entry_link_inception.delete('0', tk.END)
-                        entry_link_inception.insert('0', state.session_link_inception)
+                        entry_link_inception.insert('0', the_link_inception)
                 store.add_observer(lambda store: refreshEntryLinkInception(store))
 
             if True:  # Link item button
                 @_log
-                def do_link():
+                def do_link() -> None:
                     """Add the specified link to the current item."""
                     state = store.state
                     if state is not None:
-                        store.dispatch(Action_ChangeItemAddLink(state.session_selected_item_principal, state.session_link_inception))
+                        the_item_uid = state.session_selected_item_principal
+                        if the_item_uid is not None:
+                            the_new_link = state.session_link_inception
+                            if the_new_link is not None:
+                                store.dispatch(Action_ChangeItemAddLink(the_item_uid, UID(the_new_link)))
 
                 btn_link_item = widget.Button(frame, text="<< Link Item", command=do_link)
                 btn_link_item.grid(row=4, column=2, **kw_gp)
@@ -992,15 +1021,15 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
 
                 def refreshTextboxExtendedValue(store: Optional[Store]) -> None:
-                    state = store.state if store else None
-                    session_selected_item_principal = state.session_selected_item_principal if state else None
-                    project_tree = state.project_tree if state else None
+                    state = store.state if store is not None else None
+                    session_selected_item_principal = state.session_selected_item_principal if state is not None else None
+                    project_tree = state.project_tree if state is not None else None
                     try:
                         item = None if session_selected_item_principal is None else project_tree.find_item(session_selected_item_principal) if project_tree else None
                     except DoorstopError:
                         item = None
 
-                    value = "" if item is None else item.get(state.session_extended_name)
+                    value = "" if ((item is None) or (state is None)) else item.get(state.session_extended_name)
                     text_extendedvalue.delete(1.0, tk.END)
                     if state is not None and state.session_extended_name:
                         if value:
@@ -1013,7 +1042,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             return frame
 
-        def frame_family(root):
+        def frame_family(root) -> ttk.Frame:
             """Frame for the parent and child document items."""
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
@@ -1041,24 +1070,26 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             def refresh_text_parents(store: Optional[Store]) -> None:
                 # Display the items this item links to
-                state = store.state
+                state = None if store is None else store.state
                 if state is not None:
                     widget.noUserInput_delete(text_parents, '1.0', tk.END)
                     text_parents_hyperlink.reset()
                     if state.session_selected_item_principal is not None:
-                        for uid in state.project_tree.find_item(state.session_selected_item_principal).links:
-                            try:
-                                item = state.project_tree.find_item(uid)
-                            except DoorstopError:
-                                text = "???"
-                            else:
-                                text = item.text or item.ref or '???'
-                                uid = item.uid
+                        project_tree = state.project_tree
+                        if project_tree is not None:
+                            for uid in project_tree.find_item(state.session_selected_item_principal).links:
+                                try:
+                                    item = project_tree.find_item(uid)
+                                except DoorstopError:
+                                    text = "???"
+                                else:
+                                    text = item.text or item.ref or '???'
+                                    uid = item.uid
 
-                            widget.noUserInput_insert(text_parents, tk.END, "{t}".format(t=text))
-                            widget.noUserInput_insert(text_parents, tk.END, " [")
-                            widget.noUserInput_insert(text_parents, tk.END, uid, text_parents_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
-                            widget.noUserInput_insert(text_parents, tk.END, "]\n\n")
+                                widget.noUserInput_insert(text_parents, tk.END, "{t}".format(t=text))
+                                widget.noUserInput_insert(text_parents, tk.END, " [")
+                                widget.noUserInput_insert(text_parents, tk.END, uid, text_parents_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                                widget.noUserInput_insert(text_parents, tk.END, "]\n\n")
             store.add_observer(lambda store: refresh_text_parents(store))
 
             widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
@@ -1069,23 +1100,25 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             def refresh_text_children(store: Optional[Store]) -> None:
                 # Display the items this item links to
-                state = store.state
+                state = None if store is None else store.state
                 if state is not None:
                     # Display the items this item has links from
                     widget.noUserInput_delete(text_children, '1.0', 'end')
                     text_children_hyperlink.reset()
                     if state.session_selected_item_principal is not None:
-                        parent_item = state.project_tree.find_item(state.session_selected_item_principal)
-                        if parent_item is not None:
-                            for uid in parent_item.find_child_links():
-                                item = state.project_tree.find_item(uid)
-                                text = item.text or item.ref or '???'
-                                uid = item.uid
+                        project_tree = state.project_tree
+                        if project_tree is not None:
+                            parent_item = project_tree.find_item(state.session_selected_item_principal)
+                            if parent_item is not None:
+                                for uid in parent_item.find_child_links():
+                                    item = project_tree.find_item(uid)
+                                    text = item.text or item.ref or '???'
+                                    uid = item.uid
 
-                                widget.noUserInput_insert(text_children, tk.END, "{t}".format(t=text))
-                                widget.noUserInput_insert(text_children, tk.END, " [")
-                                widget.noUserInput_insert(text_children, tk.END, uid, text_children_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
-                                widget.noUserInput_insert(text_children, tk.END, "]\n\n")
+                                    widget.noUserInput_insert(text_children, tk.END, "{t}".format(t=text))
+                                    widget.noUserInput_insert(text_children, tk.END, " [")
+                                    widget.noUserInput_insert(text_children, tk.END, uid, text_children_hyperlink.add(lambda c_theURL: followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                                    widget.noUserInput_insert(text_children, tk.END, "]\n\n")
             store.add_observer(lambda store: refresh_text_children(store))
 
             return frame

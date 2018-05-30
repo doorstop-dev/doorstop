@@ -123,6 +123,7 @@ disable=
     no-else-return,
     logging-format-interpolation,
     duplicate-code,
+    C0302,
     C0321,
     C0122,
     W0125,

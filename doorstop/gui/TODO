@@ -28,11 +28,10 @@ Need investigation, but the following may not be possible to implement:
 - Test environment corner case situation (readonly folder, ...)
 
 ## User friendliness
-- Make view fit in screen (add scroll bar to every widget)
+- Add scroll bar to every widget
 - Make tree node draggable and reorderable with the mouse
 
 ## Missing feature
-- Add import in the menu
 - Add help in menu
  - Help > About
  - Help > GUI Help

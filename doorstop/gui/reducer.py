@@ -32,16 +32,19 @@ from doorstop.gui.action import Action_SelectedItem_Level_Indent
 from doorstop.gui.action import Action_SelectedItem_Level_Dedent
 from doorstop.gui.action import Action_SelectedItem_Level_Increment
 from doorstop.gui.action import Action_SelectedItem_Level_Decrement
-
+from doorstop.gui.action import Action_Import
 
 from doorstop.gui.state import State
 
 from doorstop.core.types import UID
 
 from doorstop.core import builder
+from doorstop.core import importer
 
 from doorstop.core.document import Document
 from doorstop.core.item import Item
+
+from doorstop.common import DoorstopError
 
 
 class Reducer(object):
@@ -354,6 +357,27 @@ class Reducer_Edit(Reducer):
                         item = project_tree.remove_item(item)
                         result.session_pending_change |= item is not None
                         result.session_selected_item = new_selection
+        elif isinstance(action, Action_Import):
+            source = action.file_to_import
+            if source:
+                project_tree = state.project_tree
+                if project_tree is not None:
+                    resultX = copy.deepcopy(result)
+                    project_tree = resultX.project_tree
+                    assert project_tree is not None
+
+                    the_document = None
+                    try:
+                        the_document = project_tree.find_document(state.session_selected_document)
+                    except DoorstopError:
+                        pass  # The document is not found.
+                    if the_document is not None:
+                        ext = source[source.rfind("."):]
+                        func = importer.check(ext)
+                        if func is not None:
+                            func(is_auto_save=False, path=source, document=the_document, mapping=None)
+                            result = resultX
+                            result.session_pending_change = True
 
         return result
 
@@ -365,7 +389,7 @@ class Reducer_Level(Reducer):
         def getNextFromStart(document: Document, uid_to_process: Set[str]) -> Generator[Item, None, None]:
             uid_to_process_left = set(uid_to_process)
             while uid_to_process_left:
-                the_next_item_to_process = next((x for x in document.items if str(x.uid) in uid_to_process_left), None)
+                the_next_item_to_process = next((x for x in document.items if str(x.uid) in uid_to_process_left), None)  # pylint: disable=R1708
                 if the_next_item_to_process is None: return
                 yield the_next_item_to_process
                 uid_to_process_left.remove(str(the_next_item_to_process.uid))
@@ -373,7 +397,7 @@ class Reducer_Level(Reducer):
         def getNextFromEnd(document: Document, uid_to_process: Set[str]) -> Generator[Item, None, None]:
             uid_to_process_left = set(uid_to_process)
             while uid_to_process_left:
-                the_next_item_to_process = next((x for x in reversed(document.items) if str(x.uid) in uid_to_process_left), None)
+                the_next_item_to_process = next((x for x in reversed(document.items) if str(x.uid) in uid_to_process_left), None)  # pylint: disable=R1708
                 if the_next_item_to_process is None: return
                 yield the_next_item_to_process
                 uid_to_process_left.remove(str(the_next_item_to_process.uid))

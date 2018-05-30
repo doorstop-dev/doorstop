@@ -235,3 +235,17 @@ class Action_SelectedItem_Level_Increment(Action): pass
 
 
 class Action_SelectedItem_Level_Decrement(Action): pass
+
+
+class Action_Import(Action):
+    @property
+    def document_prefix(self) -> Prefix:
+        return self.__document_prefix
+
+    @property
+    def file_to_import(self) -> str:
+        return self.__file_to_import
+
+    def __init__(self, document_prefix: Prefix, file_to_import: str) -> None:
+        self.__document_prefix = document_prefix
+        self.__file_to_import = file_to_import
