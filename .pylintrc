@@ -123,6 +123,8 @@ disable=
     no-else-return,
     logging-format-interpolation,
     duplicate-code,
+    unnecessary-lambda,
+    using-constant-test,
     C0122,
     C0302,
     C0321,
