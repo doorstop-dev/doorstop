@@ -64,7 +64,7 @@ check: pylint pycodestyle pydocstyle ## Run linters and static analysis
 
 .PHONY: pylint
 pylint: install
-	$(PYLINT) $(PACKAGES) $(CONFIG) --rcfile=.pylintrc
+	$(PYLINT) $(PACKAGES) $(CONFIG) --rcfile=.pylint.ini
 
 .PHONY: pycodestyle
 pycodestyle: install
