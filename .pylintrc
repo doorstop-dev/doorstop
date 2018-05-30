@@ -123,14 +123,15 @@ disable=
     no-else-return,
     logging-format-interpolation,
     duplicate-code,
+    C0122,
     C0302,
     C0321,
-    C0122,
-    W0125,
-    W0201,
-    W0613,
+    E701,
     R0201,
     W0108
+    W0125,
+    W0201,
+    W0613
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
