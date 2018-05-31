@@ -20,6 +20,7 @@ import functools
 from itertools import chain
 import logging
 import tempfile
+import webbrowser
 
 from typing import Any
 from typing import Optional
@@ -328,7 +329,6 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 with tempfile.TemporaryDirectory() as tmpdirname:
                     path = publisher.publish(project_tree, tmpdirname, ".html", template="sidebar")
                     if path:
-                        import webbrowser
                         webbrowser.open_new(os.path.join(path, "index.html"))
                         import time
                         time.sleep(5 * 60)  # 5 minutes preview
@@ -389,39 +389,53 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             path = publisher.publish(the_document, destination, ext, template="sidebar")
             del path
 
+        def do_show_help() -> None:
+            webbrowser.open_new("https://doorstop.readthedocs.io/en/latest/gui/coming-soon/")
+
         if True:  # Set the windows behavior.
             parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
             parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
             parent.bind_all("<Control-s>", lambda *args, **kw: do_save_all_project())
+            parent.bind_all("<Key-F1>", lambda *args, **kw: do_show_help())
             parent.bind_all("<Key-F5>", lambda *args, **kw: do_load_project())
             parent.bind_all("<Control-minus>", lambda *args, **kw: widget.adjustFontSize(-1))
             parent.bind_all("<Control-equal>", lambda *args, **kw: widget.adjustFontSize(1))
             parent.bind_all("<Control-0>", lambda *args, **kw: widget.resetFontSize())
 
         if True:  # Set the menu
-            menubar = widget.Menu(parent)
-            filemenu = widget.Menu(menubar, tearoff=0)
-            filemenu.add_command(label="Open Project…", command=do_open_project, accelerator="Ctrl+o")
-            filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
-            filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
-            filemenu.add_command(label="Close Project", command=do_close_project)
-            filemenu.add_separator()
-            filemenu.add_command(label="Export Tree…", command=do_export_tree)
-            filemenu.add_command(label="Export Document…", command=do_export_document)
-            filemenu.add_command(label="Import Into Document…", command=do_import)
-            filemenu.add_separator()
-            filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
-            filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
-            filemenu.add_command(label="Publish Document…", command=do_publish_document)
-            filemenu.add_separator()
-            filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
-            menubar.add_cascade(label="File", menu=filemenu)
 
-            viewmenu = widget.Menu(menubar, tearoff=0)
-            viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
-            viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
-            viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
-            menubar.add_cascade(label="View", menu=viewmenu)
+            if True:  # File menu
+                menubar = widget.Menu(parent)
+                filemenu = widget.Menu(menubar, tearoff=0)
+                filemenu.add_command(label="Open Project…", command=do_open_project, accelerator="Ctrl+o")
+                filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
+                filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
+                filemenu.add_command(label="Close Project", command=do_close_project)
+                filemenu.add_separator()
+                filemenu.add_command(label="Export Tree…", command=do_export_tree)
+                filemenu.add_command(label="Export Document…", command=do_export_document)
+                filemenu.add_command(label="Import Into Document…", command=do_import)
+                filemenu.add_separator()
+                filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
+                filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
+                filemenu.add_command(label="Publish Document…", command=do_publish_document)
+                filemenu.add_separator()
+                filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
+                menubar.add_cascade(label="File", menu=filemenu)
+
+            if True:  # View menu
+                viewmenu = widget.Menu(menubar, tearoff=0)
+                viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
+                viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
+                viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
+                menubar.add_cascade(label="View", menu=viewmenu)
+
+            if True:  # Help menu
+                helpmenu = widget.Menu(menubar, tearoff=0)
+                helpmenu.add_command(label="Doorstop GUI Help", command=lambda: do_show_help(), accelerator="F1")
+                helpmenu.add_command(label="Report Issue ☹", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop/issues"))
+                helpmenu.add_command(label="Contribute ☺", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop"))
+                menubar.add_cascade(label="Help", menu=helpmenu)
 
             parent.config(menu=menubar)
 
