@@ -186,7 +186,7 @@ def run(args: argparse.Namespace, cwd: str, error):
                     if state is not None:
                         project_path = state.project_path
                         pending_change = state.session_pending_change
-                root.title("{} ({}){}{}".format(__project__, __version__, "*" if pending_change else "", (" - " + project_path) if project_path else ""))
+                root.title("{} ({}){}{}".format(__project__, __version__, "*" if pending_change else "", (" - " + os.path.realpath(project_path)) if project_path else ""))
             store.add_observer(lambda store: refreshTitle(store))
 
         app = Application(root, store)
@@ -635,7 +635,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                 def refresh_btn_add_item(store: Optional[Store]) -> None:
                     state = store.state if store else None
-                    btn_add_item.config(state=tk.DISABLED if ((state is None) or (state.project_tree is None)) else tk.NORMAL)
+                    btn_add_item.config(state=tk.DISABLED if ((state is None) or (state.session_selected_document is None)) else tk.NORMAL)
 
                 store.add_observer(lambda store: refresh_btn_add_item(store))
 
@@ -1146,4 +1146,4 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
 
 if "__main__" == __name__:  # pragma: no cover (manual test)
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
