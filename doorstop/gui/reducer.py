@@ -51,7 +51,7 @@ class Reducer(object):
     def __init__(self) -> None:
         pass
 
-    def reduce(self, state: State, action: Action) -> State:
+    def reduce(self, state: State, action: Action) -> State:  # pylint: disable=R0201
         return state
 
 

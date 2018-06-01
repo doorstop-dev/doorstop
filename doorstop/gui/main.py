@@ -214,256 +214,8 @@ def _log(func):  # pragma: no cover (manual test)
 class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
     """Graphical application for Doorstop."""
 
-    def __init__(self, parent: tk.Frame, store: Store) -> None:
-        ttk.Frame.__init__(self, parent)
-
-        def do_close_project() -> bool:
-            current_state = store.state
-            if current_state and current_state.session_pending_change:
-                result = tkMessageBox.askyesnocancel("Pending changes", "There are unsaved changes, do you want to save them?", icon='warning', default=tkMessageBox.YES, parent=self)
-                if result is None:  # Cancel
-                    return False
-                elif result:  # Yes
-                    store.dispatch(Action_SaveProject())
-                else:  # NO
-                    pass
-            store.dispatch(Action_CloseProject())
-            return True
-
-        def do_open_project() -> bool:
-            requested_path = filedialog.askdirectory()
-            if requested_path:
-                if do_close_project():
-                    store.dispatch(Action_ChangeProjectPath(requested_path))
-                    return True
-            return False
-
-        def do_load_project() -> bool:
-            if store is None: return True
-            state = store.state
-            if state is None: return True
-            if do_close_project():
-                store.dispatch(Action_ChangeProjectPath(state.project_path))
-                return True
-            return False
-
-        def do_quit() -> bool:
-            if do_close_project():
-                parent.quit()
-                return True
-            return False
-
-        def do_save_all_project() -> None:
-            store.dispatch(Action_SaveProject())
-
-        def do_import() -> None:
-            state = store.state
-            if state is None: return
-
-            initial = None if state is None else state.project_path
-            if initial is None:
-                initial = ""
-
-            source = filedialog.askopenfilename(initialdir=initial, title="Select file", filetypes=(
-                ("Comma-Separated Values", "*.csv"),
-                ("Tab-Separated Values", "*.tsv"),
-                ("YAML", "*.yml"),
-                ("Microsoft Office Excel", ".xlsx")
-            ))
-            if not source: return
-            store.dispatch(Action_Import(state.session_selected_document, source))
-
-        def do_export(element: Optional[Union[Document, Tree]]) -> None:
-            if element is None: return
-
-            state = store.state
-            initial = None if state is None else state.project_path
-            if initial is None:
-                initial = ""
-
-            destination = filedialog.asksaveasfilename(initialdir=initial, title="Export to", filetypes=(
-                ("Comma-Separated Values", "*.csv"),
-                ("Tab-Separated Values", "*.tsv"),
-                ("YAML", "*.yml"),
-                ("Microsoft Office Excel", ".xlsx")
-            ))
-            if not destination: return
-
-            ext = destination[destination.rfind("."):]
-            try:
-                exporter.check(ext)
-            except DoorstopError:
-                return
-            if isinstance(element, Tree):
-                destination = destination[:destination.rfind(".")]
-            path = exporter.export(element, destination, ext, auto=True)
-            del path
-
-        def do_export_tree() -> None:
-            state = store.state
-            if state is None: return
-            project_tree = state.project_tree
-            do_export(project_tree)
-
-        def do_export_document() -> None:
-            state = store.state
-            if state is None: return
-            project_tree = state.project_tree
-            if project_tree is None: return
-            the_document = None
-            try:
-                the_document = project_tree.find_document(state.session_selected_document)
-            except DoorstopError:
-                pass  # The document is not found.
-
-            if the_document is None: return
-            do_export(the_document)
-
-        def do_publish_tree_preview() -> None:
-            state = store.state
-            if state is None: return
-            project_tree = state.project_tree
-            if project_tree is None: return
-
-            def __show_generate_preview() -> None:
-                with tempfile.TemporaryDirectory() as tmpdirname:
-                    path = publisher.publish(project_tree, tmpdirname, ".html", template="sidebar")
-                    if path:
-                        webbrowser.open_new(os.path.join(path, "index.html"))
-                        import time
-                        time.sleep(5 * 60)  # 5 minutes preview
-
-            import threading
-            threading.Thread(target=__show_generate_preview, name="PublishPreview", args=(), kwargs={}, daemon=True).start()
-
-        def do_publish_tree() -> None:
-            state = store.state
-            if state is None: return
-            project_tree = state.project_tree
-            if project_tree is None: return
-
-            initial = None if state is None else state.project_path
-            if initial is None:
-                initial = ""
-
-            destination = filedialog.askdirectory()
-            if not destination: return
-
-            ext = ".html"
-            try:
-                publisher.check(ext)
-            except DoorstopError:
-                return
-            path = publisher.publish(project_tree, destination, ext, template="sidebar")
-            del path
-
-        def do_publish_document() -> None:
-            state = store.state
-            if state is None: return
-            project_tree = state.project_tree
-            if project_tree is None: return
-            the_document = None
-            try:
-                the_document = project_tree.find_document(state.session_selected_document)
-            except DoorstopError:
-                pass  # The document is not found.
-            if the_document is None: return
-
-            initial = None if state is None else state.project_path
-            if initial is None:
-                initial = ""
-
-            destination = filedialog.asksaveasfilename(initialdir=initial, title="Publish to", filetypes=(
-                ("Text", "*.txt"),
-                ("Markdown", "*.md"),
-                ("HTML", "*.html"),
-            ))
-            if not destination: return
-
-            ext = destination[destination.rfind("."):]
-            if ext in [None, ""]: return
-            try:
-                publisher.check(ext)
-            except DoorstopError:
-                return
-            path = publisher.publish(the_document, destination, ext, template="sidebar")
-            del path
-
-        def do_show_help() -> None:
-            webbrowser.open_new("https://doorstop.readthedocs.io/en/latest/gui/coming-soon/")
-
-        if True:  # Set the windows behavior.
-            parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
-            parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
-            parent.bind_all("<Control-s>", lambda *args, **kw: do_save_all_project())
-            parent.bind_all("<Key-F1>", lambda *args, **kw: do_show_help())
-            parent.bind_all("<Key-F5>", lambda *args, **kw: do_load_project())
-            parent.bind_all("<Control-minus>", lambda *args, **kw: widget.adjustFontSize(-1))
-            parent.bind_all("<Control-equal>", lambda *args, **kw: widget.adjustFontSize(1))
-            parent.bind_all("<Control-0>", lambda *args, **kw: widget.resetFontSize())
-
-        if True:  # Set the menu
-
-            if True:  # File menu
-                menubar = widget.Menu(parent)
-                filemenu = widget.Menu(menubar, tearoff=0)
-                filemenu.add_command(label="Open Project…", command=do_open_project, accelerator="Ctrl+o")
-                filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
-                filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
-                filemenu.add_command(label="Close Project", command=do_close_project)
-                filemenu.add_separator()
-                filemenu.add_command(label="Export Tree…", command=do_export_tree)
-                filemenu.add_command(label="Export Document…", command=do_export_document)
-                filemenu.add_command(label="Import Into Document…", command=do_import)
-                filemenu.add_separator()
-                filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
-                filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
-                filemenu.add_command(label="Publish Document…", command=do_publish_document)
-                filemenu.add_separator()
-                filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
-                menubar.add_cascade(label="File", menu=filemenu)
-
-            if True:  # View menu
-                viewmenu = widget.Menu(menubar, tearoff=0)
-                viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
-                viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
-                viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
-                menubar.add_cascade(label="View", menu=viewmenu)
-
-            if True:  # Help menu
-                helpmenu = widget.Menu(menubar, tearoff=0)
-                helpmenu.add_command(label="Doorstop GUI Help", command=lambda: do_show_help(), accelerator="F1")
-                helpmenu.add_command(label="Report Issue ☹", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop/issues"))
-                helpmenu.add_command(label="Contribute ☺", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop"))
-                menubar.add_cascade(label="Help", menu=helpmenu)
-
-            parent.config(menu=menubar)
-
-            def refreshMenu(store: Optional[Store]) -> None:
-                project_path = None
-                state = None
-                if store:
-                    state = store.state
-                    if state is not None:
-                        project_path = state.project_path
-                        project_tree = state.project_tree
-                        project_document = state.session_selected_document
-                filemenu.entryconfig("Reload Project", state=tk.NORMAL if project_path else tk.DISABLED)
-                filemenu.entryconfig("Save All", state=tk.NORMAL if project_tree else tk.DISABLED)
-                filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
-                filemenu.entryconfig("Export Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
-                filemenu.entryconfig("Export Document…", state=tk.NORMAL if project_document else tk.DISABLED)
-                filemenu.entryconfig("Import Into Document…", state=tk.NORMAL if project_document else tk.DISABLED)
-                filemenu.entryconfig("Publish Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
-                filemenu.entryconfig("Publish Tree (Preview 5 minutes)", state=tk.NORMAL if project_tree else tk.DISABLED)
-                filemenu.entryconfig("Publish Document…", state=tk.NORMAL if project_document else tk.DISABLED)
-            store.add_observer(lambda store: refreshMenu(store))
-
-        # Initialize the GUI
-        frame = self.init(parent, store)
-        frame.pack(fill=tk.BOTH, expand=1)
-
-    def init(self, root: tk.Frame, store: Store) -> ttk.Frame:
+    @staticmethod
+    def init_main_frame(root: tk.Frame, store: Store) -> ttk.Frame:
         """Initialize and return the main frame."""
         # Shared arguments
         width_text = 30
@@ -1143,6 +895,255 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         frame_family(result_frame).grid(row=0, column=2, columnspan=1, **kw_gs)
 
         return result_frame
+
+    def __init__(self, parent: tk.Frame, store: Store) -> None:
+        ttk.Frame.__init__(self, parent)
+
+        def do_close_project() -> bool:
+            current_state = store.state
+            if current_state and current_state.session_pending_change:
+                result = tkMessageBox.askyesnocancel("Pending changes", "There are unsaved changes, do you want to save them?", icon='warning', default=tkMessageBox.YES, parent=self)
+                if result is None:  # Cancel
+                    return False
+                elif result:  # Yes
+                    store.dispatch(Action_SaveProject())
+                else:  # NO
+                    pass
+            store.dispatch(Action_CloseProject())
+            return True
+
+        def do_open_project() -> bool:
+            requested_path = filedialog.askdirectory()
+            if requested_path:
+                if do_close_project():
+                    store.dispatch(Action_ChangeProjectPath(requested_path))
+                    return True
+            return False
+
+        def do_load_project() -> bool:
+            if store is None: return True
+            state = store.state
+            if state is None: return True
+            if do_close_project():
+                store.dispatch(Action_ChangeProjectPath(state.project_path))
+                return True
+            return False
+
+        def do_quit() -> bool:
+            if do_close_project():
+                parent.quit()
+                return True
+            return False
+
+        def do_save_all_project() -> None:
+            store.dispatch(Action_SaveProject())
+
+        def do_import() -> None:
+            state = store.state
+            if state is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            source = filedialog.askopenfilename(initialdir=initial, title="Select file", filetypes=(
+                ("Comma-Separated Values", "*.csv"),
+                ("Tab-Separated Values", "*.tsv"),
+                ("YAML", "*.yml"),
+                ("Microsoft Office Excel", ".xlsx")
+            ))
+            if not source: return
+            store.dispatch(Action_Import(state.session_selected_document, source))
+
+        def do_export(element: Optional[Union[Document, Tree]]) -> None:
+            if element is None: return
+
+            state = store.state
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.asksaveasfilename(initialdir=initial, title="Export to", filetypes=(
+                ("Comma-Separated Values", "*.csv"),
+                ("Tab-Separated Values", "*.tsv"),
+                ("YAML", "*.yml"),
+                ("Microsoft Office Excel", ".xlsx")
+            ))
+            if not destination: return
+
+            ext = destination[destination.rfind("."):]
+            try:
+                exporter.check(ext)
+            except DoorstopError:
+                return
+            if isinstance(element, Tree):
+                destination = destination[:destination.rfind(".")]
+            path = exporter.export(element, destination, ext, auto=True)
+            del path
+
+        def do_export_tree() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            do_export(project_tree)
+
+        def do_export_document() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+            the_document = None
+            try:
+                the_document = project_tree.find_document(state.session_selected_document)
+            except DoorstopError:
+                pass  # The document is not found.
+
+            if the_document is None: return
+            do_export(the_document)
+
+        def do_publish_tree_preview() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+
+            def __show_generate_preview() -> None:
+                with tempfile.TemporaryDirectory() as tmpdirname:
+                    path = publisher.publish(project_tree, tmpdirname, ".html", template="sidebar")
+                    if path:
+                        webbrowser.open_new(os.path.join(path, "index.html"))
+                        import time
+                        time.sleep(5 * 60)  # 5 minutes preview
+
+            import threading
+            threading.Thread(target=__show_generate_preview, name="PublishPreview", args=(), kwargs={}, daemon=True).start()
+
+        def do_publish_tree() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.askdirectory()
+            if not destination: return
+
+            ext = ".html"
+            try:
+                publisher.check(ext)
+            except DoorstopError:
+                return
+            path = publisher.publish(project_tree, destination, ext, template="sidebar")
+            del path
+
+        def do_publish_document() -> None:
+            state = store.state
+            if state is None: return
+            project_tree = state.project_tree
+            if project_tree is None: return
+            the_document = None
+            try:
+                the_document = project_tree.find_document(state.session_selected_document)
+            except DoorstopError:
+                pass  # The document is not found.
+            if the_document is None: return
+
+            initial = None if state is None else state.project_path
+            if initial is None:
+                initial = ""
+
+            destination = filedialog.asksaveasfilename(initialdir=initial, title="Publish to", filetypes=(
+                ("Text", "*.txt"),
+                ("Markdown", "*.md"),
+                ("HTML", "*.html"),
+            ))
+            if not destination: return
+
+            ext = destination[destination.rfind("."):]
+            if ext in [None, ""]: return
+            try:
+                publisher.check(ext)
+            except DoorstopError:
+                return
+            path = publisher.publish(the_document, destination, ext, template="sidebar")
+            del path
+
+        def do_show_help() -> None:
+            webbrowser.open_new("https://doorstop.readthedocs.io/en/latest/gui/coming-soon/")
+
+        if True:  # Set the windows behavior.
+            parent.protocol("WM_DELETE_WINDOW", lambda *args, **kw: do_quit())
+            parent.bind_all("<Control-o>", lambda *args, **kw: do_open_project())
+            parent.bind_all("<Control-s>", lambda *args, **kw: do_save_all_project())
+            parent.bind_all("<Key-F1>", lambda *args, **kw: do_show_help())
+            parent.bind_all("<Key-F5>", lambda *args, **kw: do_load_project())
+            parent.bind_all("<Control-minus>", lambda *args, **kw: widget.adjustFontSize(-1))
+            parent.bind_all("<Control-equal>", lambda *args, **kw: widget.adjustFontSize(1))
+            parent.bind_all("<Control-0>", lambda *args, **kw: widget.resetFontSize())
+
+        if True:  # Set the menu
+
+            if True:  # File menu
+                menubar = widget.Menu(parent)
+                filemenu = widget.Menu(menubar, tearoff=0)
+                filemenu.add_command(label="Open Project…", command=do_open_project, accelerator="Ctrl+o")
+                filemenu.add_command(label="Reload Project", command=do_load_project, accelerator="F5")
+                filemenu.add_command(label="Save All", command=do_save_all_project, accelerator="Ctrl+s")
+                filemenu.add_command(label="Close Project", command=do_close_project)
+                filemenu.add_separator()
+                filemenu.add_command(label="Export Tree…", command=do_export_tree)
+                filemenu.add_command(label="Export Document…", command=do_export_document)
+                filemenu.add_command(label="Import Into Document…", command=do_import)
+                filemenu.add_separator()
+                filemenu.add_command(label="Publish Tree…", command=do_publish_tree)
+                filemenu.add_command(label="Publish Tree (Preview 5 minutes)", command=do_publish_tree_preview)
+                filemenu.add_command(label="Publish Document…", command=do_publish_document)
+                filemenu.add_separator()
+                filemenu.add_command(label="Exit", command=do_quit, accelerator="Alt+F4")
+                menubar.add_cascade(label="File", menu=filemenu)
+
+            if True:  # View menu
+                viewmenu = widget.Menu(menubar, tearoff=0)
+                viewmenu.add_command(label="Reduce font size", command=lambda: widget.adjustFontSize(-1), accelerator="Ctrl+-")
+                viewmenu.add_command(label="Increase font size", command=lambda: widget.adjustFontSize(1), accelerator="Ctrl++")
+                viewmenu.add_command(label="Reset font size", command=lambda: widget.resetFontSize(), accelerator="Ctrl+0")
+                menubar.add_cascade(label="View", menu=viewmenu)
+
+            if True:  # Help menu
+                helpmenu = widget.Menu(menubar, tearoff=0)
+                helpmenu.add_command(label="Doorstop GUI Help", command=lambda: do_show_help(), accelerator="F1")
+                helpmenu.add_command(label="Report Issue ☹", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop/issues"))
+                helpmenu.add_command(label="Contribute ☺", command=lambda: webbrowser.open_new("https://github.com/jacebrowning/doorstop"))
+                menubar.add_cascade(label="Help", menu=helpmenu)
+
+            parent.config(menu=menubar)
+
+            def refreshMenu(store: Optional[Store]) -> None:
+                project_path = None
+                state = None
+                if store:
+                    state = store.state
+                    if state is not None:
+                        project_path = state.project_path
+                        project_tree = state.project_tree
+                        project_document = state.session_selected_document
+                filemenu.entryconfig("Reload Project", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Save All", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Close Project", state=tk.NORMAL if project_path else tk.DISABLED)
+                filemenu.entryconfig("Export Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Export Document…", state=tk.NORMAL if project_document else tk.DISABLED)
+                filemenu.entryconfig("Import Into Document…", state=tk.NORMAL if project_document else tk.DISABLED)
+                filemenu.entryconfig("Publish Tree…", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Publish Tree (Preview 5 minutes)", state=tk.NORMAL if project_tree else tk.DISABLED)
+                filemenu.entryconfig("Publish Document…", state=tk.NORMAL if project_document else tk.DISABLED)
+            store.add_observer(lambda store: refreshMenu(store))
+
+        # Initialize the GUI
+        frame = Application.init_main_frame(parent, store)
+        frame.pack(fill=tk.BOTH, expand=1)
 
 
 if "__main__" == __name__:  # pragma: no cover (manual test)
