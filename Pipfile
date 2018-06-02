@@ -41,3 +41,6 @@ twine = "*"
 sniffer = "*"
 pync = { version = "<2.0", sys_platform = "== 'darwin'" }
 MacFSEvents = { version = "*", sys_platform = "== 'darwin'" }
+
+# This is needed for Python 3.4
+typing = "*"
