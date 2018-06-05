@@ -109,13 +109,13 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
 
     # mock objects that behave like the real thing
 
-    item = MockItemAndVCS('path/to/req3.yml', is_auto_save=True,
+    item = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                           _file=("links: [sys3]" + '\n'
                                  "text: 'Heading'" + '\n'
                                  "level: 1.1.0" + '\n'
                                  "normative: false"))
 
-    item2 = MockItemAndVCS('path/to/req3.yml', is_auto_save=True,
+    item2 = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                            _file=("links: [sys3]\ntext: '" +
                                   ("Hello, world! " * 10) +
                                   "'\nlevel: 1.2"))
@@ -135,21 +135,21 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     document.items = [
         item,
         item2,
-        MockItemAndVCS('path/to/req1.yml', is_auto_save=True,
+        MockItemAndVCS('path/to/req1.yml', should_auto_save=True,
                        _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
-        MockItemAndVCS('path/to/req2.yml', is_auto_save=True,
+        MockItemAndVCS('path/to/req2.yml', should_auto_save=True,
                        _file="links: []\ntext: ''\nlevel: 2"),
-        MockItemAndVCS('path/to/req4.yml', is_auto_save=True,
+        MockItemAndVCS('path/to/req4.yml', should_auto_save=True,
                        _file="links: []\nref: 'CHECK_PUBLISHED_CONTENT'\n"
                        "level: 2.1.1"),
-        MockItemAndVCS('path/to/req2.yml', is_auto_save=True,
+        MockItemAndVCS('path/to/req2.yml', should_auto_save=True,
                        _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
                        "normative: false"),
     ]
     document.copy_assets = Mock()
     document.assets = None
 
-    item3 = MockItem('path/to/req4.yml', is_auto_save=True, _file=(
+    item3 = MockItem('path/to/req4.yml', should_auto_save=True, _file=(
         "links: [sys4]" + '\n'
         "text: 'This shall...'" + '\n'
         "ref: Doorstop.sublime-project" + '\n'
@@ -164,14 +164,14 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
                              "Doorstop.sublime-project",
                              "Doorstop.sublime-project")]
 
-    item4 = MockItemAndVCS('path/to/req3.yml', is_auto_save=True,
+    item4 = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                            _file=("links: [sys3]" + '\n'
                                   "text: 'Heading'" + '\n'
                                   "long: " + ('"' + '0' * 66 + '"') + '\n'
                                   "level: 1.1.0" + '\n'
                                   "normative: false"))
 
-    item5 = MockItemAndVCS('path/to/req3.yml', is_auto_save=True,
+    item5 = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                            _file=("links: [sys3]" + '\n'
                                   "text: 'Heading'" + '\n'
                                   "level: 2.1.2" + '\n'

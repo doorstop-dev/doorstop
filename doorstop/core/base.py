@@ -169,7 +169,7 @@ def auto_save(func):
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
-        if self.is_auto_save:
+        if self.should_auto_save:
             self.save()
         return result
     return wrapped
@@ -183,13 +183,13 @@ class BaseFileObject(object, metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, is_auto_save):
+    def __init__(self, should_auto_save):
         self.path = None
         self.root = None
         self._data = {}
         self._exists = True
         self._loaded = False
-        self.is_auto_save = is_auto_save
+        self.should_auto_save = should_auto_save
 
     def __hash__(self):
         return hash(self.path)

@@ -29,14 +29,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
 
-    def __init__(self, path, is_auto_save, root=os.getcwd(), **kwargs):
+    def __init__(self, path, should_auto_save, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
 
         :param path: path to document directory
         :param root: path to root of project
 
         """
-        super().__init__(is_auto_save=is_auto_save)
+        super().__init__(should_auto_save=should_auto_save)
         # Ensure the directory is valid
         if not os.path.isfile(os.path.join(path, Document.CONFIG)):
             relpath = os.path.relpath(path, root)
@@ -76,7 +76,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_document
-    def new(is_auto_save, tree, path, root, prefix=None, sep=None, digits=None, parent=None):  # pylint: disable=R0913,C0301
+    def new(should_auto_save, tree, path, root, prefix=None, sep=None, digits=None, parent=None):  # pylint: disable=R0913,C0301
         """Create a new document.
 
         :param tree: reference to tree that contains this document
@@ -88,7 +88,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param sep: separator between prefix and numbers
         :param digits: number of digits for the new document
         :param parent: parent UID for the new document
-        :param is_auto_save: automatically save the document
+        :param should_auto_save: automatically save the document
 
         :raises: :class:`~doorstop.common.DoorstopError` if the document
             already exists
@@ -105,12 +105,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Create the document directory
         Document._create(config, name='document')
         # Initialize the document
-        document = Document(path, root=root, tree=tree, is_auto_save=is_auto_save)
+        document = Document(path, root=root, tree=tree, should_auto_save=should_auto_save)
         document.prefix = prefix if prefix is not None else document.prefix
         document.sep = sep if sep is not None else document.sep
         document.digits = digits if digits is not None else document.digits
         document.parent = parent if parent is not None else document.parent
-        if is_auto_save: document.save()
+        if should_auto_save: document.save()
         # Return the document
         return document
 
@@ -186,7 +186,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, is_auto_save=self.is_auto_save, root=self.root,
+                    item = Item(path, should_auto_save=self.should_auto_save, root=self.root,
                                 document=self, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
@@ -369,7 +369,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(tree=self.tree, document=self,
                         path=self.path, root=self.root, uid=uid,
-                        level=next_level, is_auto_save=self.is_auto_save)
+                        level=next_level, should_auto_save=self.should_auto_save)
         if level and reorder:
             self.reorder(keep=item)
         return item

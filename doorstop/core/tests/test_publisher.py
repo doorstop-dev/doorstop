@@ -83,7 +83,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         dirpath = os.path.join('mock', 'directory')
         assets_path = os.path.join(dirpath, 'assets')
         path = os.path.join(dirpath, 'published.custom')
-        document = MockDocument(path='/some/path', is_auto_save=True)
+        document = MockDocument(path='/some/path', should_auto_save=True)
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
         # Act
         path2 = publisher.publish(document, path, '.html')
@@ -214,7 +214,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_multi_line_heading_to_markdown(self):
         """Verify a multi line heading is published as a heading with an attribute equal to the item id"""
-        item = MockItemAndVCS('path/to/req3.yml', is_auto_save=True,
+        item = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                               _file=("links: [sys3]" + '\n'
                                      "text: 'Heading\n\nThis section describes publishing.'" + '\n'
                                      "level: 1.1.0" + '\n'
@@ -403,7 +403,7 @@ class TestTableOfContents(unittest.TestCase):
     """Unit tests for the Document class."""
 
     def setUp(self):
-        self.document = MockDocument(FILES, root=ROOT, is_auto_save=True)
+        self.document = MockDocument(FILES, root=ROOT, should_auto_save=True)
 
     def test_toc_no_links_or_heading_levels(self):
         """Verify the table of contents is generated with heading levels"""

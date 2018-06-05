@@ -95,7 +95,7 @@ class Reducer_Project(Reducer):
             result.session_selected_item = None
             result.session_selected_link = None
             try:
-                result.project_tree = None if "" == new_path else builder.build(cwd=state.cwd, root=new_path, is_auto_save=False)
+                result.project_tree = None if "" == new_path else builder.build(cwd=state.cwd, root=new_path, should_auto_save=False)
             except DoorstopError:
                 return state
             if result.project_tree is not None:
@@ -378,7 +378,7 @@ class Reducer_Edit(Reducer):
                         ext = source[source.rfind("."):]
                         func = importer.check(ext)
                         if func is not None:
-                            func(is_auto_save=False, path=source, document=the_document, mapping=None)
+                            func(should_auto_save=False, path=source, document=the_document, mapping=None)
                             result = resultX
                             result.session_pending_change = True
 

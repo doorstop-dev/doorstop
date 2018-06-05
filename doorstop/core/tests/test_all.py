@@ -47,7 +47,7 @@ class TestItem(unittest.TestCase):
         _clear_tree()
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(is_auto_save=True, path=self.path)
+        self.item = core.Item(should_auto_save=True, path=self.path)
         self.item.tree = Mock()
         self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
@@ -59,7 +59,7 @@ class TestItem(unittest.TestCase):
         self.item.level = '1.2.3'
         self.item.text = "Hello, world!"
         self.item.links = ['SYS001', 'SYS002']
-        item2 = core.Item(is_auto_save=True, path=os.path.join(FILES, 'REQ001.yml'))
+        item2 = core.Item(should_auto_save=True, path=os.path.join(FILES, 'REQ001.yml'))
         self.assertEqual((1, 2, 3), item2.level)
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
@@ -67,7 +67,7 @@ class TestItem(unittest.TestCase):
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-        item = core.Item(is_auto_save=True, path=os.path.join(FILES, 'REQ003.yml'))
+        item = core.Item(should_auto_save=True, path=os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
         path, line = item.find_ref()
@@ -87,7 +87,7 @@ class TestDocument(unittest.TestCase):
 
     def setUp(self):
         _clear_tree()
-        self.document = core.Document(is_auto_save=True, path=FILES, root=ROOT)
+        self.document = core.Document(should_auto_save=True, path=FILES, root=ROOT)
 
     def tearDown(self):
         """Clean up temporary files."""
@@ -97,14 +97,14 @@ class TestDocument(unittest.TestCase):
 
     def test_load(self):
         """Verify a document can be loaded from a directory."""
-        doc = core.Document(is_auto_save=True, path=FILES)
+        doc = core.Document(should_auto_save=True, path=FILES)
         self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
         self.assertEqual(6, len(doc.items))
 
     def test_new(self):
         """Verify a new document can be created."""
-        document = core.Document.new(is_auto_save=True, tree=None,
+        document = core.Document.new(should_auto_save=True, tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='SYS', digits=4)
         self.assertEqual('SYS', document.prefix)
@@ -156,7 +156,7 @@ class TestDocument(unittest.TestCase):
                                      path=EMPTY,
                                      root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # will get displaced
         item_1_1 = document.add_item(level='1.1')
@@ -169,7 +169,7 @@ class TestDocument(unittest.TestCase):
         document = core.Document.new(tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # to be removed
         item_1_1 = document.add_item(level='1.1')  # will get relocated
@@ -182,7 +182,7 @@ class TestDocument(unittest.TestCase):
         document = core.Document.new(tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -199,7 +199,7 @@ class TestDocument(unittest.TestCase):
         document = core.Document.new(tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
@@ -214,7 +214,7 @@ class TestDocument(unittest.TestCase):
         document = core.Document.new(tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -233,7 +233,7 @@ class TestDocument(unittest.TestCase):
         document = core.Document.new(tree=None,
                                      path=EMPTY, root=FILES,
                                      prefix='TMP',
-                                     is_auto_save=True)
+                                     should_auto_save=True)
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
         document.add_item(level='1.2.0', reorder=False)
@@ -253,9 +253,9 @@ class TestTree(unittest.TestCase):
         _clear_tree()
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(path=self.path, is_auto_save=True)
-        self.tree = core.Tree(core.Document(path=SYS, is_auto_save=True))
-        self.tree._place(core.Document(path=FILES, is_auto_save=True))
+        self.item = core.Item(path=self.path, should_auto_save=True)
+        self.tree = core.Tree(core.Document(path=SYS, should_auto_save=True))
+        self.tree._place(core.Document(path=FILES, should_auto_save=True))
 
     def tearDown(self):
         common.write_text(self.backup, self.path)
@@ -324,7 +324,7 @@ class TestImporter(unittest.TestCase):
         # Create default item attributes
         self.uid = 'PREFIX-00042'
         # Load an actual document
-        self.document = core.Document(path=FILES, is_auto_save=True, root=ROOT)
+        self.document = core.Document(path=FILES, should_auto_save=True, root=ROOT)
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -336,9 +336,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
+        document = _tree.create_document(should_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(is_auto_save=True, path=path, document=document)
+        core.importer.import_file(should_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -351,9 +351,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
+        document = _tree.create_document(should_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(is_auto_save=True, path=path, document=document)
+        core.importer.import_file(should_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -366,9 +366,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
+        document = _tree.create_document(should_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(is_auto_save=True, path=path, document=document)
+        core.importer.import_file(should_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -382,9 +382,9 @@ class TestImporter(unittest.TestCase):
         core.exporter.export(self.document, path)
         _path = os.path.join(self.temp, 'imports', 'req')
         _tree = _get_tree()
-        document = _tree.create_document(is_auto_save=True, path=_path, value='REQ')
+        document = _tree.create_document(should_auto_save=True, path=_path, value='REQ')
         # Act
-        core.importer.import_file(is_auto_save=True, path=path, document=document)
+        core.importer.import_file(should_auto_save=True, path=path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -404,7 +404,7 @@ class TestImporter(unittest.TestCase):
         document = _tree.create_document(_path, 'REQ')
         # Act
         with warnings.catch_warnings(record=True) as warns:
-            core.importer.import_file(is_auto_save=True, path=path, document=document)
+            core.importer.import_file(should_auto_save=True, path=path, document=document)
             # Assert
         self.assertEqual(1, len(warns))
         self.assertIn("maximum number of rows", str(warns[-1].message))
@@ -415,7 +415,7 @@ class TestImporter(unittest.TestCase):
 
     def test_create_document(self):
         """Verify a new document can be created to import items."""
-        document = core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
+        document = core.importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
 
@@ -424,7 +424,7 @@ class TestImporter(unittest.TestCase):
         # Verify the document does not already exist
         self.assertRaises(DoorstopError, find_document, self.prefix)
         # Import a document
-        document = core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path,
+        document = core.importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path,
                                                  parent=self.parent, tree=_get_tree())
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
@@ -437,7 +437,7 @@ class TestImporter(unittest.TestCase):
     def test_create_document_already_exists(self):
         """Verify non-parent exceptions are re-raised."""
         # Create a document
-        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
+        core.importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Attempt to create the same document
         self.assertRaises(DoorstopError, core.importer.create_document,
                           True, self.prefix, self.path, None, _get_tree())
@@ -445,11 +445,11 @@ class TestImporter(unittest.TestCase):
     def test_add_item(self):
         """Verify an item can be imported into a document."""
         # Create a document
-        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
+        core.importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Verify the item does not already exist
         self.assertRaises(DoorstopError, find_item, self.uid)
         # Import an item
-        item = core.importer.add_item(is_auto_save=True, document=find_document(self.prefix), uid=self.uid)
+        item = core.importer.add_item(should_auto_save=True, document=find_document(self.prefix), uid=self.uid)
         # Verify the item's attributes are correct
         self.assertEqual(self.uid, item.uid)
         # Verify the item can be found
@@ -462,10 +462,10 @@ class TestImporter(unittest.TestCase):
     def test_add_item_with_attrs(self):
         """Verify an item with attributes can be imported into a document."""
         # Create a document
-        core.importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
+        core.importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=_get_tree())
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(is_auto_save=True, document=find_document(self.prefix), uid=self.uid,
+        item = core.importer.add_item(should_auto_save=True, document=find_document(self.prefix), uid=self.uid,
                                       attrs=attrs)
         # Verify the item is correct
         self.assertEqual(self.uid, item.uid)
@@ -480,7 +480,7 @@ class TestExporter(unittest.TestCase):
 
     def setUp(self):
         _clear_tree()
-        self.document = core.Document(is_auto_save=True, path=FILES, root=ROOT)
+        self.document = core.Document(should_auto_save=True, path=FILES, root=ROOT)
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
@@ -554,7 +554,7 @@ class TestPublisher(unittest.TestCase):
     @patch('doorstop.core.document.Document', DocumentNoSkip)
     def setUp(self):
         _clear_tree()
-        self.tree = core.build(is_auto_save=True, cwd=FILES, root=FILES)
+        self.tree = core.build(should_auto_save=True, cwd=FILES, root=FILES)
         # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document('REQ')
         self.temp = tempfile.mkdtemp()
@@ -668,7 +668,7 @@ class TestPublisher(unittest.TestCase):
         """Verify HTML can be published from a document with headers and child links contain header."""
         path = os.path.join(FILES_BETA, 'published3.html')
         expected = common.read_text(path)
-        beta_features_tree = core.build(is_auto_save=True, cwd=FILES_BETA, root=FILES_BETA)
+        beta_features_tree = core.build(should_auto_save=True, cwd=FILES_BETA, root=FILES_BETA)
         document_with_header = beta_features_tree.find_document('REQHEADER')
         # Act
         lines = core.publisher.publish_lines(document_with_header, '.html',

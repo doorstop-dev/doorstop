@@ -11,7 +11,7 @@ from doorstop.core.document import Document
 log = common.logger(__name__)
 
 
-def build(is_auto_save, cwd=None, root=None, request_next_number=None):
+def build(should_auto_save, cwd=None, root=None, request_next_number=None):
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
@@ -32,11 +32,11 @@ def build(is_auto_save, cwd=None, root=None, request_next_number=None):
 
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
-    _document_from_path(root, root, documents, is_auto_save=is_auto_save)
+    _document_from_path(root, root, documents, should_auto_save=should_auto_save)
     for dirpath, dirnames, _ in os.walk(root):
         for dirname in dirnames:
             path = os.path.join(dirpath, dirname)
-            _document_from_path(path, root, documents, is_auto_save=is_auto_save)
+            _document_from_path(path, root, documents, should_auto_save=should_auto_save)
 
     # Build the tree
     if not documents:
@@ -51,7 +51,7 @@ def build(is_auto_save, cwd=None, root=None, request_next_number=None):
     return tree
 
 
-def _document_from_path(path, root, documents, is_auto_save):
+def _document_from_path(path, root, documents, should_auto_save):
     """Attempt to create and append a document from the specified path.
 
     :param path: path to a potential document
@@ -61,7 +61,7 @@ def _document_from_path(path, root, documents, is_auto_save):
 
     """
     try:
-        document = Document(path=path, is_auto_save=is_auto_save, root=root, tree=None)  # tree attached later
+        document = Document(path=path, should_auto_save=should_auto_save, root=root, tree=None)  # tree attached later
     except DoorstopError:
         pass  # no document in directory
     else:

@@ -22,7 +22,7 @@ _documents = []  # cache of unplaced documents
 log = common.logger(__name__)
 
 
-def import_file(is_auto_save, path, document, ext=None, mapping=None, **kwargs):
+def import_file(should_auto_save, path, document, ext=None, mapping=None, **kwargs):
     """Import items from an exported file.
 
     :param path: input file location
@@ -38,10 +38,10 @@ def import_file(is_auto_save, path, document, ext=None, mapping=None, **kwargs):
     log.info("importing {} into {}...".format(path, document))
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
-    func(is_auto_save=is_auto_save, path=path, document=document, mapping=mapping, **kwargs)
+    func(should_auto_save=should_auto_save, path=path, document=document, mapping=mapping, **kwargs)
 
 
-def create_document(is_auto_save, prefix, path, parent=None, tree=None):
+def create_document(should_auto_save, prefix, path, parent=None, tree=None):
     """Create a Doorstop document from existing document information.
 
     :param prefix: existing document's prefix (for new items)
@@ -57,7 +57,7 @@ def create_document(is_auto_save, prefix, path, parent=None, tree=None):
     # Attempt to create a document with the given parent
     log.info("importing document '{}'...".format(prefix))
     try:
-        document = tree.create_document(path=path, is_auto_save=is_auto_save, value=prefix, parent=parent)
+        document = tree.create_document(path=path, should_auto_save=should_auto_save, value=prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
             raise exc from None  # pylint: disable=raising-bad-type
@@ -67,7 +67,7 @@ def create_document(is_auto_save, prefix, path, parent=None, tree=None):
                                 path=path,
                                 root=tree.root,
                                 prefix=prefix,
-                                is_auto_save=is_auto_save,
+                                should_auto_save=should_auto_save,
                                 parent=parent)
         log.warning(exc)
         _documents.append(document)
@@ -78,7 +78,7 @@ def create_document(is_auto_save, prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(is_auto_save, document, uid, attrs=None, request_next_number=None):
+def add_item(should_auto_save, document, uid, attrs=None, request_next_number=None):
     """Create a Doorstop document from existing document information.
 
     :param uid: existing item's UID
@@ -96,18 +96,18 @@ def add_item(is_auto_save, document, uid, attrs=None, request_next_number=None):
     log.info("importing item '{}'...".format(uid))
     item = Item.new(tree=tree, document=document,
                     path=document.path, root=document.root, uid=uid,
-                    is_auto_save=False)
+                    should_auto_save=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
-    if is_auto_save:
-        item.is_auto_save = True
+    if should_auto_save:
+        item.should_auto_save = True
         item.save()
 
     log.info("imported: {}".format(item))
     return item
 
 
-def _file_yml(is_auto_save, path, document, **_):
+def _file_yml(should_auto_save, path, document, **_):
     """Import items from a YAML export to a document.
 
     :param path: input file location
@@ -127,10 +127,10 @@ def _file_yml(is_auto_save, path, document, **_):
             pass  # no matching item
         else:
             item.delete()
-        add_item(is_auto_save=is_auto_save, uid=uid, attrs=attrs, document=document)
+        add_item(should_auto_save=should_auto_save, uid=uid, attrs=attrs, document=document)
 
 
-def _file_csv(is_auto_save, path, document, delimiter=',', mapping=None):
+def _file_csv(should_auto_save, path, document, delimiter=',', mapping=None):
     """Import items from a CSV export to a document.
 
     :param path: input file location
@@ -162,10 +162,10 @@ def _file_csv(is_auto_save, path, document, delimiter=',', mapping=None):
     data = rows[1:]
 
     # Import items from the rows
-    _itemize(is_auto_save=is_auto_save, header=header, data=data, document=document, mapping=mapping)
+    _itemize(should_auto_save=should_auto_save, header=header, data=data, document=document, mapping=mapping)
 
 
-def _file_tsv(is_auto_save, path, document, mapping=None):
+def _file_tsv(should_auto_save, path, document, mapping=None):
     """Import items from a TSV export to a document.
 
     :param path: input file location
@@ -173,10 +173,10 @@ def _file_tsv(is_auto_save, path, document, mapping=None):
     :param mapping: dictionary mapping custom to standard attribute names
 
     """
-    _file_csv(is_auto_save=is_auto_save, path=path, document=document, delimiter='\t', mapping=mapping)
+    _file_csv(should_auto_save=should_auto_save, path=path, document=document, delimiter='\t', mapping=mapping)
 
 
-def _file_xlsx(is_auto_save, path, document, mapping=None):
+def _file_xlsx(should_auto_save, path, document, mapping=None):
     """Import items from an XLSX export to a document.
 
     :param path: input file location
@@ -211,10 +211,10 @@ def _file_xlsx(is_auto_save, path, document, mapping=None):
         warnings.warn(msg, Warning)
 
     # Import items from the rows
-    _itemize(is_auto_save=is_auto_save, header=header, data=data, document=document, mapping=mapping)
+    _itemize(should_auto_save=should_auto_save, header=header, data=data, document=document, mapping=mapping)
 
 
-def _itemize(is_auto_save, header, data, document, mapping=None):
+def _itemize(should_auto_save, header, data, document, mapping=None):
     """Conversion function for multiple formats.
 
     :param header: list of columns names
@@ -277,7 +277,7 @@ def _itemize(is_auto_save, header, data, document, mapping=None):
 
             # Import the item
             try:
-                item = add_item(is_auto_save=is_auto_save, uid=uid,
+                item = add_item(should_auto_save=should_auto_save, uid=uid,
                                 attrs=attrs, document=document)
             except DoorstopError as exc:
                 log.warning(exc)

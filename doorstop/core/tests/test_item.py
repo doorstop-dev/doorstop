@@ -32,11 +32,11 @@ class TestItem(unittest.TestCase):
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')
-        self.item = MockItem(path=path, is_auto_save=True)
+        self.item = MockItem(path=path, should_auto_save=True)
 
     def test_init_invalid(self):
         """Verify an item cannot be initialized from an invalid path."""
-        self.assertRaises(DoorstopError, Item, path='not/a/path', is_auto_save=True)
+        self.assertRaises(DoorstopError, Item, path='not/a/path', should_auto_save=True)
 
     def test_object_references(self):
         """Verify a standalone item does not have object references."""
@@ -76,9 +76,9 @@ class TestItem(unittest.TestCase):
 
     def test_hash(self):
         """Verify items can be hashed."""
-        item1 = MockItem(is_auto_save=True, path='path/to/fake1.yml')
-        item2 = MockItem(is_auto_save=True, path='path/to/fake2.yml')
-        item3 = MockItem(is_auto_save=True, path='path/to/fake2.yml')
+        item1 = MockItem(should_auto_save=True, path='path/to/fake1.yml')
+        item2 = MockItem(should_auto_save=True, path='path/to/fake2.yml')
+        item3 = MockItem(should_auto_save=True, path='path/to/fake2.yml')
         my_set = set()
         # Act
         my_set.add(item1)
@@ -93,11 +93,11 @@ class TestItem(unittest.TestCase):
 
     def test_lt(self):
         """Verify items can be compared."""
-        item1 = MockItem(is_auto_save=True, path='path/to/fake1.yml')
+        item1 = MockItem(should_auto_save=True, path='path/to/fake1.yml')
         item1.level = (1, 1)
-        item2 = MockItem(is_auto_save=True, path='path/to/fake1.yml')
+        item2 = MockItem(should_auto_save=True, path='path/to/fake1.yml')
         item2.level = (1, 1, 1)
-        item3 = MockItem(is_auto_save=True, path='path/to/fake1.yml')
+        item3 = MockItem(should_auto_save=True, path='path/to/fake1.yml')
         item3.level = (1, 1, 2)
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
@@ -359,14 +359,14 @@ class TestItem(unittest.TestCase):
     def test_link_by_item(self):
         """Verify links can be added to an item (by item)."""
         path = os.path.join('path', 'to', 'ABC123.yml')
-        item = MockItem(path=path, is_auto_save=True)
+        item = MockItem(path=path, should_auto_save=True)
         self.item.link(item)
         self.assertEqual(['ABC123'], self.item.links)
 
     def test_unlink_by_item(self):
         """Verify links can be removed (by item)."""
         path = os.path.join('path', 'to', 'ABC123.yml')
-        item = MockItem(path=path, is_auto_save=True)
+        item = MockItem(path=path, should_auto_save=True)
         self.item.links = ['ABC123']
         self.item.unlink(item)
         self.assertEqual([], self.item.links)
@@ -525,13 +525,13 @@ class TestItem(unittest.TestCase):
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
-        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ.yaml", is_auto_save=True)
-        self.assertRaises(DoorstopError, MockItem, path="path/to/001.yaml", is_auto_save=True)
+        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ.yaml", should_auto_save=True)
+        self.assertRaises(DoorstopError, MockItem, path="path/to/001.yaml", should_auto_save=True)
 
     def test_invalid_file_ext(self):
         """Verify an invalid file extension cannot be a requirement."""
-        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ001", is_auto_save=True)
-        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ001.txt", is_auto_save=True)
+        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ001", should_auto_save=True)
+        self.assertRaises(DoorstopError, MockItem, path="path/to/REQ001.txt", should_auto_save=True)
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new(self):
@@ -539,7 +539,7 @@ class TestItem(unittest.TestCase):
         MockItem._create.reset_mock()
         item = MockItem.new(tree=None, document=None,
                             path=EMPTY, root=FILES, uid='TEST00042',
-                            is_auto_save=True,
+                            should_auto_save=True,
                             level=(1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
@@ -553,7 +553,7 @@ class TestItem(unittest.TestCase):
         mock_tree._item_cache = {}
         item = MockItem.new(tree=mock_tree, document=None,
                             path=EMPTY, root=FILES, uid='TEST00042',
-                            is_auto_save=True,
+                            should_auto_save=True,
                             level=(1, 2, 3))
         self.assertEqual(item, mock_tree._item_cache[item.uid])
         mock_tree.vcs.add.assert_called_once_with(item.path)
@@ -564,7 +564,7 @@ class TestItem(unittest.TestCase):
         MockItem._create.reset_mock()
         item = MockItem.new(tree=None, document=None,
                             path=EMPTY, root=FILES, uid='VSM.HLR_01-002-042',
-                            is_auto_save=True,
+                            should_auto_save=True,
                             level=(1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
@@ -576,7 +576,7 @@ class TestItem(unittest.TestCase):
         self.assertRaises(DoorstopError, Item.new,
                           None, None,
                           FILES, FILES, 'REQ002',
-                          is_auto_save=True,
+                          should_auto_save=True,
                           level=(1, 2, 3))
 
     def test_validate_invalid_ref(self):
@@ -853,7 +853,7 @@ class TestFormatting(unittest.TestCase):
 
     def test_load_save(self):
         """Verify text formatting is preserved."""
-        item = Item(path=self.ITEM, is_auto_save=True)
+        item = Item(path=self.ITEM, should_auto_save=True)
         item.load()
         item.save()
         text = common.read_text(self.ITEM)
@@ -912,7 +912,7 @@ class TestUnknownItem(unittest.TestCase):
     @patch('doorstop.core.item.log.debug')
     def test_attributes_with_spec(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
-        spec = Item(path=os.path.join(FILES, 'REQ001.yml'), is_auto_save=True)
+        spec = Item(path=os.path.join(FILES, 'REQ001.yml'), should_auto_save=True)
         self.item = UnknownItem(self.item.uid, spec=spec)
         self.assertRaises(AttributeError, getattr, self.item, 'path')
         self.assertRaises(AttributeError, getattr, self.item, 'text')

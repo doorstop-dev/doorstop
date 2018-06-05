@@ -22,7 +22,7 @@ def _get_tree(request_next_number=None):
     """Get a shared tree for convenience functions."""
     global _tree  # pylint: disable=W0603
     if _tree is None:
-        _tree = build(is_auto_save=True)
+        _tree = build(should_auto_save=True)
     _tree.request_next_number = request_next_number
     return _tree
 

@@ -58,14 +58,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
 
-    def __init__(self, path, is_auto_save, root=os.getcwd(), **kwargs):
+    def __init__(self, path, should_auto_save, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
 
         :param path: path to Item file
         :param root: path to root of project
 
         """
-        super().__init__(is_auto_save=is_auto_save)
+        super().__init__(should_auto_save=should_auto_save)
         # Ensure the path is valid
         if not os.path.isfile(path):
             raise DoorstopError("item does not exist: {}".format(path))
@@ -115,7 +115,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_item
-    def new(tree, document, path, root, uid, is_auto_save, level=None):  # pylint: disable=R0913
+    def new(tree, document, path, root, uid, should_auto_save, level=None):  # pylint: disable=R0913
         """Create a new item.
 
         :param tree: reference to the tree that contains this item
@@ -126,7 +126,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param uid: UID for the new item
 
         :param level: level for the new item
-        :param is_auto_save: automatically save the item
+        :param should_auto_save: automatically save the item
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             already exists
@@ -141,9 +141,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
-        item = Item(path2, root=root, document=document, tree=tree, is_auto_save=is_auto_save)
+        item = Item(path2, root=root, document=document, tree=tree, should_auto_save=should_auto_save)
         item.level = level if level is not None else item.level
-        if is_auto_save:
+        if should_auto_save:
             item.save()
         # Return the item
         return item

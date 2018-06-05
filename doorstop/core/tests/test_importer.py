@@ -47,8 +47,8 @@ class TestModule(unittest.TestCase):
         mock_path = 'path/to/file.csv'
         mock_document = Mock()
         importer.FORMAT_FILE['.csv'] = mock_file_csv
-        importer.import_file(is_auto_save=True, path=mock_path, document=mock_document)
-        mock_file_csv.assert_called_once_with(is_auto_save=True, path=mock_path, document=mock_document,
+        importer.import_file(should_auto_save=True, path=mock_path, document=mock_document)
+        mock_file_csv.assert_called_once_with(should_auto_save=True, path=mock_path, document=mock_document,
                                               mapping=None)
 
     @patch('doorstop.core.importer.check')
@@ -56,7 +56,7 @@ class TestModule(unittest.TestCase):
         """Verify a custom extension can be specified for import."""
         mock_path = 'path/to/file.ext'
         mock_document = Mock()
-        importer.import_file(is_auto_save=True, path=mock_path, document=mock_document, ext='.custom')
+        importer.import_file(should_auto_save=True, path=mock_path, document=mock_document, ext='.custom')
         mock_check.assert_called_once_with('.custom')
 
     @patch('doorstop.core.importer.add_item')
@@ -66,7 +66,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.find_item = Mock(side_effect=DoorstopError)
         # Act
-        importer._file_yml(is_auto_save=True, path=path, document=mock_document)
+        importer._file_yml(should_auto_save=True, path=path, document=mock_document)
         # Assert
         self.assertEqual(6, mock_add_item.call_count)
 
@@ -76,7 +76,7 @@ class TestModule(unittest.TestCase):
         path = os.path.join(FILES, 'exported.yml')
         mock_document = Mock()
         # Act
-        importer._file_yml(is_auto_save=True, path=path, document=mock_document)
+        importer._file_yml(should_auto_save=True, path=path, document=mock_document)
         # Assert
         self.assertEqual(6, mock_add_item.call_count)
 
@@ -91,7 +91,7 @@ class TestModule(unittest.TestCase):
         path = os.path.join(FILES, 'exported.csv')
         mock_document = Mock()
         # Act
-        importer._file_csv(is_auto_save=True, path=path, document=mock_document)
+        importer._file_csv(should_auto_save=True, path=path, document=mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -119,7 +119,7 @@ class TestModule(unittest.TestCase):
         path = os.path.join(FILES, 'exported-modified.csv')
         mock_document = Mock()
         # Act
-        importer._file_csv(is_auto_save=True, path=path, document=mock_document)
+        importer._file_csv(should_auto_save=True, path=path, document=mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -146,10 +146,10 @@ class TestModule(unittest.TestCase):
         mock_path = 'path/to/file.tsv'
         mock_document = Mock()
         # Act
-        importer._file_tsv(is_auto_save=True, path=mock_path, document=mock_document)
+        importer._file_tsv(should_auto_save=True, path=mock_path, document=mock_document)
         # Assert
         mock_file_csv.assert_called_once_with(path=mock_path, document=mock_document,
-                                              delimiter='\t', mapping=None, is_auto_save=True)
+                                              delimiter='\t', mapping=None, should_auto_save=True)
 
     @patch('doorstop.core.importer._itemize')
     def test_file_xlsx(self, mock_itemize):
@@ -158,7 +158,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         # Act
         with catch_warnings():
-            importer._file_xlsx(is_auto_save=True, path=path, document=mock_document)
+            importer._file_xlsx(should_auto_save=True, path=path, document=mock_document)
         # Assert
         args, kwargs = mock_itemize.call_args
         logging.debug("args: {}".format(args))
@@ -189,7 +189,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
         args, kwargs = mock_add_item.call_args
@@ -210,11 +210,11 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
         self.assertEqual(args, ())
-        self.assertEqual(True, kwargs["is_auto_save"])
+        self.assertEqual(True, kwargs["should_auto_save"])
         self.assertEqual('req2', kwargs["uid"])
         expected_attrs = {'active': True,
                           'ext1': False,
@@ -230,7 +230,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.prefix = 'PREFIX'
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         args, kwargs = mock_add_item.call_args
         self.assertEqual(args, ())
@@ -251,7 +251,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mapping = {'MyID': 'uid'}
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document, mapping=mapping)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document, mapping=mapping)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 
@@ -264,7 +264,7 @@ class TestModule(unittest.TestCase):
         mock_document = Mock()
         mock_document.find_item = Mock(side_effect=DoorstopError)
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         self.assertEqual(2, mock_add_item.call_count)
 
@@ -275,12 +275,12 @@ class TestModule(unittest.TestCase):
         data = [['req1', 'text1', 'blank', '', 'val1']]
         mock_document = Mock()
         mock_document.prefix = 'prefix'
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         expected_attrs = {'links': [], 'ext1': 'val1', 'text': 'text1'}
         mock_add_item.assert_called_once_with(uid='req1',
                                               attrs=expected_attrs,
                                               document=mock_document,
-                                              is_auto_save=True)
+                                              should_auto_save=True)
 
     @patch('doorstop.core.importer.add_item')
     def test_itemize_new_rows(self, mock_add_item):
@@ -300,7 +300,7 @@ class TestModule(unittest.TestCase):
         mock_document.next_number = 3
         mock_document.digits = 3
         # Act
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
         # Assert
         self.assertEqual(6, mock_add_item.call_count)
 
@@ -311,7 +311,7 @@ class TestModule(unittest.TestCase):
         data = [['req1', 'text1', '', 'val1'],
                 ['invalid']]
         mock_document = Mock()
-        importer._itemize(is_auto_save=True, header=header, data=data, document=mock_document)
+        importer._itemize(should_auto_save=True, header=header, data=data, document=mock_document)
 
 
 class TestModuleCreateDocument(unittest.TestCase):
@@ -332,8 +332,8 @@ class TestModuleCreateDocument(unittest.TestCase):
     @patch('doorstop.core.tree.Tree.create_document')
     def test_create_document(self, mock_new):
         """Verify a new document can be created for import."""
-        importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=self.mock_tree)
-        mock_new.assert_called_once_with(is_auto_save=True, path=self.path, value=self.prefix, parent=None)
+        importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=self.mock_tree)
+        mock_new.assert_called_once_with(should_auto_save=True, path=self.path, value=self.prefix, parent=None)
 
     @patch('doorstop.core.tests.util._get_tree')
     @patch('doorstop.core.tree.Tree.create_document')
@@ -342,34 +342,34 @@ class TestModuleCreateDocument(unittest.TestCase):
         mock_document = Mock()
         mock_document.root = None
         tree = Tree(document=mock_document)
-        importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, tree=tree)
+        importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, tree=tree)
         self.assertFalse(mock_get_tree.called)
-        mock_new.assert_called_once_with(is_auto_save=True, path=self.path, value=self.prefix, parent=None)
+        mock_new.assert_called_once_with(should_auto_save=True, path=self.path, value=self.prefix, parent=None)
         self.assertIn(mock_document, tree)
 
     @patch('doorstop.core.tree.Tree.create_document')
     def test_create_document_with_parent(self, mock_new):
         """Verify a new document can be created for import with a parent."""
-        importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, parent=self.parent, tree=_get_tree())
+        importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, parent=self.parent, tree=_get_tree())
         mock_new.assert_called_once_with(path=self.path, value=self.prefix,
-                                         parent=self.parent, is_auto_save=True)
+                                         parent=self.parent, should_auto_save=True)
 
     @patch('doorstop.core.tree.Tree.create_document',
            Mock(side_effect=DoorstopError))
     def test_create_document_already_exists(self):
         """Verify non-parent import exceptions are re-raised."""
         self.assertRaises(DoorstopError,
-                          importer.create_document, is_auto_save=True, prefix=self.prefix, path=self.path, tree=self.mock_tree)
+                          importer.create_document, should_auto_save=True, prefix=self.prefix, path=self.path, tree=self.mock_tree)
 
     @patch('doorstop.core.tree.Tree.create_document',
            Mock(side_effect=DoorstopError))
     @patch('doorstop.core.document.Document.new')
     def test_create_document_unknown_parent(self, mock_new):
         """Verify documents can be created for import with unknown parents."""
-        importer.create_document(is_auto_save=True, prefix=self.prefix, path=self.path, parent=self.parent, tree=_get_tree())
+        importer.create_document(should_auto_save=True, prefix=self.prefix, path=self.path, parent=self.parent, tree=_get_tree())
         mock_new.assert_called_once_with(tree=self.mock_tree,
                                          path=self.path, root=self.root, prefix=self.prefix,
-                                         parent=self.parent, is_auto_save=True)
+                                         parent=self.parent, should_auto_save=True)
 
 
 @patch('doorstop.core.item.Item', MockItem)
@@ -407,10 +407,10 @@ class TestModuleAddItem(unittest.TestCase):
     @patch('doorstop.core.item.Item.new')
     def test_add_item(self, mock_new):
         """Verify an item can be imported into an existing document."""
-        importer.add_item(is_auto_save=True, document=self.mock_document, uid=self.uid)
+        importer.add_item(should_auto_save=True, document=self.mock_document, uid=self.uid)
         mock_new.assert_called_once_with(tree=self.mock_document.tree, document=self.mock_document,
                                          path=self.mock_document.path, root=self.mock_document.root, uid=self.uid,
-                                         is_auto_save=False)
+                                         should_auto_save=False)
 
     @patch('doorstop.core.tests.util._get_tree')
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
@@ -422,18 +422,18 @@ class TestModuleAddItem(unittest.TestCase):
         mock_document.path = self.path
         mock_tree = mock_document.tree
         mock_document.tree._item_cache = MagicMock()
-        importer.add_item(is_auto_save=True, uid=self.uid, document=mock_document)
+        importer.add_item(should_auto_save=True, uid=self.uid, document=mock_document)
         self.assertFalse(mock_get_tree.called)
         mock_new.assert_called_once_with(tree=mock_tree, document=mock_document,
                                          path=self.path, root=self.root, uid=self.uid,
-                                         is_auto_save=False)
+                                         should_auto_save=False)
 
     @patch('doorstop.settings.ADDREMOVE_FILES', False)
     @patch('doorstop.core.tree.Tree.find_document', mock_find_document)
     def test_add_item_with_attrs(self):
         """Verify an item can be imported with attributes."""
         attrs = {'text': "The item text.", 'ext': "External attrubte."}
-        item = importer.add_item(is_auto_save=True, document=self.mock_document, uid=self.uid, attrs=attrs)
+        item = importer.add_item(should_auto_save=True, document=self.mock_document, uid=self.uid, attrs=attrs)
         self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
         self.assertEqual(attrs['ext'], item.get('ext'))

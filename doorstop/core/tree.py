@@ -198,7 +198,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def create_document(self, is_auto_save, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def create_document(self, should_auto_save, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         :param path: directory path for the new document
@@ -216,7 +216,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         prefix = Prefix(value)
         document = Document.new(tree=self,
-                                path=path, root=self.root, prefix=prefix, is_auto_save=is_auto_save, sep=sep,
+                                path=path, root=self.root, prefix=prefix, should_auto_save=should_auto_save, sep=sep,
                                 digits=digits, parent=parent)
         try:
             self._place(document)
