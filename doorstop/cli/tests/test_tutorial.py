@@ -44,11 +44,15 @@ class TestBase(unittest.TestCase):
         shutil.rmtree(self.temp)
 
     @staticmethod
-    def doorstop(args=""):
+    def doorstop(args="") -> None:
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        theCompletedProcess = subprocess.call(cmd, shell=True)
+        try:
+            theCompletedProcess = subprocess.run(cmd, shell=True).returncode
+        except AttributeError:
+            # This is needed for python 3.4
+            theCompletedProcess = subprocess.call(cmd, shell=True)
         if theCompletedProcess != 0:
             raise AssertionError("command failed: doorstop {}\n".format(args))
 
