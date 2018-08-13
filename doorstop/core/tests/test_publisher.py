@@ -226,6 +226,22 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, text)
 
+    
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_multi_line_heading_to_markdown_no_heading_levels(self):
+        """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
+        item = MockItemAndVCS('path/to/req3.yml',
+                              _file=("links: [sys3]" + '\n'
+                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                                     "level: 1.1.0" + '\n'
+                                     "normative: false"))
+        expected = "## Heading {#req3 }\nThis section describes publishing.\n\n"
+        lines = publisher.publish_lines(item, '.md', linkify=True)
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_item_normative(self):
         """Verify text can be published from an item (normative)."""
