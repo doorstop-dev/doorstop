@@ -318,7 +318,7 @@ def _lines_markdown(obj, **kwargs):
                     h=heading, lev=level,
                     t=text_lines[0] if text_lines else '')
             else:
-                standard = "{h} {t}".format(h=heading, t=item.text)
+                standard = "{h} {t}".format(h=heading, t=text_lines[0] if text_lines else '')
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
