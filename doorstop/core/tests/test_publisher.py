@@ -226,7 +226,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, text)
 
-    
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_multi_line_heading_to_markdown_no_heading_levels(self):
         """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
