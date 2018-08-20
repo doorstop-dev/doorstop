@@ -878,7 +878,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         pass  # the item is deleted in the decorated method
 
 
-class UnknownItem(object):
+class UnknownItem:
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path
