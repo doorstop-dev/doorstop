@@ -12,6 +12,7 @@ sappy = "*"
 
 # Linters
 pylint = "*"
+typing = "*" # pylint dependency for Python less than 3.5
 pycodestyle = "*"
 pydocstyle = "*"
 

@@ -61,7 +61,7 @@ class Prefix(str):
         return str(value).split(' ')[0] if value else ''
 
 
-class UID(object):
+class UID:
     """Unique item ID built from document prefix and number."""
 
     UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
@@ -282,7 +282,7 @@ class Text(str):
             return ''
 
 
-class Level(object):
+class Level:
     """Variable-length numerical outline level values.
 
     Level values cannot contain zeros. Zeros are reserved for
@@ -503,7 +503,7 @@ class Level(object):
         return Level(self.value)
 
 
-class Stamp(object):
+class Stamp:
     """Hashed content for change tracking.
 
     :param values: one of the following:
@@ -564,7 +564,7 @@ class Stamp(object):
         return md5.hexdigest()
 
 
-class Reference(object):
+class Reference:
     """External reference to a file or lines in a file."""
 
 

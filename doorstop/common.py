@@ -54,7 +54,7 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
         super().__init__(*args, max_help_position=40, **kwargs)
 
 
-class WarningFormatter(logging.Formatter, object):
+class WarningFormatter(logging.Formatter):
     """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):

@@ -10,7 +10,7 @@ except ImportError as _exc:  # pragma: no cover (manual test)
     ttk = Mock()
 
 
-class HyperlinkManager(object):
+class HyperlinkManager:
     def __init__(self, text) -> None:
 
         self.text = text

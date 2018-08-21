@@ -163,6 +163,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_item.uid = 'KNOWN-001'
         mock_item.document = Mock()
         mock_item.document.prefix = 'KNOWN'
+        mock_item.header = None
         mock_item_unknown = Mock(spec=['uid'])
         mock_item_unknown.uid = 'UNKNOWN-002'
         mock_trace = [

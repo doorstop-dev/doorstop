@@ -7,6 +7,8 @@
     + Converted document outline to a tree view.
     + Made documents navigable via clicking links.
     + Added an icon for Linux and Windows.
+- Fixed duplicate headings when publishing. ([@guille-r](https://github.com/jacebrowning/doorstop/pull/302))
+- Added Python 3.7 support.
 
 ## 1.4 (2017/10/22)
 
