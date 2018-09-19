@@ -33,6 +33,7 @@ run: install
 
 .PHONY: demo
 demo: install
+	pipenv run python setup.py develop
 	pipenv run python $(PACKAGE)/cli/tests/test_tutorial.py
 
 # SYSTEM DEPENDENCIES #########################################################
