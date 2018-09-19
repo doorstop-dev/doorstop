@@ -15,7 +15,7 @@ pages:
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
-- Graphical Interface: gui/coming-soon.md
+- Graphical Interface: gui/overview.md
 - Scripting Interface: api/scripting.md
 - Item reference: reference/items.md
 - Examples: examples.md
