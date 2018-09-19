@@ -15,7 +15,6 @@ MAX_VERBOSITY = 4  # maximum verbosity level implemented
 
 
 def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
-    """New logging level, TRACE."""
     if self.isEnabledFor(logging.DEBUG - 1):
         self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
 
@@ -55,7 +54,7 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
         super().__init__(*args, max_help_position=40, **kwargs)
 
 
-class WarningFormatter(logging.Formatter, object):
+class WarningFormatter(logging.Formatter):
     """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):
@@ -221,6 +220,6 @@ def delete_contents(dirname):
             try:
                 os.remove(os.path.join(dirname, file))
             except FileExistsError:
-                log.warning("Two assets folders have files or directories " +
+                log.warning("Two assets folders have files or directories "
                             "with the same name")
                 raise

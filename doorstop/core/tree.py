@@ -21,10 +21,10 @@ ASCII = 'ascii'
 BOX = {'end': {UTF8: '│   ',
                CP437: '┬   ',
                ASCII: '|   '},
-       'tee': {UTF8: '├ ─ ',
+       'tee': {UTF8: '├── ',
                CP437: '├── ',
                ASCII: '+-- '},
-       'bend': {UTF8: '└ ─ ',
+       'bend': {UTF8: '└── ',
                 CP437: '└── ',
                 ASCII: '+-- '},
        'pipe': {UTF8: '│   ',
@@ -457,7 +457,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         def by_uid(row):
-            """Helper function to sort rows by UID."""
             row2 = []
             for item in row:
                 if item:

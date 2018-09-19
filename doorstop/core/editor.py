@@ -1,4 +1,4 @@
-""""Functions to edit documents and items."""
+"""Functions to edit documents and items."""
 
 import os
 import sys
@@ -79,8 +79,7 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
             raise DoorstopError("no default editor for: {}".format(path))
 
     # Return the process if it's still running
-    if process.returncode is None:
-        return process
+    return process if process.returncode is None else None
 
 
 def _call(args):  # pragma: no cover (integration test)

@@ -192,3 +192,39 @@ In this example, an extended attribute ```invented-by``` is added to the item.
 invented-by: some.guy@email.com
 ```
 
+
+## Beta Features
+### header
+
+This is **different** from _heading_. If you want a Heading item, following instructions for Heading above.
+
+To enable, use flag `-b header` 
+
+Gives a header (i.e. title) for the item. It will be printed alongside the item UID when published as HTML and Markdown. Links will also include the header text. 
+
+
+#### Example: Header
+
+TST007.yml
+```yaml
+level: 1.5
+normative: true
+links:
+- REQ023: null
+header: |
+    Gradual Temperature Drop Test
+text: |
+    Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes. 
+    Ensure the system performs a safe shutdown when -15 degrees Celsius is reached. 
+```
+
+When this item is published, Doorstop will place the item's Header next to its UID. 
+
+```
+TST007 Gradual Temperature Drop Test
+  Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes. 
+  Ensure the system performs a safe shutdown when -15 degrees Celsius is reached. 
+  
+  Parent Item: REQ023 Temperature Interlock
+```
+

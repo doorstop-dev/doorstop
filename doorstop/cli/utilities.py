@@ -12,7 +12,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class capture(object):  # pylint: disable=R0903
+class capture:  # pylint: disable=R0903
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 
     def __init__(self, catch=True):
@@ -31,6 +31,7 @@ class capture(object):  # pylint: disable=R0903
             if self.catch:
                 log.error(exc_value)
                 return True
+        return False
 
 
 def configure_logging(verbosity=0):
@@ -106,6 +107,10 @@ def configure_settings(args):
         settings.WARN_ALL = args.warn_all is True
     if args.error_all is not None:
         settings.ERROR_ALL = args.error_all is True
+    if args.beta is not None:
+        print(args.beta)
+        if 'header' in args.beta:
+            settings.ENABLE_HEADERS = True
 
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:

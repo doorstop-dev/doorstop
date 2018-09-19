@@ -18,6 +18,7 @@ pages:
 - Graphical Interface: gui/coming-soon.md
 - Scripting Interface: api/scripting.md
 - Item reference: reference/items.md
+- Examples: examples.md
 - About:
   - Release Notes: about/changelog.md
   - Contributing: about/contributing.md

@@ -1,32 +1,44 @@
 [[source]]
-url = "https://pypi.python.org/simple"
+
+url = "https://pypi.org/simple"
 verify_ssl = true
+name = "pypi"
 
 [packages]
+
 sappy = "*"
 
 [dev-packages]
+
+# Linters
+pylint = "*"
+typing = "*" # pylint dependency for Python less than 3.5
 pycodestyle = "*"
-pydocstyle = "~=1.1.1"
-nose = "*"
+pydocstyle = "*"
+
+# Testing
+nose = "~=1.3"
 nose-cov = "*"
 nose-capturestderr = "*"
 nose-show-skipped = "*"
 expecter = "*"
-coverage = "*"
-"coverage.space" = ">=0.7.2"
+
+# Reports
+coverage-space = "*"
+
+# Documentation
 mkdocs = "*"
 docutils = "*"
+pygments = "*"
+
+# Build
 wheel = "*"
+pyinstaller = "*"
+
+# Release
 twine = "*"
+
+# Tooling
 sniffer = "*"
-Pygments = "*"
-PyInstaller = "*"
-
-[dev-packages.pylint]
-git = "https://github.com/PyCQA/pylint.git"
-ref = "e0fdd25c214e60bef10fbaa46252f4aaa74de8c2"
-
-[dev-packages.astroid]
-git = "https://github.com/PyCQA/astroid.git"
-ref = "4e7d9fee4080d2e0db67a3e0463be8b196e56a95"
+pync = { version = "<2.0", sys_platform = "== 'darwin'" }
+MacFSEvents = { version = "*", sys_platform = "== 'darwin'" }

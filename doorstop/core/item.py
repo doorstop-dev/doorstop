@@ -20,10 +20,9 @@ log = common.logger(__name__)
 
 
 def requires_tree(func):
-    """Decorator for methods that require a tree reference."""
+    """Require a tree reference."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method that requires a tree reference."""
         if not self.tree:
             name = func.__name__
             log.critical("`{}` can only be called with a tree".format(name))
@@ -33,10 +32,9 @@ def requires_tree(func):
 
 
 def requires_document(func):
-    """Decorator for methods that require a document reference."""
+    """Require a document reference."""
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        """Wrapped method that requires a document reference."""
         if not self.document:
             name = func.__name__
             msg = "`{}` can only be called with a document".format(name)
@@ -58,6 +56,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REVIEWED = Stamp()
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
+    DEFAULT_HEADER = Text()
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -97,6 +96,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
+        if settings.ENABLE_HEADERS:
+            self._data['header'] = Item.DEFAULT_HEADER
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -116,7 +117,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_item
     def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
-        """Internal method to create a new item.
+        """Create a new item.
 
         :param tree: reference to the tree that contains this item
         :param document: reference to document that contains this item
@@ -175,6 +176,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 value = value.strip()
             elif key == 'links':
                 value = set(UID(part) for part in value)
+            elif key == 'header':
+                value = Text(value)
             else:
                 if isinstance(value, str):
                     value = Text(value)
@@ -208,6 +211,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 value = value.yaml
             elif key == 'text':
                 value = value.yaml
+            elif key == 'header':
+                # Handle for case if the header is undefined in YAML
+                if hasattr(value, 'yaml'):
+                    value = value.yaml
+                else:
+                    value = ''
             elif key == 'ref':
                 value = value.strip()
             elif key == 'links':
@@ -392,6 +401,22 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = Text(value)
+
+    @property
+    @auto_load
+    def header(self):
+        """Get the item's header."""
+        if settings.ENABLE_HEADERS:
+            return self._data['header']
+        return None
+
+    @header.setter
+    @auto_save
+    @auto_load
+    def header(self, value):
+        """Set the item's header."""
+        if settings.ENABLE_HEADERS:
+            self._data['header'] = Text(value)
 
     @property
     @auto_load
@@ -853,7 +878,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         pass  # the item is deleted in the decorated method
 
 
-class UnknownItem(object):
+class UnknownItem:
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path
