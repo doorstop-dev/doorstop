@@ -280,7 +280,13 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         :return: text to write to a file
 
         """
-        return yaml.dump(data, default_flow_style=False, allow_unicode=True)
+        text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
+
+        # yaml.dump always ends lines with '\n'... make the dump os-specific
+        if os.linesep != '\n':
+            text.replace('\n', os.linesep)
+
+        return text
 
     # properties #############################################################
 
