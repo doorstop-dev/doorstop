@@ -284,7 +284,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
 
         # yaml.dump always ends lines with '\n'... make the dump os-specific
         if os.linesep != '\n':
-            text.replace('\n', os.linesep)
+            text = text.replace('\n', os.linesep)
 
         return text
 
