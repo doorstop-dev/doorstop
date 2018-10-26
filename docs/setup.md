@@ -35,12 +35,12 @@ These warnings come from Git as a sub-process of the main Doorstop processes,
 so the solution to this problem is a Git setting.
 
 **Recommendation:**\
-Add the following `.gitattributes`
+Add the following to your `.gitattributes` file:
 
 ```
-*.yml core.safeclrf=false
+*.yml text eol=lf
 ```
 
 From [Git's documentation](https://git-scm.com/docs/gitattributes):
 
-> If `core.safecrlf` is set to "true" or "warn", Git verifies if the conversion is reversible for the current setting of `core.autocrlf`.
+> This setting forces Git to normalize line endings [for \*.yml files] to LF on checkin and prevents conversion to CRLF when the file is checked out.
