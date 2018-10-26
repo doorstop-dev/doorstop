@@ -9,6 +9,7 @@ extra_javascript: []
 
 pages:
 - Home: index.md
+- Setup: setup.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
   - Reordering Documents: cli/reordering.md
