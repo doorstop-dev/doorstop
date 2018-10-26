@@ -4,7 +4,7 @@ Doorstop can require different settings for different systems.
 This page contains recommendations for setting up your repository to
 accomodate a variety of systems.
 
-**Intended Audience:** CVS Repository Administrator
+**Intended Audience:** Version Control System (VCS) Repository Administrator
 
 ## Windows
 
