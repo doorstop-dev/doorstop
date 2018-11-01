@@ -12,6 +12,7 @@ from doorstop.core import publisher, vcs, document
 
 log = common.logger(__name__)
 
+EDITOR = os.environ.get('EDITOR')
 
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
@@ -180,8 +181,9 @@ def _edit(subs, shared):
                        help="edit document as exported XLSX")
     required = sub.add_argument_group('required arguments')
     required.add_argument('-T', '--tool', metavar='PROGRAM',
-                          help="text editor to open the document item",
-                          required=True)
+                          default=EDITOR,
+                          required=not bool(EDITOR),
+                          help="text editor to open the document item (only required if $EDITOR is not found in environment)")
 
 
 def _reorder(subs, shared):
@@ -196,6 +198,7 @@ def _reorder(subs, shared):
     group.add_argument('-m', '--manual', action='store_true',
                        help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                     default=EDITOR,
                      help="text editor to open the document index")
 
 
