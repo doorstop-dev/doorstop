@@ -547,7 +547,7 @@ def check(ext):
     :return: lines generator if available
 
     """
-    exts = ', '.join(ext for ext in FORMAT_LINES)
+    exts = ', '.join(e for e in FORMAT_LINES)
     msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
 
