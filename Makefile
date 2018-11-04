@@ -79,7 +79,7 @@ pydocstyle: install
 
 NOSE := pipenv run nosetests
 COVERAGE := pipenv run coverage
-COVERAGE_SPACE := pipenv run coverage.space
+COVERAGESPACE := pipenv run coveragespace
 
 RANDOM_SEED ?= $(shell date +%s)
 
@@ -94,7 +94,7 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install .clean-test
 	$(NOSE) $(PACKAGE) $(NOSE_OPTIONS)
-	$(COVERAGE_SPACE) $(REPOSITORY) unit
+	$(COVERAGESPACE) $(REPOSITORY) unit
 
 .PHONY: test-int
 test-int: test-all
@@ -102,7 +102,7 @@ test-int: test-all
 .PHONY: test-all
 test-all: install .clean-test
 	TEST_INTEGRATION=true $(NOSE) $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
-	$(COVERAGE_SPACE) $(REPOSITORY) overall
+	$(COVERAGESPACE) $(REPOSITORY) overall
 
 .PHONY: read-coverage
 read-coverage:
