@@ -428,8 +428,8 @@ def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
         if item.header:
-            return "[{u} {h}]({p}.html#{u})".format(u=item.uid, h=item.header, p=item.document.prefix)
-        return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
+            return "[{u} {h}]({p}.md#{u})".format(u=item.uid, h=item.header, p=item.document.prefix)
+        return "[{u}]({p}.md#{u})".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
