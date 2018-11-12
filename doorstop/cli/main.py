@@ -182,7 +182,6 @@ def _edit(subs, shared):
     required = sub.add_argument_group('required arguments')
     required.add_argument('-T', '--tool', metavar='PROGRAM',
                           default=EDITOR,
-                          required=not bool(EDITOR),
                           help="text editor to open the document item (only required if $EDITOR is not found in environment)")
 
 
