@@ -14,6 +14,7 @@ log = common.logger(__name__)
 
 EDITOR = os.environ.get('EDITOR')
 
+
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
     from doorstop import CLI, VERSION, DESCRIPTION
