@@ -1,16 +1,12 @@
-# Setup
+## Editor
 
-Doorstop can require different settings for different systems.
-This page contains recommendations for setting up your repository to
-accomodate a variety of systems.
+Doorstop will open files using the editor specified by the `$EDITOR` environment variable. If that is unset, it will attempt to open files in the default editor for each file type.
 
-**Intended Audience:** Version Control System (VCS) Repository Administrator
+## Git
 
-## Windows
+### Windows
 
-### Git repository
-
-Windows deals with line-endings differently to most systems, favouring `CRLF` (`\r\n`) over the more traditional `LF` (`\n`).
+Windows deals with line-endings differently to most systems, favoring `CRLF` (`\r\n`) over the more traditional `LF` (`\n`).
 
 **Symptom:**\
 The `YAML` files saved and revision-controlled by Doorstop have `LF`
