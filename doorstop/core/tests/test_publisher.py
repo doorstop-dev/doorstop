@@ -230,7 +230,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_multi_line_heading_to_markdown_no_heading_levels(self):
         """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
-        item = MockItemAndVCS('path/to/req3.yml',
+        item = MockItemAndVCS('path/to/req3.yml', should_auto_save=True,
                               _file=("links: [sys3]" + '\n'
                                      "text: 'Heading\n\nThis section describes publishing.'" + '\n'
                                      "level: 1.1.0" + '\n'
