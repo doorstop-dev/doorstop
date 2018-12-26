@@ -2,7 +2,7 @@
 
 from typing import Optional
 from typing import Callable
-from typing import List  # noqa:
+from typing import List  # noqa: F401 # pylint: disable=unused-import
 
 from doorstop import common
 
