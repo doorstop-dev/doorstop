@@ -2,6 +2,7 @@
 
 from typing import Optional
 from typing import Callable
+from typing import List
 
 from doorstop import common
 
@@ -12,14 +13,14 @@ from doorstop.gui.reducer import Reducer
 log = common.logger(__name__)
 
 
-class Store(object):
+class Store():
 
     @property
     def state(self) -> Optional[State]:
         return self.__state
 
     def __init__(self, reducer: Reducer, initial_state: Optional[State] = None) -> None:
-        self.__observer = []
+        self.__observer = []  # type: List[Callable[["Store"], None]]
         self.__state = initial_state
         self.__reducer = reducer
 

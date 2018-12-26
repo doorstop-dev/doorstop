@@ -12,7 +12,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class capture(object):  # pylint: disable=R0903
+class capture:  # pylint: disable=R0903
     """Context manager to catch :class:`~doorstop.common.DoorstopError`."""
 
     def __init__(self, catch=True):

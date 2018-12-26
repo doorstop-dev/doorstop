@@ -8,7 +8,7 @@ from doorstop.core.types import Prefix
 from doorstop.core.types import UID
 
 
-class Action(object): pass
+class Action(): pass
 
 
 class Action_ChangeProjectPath(Action):

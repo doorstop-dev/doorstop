@@ -6,7 +6,7 @@ from doorstop.core import build
 from doorstop.core import importer, exporter, builder, editor, publisher
 
 __project__ = 'Doorstop'
-__version__ = '1.5b3'
+__version__ = '1.6b1'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'

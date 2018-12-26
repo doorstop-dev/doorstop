@@ -12,7 +12,7 @@ from doorstop.core.types import UID
 from doorstop.common import DoorstopError
 
 
-class State(object):
+class State():
 
     @property
     def cwd(self) -> str:

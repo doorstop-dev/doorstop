@@ -45,6 +45,8 @@ settings:
 class TestDocument(unittest.TestCase):
     """Unit tests for the Document class."""
 
+    # pylint: disable=no-value-for-parameter
+
     def setUp(self):
         self.document = MockDocument(should_auto_save=True, path=FILES, root=ROOT)
 

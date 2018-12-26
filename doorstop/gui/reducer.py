@@ -47,7 +47,7 @@ from doorstop.core.item import Item
 from doorstop.common import DoorstopError
 
 
-class Reducer(object):
+class Reducer():
     def __init__(self) -> None:
         pass
 
@@ -125,7 +125,7 @@ class Reducer_Session(Reducer):
                 freshly_selected.extend(unchanged_selection)
                 result.session_selected_item = tuple([UID(aa) for aa in freshly_selected])
         elif isinstance(action, Action_ChangeSelectedLink):
-            new_selected_link = frozenset(set([x for x in result.session_selected_link]).union(action.selected_link) - action.unselected_link)
+            new_selected_link = frozenset({x for x in result.session_selected_link}.union(action.selected_link) - action.unselected_link)
             if new_selected_link != result.session_selected_link:
                 result = copy.deepcopy(result)
                 result.session_selected_link = new_selected_link

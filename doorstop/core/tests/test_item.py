@@ -28,7 +28,9 @@ text: ''
 
 
 class TestItem(unittest.TestCase):
-    """Unit tests for the Item class."""  # pylint: disable=W0212
+    """Unit tests for the Item class."""
+
+    # pylint: disable=protected-access,no-value-for-parameter
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')

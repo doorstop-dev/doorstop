@@ -12,7 +12,7 @@ from doorstop import settings
 log = common.logger(__name__)
 
 
-class BaseWorkingCopy(object, metaclass=ABCMeta):
+class BaseWorkingCopy(metaclass=ABCMeta):
     """Abstract base class for VCS working copies."""
 
     DIRECTORY = None  # special hidden directory for the working copy
