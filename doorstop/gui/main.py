@@ -258,10 +258,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 store.dispatch(Action_ChangeSelectedItem(event.widget.selection()))
 
             # Place widgets
-            widget.Label(frame, text="Document:").grid(row=0, column=0, columnspan=7, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Document:").grid(row=0, column=0, columnspan=8, sticky=tk.W, **kw_gp)
 
             combobox_documents = widget.Combobox(frame, state="readonly")
-            combobox_documents.grid(row=1, column=0, columnspan=7, **kw_gsp)
+            combobox_documents.grid(row=1, column=0, columnspan=8, **kw_gsp)
 
             # Display the information
             def refreshDocumentComboboxContent(store: Optional[Store]) -> None:
@@ -357,7 +357,7 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
             treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
             treeview_outline.bind("<Delete>", lambda event: store.dispatch(Action_RemoveSelectedItem()))
-            treeview_outline.grid(row=2, column=1, columnspan=6, **kw_gsp)
+            treeview_outline.grid(row=2, column=1, columnspan=7, **kw_gsp)
 
             if True:  # Level edit buttons
                 btn_Level_Dedent = widget.Button(frame, text="<", width=0, command=lambda: store.dispatch(Action_SelectedItem_Level_Dedent()))
@@ -391,12 +391,30 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
                 store.add_observer(lambda store: refresh_btn_add_item(store))
 
+            if True:  # Button edit item
+                def edit_selected_item() -> None:
+                    """Edit selected item with a text editor."""
+                    state = store.state if store else None
+                    if state is not None:
+                        item_uid = state.session_selected_item_principal
+                        project_tree = state.project_tree
+                        current_item = project_tree.find_item(item_uid) if project_tree else None
+                        current_item.edit()
+                btn_edit_item = widget.Button(frame, text="Edit Selected Item", command=edit_selected_item)
+                btn_edit_item.grid(row=3, column=6, sticky=tk.E, **kw_gp)
+
+                def refresh_btn_edit_item(store: Optional[Store]) -> None:
+                    state = store.state if store is not None else None
+                    btn_edit_item.config(state=tk.DISABLED if ((state is None) or (state.session_selected_item_principal is None)) else tk.NORMAL)
+
+                store.add_observer(lambda store: refresh_btn_edit_item(store))
+
             if True:  # Button remove item
                 def remove_selected_item() -> None:
                     """Remove selected item to the document."""
                     store.dispatch(Action_RemoveSelectedItem())
                 btn_remove_item = widget.Button(frame, text="Remove Selected Item", command=remove_selected_item)
-                btn_remove_item.grid(row=3, column=6, sticky=tk.E, **kw_gp)
+                btn_remove_item.grid(row=3, column=7, sticky=tk.E, **kw_gp)
 
                 def refresh_btn_remove_item(store: Optional[Store]) -> None:
                     state = store.state if store is not None else None

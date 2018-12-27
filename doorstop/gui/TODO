@@ -36,8 +36,6 @@ Need investigation, but the following may not be possible to implement:
  - Help > About
  - Help > GUI Help
  - Help > DoorStop project
- - Short cut (F1)
-- Add Raw Edit in text editor.
 - Add the possibility to add document.
 - Add the possibility to remove document.
 - Add a warning/issue list view.
