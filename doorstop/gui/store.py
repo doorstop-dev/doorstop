@@ -2,13 +2,14 @@
 
 from typing import Optional
 from typing import Callable
-from typing import List  # noqa  # pylint: disable=unused-import
-
+from typing import List
 from doorstop import common
 
 from doorstop.gui.action import Action
 from doorstop.gui.state import State
 from doorstop.gui.reducer import Reducer
+
+assert List  # This is to avoid False lint error about unused-import
 
 log = common.logger(__name__)
 
