@@ -80,7 +80,7 @@ setuptools.setup(
     ],
 
     install_requires=[
-        "PyYAML >= 3.10, < 6",
+        "PyYAML >= 5.1, < 6",
         "Markdown >= 2, < 3",
         "openpyxl >= 2.1, < 2.2",
         "bottle == 0.12.13",
