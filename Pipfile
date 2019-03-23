@@ -7,6 +7,7 @@ name = "pypi"
 [packages]
 
 sappy = "*"
+pyyaml = "~=5.1"
 
 [dev-packages]
 
