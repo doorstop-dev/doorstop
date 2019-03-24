@@ -189,7 +189,7 @@ class UID:
     def check(self):
         """Verify an UID is valid."""
         if self._exc:
-            raise self._exc
+            raise self._exc  # pylint: disable=raising-bad-type
 
     @staticmethod
     def split_uid(text):

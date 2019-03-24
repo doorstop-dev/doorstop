@@ -102,6 +102,8 @@ class TestModule(unittest.TestCase):
         self.assertEqual(expected_header, header)
         expected_data = [
             ['REQ001', '1.2.3', LOREM_IPSUM, '', 'SYS001\nSYS002:abc123', True, False, True, ''],
+            # pylint: disable=implicit-str-concat-in-sequence
+            # 'REF''123' is intentional to avoid matching the reference in this test file
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, ''],
             ['REQ004', '1.6', 'Hello, world!', '', '', True, False, True, ''],
             ['REQ002', '2.1', 'Hello, world!', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
@@ -127,6 +129,8 @@ class TestModule(unittest.TestCase):
         self.assertEqual(expected_header, header)
         expected_data = [
             ['REQ0555', '1.2.3', 'Hello, world!\n', '', 'SYS001,\nSYS002', True, False, False, ''],
+            # pylint: disable=implicit-str-concat-in-sequence
+            # 'REF''123' is intentional to avoid matching the reference in this test file
             ['REQ003', '1.4', 'Hello, world!\n', 'REF''123', 'REQ001', False, False, True, 'Some "quoted" text \'here\'.'],
             ['REQ004', '1.6', 'Hello, world!\n', '', '', False, True, True, ''],
             ['REQ002', '2.1', 'Hello, world!\n', '', '', True, False, True, ''],
@@ -164,6 +168,8 @@ class TestModule(unittest.TestCase):
         self.assertEqual(expected_header, header)
         expected_data = [
             ['REQ001', '1.2.3', LOREM_IPSUM, None, 'SYS001\nSYS002:abc123', True, False, True, None],
+            # pylint: disable=implicit-str-concat-in-sequence
+            # 'REF''123' is intentional to avoid matching the reference in this test file
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, None],
             ['REQ004', '1.6', 'Hello, world!', None, None, True, False, True, None],
             ['REQ002', '2.1', 'Hello, world!', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],

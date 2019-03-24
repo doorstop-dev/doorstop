@@ -2,6 +2,7 @@
 
 import os
 import sys
+import warnings
 
 import setuptools
 
@@ -14,6 +15,8 @@ def check_python_version():
     """Exit when the Python version is too low."""
     if sys.version < MINIMUM_PYTHON_VERSION:
         sys.exit("Python {0}+ is required.".format(MINIMUM_PYTHON_VERSION))
+    if sys.version < '3.5':
+        warnings.warn("Doorstop v1.6 will drop support for Python 3.4", DeprecationWarning)
 
 
 def read_package_variable(key, filename='__init__.py'):

@@ -875,7 +875,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @delete_item
     def delete(self, path=None):
         """Delete the item."""
-        pass  # the item is deleted in the decorated method
 
 
 class UnknownItem:
