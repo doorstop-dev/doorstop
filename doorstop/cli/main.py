@@ -154,10 +154,10 @@ def _add(subs, shared):
                            "Default editor can be set using the environment "
                            "variable EDITOR."))
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
-                      default=EDITOR,
-                      help=("text editor to open the document item (only"
-                            "required if $EDITOR is not found in"
-                            "environment). Useless option without --edit"))
+                     default=EDITOR,
+                     help=("text editor to open the document item (only"
+                           "required if $EDITOR is not found in"
+                           "environment). Useless option without --edit"))
 
 def _remove(subs, shared):
     """Configure the `doorstop remove` subparser."""
