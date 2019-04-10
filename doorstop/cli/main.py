@@ -149,7 +149,15 @@ def _add(subs, shared):
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
                      help="number of items to create")
-
+    sub.add_argument('--edit', action='store_true',
+                     help=("Open default editor to edit the added item. "
+                           "Default editor can be set using the environment "
+                           "variable EDITOR."))
+    sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                      default=EDITOR,
+                      help=("text editor to open the document item (only"
+                            "required if $EDITOR is not found in"
+                            "environment). Useless option without --edit"))
 
 def _remove(subs, shared):
     """Configure the `doorstop remove` subparser."""
