@@ -124,6 +124,10 @@ def run_add(args, cwd, _, catch=True):
             utilities.show("added item: {} ({})".format(item.uid,
                                                         item.relpath))
 
+        # Edit item if requested
+        if args.edit:
+            item.edit(tool=args.tool)
+
     if not success:
         return False
 
