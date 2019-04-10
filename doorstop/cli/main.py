@@ -159,6 +159,7 @@ def _add(subs, shared):
                            "required if $EDITOR is not found in"
                            "environment). Useless option without --edit"))
 
+
 def _remove(subs, shared):
     """Configure the `doorstop remove` subparser."""
     info = "remove an item file from a document directory"
