@@ -493,17 +493,30 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     @auto_save
-    def edit(self, tool=None):
+    def edit(self, tool=None, edit_all=True):
         """Open the item for editing.
 
         :param tool: path of alternate editor
+        :param edit_all: True to edit the whole item,
+            False to only edit the text.
 
         """
         # Lock the item
         if self.tree:
             self.tree.vcs.lock(self.path)
-        # Open in an editor
-        editor.edit(self.path, tool=tool)
+        # Edit the whole file in an editor
+        if edit_all:
+            editor.edit(self.path, tool=tool)
+        # Edit only the text part in an editor
+        else:
+            # Edit the text in a temporary file
+            edited_text = editor.edit_tmp_content(title=str(self.uid),
+                                                  original_content=str(self.text),
+                                                  tool=tool)
+            # Save the text in the actual item file
+            self.text = edited_text
+            self.save()
+
         # Force reloaded
         self._loaded = False
 

@@ -175,6 +175,10 @@ def _edit(subs, shared):
                           help=info, **shared)
     sub.add_argument('label',
                      help="item UID or document prefix to open for editing")
+    sub.add_argument('-a', '--all', action='store_true',
+                     help=("Edit the whole item with all its attributes. "
+                           "Without this option, only its text is opened for "
+                           "edition. Useless when editing a whole document."))
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-i', '--item', action='store_true',
                        help="indicates the 'label' is an item UID")
