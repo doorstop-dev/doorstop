@@ -294,8 +294,8 @@ class TestEdit(unittest.TestCase):
 
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
-        """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor']))
+        """Verify 'doorstop edit' can be called with an item (all)."""
+        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor', '--all']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
         mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
