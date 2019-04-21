@@ -30,7 +30,7 @@ coveragespace = "*"
 mkdocs = "*"
 docutils = "*"
 pygments = "*"
-markdown = "<3"
+markdown = "*"
 
 # Build
 wheel = "*"

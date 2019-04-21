@@ -7,7 +7,7 @@ theme: readthedocs
 extra_css: []
 extra_javascript: []
 
-pages:
+nav:
 - Home: index.md
 - Setup: setup.md
 - Command-line Interface:
