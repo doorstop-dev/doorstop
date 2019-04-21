@@ -188,7 +188,7 @@ def run_edit(args, cwd, error, catch=True):
 
         # edit it
         if item:
-            item.edit(tool=args.tool)
+            item.edit(tool=args.tool, edit_all=args.all)
         else:
             _export_import(args, cwd, error, document, ext)
 
