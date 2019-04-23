@@ -1,7 +1,7 @@
 # Overview
 
 Doorstop items are files formatted using YAML. When a new item is added using
-```doorstop add```, Doorstop will create a YAML file and populate it with all
+`doorstop add`, Doorstop will create a YAML file and populate it with all
 required attributes (key-value pairs).
 
 Example item:
@@ -68,7 +68,7 @@ item has not yet been reviewed. Doorstop will use this to detect unreviewed
 changes to an item by comparing the current item fingerprint to the last
 reviewed fingerprint.
 
-You should not calculate this value manually, use ```doorstop review```.
+You should not calculate this value manually, use `doorstop review`.
 
 
 ### links
@@ -76,7 +76,7 @@ You should not calculate this value manually, use ```doorstop review```.
 A list of links to parent item(s). A link indicates a relationship between two
 items in the document tree.
 
-In the following example, ```REQ001``` is a parent to the item.
+In the following example, `REQ001` is a parent to the item.
 
 ```yaml
 links:
@@ -122,7 +122,7 @@ keyword. If the keyword is found in multiple lines or files, the first found
 will be used.
 
 A file is considered a text-file unless its file extension is listed in
-```SKIP_EXTS``` (settings.py).
+`SKIP_EXTS` (settings.py).
 
 #### Example: Reference keyword
 ```yaml
@@ -186,7 +186,7 @@ application through the REST interface or the Python API.
 
 #### Example:
 
-In this example, an extended attribute ```invented-by``` is added to the item.
+In this example, an extended attribute `invented-by` is added to the item.
 
 ```yaml
 invented-by: some.guy@email.com
