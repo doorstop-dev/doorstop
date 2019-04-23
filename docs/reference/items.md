@@ -57,9 +57,9 @@ Indicates if the item is normative (true) or non-normative (false).
 Indicates the presentation order within a document. A level of 1.1 will display
 above level 1.2 and 1.1.5 displays below 1.1.2.
 
-If the level ends with .0 and the item is non-normative, Doorstop will treat the
-item as a document heading. See the [text](items.md#text)-section for an
-example.
+If the level ends with .0, Doorstop will treat the item as a document heading.
+A subtle difference occurs in function of the normative attribute. See the 
+[text](items.md#text)-section for more details and an example.
 
 ### reviewed
 
@@ -149,7 +149,7 @@ Item text. This is the main body of the item. Doorstop treats the value as
 markdown to support rich text, images and tables. To specify a multi-line text,
 use block scalar types as specified by the YAML standard.
 
-#### Example: Heading
+#### Example: Non-normative heading
 
 REQ001.yml
 ```yaml
@@ -164,7 +164,7 @@ text: |
 When this item is published, Doorstop will create a new heading with the text
 "1.1.0 This is the heading" and put the remaining text into its body.
 
-#### Example: Normative item
+#### Example: Normative heading
 
 REQ001.yml
 ```yaml

@@ -3,6 +3,7 @@
 ## 1.6 (unreleased)
 
 - Updated `edit` and `reorder` commands to use `$EDITOR` ([@aars](https://github.com/jacebrowning/doorstop/pull/316)
+⁻ Updated documentation about headings to avoid confusion.
 
 ## 1.5 (2018-09-19)
 
