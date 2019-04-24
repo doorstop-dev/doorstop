@@ -2,23 +2,27 @@
 
 Documents can be exported for editing or to exchange with other systems:
 
-    $ doorstop export TST
-    TST001:
-      active: true
-      dervied: false
-      level: 1
-      links:
-      - REQ001
-      normative: true
-      ref: ''
-      text: |
-        Verify the foobar will foo and bar.
+```sh
+$ doorstop export TST
+TST001:
+  active: true
+  dervied: false
+  level: 1
+  links:
+  - REQ001
+  normative: true
+  ref: ''
+  text: |
+    Verify the foobar will foo and bar.
+```
 
 Or a file can be created using one of the supported extensions:
 
-    $ doorstop export TST path/to/tst.csv
-    exporting TST to path/to/tst.csv...
-    exported: path/to/tst.csv
+```sh
+$ doorstop export TST path/to/tst.csv
+exporting TST to path/to/tst.csv...
+exported: path/to/tst.csv
+```
 
 Supported formats:
 
@@ -31,4 +35,6 @@ Supported formats:
 
 Items can be created/updated from the export formats:
 
-    $ doorstop import path/to/tst.csv TST
+```sh
+$ doorstop import path/to/tst.csv TST
+```

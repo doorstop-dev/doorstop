@@ -2,7 +2,7 @@
 
 Individual documents can be displayed:
 
-```
+```sh
 $ doorstop publish TST
 ```
 
@@ -10,7 +10,7 @@ $ doorstop publish TST
 
 The collection of documents can be published as a webpage:
 
-```
+```sh
 $ doorstop publish all ./dist/
 ```
 
@@ -18,8 +18,10 @@ $ doorstop publish all ./dist/
 
 Or a file can be created using one of the supported extensions:
 
-    $ doorstop publish TST path/to/tst.md
-    publishing TST to path/to/tst.md...
+```sh
+$ doorstop publish TST path/to/tst.md
+publishing TST to path/to/tst.md...
+```
 
 Supported formats:
 
