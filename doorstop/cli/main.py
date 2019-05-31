@@ -330,6 +330,7 @@ def _publish(subs, shared):
     sub.add_argument('--no-levels', choices=['all', 'body'],
                      help="do not include levels on heading and non-heading or non-heading items")
     sub.add_argument('--template', help="template file", default=publisher.HTMLTEMPLATE)
+    sub.add_argument('--no-assets', action='store_true', help="do not copy default doorstop assets. This can be useful to customize your own assets.", default=publisher.DO_NOT_COPY_ASSETS)
 
 
 if __name__ == '__main__':  # pragma: no cover (manual test)

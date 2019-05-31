@@ -21,6 +21,7 @@ EXTENSIONS = (
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
+DO_NOT_COPY_ASSETS = False
 INDEX = 'index.html'
 
 log = common.logger(__name__)
@@ -59,19 +60,23 @@ def publish(obj, path, ext=None, linkify=None, index=None,
     else:
         assets_dir = os.path.join(os.path.dirname(path), Document.ASSETS)  # path is a filename
 
-    if os.path.isdir(assets_dir):
-        log.info('Deleting contents of assets directory %s', assets_dir)
-        common.delete_contents(assets_dir)
-    else:
-        os.makedirs(assets_dir)
 
-    # If publish html and then markdown ensure that the html template are still available
-    if not template:
-        template = HTMLTEMPLATE
-    template_assets = os.path.join(os.path.dirname(__file__), 'files', 'assets')
-    if os.path.isdir(template_assets):
-        log.info("Copying %s to %s", template_assets, assets_dir)
-        common.copy_dir_contents(template_assets, assets_dir)
+    if not kwargs.get("no_assets", DO_NOT_COPY_ASSETS):
+        if os.path.isdir(assets_dir):
+            log.info('Deleting contents of assets directory %s', assets_dir)
+            common.delete_contents(assets_dir)
+        else:
+            os.makedirs(assets_dir)
+
+        # If publish html and then markdown ensure that the html template are still available
+        if not template:
+            template = HTMLTEMPLATE
+        template_assets = os.path.join(os.path.dirname(__file__), 'files', 'assets')
+        if os.path.isdir(template_assets):
+            log.info("Copying %s to %s", template_assets, assets_dir)
+            common.copy_dir_contents(template_assets, assets_dir)
+
+    kwargs.pop('no_assets', None)
 
     # Publish documents
     count = 0

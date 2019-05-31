@@ -498,6 +498,9 @@ def run_publish(args, cwd, error, catch=True):
     if args.width:
         kwargs['width'] = args.width
 
+    if args.no_assets:
+        kwargs['no_assets'] = args.no_assets
+
     # Write to output file(s)
     if args.path:
         path = os.path.abspath(os.path.join(cwd, args.path))
