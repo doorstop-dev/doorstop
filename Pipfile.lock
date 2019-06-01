@@ -413,6 +413,14 @@
             ],
             "version": "==2.8.0"
         },
+        "python-markdown-math": {
+            "hashes": [
+                "sha256:c68d8cb9695cb7b435484403dc18941d1bad0ff148e4166d9417046a0d5d3022",
+                "sha256:d443e264cf063623a5f02b0c9730867e5172b31d49967da424ed3457c25b2848"
+            ],
+            "index": "pypi",
+            "version": "==0.6"
+        },
         "python-termstyle": {
             "hashes": [
                 "sha256:6faf42ba42f2826c38cf70dacb3ac51f248a418e48afc0e36593df11cf3ab1d2",
