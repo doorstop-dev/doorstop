@@ -11,4 +11,10 @@ SYS002:abc123",True,False,True,
 REQ003,1.4,Unicode: -40° ±1%,REF123,REQ001,True,False,True,
 REQ004,1.6,"Hello, world!",,,True,False,True,
 REQ002,2.1,"Hello, world!",,,True,False,True,b5fbcc355112791bbcd2ea881c7c5f81
-REQ2-001,2.1,"Hello, world!",,REQ001,True,False,True,
+REQ2-001,2.1,"Hello, world!
+
+Test Math Expressions in Latex Style:
+
+Inline Style 1: $a \ne 0$
+Inline Style 2: \(ax^2 + bx + c = 0\)
+Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$",,REQ001,True,False,True,

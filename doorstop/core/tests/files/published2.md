@@ -31,5 +31,11 @@ Hello, world!
 
 Hello, world!
 
+Test Math Expressions in Latex Style:
+
+Inline Style 1: $a \ne 0$
+Inline Style 2: \(ax^2 + bx + c = 0\)
+Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+
 *Links: REQ001*
 
