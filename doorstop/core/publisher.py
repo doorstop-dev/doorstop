@@ -524,7 +524,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
                                                      '..', 'views'))
             if 'baseurl' not in bottle.SimpleTemplate.defaults:
                 bottle.SimpleTemplate.defaults['baseurl'] = ''
-            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent, obj=obj)
+            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent, document=obj)
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise
