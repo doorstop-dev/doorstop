@@ -27,6 +27,12 @@ eu fugiat nulla pariatur.
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
 deserunt mollit anim id est laborum.'''
 
+LATEX_MATH = '''Test Math Expressions in Latex Style:
+
+Inline Style 1: $a \\ne 0$
+Inline Style 2: \\(ax^2 + bx + c = 0\\)
+Multiline: $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}.$$'''
+
 
 class TestModule(unittest.TestCase):
     """Unit tests for the doorstop.core.importer module."""
@@ -107,7 +113,7 @@ class TestModule(unittest.TestCase):
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, ''],
             ['REQ004', '1.6', 'Hello, world!', '', '', True, False, True, ''],
             ['REQ002', '2.1', 'Hello, world!', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
-            ['REQ2-001', '2.1', 'Hello, world!', '', 'REQ001', True, False, True, ''],
+            ['REQ2-001', '2.1', 'Hello, world!\n\n' + LATEX_MATH, '', 'REQ001', True, False, True, ''],
         ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
@@ -173,7 +179,7 @@ class TestModule(unittest.TestCase):
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, None],
             ['REQ004', '1.6', 'Hello, world!', None, None, True, False, True, None],
             ['REQ002', '2.1', 'Hello, world!', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
-            ['REQ2-001', '2.1', 'Hello, world!', None, 'REQ001', True, False, True, None],
+            ['REQ2-001', '2.1', 'Hello, world!\n\nTest Math Expressions in Latex Style:\n\nInline Style 1: $a \\ne 0$\nInline Style 2: \\(ax^2 + bx + c = 0\\)\nMultiline: $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}.$$', None, 'REQ001', True, False, True, None],
         ]
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)

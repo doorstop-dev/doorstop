@@ -42,6 +42,7 @@ Icon*
 /build/
 /dist/
 *.spec
+**/MathJax
 
 # Sublime Text
 *.sublime-workspace

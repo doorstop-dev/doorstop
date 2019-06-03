@@ -227,4 +227,19 @@ TST007 Gradual Temperature Drop Test
   
   Parent Item: REQ023 Temperature Interlock
 ```
+### LaTex-like math expressions
 
+You can use math expressions in LaTex interpreted by the markdown extension 
+[python-markdown-math](https://pypi.org/project/python-markdown-math/) and rendered by 
+[MathJax](https://github.com/mathjax/MathJax), when using the HTML publisher.
+
+TST008.yml
+```yaml
+level: 1.6
+normative: true
+links:
+- REQ023: null
+text: |
+  When $a \ne 0$, there are two solutions to \(ax^2 + bx + c = 0\) and they are
+  $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
+```

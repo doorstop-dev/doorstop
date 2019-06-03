@@ -90,5 +90,6 @@ setuptools.setup(
         "requests >= 2, < 3",
         "pyficache == 0.3.1",
         "mdx_outline >= 1.3.0, < 2",
+        "python-markdown-math == 0.6",
     ],
 )
