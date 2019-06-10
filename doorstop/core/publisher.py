@@ -18,7 +18,8 @@ EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
     'mdx_outline',
-    'mdx_math'
+    'mdx_math',
+    'plantuml_markdown',
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'

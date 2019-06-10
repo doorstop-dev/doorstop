@@ -32,6 +32,7 @@ docutils = "*"
 pygments = "*"
 markdown = "*"
 python-markdown-math = "*"
+plantuml-markdown = "*"
 
 # Build
 wheel = "*"
