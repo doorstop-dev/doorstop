@@ -27,6 +27,24 @@ Hello, world!
 
 Hello, world!
 
+```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+@startuml
+Author --> (Create Document)
+Author --> (Create Item)
+Author --> (Link Item to Document)
+Author --> (Link Item to other Item)
+Author --> (Edit Item)
+Author --> (Review Item)
+Author -> (Delete Item)
+Author -> (Delete Document)
+(Export) <- (Author)
+(Import) <- (Author)
+Reviewer --> (Review Item)
+System --> (Suspect Changes)
+System --> (Integrity)
+@enduml
+```
+
 *Child links: TST001, TST002*
 
 ## 2.1 REQ2-001 {#REQ2-001 }

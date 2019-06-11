@@ -10,7 +10,25 @@ deserunt mollit anim id est laborum."		"SYS001
 SYS002:abc123"	True	False	True	
 REQ003	1.4	Unicode: -40° ±1%	REF123	REQ001	True	False	True	
 REQ004	1.6	Hello, world!			True	False	True	
-REQ002	2.1	Hello, world!			True	False	True	b5fbcc355112791bbcd2ea881c7c5f81
+REQ002	2.1	"Hello, world!
+
+```plantuml format=""svg_inline"" alt=""Use Cases of Doorstop"" title=""Use Cases of Doorstop""
+@startuml
+Author --> (Create Document)
+Author --> (Create Item)
+Author --> (Link Item to Document)
+Author --> (Link Item to other Item)
+Author --> (Edit Item)
+Author --> (Review Item)
+Author -> (Delete Item)
+Author -> (Delete Document)
+(Export) <- (Author)
+(Import) <- (Author)
+Reviewer --> (Review Item)
+System --> (Suspect Changes)
+System --> (Integrity)
+@enduml
+```"			True	False	True	50ae164a198e612dee696cc80942dc29
 REQ2-001	2.1	"Hello, world!
 
 Test Math Expressions in Latex Style:

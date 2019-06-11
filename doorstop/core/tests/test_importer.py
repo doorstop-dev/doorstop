@@ -33,6 +33,24 @@ Inline Style 1: $a \\ne 0$
 Inline Style 2: \\(ax^2 + bx + c = 0\\)
 Multiline: $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}.$$'''
 
+PLANTUML_TXT = '''```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+@startuml
+Author --> (Create Document)
+Author --> (Create Item)
+Author --> (Link Item to Document)
+Author --> (Link Item to other Item)
+Author --> (Edit Item)
+Author --> (Review Item)
+Author -> (Delete Item)
+Author -> (Delete Document)
+(Export) <- (Author)
+(Import) <- (Author)
+Reviewer --> (Review Item)
+System --> (Suspect Changes)
+System --> (Integrity)
+@enduml
+```'''
+
 
 class TestModule(unittest.TestCase):
     """Unit tests for the doorstop.core.importer module."""
@@ -112,7 +130,7 @@ class TestModule(unittest.TestCase):
             # 'REF''123' is intentional to avoid matching the reference in this test file
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, ''],
             ['REQ004', '1.6', 'Hello, world!', '', '', True, False, True, ''],
-            ['REQ002', '2.1', 'Hello, world!', '', '', True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
+            ['REQ002', '2.1', 'Hello, world!\n\n' + PLANTUML_TXT, '', '', True, False, True, '50ae164a198e612dee696cc80942dc29'],
             ['REQ2-001', '2.1', 'Hello, world!\n\n' + LATEX_MATH, '', 'REQ001', True, False, True, ''],
         ]
         self.assertEqual(expected_data, data)
@@ -178,7 +196,7 @@ class TestModule(unittest.TestCase):
             # 'REF''123' is intentional to avoid matching the reference in this test file
             ['REQ003', '1.4', 'Unicode: -40° ±1%', 'REF''123', 'REQ001', True, False, True, None],
             ['REQ004', '1.6', 'Hello, world!', None, None, True, False, True, None],
-            ['REQ002', '2.1', 'Hello, world!', None, None, True, False, True, 'b5fbcc355112791bbcd2ea881c7c5f81'],
+            ['REQ002', '2.1', 'Hello, world!\n\n```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"\n@startuml\nAuthor --> (Create Document)\nAuthor --> (Create Item)\nAuthor --> (Link Item to Document)\nAuthor --> (Link Item to other Item)\nAuthor --> (Edit Item)\nAuthor --> (Review Item)\nAuthor -> (Delete Item)\nAuthor -> (Delete Document)\n(Export) <- (Author)\n(Import) <- (Author)\nReviewer --> (Review Item)\nSystem --> (Suspect Changes)\nSystem --> (Integrity)\n@enduml\n```', None, None, True, False, True, '50ae164a198e612dee696cc80942dc29'],
             ['REQ2-001', '2.1', 'Hello, world!\n\nTest Math Expressions in Latex Style:\n\nInline Style 1: $a \\ne 0$\nInline Style 2: \\(ax^2 + bx + c = 0\\)\nMultiline: $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}.$$', None, 'REQ001', True, False, True, None],
         ]
         self.assertEqual(expected_data, data)

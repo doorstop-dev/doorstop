@@ -21,11 +21,11 @@ EXTENSIONS = (
     'mdx_outline',
     'mdx_math',
     PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
-                      cachedir='/tmp',
-                      format='svg',
-                      classes='class1,class2',
-                      title='UML',
-                      alt='UML Diagram')
+                              cachedir='/tmp',
+                              format='svg',
+                              classes='class1,class2',
+                              title='UML',
+                              alt='UML Diagram')
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
