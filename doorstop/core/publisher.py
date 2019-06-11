@@ -2,6 +2,7 @@
 
 import os
 import textwrap
+import tempfile
 
 import markdown
 from plantuml_markdown import PlantUMLMarkdownExtension
@@ -21,7 +22,7 @@ EXTENSIONS = (
     'mdx_outline',
     'mdx_math',
     PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
-                              cachedir='/tmp',
+                              cachedir=tempfile.gettempdir(),
                               format='svg',
                               classes='class1,class2',
                               title='UML',
