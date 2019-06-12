@@ -2,8 +2,10 @@
 
 import os
 import textwrap
+import tempfile
 
 import markdown
+from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -18,7 +20,13 @@ EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
     'mdx_outline',
-    'mdx_math'
+    'mdx_math',
+    PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
+                              cachedir=tempfile.gettempdir(),
+                              format='svg',
+                              classes='class1,class2',
+                              title='UML',
+                              alt='UML Diagram')
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
