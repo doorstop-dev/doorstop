@@ -46,7 +46,7 @@ class TestItem(unittest.TestCase):
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
+        self.item = core.Item(None, self.path)
         self.item.tree = Mock()
         self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
@@ -58,7 +58,7 @@ class TestItem(unittest.TestCase):
         self.item.level = '1.2.3'
         self.item.text = "Hello, world!"
         self.item.links = ['SYS001', 'SYS002']
-        item2 = core.Item(os.path.join(FILES, 'REQ001.yml'))
+        item2 = core.Item(None, os.path.join(FILES, 'REQ001.yml'))
         self.assertEqual((1, 2, 3), item2.level)
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
@@ -66,7 +66,7 @@ class TestItem(unittest.TestCase):
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-        item = core.Item(os.path.join(FILES, 'REQ003.yml'))
+        item = core.Item(None, os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
         path, line = item.find_ref()
@@ -243,7 +243,7 @@ class TestTree(unittest.TestCase):
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
+        self.item = core.Item(None, self.path)
         self.tree = core.Tree(core.Document(SYS))
         self.tree._place(core.Document(FILES))
 
