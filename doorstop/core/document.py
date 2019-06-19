@@ -189,8 +189,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root,
-                                document=self, tree=self.tree)
+                    item = Item(self, path, root=self.root, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
