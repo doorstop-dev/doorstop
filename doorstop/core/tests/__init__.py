@@ -74,6 +74,12 @@ class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902
     """Mock Document class with stubbed file IO."""
 
 
+class MockSimpleDocument:
+    """Mock Document class with basic default members."""
+
+    _items = []
+
+
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
     """Mock Document class that is always skipped in tree placement."""
 

@@ -12,7 +12,7 @@ from doorstop.core.item import Item, UnknownItem
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 from doorstop.core.tests import FILES, EMPTY, EXTERNAL
-from doorstop.core.tests import MockItem
+from doorstop.core.tests import MockItem, MockSimpleDocument
 
 
 YAML_DEFAULT = """
@@ -535,7 +535,7 @@ class TestItem(unittest.TestCase):
     def test_new(self):
         """Verify items can be created."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
+        item = MockItem.new(None, MockSimpleDocument(),
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
@@ -548,7 +548,7 @@ class TestItem(unittest.TestCase):
         """Verify new items are cached."""
         mock_tree = Mock()
         mock_tree._item_cache = {}
-        item = MockItem.new(mock_tree, None,
+        item = MockItem.new(mock_tree, MockSimpleDocument(),
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         self.assertEqual(item, mock_tree._item_cache[item.uid])
@@ -558,7 +558,7 @@ class TestItem(unittest.TestCase):
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
+        item = MockItem.new(None, MockSimpleDocument(),
                             EMPTY, FILES, 'VSM.HLR_01-002-042',
                             level=(1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
@@ -820,6 +820,7 @@ class TestItem(unittest.TestCase):
     @patch('doorstop.common.delete')
     def test_delete(self, mock_delete):
         """Verify an item can be deleted."""
+        self.item.document = MockSimpleDocument()
         self.item.delete()
         mock_delete.assert_called_once_with(self.item.path)
         self.item.delete()  # ensure a second delete is ignored
@@ -827,6 +828,7 @@ class TestItem(unittest.TestCase):
     @patch('doorstop.common.delete', Mock())
     def test_delete_cache(self):
         """Verify an item is expunged after delete."""
+        self.item.document = MockSimpleDocument()
         self.item.tree = Mock()
         self.item.tree._item_cache = {self.item.uid: self.item}
         self.item.delete()

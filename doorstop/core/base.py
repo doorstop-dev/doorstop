@@ -21,7 +21,7 @@ def add_item(func):
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.add(item.path)
         # pylint: disable=W0212
-        if item.document and item not in item.document._items:
+        if item not in item.document._items:
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = item
@@ -49,7 +49,7 @@ def delete_item(func):
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.delete(item.path)
         # pylint: disable=W0212
-        if item.document and item in item.document._items:
+        if item in item.document._items:
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = None
