@@ -89,6 +89,7 @@ class MockSimpleDocument:
         self.parent = None
         self.prefix = 'RQ'
         self._items = []
+        self.extended_reviewed = []
 
     def __iter__(self):
         yield from self._items

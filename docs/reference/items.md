@@ -88,9 +88,11 @@ e.g. `level: '1.10'`.
 
 ## reviewed
 
-Each item has a fingerprint. The UID of the item, the values of the
+Each item has a fingerprint. By default, the UID of the item, the values of the
 [text](items.md#text) and [ref](items.md#ref) attributes, and the UIDs of the
-[links](items.md#links) attribute contribute to the fingerprint.
+[links](items.md#links) attribute contribute to the fingerprint. Optionally,
+values of extended attributes can be added to the fingerprint through the
+[extended-reviewed](items.md#extended-reviewed-attributes) document setting.
 
 The value of the *reviewed* attribute indicates the fingerprint of the item
 when it was last reviewed. "null" if the item has not yet been reviewed.
@@ -222,10 +224,7 @@ custom attributes (key-value pairs) in the YAML file. The extended attributes
 will not be part of a published document, but they can be queried by a 3rd party
 application through the REST interface or the Python API.
 
-The values of extended attributes do **not** contribute to the
-[fingerprint](items.md#reviewed) of the item.
-
-### Example:
+#### Example: Extended attribute
 
 In this example, an extended attribute `invented-by` is added to the item.
 
@@ -233,6 +232,31 @@ In this example, an extended attribute `invented-by` is added to the item.
 invented-by: some.guy@email.com
 ```
 
+#### Extended reviewed attributes
+
+By default, the values of extended attributes do **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.  Optionally, you can add the
+values of extended attributes to the fingerprint through the
+`extended-reviewed` setting in the corresponding document configuration file
+`.doorstop.yml`.  The `extended-reviewed` setting expects a non-empty list of
+attribute keys.  There is no command to maintain this document setting.  You
+have to edit the document configuration file `.doorstop.yml` by hand.
+
+```yaml
+settings:
+  digits: 3
+  extended-reviewed: [type, verification-method]
+  prefix: REQ
+  sep: ''
+```
+
+If attributes listed in the `extended-reviewed` do not exist in an item of this
+document, then a warning is issued by the validation command `doorstop`:
+
+```
+WARNING: REQ001: missing extended reviewed attribute: type
+WARNING: REQ001: missing extended reviewed attribute: verification-method
+```
 
 # Beta Features
 

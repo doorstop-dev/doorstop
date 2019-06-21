@@ -59,6 +59,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._data['extended-reviewed'] = []
         self._items = []
         self._itered = False
         self.children = []
@@ -146,6 +147,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     self._data[key] = value.strip()
                 elif key == 'digits':
                     self._data[key] = int(value)
+                elif key == 'extended-reviewed':
+                    self._data[key] = sorted(set(v for v in value))
                 else:
                     msg = "unexpected document setting '{}' in: {}".format(
                         key, self.config
@@ -174,6 +177,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'digits':
                 sets[key] = value
             elif key == 'parent':
+                if value:
+                    sets[key] = value
+            elif key == 'extended-reviewed':
                 if value:
                     sets[key] = value
             else:
@@ -258,6 +264,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the document's prefix."""
         self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
+
+    @property
+    @auto_load
+    def extended_reviewed(self):
+        """Get the document's extended reviewed attribute keys."""
+        return self._data['extended-reviewed']
 
     @property
     @auto_load
