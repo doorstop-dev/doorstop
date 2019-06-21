@@ -809,6 +809,45 @@ class TestItem(unittest.TestCase):
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
 
+    def test_stamp_with_one_extended_reviewed(self):
+        """Verify fingerprint with one extended reviewed attribute."""
+        self.item._data['type'] = 'functional'
+        self.item.document.extended_reviewed = ['type']
+        stamp = '04fdd093f67ce3a3160dfdc5d93e7813'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_two_extended_reviewed(self):
+        """Verify fingerprint with two extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['type', 'verification-method']
+        stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_reversed_extended_reviewed_reverse(self):
+        """Verify fingerprint with reversed extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['verification-method', 'type']
+        stamp = '7b14dfcc17026e98790284c5cddb0900'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_missing_extended_reviewed_reverse(self):
+        """Verify fingerprint with missing extended reviewed attribute."""
+        with ListLogHandler(core.item.log) as handler:
+            self.item._data['type'] = 'functional'
+            self.item._data['verification-method'] = 'test'
+            self.item.document.extended_reviewed = [
+                'missing',
+                'type',
+                'verification-method',
+            ]
+            stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+            self.assertEqual(stamp, self.item.stamp())
+            self.assertIn(
+                "RQ001: missing extended reviewed attribute: missing", handler.records
+            )
+
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
         self.item.link('mock_link')

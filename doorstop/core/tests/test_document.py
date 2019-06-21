@@ -48,6 +48,26 @@ settings:
   John: 'Doe'
 """.lstrip()
 
+YAML_UNKNOWN_ATTRIBUTES = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  unknown: empty
+""".lstrip()
+
+YAML_EXTENDED_REVIEWED = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  reviewed:
+  - type
+  - verification-method
+""".lstrip()
+
 
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
@@ -108,6 +128,20 @@ class TestDocument(unittest.TestCase):
         msg = "^unexpected document setting 'John' in: .*\\.doorstop.yml$"
         self.assertRaisesRegex(DoorstopError, msg, self.document.load)
 
+    def test_load_unknown_attributes(self):
+        """Verify loading a document config with unknown attributes fails."""
+        self.document._file = YAML_UNKNOWN_ATTRIBUTES
+        msg = "^unexpected attributes configuration 'unknown' in: .*\\.doorstop.yml$"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.load)
+
+    def test_load_extended_reviewed(self):
+        """Verify loaded extended reviewed attribute keys of a document."""
+        self.document._file = YAML_EXTENDED_REVIEWED
+        self.document.load()
+        self.assertEqual(
+            self.document.extended_reviewed, ['type', 'verification-method']
+        )
+
     def test_save_empty(self):
         """Verify saving calls write."""
         self.document.tree = Mock()
@@ -126,6 +160,22 @@ class TestDocument(unittest.TestCase):
         self.document._data['custom'] = 'this'
         self.document.save()
         self.assertIn("custom: this", self.document._file)
+
+    def test_save_extended_reviewed(self):
+        """Verify saving of extended reviewed attribute keys."""
+        self.document._extended_reviewed = ['type', 'verification-method']
+        self.document.save()
+        self.assertIn("attributes:", self.document._file)
+        self.assertIn("  reviewed:", self.document._file)
+        self.assertIn("  - type", self.document._file)
+        self.assertIn("  - verification-method", self.document._file)
+
+    def test_no_save_empty_extended_reviewed(self):
+        """Verify not saving of empty extended reviewed attribute keys."""
+        self.document._extended_reviewed = []
+        self.document.save()
+        self.assertNotIn("attributes:", self.document._file)
+        self.assertNotIn("  reviewed:", self.document._file)
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
@@ -184,6 +234,7 @@ class TestDocument(unittest.TestCase):
         document = MockDocument.new(None, EMPTY, root=FILES, prefix='NEW', digits=2)
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
+        self.assertEqual([], document.extended_reviewed)
         MockDocument._create.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):

@@ -59,6 +59,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._extended_reviewed = []
         self._items = []
         self._itered = False
         self.children = []
@@ -154,6 +155,16 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             except (AttributeError, TypeError, ValueError):
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
                 raise DoorstopError(msg)
+        # Store parsed attributes
+        attributes = data.get('attributes', {})
+        for key, value in attributes.items():
+            if key == 'reviewed':
+                self._extended_reviewed = sorted(set(v for v in value))
+            else:
+                msg = "unexpected attributes configuration '{}' in: {}".format(
+                    key, self.config
+                )
+                raise DoorstopError(msg)
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -179,6 +190,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 data[key] = value
         data['settings'] = sets
+        # Save the attributes
+        attributes = {}
+        if self._extended_reviewed:
+            attributes['reviewed'] = self._extended_reviewed
+        if attributes:
+            data['attributes'] = attributes
         # Dump the data to YAML
         text = self._dump(data)
         # Save the YAML to file
@@ -258,6 +275,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the document's prefix."""
         self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
+
+    @property
+    @auto_load
+    def extended_reviewed(self):
+        """Get the document's extended reviewed attribute keys."""
+        return self._extended_reviewed
 
     @property
     @auto_load

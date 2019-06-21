@@ -858,6 +858,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         values = [self.uid, self.text, self.ref]
         if links:
             values.extend(self.links)
+        for key in self.document.extended_reviewed:
+            if key in self._data:
+                values.append(self._dump(self._data[key]))
+            else:
+                log.warning(
+                    "{}: missing extended reviewed attribute: {}".format(self.uid, key)
+                )
         return Stamp(*values)
 
     @auto_save
