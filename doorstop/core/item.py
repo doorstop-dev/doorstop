@@ -131,6 +131,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Initialize the item
         item = Item(document, path2, root=root, tree=tree, auto=False)
         item.level = level if level is not None else item.level
+        # Here cannot use directly "item._data[i]" due to Access to
+        # a protected member _data of a client class
+        item.init_reviewed_extended_attributes()
         if auto or (auto is None and Item.auto):
             item.save()
         # Return the item
@@ -477,6 +480,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             return []
 
     # actions ################################################################
+
+    @auto_save
+    @auto_load
+    def init_reviewed_extended_attributes(self):
+        """Initialize the contents of reviewed extended attributes as empty strings."""
+        for i in self.document.extended_reviewed:
+            self._data[i] = ""
 
     @auto_save
     def edit(self, tool=None, edit_all=True):
@@ -848,6 +858,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         values = [self.uid, self.text, self.ref]
         if links:
             values.extend(self.links)
+        # If below line is missing, it will have error "AttributeError
+        # ('NoneType' object has no attribute 'extended_reviewed')"
+        if self.document:
+            for i in self.document.extended_reviewed:
+                if i in self._data:
+                    values.append(self._dump(self._data[i]))
+                else:
+                    # Check whether key and content are missing or not
+                    log.warning("{0}: missing key \"{1}\" for the mandatory attributes".format(self.uid, i))
         return Stamp(*values)
 
     @auto_save

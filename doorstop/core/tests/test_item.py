@@ -543,6 +543,24 @@ class TestItem(unittest.TestCase):
         self.assertEqual((1, 2, 3), item.level)
         MockItem._create.assert_called_once_with(path, name='item')
 
+    def tearDown(self):
+        """Clean up temporary files."""
+        path = os.path.join('path')
+        if os.path.isdir(path):
+            common.delete(path)
+
+    def test_document_extended_reviewed_key(self):
+        """Verify the extended attributed in .doorstop.yml can be added as keys for an item."""
+        path = os.path.join('path', 'to', 'REQ001')
+        mockdocument = Mock()
+        mockdocument.prefix = 'mock_prefix'
+        mockdocument.extended_reviewed = ['type', 'verification-method']
+        mockdocument._items = []
+        self.item = MockItem.new(None, mockdocument, path, mockdocument.root, 'REQ001',
+                                 auto=False)
+        self.assertEqual(self.item._data['type'], "")
+        self.assertEqual(self.item._data['verification-method'], "")
+
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_cache(self):
         """Verify new items are cached."""
@@ -660,6 +678,7 @@ class TestItem(unittest.TestCase):
         """Verify an item can be checked against a document."""
         mock_document = Mock()
         mock_document.parent = 'fake'
+        mock_document.extended_reviewed = []
         self.item.document = mock_document
         self.assertTrue(self.item.validate())
 
@@ -668,6 +687,7 @@ class TestItem(unittest.TestCase):
         self.item.link('unknown1')
         mock_document = Mock()
         mock_document.parent = 'fake'
+        mock_document.extended_reviewed = []
         self.item.document = mock_document
         self.assertTrue(self.item.validate())
 
@@ -676,6 +696,7 @@ class TestItem(unittest.TestCase):
         self.item.link('invalid')
         mock_document = Mock()
         mock_document.parent = 'fake'
+        mock_document.extended_reviewed = []
         self.item.document = mock_document
         self.assertFalse(self.item.validate())
 
@@ -734,6 +755,7 @@ class TestItem(unittest.TestCase):
         mock_document = Mock()
         mock_document.parent = 'BOTH'
         mock_document.prefix = 'BOTH'
+        mock_document.extended_reviewed = []
 
         mock_document.__iter__ = mock_iter([mock_item])
         mock_tree = Mock()
@@ -768,6 +790,7 @@ class TestItem(unittest.TestCase):
 
         mock_document = Mock()
         mock_document.prefix = 'RQ'
+        mock_document.extended_reviewed = []
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
@@ -787,6 +810,18 @@ class TestItem(unittest.TestCase):
         """Verify an item's contents can be stamped."""
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_include_extended_reviewed_key(self):
+        """Verify the extended attributes in .doorstop.yml are included and tracked in the stamp."""
+        path = os.path.join('path', 'to', 'RQ001.yml')
+        mockdocument = Mock()
+        mockdocument.prefix = 'mock_prefix'
+        mockdocument.extended_reviewed = ['type', 'verification-method']
+        self.item = MockItem(document=mockdocument, path=path)
+        originalstamp = self.item.stamp()
+        self.item._data['type'] = 'functional type A'
+        self.item._data['verification-method'] = 'unit test'
+        self.assertNotEqual(originalstamp, self.item.stamp)
 
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""

@@ -39,6 +39,15 @@ settings:
   sep: '-'
 """.lstrip()
 
+YAML_CUSTOM_EXTENDED_REVIEWED = """
+settings:
+  digits: 2
+  extended-reviewed: [type, verification-method]
+  parent: REQ
+  prefix: REVIEWED
+  sep: '-'
+""".lstrip()
+
 
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
@@ -87,6 +96,19 @@ class TestDocument(unittest.TestCase):
         self.document.load()
         self.assertEqual('PARENT', self.document.parent)
 
+    def tearDown(self):
+        """Clean up temporary files."""
+        REVIEWEDPATH = os.path.join(FILES, 'extended_reviewed')
+        if os.path.isdir(REVIEWEDPATH):
+            common.delete(REVIEWEDPATH)
+
+    def test_load_extended_reviewed(self):
+        """Verify a new document can be created with extended mandatory attributes."""
+        self.document._file = YAML_CUSTOM_EXTENDED_REVIEWED
+        self.document.load(reload=True)
+        self.assertEqual(self.document.extended_reviewed, ['type', 'verification-method'])
+        self.assertEqual({'type', 'verification-method'}, self.document._data['extended-reviewed'])
+
     def test_save_empty(self):
         """Verify saving calls write."""
         self.document.tree = Mock()
@@ -107,6 +129,13 @@ class TestDocument(unittest.TestCase):
         self.document._data['custom'] = 'this'
         self.document.save()
         self.assertIn("custom: this", self.document._file)
+
+    def test_save_extended_reviewed(self):
+        """Verify a document can be saved with the extended mandatory attributes."""
+        self.document._data['extended-reviewed'] = ['type', 'verification-method']
+        self.document.save()
+        self.assertIn("type", self.document._file)
+        self.assertIn("verification-method", self.document._file)
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
@@ -167,6 +196,13 @@ class TestDocument(unittest.TestCase):
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
         MockDocument._create.assert_called_once_with(path, name='document')
+
+    def test_new_extended_reviewed(self):
+        """Verify a new document can be created with extended mandatory attributes."""
+        REVIEWEDPATH = os.path.join(FILES, 'extended_reviewed')
+        document = Document.new(None, REVIEWEDPATH, root=FILES, prefix='REVIEWED',
+                                sep='-', digits=2, parent='REQ', auto=None)
+        self.assertEqual(document.extended_reviewed, [])
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""

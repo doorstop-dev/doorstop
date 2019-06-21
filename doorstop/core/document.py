@@ -28,6 +28,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_PREFIX = Prefix('REQ')
     DEFAULT_SEP = ''
     DEFAULT_DIGITS = 3
+    DEFAULT_EXTENDED_REVIEWED = []
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
         """Initialize a document from an exiting directory.
@@ -52,6 +53,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._data['extended-reviewed'] = Document.DEFAULT_EXTENDED_REVIEWED
         self._items = []
         self._itered = False
         self.children = []
@@ -136,6 +138,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 self._data['parent'] = value.strip()
             elif key == 'digits':
                 self._data['digits'] = int(value)
+            elif key == 'extended-reviewed':
+                self._data['extended-reviewed'] = set(v for v in value)
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -158,6 +162,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'parent':
                 if value:
                     sets['parent'] = value
+            elif key == 'extended-reviewed':
+                if value:
+                    sets['extended-reviewed'] = value
             else:
                 data[key] = value
         data['settings'] = sets
@@ -240,6 +247,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the document's prefix."""
         self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
+
+    @property
+    @auto_load
+    def extended_reviewed(self):
+        """Get the document's extended reviewed keys."""
+        return sorted(self._data['extended-reviewed'])
 
     @property
     @auto_load
