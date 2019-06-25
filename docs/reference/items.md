@@ -66,7 +66,8 @@ example.
 Indicates the fingerprint of the item when it was last reviewed. "null" if the
 item has not yet been reviewed. Doorstop will use this to detect unreviewed
 changes to an item by comparing the current item fingerprint to the last
-reviewed fingerprint.
+reviewed fingerprint. The attributes, which are included in the fingerprint, are
+UID, text, ref and links of the item.
 
 You should not calculate this value manually, use `doorstop review`.
 
