@@ -12,6 +12,61 @@ from doorstop import server
 log = common.logger(__name__)
 
 
+class CycleTracker:
+    """A cycle tracker to detect cyclic references between items.
+
+    The cycle tracker uses a standard algorithm to detect cycles in a directed
+    graph (not necessarily connected) using a depth first search with a bit of
+    graph colouring.  The time complexity is O(|V| + |E|).  The vertices are
+    the items.  The edges are the links between items.
+
+    """
+
+    def __init__(self):
+        """Initialize a cycle tracker."""
+        self.discovered = set()
+        self.finished = set()
+
+    def _dfs_visit(self, uid, tree):
+        """Do a depth first search visit of the specified item.
+
+        :param uid: the UID of the item to visit
+        :param tree: the document hierarchy tree
+
+        :return: generator of :class:`~doorstop.common.DoorstopWarning`
+
+        """
+        self.discovered.add(uid)
+        item = tree.find_item(uid)
+
+        for pid in item.links:
+            # Detect cycles via a back edge
+            if pid in self.discovered:
+                msg = "detected a cycle with a back edge from {} to {}" \
+                      .format(pid, uid)
+                yield common.DoorstopWarning(msg)
+
+            # Recurse, if this a fresh item
+            if pid not in self.discovered and pid not in self.finished:
+                yield from self._dfs_visit(pid, tree)
+
+        self.discovered.remove(uid)
+        self.finished.add(uid)
+
+    def __call__(self, item, document, tree):
+        """Get cycles which include the specified item.
+
+        :param item: the UID of the item to get the cycles for
+        :param document: unused
+        :param tree: the document hierarchy tree
+
+        :return: generator of :class:`~doorstop.common.DoorstopWarning`
+
+        """
+        if item not in self.discovered and item not in self.finished:
+            yield from self._dfs_visit(item, tree)
+
+
 def get(name):
     """Get a command function by name."""
     if name:
@@ -38,7 +93,8 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
 
         # validate it
         utilities.show("validating items...", flush=True)
-        valid = tree.validate(skip=args.skip)
+        cycle_tracker = CycleTracker()
+        valid = tree.validate(skip=args.skip, item_hook=cycle_tracker)
 
     if not success:
         return False

@@ -1,0 +1,10 @@
+active: true
+derived: false
+level: 1.1
+links:
+- A002: 23e02cca707fc2db356546bf9b09c664
+normative: true
+ref: ''
+reviewed: 1e9d4868c614ccb2c73f06145df5e21b
+text: |
+  A002

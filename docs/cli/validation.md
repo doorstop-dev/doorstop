@@ -34,11 +34,13 @@ are shown.  *INFO* level messages are generated under the following conditions:
 * An item has unreviewed changes.
 * An item is linked to an inactive item.
 * An item is linked to a non-normative item.
+* An item is linked to itself.
 * An item has a suspect linked to an item those fingerprint is not equal to the
   one recorded in the link.
 * An item in a document with child documents has no links from an item in one of its child documents.
 * A normative, non-derived item in a child document has no links.
 * A non-normative items has links.
+* There is a cycle of item links.
 
 *ERROR* level messages are generated under the following conditions:
 
