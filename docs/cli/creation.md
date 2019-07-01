@@ -36,4 +36,5 @@ $ doorstop link TST1 REQ1
 linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 ```
 
-It is not allowed to create links which would end up in a self reference.
+It is not allowed to create links which would end up in a self reference or
+cyclic dependency.
