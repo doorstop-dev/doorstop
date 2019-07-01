@@ -324,6 +324,25 @@ class TestTree(unittest.TestCase):
         self.tree.link_items('req1', 'req2')
         mock_link.assert_called_once_with('REQ002')
 
+    def test_link_items_self_reference(self):
+        """Verify an exception is raised with a self reference."""
+        try:
+            self.tree.link_items('req1', 'req1')
+            self.fail()
+        except DoorstopError as error:
+            self.assertEqual(str(error), "link would be self reference")
+
+    def test_link_items_cyclic_dependency(self):
+        """Verify an exception is raised with a cyclic dependency."""
+        self.tree.link_items('req1', 'sys2')
+        try:
+            self.tree.link_items('sys2', 'req1')
+            self.fail()
+        except DoorstopError as error:
+            self.assertEqual(str(error),
+                             "link would create a cyclic dependency: "
+                             "SYS002 -> REQ001 -> SYS002")
+
     def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
         self.assertRaises(DoorstopError,
