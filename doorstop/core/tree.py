@@ -293,7 +293,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         child = self.find_item(cid, _kind='child')
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
-        # Add link
+        # Add link if it is not a self reference
+        if child is parent:
+            raise DoorstopError("link would be self reference")
         child.link(parent.uid)
         return child, parent
 
