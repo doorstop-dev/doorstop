@@ -48,8 +48,10 @@ class TestBase(unittest.TestCase):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        if subprocess.call(cmd, shell=True, stderr=subprocess.PIPE) != 0:
+        cp = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+        if cp.returncode != 0:
             raise AssertionError("command failed: doorstop {}".format(args))
+        return cp
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
