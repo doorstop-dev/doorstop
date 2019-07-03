@@ -617,7 +617,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
 
-        # Verify an item has upward links
+        # Verify that normative, non-derived items in a child document have at
+        # least one link.  It is recommended that these items have an upward
+        # link to an item in the parent document, however, this is not
+        # enforced.  An info message is generated if this is not the case.
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
