@@ -6,6 +6,7 @@ A document can be created inside a directory that is under version control:
 $ doorstop create REQ ./reqs
 created document: REQ (@/reqs)
 ```
+Note: Only one root parent requirements document is allowed per version controlled directory.
 
 Items can be added to the document and edited:
 
