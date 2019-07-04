@@ -364,7 +364,7 @@ def _lines_markdown(obj, **kwargs):
                 yield ""  # break before links
                 items2 = item.parent_items
                 if settings.PUBLISH_CHILD_LINKS:
-                    label = "🡩 Parent links"
+                    label = "🡩 Parents:"
                 else:
                     label = "Links:"
                 links = _format_md_links(items2, linkify)
@@ -376,7 +376,7 @@ def _lines_markdown(obj, **kwargs):
                 items2 = item.find_child_items()
                 if items2:
                     yield ""  # break before links
-                    label = "🡫 Child links"
+                    label = "🡫 Children:"
                     links = _format_md_links(items2, linkify)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
@@ -430,7 +430,7 @@ def _format_md_links(items, linkify):
     for item in items:
         link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
-    return '\n - '.join(links)
+    return ', '.join(links)
 
 
 def _format_md_item_link(item, linkify=True):
@@ -469,7 +469,7 @@ def _format_html_item_link_index_table(item, linkify=True):
 def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
-        return "{lb} \n\n - {ls}".format(lb=label, ls=links)
+        return "{lb} {ls}".format(lb=label, ls=links)
     else:
         return "*{lb} {ls}*".format(lb=label, ls=links)
 
