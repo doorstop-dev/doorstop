@@ -2,7 +2,11 @@
 
 Doorstop items are files formatted using YAML. When a new item is added using
 `doorstop add`, Doorstop will create a YAML file and populate it with all
-required attributes (key-value pairs).
+required attributes (key-value pairs). The UID of an item is defined by its
+file name without the extension. An UID consists of two parts, the prefix and a
+number. The parts are divided by an optional separator. The prefix is
+determined by the document to which the item belongs. The number is
+automatically assigned by Doorstop.
 
 Example item:
 ```yaml
@@ -26,6 +30,9 @@ Determines if the item is active (true) or not (false). Only active items are
 included when the corresponding document is published. Inactive items are
 excluded from validation.
 
+The value of this attribute does **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.
+
 ### derived
 
 Indicates if the item is derived (true) or not (false).
@@ -35,6 +42,9 @@ Indicates if the item is derived (true) or not (false).
 > '...requirements that are not explicitly stated in the set of stakeholder requirements yet is required to satisfy one or more of them. They also arise from constraints, consideration of issues implied but not explicitly stated in the requirements baseline, factors introduced by the selected architecture, Information Assurance (IA) requirements and the design.'
 
 Doorstop does not expect parent links on derived items.
+
+The value of this attribute does **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.
 
 ### normative
 
@@ -52,6 +62,9 @@ Indicates if the item is normative (true) or non-normative (false).
 > standard"; an object that complies with the normative sections but not the
 > non-normative sections of a standard is still considered to be in compliance.'
 
+The value of this attribute does **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.
+
 ### level
 
 Indicates the presentation order within a document. A level of 1.1 will display
@@ -61,15 +74,21 @@ If the level ends with .0 and the item is non-normative, Doorstop will treat the
 item as a document heading. See the [text](items.md#text)-section for an
 example.
 
+The value of this attribute does **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.
+
 ### reviewed
 
-Indicates the fingerprint of the item when it was last reviewed. "null" if the
-item has not yet been reviewed. Doorstop will use this to detect unreviewed
-changes to an item by comparing the current item fingerprint to the last
-reviewed fingerprint.
+Each item has a fingerprint. The UID of the item, the values of the
+[text](items.md#text) and [ref](items.md#ref) attributes, and the UIDs of the
+[links](items.md#links) attribute contribute to the fingerprint.
+
+The value of the *reviewed* attribute indicates the fingerprint of the item
+when it was last reviewed. "null" if the item has not yet been reviewed.
+Doorstop will use this to detect unreviewed changes to an item by comparing the
+current item fingerprint to the last reviewed fingerprint.
 
 You should not calculate this value manually, use `doorstop review`.
-
 
 ### links
 
@@ -83,9 +102,9 @@ links:
 - REQ001: 1f33605bbc5d1a39c9a6441b91389e88
 ```
 
-A link consists of two parts, the parent item UID and the fingerprint of the
-parent when it last reviewed. If the link has not yet been reviewed, the
-fingerprint is set to "null" or omitted.
+A link consists of two parts, the parent item UID and the
+[fingerprint](items.md#reviewed) of the parent when it last reviewed. If the
+link has not yet been reviewed, the fingerprint is set to "null" or omitted.
 
 ```yaml
 links:
@@ -106,6 +125,11 @@ The link fingerprint is used by Doorstop to detect when a parent item is
 changed, as a convenience to the writer since such change may also affect its
 children.
 
+Only the UID part of the link contributes to the fingerprint of the item (the
+item of the reviewed attribute, not the parent item of the link).  The
+fingerprint of the link is does **not** contribute to the fingerprint of the
+item.
+
 ### ref
 
 External reference. An item may reference an external file or a line in an
@@ -123,6 +147,9 @@ will be used.
 
 A file is considered a text-file unless its file extension is listed in
 `SKIP_EXTS` (settings.py).
+
+The value of this attribute contributes to the [fingerprint](items.md#reviewed)
+of the item.
 
 #### Example: Reference keyword
 ```yaml
@@ -142,12 +169,14 @@ References a file called "test-tst001.c".
 If a reference is specified and Doorstop is unable to find it, Doorstop will
 exit with an error unless reference checking is disabled.
 
-
 ### text
 
 Item text. This is the main body of the item. Doorstop treats the value as
 markdown to support rich text, images and tables. To specify a multi-line text,
 use block scalar types as specified by the YAML standard.
+
+The value of this attribute contributes to the [fingerprint](items.md#reviewed)
+of the item.
 
 #### Example: Heading
 
@@ -183,6 +212,9 @@ In addition to the standard attributes, Doorstop will allow any number of
 custom attributes (key-value pairs) in the YAML file. The extended attributes
 will not be part of a published document, but they can be queried by a 3rd party
 application through the REST interface or the Python API.
+
+The values of extended attributes do **not** contribute to the
+[fingerprint](items.md#reviewed) of the item.
 
 #### Example:
 
