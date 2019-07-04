@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
-"""Setup script for the package."""
-
 import os
 import sys
-import logging
 
 import setuptools
 
+
 PACKAGE_NAME = 'doorstop'
-MINIMUM_PYTHON_VERSION = '3.4'
+MINIMUM_PYTHON_VERSION = '3.5'
 
 
 def check_python_version():
@@ -26,8 +24,7 @@ def read_package_variable(key, filename='__init__.py'):
             parts = line.strip().split(' ', 2)
             if parts[:-1] == [key, '=']:
                 return parts[-1].strip("'")
-    logging.warning("'%s' not found in '%s'", key, module_path)
-    return None
+    sys.exit("'%s' not found in '%s'", key, module_path)
 
 
 def build_description():
@@ -73,21 +70,23 @@ setuptools.setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Documentation',
         'Topic :: Text Editors :: Documentation',
         'Topic :: Text Processing :: Markup',
     ],
 
     install_requires=[
-        "PyYAML >= 3.10, < 4",
+        "PyYAML >= 5.1, < 6",
         "Markdown >= 2, < 3",
         "openpyxl >= 2.1, < 2.2",
         "bottle == 0.12.13",
         "requests >= 2, < 3",
         "pyficache == 0.3.1",
         "mdx_outline >= 1.3.0, < 2",
+        "python-markdown-math == 0.6",
+        "plantuml-markdown >= 2.0",
     ],
 )

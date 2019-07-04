@@ -274,6 +274,25 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
 
+    def check_for_cycle(self, item, cid, path):
+        """Check if a cyclic dependency would be created.
+
+        :param item: an item on the dependency path
+        :param cid: the child item's UID
+        :param path: the path of UIDs from the child item to the item
+
+        :raises: :class:`~doorstop.common.DoorstopError` if the link
+            would create a cyclic dependency
+        """
+        for did in item.links:
+            path2 = path + [did]
+            if did in path:
+                s = " -> ".join(list(map(str, path2)))
+                msg = "link would create a cyclic dependency: {}".format(s)
+                raise DoorstopError(msg)
+            dep = self.find_item(did, _kind='dependency')
+            self.check_for_cycle(dep, cid, path2)
+
     # decorators are applied to methods in the associated classes
     def link_items(self, cid, pid):
         """Add a new link between two items by UIDs.
@@ -293,7 +312,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         child = self.find_item(cid, _kind='child')
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
-        # Add link
+        # Add link if it is not a self reference or cyclic dependency
+        if child is parent:
+            raise DoorstopError("link would be self reference")
+        self.check_for_cycle(parent, child.uid, [child.uid, parent.uid])
         child.link(parent.uid)
         return child, parent
 

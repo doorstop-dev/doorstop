@@ -49,7 +49,7 @@ $ make watch
 Build the documentation:
 
 ```sh
-$ make doc
+$ make docs
 ```
 
 ### Static Analysis

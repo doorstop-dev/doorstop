@@ -2,8 +2,10 @@
 
 import os
 import textwrap
+import tempfile
 
 import markdown
+from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -18,6 +20,13 @@ EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
     'mdx_outline',
+    'mdx_math',
+    PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
+                              cachedir=tempfile.gettempdir(),
+                              format='svg',
+                              classes='class1,class2',
+                              title='UML',
+                              alt='UML Diagram')
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
@@ -318,7 +327,7 @@ def _lines_markdown(obj, **kwargs):
                     h=heading, lev=level,
                     t=text_lines[0] if text_lines else '')
             else:
-                standard = "{h} {t}".format(h=heading, t=item.text)
+                standard = "{h} {t}".format(h=heading, t=text_lines[0] if text_lines else '')
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
@@ -524,7 +533,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
                                                      '..', 'views'))
             if 'baseurl' not in bottle.SimpleTemplate.defaults:
                 bottle.SimpleTemplate.defaults['baseurl'] = ''
-            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent)
+            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent, document=obj)
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise

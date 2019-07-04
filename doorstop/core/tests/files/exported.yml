@@ -48,9 +48,27 @@ REQ002:
   links: []
   normative: true
   ref: ''
-  reviewed: b5fbcc355112791bbcd2ea881c7c5f81
+  reviewed: 50ae164a198e612dee696cc80942dc29
   text: |
     Hello, world!
+
+    ```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+    @startuml
+    Author --> (Create Document)
+    Author --> (Create Item)
+    Author --> (Link Item to Document)
+    Author --> (Link Item to other Item)
+    Author --> (Edit Item)
+    Author --> (Review Item)
+    Author -> (Delete Item)
+    Author -> (Delete Document)
+    (Export) <- (Author)
+    (Import) <- (Author)
+    Reviewer --> (Review Item)
+    System --> (Suspect Changes)
+    System --> (Integrity)
+    @enduml
+    ```
 
 REQ2-001:
   active: true
@@ -63,4 +81,10 @@ REQ2-001:
   reviewed: null
   text: |
     Hello, world!
+
+    Test Math Expressions in Latex Style:
+
+    Inline Style 1: $a \ne 0$
+    Inline Style 2: \(ax^2 + bx + c = 0\)
+    Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 

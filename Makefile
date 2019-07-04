@@ -8,16 +8,10 @@ PACKAGES := $(PACKAGE)
 CONFIG := $(wildcard *.py)
 MODULES := $(wildcard $(PACKAGE)/*.py)
 
-# Python settings
-ifndef TRAVIS
-	PYTHON_MAJOR ?= 3
-	PYTHON_MINOR ?= 6
-endif
-
 # Virtual environment paths
 export PIPENV_VENV_IN_PROJECT=true
 export PIPENV_IGNORE_VIRTUALENVS=true
-ENV := .venv
+VENV := .venv
 
 # MAIN TASKS ##################################################################
 
@@ -39,6 +33,7 @@ run: install
 
 .PHONY: demo
 demo: install
+	pipenv run python setup.py develop
 	pipenv run python $(PACKAGE)/cli/tests/test_tutorial.py
 
 # SYSTEM DEPENDENCIES #########################################################
@@ -49,18 +44,14 @@ doctor:  ## Confirm system dependencies are available
 
 # PROJECT DEPENDENCIES ########################################################
 
-DEPENDENCIES := $(ENV)/.pipenv-$(shell bin/checksum Pipfile*)
-METADATA := *.egg-info
+DEPENDENCIES := $(VENV)/.pipenv-$(shell bin/checksum Pipfile* setup.py)
 
 .PHONY: install
-install: $(DEPENDENCIES) $(METADATA)
+install: $(DEPENDENCIES)
 
 $(DEPENDENCIES):
-	pipenv install --dev
-	@ touch $@
-
-$(METADATA): setup.py
 	pipenv run python setup.py develop
+	pipenv install --dev
 	@ touch $@
 
 # CHECKS ######################################################################
@@ -88,7 +79,7 @@ pydocstyle: install
 
 NOSE := pipenv run nosetests
 COVERAGE := pipenv run coverage
-COVERAGE_SPACE := pipenv run coverage.space
+COVERAGESPACE := pipenv run coveragespace
 
 RANDOM_SEED ?= $(shell date +%s)
 
@@ -103,7 +94,7 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install .clean-test
 	$(NOSE) $(PACKAGE) $(NOSE_OPTIONS)
-	$(COVERAGE_SPACE) $(REPOSITORY) unit
+	$(COVERAGESPACE) $(REPOSITORY) unit
 
 .PHONY: test-int
 test-int: test-all
@@ -111,7 +102,7 @@ test-int: test-all
 .PHONY: test-all
 test-all: install .clean-test
 	TEST_INTEGRATION=true $(NOSE) $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
-	$(COVERAGE_SPACE) $(REPOSITORY) overall
+	$(COVERAGESPACE) $(REPOSITORY) overall
 
 .PHONY: read-coverage
 read-coverage:
@@ -211,7 +202,7 @@ TWINE := pipenv run twine
 upload: dist ## Upload the current version to PyPI
 	git diff --name-only --exit-code
 	$(TWINE) upload dist/*.*
-	bin/open https://pypi.python.org/pypi/$(PROJECT)
+	bin/open https://pypi.org/project/$(PROJECT)
 
 # CLEANUP #####################################################################
 
@@ -220,7 +211,7 @@ clean: .clean-build .clean-docs .clean-test .clean-install ## Delete all generat
 
 .PHONY: clean-all
 clean-all: clean
-	rm -rf $(ENV)
+	rm -rf $(VENV)
 
 .PHONY: .clean-install
 .clean-install:

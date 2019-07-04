@@ -88,7 +88,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                     "  normative: false" + '\n'
                     "  ref: ''" + '\n'
                     "  reviewed: null" + '\n'
-                    "  text: |" + '\n' +
+                    "  text: |" + '\n'
                     "    Heading" + '\n\n')
         # Act
         lines = exporter.export_lines(self.item)
