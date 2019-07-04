@@ -146,9 +146,6 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield '<head>'
     yield ('<meta http-equiv="content-type" content="text/html; '
            'charset={charset}">'.format(charset=charset))
-    # yield '<style type="text/css">'
-    # yield from _lines_css()
-    # yield '</style>'
     yield '<link rel="stylesheet" href="assets/doorstop/bootstrap.min.css" />'
     yield '<link rel="stylesheet" href="assets/doorstop/general.css" />'
     yield '</head>'

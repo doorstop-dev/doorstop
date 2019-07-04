@@ -60,4 +60,4 @@ SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 7867
 
 # Beta Features
-ENABLE_HEADERS = True
+ENABLE_HEADERS = False
