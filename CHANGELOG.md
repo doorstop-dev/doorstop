@@ -1,16 +1,5 @@
 # Revision History
 
-## 1.5 (unreleased)
-
-- Added preliminary support for item headers ([@rickeywang](https://github.com/jacebrowning/doorstop/pull/285)
-- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/jacebrowning/doorstop/pull/290))
-    + Converted document outline to a tree view.
-    + Made documents navigable via clicking links.
-    + Added an icon for Linux and Windows.
-
-## 1.4 (2017/10/22)
-
-- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
 ## 1.6 (unreleased)
 
 - Updated `edit` and `reorder` commands to use `$EDITOR` ([@aars](https://github.com/jacebrowning/doorstop/pull/316)
