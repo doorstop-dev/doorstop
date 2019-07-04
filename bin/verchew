@@ -128,8 +128,6 @@ def parse_args():
                         help="generate a sample configuration file")
     parser.add_argument('--exit-code', action='store_true',
                         help="return a non-zero exit code on failure")
-    parser.add_argument('-v', '--verbose', action='count', default=0,
-                        help="enable verbose logging")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-v', '--verbose', action='count', default=0,
