@@ -69,9 +69,25 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
     """Mock Item class with stubbed file IO."""
 
+    def _no_get_issues_document(self, document, skip):  # pylint: disable=W0613,R0201
+        return
+        yield  # pylint: disable=W0101
+
+    def disable_get_issues_document(self):
+        self._get_issues_document = self._no_get_issues_document
+
 
 class MockDocument(MockFileObject, Document):  # pylint: disable=W0223,R0902
     """Mock Document class with stubbed file IO."""
+
+
+class MockSimpleDocument:
+    """Mock Document class with basic default members."""
+
+    def __init__(self):
+        self.parent = None
+        self.prefix = 'RQ'
+        self._items = []
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
