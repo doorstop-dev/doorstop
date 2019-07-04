@@ -15,7 +15,7 @@ When a project utilizes this tool, each linkable item (requirement, test case, e
 
 Doorstop is under active development and we welcome contributions.
 
-The project is licensed as GPLv3.
+The project is licensed as [LGPLv3](https://github.com/jacebrowning/doorstop/blob/develop/LICENSE.md).
 
 To report a problem or a security vulnerability please [raise an issue](https://github.com/jacebrowning/doorstop/issues).
 
