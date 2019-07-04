@@ -27,9 +27,33 @@ Hello, world!
 
 Hello, world!
 
+```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+@startuml
+Author --> (Create Document)
+Author --> (Create Item)
+Author --> (Link Item to Document)
+Author --> (Link Item to other Item)
+Author --> (Edit Item)
+Author --> (Review Item)
+Author -> (Delete Item)
+Author -> (Delete Document)
+(Export) <- (Author)
+(Import) <- (Author)
+Reviewer --> (Review Item)
+System --> (Suspect Changes)
+System --> (Integrity)
+@enduml
+```
+
 ## 2.1 REQ2-001 {#REQ2-001 }
 
 Hello, world!
+
+Test Math Expressions in Latex Style:
+
+Inline Style 1: $a \ne 0$
+Inline Style 2: \(ax^2 + bx + c = 0\)
+Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
 *Links: REQ001*
 

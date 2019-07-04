@@ -1,8 +1,6 @@
-# Coming Soon
+# Desktop Client
 
-An **experimental** desktop graphical interface (GUI) is available as a way to perform basic editing tasks.
-
-To launch the program:
+An **experimental** desktop graphical interface (GUI) is available as a way to perform basic editing tasks. To launch the program:
 
 ```sh
 $ doorstop-gui

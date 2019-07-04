@@ -163,6 +163,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_item.uid = 'KNOWN-001'
         mock_item.document = Mock()
         mock_item.document.prefix = 'KNOWN'
+        mock_item.header = None
         mock_item_unknown = Mock(spec=['uid'])
         mock_item_unknown.uid = 'UNKNOWN-002'
         mock_trace = [
@@ -220,6 +221,21 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                                      "level: 1.1.0" + '\n'
                                      "normative: false"))
         expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
+        lines = publisher.publish_lines(item, '.md', linkify=True)
+        # Act
+        text = ''.join(line + '\n' for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
+    def test_multi_line_heading_to_markdown_no_heading_levels(self):
+        """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
+        item = MockItemAndVCS('path/to/req3.yml',
+                              _file=("links: [sys3]" + '\n'
+                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                                     "level: 1.1.0" + '\n'
+                                     "normative: false"))
+        expected = "## Heading {#req3 }\nThis section describes publishing.\n\n"
         lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
         text = ''.join(line + '\n' for line in lines)

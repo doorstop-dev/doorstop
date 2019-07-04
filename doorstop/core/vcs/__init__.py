@@ -38,8 +38,7 @@ def find_root(cwd):
         if path == parent:
             msg = "no working copy found from: {}".format(cwd)
             raise DoorstopError(msg)
-        else:
-            path = parent
+        path = parent
 
     log.debug("found working copy: {}".format(path))
     return path

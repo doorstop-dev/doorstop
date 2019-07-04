@@ -54,7 +54,7 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
         super().__init__(*args, max_help_position=40, **kwargs)
 
 
-class WarningFormatter(logging.Formatter, object):
+class WarningFormatter(logging.Formatter):
     """Logging formatter that displays verbose formatting for WARNING+."""
 
     def __init__(self, default_format, verbose_format, *args, **kwargs):
@@ -123,7 +123,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text) or {}
+        data = yaml.load(text, Loader=yaml.FullLoader) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
@@ -220,6 +220,6 @@ def delete_contents(dirname):
             try:
                 os.remove(os.path.join(dirname, file))
             except FileExistsError:
-                log.warning("Two assets folders have files or directories " +
+                log.warning("Two assets folders have files or directories "
                             "with the same name")
                 raise

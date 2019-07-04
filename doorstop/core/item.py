@@ -31,19 +31,6 @@ def requires_tree(func):
     return wrapped
 
 
-def requires_document(func):
-    """Require a document reference."""
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        if not self.document:
-            name = func.__name__
-            msg = "`{}` can only be called with a document".format(name)
-            log.critical(msg)
-            return None
-        return func(self, *args, **kwargs)
-    return wrapped
-
-
 class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     """Represents an item file with linkable text."""
 
@@ -58,7 +45,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
 
-    def __init__(self, path, root=os.getcwd(), **kwargs):
+    def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
 
         :param path: path to Item file
@@ -84,7 +71,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Initialize the item
         self.path = path
         self.root = root
-        self.document = kwargs.get('document')
+        self.document = document
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Item.auto)
         # Set default values
@@ -142,7 +129,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
-        item = Item(path2, root=root, document=document, tree=tree, auto=False)
+        item = Item(document, path2, root=root, tree=tree, auto=False)
         item.level = level if level is not None else item.level
         if auto or (auto is None and Item.auto):
             item.save()
@@ -475,7 +462,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @property
     @requires_tree
-    @requires_document
     def parent_documents(self):
         """Get a list of documents that this item's document should link to.
 
@@ -493,17 +479,30 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     @auto_save
-    def edit(self, tool=None):
+    def edit(self, tool=None, edit_all=True):
         """Open the item for editing.
 
         :param tool: path of alternate editor
+        :param edit_all: True to edit the whole item,
+            False to only edit the text.
 
         """
         # Lock the item
         if self.tree:
             self.tree.vcs.lock(self.path)
-        # Open in an editor
-        editor.edit(self.path, tool=tool)
+        # Edit the whole file in an editor
+        if edit_all:
+            editor.edit(self.path, tool=tool)
+        # Edit only the text part in an editor
+        else:
+            # Edit the text in a temporary file
+            edited_text = editor.edit_tmp_content(title=str(self.uid),
+                                                  original_content=str(self.text),
+                                                  tool=tool)
+            # Save the text in the actual item file
+            self.text = edited_text
+            self.save()
+
         # Force reloaded
         self._loaded = False
 
@@ -618,7 +617,10 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
 
-        # Verify an item has upward links
+        # Verify that normative, non-derived items in a child document have at
+        # least one link.  It is recommended that these items have an upward
+        # link to an item in the parent document, however, this is not
+        # enforced.  An info message is generated if this is not the case.
         if all((document.parent,
                 self.normative,
                 not self.derived)) and not self.links:
@@ -875,10 +877,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @delete_item
     def delete(self, path=None):
         """Delete the item."""
-        pass  # the item is deleted in the decorated method
 
 
-class UnknownItem(object):
+class UnknownItem:
     """Represents an unknown item, which doesn't have a path."""
 
     UNKNOWN_PATH = '???'  # string to represent an unknown path

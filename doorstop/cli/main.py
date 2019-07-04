@@ -12,6 +12,8 @@ from doorstop.core import publisher, vcs, document
 
 log = common.logger(__name__)
 
+EDITOR = os.environ.get('EDITOR')
+
 
 def main(args=None):  # pylint: disable=R0915
     """Process command-line arguments and run the program."""
@@ -147,6 +149,15 @@ def _add(subs, shared):
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument('-c', '--count', default=1, type=utilities.positive_int,
                      help="number of items to create")
+    sub.add_argument('--edit', action='store_true',
+                     help=("Open default editor to edit the added item. "
+                           "Default editor can be set using the environment "
+                           "variable EDITOR."))
+    sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                     default=EDITOR,
+                     help=("text editor to open the document item (only"
+                           "required if $EDITOR is not found in"
+                           "environment). Useless option without --edit"))
 
 
 def _remove(subs, shared):
@@ -164,6 +175,10 @@ def _edit(subs, shared):
                           help=info, **shared)
     sub.add_argument('label',
                      help="item UID or document prefix to open for editing")
+    sub.add_argument('-a', '--all', action='store_true',
+                     help=("Edit the whole item with all its attributes. "
+                           "Without this option, only its text is opened for "
+                           "edition. Useless when editing a whole document."))
     group = sub.add_mutually_exclusive_group()
     group.add_argument('-i', '--item', action='store_true',
                        help="indicates the 'label' is an item UID")
@@ -180,8 +195,8 @@ def _edit(subs, shared):
                        help="edit document as exported XLSX")
     required = sub.add_argument_group('required arguments')
     required.add_argument('-T', '--tool', metavar='PROGRAM',
-                          help="text editor to open the document item",
-                          required=True)
+                          default=EDITOR,
+                          help="text editor to open the document item (only required if $EDITOR is not found in environment)")
 
 
 def _reorder(subs, shared):
@@ -196,6 +211,7 @@ def _reorder(subs, shared):
     group.add_argument('-m', '--manual', action='store_true',
                        help="do not automatically reorder the items")
     sub.add_argument('-T', '--tool', metavar='PROGRAM',
+                     default=EDITOR,
                      help="text editor to open the document index")
 
 

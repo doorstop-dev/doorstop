@@ -1,8 +1,8 @@
 [![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
 [![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
-[![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.python.org/pypi/Doorstop)
-[![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754) 
+[![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
+[![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754)
 [![Gitter](https://badges.gitter.im/jacebrowning/doorstop.svg)](https://gitter.im/jacebrowning/doorstop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Overview
@@ -30,7 +30,7 @@ Additional reading:
 
 ## Requirements
 
-* Python 3.4+
+* Python 3.5+
 * A version control system for requirements storage
 
 ## Installation

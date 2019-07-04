@@ -1,12 +1,13 @@
 [[source]]
 
-url = "https://pypi.python.org/simple"
+url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
 [packages]
 
 sappy = "*"
+pyyaml = "~=5.1"
 
 [dev-packages]
 
@@ -23,12 +24,15 @@ nose-show-skipped = "*"
 expecter = "*"
 
 # Reports
-coverage-space = "*"
+coveragespace = "*"
 
 # Documentation
 mkdocs = "*"
 docutils = "*"
 pygments = "*"
+markdown = "*"
+python-markdown-math = "*"
+plantuml-markdown = "*"
 
 # Build
 wheel = "*"

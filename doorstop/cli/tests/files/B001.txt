@@ -1,0 +1,10 @@
+active: true
+derived: false
+level: 1.0
+links:
+- B002: 26f9500c1a290315dbfffade4a4a3eba
+normative: true
+ref: ''
+reviewed: e393ce229853b50eb4f8b4e27457bb22
+text: |
+  B001
