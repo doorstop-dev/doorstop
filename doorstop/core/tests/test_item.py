@@ -12,7 +12,7 @@ from doorstop.core.item import Item, UnknownItem
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 from doorstop.core.tests import FILES, EMPTY, EXTERNAL
-from doorstop.core.tests import MockItem
+from doorstop.core.tests import MockItem, MockSimpleDocument
 
 
 YAML_DEFAULT = """
@@ -34,15 +34,14 @@ class TestItem(unittest.TestCase):
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')
-        self.item = MockItem(None, path)
+        self.item = MockItem(MockSimpleDocument(), path)
 
     def test_init_invalid(self):
         """Verify an item cannot be initialized from an invalid path."""
         self.assertRaises(DoorstopError, Item, None, 'not/a/path')
 
-    def test_object_references(self):
-        """Verify a standalone item does not have object references."""
-        self.assertIs(None, self.item.document)
+    def test_no_tree_references(self):
+        """Verify a standalone item has no tree reference."""
         self.assertIs(None, self.item.tree)
 
     def test_load_empty(self):
@@ -535,7 +534,7 @@ class TestItem(unittest.TestCase):
     def test_new(self):
         """Verify items can be created."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
+        item = MockItem.new(None, MockSimpleDocument(),
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         path = os.path.join(EMPTY, 'TEST00042.yml')
@@ -548,7 +547,7 @@ class TestItem(unittest.TestCase):
         """Verify new items are cached."""
         mock_tree = Mock()
         mock_tree._item_cache = {}
-        item = MockItem.new(mock_tree, None,
+        item = MockItem.new(mock_tree, MockSimpleDocument(),
                             EMPTY, FILES, 'TEST00042',
                             level=(1, 2, 3))
         self.assertEqual(item, mock_tree._item_cache[item.uid])
@@ -558,7 +557,7 @@ class TestItem(unittest.TestCase):
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
+        item = MockItem.new(None, MockSimpleDocument(),
                             EMPTY, FILES, 'VSM.HLR_01-002-042',
                             level=(1, 0))
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
@@ -614,6 +613,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
         self.item.links = [{'mock_uid': True}]
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
@@ -625,6 +625,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
         self.item.links = [{'mock_uid': None}]
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
@@ -632,6 +633,7 @@ class TestItem(unittest.TestCase):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
         self.item.links = ['a']
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
@@ -643,6 +645,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
         self.item.tree = mock_tree
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
@@ -654,6 +657,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
         self.item.tree = mock_tree
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     def test_validate_document(self):

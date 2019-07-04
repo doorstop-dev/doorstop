@@ -576,17 +576,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             yield DoorstopWarning("non-normative, but has links")
 
         # Check links against the document
-        if self.document:
-            yield from self._get_issues_document(self.document, skip)
+        yield from self._get_issues_document(self.document, skip)
 
-        # Check links against the tree
         if self.tree:
+            # Check links against the tree
             yield from self._get_issues_tree(self.tree)
 
-        # Check links against both document and tree
-        if self.document and self.tree:
-            yield from self._get_issues_both(self.document, self.tree,
-                                             skip)
+            # Check links against both document and tree
+            yield from self._get_issues_both(self.document, self.tree, skip)
 
         # Check review status
         if not self.reviewed:
