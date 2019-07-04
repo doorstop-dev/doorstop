@@ -16,17 +16,17 @@ class TestMain(unittest.TestCase):
     @patch('doorstop.gui.main.run', Mock(return_value=True))
     def test_gui(self):
         """Verify 'doorstop-gui' launches the GUI."""
-        self.assertIs(None, main([]))
+        self.assertIs(0, main([]))
 
     @patch('doorstop.gui.main.run', Mock(return_value=False))
     def test_exit(self):
         """Verify 'doorstop-gui' treats False as an error ."""
-        self.assertRaises(SystemExit, main, [])
+        self.assertIs(1, main([]))
 
     @patch('doorstop.gui.main.run', Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify 'doorstop-gui' treats KeyboardInterrupt as an error."""
-        self.assertRaises(SystemExit, main, [])
+        self.assertIs(1, main([]))
 
 
 class TestImport(unittest.TestCase):
@@ -46,12 +46,12 @@ class TestLogging(unittest.TestCase):
 
     def test_verbose_1(self):
         """Verify verbose level 1 can be set."""
-        self.assertIs(None, main(['-v']))
+        self.assertIs(0, main(['-v']))
 
     def test_verbose_2(self):
         """Verify verbose level 2 can be set."""
-        self.assertIs(None, main(['-v', '-v']))
+        self.assertIs(0, main(['-v', '-v']))
 
     def test_verbose_3(self):
         """Verify verbose level 1 can be set."""
-        self.assertIs(None, main(['-v', '-v', '-v']))
+        self.assertIs(0, main(['-v', '-v', '-v']))

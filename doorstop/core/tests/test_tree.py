@@ -71,20 +71,20 @@ class TestTreeStrings(unittest.TestCase):
         """Verify trees structure can be drawn (UTF-8)."""
         text = ("a" + '\n'
                 "│   " + '\n'
-                "├ ─ b1" + '\n'
+                "├── b1" + '\n'
                 "│   │   " + '\n'
-                "│   └ ─ d" + '\n'
+                "│   └── d" + '\n'
                 "│       │   " + '\n'
-                "│       └ ─ e" + '\n'
+                "│       └── e" + '\n'
                 "│   " + '\n'
-                "└ ─ b2" + '\n'
+                "└── b2" + '\n'
                 "    │   " + '\n'
-                "    ├ ─ c1" + '\n'
+                "    ├── c1" + '\n'
                 "    │   " + '\n'
-                "    └ ─ c2")
-        logging.debug('expected:\n' + text)
+                "    └── c2")
+        logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='UTF-8')
-        logging.debug('actual:\n' + text2)
+        logging.debug('actual:\n%s', text2)
         self.assertEqual(text, text2)
 
     def test_draw_cp437(self):
@@ -102,9 +102,9 @@ class TestTreeStrings(unittest.TestCase):
                 "    ├── c1" + '\n'
                 "    │   " + '\n'
                 "    └── c2")
-        logging.debug('expected:\n' + text)
+        logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='cp437')
-        logging.debug('actual:\n' + text2)
+        logging.debug('actual:\n%s', text2)
         self.assertEqual(text, text2)
 
     def test_draw_unknown(self):
@@ -122,9 +122,9 @@ class TestTreeStrings(unittest.TestCase):
                 "    +-- c1" + '\n'
                 "    |   " + '\n'
                 "    +-- c2")
-        logging.debug('expected:\n' + text)
+        logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='unknown')
-        logging.debug('actual:\n' + text2)
+        logging.debug('actual:\n%s', text2)
         self.assertEqual(text, text2)
 
     @patch('doorstop.settings.REORDER', False)
@@ -323,6 +323,25 @@ class TestTree(unittest.TestCase):
         """Verify two items can be linked."""
         self.tree.link_items('req1', 'req2')
         mock_link.assert_called_once_with('REQ002')
+
+    def test_link_items_self_reference(self):
+        """Verify an exception is raised with a self reference."""
+        try:
+            self.tree.link_items('req1', 'req1')
+            self.fail()
+        except DoorstopError as error:
+            self.assertEqual(str(error), "link would be self reference")
+
+    def test_link_items_cyclic_dependency(self):
+        """Verify an exception is raised with a cyclic dependency."""
+        self.tree.link_items('req1', 'sys2')
+        try:
+            self.tree.link_items('sys2', 'req1')
+            self.fail()
+        except DoorstopError as error:
+            self.assertEqual(str(error),
+                             "link would create a cyclic dependency: "
+                             "SYS002 -> REQ001 -> SYS002")
 
     def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""

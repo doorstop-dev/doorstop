@@ -2,8 +2,10 @@
 
 import os
 import textwrap
+import tempfile
 
 import markdown
+from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -17,6 +19,14 @@ import bottle
 EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
+    'mdx_outline',
+    'mdx_math',
+    PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
+                              cachedir=tempfile.gettempdir(),
+                              format='svg',
+                              classes='class1,class2',
+                              title='UML',
+                              alt='UML Diagram')
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
@@ -319,25 +329,28 @@ def _lines_markdown(obj, **kwargs):
                     h=heading, lev=level,
                     t=text_lines[0] if text_lines else '')
             else:
-                standard = "{h} {t}".format(h=heading, t=item.text)
+                standard = "{h} {t}".format(h=heading, t=text_lines[0] if text_lines else '')
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
         else:
 
+            uid = item.uid
+            if settings.ENABLE_HEADERS:
+                if item.header:
+                    uid = '{h} <small>{u}</small>'.format(h=item.header, u=item.uid)
+                else:
+                    uid = '{u}'.format(u=item.uid)
+
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {lev} <small>{u}</small>".format(h=heading,
-                                                                lev=level, u=item.uid)
+                standard = "{h} {lev} {u}".format(h=heading,
+                                                  lev=level, u=uid)
             else:
-                standard = "{h} {u}".format(h=heading, u=item.uid)
+                standard = "{h} {u}".format(h=heading, u=uid)
+
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
-
-            # Item Description
-            if item.header:
-                yield ""  # break before text
-                yield heading + item.header
 
             # Text
             if item.text:
@@ -477,6 +490,8 @@ def _table_of_contents_md(obj, linkify=None):
         if item.heading:
             lines = item.text.splitlines()
             heading = lines[0] if lines else ''
+        elif item.header:
+            heading = "{h}".format(h=item.header)
         else:
             if settings.ENABLE_HEADERS:
                 heading = item.header
@@ -536,7 +551,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
                                                      '..', 'views'))
             if 'baseurl' not in bottle.SimpleTemplate.defaults:
                 bottle.SimpleTemplate.defaults['baseurl'] = ''
-            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent)
+            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent, document=obj)
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise

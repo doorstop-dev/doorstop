@@ -241,7 +241,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_yes(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (yes)."""
         self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -249,7 +249,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_no(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (no)."""
         self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -264,7 +264,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
         """Verify 'doorstop reorder' can be called with a document (manual)."""
         self.assertIs(None, main(['reorder', self.prefix, '--manual']))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertEqual(0, mock_reorder_auto.call_count)
         self.assertFalse(os.path.exists(self.path))
 
@@ -294,8 +294,8 @@ class TestEdit(unittest.TestCase):
 
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
-        """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor']))
+        """Verify 'doorstop edit' can be called with an item (all)."""
+        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor', '--all']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
         mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 

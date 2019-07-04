@@ -78,7 +78,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_document
     def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
-        """Internal method to create a new document.
+        """Create a new document.
 
         :param tree: reference to tree that contains this document
 
@@ -189,8 +189,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root,
-                                document=self, tree=self.tree)
+                    item = Item(self, path, root=self.root, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
@@ -226,8 +225,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def assets(self):
         """Get the path to the document's assets if they exist else `None`."""
         path = os.path.join(self.path, Document.ASSETS)
-        if os.path.isdir(path):
-            return path
+        return path if os.path.isdir(path) else None
 
     @property
     @auto_load
@@ -326,8 +324,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
         path = os.path.join(self.path, Document.INDEX)
-        if os.path.isfile(path):
-            return path
+        return path if os.path.isfile(path) else None
 
     @index.setter
     def index(self, value):

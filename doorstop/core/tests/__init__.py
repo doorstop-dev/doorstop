@@ -16,7 +16,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '..', '..', '..'))
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
-FILES_BETA = os.path.join(os.path.dirname(__file__), 'files_beta') # tests for beta features
+FILES_BETA = os.path.join(os.path.dirname(__file__), 'files_beta')  # tests for beta features
 SYS = os.path.join(FILES, 'parent')
 TST = os.path.join(FILES, 'child')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory
@@ -90,7 +90,7 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
     """Mock item class with stubbed IO and a mock VCS reference."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(None, *args, **kwargs)
         self.tree = Mock()
         self.tree.vcs = WorkingCopy(None)
 
@@ -149,7 +149,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     document.copy_assets = Mock()
     document.assets = None
 
-    item3 = MockItem('path/to/req4.yml', _file=(
+    item3 = MockItem(None, 'path/to/req4.yml', _file=(
         "links: [sys4]" + '\n'
         "text: 'This shall...'" + '\n'
         "ref: Doorstop.sublime-project" + '\n'

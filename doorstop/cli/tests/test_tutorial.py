@@ -48,8 +48,10 @@ class TestBase(unittest.TestCase):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        if subprocess.call(cmd, shell=True, stderr=subprocess.PIPE) != 0:
+        cp = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+        if cp.returncode != 0:
             raise AssertionError("command failed: doorstop {}".format(args))
+        return cp
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -159,6 +161,31 @@ class TestSection1(TestBase):
         self.doorstop("export TST")
         self.doorstop("export all dirpath/to/exports")
         self.doorstop("export REQ path/to/req.xlsx")
+
+    def test_validate_cycles(self):
+        """Verify cycle detection is working."""
+
+        self.doorstop("create A .")
+        self.doorstop("create B b --parent A")
+
+        src = os.path.join(FILES, 'A001.txt')
+        dst = os.path.join(self.temp, 'A001.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'A002.txt')
+        dst = os.path.join(self.temp, 'A002.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'B001.txt')
+        dst = os.path.join(self.temp, 'b', 'B001.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'B002.txt')
+        dst = os.path.join(self.temp, 'b', 'B002.yml')
+        shutil.copy(src, dst)
+
+        cp = self.doorstop()
+        self.assertIn(b'WARNING: A: A001: detected a cycle with a back edge from B001 to A001',
+                      cp.stderr)
+        self.assertIn(b'WARNING: A: A001: detected a cycle with a back edge from A002 to A002',
+                      cp.stderr)
 
 
 if __name__ == '__main__':
