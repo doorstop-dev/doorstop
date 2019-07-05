@@ -315,7 +315,7 @@ def _lines_markdown(obj, **kwargs):
     linkify = kwargs.get('linkify', False)
     for item in iter_items(obj):
 
-        heading = '##' * min(item.depth, 2) # Don't have anything smaller than h4
+        heading = '##' * min(item.depth, 2)  # Don't have anything smaller than h4
         level = _format_level(item.level)
 
         if item.heading:
@@ -382,7 +382,7 @@ def _lines_markdown(obj, **kwargs):
                     yield label_links
 
         yield ""  # break between items
-        yield "***" # horizontal rule between items
+        yield "***"  # horizontal rule between items
 
 
 def _format_level(level):
@@ -466,6 +466,7 @@ def _format_html_item_link_index_table(item, linkify=True):
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
+
 def _format_md_label_links(label, links, linkify):
     """Join a string of label and links with formatting."""
     if linkify:
@@ -536,7 +537,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
 
     if toc:
         toc_md = _table_of_contents_md(obj, True)
-        toc_md = '[🡨 Index](index.html) \n\n ' + toc_md # Add a link to index
+        toc_md = '[🡨 Index](index.html) \n\n ' + toc_md  # Add a link to index
         toc_html = markdown.markdown(toc_md, extensions=extensions)
     else:
         toc_html = ''
