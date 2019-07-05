@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Shared functions for the `doorstop.server` package."""
 
 from doorstop import common

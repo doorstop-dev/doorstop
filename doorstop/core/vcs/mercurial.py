@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Plug-in module to store requirements in a Mercurial repository."""
 
 from doorstop import common

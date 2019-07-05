@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Core package for Doorstop."""
 
 from doorstop.core.item import Item
