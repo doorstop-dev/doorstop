@@ -335,13 +335,10 @@ class TestTree(unittest.TestCase):
     def test_link_items_cyclic_dependency(self):
         """Verify an exception is raised with a cyclic dependency."""
         self.tree.link_items('req1', 'sys2')
-        try:
-            self.tree.link_items('sys2', 'req1')
-            self.fail()
-        except DoorstopError as error:
-            self.assertEqual(str(error),
-                             "link would create a cyclic dependency: "
-                             "SYS002 -> REQ001 -> SYS002")
+        msg = "^link would create a cyclic dependency: " \
+              "SYS002 -> REQ001 -> SYS002$"
+        self.assertRaisesRegex(DoorstopError, msg,
+                               self.tree.link_items, 'sys2', 'req1')
 
     def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
