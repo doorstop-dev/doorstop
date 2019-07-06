@@ -128,14 +128,18 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
-            if key == 'prefix':
-                self._data['prefix'] = Prefix(value)
-            elif key == 'sep':
-                self._data['sep'] = value.strip()
-            elif key == 'parent':
-                self._data['parent'] = value.strip()
-            elif key == 'digits':
-                self._data['digits'] = int(value)
+            try:
+                if key == 'prefix':
+                    self._data['prefix'] = Prefix(value)
+                elif key == 'sep':
+                    self._data['sep'] = value.strip()
+                elif key == 'parent':
+                    self._data['parent'] = value.strip()
+                elif key == 'digits':
+                    self._data['digits'] = int(value)
+            except Exception:
+                msg = "invalid value for '{}' in: {}".format(key, self.config)
+                raise DoorstopError(msg)
         # Set meta attributes
         self._loaded = True
         if reload:

@@ -39,6 +39,11 @@ settings:
   sep: '-'
 """.lstrip()
 
+YAML_INVALID = """
+settings:
+  digits: oops
+""".lstrip()
+
 
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
@@ -86,6 +91,12 @@ class TestDocument(unittest.TestCase):
         self.document._file = YAML_CUSTOM_PARENT
         self.document.load()
         self.assertEqual('PARENT', self.document.parent)
+
+    def test_load_invalid(self):
+        """Verify that an invalid document config raises an exception."""
+        self.document._file = YAML_INVALID
+        msg = "^invalid value for 'digits' in: .*\\.doorstop.yml$"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.load)
 
     def test_save_empty(self):
         """Verify saving calls write."""
