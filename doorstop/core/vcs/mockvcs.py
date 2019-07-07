@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Plug-in module to simulate the storage of requirements in a repository."""
 import os
 

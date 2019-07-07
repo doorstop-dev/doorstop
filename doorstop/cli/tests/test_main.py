@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.cli.main module."""
 
 from unittest.mock import patch, Mock

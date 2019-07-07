@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Plug-in module to store requirements in a Subversion (1.7) repository."""
 
 import os

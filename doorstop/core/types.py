@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Common classes and functions for the `doorstop.core` package."""
 
 import os
