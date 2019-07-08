@@ -664,25 +664,19 @@ class TestItem(unittest.TestCase):
 
     def test_validate_document(self):
         """Verify an item can be checked against a document."""
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
+        self.item.document.parent = 'fake'
         self.assertTrue(self.item.validate())
 
     def test_validate_document_with_links(self):
         """Verify an item can be checked against a document with links."""
         self.item.link('unknown1')
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
+        self.item.document.parent = 'fake'
         self.assertTrue(self.item.validate())
 
     def test_validate_document_with_bad_link_uids(self):
         """Verify an item can be checked against a document w/ bad links."""
         self.item.link('invalid')
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
+        self.item.document.parent = 'fake'
         self.assertFalse(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
@@ -737,15 +731,12 @@ class TestItem(unittest.TestCase):
         mock_item = Mock()
         mock_item.links = [self.item.uid]
 
-        mock_document = Mock()
-        mock_document.parent = 'BOTH'
-        mock_document.prefix = 'BOTH'
+        self.item.document.parent = 'BOTH'
+        self.item.document.prefix = 'BOTH'
+        self.item.document.set_items([mock_item])
 
-        mock_document.__iter__ = mock_iter([mock_item])
         mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter([mock_document])
-
-        self.item.document = mock_document
+        mock_tree.__iter__ = mock_iter([self.item.document])
         self.item.tree = mock_tree
 
         self.assertTrue(self.item.validate())
@@ -772,14 +763,9 @@ class TestItem(unittest.TestCase):
 
         self.item.link('fake1')
 
-        mock_document = Mock()
-        mock_document.prefix = 'RQ'
-
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda uid: Mock(uid='fake1')
-
-        self.item.document = mock_document
         self.item.tree = mock_tree
 
         self.assertTrue(self.item.validate())
