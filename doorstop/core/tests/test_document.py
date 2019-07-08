@@ -46,6 +46,11 @@ settings:
   digits: oops
 """.lstrip()
 
+YAML_UNKNOWN = """
+settings:
+  John: 'Doe'
+""".lstrip()
+
 
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
@@ -98,6 +103,12 @@ class TestDocument(unittest.TestCase):
         """Verify that an invalid document config raises an exception."""
         self.document._file = YAML_INVALID
         msg = "^invalid value for 'digits' in: .*\\.doorstop.yml$"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.load)
+
+    def test_load_unknown(self):
+        """Verify loading a document config with an unknown key fails."""
+        self.document._file = YAML_UNKNOWN
+        msg = "^unexpected document setting 'John' in: .*\\.doorstop.yml$"
         self.assertRaisesRegex(DoorstopError, msg, self.document.load)
 
     def test_save_empty(self):
