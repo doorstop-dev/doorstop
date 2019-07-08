@@ -10,12 +10,9 @@ puts-step() {
   echo "-----> $@"
 }
 
-puts-step "Installing setuptools"
-pip install setuptools | indent
-
-puts-step "Installing Doorstop"
-python setup.py install | indent
+puts-step "Installing dependencies with poetry"
+poetry install | indent
 
 puts-step "Generating HTML from requirements"
 touch .mockvcs
-doorstop publish all public -b header | indent
+poetry run doorstop publish all public -b header | indent
