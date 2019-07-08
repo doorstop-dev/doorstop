@@ -5,9 +5,10 @@
 import unittest
 from unittest.mock import patch, Mock, MagicMock
 
+import logging
 import os
 
-from doorstop import common
+from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
@@ -27,6 +28,23 @@ ref: ''
 reviewed: null
 text: ''
 """.lstrip()
+
+
+class ListLogHandler(logging.NullHandler):
+    def __init__(self, log):
+        super().__init__()
+        self.records = []
+        self.log = log
+
+    def __enter__(self):
+        self.log.addHandler(self)
+        return self
+
+    def __exit__(self, kind, value, traceback):
+        self.log.removeHandler(self)
+
+    def handle(self, record):
+        self.records.append(str(record.msg))
 
 
 class TestItem(unittest.TestCase):
@@ -577,8 +595,10 @@ class TestItem(unittest.TestCase):
     def test_validate_invalid_ref(self):
         """Verify an invalid reference fails validity."""
         with patch('doorstop.core.item.Item.find_ref',
-                   Mock(side_effect=DoorstopError)):
-            self.assertFalse(self.item.validate())
+                   Mock(side_effect=DoorstopError("test invalid ref"))):
+            with ListLogHandler(core.base.log) as handler:
+                self.assertFalse(self.item.validate())
+                self.assertIn("test invalid ref", handler.records)
 
     def test_validate_inactive(self):
         """Verify an inactive item is not checked."""
@@ -605,7 +625,9 @@ class TestItem(unittest.TestCase):
     def test_validate_reviewed_second(self):
         """Verify that a modified stamp fails review."""
         self.item._data['reviewed'] = Stamp('abc123')
-        self.assertFalse(self.item.validate())
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("unreviewed changes", handler.records)
 
     def test_validate_cleared(self):
         """Verify that checking a cleared link updates the stamp."""
@@ -677,7 +699,9 @@ class TestItem(unittest.TestCase):
         """Verify an item can be checked against a document w/ bad links."""
         self.item.link('invalid')
         self.item.document.parent = 'fake'
-        self.assertFalse(self.item.validate())
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("invalid UID in links: invalid", handler.records)
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_tree(self):
@@ -714,7 +738,9 @@ class TestItem(unittest.TestCase):
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(side_effect=DoorstopError)
         self.item.tree = mock_tree
-        self.assertFalse(self.item.validate())
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("linked to unknown item: fake1", handler.records)
 
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both(self):
