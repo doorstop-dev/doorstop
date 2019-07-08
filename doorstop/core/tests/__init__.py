@@ -91,6 +91,12 @@ class MockSimpleDocument:
         self.prefix = 'RQ'
         self._items = []
 
+    def __iter__(self):
+        yield from self._items
+
+    def set_items(self, items):
+        self._items = items
+
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
     """Mock Document class that is always skipped in tree placement."""
