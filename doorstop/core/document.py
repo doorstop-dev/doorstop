@@ -132,13 +132,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for key, value in sets.items():
             try:
                 if key == 'prefix':
-                    self._data['prefix'] = Prefix(value)
+                    self._data[key] = Prefix(value)
                 elif key == 'sep':
-                    self._data['sep'] = value.strip()
+                    self._data[key] = value.strip()
                 elif key == 'parent':
-                    self._data['parent'] = value.strip()
+                    self._data[key] = value.strip()
                 elif key == 'digits':
-                    self._data['digits'] = int(value)
+                    self._data[key] = int(value)
             except Exception:
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
                 raise DoorstopError(msg)
@@ -156,14 +156,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         sets = {}
         for key, value in self._data.items():
             if key == 'prefix':
-                sets['prefix'] = str(value)
+                sets[key] = str(value)
             elif key == 'sep':
-                sets['sep'] = value
+                sets[key] = value
             elif key == 'digits':
-                sets['digits'] = value
+                sets[key] = value
             elif key == 'parent':
                 if value:
-                    sets['parent'] = value
+                    sets[key] = value
             else:
                 data[key] = value
         data['settings'] = sets
