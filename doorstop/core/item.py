@@ -489,6 +489,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     @auto_save
+    def set_attributes(self, attributes):
+        """Set the specified item's attributes."""
+        for key, value in attributes.items():
+            self._data[key] = value
+
+    @auto_save
     def edit(self, tool=None, edit_all=True):
         """Open the item for editing.
 

@@ -55,6 +55,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Document.auto)
         # Set default values
+        self._attribute_defaults = None
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
@@ -158,7 +159,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Store parsed attributes
         attributes = data.get('attributes', {})
         for key, value in attributes.items():
-            if key == 'reviewed':
+            if key == 'defaults':
+                self._attribute_defaults = value
+            elif key == 'reviewed':
                 self._extended_reviewed = sorted(set(v for v in value))
             else:
                 msg = "unexpected attributes configuration '{}' in: {}".format(
@@ -192,6 +195,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         data['settings'] = sets
         # Save the attributes
         attributes = {}
+        if self._attribute_defaults:
+            attributes['defaults'] = self._attribute_defaults
         if self._extended_reviewed:
             attributes['reviewed'] = self._extended_reviewed
         if attributes:
@@ -411,6 +416,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
+        if self._attribute_defaults:
+            item.set_attributes(self._attribute_defaults)
         if level and reorder:
             self.reorder(keep=item)
         return item

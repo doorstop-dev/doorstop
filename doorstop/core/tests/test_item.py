@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
 
 """Unit tests for the doorstop.core.item module."""
 
@@ -17,6 +18,25 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 YAML_DEFAULT = """
 active: true
 derived: false
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: ''
+""".lstrip()
+
+YAML_EXTENDED_ATTRIBUTES = """
+a:
+- b
+- c
+active: true
+d:
+  e: f
+  g: h
+derived: false
+i: j
+k: null
 level: 1.0
 links: []
 normative: true
@@ -79,6 +99,15 @@ class TestItem(unittest.TestCase):
         """Verify saving calls write."""
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
+
+    def test_set_attributes(self):
+        """Verify setting attributes calls write with the attributes."""
+        self.item.set_attributes(
+            {'a': ['b', 'c'], 'd': {'e': 'f', 'g': 'h'}, 'i': 'j', 'k': None}
+        )
+        self.item._write.assert_called_once_with(
+            YAML_EXTENDED_ATTRIBUTES, self.item.path
+        )
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):

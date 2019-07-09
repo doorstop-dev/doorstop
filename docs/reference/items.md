@@ -232,6 +232,31 @@ In this example, an extended attribute `invented-by` is added to the item.
 invented-by: some.guy@email.com
 ```
 
+#### Defaults for extended attributes
+
+Optionally, you can add custom default values for extended attributes.  Add
+them as key-value pairs to the `defaults` dictionary under the `attributes`
+section in the corresponding document configuration file `.doorstop.yml`.
+There is no command to maintain this configuration option.  You have to edit
+the document configuration file `.doorstop.yml` by hand.
+
+```yaml
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  defaults:
+    attribute-key-0: a scalar default value
+    attribute-key-1:
+    - default values can
+    - be lists
+    attribute-key-2:
+      default: values can
+      be: dictionaries
+    attribute-key-3: ... default values can be arbitrarily complex
+```
+
 #### Extended reviewed attributes
 
 By default, the values of extended attributes do **not** contribute to the
