@@ -65,7 +65,7 @@ def configure_logging(verbosity=0):
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
-    if not logging.root.handlers:  # pragma: no cover (manual test)
+    if not logging.root.handlers:
         logging.basicConfig(level=level)
         logging.captureWarnings(True)
         formatter = common.WarningFormatter(default_format, verbose_format)

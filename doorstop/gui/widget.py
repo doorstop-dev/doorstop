@@ -6,11 +6,11 @@
 import sys
 from unittest.mock import Mock
 
-try:  # pragma: no cover (manual test)
+try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter import font
-except ImportError as _exc:  # pragma: no cover (manual test)
+except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()
@@ -43,7 +43,7 @@ styleDsTreeviewHeading = None
 # # Widget
 
 
-class _Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
+class _Listbox2(tk.Listbox):
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):

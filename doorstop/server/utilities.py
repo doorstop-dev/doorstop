@@ -13,7 +13,7 @@ class StripPathMiddleware:  # pylint: disable=R0903
     def __init__(self, app):
         self.app = app
 
-    def __call__(self, e, h):  # pragma: no cover (integration test)
+    def __call__(self, e, h):
         e['PATH_INFO'] = e['PATH_INFO'].rstrip('/')
         return self.app(e, h)
 
@@ -33,7 +33,7 @@ def build_url(host=None, port=None, path=None):
     return url
 
 
-def json_response(request):  # pragma: no cover (integration test)
+def json_response(request):
     """Determine if the request's response should be JSON."""
     if request.query.get('format') == 'json':
         return True

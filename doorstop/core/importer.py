@@ -206,7 +206,7 @@ def _file_xlsx(path, document, mapping=None):
             data.append(row2)
 
     # Warn about workbooks that may be sized incorrectly
-    if index >= 2 ** 20 - 1:  # pragma: no cover (integration test)
+    if index >= 2 ** 20 - 1:
         msg = "workbook contains the maximum number of rows"
         warnings.warn(msg, Warning)
 

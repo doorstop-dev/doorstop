@@ -278,7 +278,7 @@ def _lines_text(obj, indent=8, width=79, **_):
                 for line in item.text.splitlines():
                     yield from _chunks(line, width, indent)
 
-                    if not line:  # pragma: no cover (integration test)
+                    if not line:
                         yield ""  # break between paragraphs
 
             # Reference

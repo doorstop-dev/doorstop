@@ -504,5 +504,5 @@ def _publish(subs, shared):
     sub.add_argument('--template', help="template file", default=publisher.HTMLTEMPLATE)
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if __name__ == '__main__':
     main()

@@ -9,6 +9,15 @@ omit =
 
 [report]
 
+omit =
+    */gui/main.py
+    */gui/utilTkinter.py
+    */gui/widget.py
+
 exclude_lines =
     pragma: no cover
     raise NotImplementedError
+    except DistributionNotFound
+    if __name__ == '__main__'
+
+skip_covered = true

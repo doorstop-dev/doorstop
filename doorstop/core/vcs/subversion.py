@@ -34,7 +34,7 @@ class WorkingCopy(BaseWorkingCopy):
         self.call('svn', 'commit', '--message', message)
 
     @property
-    def ignores(self):  # pragma: no cover (manual test)
+    def ignores(self):
         if self._ignores_cache is None:
             self._ignores_cache = []
             os.chdir(self.path)

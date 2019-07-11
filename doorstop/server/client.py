@@ -59,7 +59,7 @@ def get_next_number(prefix):
     return number
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if __name__ == '__main__':
     import sys
 
     if len(sys.argv) != 2:

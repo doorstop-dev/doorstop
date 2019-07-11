@@ -17,7 +17,7 @@ LAUNCH_DELAY = 0.5  # number of seconds to let a program try to launch
 log = common.logger(__name__)
 
 
-def edit(path, tool=None):  # pragma: no cover (integration test)
+def edit(path, tool=None):
     """Open a file and wait for the default editor to exit.
 
     :param path: path of file to open
@@ -69,7 +69,7 @@ def edit_tmp_content(title=None, original_content=None, tool=None):
     return edited_content
 
 
-def launch(path, tool=None):  # pragma: no cover (integration test)
+def launch(path, tool=None):
     """Open a file using the default editor.
 
     :param path: path of file to open
@@ -115,7 +115,7 @@ def launch(path, tool=None):  # pragma: no cover (integration test)
     return process if process.returncode is None else None
 
 
-def _call(args):  # pragma: no cover (integration test)
+def _call(args):
     """Call a program with arguments and return the process."""
     log.debug("$ {}".format(' '.join(args)))
     process = subprocess.Popen(args)

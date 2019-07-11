@@ -4,9 +4,9 @@
 import sys
 from unittest.mock import Mock
 
-try:  # pragma: no cover (manual test)
+try:
     import tkinter as tk
-except ImportError as _exc:  # pragma: no cover (manual test)
+except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()

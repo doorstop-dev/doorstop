@@ -120,7 +120,7 @@ def strip_path():
 
 
 @hook('after_request')
-def enable_cors():  # pragma: no cover (manual test)
+def enable_cors():
     """Allow a webserver running on the same machine to access data."""
     response.headers['Access-Control-Allow-Origin'] = '*'
 
@@ -240,5 +240,5 @@ def post_numbers(prefix):
         return str(number)
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if __name__ == '__main__':
     main()

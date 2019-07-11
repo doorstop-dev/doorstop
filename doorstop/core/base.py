@@ -220,7 +220,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         return not self == other
 
     @staticmethod
-    def _create(path, name):  # pragma: no cover (integration test)
+    def _create(path, name):
         """Create a new file for the object.
 
         :param path: path to new file
@@ -236,7 +236,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         common.touch(path)
 
     @abc.abstractmethod
-    def load(self, reload=False):  # pragma: no cover (abstract method)
+    def load(self, reload=False):
         """Load the object's properties from its file."""
         # 1. Start implementations of this method with:
         if self._loaded and not reload:
@@ -245,7 +245,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         # 3. End implementations of this method with:
         self._loaded = True
 
-    def _read(self, path):  # pragma: no cover (integration test)
+    def _read(self, path):
         """Read text from the object's file.
 
         :param path: path to a text file
@@ -271,14 +271,14 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         return common.load_yaml(text, path)
 
     @abc.abstractmethod
-    def save(self):  # pragma: no cover (abstract method)
+    def save(self):
         """Format and save the object's properties to its file."""
         # 1. Call self._write() with the current properties here
         # 2. End implementations of this method with:
         self._loaded = False
         self.auto = True
 
-    def _write(self, text, path):  # pragma: no cover (integration test)
+    def _write(self, text, path):
         """Write text to the object's file.
 
         :param text: text to write to a file

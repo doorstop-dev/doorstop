@@ -16,7 +16,7 @@ STR_VERBOSITY = 3  # minimum verbosity to use verbose `__str__`
 MAX_VERBOSITY = 4  # maximum verbosity level implemented
 
 
-def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
+def _trace(self, message, *args, **kws):
     if self.isEnabledFor(logging.DEBUG - 1):
         self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
 
@@ -65,7 +65,7 @@ class WarningFormatter(logging.Formatter):
         self.default_format = default_format
         self.verbose_format = verbose_format
 
-    def format(self, record):  # pragma: no cover (manual test)
+    def format(self, record):
         """Python 3 hack to change the formatting style dynamically."""
         if record.levelno > logging.INFO:
             self._style._fmt = self.verbose_format  # pylint: disable=W0212
@@ -175,7 +175,7 @@ def write_text(text, path, encoding='utf-8'):
     return path
 
 
-def touch(path):  # pragma: no cover (integration test)
+def touch(path):
     """Ensure a file exists."""
     if not os.path.exists(path):
         log.trace("creating empty '{}'...".format(path))
@@ -203,7 +203,7 @@ def copy_dir_contents(src, dst):
                 shutil.copyfile(fpath, dest_path)
 
 
-def delete(path):  # pragma: no cover (integration test)
+def delete(path):
     """Delete a file or directory with error handling."""
     if os.path.isdir(path):
         try:

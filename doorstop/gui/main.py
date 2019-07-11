@@ -16,11 +16,11 @@ from doorstop.common import DoorstopError, HelpFormatter, WarningFormatter
 from doorstop.core import builder, vcs
 from doorstop.gui import utilTkinter, widget
 
-try:  # pragma: no cover (manual test)
+try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter import filedialog
-except ImportError as _exc:  # pragma: no cover (manual test)
+except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()
@@ -103,7 +103,7 @@ def run(args, cwd, error):
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
         return error("tkinter is not available")
 
-    else:  # pragma: no cover (manual test)
+    else:
 
         root = widget.Tk()
         root.title("{} ({})".format(__project__, __version__))
@@ -155,7 +155,7 @@ def run(args, cwd, error):
         return True
 
 
-def _log(func):  # pragma: no cover (manual test)
+def _log(func):
     """Log name and arguments."""
 
     @functools.wraps(func)
@@ -172,9 +172,7 @@ def _log(func):  # pragma: no cover (manual test)
     return wrapped
 
 
-class Application(
-    ttk.Frame
-):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
+class Application(ttk.Frame):
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):
@@ -904,5 +902,5 @@ class Application(
         self.stringvar_item.set(uid)
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if __name__ == '__main__':
     sys.exit(main())
