@@ -183,12 +183,14 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         log.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
-    for _ext, option in {'.txt': 'text',
-                         '.md': 'markdown',
-                         '.html': 'html',
-                         '.yml': 'yaml',
-                         '.csv': 'csv',
-                         '.xlsx': 'xlsx'}.items():
+    for _ext, option in {
+        '.txt': 'text',
+        '.md': 'markdown',
+        '.html': 'html',
+        '.yml': 'yaml',
+        '.csv': 'csv',
+        '.xlsx': 'xlsx',
+    }.items():
         try:
             if getattr(args, option):
                 ext = _ext
@@ -230,13 +232,8 @@ def ask(question, default=None):
     :return: True = 'yes', False = 'no'
 
     """
-    valid = {"yes": True,
-             "y": True,
-             "no": False,
-             "n": False}
-    prompts = {'yes': " [Y/n] ",
-               'no': " [y/N] ",
-               None: " [y/n] "}
+    valid = {"yes": True, "y": True, "no": False, "n": False}
+    prompts = {'yes': " [Y/n] ", 'no': " [y/N] ", None: " [y/n] "}
 
     prompt = prompts.get(default, prompts[None])
     message = question + prompt

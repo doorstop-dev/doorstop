@@ -20,8 +20,16 @@ import yaml
 from doorstop import common, core
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
-from doorstop.core.tests import (EMPTY, ENV, FILES, FILES_BETA, REASON, ROOT,
-                                 SYS, DocumentNoSkip)
+from doorstop.core.tests import (
+    EMPTY,
+    ENV,
+    FILES,
+    FILES_BETA,
+    REASON,
+    ROOT,
+    SYS,
+    DocumentNoSkip,
+)
 from doorstop.core.vcs import mockvcs
 
 # Whenever the export format is changed:
@@ -69,8 +77,7 @@ class TestItem(unittest.TestCase):
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
         path, line = item.find_ref()
-        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
-                                  ROOT)
+        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), ROOT)
         self.assertEqual(relpath, path)
         self.assertEqual(3, line)
 
@@ -101,9 +108,7 @@ class TestDocument(unittest.TestCase):
 
     def test_new(self):
         """Verify a new document can be created."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='SYS', digits=4)
+        document = core.Document.new(None, EMPTY, FILES, prefix='SYS', digits=4)
         self.assertEqual('SYS', document.prefix)
         self.assertEqual(4, document.digits)
         self.assertEqual(0, len(document.items))
@@ -149,9 +154,7 @@ class TestDocument(unittest.TestCase):
 
     def test_add_item_with_reordering(self):
         """Verify an item can be inserted into a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # will get displaced
         item_1_1 = document.add_item(level='1.1')
@@ -161,9 +164,7 @@ class TestDocument(unittest.TestCase):
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed from a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # to be removed
         item_1_1 = document.add_item(level='1.1')  # will get relocated
@@ -173,9 +174,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -189,9 +188,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_keep(self):
         """Verify a document's order can be corrected with a kept level."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
@@ -203,9 +200,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_start(self):
         """Verify a document's order can be corrected with a given start."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -221,9 +216,7 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
         document.add_item(level='1.2.0', reorder=False)
@@ -414,8 +407,9 @@ class TestImporter(unittest.TestCase):
         # Verify the document does not already exist
         self.assertRaises(DoorstopError, core.find_document, self.prefix)
         # Import a document
-        document = core.importer.create_document(self.prefix, self.path,
-                                                 parent=self.parent)
+        document = core.importer.create_document(
+            self.prefix, self.path, parent=self.parent
+        )
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
@@ -429,8 +423,9 @@ class TestImporter(unittest.TestCase):
         # Create a document
         core.importer.create_document(self.prefix, self.path)
         # Attempt to create the same document
-        self.assertRaises(DoorstopError, core.importer.create_document,
-                          self.prefix, self.path)
+        self.assertRaises(
+            DoorstopError, core.importer.create_document, self.prefix, self.path
+        )
 
     def test_add_item(self):
         """Verify an item can be imported into a document."""
@@ -455,8 +450,7 @@ class TestImporter(unittest.TestCase):
         core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(self.prefix, self.uid,
-                                      attrs=attrs)
+        item = core.importer.add_item(self.prefix, self.uid, attrs=attrs)
         # Verify the item is correct
         self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
@@ -628,8 +622,7 @@ class TestPublisher(unittest.TestCase):
         path = os.path.join(FILES, 'published.html')
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, '.html',
-                                             linkify=True)
+        lines = core.publisher.publish_lines(self.document, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -659,8 +652,9 @@ class TestPublisher(unittest.TestCase):
         beta_features_tree = core.build(cwd=FILES_BETA, root=FILES_BETA)
         document_with_header = beta_features_tree.find_document('REQHEADER')
         # Act
-        lines = core.publisher.publish_lines(document_with_header, '.html',
-                                             linkify=True)
+        lines = core.publisher.publish_lines(
+            document_with_header, '.html', linkify=True
+        )
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -700,10 +694,11 @@ class TestModule(unittest.TestCase):
 def log_data(expected, actual):
     """Log list values."""
     for index, (evalue, avalue) in enumerate(zip(expected, actual)):
-        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-            i=index,
-            e=pprint.pformat(evalue),
-            a=pprint.pformat(avalue)))
+        logging.debug(
+            "\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+                i=index, e=pprint.pformat(evalue), a=pprint.pformat(avalue)
+            )
+        )
 
 
 def read_yml(path):
@@ -738,9 +733,11 @@ def read_xlsx(path):
         worksheet = workbook.active
         for row in worksheet.rows:
             for cell in row:
-                values = (cell.value,
-                          cell.style,
-                          worksheet.column_dimensions[cell.column].width)
+                values = (
+                    cell.value,
+                    cell.style,
+                    worksheet.column_dimensions[cell.column].width,
+                )
                 data.append(values)
         data.append(worksheet.auto_filter.ref)
 

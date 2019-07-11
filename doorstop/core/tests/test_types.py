@@ -236,8 +236,7 @@ class TestLevel(unittest.TestCase):
         """Verify levels can be represented."""
         self.assertEqual("Level('1')", repr(self.level_1))
         self.assertEqual("Level('1.2')", repr(self.level_1_2))
-        self.assertEqual("Level('1.2', heading=True)",
-                         repr(self.level_1_2_heading))
+        self.assertEqual("Level('1.2', heading=True)", repr(self.level_1_2_heading))
         self.assertEqual("Level('1.2.3')", repr(self.level_1_2_3))
 
     def test_str(self):
@@ -402,8 +401,7 @@ class TestStamp(unittest.TestCase):
     def test_repr(self):
         """Verify stamps can be represented."""
         self.assertEqual("Stamp('abc123')", repr(self.stamp1))
-        self.assertEqual("Stamp('2645439971b8090da05c7403320afcfa')",
-                         repr(self.stamp2))
+        self.assertEqual("Stamp('2645439971b8090da05c7403320afcfa')", repr(self.stamp2))
         self.assertEqual("Stamp(True)", repr(self.stamp3))
         self.assertEqual("Stamp(None)", repr(self.stamp4))
         self.assertEqual("Stamp(None)", repr(self.stamp5))

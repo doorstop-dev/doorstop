@@ -29,7 +29,6 @@ class Options:
         (('make', 'check'), "Static Analysis", True),
         (('make', 'demo'), "Run Demo", False),
         (('make', 'docs'), None, True),
-        (('make', 'dist'), None, True),
     ]
 
 

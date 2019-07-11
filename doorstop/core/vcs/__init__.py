@@ -2,12 +2,12 @@
 
 """Interfaces to version control systems."""
 
-import os
 import logging
+import os
 
 from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core.vcs import git, subversion, veracity, mockvcs, mercurial
+from doorstop.core.vcs import git, mercurial, mockvcs, subversion, veracity
 
 DEFAULT = mockvcs.WorkingCopy
 DIRECTORIES = {

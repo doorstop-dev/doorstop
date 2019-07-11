@@ -43,8 +43,7 @@ class CycleTracker:
         for pid in item.links:
             # Detect cycles via a back edge
             if pid in self.discovered:
-                msg = "detected a cycle with a back edge from {} to {}" \
-                      .format(pid, uid)
+                msg = "detected a cycle with a back edge from {} to {}".format(pid, uid)
                 yield common.DoorstopWarning(msg)
 
             # Recurse, if this a fresh item
@@ -121,14 +120,16 @@ def run_create(args, cwd, _, catch=True):
         tree = _get_tree(args, cwd)
 
         # create a new document
-        document = tree.create_document(args.path, args.prefix,
-                                        parent=args.parent, digits=args.digits)
+        document = tree.create_document(
+            args.path, args.prefix, parent=args.parent, digits=args.digits
+        )
 
     if not success:
         return False
 
-    utilities.show("created document: {} ({})".format(document.prefix,
-                                                      document.relpath))
+    utilities.show(
+        "created document: {} ({})".format(document.prefix, document.relpath)
+    )
     return True
 
 
@@ -178,8 +179,7 @@ def run_add(args, cwd, _, catch=True):
         # add items to it
         for _ in range(args.count):
             item = document.add_item(level=args.level)
-            utilities.show("added item: {} ({})".format(item.uid,
-                                                        item.relpath))
+            utilities.show("added item: {} ({})".format(item.uid, item.relpath))
 
         # Edit item if requested
         if args.edit:
@@ -336,10 +336,9 @@ def run_link(args, cwd, _, catch=True):
     if not success:
         return False
 
-    msg = "linked items: {} ({}) -> {} ({})".format(child.uid,
-                                                    child.relpath,
-                                                    parent.uid,
-                                                    parent.relpath)
+    msg = "linked items: {} ({}) -> {} ({})".format(
+        child.uid, child.relpath, parent.uid, parent.relpath
+    )
     utilities.show(msg)
 
     return True
@@ -365,10 +364,9 @@ def run_unlink(args, cwd, _, catch=True):
     if not success:
         return False
 
-    msg = "unlinked items: {} ({}) -> {} ({})".format(child.uid,
-                                                      child.relpath,
-                                                      parent.uid,
-                                                      parent.relpath)
+    msg = "unlinked items: {} ({}) -> {} ({})".format(
+        child.uid, child.relpath, parent.uid, parent.relpath
+    )
     utilities.show(msg)
 
     return True
@@ -446,31 +444,32 @@ def run_import(args, cwd, error, catch=True, _tree=None):
 
             # get the document
             request_next_number = _request_next_number(args)
-            tree = _tree or _get_tree(args, cwd,
-                                      request_next_number=request_next_number)
+            tree = _tree or _get_tree(
+                args, cwd, request_next_number=request_next_number
+            )
             document = tree.find_document(args.prefix)
 
             # import items into it
-            msg = "importing '{}' into document {}...".format(args.path,
-                                                              document)
+            msg = "importing '{}' into document {}...".format(args.path, document)
             utilities.show(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
 
         elif args.document:
             prefix, path = args.document
-            document = importer.create_document(prefix, path,
-                                                parent=args.parent)
+            document = importer.create_document(prefix, path, parent=args.parent)
         elif args.item:
             prefix, uid = args.item
             request_next_number = _request_next_number(args)
-            item = importer.add_item(prefix, uid, attrs=attrs,
-                                     request_next_number=request_next_number)
+            item = importer.add_item(
+                prefix, uid, attrs=attrs, request_next_number=request_next_number
+            )
     if not success:
         return False
 
     if document:
-        utilities.show("imported document: {} ({})".format(document.prefix,
-                                                           document.relpath))
+        utilities.show(
+            "imported document: {} ({})".format(document.prefix, document.relpath)
+        )
     else:
         assert item
         utilities.show("imported item: {} ({})".format(item.uid, item.relpath))
@@ -510,8 +509,7 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
             utilities.show(msg, flush=True)
             path = exporter.export(tree, args.path, ext, auto=auto)
         else:
-            msg = "exporting document {} to '{}'...".format(document,
-                                                            args.path)
+            msg = "exporting document {} to '{}'...".format(document, args.path)
             utilities.show(msg, flush=True)
             path = exporter.export(document, args.path, ext, auto=auto)
         if path:
@@ -561,14 +559,15 @@ def run_publish(args, cwd, error, catch=True):
         if whole_tree:
             msg = "publishing tree to '{}'...".format(path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(tree, path, ext,
-                                               template=args.template, **kwargs)
+            published_path = publisher.publish(
+                tree, path, ext, template=args.template, **kwargs
+            )
         else:
-            msg = "publishing document {} to '{}'...".format(document,
-                                                             path)
+            msg = "publishing document {} to '{}'...".format(document, path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(document, path, ext,
-                                               template=args.template, **kwargs)
+            published_path = publisher.publish(
+                document, path, ext, template=args.template, **kwargs
+            )
         if published_path:
             utilities.show("published: {}".format(published_path))
 
@@ -604,8 +603,7 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
 
     """
     utilities.show("building tree...", flush=True)
-    tree = build(cwd=cwd, root=args.project,
-                 request_next_number=request_next_number)
+    tree = build(cwd=cwd, root=args.project, request_next_number=request_next_number)
 
     if load:
         utilities.show("loading documents...", flush=True)
@@ -682,8 +680,7 @@ def _export_import(args, cwd, error, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, error, catch=False, auto=True,
-                  _tree=document.tree)
+    get('export')(args, cwd, error, catch=False, auto=True, _tree=document.tree)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)

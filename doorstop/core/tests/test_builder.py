@@ -6,8 +6,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from doorstop.core.builder import _clear_tree, build, find_document, find_item
-from doorstop.core.tests import (EMPTY, FILES, MockDocumentNoSkip,
-                                 MockDocumentSkip)
+from doorstop.core.tests import EMPTY, FILES, MockDocumentNoSkip, MockDocumentSkip
 from doorstop.core.tree import Tree
 
 

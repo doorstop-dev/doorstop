@@ -110,12 +110,16 @@ def TreeView(parent, *args, **kwargs):
 
 
 def ScrollbarH(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs)
+    result = ttk.Scrollbar(
+        parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs
+    )
     return result
 
 
 def ScrollbarV(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs)
+    result = ttk.Scrollbar(
+        parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs
+    )
     return result
 
 
@@ -183,7 +187,9 @@ def Tk():
     # Style for Progressbar
     global styleDsHorizontalTProgressbar
     styleDsHorizontalTProgressbar = ttk.Style()
-    styleDsHorizontalTProgressbar.configure('ds.Horizontal.TProgressbar', font=fontNormal)
+    styleDsHorizontalTProgressbar.configure(
+        'ds.Horizontal.TProgressbar', font=fontNormal
+    )
     global styleDsVerticalTProgressbar
     styleDsVerticalTProgressbar = ttk.Style()
     styleDsVerticalTProgressbar.configure('ds.Vertical.TProgressbar', font=fontNormal)
@@ -231,6 +237,7 @@ def Tk():
     resetFontSize()
     result.option_add('*TCombobox*Listbox.font', fontNormal)
     return result
+
 
 # Manage font size.
 

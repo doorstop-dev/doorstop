@@ -2,10 +2,9 @@
 
 """Integration tests for the doorstop.core.vcs package."""
 
-import unittest
-from unittest.mock import patch, Mock
-
 import os
+import unittest
+from unittest.mock import Mock, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import vcs

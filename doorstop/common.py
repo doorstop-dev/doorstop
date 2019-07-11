@@ -46,6 +46,7 @@ class DoorstopWarning(DoorstopError, Warning):
 class DoorstopInfo(DoorstopWarning, Warning):
     """Generic Doorstop info."""
 
+
 # logging classes ############################################################
 
 
@@ -187,9 +188,13 @@ def copy_dir_contents(src, dst):
         dest_path = os.path.join(dst, os.path.split(fpath)[-1])
         if os.path.exists(dest_path):
             if os.path.basename(fpath) == "doorstop":
-                msg = "Skipping '{}' as this directory name is required by doorstop".format(fpath)
+                msg = "Skipping '{}' as this directory name is required by doorstop".format(
+                    fpath
+                )
             else:
-                msg = "Skipping '{}' as a file or directory with this name already exists".format(fpath)
+                msg = "Skipping '{}' as a file or directory with this name already exists".format(
+                    fpath
+                )
             log.warning(msg)
         else:
             if os.path.isdir(fpath):
@@ -222,6 +227,7 @@ def delete_contents(dirname):
             try:
                 os.remove(os.path.join(dirname, file))
             except FileExistsError:
-                log.warning("Two assets folders have files or directories "
-                            "with the same name")
+                log.warning(
+                    "Two assets folders have files or directories " "with the same name"
+                )
                 raise

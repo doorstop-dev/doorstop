@@ -31,10 +31,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_export_document_unknown(self):
         """Verify an exception is raised when exporting unknown formats."""
-        self.assertRaises(DoorstopError,
-                          exporter.export, self.document, 'a.a')
-        self.assertRaises(DoorstopError,
-                          exporter.export, self.document, 'a.yml', '.a')
+        self.assertRaises(DoorstopError, exporter.export, self.document, 'a.a')
+        self.assertRaises(DoorstopError, exporter.export, self.document, 'a.yml', '.a')
 
     @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
@@ -79,17 +77,19 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines(self):
         """Verify an item can be exported as lines."""
-        expected = ("req3:" + '\n'
-                    "  active: true" + '\n'
-                    "  derived: false" + '\n'
-                    "  level: 1.1.0" + '\n'
-                    "  links:" + '\n'
-                    "  - sys3: null" + '\n'
-                    "  normative: false" + '\n'
-                    "  ref: ''" + '\n'
-                    "  reviewed: null" + '\n'
-                    "  text: |" + '\n'
-                    "    Heading" + '\n\n')
+        expected = (
+            "req3:" + '\n'
+            "  active: true" + '\n'
+            "  derived: false" + '\n'
+            "  level: 1.1.0" + '\n'
+            "  links:" + '\n'
+            "  - sys3: null" + '\n'
+            "  normative: false" + '\n'
+            "  ref: ''" + '\n'
+            "  reviewed: null" + '\n'
+            "  text: |" + '\n'
+            "    Heading" + '\n\n'
+        )
         # Act
         lines = exporter.export_lines(self.item)
         text = ''.join(line + '\n' for line in lines)
@@ -114,10 +114,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_export_file_unknown(self):
         """Verify an item can be exported as a file."""
-        self.assertRaises(DoorstopError,
-                          exporter.export_file, self.document, 'a.a')
-        self.assertRaises(DoorstopError,
-                          exporter.export_file, self.document, 'a.csv', '.a')
+        self.assertRaises(DoorstopError, exporter.export_file, self.document, 'a.a')
+        self.assertRaises(
+            DoorstopError, exporter.export_file, self.document, 'a.csv', '.a'
+        )
 
     @patch('doorstop.core.exporter._file_csv')
     def test_file_tsv(self, mock_file_csv):
@@ -127,8 +127,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Act
         exporter._file_tsv(self.item, path)  # pylint:disable=W0212
         # Assert
-        mock_file_csv.assert_called_once_with(self.item, path,
-                                              delimiter='\t', auto=False)
+        mock_file_csv.assert_called_once_with(
+            self.item, path, delimiter='\t', auto=False
+        )
 
     @patch('doorstop.core.exporter._get_xlsx')
     def test_file_xlsx(self, mock_get_xlsx):

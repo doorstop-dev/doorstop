@@ -43,16 +43,23 @@ class TestMain(SettingsTestCase):
     @patch('doorstop.cli.commands.run', Mock())
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
-        self.assertIs(None, main.main(['--no-reformat',
-                                       '--no-ref-check',
-                                       '--no-child-check',
-                                       '--reorder',
-                                       '--no-level-check',
-                                       '--no-suspect-check',
-                                       '--no-review-check',
-                                       '--no-cache',
-                                       '--warn-all',
-                                       '--error-all']))
+        self.assertIs(
+            None,
+            main.main(
+                [
+                    '--no-reformat',
+                    '--no-ref-check',
+                    '--no-child-check',
+                    '--reorder',
+                    '--no-level-check',
+                    '--no-suspect-check',
+                    '--no-review-check',
+                    '--no-cache',
+                    '--warn-all',
+                    '--error-all',
+                ]
+            ),
+        )
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)

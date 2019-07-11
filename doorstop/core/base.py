@@ -16,6 +16,7 @@ log = common.logger(__name__)
 
 def add_item(func):
     """Add and cache the returned item."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         item = func(self, *args, **kwargs) or self
@@ -28,22 +29,26 @@ def add_item(func):
             item.tree._item_cache[item.uid] = item
             log.trace("cached item: {}".format(item))
         return item
+
     return wrapped
 
 
 def edit_item(func):
     """Mark the returned item as modified."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
             item.tree.vcs.edit(item.path)
         return item
+
     return wrapped
 
 
 def delete_item(func):
     """Remove and expunge the returned item."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         item = func(self, *args, **kwargs) or self
@@ -57,11 +62,13 @@ def delete_item(func):
             log.trace("expunged item: {}".format(item))
         BaseFileObject.delete(item, item.path)
         return item
+
     return wrapped
 
 
 def add_document(func):
     """Add and cache the returned document."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         document = func(self, *args, **kwargs) or self
@@ -72,22 +79,26 @@ def add_document(func):
             document.tree._document_cache[document.prefix] = document
             log.trace("cached document: {}".format(document))
         return document
+
     return wrapped
 
 
 def edit_document(func):
     """Mark the returned document as modified."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         document = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and document.tree:
             document.tree.vcs.edit(document.config)
         return document
+
     return wrapped
 
 
 def delete_document(func):
     """Remove and expunge the returned document."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         document = func(self, *args, **kwargs) or self
@@ -103,6 +114,7 @@ def delete_document(func):
             # Directory wasn't empty
             pass
         return document
+
     return wrapped
 
 
@@ -122,8 +134,9 @@ class BaseValidatable(metaclass=abc.ABCMeta):
         """
         valid = True
         # Display all issues
-        for issue in self.get_issues(skip=skip, document_hook=document_hook,
-                                     item_hook=item_hook):
+        for issue in self.get_issues(
+            skip=skip, document_hook=document_hook, item_hook=item_hook
+        ):
             if isinstance(issue, DoorstopInfo) and not settings.WARN_ALL:
                 log.info(issue)
             elif isinstance(issue, DoorstopWarning) and not settings.ERROR_ALL:
@@ -158,21 +171,25 @@ class BaseValidatable(metaclass=abc.ABCMeta):
 
 def auto_load(func):
     """Call self.load() before execution."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         self.load()
         return func(self, *args, **kwargs)
+
     return wrapped
 
 
 def auto_save(func):
     """Call self.save() after execution."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
         if self.auto:
             self.save()
         return result
+
     return wrapped
 
 
