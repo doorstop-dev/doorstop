@@ -1,0 +1,102 @@
+[tool.poetry]
+
+name = "doorstop"
+version = "1.6b2"
+description = "Requirements management using version control."
+
+license = "LGPLv3"
+
+authors = ["Jace Browning <jacebrowning@gmail.com>"]
+
+readme = "README.md"
+
+homepage = "https://pypi.org/project/Doorstop"
+documentation = "https://doorstop.readthedocs.io"
+repository = "https://github.com/jacebrowning/doorstop"
+
+keywords = [
+  "requirements-management",
+  "version-control",
+  "documentation",
+  "traceability",
+  "markdown",
+  "certification",
+  "html",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Editors :: Documentation",
+    "Topic :: Text Processing :: Markup",
+]
+
+[tool.poetry.dependencies]
+
+python = "^3.5"
+
+PyYAML = "^5.1"
+Markdown = "^2"
+openpyxl = "~2.1"
+bottle = "=0.12.13"
+requests = "^2"
+pyficache = "=0.3.1"
+mdx_outline = "^1.3.0"
+python-markdown-math = "=0.6"
+plantuml-markdown = "^3.0"
+
+[tool.poetry.dev-dependencies]
+
+# Formatters
+# TODO: Format code using black after dropping Python 3.5 support
+# black = "=19.3b0"
+isort = "=4.3.4"
+
+# Linters
+mypy = "*"
+pycodestyle = "*"
+pydocstyle = "*"
+pylint = "^2.0"
+
+# Testing
+nose = "^1.3"
+nose-cov = "*"
+nose-capturestderr = "*"
+nose-show-skipped = "*"
+expecter = "*"
+
+# Reports
+coveragespace = "*"
+
+# Documentation
+mkdocs = "^1.0"
+pygments = "*"
+
+# Tooling
+pyinstaller = "*"
+sniffer = "*"
+MacFSEvents = { version = "*", platform = "darwin" }
+pync = { version = "*", platform = "darwin" }
+
+[tool.poetry.scripts]
+
+doorstop = "doorstop.cli.main:main"
+doorstop-gui = "doorstop.gui.main:main"
+doorstop-server = "doorstop.server.main:main"
+
+[tool.black]
+
+target-version = ["py36", "py37"]
+skip-string-normalization = true
+
+[build-system]
+
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

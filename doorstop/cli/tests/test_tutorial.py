@@ -16,12 +16,13 @@ from doorstop.cli.tests import ROOT, FILES
 ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
 REASON = "'{0}' variable not set".format(ENV)
 
-if os.name == 'nt':
+if 'TRAVIS' in os.environ:
+    PATH = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'doorstop')
+elif os.name == 'nt':
     PATH = os.path.join(ROOT, '.venv', 'Scripts', 'doorstop.exe')
-    DOORSTOP = os.path.normpath(PATH)
 else:
     PATH = os.path.join(ROOT, '.venv', 'bin', 'doorstop')
-    DOORSTOP = os.path.normpath(PATH)
+DOORSTOP = os.path.normpath(PATH)
 
 
 if __name__ == '__main__':
