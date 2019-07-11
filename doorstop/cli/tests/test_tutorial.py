@@ -25,7 +25,7 @@ DOORSTOP = os.path.normpath(PATH)
 
 
 if __name__ == '__main__':
-    os.environ[ENV] = '1'  # run the integration tests when called directly
+    os.environ[ENV] = 'true'  # run the integration tests when called directly
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)

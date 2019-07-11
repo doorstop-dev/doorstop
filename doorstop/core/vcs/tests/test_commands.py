@@ -9,7 +9,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.vcs import load
 
 
-class BaseTestCase:  # pylint: disable=R0904
+class BaseTestCase:
     """Base TestCase for tests that need a working copy."""
 
     DIRECTORY = None
@@ -48,7 +48,7 @@ class BaseTestCase:  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.add)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestGit(BaseTestCase, unittest.TestCase):
     """Tests for the Git plugin."""
 
@@ -88,7 +88,7 @@ class TestGit(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestSubversion(BaseTestCase, unittest.TestCase):
     """Tests for the Subversion plugin."""
 
@@ -125,7 +125,7 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestVeracity(BaseTestCase, unittest.TestCase):
     """Tests for the Veracity plugin."""
 
@@ -165,7 +165,7 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestMercurial(BaseTestCase, unittest.TestCase):
     """Tests for the Mercurial plugin."""
 

@@ -83,10 +83,12 @@ class TestMain(SettingsTestCase):
 class TestCreate(TempTestCase):
     """Integration tests for the 'doorstop create' command."""
 
+    @patch('subprocess.call', Mock())
     def test_create(self):
         """Verify 'doorstop create' can be called."""
         self.assertIs(None, main(['create', '_TEMP', self.temp, '-p', 'REQ']))
 
+    @patch('subprocess.call', Mock())
     def test_create_error_unknwon_parent(self):
         """Verify 'doorstop create' returns an error with an unknown parent."""
         self.assertRaises(
@@ -298,6 +300,7 @@ class TestReorder(unittest.TestCase):
 class TestEdit(unittest.TestCase):
     """Integration tests for the 'doorstop edit' command."""
 
+    @patch('subprocess.call', Mock())
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
         """Verify 'doorstop edit' can be called with an item (all)."""

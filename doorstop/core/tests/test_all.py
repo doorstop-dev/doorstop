@@ -11,7 +11,6 @@ import pprint
 import shutil
 import tempfile
 import unittest
-import warnings
 from unittest.mock import Mock, patch
 
 import openpyxl
@@ -370,28 +369,6 @@ class TestImporter(unittest.TestCase):
         core.importer.import_file(path, document)
         # Assert
         expected = [item.data for item in self.document.items]
-        actual = [item.data for item in document.items]
-        log_data(expected, actual)
-        self.assertListEqual(expected, actual)
-
-    # TODO: determine when this test should be run (if at all)
-    # currently, 'TEST_LONG' isn't set under any condition
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    @unittest.skipUnless(os.getenv('TEST_LONG'), "this test takes too long")
-    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long")
-    def test_import_xlsx_huge(self):
-        """Verify huge XLSX files are handled."""
-        path = os.path.join(FILES, 'exported-huge.xlsx')
-        _path = os.path.join(self.temp, 'imports', 'req')
-        _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
-        # Act
-        with warnings.catch_warnings(record=True) as warns:
-            core.importer.import_file(path, document)
-            # Assert
-        self.assertEqual(1, len(warns))
-        self.assertIn("maximum number of rows", str(warns[-1].message))
-        expected = []
         actual = [item.data for item in document.items]
         log_data(expected, actual)
         self.assertListEqual(expected, actual)
