@@ -75,6 +75,17 @@ example.
 The value of this attribute does **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
+If you edit the item file by hand or use other tools be aware of the implicit
+typing rules in YAML.  For example the following level value
+
+```yaml
+level: 1.10
+```
+
+will parsed as a 1.1 float value.  Doorstop will interpret this as level 1.1
+and store this level in the item file.  Use quotes around non-float values,
+e.g. `level: '1.10'`.
+
 ## reviewed
 
 Each item has a fingerprint. The UID of the item, the values of the
