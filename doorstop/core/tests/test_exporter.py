@@ -2,15 +2,13 @@
 
 """Unit tests for the doorstop.core.exporter module."""
 
-import unittest
-from unittest.mock import patch, MagicMock, Mock
-
 import os
 import tempfile
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
-
 from doorstop.core.tests import MockDataMixIn
 
 

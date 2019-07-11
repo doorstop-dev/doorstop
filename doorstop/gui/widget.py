@@ -5,6 +5,7 @@
 
 import sys
 from unittest.mock import Mock
+
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk

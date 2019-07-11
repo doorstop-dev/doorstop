@@ -5,19 +5,17 @@
 
 # pylint: disable=no-self-use,protected-access
 
+import logging
+import os
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 from warnings import catch_warnings
 
-import os
-import logging
-
 from doorstop.common import DoorstopError
-from doorstop.core.tree import Tree
 from doorstop.core import importer
 from doorstop.core.builder import _set_tree
-
 from doorstop.core.tests.test_document import FILES, MockItem
+from doorstop.core.tree import Tree
 
 LOREM_IPSUM = '''Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua.

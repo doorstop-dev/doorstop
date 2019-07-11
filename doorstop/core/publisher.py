@@ -3,20 +3,18 @@
 """Functions to publish documents and items."""
 
 import os
-import textwrap
 import tempfile
+import textwrap
 
 import markdown
 from plantuml_markdown import PlantUMLMarkdownExtension
 
-from doorstop import common
-from doorstop.common import DoorstopError
-from doorstop.core.types import iter_documents, iter_items, is_tree, is_item
-from doorstop import settings
-from doorstop.core import Document
-
-from bottle import template as bottle_template
 import bottle
+from bottle import template as bottle_template
+from doorstop import common, settings
+from doorstop.common import DoorstopError
+from doorstop.core import Document
+from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
     'markdown.extensions.extra',

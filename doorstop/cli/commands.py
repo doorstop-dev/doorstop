@@ -5,11 +5,10 @@
 import os
 import time
 
-from doorstop import common
+from doorstop import common, server
 from doorstop.cli import utilities
+from doorstop.core import editor, exporter, importer, publisher
 from doorstop.core.builder import build
-from doorstop.core import editor, importer, exporter, publisher
-from doorstop import server
 
 log = common.logger(__name__)
 

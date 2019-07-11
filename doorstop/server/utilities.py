@@ -2,8 +2,7 @@
 
 """Shared functions for the `doorstop.server` package."""
 
-from doorstop import common
-from doorstop import settings
+from doorstop import common, settings
 
 log = common.logger(__name__)
 

@@ -2,15 +2,14 @@
 
 """Common classes and functions for the `doorstop.core` package."""
 
+import hashlib
 import os
 import re
-import hashlib
 
 import yaml
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop import settings
 
 log = common.logger(__name__)
 

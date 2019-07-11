@@ -4,28 +4,25 @@
 
 # pylint: disable=protected-access,unidiomatic-typecheck
 
-import unittest
-from unittest.mock import patch, Mock
-
-import os
 import csv
-import tempfile
-import shutil
-import pprint
 import logging
+import os
+import pprint
+import shutil
+import tempfile
+import unittest
 import warnings
+from unittest.mock import Mock, patch
 
-import yaml
 import openpyxl
+import yaml
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import core
-from doorstop.core.builder import _get_tree, _clear_tree
+from doorstop import common, core
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core.builder import _clear_tree, _get_tree
+from doorstop.core.tests import (EMPTY, ENV, FILES, FILES_BETA, REASON, ROOT,
+                                 SYS, DocumentNoSkip)
 from doorstop.core.vcs import mockvcs
-
-from doorstop.core.tests import ENV, REASON, ROOT, FILES, EMPTY, SYS, FILES_BETA
-from doorstop.core.tests import DocumentNoSkip
 
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False

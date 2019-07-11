@@ -2,21 +2,19 @@
 
 """Functions to import exiting documents and items."""
 
+import csv
 import os
 import re
-import csv
 import warnings
 
 import openpyxl
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import UID
+from doorstop.core.builder import _get_tree
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.core.builder import _get_tree
-from doorstop import settings
-
+from doorstop.core.types import UID
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 

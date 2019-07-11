@@ -4,20 +4,17 @@
 
 # pylint: disable=unused-argument,protected-access
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock, call
-from unittest import mock
-
-import os
 import logging
+import os
+import unittest
+from unittest import mock
+from unittest.mock import MagicMock, Mock, call, patch
 
 from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.types import Level
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
-
-from doorstop.core.tests import ROOT, FILES, EMPTY, NEW
-from doorstop.core.tests import MockItem, MockDocument
+from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, MockDocument, MockItem
+from doorstop.core.types import Level
 
 YAML_DEFAULT = """
 settings:

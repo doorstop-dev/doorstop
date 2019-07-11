@@ -2,15 +2,14 @@
 
 """Base classes and decorators for the doorstop.core package."""
 
-import os
 import abc
 import functools
+import os
 
 import yaml
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import settings
+from doorstop import common, settings
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 
 log = common.logger(__name__)
 

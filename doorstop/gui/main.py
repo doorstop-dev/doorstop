@@ -3,9 +3,19 @@
 
 """Graphical interface for Doorstop."""
 
+import argparse
+import functools
+import logging
 import os
 import sys
+from itertools import chain
 from unittest.mock import Mock
+
+from doorstop import common, settings
+from doorstop.common import DoorstopError, HelpFormatter, WarningFormatter
+from doorstop.core import builder, vcs
+from doorstop.gui import utilTkinter, widget
+
 try:  # pragma: no cover (manual test)
     import tkinter as tk
     from tkinter import ttk
@@ -15,19 +25,6 @@ except ImportError as _exc:  # pragma: no cover (manual test)
     tk = Mock()
     ttk = Mock()
 
-import argparse
-import functools
-from itertools import chain
-import logging
-
-from doorstop.gui import widget
-from doorstop.gui import utilTkinter
-
-from doorstop import common
-from doorstop.common import HelpFormatter, WarningFormatter, DoorstopError
-from doorstop.core import vcs
-from doorstop.core import builder
-from doorstop import settings
 
 log = common.logger(__name__)
 

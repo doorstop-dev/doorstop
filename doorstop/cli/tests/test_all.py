@@ -2,21 +2,18 @@
 
 """Integration tests for the doorstop.cli package."""
 
-import unittest
-from unittest.mock import patch, Mock
-
 import os
-import tempfile
 import shutil
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
 
+from doorstop import common, settings
 from doorstop.cli.main import main
-from doorstop import common
+from doorstop.cli.tests import (ENV, FILES, REASON, REQS, ROOT, TUTORIAL,
+                                SettingsTestCase)
 from doorstop.core.builder import _clear_tree
-from doorstop import settings
 from doorstop.core.document import Document
-
-from doorstop.cli.tests import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
-from doorstop.cli.tests import SettingsTestCase
 
 REQ_COUNT = 17
 ALL_COUNT = 49

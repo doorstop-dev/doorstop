@@ -2,11 +2,10 @@
 
 """Unit tests for the doorstop.cli.main module."""
 
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
-from doorstop.cli import main
 from doorstop import settings
-
+from doorstop.cli import main
 from doorstop.cli.tests import SettingsTestCase
 
 

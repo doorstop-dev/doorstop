@@ -3,13 +3,13 @@
 
 """Command-line interface for Doorstop."""
 
+import argparse
 import os
 import sys
-import argparse
 
 from doorstop import common, settings
-from doorstop.cli import utilities, commands
-from doorstop.core import publisher, vcs, document
+from doorstop.cli import commands, utilities
+from doorstop.core import document, publisher, vcs
 
 log = common.logger(__name__)
 

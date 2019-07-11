@@ -2,21 +2,18 @@
 
 """Unit tests for the doorstop.core.item module."""
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock
-
 import logging
 import os
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import common, core
 from doorstop.common import DoorstopError
-from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
+from doorstop.core.tests import (EMPTY, EXTERNAL, FILES, MockItem,
+                                 MockSimpleDocument)
+from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
-
-from doorstop.core.tests import FILES, EMPTY, EXTERNAL
-from doorstop.core.tests import MockItem, MockSimpleDocument
-
 
 YAML_DEFAULT = """
 active: true

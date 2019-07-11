@@ -4,21 +4,18 @@
 
 """Unit tests for the doorstop.core.tree module."""
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock
-
+import logging
+import operator
 import os
 import tempfile
-import operator
-import logging
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.tree import Tree
-from doorstop.core.document import Document
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
-
-from doorstop.core.tests import FILES, SYS, EMPTY
-from doorstop.core.tests import MockDocumentSkip
+from doorstop.core.document import Document
+from doorstop.core.tests import EMPTY, FILES, SYS, MockDocumentSkip
+from doorstop.core.tree import Tree
 
 
 @patch('doorstop.core.document.Document', MockDocumentSkip)

@@ -3,7 +3,7 @@
 """Unit tests for the doorstop.server.client module."""
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import requests
 
