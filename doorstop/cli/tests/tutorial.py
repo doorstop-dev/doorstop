@@ -12,9 +12,6 @@ import unittest
 
 from doorstop.cli.tests import FILES, ROOT
 
-ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
-REASON = "'{0}' variable not set".format(ENV)
-
 if 'TRAVIS' in os.environ:
     PATH = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'doorstop')
 elif os.name == 'nt':
@@ -24,11 +21,6 @@ else:
 DOORSTOP = os.path.normpath(PATH)
 
 
-if __name__ == '__main__':
-    os.environ[ENV] = 'true'  # run the integration tests when called directly
-
-
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestBase(unittest.TestCase):
     """Base class for tutorial tests."""
 
@@ -55,7 +47,6 @@ class TestBase(unittest.TestCase):
         return cp
 
 
-@unittest.skipUnless(os.getenv(ENV), REASON)
 class TestSection1(TestBase):
     """Integration tests for section 1.0 of the tutorial."""
 

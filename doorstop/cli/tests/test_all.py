@@ -118,9 +118,9 @@ def get_next_number():
     """Helper function to get the next document number."""
     last = None
     for last in sorted(os.listdir(TUTORIAL), reverse=True):
-        if "index" not in last:
+        if last.endswith('.yml'):
             break
-    assert last
+    assert last, "Unable to find last item"
     number = int(last.replace('TUT', '').replace('.yml', '')) + 1
     return number
 

@@ -29,7 +29,7 @@ run: install
 
 .PHONY: demo
 demo: install
-	poetry run python $(PACKAGE)/cli/tests/test_tutorial.py
+	poetry run python $(PACKAGE)/cli/tests/tutorial.py
 
 # SYSTEM DEPENDENCIES #########################################################
 
