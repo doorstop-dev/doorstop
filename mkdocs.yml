@@ -18,9 +18,11 @@ nav:
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
-- Graphical Interface: gui/overview.md
+- Desktop Interface: gui/overview.md
+- Web Interface: web.md
 - Scripting Interface: api/scripting.md
-- Item reference: reference/items.md
+- Reference:
+  - Items: reference/items.md
 - Examples: examples.md
 - About:
   - Release Notes: about/changelog.md

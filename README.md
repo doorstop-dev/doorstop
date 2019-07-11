@@ -41,12 +41,10 @@ Install Doorstop with pip:
 $ pip install doorstop
 ```
 
-or directly from source:
+or add it to your [Poetry](https://poetry.eustace.io/) project:
 
 ```sh
-$ git clone https://github.com/jacebrowning/doorstop.git
-$ cd doorstop
-$ python setup.py install
+$ poetry add doorstop
 ```
 
 After installation, Doorstop is available on the command-line:

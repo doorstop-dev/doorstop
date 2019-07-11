@@ -1,5 +1,3 @@
-# Overview
-
 Doorstop items are files formatted using YAML. When a new item is added using
 `doorstop add`, Doorstop will create a YAML file and populate it with all
 required attributes (key-value pairs). The UID of an item is defined by its
@@ -22,9 +20,9 @@ text: |
   sections of text.
 ```
 
-## Standard attributes
+# Standard Attributes
 
-### active
+## active
 
 Determines if the item is active (true) or not (false). Only active items are
 included when the corresponding document is published. Inactive items are
@@ -33,7 +31,7 @@ excluded from validation.
 The value of this attribute does **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
-### derived
+## derived
 
 Indicates if the item is derived (true) or not (false).
 
@@ -46,7 +44,7 @@ Doorstop does not expect parent links on derived items.
 The value of this attribute does **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
-### normative
+## normative
 
 Indicates if the item is normative (true) or non-normative (false).
 
@@ -65,7 +63,7 @@ Indicates if the item is normative (true) or non-normative (false).
 The value of this attribute does **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
-### level
+## level
 
 Indicates the presentation order within a document. A level of 1.1 will display
 above level 1.2 and 1.1.5 displays below 1.1.2.
@@ -77,7 +75,7 @@ example.
 The value of this attribute does **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
-### reviewed
+## reviewed
 
 Each item has a fingerprint. The UID of the item, the values of the
 [text](items.md#text) and [ref](items.md#ref) attributes, and the UIDs of the
@@ -90,7 +88,7 @@ current item fingerprint to the last reviewed fingerprint.
 
 You should not calculate this value manually, use `doorstop review`.
 
-### links
+## links
 
 A list of links to parent item(s). A link indicates a relationship between two
 items in the document tree.
@@ -130,7 +128,7 @@ item of the reviewed attribute, not the parent item of the link).  The
 fingerprint of the link is does **not** contribute to the fingerprint of the
 item.
 
-### ref
+## ref
 
 External reference. An item may reference an external file or a line in an
 external file. An external reference is displayed in a published document.
@@ -151,7 +149,7 @@ A file is considered a text-file unless its file extension is listed in
 The value of this attribute contributes to the [fingerprint](items.md#reviewed)
 of the item.
 
-#### Example: Reference keyword
+### Example: Reference keyword
 ```yaml
 ref: 'TST001'
 ```
@@ -159,7 +157,7 @@ ref: 'TST001'
 References the filename and line number of a text-file that contains the
 keyword "TST001".
 
-#### Example: Reference file
+### Example: Reference file
 ```yaml
 ref: 'test-tst001.c'
 ```
@@ -169,7 +167,7 @@ References a file called "test-tst001.c".
 If a reference is specified and Doorstop is unable to find it, Doorstop will
 exit with an error unless reference checking is disabled.
 
-### text
+## text
 
 Item text. This is the main body of the item. Doorstop treats the value as
 markdown to support rich text, images and tables. To specify a multi-line text,
@@ -178,7 +176,7 @@ use block scalar types as specified by the YAML standard.
 The value of this attribute contributes to the [fingerprint](items.md#reviewed)
 of the item.
 
-#### Example: Heading
+### Example: Heading
 
 REQ001.yml
 ```yaml
@@ -193,7 +191,7 @@ text: |
 When this item is published, Doorstop will create a new heading with the text
 "1.1.0 This is the heading" and put the remaining text into its body.
 
-#### Example: Normative item
+### Example: Normative item
 
 REQ001.yml
 ```yaml
@@ -206,7 +204,7 @@ text: |
 When this item is published, Doorstop will create a new heading with the text
 "1.1.0 REQ001" and put the all of the text in its body.
 
-## Extended attributes
+# Extended Attributes
 
 In addition to the standard attributes, Doorstop will allow any number of
 custom attributes (key-value pairs) in the YAML file. The extended attributes
@@ -216,7 +214,7 @@ application through the REST interface or the Python API.
 The values of extended attributes do **not** contribute to the
 [fingerprint](items.md#reviewed) of the item.
 
-#### Example:
+### Example:
 
 In this example, an extended attribute `invented-by` is added to the item.
 
@@ -225,17 +223,18 @@ invented-by: some.guy@email.com
 ```
 
 
-## Beta Features
-### header
+# Beta Features
+
+## header
 
 This is **different** from _heading_. If you want a Heading item, following instructions for Heading above.
 
-To enable, use flag `-b header` 
+To enable, use flag `-b header`
 
-Gives a header (i.e. title) for the item. It will be printed alongside the item UID when published as HTML and Markdown. Links will also include the header text. 
+Gives a header (i.e. title) for the item. It will be printed alongside the item UID when published as HTML and Markdown. Links will also include the header text.
 
 
-#### Example: Header
+### Example: Header
 
 TST007.yml
 ```yaml
@@ -246,23 +245,23 @@ links:
 header: |
     Gradual Temperature Drop Test
 text: |
-    Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes. 
-    Ensure the system performs a safe shutdown when -15 degrees Celsius is reached. 
+    Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+    Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
 ```
 
-When this item is published, Doorstop will place the item's Header next to its UID. 
+When this item is published, Doorstop will place the item's Header next to its UID.
 
 ```
 TST007 Gradual Temperature Drop Test
-  Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes. 
-  Ensure the system performs a safe shutdown when -15 degrees Celsius is reached. 
-  
+  Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+  Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
+
   Parent Item: REQ023 Temperature Interlock
 ```
-### LaTex-like math expressions
+## LaTex-like math expressions
 
-You can use math expressions in LaTex interpreted by the markdown extension 
-[python-markdown-math](https://pypi.org/project/python-markdown-math/) and rendered by 
+You can use math expressions in LaTex interpreted by the markdown extension
+[python-markdown-math](https://pypi.org/project/python-markdown-math/) and rendered by
 [MathJax](https://github.com/mathjax/MathJax), when using the HTML publisher.
 
 TST008.yml
