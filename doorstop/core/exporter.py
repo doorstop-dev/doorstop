@@ -2,18 +2,17 @@
 
 """Functions to export documents and items."""
 
-import os
 import csv
 import datetime
+import os
 from collections import defaultdict
 
-import yaml
 import openpyxl
+import yaml
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
-from doorstop import settings
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 

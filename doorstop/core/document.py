@@ -3,18 +3,17 @@
 """Representation of a collection of items."""
 
 import os
-from itertools import chain
-from collections import OrderedDict
 import re
+from collections import OrderedDict
+from itertools import chain
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import (add_document, edit_document, delete_document,
-                                auto_load, auto_save,
-                                BaseValidatable, BaseFileObject)
-from doorstop.core.types import Prefix, UID, Level
+from doorstop import common, settings
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core.base import (BaseFileObject, BaseValidatable, add_document,
+                                auto_load, auto_save, delete_document,
+                                edit_document)
 from doorstop.core.item import Item
-from doorstop import settings
+from doorstop.core.types import UID, Level, Prefix
 
 log = common.logger(__name__)
 

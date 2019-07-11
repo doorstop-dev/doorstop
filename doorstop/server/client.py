@@ -5,10 +5,9 @@
 
 import requests
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.server import utilities
-from doorstop import settings
 
 log = common.logger(__name__)
 

@@ -2,21 +2,18 @@
 
 """Representation of an item in a document."""
 
+import functools
 import os
 import re
-import functools
 
 import pyficache
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import (add_item, edit_item, delete_item,
-                                auto_load, auto_save,
-                                BaseValidatable, BaseFileObject)
-from doorstop.core.types import Prefix, UID, Text, Level, Stamp, to_bool
+from doorstop import common, settings
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core import editor
-from doorstop import settings
-
+from doorstop.core.base import (BaseFileObject, BaseValidatable, add_item,
+                                auto_load, auto_save, delete_item, edit_item)
+from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
 
 log = common.logger(__name__)
 

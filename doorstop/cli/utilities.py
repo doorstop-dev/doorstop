@@ -2,14 +2,13 @@
 
 """Shared functions for the `doorstop.cli` package."""
 
-import os
 import ast
-from argparse import ArgumentTypeError
 import logging
+import os
 import warnings
+from argparse import ArgumentTypeError
 
-from doorstop import common
-from doorstop import settings
+from doorstop import common, settings
 
 log = common.logger(__name__)
 

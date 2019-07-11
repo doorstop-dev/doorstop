@@ -3,6 +3,7 @@
 
 import sys
 from unittest.mock import Mock
+
 try:  # pragma: no cover (manual test)
     import tkinter as tk
 except ImportError as _exc:  # pragma: no cover (manual test)

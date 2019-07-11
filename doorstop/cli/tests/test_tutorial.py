@@ -3,15 +3,14 @@
 
 """Integration tests for the documentation tutorials."""
 
-import unittest
-
+import logging
 import os
 import shutil
-import tempfile
 import subprocess
-import logging
+import tempfile
+import unittest
 
-from doorstop.cli.tests import ROOT, FILES
+from doorstop.cli.tests import FILES, ROOT
 
 ENV = 'TEST_TUTORIAL'  # environment variable to enable the tutorial example
 REASON = "'{0}' variable not set".format(ENV)

@@ -7,13 +7,12 @@
 import sys
 from itertools import chain
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core.base import BaseValidatable
-from doorstop.core.types import Prefix, UID
-from doorstop.core.document import Document
 from doorstop.core import vcs
-from doorstop import settings
+from doorstop.core.base import BaseValidatable
+from doorstop.core.document import Document
+from doorstop.core.types import UID, Prefix
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'

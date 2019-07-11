@@ -4,14 +4,12 @@
 
 import sys
 import unittest
-from unittest.mock import patch, Mock
 from argparse import ArgumentTypeError
+from unittest.mock import Mock, patch
 from warnings import catch_warnings
 
+from doorstop import common, settings
 from doorstop.cli import utilities
-from doorstop import common
-from doorstop import settings
-
 from doorstop.cli.tests import SettingsTestCase
 
 

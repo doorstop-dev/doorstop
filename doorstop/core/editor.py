@@ -3,11 +3,11 @@
 """Functions to edit documents and items."""
 
 import os
-import sys
-from distutils.spawn import find_executable
 import subprocess
-import time
+import sys
 import tempfile
+import time
+from distutils.spawn import find_executable
 
 from doorstop import common
 from doorstop.common import DoorstopError

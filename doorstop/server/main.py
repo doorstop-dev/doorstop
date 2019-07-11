@@ -3,20 +3,18 @@
 
 """REST server to display content and reserve item numbers."""
 
-import os
-from collections import defaultdict
-import webbrowser
 import argparse
 import logging
+import os
+import webbrowser
+from collections import defaultdict
 
 import bottle
-from bottle import get, post, request, hook, response, template
-
-from doorstop import common, build, publisher
+from bottle import get, hook, post, request, response, template
+from doorstop import build, common, publisher, settings
 from doorstop.common import HelpFormatter
-from doorstop.server import utilities
-from doorstop import settings
 from doorstop.core import vcs
+from doorstop.server import utilities
 
 log = common.logger(__name__)
 

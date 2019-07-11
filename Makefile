@@ -60,8 +60,7 @@ poetry.lock: pyproject.toml
 
 .PHONY: format
 format: install
-	# TODO: Format imports using isort
-	# poetry run isort $(PACKAGES) --recursive --apply
+	poetry run isort $(PACKAGES) --recursive --apply
 	# TODO: Format code using black after dropping Python 3.5 support
 	# poetry run black $(PACKAGES)
 	@ echo

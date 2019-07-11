@@ -3,8 +3,7 @@
 """Unit tests for the doorstop.server.main module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
-
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.server import main as server
 

@@ -2,11 +2,11 @@
 
 """Common exceptions, classes, and functions for Doorstop."""
 
+import argparse
+import glob
+import logging
 import os
 import shutil
-import argparse
-import logging
-import glob
 
 import yaml
 

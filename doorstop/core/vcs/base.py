@@ -2,14 +2,12 @@
 
 """Abstract interface to version control systems."""
 
-import os
 import fnmatch
+import os
 import subprocess
 from abc import ABCMeta, abstractmethod
 
-from doorstop import common
-from doorstop import settings
-
+from doorstop import common, settings
 
 log = common.logger(__name__)
 

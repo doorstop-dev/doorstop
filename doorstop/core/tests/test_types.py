@@ -3,10 +3,11 @@
 """Unit tests for the doorstop.core.types module."""
 
 import unittest
+
 import yaml
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import Prefix, UID, Text, Level, Stamp, Reference
+from doorstop.core.types import UID, Level, Prefix, Reference, Stamp, Text
 
 
 class TestPrefix(unittest.TestCase):

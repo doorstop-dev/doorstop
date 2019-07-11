@@ -5,7 +5,6 @@
 import unittest
 
 from doorstop.core.vcs import load
-
 from doorstop.core.vcs.tests import ROOT
 
 

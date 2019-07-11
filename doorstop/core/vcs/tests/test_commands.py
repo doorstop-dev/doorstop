@@ -3,10 +3,10 @@
 """Unit tests for the doorstop.vcs plugin modules."""
 
 import unittest
-from unittest.mock import patch, Mock, call
+from unittest.mock import Mock, call, patch
 
-from doorstop.core.vcs import load
 from doorstop.common import DoorstopError
+from doorstop.core.vcs import load
 
 
 class BaseTestCase():  # pylint: disable=R0904
