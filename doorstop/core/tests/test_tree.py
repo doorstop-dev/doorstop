@@ -67,19 +67,21 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_draw_utf8(self):
         """Verify trees structure can be drawn (UTF-8)."""
-        text = ("a" + '\n'
-                "│   " + '\n'
-                "├── b1" + '\n'
-                "│   │   " + '\n'
-                "│   └── d" + '\n'
-                "│       │   " + '\n'
-                "│       └── e" + '\n'
-                "│   " + '\n'
-                "└── b2" + '\n'
-                "    │   " + '\n'
-                "    ├── c1" + '\n'
-                "    │   " + '\n'
-                "    └── c2")
+        text = (
+            "a" + '\n'
+            "│   " + '\n'
+            "├── b1" + '\n'
+            "│   │   " + '\n'
+            "│   └── d" + '\n'
+            "│       │   " + '\n'
+            "│       └── e" + '\n'
+            "│   " + '\n'
+            "└── b2" + '\n'
+            "    │   " + '\n'
+            "    ├── c1" + '\n'
+            "    │   " + '\n'
+            "    └── c2"
+        )
         logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='UTF-8')
         logging.debug('actual:\n%s', text2)
@@ -87,19 +89,21 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_draw_cp437(self):
         """Verify trees structure can be drawn (cp437)."""
-        text = ("a" + '\n'
-                "┬   " + '\n'
-                "├── b1" + '\n'
-                "│   ┬   " + '\n'
-                "│   └── d" + '\n'
-                "│       ┬   " + '\n'
-                "│       └── e" + '\n'
-                "│   " + '\n'
-                "└── b2" + '\n'
-                "    ┬   " + '\n'
-                "    ├── c1" + '\n'
-                "    │   " + '\n'
-                "    └── c2")
+        text = (
+            "a" + '\n'
+            "┬   " + '\n'
+            "├── b1" + '\n'
+            "│   ┬   " + '\n'
+            "│   └── d" + '\n'
+            "│       ┬   " + '\n'
+            "│       └── e" + '\n'
+            "│   " + '\n'
+            "└── b2" + '\n'
+            "    ┬   " + '\n'
+            "    ├── c1" + '\n'
+            "    │   " + '\n'
+            "    └── c2"
+        )
         logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='cp437')
         logging.debug('actual:\n%s', text2)
@@ -107,19 +111,21 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_draw_unknown(self):
         """Verify trees structure can be drawn (unknown)."""
-        text = ("a" + '\n'
-                "|   " + '\n'
-                "+-- b1" + '\n'
-                "|   |   " + '\n'
-                "|   +-- d" + '\n'
-                "|       |   " + '\n'
-                "|       +-- e" + '\n'
-                "|   " + '\n'
-                "+-- b2" + '\n'
-                "    |   " + '\n'
-                "    +-- c1" + '\n'
-                "    |   " + '\n'
-                "    +-- c2")
+        text = (
+            "a" + '\n'
+            "|   " + '\n'
+            "+-- b1" + '\n'
+            "|   |   " + '\n'
+            "|   +-- d" + '\n'
+            "|       |   " + '\n'
+            "|       +-- e" + '\n'
+            "|   " + '\n'
+            "+-- b2" + '\n'
+            "    |   " + '\n'
+            "    +-- c1" + '\n'
+            "    |   " + '\n'
+            "    +-- c2"
+        )
         logging.debug('expected:\n%s', text)
         text2 = self.tree.draw(encoding='unknown')
         logging.debug('actual:\n%s', text2)
@@ -204,8 +210,7 @@ class TestTree(unittest.TestCase):
     def test_palce_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocumentSkip.new(tree,
-                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
+        doc = MockDocumentSkip.new(tree, os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
         tree._place(doc)  # pylint: disable=W0212
         self.assertEqual(1, len(tree))
 
@@ -213,9 +218,9 @@ class TestTree(unittest.TestCase):
     def test_palce_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
-        doc = MockDocumentSkip.new(tree,
-                                   os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP',
-                                   parent='REQ')
+        doc = MockDocumentSkip.new(
+            tree, os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP', parent='REQ'
+        )
         self.assertRaises(DoorstopError, tree._place, doc)  # pylint: disable=W0212
 
     def test_documents(self):
@@ -239,10 +244,16 @@ class TestTree(unittest.TestCase):
         self.assertTrue(tree.validate())
 
     @patch('doorstop.settings.REORDER', False)
-    @patch('doorstop.core.document.Document.get_issues',
-           Mock(return_value=[DoorstopError('error'),
-                              DoorstopWarning('warning'),
-                              DoorstopInfo('info')]))
+    @patch(
+        'doorstop.core.document.Document.get_issues',
+        Mock(
+            return_value=[
+                DoorstopError('error'),
+                DoorstopWarning('warning'),
+                DoorstopInfo('info'),
+            ]
+        ),
+    )
     def test_validate_document(self):
         """Verify a document error fails the tree validation."""
         self.assertFalse(self.tree.validate())
@@ -280,23 +291,22 @@ class TestTree(unittest.TestCase):
     def test_new_document_unknown_parent(self):
         """Verify an exception is raised for an unknown parent."""
         temp = tempfile.mkdtemp()
-        self.assertRaises(DoorstopError, self.tree.create_document,
-                          temp, '_TEST', parent='UNKNOWN')
+        self.assertRaises(
+            DoorstopError, self.tree.create_document, temp, '_TEST', parent='UNKNOWN'
+        )
         self.assertFalse(os.path.exists(temp))
 
     @patch('doorstop.core.document.Document.add_item')
     def test_add_item(self, mock_add_item):
         """Verify an item can be added to a document."""
         self.tree.add_item('REQ')
-        mock_add_item.assert_called_once_with(number=None, level=None,
-                                              reorder=True)
+        mock_add_item.assert_called_once_with(number=None, level=None, reorder=True)
 
     @patch('doorstop.core.document.Document.add_item')
     def test_add_item_level(self, mock_add):
         """Verify an item can be added to a document with a level."""
         self.tree.add_item('REQ', level='1.2.3')
-        mock_add.assert_called_once_with(number=None, level='1.2.3',
-                                         reorder=True)
+        mock_add.assert_called_once_with(number=None, level='1.2.3', reorder=True)
 
     def test_add_item_unknown_prefix(self):
         """Verify an exception is raised for an unknown prefix (item)."""
@@ -333,30 +343,24 @@ class TestTree(unittest.TestCase):
     def test_link_items_cyclic_dependency(self):
         """Verify an exception is raised with a cyclic dependency."""
         self.tree.link_items('req1', 'sys2')
-        msg = "^link would create a cyclic dependency: " \
-              "SYS002 -> REQ001 -> SYS002$"
-        self.assertRaisesRegex(DoorstopError, msg,
-                               self.tree.link_items, 'sys2', 'req1')
+        msg = "^link would create a cyclic dependency: " "SYS002 -> REQ001 -> SYS002$"
+        self.assertRaisesRegex(DoorstopError, msg, self.tree.link_items, 'sys2', 'req1')
 
     def test_link_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError,
-                          self.tree.link_items, 'unknown1', 'req2')
+        self.assertRaises(DoorstopError, self.tree.link_items, 'unknown1', 'req2')
 
     def test_link_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError,
-                          self.tree.link_items, 'req9999', 'req2')
+        self.assertRaises(DoorstopError, self.tree.link_items, 'req9999', 'req2')
 
     def test_link_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError,
-                          self.tree.link_items, 'req1', 'unknown1')
+        self.assertRaises(DoorstopError, self.tree.link_items, 'req1', 'unknown1')
 
     def test_link_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError,
-                          self.tree.link_items, 'req1', 'req9999')
+        self.assertRaises(DoorstopError, self.tree.link_items, 'req1', 'req9999')
 
     @patch('doorstop.core.item.Item.unlink')
     def test_unlink_items(self, mock_unlink):
@@ -366,27 +370,22 @@ class TestTree(unittest.TestCase):
 
     def test_unlink_items_unknown_child_prefix(self):
         """Verify an exception is raised with an unknown child prefix."""
-        self.assertRaises(DoorstopError,
-                          self.tree.unlink_items, 'unknown1', 'req1')
+        self.assertRaises(DoorstopError, self.tree.unlink_items, 'unknown1', 'req1')
 
     def test_unlink_items_unknown_child_number(self):
         """Verify an exception is raised with an unknown child number."""
-        self.assertRaises(DoorstopError,
-                          self.tree.unlink_items, 'req9999', 'req1')
+        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req9999', 'req1')
 
     def test_unlink_items_unknown_parent_prefix(self):
         """Verify an exception is raised with an unknown parent prefix."""
         # Cache miss
-        self.assertRaises(DoorstopError,
-                          self.tree.unlink_items, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'unknown1')
         # Cache hit
-        self.assertRaises(DoorstopError,
-                          self.tree.unlink_items, 'req3', 'unknown1')
+        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'unknown1')
 
     def test_unlink_items_unknown_parent_number(self):
         """Verify an exception is raised with an unknown parent prefix."""
-        self.assertRaises(DoorstopError,
-                          self.tree.unlink_items, 'req3', 'req9999')
+        self.assertRaises(DoorstopError, self.tree.unlink_items, 'req3', 'req9999')
 
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):

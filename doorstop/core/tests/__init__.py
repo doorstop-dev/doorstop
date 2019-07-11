@@ -2,23 +2,22 @@
 
 """Package for the doorstop.core tests."""
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock
-
-import os
 import logging
+import os
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
-from doorstop.core.item import Item
 from doorstop.core.document import Document
+from doorstop.core.item import Item
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
-
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                    '..', '..', '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
-FILES_BETA = os.path.join(os.path.dirname(__file__), 'files_beta')  # tests for beta features
+FILES_BETA = os.path.join(
+    os.path.dirname(__file__), 'files_beta'
+)  # tests for beta features
 SYS = os.path.join(FILES, 'parent')
 TST = os.path.join(FILES, 'child')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory
@@ -133,16 +132,20 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
 
     # mock objects that behave like the real thing
 
-    item = MockItemAndVCS('path/to/req3.yml',
-                          _file=("links: [sys3]" + '\n'
-                                 "text: 'Heading'" + '\n'
-                                 "level: 1.1.0" + '\n'
-                                 "normative: false"))
+    item = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=(
+            "links: [sys3]" + '\n'
+            "text: 'Heading'" + '\n'
+            "level: 1.1.0" + '\n'
+            "normative: false"
+        ),
+    )
 
-    item2 = MockItemAndVCS('path/to/req3.yml',
-                           _file=("links: [sys3]\ntext: '" +
-                                  ("Hello, world! " * 10) +
-                                  "'\nlevel: 1.2"))
+    item2 = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=("links: [sys3]\ntext: '" + ("Hello, world! " * 10) + "'\nlevel: 1.2"),
+    )
     _mock_item = Mock()
     _mock_item.uid = 'sys3'
     _mock_item.document.prefix = 'sys'
@@ -159,45 +162,64 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     document.items = [
         item,
         item2,
-        MockItemAndVCS('path/to/req1.yml',
-                       _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"),
-        MockItemAndVCS('path/to/req2.yml',
-                       _file="links: []\ntext: ''\nlevel: 2"),
-        MockItemAndVCS('path/to/req4.yml',
-                       _file="links: []\nref: 'CHECK_PUBLISHED_CONTENT'\n"
-                       "level: 2.1.1"),
-        MockItemAndVCS('path/to/req2.yml',
-                       _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n"
-                       "normative: false"),
+        MockItemAndVCS(
+            'path/to/req1.yml', _file="links: []\ntext: 'abc\n123'\nlevel: 1.1"
+        ),
+        MockItemAndVCS('path/to/req2.yml', _file="links: []\ntext: ''\nlevel: 2"),
+        MockItemAndVCS(
+            'path/to/req4.yml',
+            _file="links: []\nref: 'CHECK_PUBLISHED_CONTENT'\n" "level: 2.1.1",
+        ),
+        MockItemAndVCS(
+            'path/to/req2.yml',
+            _file="links: [sys1]\ntext: 'Heading 2'\nlevel: 2.1.0\n" "normative: false",
+        ),
     ]
     document.copy_assets = Mock()
     document.assets = None
 
-    item3 = MockItem(None, 'path/to/req4.yml', _file=(
-        "links: [sys4]" + '\n'
-        "text: 'This shall...'" + '\n'
-        "ref: Doorstop.sublime-project" + '\n'
-        "level: 1.2" + '\n'
-        "normative: true"))
+    item3 = MockItem(
+        None,
+        'path/to/req4.yml',
+        _file=(
+            "links: [sys4]" + '\n'
+            "text: 'This shall...'" + '\n'
+            "ref: Doorstop.sublime-project" + '\n'
+            "level: 1.2" + '\n'
+            "normative: true"
+        ),
+    )
     _mock_item3 = Mock()
     _mock_item3.uid = 'sys4'
     _mock_item3.document.prefix = 'sys'
     item3.tree = Mock()
     item3.tree.find_item = Mock(return_value=_mock_item3)
-    item3.tree.vcs.paths = [("Doorstop.sublime-project",
-                             "Doorstop.sublime-project",
-                             "Doorstop.sublime-project")]
+    item3.tree.vcs.paths = [
+        (
+            "Doorstop.sublime-project",
+            "Doorstop.sublime-project",
+            "Doorstop.sublime-project",
+        )
+    ]
 
-    item4 = MockItemAndVCS('path/to/req3.yml',
-                           _file=("links: [sys3]" + '\n'
-                                  "text: 'Heading'" + '\n'
-                                  "long: " + ('"' + '0' * 66 + '"') + '\n'
-                                  "level: 1.1.0" + '\n'
-                                  "normative: false"))
+    item4 = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=(
+            "links: [sys3]" + '\n'
+            "text: 'Heading'" + '\n'
+            "long: " + ('"' + '0' * 66 + '"') + '\n'
+            "level: 1.1.0" + '\n'
+            "normative: false"
+        ),
+    )
 
-    item5 = MockItemAndVCS('path/to/req3.yml',
-                           _file=("links: [sys3]" + '\n'
-                                  "text: 'Heading'" + '\n'
-                                  "level: 2.1.2" + '\n'
-                                  "normative: false" + '\n'
-                                  "ref: 'abc123'"))
+    item5 = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=(
+            "links: [sys3]" + '\n'
+            "text: 'Heading'" + '\n'
+            "level: 2.1.2" + '\n'
+            "normative: false" + '\n'
+            "ref: 'abc123'"
+        ),
+    )

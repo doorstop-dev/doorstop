@@ -144,8 +144,7 @@ class UID:
         if not isinstance(other, UID):
             other = UID(other)
         try:
-            return all((self.prefix == other.prefix,
-                        self.number == other.number))
+            return all((self.prefix == other.prefix, self.number == other.number))
         except DoorstopError:
             return self.value.lower() == other.value.lower()
 
@@ -236,8 +235,9 @@ class _Literal(str):
     @staticmethod
     def representer(dumper, data):
         """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
+        return dumper.represent_scalar(
+            'tag:yaml.org,2002:str', data, style='|' if data else ''
+        )
 
 
 yaml.add_representer(_Literal, _Literal.representer)

@@ -61,6 +61,7 @@ def get_next_number(prefix):
 
 if __name__ == '__main__':  # pragma: no cover (manual test)
     import sys
+
     if len(sys.argv) != 2:
         exit("Usage: {} <PREFIX>".format(sys.argv[0]))
     print(get_next_number(sys.argv[-1]))

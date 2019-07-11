@@ -61,8 +61,7 @@ poetry.lock: pyproject.toml
 .PHONY: format
 format: install
 	poetry run isort $(PACKAGES) --recursive --apply
-	# TODO: Format code using black after dropping Python 3.5 support
-	# poetry run black $(PACKAGES)
+	poetry run black $(PACKAGES) || echo "black requires Python 3.6+"
 	@ echo
 
 .PHONY: check
@@ -73,7 +72,6 @@ endif
 	# TODO: Enable mypy for type checking
 	# poetry run mypy $(PACKAGES) --config-file=.mypy.ini
 	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
-	poetry run pycodestyle $(PACKAGES) $(CONFIG) --config=.pycodestyle.ini
 	poetry run pydocstyle $(PACKAGES) $(CONFIG)
 
 # TESTS #######################################################################

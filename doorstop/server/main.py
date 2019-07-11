@@ -11,6 +11,7 @@ from collections import defaultdict
 
 import bottle
 from bottle import get, hook, post, request, response, template
+
 from doorstop import build, common, publisher, settings
 from doorstop.common import HelpFormatter
 from doorstop.core import vcs
@@ -35,21 +36,32 @@ def main(args=None):
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Build main parser
-    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
-                                     **shared)
+    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__, **shared)
     cwd = os.getcwd()
 
-    parser.add_argument('-j', '--project', default=None,
-                        help="path to the root of the project")
-    parser.add_argument('-P', '--port', metavar='NUM', type=int,
-                        default=settings.SERVER_PORT,
-                        help="use a custom port for the server")
-    parser.add_argument('-H', '--host', default='127.0.0.1',
-                        help="IP address to listen")
-    parser.add_argument('-w', '--wsgi', action='store_true',
-                        help="Run as a WSGI process")
-    parser.add_argument('-b', '--baseurl', default='',
-                        help="Base URL this is served at (Usually only necessary for WSGI)")
+    parser.add_argument(
+        '-j', '--project', default=None, help="path to the root of the project"
+    )
+    parser.add_argument(
+        '-P',
+        '--port',
+        metavar='NUM',
+        type=int,
+        default=settings.SERVER_PORT,
+        help="use a custom port for the server",
+    )
+    parser.add_argument(
+        '-H', '--host', default='127.0.0.1', help="IP address to listen"
+    )
+    parser.add_argument(
+        '-w', '--wsgi', action='store_true', help="Run as a WSGI process"
+    )
+    parser.add_argument(
+        '-b',
+        '--baseurl',
+        default='',
+        help="Base URL this is served at (Usually only necessary for WSGI)",
+    )
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -58,8 +70,9 @@ def main(args=None):
         args.project = vcs.find_root(cwd)
 
     # Configure logging
-    logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
-                        level=settings.VERBOSE_LOGGING_LEVEL)
+    logging.basicConfig(
+        format=settings.VERBOSE_LOGGING_FORMAT, level=settings.VERBOSE_LOGGING_LEVEL
+    )
 
     # Run the program
     run(args, os.getcwd(), parser.error)
@@ -78,8 +91,9 @@ def run(args, cwd, _):
     tree.load()
     host = args.host
     port = args.port or settings.SERVER_PORT
-    bottle.TEMPLATE_PATH.insert(0, os.path.join(os.path.dirname(__file__),
-                                                '..', 'views'))
+    bottle.TEMPLATE_PATH.insert(
+        0, os.path.join(os.path.dirname(__file__), '..', 'views')
+    )
 
     # If you started without WSGI, the base will be '/'.
     if args.baseurl == '' and not args.wsgi:
@@ -96,8 +110,7 @@ def run(args, cwd, _):
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
     if not args.wsgi:
-        bottle.run(app=app, host=host, port=port,
-                   debug=args.debug, reloader=args.debug)
+        bottle.run(app=app, host=host, port=port, debug=args.debug, reloader=args.debug)
 
 
 @hook('before_request')
@@ -208,8 +221,9 @@ def get_attr(prefix, uid, name):
 @get('/assets/doorstop/<filename>')
 def get_assets(filename):
     """Serve static files. Mainly used to serve CSS files and javascript."""
-    public_dir = os.path.join(os.path.dirname(__file__),
-                              '..', 'core', 'files', 'assets', 'doorstop')
+    public_dir = os.path.join(
+        os.path.dirname(__file__), '..', 'core', 'files', 'assets', 'doorstop'
+    )
     return bottle.static_file(filename, root=public_dir)
 
 

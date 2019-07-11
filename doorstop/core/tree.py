@@ -18,21 +18,13 @@ UTF8 = 'utf-8'
 CP437 = 'cp437'
 ASCII = 'ascii'
 
-BOX = {'end': {UTF8: '│   ',
-               CP437: '┬   ',
-               ASCII: '|   '},
-       'tee': {UTF8: '├── ',
-               CP437: '├── ',
-               ASCII: '+-- '},
-       'bend': {UTF8: '└── ',
-                CP437: '└── ',
-                ASCII: '+-- '},
-       'pipe': {UTF8: '│   ',
-                CP437: '│   ',
-                ASCII: '|   '},
-       'space': {UTF8: '    ',
-                 CP437: '    ',
-                 ASCII: '    '}}
+BOX = {
+    'end': {UTF8: '│   ', CP437: '┬   ', ASCII: '|   '},
+    'tee': {UTF8: '├── ', CP437: '├── ', ASCII: '+-- '},
+    'bend': {UTF8: '└── ', CP437: '└── ', ASCII: '+-- '},
+    'pipe': {UTF8: '│   ', CP437: '│   ', ASCII: '|   '},
+    'space': {UTF8: '    ', CP437: '    ', ASCII: '    '},
+}
 
 log = common.logger(__name__)
 
@@ -141,8 +133,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         if not self.document:  # tree is empty
 
             if document.parent:
-                msg = "unknown parent for {}: {}".format(document,
-                                                         document.parent)
+                msg = "unknown parent for {}: {}".format(document, document.parent)
                 raise DoorstopError(msg)
             self.document = document
 
@@ -165,8 +156,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     else:
                         break
                 else:
-                    msg = "unknown parent for {}: {}".format(document,
-                                                             document.parent)
+                    msg = "unknown parent for {}: {}".format(document, document.parent)
                     raise DoorstopError(msg)
 
         else:  # tree has documents, but no parent specified for document
@@ -198,7 +188,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
+    def create_document(
+        self, path, value, sep=None, digits=None, parent=None
+    ):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         :param path: directory path for the new document
@@ -215,9 +207,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
-        document = Document.new(self,
-                                path, self.root, prefix, sep=sep,
-                                digits=digits, parent=parent)
+        document = Document.new(
+            self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
+        )
         try:
             self._place(document)
         except DoorstopError:
@@ -465,9 +457,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            for issue in chain(hook(document=document, tree=self),
-                               document.get_issues(skip=skip,
-                                                   item_hook=item_hook)):
+            for issue in chain(
+                hook(document=document, tree=self),
+                document.get_issues(skip=skip, item_hook=item_hook),
+            ):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
@@ -478,6 +471,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
 
         """
+
         def by_uid(row):
             row2 = []
             for item in row:
@@ -512,7 +506,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         children = [c.document.prefix for c in self.children]
         return children
 
-    def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
+    def _iter_rows(
+        self, item, mapping, parent=True, child=True, row=None
+    ):  # pylint: disable=R0913
         """Generate all traceability row slices.
 
         :param item: base :class:`~doorstop.core.item.Item` for slicing
@@ -522,6 +518,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param row: currently generated row
 
         """
+
         class Row(list):
             """List type that tracks upper and lower boundaries."""
 
@@ -546,15 +543,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if parent:
                 items = item.parent_items
                 for item2 in items:
-                    yield from self._iter_rows(item2, mapping,
-                                               child=False, row=row)
+                    yield from self._iter_rows(item2, mapping, child=False, row=row)
                 if not items:
                     row.parent = True
             if child:
                 items = item.child_items
                 for item2 in items:
-                    yield from self._iter_rows(item2, mapping,
-                                               parent=False, row=row)
+                    yield from self._iter_rows(item2, mapping, parent=False, row=row)
                 if not items:
                     row.child = True
 
@@ -599,7 +594,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, 'prefix', '') or str(self.document)
         # Build children prefix strings
-        children = ", ".join(c._draw_line() for c in self.children)  # pylint: disable=W0212
+        children = ", ".join(
+            c._draw_line() for c in self.children  # pylint: disable=protected-access
+        )
         # Format the tree
         if children:
             return "{} <- [ {} ]".format(prefix, children)
@@ -625,7 +622,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             else:
                 base = self._symbol('space', encoding)
                 indent = self._symbol('bend', encoding)
-            for index, line in enumerate(child._draw_lines(encoding, html_links)):  # pylint: disable=W0212
+            for index, line in enumerate(
+                # pylint: disable=protected-access
+                child._draw_lines(encoding, html_links)
+            ):
                 if index == 0:
                     yield indent + line
                 else:

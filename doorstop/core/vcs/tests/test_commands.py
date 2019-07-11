@@ -9,7 +9,7 @@ from doorstop.common import DoorstopError
 from doorstop.core.vcs import load
 
 
-class BaseTestCase():  # pylint: disable=R0904
+class BaseTestCase:  # pylint: disable=R0904
     """Base TestCase for tests that need a working copy."""
 
     DIRECTORY = None
@@ -81,8 +81,10 @@ class TestGit(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Git can commit files."""
         self.commit()
-        calls = [call(("git", "commit", "--all", "--message", self.message)),
-                 call(("git", "push"))]
+        calls = [
+            call(("git", "commit", "--all", "--message", self.message)),
+            call(("git", "push")),
+        ]
         mock_call.assert_has_calls(calls)
 
 
@@ -95,8 +97,7 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
     def test_lock(self, mock_call):
         """Verify Subversion can lock files."""
         self.lock()
-        calls = [call(("svn", "update")),
-                 call(("svn", "lock", self.path))]
+        calls = [call(("svn", "update")), call(("svn", "lock", self.path))]
         mock_call.assert_has_calls(calls)
 
     def test_edit(self, mock_call):
@@ -133,8 +134,7 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
     def test_lock(self, mock_call):
         """Verify Veracity can lock files."""
         self.lock()
-        calls = [call(("vv", "pull")),
-                 call(("vv", "update"))]
+        calls = [call(("vv", "pull")), call(("vv", "update"))]
         mock_call.assert_has_calls(calls)
 
     def test_edit(self, mock_call):
@@ -158,8 +158,10 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Veracity can commit files."""
         self.commit()
-        calls = [call(("vv", "commit", "--message", self.message)),
-                 call(("vv", "push"))]
+        calls = [
+            call(("vv", "commit", "--message", self.message)),
+            call(("vv", "push")),
+        ]
         mock_call.assert_has_calls(calls)
 
 
@@ -196,6 +198,8 @@ class TestMercurial(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Mercurial can commit files."""
         self.commit()
-        calls = [call(("hg", "commit", "--message", self.message)),
-                 call(("hg", "push"))]
+        calls = [
+            call(("hg", "commit", "--message", self.message)),
+            call(("hg", "push")),
+        ]
         mock_call.assert_has_calls(calls)

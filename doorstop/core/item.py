@@ -11,8 +11,15 @@ import pyficache
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core import editor
-from doorstop.core.base import (BaseFileObject, BaseValidatable, add_item,
-                                auto_load, auto_save, delete_item, edit_item)
+from doorstop.core.base import (
+    BaseFileObject,
+    BaseValidatable,
+    add_item,
+    auto_load,
+    auto_save,
+    delete_item,
+    edit_item,
+)
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
 
 log = common.logger(__name__)
@@ -20,6 +27,7 @@ log = common.logger(__name__)
 
 def requires_tree(func):
     """Require a tree reference."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         if not self.tree:
@@ -27,6 +35,7 @@ def requires_tree(func):
             log.critical("`{}` can only be called with a tree".format(name))
             return None
         return func(self, *args, **kwargs)
+
     return wrapped
 
 
@@ -102,7 +111,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_item
-    def new(tree, document, path, root, uid, level=None, auto=None):  # pylint: disable=R0913
+    def new(
+        tree, document, path, root, uid, level=None, auto=None
+    ):  # pylint: disable=R0913
         """Create a new item.
 
         :param tree: reference to the tree that contains this item
@@ -495,9 +506,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Edit only the text part in an editor
         else:
             # Edit the text in a temporary file
-            edited_text = editor.edit_tmp_content(title=str(self.uid),
-                                                  original_content=str(self.text),
-                                                  tool=tool)
+            edited_text = editor.edit_tmp_content(
+                title=str(self.uid), original_content=str(self.text), tool=tool
+            )
             # Save the text in the actual item file
             self.text = edited_text
             self.save()
@@ -531,7 +542,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
+    def get_issues(
+        self, skip=None, document_hook=None, item_hook=None
+    ):  # pylint: disable=unused-argument
         """Yield all the item's issues.
 
         :param skip: list of document prefixes to skip
@@ -617,9 +630,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # least one link.  It is recommended that these items have an upward
         # link to an item in the parent document, however, this is not
         # enforced.  An info message is generated if this is not the case.
-        if all((document.parent,
-                self.normative,
-                not self.derived)) and not self.links:
+        if all((document.parent, self.normative, not self.derived)) and not self.links:
             msg = "no links to parent document: {}".format(document.parent)
             yield DoorstopWarning(msg)
 
@@ -636,7 +647,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     # to contain items with a different prefix, but
                     # Doorstop will not create items like this
                     msg = "parent is '{}', but linked to: {}".format(
-                        document.parent, uid)
+                        document.parent, uid
+                    )
                     yield DoorstopInfo(msg)
 
     def _get_issues_tree(self, tree):
@@ -688,9 +700,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and self.normative:
             find_all = settings.CHECK_CHILD_LINKS_STRICT or False
-            items, documents = self._find_child_objects(document=document,
-                                                        tree=tree,
-                                                        find_all=find_all)
+            items, documents = self._find_child_objects(
+                document=document, tree=tree, find_all=find_all
+            )
 
             if not items:
                 for child_document in documents:
@@ -698,8 +710,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         msg = "skipping issues against document %s..."
                         log.debug(msg, child_document)
                         continue
-                    msg = ("no links from child document: {}".
-                           format(child_document))
+                    msg = "no links from child document: {}".format(child_document)
                     yield DoorstopWarning(msg)
             elif settings.CHECK_CHILD_LINKS_STRICT:
                 prefix = [item.prefix for item in items]

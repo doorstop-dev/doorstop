@@ -10,8 +10,7 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import (EMPTY, EXTERNAL, FILES, MockItem,
-                                 MockSimpleDocument)
+from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -250,13 +249,19 @@ class TestItem(unittest.TestCase):
 
     def test_text_sbd(self):
         """Verify newlines separate sentences in an item's text."""
-        value = ("A sentence. Another sentence! Hello? Hi.\n"
-                 "A new line (here). And another sentence.")
-        text = ("A sentence. Another sentence! Hello? Hi.\n"
-                "A new line (here). And another sentence.")
-        yaml = ("text: |\n"
-                "  A sentence. Another sentence! Hello? Hi.\n"
-                "  A new line (here). And another sentence.\n")
+        value = (
+            "A sentence. Another sentence! Hello? Hi.\n"
+            "A new line (here). And another sentence."
+        )
+        text = (
+            "A sentence. Another sentence! Hello? Hi.\n"
+            "A new line (here). And another sentence."
+        )
+        yaml = (
+            "text: |\n"
+            "  A sentence. Another sentence! Hello? Hi.\n"
+            "  A new line (here). And another sentence.\n"
+        )
         self.item.text = value
         self.assertEqual(text, self.item.text)
         self.assertIn(yaml, self.item._write.call_args[0][0])
@@ -551,9 +556,9 @@ class TestItem(unittest.TestCase):
     def test_new(self):
         """Verify items can be created."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, MockSimpleDocument(),
-                            EMPTY, FILES, 'TEST00042',
-                            level=(1, 2, 3))
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3)
+        )
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
@@ -564,9 +569,9 @@ class TestItem(unittest.TestCase):
         """Verify new items are cached."""
         mock_tree = Mock()
         mock_tree._item_cache = {}
-        item = MockItem.new(mock_tree, MockSimpleDocument(),
-                            EMPTY, FILES, 'TEST00042',
-                            level=(1, 2, 3))
+        item = MockItem.new(
+            mock_tree, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3)
+        )
         self.assertEqual(item, mock_tree._item_cache[item.uid])
         mock_tree.vcs.add.assert_called_once_with(item.path)
 
@@ -574,9 +579,9 @@ class TestItem(unittest.TestCase):
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, MockSimpleDocument(),
-                            EMPTY, FILES, 'VSM.HLR_01-002-042',
-                            level=(1, 0))
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, FILES, 'VSM.HLR_01-002-042', level=(1, 0)
+        )
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1,), item.level)
@@ -584,15 +589,16 @@ class TestItem(unittest.TestCase):
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
-        self.assertRaises(DoorstopError, Item.new,
-                          None, None,
-                          FILES, FILES, 'REQ002',
-                          level=(1, 2, 3))
+        self.assertRaises(
+            DoorstopError, Item.new, None, None, FILES, FILES, 'REQ002', level=(1, 2, 3)
+        )
 
     def test_validate_invalid_ref(self):
         """Verify an invalid reference fails validity."""
-        with patch('doorstop.core.item.Item.find_ref',
-                   Mock(side_effect=DoorstopError("test invalid ref"))):
+        with patch(
+            'doorstop.core.item.Item.find_ref',
+            Mock(side_effect=DoorstopError("test invalid ref")),
+        ):
             with ListLogHandler(core.base.log) as handler:
                 self.assertFalse(self.item.validate())
                 self.assertIn("test invalid ref", handler.records)
@@ -600,8 +606,7 @@ class TestItem(unittest.TestCase):
     def test_validate_inactive(self):
         """Verify an inactive item is not checked."""
         self.item.active = False
-        with patch('doorstop.core.item.Item.find_ref',
-                   Mock(side_effect=DoorstopError)):
+        with patch('doorstop.core.item.Item.find_ref', Mock(side_effect=DoorstopError)):
             self.assertTrue(self.item.validate())
 
     def test_validate_reviewed(self):
@@ -749,6 +754,7 @@ class TestItem(unittest.TestCase):
             def _iter(self):  # pylint: disable=W0613
                 """Mock __iter__method."""
                 yield from seq
+
             return _iter
 
         mock_item = Mock()

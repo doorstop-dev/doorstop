@@ -239,9 +239,9 @@ def _get_xlsx(obj, auto):
             cell = worksheet.cell('%s%s' % (col, row))
 
             # wrap text in every cell
-            alignment = openpyxl.styles.Alignment(vertical='top',
-                                                  horizontal='left',
-                                                  wrap_text=True)
+            alignment = openpyxl.styles.Alignment(
+                vertical='top', horizontal='left', wrap_text=True
+            )
             style = cell.style.copy(alignment=alignment)
             # and bold header rows
             if row == 1:
@@ -285,9 +285,7 @@ def _width(text):
 # Mapping from file extension to lines generator
 FORMAT_LINES = {'.yml': _lines_yaml}
 # Mapping from file extension to file generator
-FORMAT_FILE = {'.csv': _file_csv,
-               '.tsv': _file_tsv,
-               '.xlsx': _file_xlsx}
+FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx}
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))
 

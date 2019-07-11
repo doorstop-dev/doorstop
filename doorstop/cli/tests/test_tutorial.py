@@ -132,8 +132,9 @@ class TestSection1(TestBase):
         # 3.3
 
         self.doorstop("import --item HLR HLR001")
-        self.doorstop("import --item LLR LLR001 "
-                      "--attr \"{'text': 'The item text.'}\"")
+        self.doorstop(
+            "import --item LLR LLR001 " "--attr \"{'text': 'The item text.'}\""
+        )
 
         # 3.1
 
@@ -183,10 +184,14 @@ class TestSection1(TestBase):
         shutil.copy(src, dst)
 
         cp = self.doorstop()
-        self.assertIn(b'WARNING: A: A001: detected a cycle with a back edge from B001 to A001',
-                      cp.stderr)
-        self.assertIn(b'WARNING: A: A001: detected a cycle with a back edge from A002 to A002',
-                      cp.stderr)
+        self.assertIn(
+            b'WARNING: A: A001: detected a cycle with a back edge from B001 to A001',
+            cp.stderr,
+        )
+        self.assertIn(
+            b'WARNING: A: A001: detected a cycle with a back edge from A002 to A002',
+            cp.stderr,
+        )
 
 
 if __name__ == '__main__':

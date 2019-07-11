@@ -38,7 +38,8 @@ class WorkingCopy(BaseWorkingCopy):
         if self._ignores_cache is None:
             self._ignores_cache = []
             os.chdir(self.path)
-            for line in self.call('svn', 'pg', '-R', 'svn:ignore', '.',
-                                  return_stdout=True).splitlines():
+            for line in self.call(
+                'svn', 'pg', '-R', 'svn:ignore', '.', return_stdout=True
+            ).splitlines():
                 self._ignores_cache.append(line)
         return self._ignores_cache

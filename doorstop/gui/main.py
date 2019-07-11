@@ -36,14 +36,16 @@ def main(args=None):
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
-    debug.add_argument('-v', '--verbose', action='count', default=0,
-                       help="enable verbose logging")
+    debug.add_argument(
+        '-v', '--verbose', action='count', default=0, help="enable verbose logging"
+    )
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **shared)
 
     # Build main parser
-    parser.add_argument('-j', '--project', metavar="PATH",
-                        help="path to the root of the project")
+    parser.add_argument(
+        '-j', '--project', metavar="PATH", help="path to the root of the project"
+    )
 
     # Parse arguments
     args = parser.parse_args(args=args)
@@ -96,6 +98,7 @@ def run(args, cwd, error):
 
     """
     from doorstop import __project__, __version__
+
     # Exit if tkinter is not available
     if isinstance(tk, Mock) or isinstance(ttk, Mock):
         return error("tkinter is not available")
@@ -107,22 +110,34 @@ def run(args, cwd, error):
 
         from sys import platform as _platform
 
-        # # Load the icon
+        # Load the icon
         if _platform in ("linux", "linux2"):
-            # linux
+            # Linux
             from doorstop.gui import resources
-            root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(data=resources.b64_doorstopicon_png))  # pylint: disable=W0212
+
+            root.tk.call(
+                # pylint: disable=protected-access
+                'wm',
+                'iconphoto',
+                root._w,
+                tk.PhotoImage(data=resources.b64_doorstopicon_png),
+            )
         elif _platform == "darwin":
-            # MAC OS X
+            # macOS
             pass  # TODO
         elif _platform in ("win32", "win64"):
             # Windows
             from doorstop.gui import resources
             import base64
             import tempfile
+
             try:
-                with tempfile.TemporaryFile(mode='w+b', suffix=".ico", delete=False) as theTempIconFile:
-                    theTempIconFile.write(base64.b64decode(resources.b64_doorstopicon_ico))
+                with tempfile.TemporaryFile(
+                    mode='w+b', suffix=".ico", delete=False
+                ) as theTempIconFile:
+                    theTempIconFile.write(
+                        base64.b64decode(resources.b64_doorstopicon_ico)
+                    )
                     theTempIconFile.flush()
                 root.iconbitmap(theTempIconFile.name)
             finally:
@@ -142,19 +157,24 @@ def run(args, cwd, error):
 
 def _log(func):  # pragma: no cover (manual test)
     """Log name and arguments."""
+
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
-        sargs = "{}, {}".format(', '.join(repr(a) for a in args),
-                                ', '.join("{}={}".format(k, repr(v))
-                                          for k, v in kwargs.items()))
+        sargs = "{}, {}".format(
+            ', '.join(repr(a) for a in args),
+            ', '.join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
+        )
         msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
         if not isinstance(self, ttk.Frame) or not self.ignore:
             log.debug(msg.strip())
         return func(self, *args, **kwargs)
+
     return wrapped
 
 
-class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
+class Application(
+    ttk.Frame
+):  # pragma: no cover (manual test), pylint: disable=R0901,R0902
     """Graphical application for Doorstop."""
 
     def __init__(self, root, cwd, project):
@@ -214,6 +234,8 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
     def init(self, root):
         """Initialize and return the main frame."""
+        # pylint: disable=attribute-defined-outside-init
+
         # Shared arguments
         width_text = 30
         width_uid = 10
@@ -224,7 +246,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         kw_f = {'padding': 5}  # constructor arguments for frames
         kw_gp = {'padx': 2, 'pady': 2}  # grid arguments for padded widgets
         kw_gs = {'sticky': tk.NSEW}  # grid arguments for sticky widgets
-        kw_gsp = dict(chain(kw_gs.items(), kw_gp.items()))  # grid arguments for sticky padded widgets
+        kw_gsp = dict(
+            chain(kw_gs.items(), kw_gp.items())
+        )  # grid arguments for sticky padded widgets
 
         root.bind_all("<Control-minus>", lambda arg: widget.adjustFontSize(-1))
         root.bind_all("<Control-equal>", lambda arg: widget.adjustFontSize(1))
@@ -250,7 +274,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Place widgets
             widget.Label(frame, text="Project:").grid(row=0, column=0, **kw_gp)
-            widget.Entry(frame, textvariable=self.stringvar_project).grid(row=0, column=1, **kw_gsp)
+            widget.Entry(frame, textvariable=self.stringvar_project).grid(
+                row=0, column=1, **kw_gsp
+            )
 
             return frame
 
@@ -264,7 +290,9 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             # Place widgets
             widget.Label(frame, text="Document:").grid(row=0, column=0, **kw_gp)
-            self.combobox_documents = widget.Combobox(frame, textvariable=self.stringvar_document, state="readonly")
+            self.combobox_documents = widget.Combobox(
+                frame, textvariable=self.stringvar_document, state="readonly"
+            )
             self.combobox_documents.grid(row=0, column=1, **kw_gsp)
 
             return frame
@@ -303,30 +331,56 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 self.remove()
 
             # Place widgets
-            widget.Label(frame, text="Outline:").grid(row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp)
-            widget.Label(frame, text="Items:").grid(row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Outline:").grid(
+                row=0, column=0, columnspan=4, sticky=tk.W, **kw_gp
+            )
+            widget.Label(frame, text="Items:").grid(
+                row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp
+            )
             c_columnId = ("Id",)
-            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)  # pylint: disable=W0201
+            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)
             for col in c_columnId:
                 self.treeview_outline.heading(col, text=col)
 
             # Add a Vertical scrollbar to the Treeview Outline
-            treeview_outline_verticalScrollBar = widget.ScrollbarV(frame, command=self.treeview_outline.yview)
-            treeview_outline_verticalScrollBar.grid(row=1, column=0, columnspan=1, **kw_gs)
-            self.treeview_outline.configure(yscrollcommand=treeview_outline_verticalScrollBar.set)
+            treeview_outline_verticalScrollBar = widget.ScrollbarV(
+                frame, command=self.treeview_outline.yview
+            )
+            treeview_outline_verticalScrollBar.grid(
+                row=1, column=0, columnspan=1, **kw_gs
+            )
+            self.treeview_outline.configure(
+                yscrollcommand=treeview_outline_verticalScrollBar.set
+            )
 
-            self.treeview_outline.bind("<<TreeviewSelect>>", treeview_outline_treeviewselect)
+            self.treeview_outline.bind(
+                "<<TreeviewSelect>>", treeview_outline_treeviewselect
+            )
             self.treeview_outline.bind("<Delete>", treeview_outline_delete)
             self.treeview_outline.grid(row=1, column=1, columnspan=3, **kw_gsp)
-            self.text_items = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
+            self.text_items = widget.noUserInput_init(
+                widget.Text(frame, width=width_text, wrap=tk.WORD)
+            )
             self.text_items.grid(row=1, column=4, columnspan=2, **kw_gsp)
-            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)  # pylint: disable=W0201
-            widget.Button(frame, text="<", width=0, command=self.left).grid(row=2, column=0, sticky=tk.EW, padx=(2, 0))
-            widget.Button(frame, text="v", width=0, command=self.down).grid(row=2, column=1, sticky=tk.EW)
-            widget.Button(frame, text="^", width=0, command=self.up).grid(row=2, column=2, sticky=tk.EW)
-            widget.Button(frame, text=">", width=0, command=self.right).grid(row=2, column=3, sticky=tk.EW, padx=(0, 2))
-            widget.Button(frame, text="Add Item", command=self.add).grid(row=2, column=4, sticky=tk.W, **kw_gp)
-            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(row=2, column=5, sticky=tk.E, **kw_gp)
+            self.text_items_hyperlink = utilTkinter.HyperlinkManager(self.text_items)
+            widget.Button(frame, text="<", width=0, command=self.left).grid(
+                row=2, column=0, sticky=tk.EW, padx=(2, 0)
+            )
+            widget.Button(frame, text="v", width=0, command=self.down).grid(
+                row=2, column=1, sticky=tk.EW
+            )
+            widget.Button(frame, text="^", width=0, command=self.up).grid(
+                row=2, column=2, sticky=tk.EW
+            )
+            widget.Button(frame, text=">", width=0, command=self.right).grid(
+                row=2, column=3, sticky=tk.EW, padx=(0, 2)
+            )
+            widget.Button(frame, text="Add Item", command=self.add).grid(
+                row=2, column=4, sticky=tk.W, **kw_gp
+            )
+            widget.Button(frame, text="Remove Selected Item", command=self.remove).grid(
+                row=2, column=5, sticky=tk.E, **kw_gp
+            )
 
             return frame
 
@@ -372,28 +426,60 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                 self.stringvar_extendedvalue.set(value)
 
             # Place widgets
-            widget.Label(frame, text="Selected Item:").grid(row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.text_item = widget.Text(frame, width=width_text, height=height_text, wrap=tk.WORD)
+            widget.Label(frame, text="Selected Item:").grid(
+                row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            )
+            self.text_item = widget.Text(
+                frame, width=width_text, height=height_text, wrap=tk.WORD
+            )
             self.text_item.bind('<FocusIn>', text_focusin)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
-            widget.Label(frame, text="Properties:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            widget.Label(frame, text="Links:").grid(row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(row=3, column=0, sticky=tk.W, **kw_gp)
+            widget.Label(frame, text="Properties:").grid(
+                row=2, column=0, sticky=tk.W, **kw_gp
+            )
+            widget.Label(frame, text="Links:").grid(
+                row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp
+            )
+            widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(
+                row=3, column=0, sticky=tk.W, **kw_gp
+            )
             self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
             self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(row=3, column=2, sticky=tk.EW + tk.N, **kw_gp)
-            widget.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(row=4, column=0, sticky=tk.W, **kw_gp)
-            widget.Button(frame, text="<< Link Item", command=self.link).grid(row=4, column=2, **kw_gp)
-            widget.Checkbutton(frame, text="Normative", variable=self.intvar_normative).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(row=6, column=0, sticky=tk.W, **kw_gp)
-            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(row=6, column=2, **kw_gp)
-            widget.Label(frame, text="External Reference:").grid(row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            widget.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(row=8, column=0, columnspan=3, **kw_gsp)
-            widget.Label(frame, text="Extended Attributes:").grid(row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp)
-            self.combobox_extended = widget.Combobox(frame, textvariable=self.stringvar_extendedkey)
+            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
+                row=3, column=2, sticky=tk.EW + tk.N, **kw_gp
+            )
+            widget.Checkbutton(
+                frame, text="Derived", variable=self.intvar_derived
+            ).grid(row=4, column=0, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text="<< Link Item", command=self.link).grid(
+                row=4, column=2, **kw_gp
+            )
+            widget.Checkbutton(
+                frame, text="Normative", variable=self.intvar_normative
+            ).grid(row=5, column=0, sticky=tk.W, **kw_gp)
+            widget.Checkbutton(
+                frame, text="Heading", variable=self.intvar_heading
+            ).grid(row=6, column=0, sticky=tk.W, **kw_gp)
+            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
+                row=6, column=2, **kw_gp
+            )
+            widget.Label(frame, text="External Reference:").grid(
+                row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            )
+            widget.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(
+                row=8, column=0, columnspan=3, **kw_gsp
+            )
+            widget.Label(frame, text="Extended Attributes:").grid(
+                row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            )
+            self.combobox_extended = widget.Combobox(
+                frame, textvariable=self.stringvar_extendedkey
+            )
             self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
-            self.text_extendedvalue = widget.Text(frame, width=width_text, height=height_ext, wrap=tk.WORD)
+            self.text_extendedvalue = widget.Text(
+                frame, width=width_text, height=height_ext, wrap=tk.WORD
+            )
             self.text_extendedvalue.bind('<FocusIn>', text_focusin)
             self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
             self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
@@ -411,13 +497,25 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
             frame.columnconfigure(0, weight=1)
 
             # Place widgets
-            widget.Label(frame, text="Linked To:").grid(row=0, column=0, sticky=tk.W, **kw_gp)
-            self.text_parents = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(self.text_parents)  # pylint: disable=W0201
+            widget.Label(frame, text="Linked To:").grid(
+                row=0, column=0, sticky=tk.W, **kw_gp
+            )
+            self.text_parents = widget.noUserInput_init(
+                widget.Text(frame, width=width_text, wrap=tk.WORD)
+            )
+            self.text_parents_hyperlink = utilTkinter.HyperlinkManager(
+                self.text_parents
+            )
             self.text_parents.grid(row=1, column=0, **kw_gsp)
-            widget.Label(frame, text="Linked From:").grid(row=2, column=0, sticky=tk.W, **kw_gp)
-            self.text_children = widget.noUserInput_init(widget.Text(frame, width=width_text, wrap=tk.WORD))
-            self.text_children_hyperlink = utilTkinter.HyperlinkManager(self.text_children)  # pylint: disable=W0201
+            widget.Label(frame, text="Linked From:").grid(
+                row=2, column=0, sticky=tk.W, **kw_gp
+            )
+            self.text_children = widget.noUserInput_init(
+                widget.Text(frame, width=width_text, wrap=tk.WORD)
+            )
+            self.text_children_hyperlink = utilTkinter.HyperlinkManager(
+                self.text_children
+            )
             self.text_children.grid(row=3, column=0, **kw_gsp)
 
             return frame
@@ -458,8 +556,10 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         log.info("displaying tree...")
 
         # Display the documents in the tree
-        values = ["{} ({})".format(document.prefix, document.relpath)
-                  for document in self.tree]
+        values = [
+            "{} ({})".format(document.prefix, document.relpath)
+            for document in self.tree
+        ]
         self.combobox_documents['values'] = values
 
         # Select the first document
@@ -493,25 +593,50 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         # Display the items in the document
         c_levelsItem = [""]
         for item in self.document.items:
-            theParent = next(iter(reversed([x for x in c_levelsItem[:item.depth]])), "")
+            theParent = next(
+                iter(reversed([x for x in c_levelsItem[: item.depth]])), ""
+            )
 
             while len(c_levelsItem) < item.depth:
                 c_levelsItem.append(item.uid)
-            c_levelsItem = c_levelsItem[:item.depth]
+            c_levelsItem = c_levelsItem[: item.depth]
             for x in range(item.depth):
                 c_levelsItem.append(item.uid)
 
             # Add the item to the document outline
-            self.treeview_outline.insert(theParent, tk.END, item.uid, text=item.level, values=(item.uid,), open=item.uid in c_openItem)
+            self.treeview_outline.insert(
+                theParent,
+                tk.END,
+                item.uid,
+                text=item.level,
+                values=(item.uid,),
+                open=item.uid in c_openItem,
+            )
 
             # Add the item to the document text
-            widget.noUserInput_insert(self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???'))
+            widget.noUserInput_insert(
+                self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???')
+            )
             widget.noUserInput_insert(self.text_items, tk.END, " [")
-            widget.noUserInput_insert(self.text_items, tk.END, item.uid, self.text_items_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), item.uid, ["refLink"]))  # pylint: disable=W0108
+            widget.noUserInput_insert(
+                self.text_items,
+                tk.END,
+                item.uid,
+                self.text_items_hyperlink.add(
+                    # pylint: disable=unnecessary-lambda
+                    lambda c_theURL: self.followlink(c_theURL),
+                    item.uid,
+                    ["refLink"],
+                ),
+            )
             widget.noUserInput_insert(self.text_items, tk.END, "]\n\n")
 
         # Set tree view selection
-        c_selectedItem = [x for x in c_selectedItem if x in utilTkinter.getAllChildren(self.treeview_outline)]
+        c_selectedItem = [
+            x
+            for x in c_selectedItem
+            if x in utilTkinter.getAllChildren(self.treeview_outline)
+        ]
         if c_selectedItem:
             # Restore selection
             self.treeview_outline.selection_set(c_selectedItem)
@@ -543,17 +668,21 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
 
             if uid != "":
                 if uid not in self.treeview_outline.selection():
-                    self.treeview_outline.selection_set((uid, ))
+                    self.treeview_outline.selection_set((uid,))
                 self.treeview_outline.see(uid)
 
             # Display the item's text
-            self.text_item.replace('1.0', tk.END, "" if self.item is None else self.item.text)
+            self.text_item.replace(
+                '1.0', tk.END, "" if self.item is None else self.item.text
+            )
 
             # Display the item's properties
             self.stringvar_text.set("" if self.item is None else self.item.text)
             self.intvar_active.set(False if self.item is None else self.item.active)
             self.intvar_derived.set(False if self.item is None else self.item.derived)
-            self.intvar_normative.set(False if self.item is None else self.item.normative)
+            self.intvar_normative.set(
+                False if self.item is None else self.item.normative
+            )
             self.intvar_heading.set(False if self.item is None else self.item.heading)
 
             # Display the item's links
@@ -585,9 +714,21 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                         text = item.text or item.ref or '???'
                         uid = item.uid
 
-                    widget.noUserInput_insert(self.text_parents, tk.END, "{t}".format(t=text))
+                    widget.noUserInput_insert(
+                        self.text_parents, tk.END, "{t}".format(t=text)
+                    )
                     widget.noUserInput_insert(self.text_parents, tk.END, " [")
-                    widget.noUserInput_insert(self.text_parents, tk.END, uid, self.text_parents_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                    widget.noUserInput_insert(
+                        self.text_parents,
+                        tk.END,
+                        uid,
+                        self.text_parents_hyperlink.add(
+                            # pylint: disable=unnecessary-lambda
+                            lambda c_theURL: self.followlink(c_theURL),
+                            uid,
+                            ["refLink"],
+                        ),
+                    )
                     widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
 
             # Display the items this item has links from
@@ -599,9 +740,21 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
                     text = item.text or item.ref or '???'
                     uid = item.uid
 
-                    widget.noUserInput_insert(self.text_children, tk.END, "{t}".format(t=text))
+                    widget.noUserInput_insert(
+                        self.text_children, tk.END, "{t}".format(t=text)
+                    )
                     widget.noUserInput_insert(self.text_children, tk.END, " [")
-                    widget.noUserInput_insert(self.text_children, tk.END, uid, self.text_children_hyperlink.add(lambda c_theURL: self.followlink(c_theURL), uid, ["refLink"]))  # pylint: disable=W0108
+                    widget.noUserInput_insert(
+                        self.text_children,
+                        tk.END,
+                        uid,
+                        self.text_children_hyperlink.add(
+                            # pylint: disable=unnecessary-lambda
+                            lambda c_theURL: self.followlink(c_theURL),
+                            uid,
+                            ["refLink"],
+                        ),
+                    )
                     widget.noUserInput_insert(self.text_children, tk.END, "]\n\n")
         finally:
             self.ignore = False
@@ -694,7 +847,11 @@ class Application(ttk.Frame):  # pragma: no cover (manual test), pylint: disable
         newSelection = ""
         for c_currUID in self.treeview_outline.selection():
             # Find the item which should be selected once the current selection is removed.
-            for currNeighbourStrategy in (self.treeview_outline.next, self.treeview_outline.prev, self.treeview_outline.parent):
+            for currNeighbourStrategy in (
+                self.treeview_outline.next,
+                self.treeview_outline.prev,
+                self.treeview_outline.parent,
+            ):
                 newSelection = currNeighbourStrategy(c_currUID)
                 if newSelection != "":
                     break

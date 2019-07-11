@@ -9,9 +9,15 @@ from itertools import chain
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
-from doorstop.core.base import (BaseFileObject, BaseValidatable, add_document,
-                                auto_load, auto_save, delete_document,
-                                edit_document)
+from doorstop.core.base import (
+    BaseFileObject,
+    BaseValidatable,
+    add_document,
+    auto_load,
+    auto_save,
+    delete_document,
+    edit_document,
+)
 from doorstop.core.item import Item
 from doorstop.core.types import UID, Level, Prefix
 
@@ -78,7 +84,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_document
-    def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
+    def new(
+        tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None
+    ):  # pylint: disable=R0913,C0301
         """Create a new document.
 
         :param tree: reference to tree that contains this document
@@ -139,8 +147,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 elif key == 'digits':
                     self._data[key] = int(value)
                 else:
-                    msg = "unexpected document setting '{}' in: {}" \
-                          .format(key, self.config)
+                    msg = "unexpected document setting '{}' in: {}".format(
+                        key, self.config
+                    )
                     raise DoorstopError(msg)
             except (AttributeError, TypeError, ValueError):
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
@@ -378,9 +387,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.tree, self,
-                        self.path, self.root, uid,
-                        level=next_level)
+        item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
         if level and reorder:
             self.reorder(keep=item)
         return item
@@ -406,8 +413,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return item
 
     # decorators are applied to methods in the associated classes
-    def reorder(self, manual=True, automatic=True, start=None, keep=None,
-                _items=None):
+    def reorder(self, manual=True, automatic=True, start=None, keep=None, _items=None):
         """Reorder a document's items.
 
         Two methods are using to create the outline order:
@@ -453,7 +459,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             comment = lines[0] if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
-                line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
+                line = line[: settings.MAX_LINE_LENGTH - 3] + '...'
             yield line
 
     @staticmethod
@@ -539,7 +545,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
             # Process each subsection
             for index, subsection in enumerate(section):
-                Document._reorder_section(subsection, level + index, document, list_of_ids)
+                Document._reorder_section(
+                    subsection, level + index, document, list_of_ids
+                )
 
     @staticmethod
     def _reorder_automatic(items, start=None, keep=None):
@@ -639,7 +647,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
+    def get_issues(
+        self, skip=None, document_hook=None, item_hook=None
+    ):  # pylint: disable=unused-argument
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
@@ -676,8 +686,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for item in items:
 
             # Check item
-            for issue in chain(hook(item=item, document=self, tree=self.tree),
-                               item.get_issues(skip=skip)):
+            for issue in chain(
+                hook(item=item, document=self, tree=self.tree),
+                item.get_issues(skip=skip),
+            ):
 
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
@@ -704,13 +716,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 # Types of skipped levels:
                 #         1. over: 1.0 --> 1.2
                 #         2. out: 1.1 --> 3.0
-                if (nlev.value[index] - plev.value[index] > 1 or
-                        # 3. over and out: 1.1 --> 2.2
-                        (plev.value[index] != nlev.value[index] and
-                         index + 1 < length and
-                         nlev.value[index + 1] not in (0, 1))):
-                    msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
-                                                                   nlev, nuid)
+                if (
+                    nlev.value[index] - plev.value[index] > 1
+                    or
+                    # 3. over and out: 1.1 --> 2.2
+                    (
+                        plev.value[index] != nlev.value[index]
+                        and index + 1 < length
+                        and nlev.value[index + 1] not in (0, 1)
+                    )
+                ):
+                    msg = "skipped level: {} ({}), {} ({})".format(
+                        plev, puid, nlev, nuid
+                    )
                     yield DoorstopInfo(msg)
                     break
             prev = item

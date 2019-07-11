@@ -112,10 +112,8 @@ class TestDocument(unittest.TestCase):
         """Verify saving calls write."""
         self.document.tree = Mock()
         self.document.save()
-        self.document._write.assert_called_once_with(YAML_DEFAULT,
-                                                     self.document.config)
-        self.document.tree.vcs.edit.assert_called_once_with(
-            self.document.config)
+        self.document._write.assert_called_once_with(YAML_DEFAULT, self.document.config)
+        self.document.tree.vcs.edit.assert_called_once_with(self.document.config)
 
     def test_save_parent(self):
         """Verify a document can be saved with a parent."""
@@ -183,26 +181,23 @@ class TestDocument(unittest.TestCase):
         """Verify a new document can be created with defaults."""
         MockDocument._create.reset_mock()
         path = os.path.join(EMPTY, '.doorstop.yml')
-        document = MockDocument.new(None,
-                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        document = MockDocument.new(None, EMPTY, root=FILES, prefix='NEW', digits=2)
         self.assertEqual('NEW', document.prefix)
         self.assertEqual(2, document.digits)
         MockDocument._create.assert_called_once_with(path, name='document')
 
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
-        self.assertRaises(DoorstopError, Document.new,
-                          None,
-                          FILES, ROOT,
-                          prefix='DUPL')
+        self.assertRaises(DoorstopError, Document.new, None, FILES, ROOT, prefix='DUPL')
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new_cache(self):
         """Verify a new documents are cached."""
         mock_tree = Mock()
         mock_tree._document_cache = {}
-        document = MockDocument.new(mock_tree,
-                                    EMPTY, root=FILES, prefix='NEW', digits=2)
+        document = MockDocument.new(
+            mock_tree, EMPTY, root=FILES, prefix='NEW', digits=2
+        )
         mock_tree.vcs.add.assert_called_once_with(document.config)
         self.assertEqual(document, mock_tree._document_cache[document.prefix])
 
@@ -257,13 +252,15 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.MAX_LINE_LENGTH', 40)
     def test_index_set(self, mock_write_lines):
         """Verify an document's index can be created."""
-        lines = ['initial: 1.2.3',
-                 'outline:',
-                 '            - REQ001: # Lorem ipsum d...',
-                 '        - REQ003: # Unicode: -40° ±1%',
-                 '        - REQ004: # Hello, world!',
-                 '        - REQ002: # Hello, world!',
-                 '        - REQ2-001: # Hello, world!']
+        lines = [
+            'initial: 1.2.3',
+            'outline:',
+            '            - REQ001: # Lorem ipsum d...',
+            '        - REQ003: # Unicode: -40° ±1%',
+            '        - REQ004: # Hello, world!',
+            '        - REQ002: # Hello, world!',
+            '        - REQ2-001: # Hello, world!',
+        ]
         # Act
         self.document.index = True  # create index
         # Assert
@@ -284,15 +281,21 @@ outline:
         - REQ002: # Hello, world! !["...
         - REQ2-001: # Hello, world!'''
 
-        expected = {'initial': '1.2.3',
-                    'outline': [{'REQ001': [{'text': 'Lorem ipsum d...'}]},
-                                {'REQ003': [{'text': 'Unicode: -40° ±1%'}]},
-                                {'REQ004': [{'text': "Hello, world! !['.."}]},
-                                {'REQ002': [{'text': 'Hello, world! !["...'}]},
-                                {'REQ2-001': [{'text': 'Hello, world!'}]}]}
+        expected = {
+            'initial': '1.2.3',
+            'outline': [
+                {'REQ001': [{'text': 'Lorem ipsum d...'}]},
+                {'REQ003': [{'text': 'Unicode: -40° ±1%'}]},
+                {'REQ004': [{'text': "Hello, world! !['.."}]},
+                {'REQ002': [{'text': 'Hello, world! !["...'}]},
+                {'REQ2-001': [{'text': 'Hello, world!'}]},
+            ],
+        }
         # Act
         with patch('builtins.open') as mock_open:
-            mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data=lines).return_value
+            mock_open.side_effect = lambda *args, **kw: mock.mock_open(
+                read_data=lines
+            ).return_value
             actual = self.document._read_index('mock_path')
             # Check string can be parsed as yaml
         # Assert
@@ -310,9 +313,9 @@ outline:
         """Verify an item can be added to a document."""
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ006',
-                                         level=Level('2.2'))
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2')
+        )
         self.assertEqual(0, mock_reorder.call_count)
 
     @patch('doorstop.core.document.Document.reorder')
@@ -321,18 +324,18 @@ outline:
         """Verify an item can be added to a document with a level."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ006',
-                                         level='4.2')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ006', level='4.2'
+        )
         mock_reorder.assert_called_once_with(keep=item)
 
     @patch('doorstop.core.item.Item.new')
     def test_add_item_with_number(self, mock_new):
         """Verify an item can be added to a document with a number."""
         self.document.add_item(number=999)
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ999',
-                                         level=Level('2.2'))
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
+        )
 
     @patch('doorstop.core.item.Item.new')
     def test_add_item_empty(self, mock_new):
@@ -340,9 +343,9 @@ outline:
         document = MockDocument(NEW, ROOT)
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item(reorder=False))
-        mock_new.assert_called_once_with(None, document,
-                                         NEW, ROOT, 'NEW001',
-                                         level=None)
+        mock_new.assert_called_once_with(
+            None, document, NEW, ROOT, 'NEW001', level=None
+        )
 
     @patch('doorstop.core.item.Item.new')
     def test_add_item_after_header(self, mock_new):
@@ -352,9 +355,9 @@ outline:
         mock_item.level = Level('1.0')
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
-        mock_new.assert_called_once_with(None, self.document,
-                                         FILES, ROOT, 'REQ002',
-                                         level=Level('1.1'))
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ002', level=Level('1.1')
+        )
 
     def test_add_item_contains(self):
         """Verify an added item is contained in the document."""
@@ -377,8 +380,7 @@ outline:
         """Verify an item can be removed."""
         with patch('doorstop.settings.REORDER', True):
             item = self.document.remove_item('REQ001')
-        mock_reorder.assert_called_once_with(self.document.items,
-                                             keep=None, start=None)
+        mock_reorder.assert_called_once_with(self.document.items, keep=None, start=None)
         mock_remove.assert_called_once_with(item.path)
 
     @patch('os.remove')
@@ -419,47 +421,54 @@ outline:
         self.document.reorder()
         # Assert
         mock_index.assert_called_once_with(self.document, path)
-        mock_auto.assert_called_once_with(self.document.items,
-                                          start=None, keep=None)
+        mock_auto.assert_called_once_with(self.document.items, start=None, keep=None)
 
     def test_reorder_automatic(self):
         """Verify items can be reordered automatically."""
-        mock_items = [Mock(level=Level('2.3')),
-                      Mock(level=Level('2.3')),
-                      Mock(level=Level('2.7')),
-                      Mock(level=Level('3.2.2')),
-                      Mock(level=Level('3.4.2')),
-                      Mock(level=Level('3.5.0')),
-                      Mock(level=Level('3.5.0')),
-                      Mock(level=Level('3.6')),
-                      Mock(level=Level('5.0')),
-                      Mock(level=Level('5.9'))]
-        expected = [Level('2.3'),
-                    Level('2.4'),
-                    Level('2.5'),
-                    Level('3.1.1'),
-                    Level('3.2.1'),
-                    Level('3.3.0'),
-                    Level('3.4.0'),
-                    Level('3.5'),
-                    Level('4.0'),
-                    Level('4.1')]
+        mock_items = [
+            Mock(level=Level('2.3')),
+            Mock(level=Level('2.3')),
+            Mock(level=Level('2.7')),
+            Mock(level=Level('3.2.2')),
+            Mock(level=Level('3.4.2')),
+            Mock(level=Level('3.5.0')),
+            Mock(level=Level('3.5.0')),
+            Mock(level=Level('3.6')),
+            Mock(level=Level('5.0')),
+            Mock(level=Level('5.9')),
+        ]
+        expected = [
+            Level('2.3'),
+            Level('2.4'),
+            Level('2.5'),
+            Level('3.1.1'),
+            Level('3.2.1'),
+            Level('3.3.0'),
+            Level('3.4.0'),
+            Level('3.5'),
+            Level('4.0'),
+            Level('4.1'),
+        ]
         Document._reorder_automatic(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
 
     def test_reorder_automatic_no_change(self):
         """Verify already ordered items can be reordered."""
-        mock_items = [Mock(level=Level('1.1')),
-                      Mock(level=Level('1.1.1.1')),
-                      Mock(level=Level('2')),
-                      Mock(level=Level('3')),
-                      Mock(level=Level('4.1.1'))]
-        expected = [Level('1.1'),
-                    Level('1.1.1.1'),
-                    Level('2'),
-                    Level('3'),
-                    Level('4.1.1')]
+        mock_items = [
+            Mock(level=Level('1.1')),
+            Mock(level=Level('1.1.1.1')),
+            Mock(level=Level('2')),
+            Mock(level=Level('3')),
+            Mock(level=Level('4.1.1')),
+        ]
+        expected = [
+            Level('1.1'),
+            Level('1.1.1.1'),
+            Level('2'),
+            Level('3'),
+            Level('4.1.1'),
+        ]
         Document._reorder_automatic(mock_items)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
@@ -467,28 +476,32 @@ outline:
     def test_reorder_automatic_with_start(self):
         """Verify items can be reordered with a given start."""
         mock_item = Mock(level=Level('2.3'))
-        mock_items = [Mock(level=Level('2.2')),
-                      mock_item,
-                      Mock(level=Level('2.3')),
-                      Mock(level=Level('2.7')),
-                      Mock(level=Level('3.2.2')),
-                      Mock(level=Level('3.4.2')),
-                      Mock(level=Level('3.5.0')),
-                      Mock(level=Level('3.5.0')),
-                      Mock(level=Level('3.6')),
-                      Mock(level=Level('5.0')),
-                      Mock(level=Level('5.9'))]
-        expected = [Level('1.2'),
-                    Level('1.3'),
-                    Level('1.4'),
-                    Level('1.5'),
-                    Level('2.1.1'),
-                    Level('2.2.1'),
-                    Level('2.3.0'),
-                    Level('2.4.0'),
-                    Level('2.5'),
-                    Level('3.0'),
-                    Level('3.1')]
+        mock_items = [
+            Mock(level=Level('2.2')),
+            mock_item,
+            Mock(level=Level('2.3')),
+            Mock(level=Level('2.7')),
+            Mock(level=Level('3.2.2')),
+            Mock(level=Level('3.4.2')),
+            Mock(level=Level('3.5.0')),
+            Mock(level=Level('3.5.0')),
+            Mock(level=Level('3.6')),
+            Mock(level=Level('5.0')),
+            Mock(level=Level('5.9')),
+        ]
+        expected = [
+            Level('1.2'),
+            Level('1.3'),
+            Level('1.4'),
+            Level('1.5'),
+            Level('2.1.1'),
+            Level('2.2.1'),
+            Level('2.3.0'),
+            Level('2.4.0'),
+            Level('2.5'),
+            Level('3.0'),
+            Level('3.1'),
+        ]
         Document._reorder_automatic(mock_items, start=(1, 2), keep=mock_item)
         actual = [item.level for item in mock_items]
         self.assertListEqual(expected, actual)
@@ -521,10 +534,16 @@ outline:
         mock_reorder.assert_called_once_with(_items=self.document.items)
         self.assertEqual(5, mock_get_issues.call_count)
 
-    @patch('doorstop.core.item.Item.get_issues',
-           Mock(return_value=[DoorstopError('error'),
-                              DoorstopWarning('warning'),
-                              DoorstopInfo('info')]))
+    @patch(
+        'doorstop.core.item.Item.get_issues',
+        Mock(
+            return_value=[
+                DoorstopError('error'),
+                DoorstopWarning('warning'),
+                DoorstopInfo('info'),
+            ]
+        ),
+    )
     def test_validate_item(self):
         """Verify an item error fails the document check."""
         self.assertFalse(self.document.validate())
@@ -563,10 +582,8 @@ outline:
         self.document.tree._item_cache = {}
         self.document.tree._document_cache = {}
         self.document.delete()
-        self.document.tree.vcs.delete.assert_called_once_with(
-            self.document.config)
-        self.assertIs(
-            None, self.document.tree._document_cache[self.document.prefix])
+        self.document.tree.vcs.delete.assert_called_once_with(self.document.config)
+        self.assertIs(None, self.document.tree._document_cache[self.document.prefix])
 
     @patch('doorstop.core.document.Document.get_issues', Mock(return_value=[]))
     def test_issues(self):
@@ -649,11 +666,16 @@ outline:
     def test_copy_assets(self, mock_copytree, mock_glob):
         """Verify a document can copy its assets"""
         assets = ['css', 'logo.png']
-        assets_full_path = [os.path.join(self.document.path, self.document.ASSETS, dir) for dir in assets]
+        assets_full_path = [
+            os.path.join(self.document.path, self.document.ASSETS, dir)
+            for dir in assets
+        ]
         mock_glob.return_value = assets_full_path
         dst = os.path.join('publishdir', 'assets')
-        expected_calls = [call(assets_full_path[0], os.path.join(dst, assets[0])),
-                          call(assets_full_path[1], os.path.join(dst, assets[1]))]
+        expected_calls = [
+            call(assets_full_path[0], os.path.join(dst, assets[0])),
+            call(assets_full_path[1], os.path.join(dst, assets[1])),
+        ]
         # Act]
         self.document.copy_assets(dst)
         # Assert
@@ -724,24 +746,29 @@ class TestDocumentReorder(unittest.TestCase):
 
     def test_reorder_from_index(self):
         """Verify items can be reordered from an index."""
-        data = {'initial': 2.0,
-                'outline': [
-                    {'a': None},
-                    {'b': [
-                        {'ba': [
-                            {'baa': None},
-                            {'bac': None}]},
-                        {'bb': [
-                            {'new': None}]}]},
-                    {'c': None}]}
-        expected = [Level('2'),
-                    Level('3.0'),
-                    Level('3.1.0'),
-                    Level('3.1.1'),
-                    Level('3.1.2'),
-                    Level('3.2.0'),
-                    Level('3.2.1'),
-                    Level('4')]
+        data = {
+            'initial': 2.0,
+            'outline': [
+                {'a': None},
+                {
+                    'b': [
+                        {'ba': [{'baa': None}, {'bac': None}]},
+                        {'bb': [{'new': None}]},
+                    ]
+                },
+                {'c': None},
+            ],
+        }
+        expected = [
+            Level('2'),
+            Level('3.0'),
+            Level('3.1.0'),
+            Level('3.1.1'),
+            Level('3.1.2'),
+            Level('3.2.0'),
+            Level('3.2.1'),
+            Level('4'),
+        ]
 
         # Act
         self.document._read_index = MagicMock(return_value=data)
@@ -756,26 +783,30 @@ class TestDocumentReorder(unittest.TestCase):
 
     def test_reorder_from_index_add(self):
         """Verify items can be added when reordering from an index."""
-        data = {'initial': 2.0,
-                'outline': [
-                    {'a': None},
-                    {'b': [
-                        {'ba': [
-                            {'baa': None},
-                            {'new': None},
-                            {'bac': None}]},
-                        {'bb': [
-                            {'new': [{'text': 'item_text'}]}]}]},
-                    {'c': None}]}
-        expected = [Level('2'),
-                    Level('3.0'),
-                    Level('3.1.0'),
-                    Level('3.1.1'),
-                    Level('3.1.2'),
-                    Level('3.1.3'),
-                    Level('3.2.0'),
-                    Level('3.2.1'),
-                    Level('4')]
+        data = {
+            'initial': 2.0,
+            'outline': [
+                {'a': None},
+                {
+                    'b': [
+                        {'ba': [{'baa': None}, {'new': None}, {'bac': None}]},
+                        {'bb': [{'new': [{'text': 'item_text'}]}]},
+                    ]
+                },
+                {'c': None},
+            ],
+        }
+        expected = [
+            Level('2'),
+            Level('3.0'),
+            Level('3.1.0'),
+            Level('3.1.1'),
+            Level('3.1.2'),
+            Level('3.1.3'),
+            Level('3.2.0'),
+            Level('3.2.1'),
+            Level('4'),
+        ]
         # Act
         self.document._read_index = MagicMock(return_value=data)
         Document._reorder_from_index(self.document, 'mock_path')
@@ -788,26 +819,30 @@ class TestDocumentReorder(unittest.TestCase):
 
     def test_reorder_from_index_delete(self):
         """Verify items can be deleted when reordering from an index."""
-        data = {'initial': 2.0,
-                'outline': [
-                    {'a': None},
-                    {'b': [
-                        {'ba': [
-                            {'baa': None},
-                            {'bab': None},
-                            {'bac': None}]},
-                        {'bb': [
-                            {'bba': None}]}]},
-                    {'c': None}]}
-        expected = [Level('2'),
-                    Level('3.0'),
-                    Level('3.1.0'),
-                    Level('3.1.1'),
-                    Level('3.1.2'),
-                    Level('3.1.3'),
-                    Level('3.2.0'),
-                    Level('3.2.1'),
-                    Level('4')]
+        data = {
+            'initial': 2.0,
+            'outline': [
+                {'a': None},
+                {
+                    'b': [
+                        {'ba': [{'baa': None}, {'bab': None}, {'bac': None}]},
+                        {'bb': [{'bba': None}]},
+                    ]
+                },
+                {'c': None},
+            ],
+        }
+        expected = [
+            Level('2'),
+            Level('3.0'),
+            Level('3.1.0'),
+            Level('3.1.1'),
+            Level('3.1.2'),
+            Level('3.1.3'),
+            Level('3.2.0'),
+            Level('3.2.1'),
+            Level('4'),
+        ]
 
         mock_item = self.document.add_item()
         # Act

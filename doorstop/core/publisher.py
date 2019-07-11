@@ -6,11 +6,11 @@ import os
 import tempfile
 import textwrap
 
+import bottle
 import markdown
+from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
-import bottle
-from bottle import template as bottle_template
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core import Document
@@ -21,12 +21,14 @@ EXTENSIONS = (
     'markdown.extensions.sane_lists',
     'mdx_outline',
     'mdx_math',
-    PlantUMLMarkdownExtension(server='http://www.plantuml.com/plantuml',
-                              cachedir=tempfile.gettempdir(),
-                              format='svg',
-                              classes='class1,class2',
-                              title='UML',
-                              alt='UML Diagram')
+    PlantUMLMarkdownExtension(
+        server='http://www.plantuml.com/plantuml',
+        cachedir=tempfile.gettempdir(),
+        format='svg',
+        classes='class1,class2',
+        title='UML',
+        alt='UML Diagram',
+    ),
 )
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
@@ -35,8 +37,9 @@ INDEX = 'index.html'
 log = common.logger(__name__)
 
 
-def publish(obj, path, ext=None, linkify=None, index=None,
-            template=None, toc=True, **kwargs):
+def publish(
+    obj, path, ext=None, linkify=None, index=None, template=None, toc=True, **kwargs
+):
     """Publish an object to a given format.
 
     The function can be called in two ways:
@@ -66,7 +69,9 @@ def publish(obj, path, ext=None, linkify=None, index=None,
     if is_tree(obj):
         assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
     else:
-        assets_dir = os.path.join(os.path.dirname(path), Document.ASSETS)  # path is a filename
+        assets_dir = os.path.join(
+            os.path.dirname(path), Document.ASSETS
+        )  # path is a filename
 
     if os.path.isdir(assets_dir):
         log.info('Deleting contents of assets directory %s', assets_dir)
@@ -89,8 +94,9 @@ def publish(obj, path, ext=None, linkify=None, index=None,
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
-        lines = publish_lines(obj2, ext, linkify=linkify, template=template,
-                              toc=toc, **kwargs)
+        lines = publish_lines(
+            obj2, ext, linkify=linkify, template=template, toc=toc, **kwargs
+        )
         common.write_lines(lines, path2)
         if obj2.copy_assets(assets_dir):
             log.info('Copied assets from %s to %s', obj.assets, assets_dir)
@@ -144,8 +150,10 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     """
     yield '<!DOCTYPE html>'
     yield '<head>'
-    yield ('<meta http-equiv="content-type" content="text/html; '
-           'charset={charset}">'.format(charset=charset))
+    yield (
+        '<meta http-equiv="content-type" content="text/html; '
+        'charset={charset}">'.format(charset=charset)
+    )
     yield '<style type="text/css">'
     yield from _lines_css()
     yield '</style>'
@@ -188,8 +196,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield ('  <th height="25" align="center"> {link} </th>'.
-                   format(link=link))
+            yield ('  <th height="25" align="center"> {link} </th>'.format(link=link))
         yield '</tr>'
         # data
         for index, row in enumerate(tree.get_traceability()):
@@ -259,7 +266,9 @@ def _lines_text(obj, indent=8, width=79, **_):
 
             # Level and UID
             if item.header:
-                yield "{lev:<{s}}{u} {header}".format(lev=level, s=indent, u=item.uid, header=item.header)
+                yield "{lev:<{s}}{u} {header}".format(
+                    lev=level, s=indent, u=item.uid, header=item.header
+                )
             else:
                 yield "{lev:<{s}}{u}".format(lev=level, s=indent, u=item.uid)
 
@@ -299,9 +308,9 @@ def _lines_text(obj, indent=8, width=79, **_):
 
 def _chunks(text, width, indent):
     """Yield wrapped lines of text."""
-    yield from textwrap.wrap(text, width,
-                             initial_indent=' ' * indent,
-                             subsequent_indent=' ' * indent)
+    yield from textwrap.wrap(
+        text, width, initial_indent=' ' * indent, subsequent_indent=' ' * indent
+    )
 
 
 def _lines_markdown(obj, **kwargs):
@@ -324,10 +333,12 @@ def _lines_markdown(obj, **kwargs):
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level,
-                    t=text_lines[0] if text_lines else '')
+                    h=heading, lev=level, t=text_lines[0] if text_lines else ''
+                )
             else:
-                standard = "{h} {t}".format(h=heading, t=text_lines[0] if text_lines else '')
+                standard = "{h} {t}".format(
+                    h=heading, t=text_lines[0] if text_lines else ''
+                )
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
@@ -342,8 +353,7 @@ def _lines_markdown(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {lev} {u}".format(h=heading,
-                                                  lev=level, u=uid)
+                standard = "{h} {lev} {u}".format(h=heading, lev=level, u=uid)
             else:
                 standard = "{h} {u}".format(h=heading, u=uid)
 
@@ -437,7 +447,9 @@ def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
         if item.header:
-            return "[{u} {h}]({p}.html#{u})".format(u=item.uid, h=item.header, p=item.document.prefix)
+            return "[{u} {h}]({p}.html#{u})".format(
+                u=item.uid, h=item.header, p=item.document.prefix
+            )
         return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
@@ -447,9 +459,13 @@ def _format_html_item_link(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
         if item.header:
-            link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(u=item.uid, h=item.header, p=item.document.prefix)
+            link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(
+                u=item.uid, h=item.header, p=item.document.prefix
+            )
         else:
-            link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid, p=item.document.prefix)
+            link = '<a href="{p}.html#{u}">{u}</a>'.format(
+                u=item.uid, p=item.document.prefix
+            )
         return link
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
@@ -488,18 +504,16 @@ def _table_of_contents_md(obj, linkify=None):
             lbl = heading
 
         if linkify:
-            line = '{p}[{lbl}](#{uid})\n'.format(p=prefix,
-                                                 lbl=lbl,
-                                                 uid=item.uid)
+            line = '{p}[{lbl}](#{uid})\n'.format(p=prefix, lbl=lbl, uid=item.uid)
         else:
-            line = '{p}{lbl}\n'.format(p=prefix,
-                                       lbl=lbl)
+            line = '{p}{lbl}\n'.format(p=prefix, lbl=lbl)
         toc += line
     return toc
 
 
-def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
-                template=HTMLTEMPLATE, toc=True):
+def _lines_html(
+    obj, linkify=False, extensions=EXTENSIONS, template=HTMLTEMPLATE, toc=True
+):
     """Yield lines for an HTML report.
 
     :param obj: Item, list of Items, or Document to publish
@@ -528,12 +542,14 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
 
     if document:
         try:
-            bottle.TEMPLATE_PATH.insert(0,
-                                        os.path.join(os.path.dirname(__file__),
-                                                     '..', 'views'))
+            bottle.TEMPLATE_PATH.insert(
+                0, os.path.join(os.path.dirname(__file__), '..', 'views')
+            )
             if 'baseurl' not in bottle.SimpleTemplate.defaults:
                 bottle.SimpleTemplate.defaults['baseurl'] = ''
-            html = bottle_template(template, body=body, toc=toc_html, parent=obj.parent, document=obj)
+            html = bottle_template(
+                template, body=body, toc=toc_html, parent=obj.parent, document=obj
+            )
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise
@@ -543,9 +559,7 @@ def _lines_html(obj, linkify=False, extensions=EXTENSIONS,
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.txt': _lines_text,
-                '.md': _lines_markdown,
-                '.html': _lines_html}
+FORMAT_LINES = {'.txt': _lines_text, '.md': _lines_markdown, '.html': _lines_html}
 
 
 def check(ext):
