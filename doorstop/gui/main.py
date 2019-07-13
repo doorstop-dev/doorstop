@@ -205,8 +205,8 @@ class Application(ttk.Frame):
         self.intvar_heading = tk.IntVar()
         self.intvar_heading.trace('w', self.update_item)
         self.stringvar_link = tk.StringVar()  # no trace event
-        self.stringvar_ref = tk.StringVar()
-        self.stringvar_ref.trace('w', self.update_item)
+        self.stringvar_ref = tk.StringVar()  # no trace event
+
         self.stringvar_extendedkey = tk.StringVar()
         self.stringvar_extendedkey.trace('w', self.display_extended)
         self.stringvar_extendedvalue = tk.StringVar()
@@ -217,6 +217,7 @@ class Application(ttk.Frame):
         self.text_items = None
         self.text_item = None
         self.listbox_links = None
+        self.listbox_refs = None
         self.combobox_extended = None
         self.text_extendedvalue = None
         self.text_parents = None
@@ -297,7 +298,7 @@ class Application(ttk.Frame):
         def frame_document(root):
             """Frame for current document's outline and items."""
             # Configure grid
-            frame = ttk.Frame(root, **kw_f)
+            frame = ttk.Frame(root, style='hausstil.TFrame', **kw_f)
             frame.rowconfigure(0, weight=0)
             frame.rowconfigure(1, weight=5)
             frame.rowconfigure(2, weight=0)
@@ -335,7 +336,9 @@ class Application(ttk.Frame):
                 row=0, column=4, columnspan=2, sticky=tk.W, **kw_gp
             )
             c_columnId = ("Id",)
-            self.treeview_outline = widget.TreeView(frame, columns=c_columnId)
+            self.treeview_outline = widget.TreeView(
+                frame, style='hausstil.TFrame', columns=c_columnId
+            )
             for col in c_columnId:
                 self.treeview_outline.heading(col, text=col)
 
@@ -439,16 +442,16 @@ class Application(ttk.Frame):
 
             # Column: Links
             self.create_links_widget(frame).grid(
-                row=4, rowspan=3, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=4, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # External Reference
             self.create_reference_widget(frame).grid(
-                row=7, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=6, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             widget.Label(frame, text="Extended Attributes:").grid(
-                row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp
+                row=8, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.combobox_extended = widget.Combobox(
                 frame, textvariable=self.stringvar_extendedkey
@@ -670,7 +673,18 @@ class Application(ttk.Frame):
             self.stringvar_link.set('')
 
             # Display the item's external reference
-            self.stringvar_ref.set("" if self.item is None else self.item.ref)
+            self.listbox_refs.delete(0, tk.END)
+            if (
+                self.item is not None
+                and isinstance(self.item.ref, str)
+                and len(self.item.ref) > 0
+            ):
+                self.listbox_refs.insert(tk.END, self.item.ref)
+            else:
+                if self.item is not None and isinstance(self.item.ref, list):
+                    for ref in self.item.ref:
+                        self.listbox_refs.insert(tk.END, ref['path'])
+            self.stringvar_ref.set('')
 
             # Display the item's extended attributes
             values = None if self.item is None else self.item.extended
@@ -766,7 +780,20 @@ class Application(ttk.Frame):
         self.item.normative = self.intvar_normative.get()
         self.item.heading = self.intvar_heading.get()
         self.item.links = self.listbox_links.get(0, tk.END)
-        self.item.ref = self.stringvar_ref.get()
+
+        # TODO: Is this a good way to preserve compatibility with the original
+        # 'ref is string' behavior?
+        if isinstance(self.item.ref, str) and self.listbox_refs.size() == 1:
+            self.item.ref = self.listbox_refs.get(0)
+        elif isinstance(self.item.ref, str) and self.listbox_refs.size() == 0:
+            self.item.ref = ''
+        else:
+            listbox_refs = self.listbox_refs.get(0, tk.END)
+            item_refs = []
+            for listbox_ref in listbox_refs:
+                item_refs.append({'path': listbox_ref, 'type': 'file'})
+            self.item.ref = item_refs
+
         name = self.stringvar_extendedkey.get()
         if name:
             self.item.set(name, self.stringvar_extendedvalue.get())
@@ -882,6 +909,30 @@ class Application(ttk.Frame):
         # load the good Item
         self.stringvar_item.set(uid)
 
+    @_log
+    def link_ref(self):
+        """Add the specified ref to the current item."""
+        # Add the specified ref to the list
+        uid = self.stringvar_ref.get()
+        if uid:
+            self.listbox_refs.insert(tk.END, uid)
+            self.stringvar_ref.set('')
+
+            # Update the current item
+            self.update_item()
+
+    @_log
+    def unlink_ref(self):
+        """Remove the currently selected ref from the current item."""
+        # Remove the selected ref from the list (if selected)
+        index = self.listbox_refs.curselection()
+        if not index:
+            return
+        self.listbox_refs.delete(index)
+
+        # Update the current item
+        self.update_item()
+
     def create_properties_widget(self, parent):
         frame = ttk.Frame(parent)
 
@@ -892,7 +943,9 @@ class Application(ttk.Frame):
         frame.rowconfigure(3, weight=1)
         frame.rowconfigure(4, weight=1)
 
-        widget.Label(frame, text="Properties:").grid(row=0, column=0, sticky=tk.NW)
+        widget.Label(frame, text="Properties:").grid(
+            row=0, column=0, sticky=tk.NW, pady=(3, 3)
+        )
         widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(
             row=1, column=0, sticky=tk.NW
         )
@@ -932,7 +985,7 @@ class Application(ttk.Frame):
         widget.Button(frame, text="-", command=self.unlink).grid(
             row=1, column=3, columnspan=1, sticky=tk.EW + tk.N
         )
-        self.listbox_links = widget.Listbox(frame, width=width_uid)
+        self.listbox_links = widget.Listbox(frame, width=width_uid, height=5)
         self.listbox_links.grid(
             row=2,
             column=0,
@@ -949,14 +1002,35 @@ class Application(ttk.Frame):
         frame = ttk.Frame(parent)
 
         frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+        frame.columnconfigure(2, weight=0)
+        frame.columnconfigure(3, weight=0)
         frame.rowconfigure(0, weight=1)
         frame.rowconfigure(1, weight=1)
+        frame.rowconfigure(2, weight=1)
 
-        widget.Label(frame, text="External Reference:").grid(
-            row=0, column=0, sticky=tk.W
+        width_uid = 10
+        widget.Label(frame, text="External references:").grid(
+            row=0, column=0, columnspan=1, sticky=tk.NW
         )
         widget.Entry(frame, textvariable=self.stringvar_ref).grid(
-            row=1, column=0, sticky=tk.NSEW
+            row=1, column=0, columnspan=2, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="+", command=self.link_ref).grid(
+            row=1, column=2, columnspan=1, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="-", command=self.unlink_ref).grid(
+            row=1, column=3, columnspan=1, sticky=tk.EW + tk.N
+        )
+        self.listbox_refs = widget.Listbox(frame, width=width_uid, height=5)
+        self.listbox_refs.grid(
+            row=2,
+            column=0,
+            rowspan=2,
+            columnspan=4,
+            padx=(3, 0),
+            pady=(3, 0),
+            sticky=tk.NSEW,
         )
 
         return frame

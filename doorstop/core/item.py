@@ -162,7 +162,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'text':
                 value = Text(value)
             elif key == 'ref':
-                value = value.strip()
+                if isinstance(value, list):
+                    stripped_value = []
+                    for el in value:
+                        stripped_value.append(
+                            {"type": "file", "path": el["path"].strip()}
+                        )
+                    value = stripped_value
+                else:
+                    value = value.strip()
             elif key == 'links':
                 value = set(UID(part) for part in value)
             elif key == 'header':
@@ -217,7 +225,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 else:
                     value = ''
             elif key == 'ref':
-                value = value.strip()
+                if isinstance(value, list):
+                    stripped_value = []
+                    for el in value:
+                        stripped_value.append(
+                            {"type": "file", "path": el["path"].strip()}
+                        )
+                    value = stripped_value
+                else:
+                    value = value.strip()
             elif key == 'links':
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]
             elif key == 'reviewed':
@@ -420,7 +436,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = str(value) if value else ""
+        if isinstance(value, list):
+            str_value = []
+            for el in value:
+                str_value.append({"type": "file", "path": str(el["path"])})
+            self._data['ref'] = str_value
+        else:
+            self._data['ref'] = str(value) if value else ""
 
     @property
     @auto_load
@@ -730,13 +752,26 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return immediately if no external reference
         if not self.ref:
             log.debug("no external reference to search for")
-            return None, None
+            return []
         # Update the cache
         if not settings.CACHE_PATHS:
             pyficache.clear_file_cache()
-        # Search for the external reference
-        log.debug("seraching for ref '{}'...".format(self.ref))
-        pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
+        # Search for the external references
+        ref = self.ref
+        if isinstance(ref, str):
+            external_ref = self._find_external_ref(ref)
+            return [external_ref]
+
+        external_refs = []
+        for ref_item in ref:
+            path = ref_item["path"]
+            external_ref = self._find_external_file_ref(path)
+            external_refs.append(external_ref)
+        return external_refs
+
+    def _find_external_ref(self, ref):
+        log.debug("searching for ref '{}'...".format(ref))
+        pattern = r"(\b|\W){}(\b|\W)".format(re.escape(ref))
         log.trace("regex: {}".format(pattern))
         regex = re.compile(pattern)
         for path, filename, relpath in self.tree.vcs.paths:
@@ -744,7 +779,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if path == self.path:
                 continue
             # Check for a matching filename
-            if filename == self.ref:
+            if filename == ref:
                 return relpath, None
             # Skip extensions that should not be considered text
             if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
@@ -759,7 +794,21 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     log.debug("found ref: {}".format(relpath))
                     return relpath, lineno
 
-        msg = "external reference not found: {}".format(self.ref)
+        msg = "external reference not found: {}".format(ref)
+        raise DoorstopError(msg)
+
+    def _find_external_file_ref(self, ref_path):
+        log.debug("searching for ref '{}'...".format(ref_path))
+        ref_full_path = os.path.join(self.root, ref_path)
+
+        for path, filename, relpath in self.tree.vcs.paths:
+            # Skip the item's file while searching
+            if path == self.path:
+                continue
+            if path == ref_full_path:
+                return ref_path, None
+
+        msg = "external reference not found: {}".format(ref_path)
         raise DoorstopError(msg)
 
     def find_child_links(self, find_all=True):

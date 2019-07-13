@@ -61,19 +61,45 @@ class TestItem(unittest.TestCase):
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
 
     @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_find_ref(self):
+    def test_find_ref_single(self):
         """Verify an item's external reference can be found."""
         item = core.Item(None, os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
-        path, line = item.find_ref()
+        ref_items = item.find_ref()
+        path, line = ref_items[0]
         relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), ROOT)
         self.assertEqual(relpath, path)
         self.assertEqual(3, line)
 
-    def test_find_ref_error(self):
+    @unittest.skipUnless(os.getenv(ENV), REASON)
+    def test_find_ref_multiple(self):
+        """Verify an item's external reference can be found."""
+        item = core.Item(None, os.path.join(FILES, 'REQ006.yml'), ROOT)
+        item.tree = Mock()
+        item.tree.vcs = mockvcs.WorkingCopy(FILES)
+        item.root = FILES
+        ref_items = item.find_ref()
+        self.assertEqual(len(ref_items), 2)
+
+        path1, line1 = ref_items[0]
+        relpath1 = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), FILES)
+        self.assertEqual(relpath1, path1)
+        self.assertEqual(None, line1)
+
+        path2, line2 = ref_items[1]
+        relpath2 = os.path.relpath(os.path.join(FILES, 'external', 'text2.txt'), FILES)
+        self.assertEqual(relpath2, path2)
+        self.assertEqual(None, line2)
+
+    def test_find_ref_single_error(self):
         """Verify an error occurs when no external reference found."""
         self.item.ref = "not" "found"  # space avoids self match
+        self.assertRaises(DoorstopError, self.item.find_ref)
+
+    def test_find_ref_multiple_error(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.ref = [{"path": "not" "found"}]
         self.assertRaises(DoorstopError, self.item.find_ref)
 
 
@@ -94,7 +120,7 @@ class TestDocument(unittest.TestCase):
         doc = core.Document(FILES)
         self.assertEqual('REQ', doc.prefix)
         self.assertEqual(2, doc.digits)
-        self.assertEqual(5, len(doc.items))
+        self.assertEqual(6, len(doc.items))
 
     def test_new(self):
         """Verify a new document can be created."""
@@ -116,7 +142,7 @@ class TestDocument(unittest.TestCase):
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(12, len(issues))
+        self.assertEqual(13, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
@@ -134,7 +160,7 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_issues_skipped_level(self):
         """Verify skipped item levels are detected."""
-        expect = DoorstopInfo("skipped level: 1.4 (REQ003), 1.6 (REQ004)")
+        expect = DoorstopInfo("skipped level: 1.2.3 (REQ001), 1.4 (REQ003)")
         for issue in self.document.issues:
             logging.info(repr(issue))
             if type(issue) == type(expect) and issue.args == expect.args:
@@ -241,7 +267,7 @@ class TestTree(unittest.TestCase):
         issues = self.tree.issues
         for issue in self.tree.issues:
             logging.info(repr(issue))
-        self.assertEqual(14, len(issues))
+        self.assertEqual(15, len(issues))
 
     @patch('doorstop.settings.REORDER', False)
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)

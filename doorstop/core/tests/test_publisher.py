@@ -204,14 +204,25 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertTrue(os.path.isfile(path))
 
-    def test_lines_text_item(self):
+    def test_lines_text_item_single(self):
         """Verify text can be published from an item."""
         with patch.object(
-            self.item5, 'find_ref', Mock(return_value=('path/to/mock/file', 42))
+            self.item5, 'find_ref', Mock(return_value=[('path/to/mock/file', 42)])
         ):
             lines = publisher.publish_lines(self.item5, '.txt')
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
+
+    def test_lines_text_item_multiple(self):
+        """Verify text can be published from an item."""
+        mock_value = [('path/to/mock/file1', 42), ('path/to/mock/file2', 43)]
+        with patch.object(self.item5, 'find_ref', Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item5, '.txt')
+            text = ''.join(line + '\n' for line in lines)
+        self.assertIn(
+            "Reference: path/to/mock/file1 (line 42), path/to/mock/file2 (line 43)",
+            text,
+        )
 
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""
@@ -294,11 +305,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     @patch('doorstop.settings.CHECK_REF', False)
-    def test_lines_text_item_no_ref(self):
+    def test_lines_text_item_no_ref_single(self):
         """Verify text can be published without checking references."""
         lines = publisher.publish_lines(self.item5, '.txt')
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: 'abc123'", text)
+
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_lines_text_item_no_ref_multiple(self):
+        """Verify text can be published without checking references."""
+        lines = publisher.publish_lines(self.item6, '.txt')
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("Reference: 'abc1', 'abc2'", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_text_item_with_child_links(self):
@@ -309,14 +327,27 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIn("Child links: tst1", text)
 
-    def test_lines_markdown_item(self):
+    def test_lines_markdown_item_single(self):
         """Verify Markdown can be published from an item."""
         with patch.object(
-            self.item5, 'find_ref', Mock(return_value=('path/to/mock/file', 42))
+            self.item5, 'find_ref', Mock(return_value=[('path/to/mock/file', 42)])
         ):
             lines = publisher.publish_lines(self.item5, '.md')
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("> `path/to/mock/file` (line 42)", text)
+
+    def test_lines_markdown_item_multiple(self):
+        """Verify Markdown can be published from an item."""
+        with patch.object(
+            self.item5,
+            'find_ref',
+            Mock(return_value=[('path/to/mock/file1', 42), ('path/to/mock/file2', 43)]),
+        ):
+            lines = publisher.publish_lines(self.item5, '.md')
+            text = ''.join(line + '\n' for line in lines)
+        self.assertIn(
+            "> `path/to/mock/file1` (line 42)\n> `path/to/mock/file2` (line 43)", text
+        )
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
@@ -387,11 +418,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     @patch('doorstop.settings.CHECK_REF', False)
-    def test_lines_markdown_item_no_ref(self):
+    def test_lines_markdown_item_no_ref_single(self):
         """Verify Markdown can be published without checking references."""
         lines = publisher.publish_lines(self.item5, '.md')
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("> 'abc123'", text)
+
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_lines_markdown_item_no_ref_multiple(self):
+        """Verify Markdown can be published without checking references."""
+        lines = publisher.publish_lines(self.item6, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("> 'abc1'\n> 'abc2'", text)
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
@@ -474,6 +512,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * 1.2.3 REQ001
     * 1.4 REQ003
+    * 1.5 REQ006
     * 1.6 REQ004
     * 2.1 Plantuml
     * 2.1 REQ2-001\n'''
@@ -488,6 +527,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * REQ001
     * REQ003
+    * REQ006
     * REQ004
     * Plantuml
     * REQ2-001\n'''
@@ -501,6 +541,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * [1.2.3 REQ001](#REQ001)
     * [1.4 REQ003](#REQ003)
+    * [1.5 REQ006](#REQ006)
     * [1.6 REQ004](#REQ004)
     * [2.1 Plantuml](#REQ002)
     * [2.1 REQ2-001](#REQ2-001)\n'''

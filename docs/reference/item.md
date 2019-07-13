@@ -177,7 +177,42 @@ item of the reviewed attribute, not the parent item of the link).  The
 fingerprint of the link is does **not** contribute to the fingerprint of the
 item.
 
-## `ref`
+## `ref` as array (new behavior)
+
+An array of external references. An item may reference a number of external
+files. The external references are displayed in a published document.
+
+Doorstop will search in the project root for a file matching the specified
+reference. If multiple matching files exist, the first found will be used.
+
+A file is considered a text-file unless its file extension is listed in
+`SKIP_EXTS` (settings.py).
+
+The value of this attribute contributes to the [fingerprint](item.md#reviewed)
+of the item.
+
+### Example: Reference file
+
+```yaml
+ref:
+- path: tests/test1.cpp
+  type: file
+- path: tests/test2.cpp
+  type: file
+```
+
+### Note: new behavior vs old behavior
+
+Note: `ref` attribute has two behaviors: new 'ref is an array' behavior and the 
+original 'ref is a string' behavior. The old behavior supports referencing only 
+one file via file name or referencing a file that contains a given keyword. 
+
+The new behavior allows referencing many files. It discards referencing files 
+via keywords and only supports referencing files.
+
+## `ref` as a string field (old behavior)
+
+Please check the "ref as array (new behavior)" section before reading further.
 
 External reference. An item may reference an external file or a line in an
 external file. An external reference is displayed in a published document.

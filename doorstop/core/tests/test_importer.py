@@ -90,7 +90,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(5, mock_add_item.call_count)
+        self.assertEqual(6, mock_add_item.call_count)
 
     @patch('doorstop.core.importer.add_item')
     def test_file_yml_duplicates(self, mock_add_item):
@@ -100,7 +100,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(5, mock_add_item.call_count)
+        self.assertEqual(6, mock_add_item.call_count)
 
     def test_file_yml_bad_format(self):
         """Verify YAML file import can handle bad data."""
@@ -158,6 +158,18 @@ class TestModule(unittest.TestCase):
                 '',
                 True,
                 '',
+            ],
+            [
+                'REQ006',
+                '1.5',
+                'Hello, world!',
+                'type:file,path:external/text.txt\ntype:file,path:external/text2.txt',
+                'REQ001:35ed54323e3054c33ae5545fffdbbbf5',
+                True,
+                False,
+                '',
+                True,
+                'c442316131ca0225595ae257f3b4583d',
             ],
             ['REQ004', '1.6', 'Hello, world!', '', '', True, False, '', True, ''],
             [
@@ -308,6 +320,18 @@ class TestModule(unittest.TestCase):
                 None,
                 True,
                 None,
+            ],
+            [
+                'REQ006',
+                '1.5',
+                'Hello, world!',
+                'type:file,path:external/text.txt\ntype:file,path:external/text2.txt',
+                'REQ001:35ed54323e3054c33ae5545fffdbbbf5',
+                True,
+                False,
+                None,
+                True,
+                'c442316131ca0225595ae257f3b4583d',
             ],
             [
                 'REQ004',

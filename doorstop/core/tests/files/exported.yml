@@ -32,6 +32,23 @@ REQ003:
   text: |
     Unicode: -40° ±1%
 
+REQ006:
+  active: true
+  derived: false
+  header: ''
+  level: 1.5
+  links:
+  - REQ001: 35ed54323e3054c33ae5545fffdbbbf5
+  normative: true
+  ref:
+  - path: external/text.txt
+    type: file
+  - path: external/text2.txt
+    type: file
+  reviewed: c442316131ca0225595ae257f3b4583d
+  text: |
+    Hello, world!
+
 REQ004:
   active: true
   derived: false

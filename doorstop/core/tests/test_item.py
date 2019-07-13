@@ -11,7 +11,14 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.tests import (
+    EMPTY,
+    EXTERNAL,
+    FILES,
+    TESTS_ROOT,
+    MockItem,
+    MockSimpleDocument,
+)
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -254,7 +261,7 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_reviwed(self):
+    def test_reviewed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
         self.item.reviewed = 1  # calls `review()`
@@ -332,11 +339,21 @@ class TestItem(unittest.TestCase):
         expected = "should be a heading\n\n# right here"
         self.assertEqual(expected, self.item.text)
 
-    def test_ref(self):
+    def test_ref_as_string(self):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
+
+    def test_ref_as_array(self):
+        """Verify an item's reference can be set and read."""
+        ref = [{'type': 'file', 'path': 'abc1'}, {"type": "file", "path": "abc2"}]
+        self.item.ref = ref
+        self.assertIn(
+            "ref:\n- path: abc1\n  type: file\n- path: abc2\n  type: file",
+            self.item._write.call_args[0][0],
+        )
+        self.assertListEqual(ref, self.item.ref)
 
     def test_extended(self):
         """Verify an extended attribute (`str`) can be used."""
@@ -477,32 +494,69 @@ class TestItem(unittest.TestCase):
         self.assertEqual([], documents)
 
     @patch('doorstop.settings.CACHE_PATHS', False)
-    def test_find_ref(self):
+    def test_find_ref_single(self):
         """Verify an item's reference can be found."""
         self.item.ref = "REF" "123"  # space to avoid matching in this file
         self.item.tree = Mock()
         self.item.tree.vcs = WorkingCopy(EXTERNAL)
         # Act
-        relpath, line = self.item.find_ref()
+        ref = self.item.find_ref()
+
         # Assert
+        self.assertEqual(1, len(ref))
+
+        relpath, line = ref[0]
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(3, line)
 
-    def test_find_ref_filename(self):
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_ref_multiple(self):
+        """Verify an item's references can be found."""
+        self.item.ref = [{"path": "files/REQ001.yml"}, {"path": "files/REQ002.yml"}]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_ref()
+
+        # Assert
+        self.assertEqual(2, len(ref))
+
+        relpath1, line1 = ref[0]
+        self.assertEqual('files/REQ001.yml', relpath1)
+        self.assertIsNone(line1)
+
+        relpath2, line2 = ref[1]
+        self.assertEqual('files/REQ002.yml', relpath2)
+        self.assertIsNone(line2)
+
+    def test_find_ref_filename_single(self):
         """Verify an item's reference can also be a filename."""
         self.item.ref = "text.txt"
         self.item.tree = Mock()
         self.item.tree.vcs = WorkingCopy(FILES)
         self.item.tree.vcs._ignores_cache = ["*published*"]
         # Act
-        relpath, line = self.item.find_ref()
+        ref = self.item.find_ref()
         # Assert
+        self.assertEqual(1, len(ref))
+        relpath, line = ref[0]
         self.assertEqual('text.txt', os.path.basename(relpath))
         self.assertEqual(None, line)
 
-    def test_find_ref_error(self):
+    def test_find_ref_error_single(self):
         """Verify an error occurs when no external reference found."""
         self.item.ref = "not" "found"  # space to avoid matching in this file
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_ref)
+
+    def test_find_ref_error_multiple(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.ref = [{"path": "this/path/does/not/exist.yml"}]
         self.item.tree = Mock()
         self.item.tree.vcs = WorkingCopy(EMPTY)
         # Act and assert
@@ -521,7 +575,7 @@ class TestItem(unittest.TestCase):
     def test_find_ref_none(self):
         """Verify nothing returned when no external reference is specified."""
         self.item.tree = Mock()
-        self.assertEqual((None, None), self.item.find_ref())
+        self.assertEqual([], self.item.find_ref())
 
     def test_find_child_objects(self):
         """Verify an item's child objects can be found."""

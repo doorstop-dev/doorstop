@@ -155,6 +155,15 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
             elif key == 'links':
                 # separate identifiers with a delimiter
                 value = sep.join(uid.string for uid in item.links)
+            elif key == 'ref' and isinstance(value, list):
+                arr = []
+
+                for ref_item in value:
+                    ref_type = ref_item['type']
+                    ref_path = ref_item['path']
+                    arr.append("type:{},path:{}".format(ref_type, ref_path))
+
+                value = '\n'.join(ref_item for ref_item in arr)
             elif isinstance(value, str) and key not in ('reviewed',):
                 # remove sentence boundaries and line wrapping
                 value = item.get(key)

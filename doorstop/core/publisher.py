@@ -411,27 +411,51 @@ def _format_md_attr_list(item, linkify):
 def _format_text_ref(item):
     """Format an external reference in text."""
     if settings.CHECK_REF:
-        path, line = item.find_ref()
-        path = path.replace('\\', '/')  # always use unix-style paths
-        if line:
-            return "Reference: {p} (line {line})".format(p=path, line=line)
-        else:
-            return "Reference: {p}".format(p=path)
+        ref = item.find_ref()
+        refs = []
+        for ref_item in ref:
+            path, line = ref_item
+            path = path.replace('\\', '/')  # always use unix-style paths
+            if line:
+                refs.append("{p} (line {line})".format(p=path, line=line))
+            else:
+                refs.append("{p}".format(p=path))
+        return "Reference: {}".format(', '.join(ref for ref in refs))
     else:
-        return "Reference: '{r}'".format(r=item.ref)
+        ref = item.ref
+        if isinstance(ref, str):
+            return "Reference: '{r}'".format(r=ref)
+        refs = []
+        for ref_item in ref:
+            path = ref_item["path"]
+            path = path.replace('\\', '/')  # always use unix-style paths
+            refs.append("'{p}'".format(p=path))
+        return "Reference: {}".format(', '.join(ref for ref in refs))
 
 
 def _format_md_ref(item):
     """Format an external reference in Markdown."""
     if settings.CHECK_REF:
-        path, line = item.find_ref()
-        path = path.replace('\\', '/')  # always use unix-style paths
-        if line:
-            return "> `{p}` (line {line})".format(p=path, line=line)
-        else:
-            return "> `{p}`".format(p=path)
+        ref = item.find_ref()
+        refs = []
+        for ref_item in ref:
+            path, line = ref_item
+            path = path.replace('\\', '/')  # always use unix-style paths
+            if line:
+                refs.append("> `{p}` (line {line})".format(p=path, line=line))
+            else:
+                refs.append("> `{p}`".format(p=path))
+        return '\n'.join(ref for ref in refs)
     else:
-        return "> '{r}'".format(r=item.ref)
+        ref = item.ref
+        if isinstance(ref, str):
+            return "> '{r}'".format(r=ref)
+        refs = []
+        for ref_item in ref:
+            path = ref_item["path"]
+            path = path.replace('\\', '/')  # always use unix-style paths
+            refs.append("> '{r}'".format(r=path))
+        return '\n'.join(ref for ref in refs)
 
 
 def _format_md_links(items, linkify):
