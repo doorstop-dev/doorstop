@@ -489,6 +489,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     @auto_save
+    def set_attributes(self, attributes):
+        """Set the specified item's attributes."""
+        for key, value in attributes.items():
+            self._data[key] = value
+
+    @auto_save
     def edit(self, tool=None, edit_all=True):
         """Open the item for editing.
 
@@ -858,6 +864,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         values = [self.uid, self.text, self.ref]
         if links:
             values.extend(self.links)
+        for key in self.document.extended_reviewed:
+            if key in self._data:
+                values.append(self._dump(self._data[key]))
+            else:
+                log.warning(
+                    "{}: missing extended reviewed attribute: {}".format(self.uid, key)
+                )
         return Stamp(*values)
 
     @auto_save

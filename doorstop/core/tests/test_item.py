@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
 
 """Unit tests for the doorstop.core.item module."""
 
@@ -17,6 +18,25 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 YAML_DEFAULT = """
 active: true
 derived: false
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: ''
+""".lstrip()
+
+YAML_EXTENDED_ATTRIBUTES = """
+a:
+- b
+- c
+active: true
+d:
+  e: f
+  g: h
+derived: false
+i: j
+k: null
 level: 1.0
 links: []
 normative: true
@@ -79,6 +99,15 @@ class TestItem(unittest.TestCase):
         """Verify saving calls write."""
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
+
+    def test_set_attributes(self):
+        """Verify setting attributes calls write with the attributes."""
+        self.item.set_attributes(
+            {'a': ['b', 'c'], 'd': {'e': 'f', 'g': 'h'}, 'i': 'j', 'k': None}
+        )
+        self.item._write.assert_called_once_with(
+            YAML_EXTENDED_ATTRIBUTES, self.item.path
+        )
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
@@ -808,6 +837,45 @@ class TestItem(unittest.TestCase):
         """Verify an item's contents can be stamped."""
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_one_extended_reviewed(self):
+        """Verify fingerprint with one extended reviewed attribute."""
+        self.item._data['type'] = 'functional'
+        self.item.document.extended_reviewed = ['type']
+        stamp = '04fdd093f67ce3a3160dfdc5d93e7813'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_two_extended_reviewed(self):
+        """Verify fingerprint with two extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['type', 'verification-method']
+        stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_reversed_extended_reviewed_reverse(self):
+        """Verify fingerprint with reversed extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['verification-method', 'type']
+        stamp = '7b14dfcc17026e98790284c5cddb0900'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_missing_extended_reviewed_reverse(self):
+        """Verify fingerprint with missing extended reviewed attribute."""
+        with ListLogHandler(core.item.log) as handler:
+            self.item._data['type'] = 'functional'
+            self.item._data['verification-method'] = 'test'
+            self.item.document.extended_reviewed = [
+                'missing',
+                'type',
+                'verification-method',
+            ]
+            stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+            self.assertEqual(stamp, self.item.stamp())
+            self.assertIn(
+                "RQ001: missing extended reviewed attribute: missing", handler.records
+            )
 
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
