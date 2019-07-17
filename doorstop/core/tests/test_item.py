@@ -42,7 +42,8 @@ links: []
 normative: true
 ref: ''
 reviewed: null
-text: ''
+text: |
+  something
 """.lstrip()
 
 
@@ -103,7 +104,13 @@ class TestItem(unittest.TestCase):
     def test_set_attributes(self):
         """Verify setting attributes calls write with the attributes."""
         self.item.set_attributes(
-            {'a': ['b', 'c'], 'd': {'e': 'f', 'g': 'h'}, 'i': 'j', 'k': None}
+            {
+                'a': ['b', 'c'],
+                'd': {'e': 'f', 'g': 'h'},
+                'i': 'j',
+                'k': None,
+                'text': 'something',
+            }
         )
         self.item._write.assert_called_once_with(
             YAML_EXTENDED_ATTRIBUTES, self.item.path

@@ -146,17 +146,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return the item
         return item
 
-    def load(self, reload=False):
-        """Load the item's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        # Read text from file
-        text = self._read(self.path)
-        # Parse YAML data from text
-        data = self._load(text, self.path)
-        # Store parsed data
-        for key, value in data.items():
+    def _set_attributes(self, attributes):
+        """Set the item's attributes."""
+        for key, value in attributes.items():
             if key == 'level':
                 value = Level(value)
             elif key == 'active':
@@ -179,6 +171,18 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if isinstance(value, str):
                     value = Text(value)
             self._data[key] = value
+
+    def load(self, reload=False):
+        """Load the item's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        # Read text from file
+        text = self._read(self.path)
+        # Parse YAML data from text
+        data = self._load(text, self.path)
+        # Store parsed data
+        self._set_attributes(data)
         # Set meta attributes
         self._loaded = True
 
@@ -483,9 +487,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @auto_save
     def set_attributes(self, attributes):
-        """Set the specified item's attributes."""
-        for key, value in attributes.items():
-            self._data[key] = value
+        """Set the item's attributes and save them."""
+        self._set_attributes(attributes)
 
     @auto_save
     def edit(self, tool=None, edit_all=True):
