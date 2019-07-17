@@ -1,5 +1,6 @@
 active: true
 derived: false
+header: ''
 level: 1.2.3
 links:
 - SYS001: null

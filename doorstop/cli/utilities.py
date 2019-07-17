@@ -108,10 +108,6 @@ def configure_settings(args):
         settings.WARN_ALL = args.warn_all is True
     if args.error_all is not None:
         settings.ERROR_ALL = args.error_all is True
-    if args.beta is not None:
-        print(args.beta)
-        if 'header' in args.beta:
-            settings.ENABLE_HEADERS = True
 
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:

@@ -1,6 +1,7 @@
 REQ001:
   active: true
   derived: false
+  header: ''
   level: 1.2.3
   links:
   - SYS001: null
@@ -21,6 +22,7 @@ REQ001:
 REQ003:
   active: true
   derived: false
+  header: ''
   level: 1.4
   links:
   - REQ001: null
@@ -33,6 +35,7 @@ REQ003:
 REQ004:
   active: true
   derived: false
+  header: ''
   level: 1.6
   links: []
   normative: true
@@ -44,6 +47,7 @@ REQ004:
 REQ002:
   active: true
   derived: false
+  header: ''
   level: 2.1
   links: []
   normative: true
@@ -73,6 +77,7 @@ REQ002:
 REQ2-001:
   active: true
   derived: false
+  header: ''
   level: 2.1
   links:
   - REQ001: null

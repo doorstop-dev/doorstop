@@ -81,6 +81,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             "req3:" + '\n'
             "  active: true" + '\n'
             "  derived: false" + '\n'
+            "  header: ''" + '\n'
             "  level: 1.1.0" + '\n'
             "  links:" + '\n'
             "  - sys3: null" + '\n'

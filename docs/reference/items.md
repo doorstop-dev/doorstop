@@ -292,8 +292,6 @@ WARNING: REQ001: missing extended reviewed attribute: verification-method
 
 This is **different** from _heading_. If you want a Heading item, following instructions for Heading above.
 
-To enable, use flag `-b header`
-
 Gives a header (i.e. title) for the item. It will be printed alongside the item UID when published as HTML and Markdown. Links will also include the header text.
 
 
