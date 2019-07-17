@@ -146,17 +146,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return the item
         return item
 
-    def load(self, reload=False):
-        """Load the item's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        # Read text from file
-        text = self._read(self.path)
-        # Parse YAML data from text
-        data = self._load(text, self.path)
-        # Store parsed data
-        for key, value in data.items():
+    def _set_attributes(self, attributes):
+        """Set the item's attributes."""
+        for key, value in attributes.items():
             if key == 'level':
                 value = Level(value)
             elif key == 'active':
@@ -179,6 +171,18 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if isinstance(value, str):
                     value = Text(value)
             self._data[key] = value
+
+    def load(self, reload=False):
+        """Load the item's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        # Read text from file
+        text = self._read(self.path)
+        # Parse YAML data from text
+        data = self._load(text, self.path)
+        # Store parsed data
+        self._set_attributes(data)
         # Set meta attributes
         self._loaded = True
 
@@ -187,20 +191,18 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Format and save the item's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
         # Format the data items
-        data = self.data
+        data = self._yaml_data()
         # Dump the data to YAML
         text = self._dump(data)
         # Save the YAML to file
         self._write(text, self.path)
         # Set meta attributes
-        self._loaded = False
+        self._loaded = True
         self.auto = True
 
     # properties #############################################################
 
-    @property
-    @auto_load
-    def data(self):
+    def _yaml_data(self):
         """Get all the item's data formatted for YAML dumping."""
         data = {}
         for key, value in self._data.items():
@@ -232,6 +234,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return data
 
     @property
+    @auto_load
+    def data(self):
+        """Load and get all the item's data formatted for YAML dumping."""
+        return self._yaml_data()
+
+    @property
     def uid(self):
         """Get the item's UID."""
         filename = os.path.basename(self.path)
@@ -255,7 +263,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @level.setter
     @auto_save
-    @auto_load
     def level(self, value):
         """Set the item's level."""
         self._data['level'] = Level(value)
@@ -283,7 +290,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @active.setter
     @auto_save
-    @auto_load
     def active(self, value):
         """Set the item's active status."""
         self._data['active'] = to_bool(value)
@@ -302,7 +308,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @derived.setter
     @auto_save
-    @auto_load
     def derived(self, value):
         """Set the item's derived status."""
         self._data['derived'] = to_bool(value)
@@ -324,7 +329,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @normative.setter
     @auto_save
-    @auto_load
     def normative(self, value):
         """Set the item's normative status."""
         self._data['normative'] = to_bool(value)
@@ -340,7 +344,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @heading.setter
     @auto_save
-    @auto_load
     def heading(self, value):
         """Set the item's heading status."""
         heading = to_bool(value)
@@ -365,7 +368,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @cleared.setter
     @auto_save
-    @auto_load
     def cleared(self, value):
         """Set the item's suspect link status."""
         self.clear(_inverse=not to_bool(value))
@@ -381,7 +383,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @reviewed.setter
     @auto_save
-    @auto_load
     def reviewed(self, value):
         """Set the item's review status."""
         self._data['reviewed'] = Stamp(value)
@@ -394,7 +395,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @text.setter
     @auto_save
-    @auto_load
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = Text(value)
@@ -409,7 +409,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @header.setter
     @auto_save
-    @auto_load
     def header(self, value):
         """Set the item's header."""
         if settings.ENABLE_HEADERS:
@@ -428,7 +427,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @ref.setter
     @auto_save
-    @auto_load
     def ref(self, value):
         """Set the item's external file reference."""
         self._data['ref'] = str(value) if value else ""
@@ -441,7 +439,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @links.setter
     @auto_save
-    @auto_load
     def links(self, value):
         """Set the list of item UIDs this item links to."""
         self._data['links'] = set(UID(v) for v in value)
@@ -490,9 +487,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @auto_save
     def set_attributes(self, attributes):
-        """Set the specified item's attributes."""
-        for key, value in attributes.items():
-            self._data[key] = value
+        """Set the item's attributes and save them."""
+        self._set_attributes(attributes)
 
     @auto_save
     def edit(self, tool=None, edit_all=True):
@@ -523,7 +519,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._loaded = False
 
     @auto_save
-    @auto_load
     def link(self, value):
         """Add a new link to another item UID.
 
@@ -535,7 +530,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['links'].add(uid)
 
     @auto_save
-    @auto_load
     def unlink(self, value):
         """Remove an existing link by item UID.
 
@@ -874,7 +868,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return Stamp(*values)
 
     @auto_save
-    @auto_load
     def clear(self, _inverse=False):
         """Clear suspect links."""
         log.info("clearing suspect links...")
@@ -888,7 +881,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         uid.stamp = item.stamp()
 
     @auto_save
-    @auto_load
     def review(self):
         """Mark the item as reviewed."""
         log.info("marking item as reviewed...")
