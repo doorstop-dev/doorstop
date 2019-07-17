@@ -91,8 +91,8 @@ e.g. `level: '1.10'`.
 Each item has a fingerprint. By default, the UID of the item, the values of the
 [text](items.md#text) and [ref](items.md#ref) attributes, and the UIDs of the
 [links](items.md#links) attribute contribute to the fingerprint. Optionally,
-values of extended attributes can be added to the fingerprint through the
-[extended-reviewed](items.md#extended-reviewed-attributes) document setting.
+values of extended attributes can be added to the fingerprint through a
+[document configuration option](items.md#extended-reviewed-attributes).
 
 The value of the *reviewed* attribute indicates the fingerprint of the item
 when it was last reviewed. "null" if the item has not yet been reviewed.
