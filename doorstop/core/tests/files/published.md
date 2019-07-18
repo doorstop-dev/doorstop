@@ -9,20 +9,23 @@ eu fugiat nulla pariatur.
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
 deserunt mollit anim id est laborum.
 
-*Parent links: SYS001, SYS002*
+*🡩 Parents: SYS001, SYS002*
 
+***
 ## 1.4 REQ003 {#REQ003 }
 
 Unicode: -40° ±1%
 
 > `external/text.txt` (line 3)
 
-*Parent links: REQ001*
+*🡩 Parents: REQ001*
 
+***
 ## 1.6 REQ004 {#REQ004 }
 
 Hello, world!
 
+***
 ## 2.1 Plantuml <small>REQ002</small> {#REQ002 }
 
 Hello, world!
@@ -45,8 +48,9 @@ System --> (Integrity)
 @enduml
 ```
 
-*Child links: TST001, TST002*
+*🡫 Children: TST001, TST002*
 
+***
 ## 2.1 REQ2-001 {#REQ2-001 }
 
 Hello, world!
@@ -57,7 +61,8 @@ Inline Style 1: $a \ne 0$
 Inline Style 2: \(ax^2 + bx + c = 0\)
 Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
-*Parent links: REQ001*
+*🡩 Parents: REQ001*
 
-*Child links: TST001*
+*🡫 Children: TST001*
 
+***

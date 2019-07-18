@@ -234,7 +234,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_single_line_heading_to_markdown(self):
         """Verify a single line heading is published as a heading with an attribute equal to the item id"""
-        expected = "## 1.1 Heading {#req3 }\n\n"
+        expected = "## 1.1 Heading {#req3 }\n\n***\n"
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         # Act
         text = ''.join(line + '\n' for line in lines)
@@ -252,7 +252,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                 "normative: false"
             ),
         )
-        expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
+        expected = (
+            "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n***\n"
+        )
         lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
         text = ''.join(line + '\n' for line in lines)
@@ -271,7 +273,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                 "normative: false"
             ),
         )
-        expected = "## Heading {#req3 }\nThis section describes publishing.\n\n"
+        expected = "## Heading {#req3 }\nThis section describes publishing.\n\n***\n"
         lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
         text = ''.join(line + '\n' for line in lines)
@@ -320,7 +322,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
-        expected = "## 1.1 Heading {#req3 }\n\n"
+        expected = "## 1.1 Heading {#req3 }\n\n***\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -330,7 +332,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_lines_markdown_item_heading_no_heading_levels(self):
         """Verify an item heading level can be ommitted."""
-        expected = "## Heading {#req3 }\n\n"
+        expected = "## Heading {#req3 }\n\n***\n"
         # Act
         lines = publisher.publish_lines(self.item, '.md', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -344,7 +346,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             "## 1.2 req4 {#req4 }" + '\n\n'
             "This shall..." + '\n\n'
             "> `Doorstop.sublime-project`" + '\n\n'
-            "*Links: sys4*" + '\n\n'
+            "*Links: sys4*" + '\n\n***\n'
         )
         # Act
         lines = publisher.publish_lines(self.item3, '.md', linkify=False)
@@ -359,7 +361,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         lines = publisher.publish_lines(self.item2, '.md')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertIn("Child links: tst1", text)
+        self.assertIn("Children: tst1", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_without_child_links(self):
@@ -378,7 +380,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             "## req4 {#req4 }" + '\n\n'
             "This shall..." + '\n\n'
             "> `Doorstop.sublime-project`" + '\n\n'
-            "*Links: sys4*" + '\n\n'
+            "*Links: sys4*" + '\n\n***\n'
         )
         # Act
         lines = publisher.publish_lines(self.item3, '.md', linkify=False)
@@ -395,9 +397,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = (
-            '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
-        )
+        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n<hr />\n</section>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -407,7 +407,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_lines_html_item_no_heading_levels(self):
         """Verify an item heading level can be ommitted."""
-        expected = '<section class="section2" id="req3"><h2>Heading</h2>\n</section>\n'
+        expected = (
+            '<section class="section2" id="req3"><h2>Heading</h2>\n<hr />\n</section>\n'
+        )
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -416,9 +418,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item_linkify(self):
         """Verify HTML (hyper) can be published from an item."""
-        expected = (
-            '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
-        )
+        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n<hr />\n</section>\n'
         # Act
         lines = publisher.publish_lines(self.item, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -432,7 +432,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         lines = publisher.publish_lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertIn("Child links: tst1", text)
+        self.assertIn("Children: tst1", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_html_item_without_child_links(self):
@@ -441,7 +441,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         lines = publisher.publish_lines(self.item2, '.html')
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertNotIn("Child links", text)
+        self.assertNotIn("Children", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_html_item_with_child_links_linkify(self):
@@ -450,7 +450,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         lines = publisher.publish_lines(self.item2, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
-        self.assertIn("Child links:", text)
+        self.assertIn("Children:", text)
         self.assertIn("tst.html#tst1", text)
 
     def test_lines_unknown(self):
@@ -470,7 +470,7 @@ class TestTableOfContents(unittest.TestCase):
 
     def test_toc_no_links_or_heading_levels(self):
         """Verify the table of contents is generated with heading levels"""
-        expected = '''### Table of Contents
+        expected = '''**Contents**
 
         * 1.2.3 REQ001
     * 1.4 REQ003
@@ -484,7 +484,7 @@ class TestTableOfContents(unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_toc_no_links(self):
         """Verify the table of contents is generated without heading levels"""
-        expected = '''### Table of Contents
+        expected = '''**Contents**
 
         * REQ001
     * REQ003
@@ -497,7 +497,7 @@ class TestTableOfContents(unittest.TestCase):
 
     def test_toc(self):
         """Verify the table of contents is generated with an ID for the heading"""
-        expected = '''### Table of Contents
+        expected = '''**Contents**
 
         * [1.2.3 REQ001](#REQ001)
     * [1.4 REQ003](#REQ003)

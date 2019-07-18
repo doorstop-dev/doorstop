@@ -11,6 +11,7 @@ deserunt mollit anim id est laborum.
 
 *Links: SYS001, SYS002*
 
+***
 ## 1.4 REQ003 {#REQ003 }
 
 Unicode: -40° ±1%
@@ -19,10 +20,12 @@ Unicode: -40° ±1%
 
 *Links: REQ001*
 
+***
 ## 1.6 REQ004 {#REQ004 }
 
 Hello, world!
 
+***
 ## 2.1 Plantuml <small>REQ002</small> {#REQ002 }
 
 Hello, world!
@@ -45,6 +48,7 @@ System --> (Integrity)
 @enduml
 ```
 
+***
 ## 2.1 REQ2-001 {#REQ2-001 }
 
 Hello, world!
@@ -57,3 +61,4 @@ Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
 *Links: REQ001*
 
+***
