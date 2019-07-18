@@ -324,7 +324,7 @@ def _lines_markdown(obj, **kwargs):
     linkify = kwargs.get('linkify', False)
     for item in iter_items(obj):
 
-        heading = '##' * min(item.depth, 2)  # Don't have anything smaller than h4
+        heading = '#' * item.depth
         level = _format_level(item.level)
 
         if item.heading:
@@ -496,7 +496,7 @@ def _format_md_label_links(label, links, linkify):
 
 
 def _table_of_contents_md(obj, linkify=None):
-    toc = '**Contents** \n\n'
+    toc = '**Contents**\n\n'
 
     for item in iter_items(obj):
         if item.depth == 1:
