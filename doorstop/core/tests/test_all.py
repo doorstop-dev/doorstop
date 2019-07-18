@@ -713,7 +713,9 @@ def read_xlsx(path):
                 values = (
                     cell.value,
                     cell.style,
-                    worksheet.column_dimensions[cell.column].width,
+                    worksheet.column_dimensions[
+                        openpyxl.utils.get_column_letter(cell.column)
+                    ].width,
                 )
                 data.append(values)
         data.append(worksheet.auto_filter.ref)
