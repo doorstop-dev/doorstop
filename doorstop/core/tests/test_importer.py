@@ -168,7 +168,7 @@ class TestModule(unittest.TestCase):
                 '',
                 True,
                 False,
-                '',
+                'Plantuml',
                 True,
                 '50ae164a198e612dee696cc80942dc29',
             ],

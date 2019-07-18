@@ -23,7 +23,7 @@ Unicode: -40° ±1%
 
 Hello, world!
 
-## 2.1 REQ002 {#REQ002 }
+## 2.1 Plantuml <small>REQ002</small> {#REQ002 }
 
 Hello, world!
 

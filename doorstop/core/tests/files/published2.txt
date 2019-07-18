@@ -26,7 +26,7 @@
 
         Hello, world!
 
-2.1     REQ002
+2.1     REQ002 Plantuml
 
         Hello, world!
 

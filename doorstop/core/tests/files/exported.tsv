@@ -28,7 +28,7 @@ Reviewer --> (Review Item)
 System --> (Suspect Changes)
 System --> (Integrity)
 @enduml
-```"			True	False		True	50ae164a198e612dee696cc80942dc29
+```"			True	False	Plantuml	True	50ae164a198e612dee696cc80942dc29
 REQ2-001	2.1	"Hello, world!
 
 Test Math Expressions in Latex Style:
