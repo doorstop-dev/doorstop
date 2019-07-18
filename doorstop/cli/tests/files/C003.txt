@@ -1,0 +1,9 @@
+active: true
+derived: false
+level: 1.2
+links: []
+normative: true
+ref: ''
+reviewed: 486c91baf12e1e0190e7c37b0ef9d526
+text: |
+  C003

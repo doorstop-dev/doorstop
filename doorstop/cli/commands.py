@@ -384,10 +384,19 @@ def run_clear(args, cwd, error, catch=True):
     with utilities.capture(catch=catch) as success:
         tree = _get_tree(args, cwd)
 
+        if args.parents:
+            # Check that the parent item UIDs exist
+            for pid in args.parents:
+                tree.find_item(pid)
+
+            pids = " to " + ", ".join(args.parents)
+        else:
+            pids = ""
+
         for item in _iter_items(args, tree, error):
-            msg = "clearing item {}'s suspect links...".format(item.uid)
+            msg = "clearing item {}'s suspect links{}...".format(item.uid, pids)
             utilities.show(msg)
-            item.clear()
+            item.clear(parents=args.parents)
 
     if not success:
         return False

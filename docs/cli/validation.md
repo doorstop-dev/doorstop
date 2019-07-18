@@ -73,3 +73,42 @@ REQ
 │
 └── LLT
 ```
+
+## Clear Suspect Links
+
+Each link consists of the parent item UID and the
+[fingerprint](../reference/items.md#reviewed) of the parent item.  When the
+fingerprint of a parent item changes, the link is reported as suspect during
+validation.
+
+```sh
+doorstop
+building tree...
+loading documents...
+validating items...
+WARNING: LLT: LLT005: suspect link: REQ001
+
+REQ
+│   
+├── TUT
+│   │   
+│   └── HLT
+│   
+└── LLT
+```
+
+You can clear suspect links with the `doorstop clear` command.
+
+```sh
+$ doorstop clear LLT005
+building tree...
+clearing item LLT005's suspect links...
+```
+
+Optionally, you can clear only suspect links to specific parent items.
+
+```sh
+$ doorstop clear LLT005 REQ002 REQ003
+building tree...
+clearing item LLT005's suspect links to REQ002, REQ003...
+```

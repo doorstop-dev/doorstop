@@ -895,6 +895,28 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.cleared)
         self.assertEqual('abc123', self.item.links[0].stamp)
 
+    def test_clear_by_uid(self):
+        """Verify an item's links can be cleared as suspect by UID."""
+        mock_item = Mock()
+        mock_item.uid = 'mock_uid'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_uid')
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['other_uid'])
+        # Assert
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['mock_uid'])
+        # Assert
+        self.assertTrue(self.item.cleared)
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
     def test_review(self):
         """Verify an item can be marked as reviewed."""
         self.item.reviewed = False

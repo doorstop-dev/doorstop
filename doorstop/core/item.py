@@ -861,11 +861,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return Stamp(*values)
 
     @auto_save
-    def clear(self):
+    def clear(self, parents=None):
         """Clear suspect links."""
         log.info("clearing suspect links...")
         for uid, item in self._get_parent_uid_and_item():
-            uid.stamp = item.stamp()
+            if not parents or uid in parents:
+                uid.stamp = item.stamp()
 
     @auto_save
     def review(self):
