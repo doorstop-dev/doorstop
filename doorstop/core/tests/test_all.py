@@ -19,16 +19,7 @@ import yaml
 from doorstop import common, core
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
-from doorstop.core.tests import (
-    EMPTY,
-    ENV,
-    FILES,
-    FILES_BETA,
-    REASON,
-    ROOT,
-    SYS,
-    DocumentNoSkip,
-)
+from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
 from doorstop.core.vcs import mockvcs
 
 # Whenever the export format is changed:
@@ -613,25 +604,6 @@ class TestPublisher(unittest.TestCase):
         expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
-
-    @patch('doorstop.core.document.Document', DocumentNoSkip)
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    @patch('doorstop.settings.ENABLE_HEADERS', True)
-    def test_lines_html_document_with_header(self):
-        """Verify HTML can be published from a document with headers and child links contain header"""
-        path = os.path.join(FILES_BETA, 'published3.html')
-        expected = common.read_text(path)
-        beta_features_tree = core.build(cwd=FILES_BETA, root=FILES_BETA)
-        document_with_header = beta_features_tree.find_document('REQHEADER')
-        # Act
-        lines = core.publisher.publish_lines(
-            document_with_header, '.html', linkify=True
-        )
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:

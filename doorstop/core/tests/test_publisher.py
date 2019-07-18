@@ -475,7 +475,7 @@ class TestTableOfContents(unittest.TestCase):
         * 1.2.3 REQ001
     * 1.4 REQ003
     * 1.6 REQ004
-    * 2.1 REQ002
+    * 2.1 Plantuml
     * 2.1 REQ2-001\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=None)
         print(toc)
@@ -489,7 +489,7 @@ class TestTableOfContents(unittest.TestCase):
         * REQ001
     * REQ003
     * REQ004
-    * REQ002
+    * Plantuml
     * REQ2-001\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=None)
         print(toc)
@@ -502,7 +502,7 @@ class TestTableOfContents(unittest.TestCase):
         * [1.2.3 REQ001](#REQ001)
     * [1.4 REQ003](#REQ003)
     * [1.6 REQ004](#REQ004)
-    * [2.1 REQ002](#REQ002)
+    * [2.1 Plantuml](#REQ002)
     * [2.1 REQ2-001](#REQ2-001)\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=True)
         self.assertEqual(expected, toc)

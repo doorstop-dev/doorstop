@@ -15,9 +15,6 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 FILES = os.path.join(os.path.dirname(__file__), 'files')
-FILES_BETA = os.path.join(
-    os.path.dirname(__file__), 'files_beta'
-)  # tests for beta features
 SYS = os.path.join(FILES, 'parent')
 TST = os.path.join(FILES, 'child')
 EMPTY = os.path.join(FILES, 'empty')  # an empty directory

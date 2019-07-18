@@ -18,6 +18,7 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 YAML_DEFAULT = """
 active: true
 derived: false
+header: ''
 level: 1.0
 links: []
 normative: true
@@ -35,6 +36,7 @@ d:
   e: f
   g: h
 derived: false
+header: ''
 i: j
 k: null
 level: 1.0

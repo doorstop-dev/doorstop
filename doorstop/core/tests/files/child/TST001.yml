@@ -1,5 +1,6 @@
 active: true
 derived: false
+header: ''
 level: 1
 links:
 - REQ002: null
