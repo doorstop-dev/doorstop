@@ -358,12 +358,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def cleared(self):
         """Indicate if no links are suspect."""
-        items = self.parent_items
-        for uid in self.links:
-            for item in items:
-                if uid == item.uid:
-                    if uid.stamp != item.stamp():
-                        return False
+        for uid, item in self._get_parent_uid_and_item():
+            if uid.stamp != item.stamp():
+                return False
         return True
 
     @property
@@ -447,19 +444,21 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the list of item UIDs this item links to."""
         self.links = value  # alias
 
-    @property
     @requires_tree
-    def parent_items(self):
-        """Get a list of items that this item links to."""
-        items = []
+    def _get_parent_uid_and_item(self):
+        """Yield UID and item of all links of this item."""
         for uid in self.links:
             try:
                 item = self.tree.find_item(uid)
             except DoorstopError:
                 item = UnknownItem(uid)
                 log.warning(item.exception)
-            items.append(item)
-        return items
+            yield uid, item
+
+    @property
+    def parent_items(self):
+        """Get a list of items that this item links to."""
+        return [item for uid, item in self._get_parent_uid_and_item()]
 
     @property
     @requires_tree
@@ -865,11 +864,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def clear(self):
         """Clear suspect links."""
         log.info("clearing suspect links...")
-        items = self.parent_items
-        for uid in self.links:
-            for item in items:
-                if uid == item.uid:
-                    uid.stamp = item.stamp()
+        for uid, item in self._get_parent_uid_and_item():
+            uid.stamp = item.stamp()
 
     @auto_save
     def review(self):
