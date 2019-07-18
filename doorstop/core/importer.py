@@ -189,7 +189,7 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path, use_iterators=True)
+    workbook = openpyxl.load_workbook(path)
     worksheet = workbook.active
 
     index = 0
