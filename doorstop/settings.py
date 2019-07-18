@@ -50,7 +50,7 @@ STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = True  # include levels on header items
-ENABLE_HEADERS = True # use headers if defined
+ENABLE_HEADERS = True  # use headers if defined
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
@@ -63,4 +63,3 @@ CACHE_PATHS = True  # cache file/directory paths and contents
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 7867
-

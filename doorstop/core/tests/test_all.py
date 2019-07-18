@@ -619,6 +619,7 @@ class TestPublisher(unittest.TestCase):
             self.assertEqual(expected, text)
         common.write_text(text, path)
 
+
 class TestModule(unittest.TestCase):
     """Integration tests for the doorstop.core module."""
 
