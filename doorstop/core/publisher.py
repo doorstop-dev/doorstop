@@ -506,7 +506,7 @@ def _table_of_contents_md(obj, linkify=None):
         elif item.header:
             heading = "{h}".format(h=item.header)
         else:
-            if settings.ENABLE_HEADERS:
+            if settings.ENABLE_HEADERS and item.header:
                 heading = item.header
             else:
                 heading = item.uid
