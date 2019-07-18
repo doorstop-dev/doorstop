@@ -1,12 +1,12 @@
 % rebase('base.tpl', title='Doorstop', stylesheet='sidebar.css')
 <div class="container-fluid">
     <div class="row">
-      <div class="col-lg-2 hidden-sm hidden-xs">
+      <div class="col-lg-3 col-md-3 hidden-sm hidden-xs">
           <nav id="TOC" class="nav nav-stacked fixed sidebar">
               {{!toc}}
           </nav>
       </div>
-      <div class="col-lg-8" id="main">
+      <div class="col-lg-7 col-md-9" id="main">
         {{!body}}
       </div>
     </div>
