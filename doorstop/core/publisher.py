@@ -150,8 +150,10 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     """
     yield '<!DOCTYPE html>'
     yield '<head>'
-    yield ('<meta http-equiv="content-type" content="text/html; '
-           'charset={charset}">'.format(charset=charset))
+    yield (
+        '<meta http-equiv="content-type" content="text/html; '
+        'charset={charset}">'.format(charset=charset)
+    )
     yield '<link rel="stylesheet" href="assets/doorstop/bootstrap.min.css" />'
     yield '<link rel="stylesheet" href="assets/doorstop/general.css" />'
     yield '</head>'
@@ -193,8 +195,7 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<tr>'
         for document in documents:
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-            yield ('  <th height="25" align="left"> {link} </th>'.
-                   format(link=link))
+            yield ('  <th height="25" align="left"> {link} </th>'.format(link=link))
         yield '</tr>'
         # data
         for index, row in enumerate(tree.get_traceability()):
@@ -474,9 +475,13 @@ def _format_html_item_link_index_table(item, linkify=True):
     """Format an item link in HTML."""
     if linkify and is_item(item):
         if item.header:
-            link = '<a href="{p}.html#{u}">{u}</a><br/>{h}'.format(u=item.uid, h=item.header, p=item.document.prefix)
+            link = '<a href="{p}.html#{u}">{u}</a><br/>{h}'.format(
+                u=item.uid, h=item.header, p=item.document.prefix
+            )
         else:
-            link = '<a href="{p}.html#{u}">{u}</a>'.format(u=item.uid, p=item.document.prefix)
+            link = '<a href="{p}.html#{u}">{u}</a>'.format(
+                u=item.uid, p=item.document.prefix
+            )
         return link
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
