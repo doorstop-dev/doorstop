@@ -254,20 +254,6 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_cleared(self):
-        """Verify an item's suspect link status can be set and read."""
-        mock_item = Mock()
-        mock_item.uid = 'mock_uid'
-        mock_item.stamp = Mock(return_value=Stamp('abc123'))
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.tree = mock_tree
-        self.item.link('mock_uid')
-        self.item.cleared = 1  # updates each stamp
-        self.assertTrue(self.item.cleared)
-        self.item.cleared = 0  # sets each stamp to None
-        self.assertFalse(self.item.cleared)
-
     def test_reviwed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default

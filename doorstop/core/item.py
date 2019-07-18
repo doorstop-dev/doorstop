@@ -366,12 +366,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         return False
         return True
 
-    @cleared.setter
-    @auto_save
-    def cleared(self, value):
-        """Set the item's suspect link status."""
-        self.clear(_inverse=not to_bool(value))
-
     @property
     @auto_load
     def reviewed(self):
@@ -868,17 +862,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return Stamp(*values)
 
     @auto_save
-    def clear(self, _inverse=False):
+    def clear(self):
         """Clear suspect links."""
         log.info("clearing suspect links...")
         items = self.parent_items
         for uid in self.links:
             for item in items:
                 if uid == item.uid:
-                    if _inverse:
-                        uid.stamp = Stamp()
-                    else:
-                        uid.stamp = item.stamp()
+                    uid.stamp = item.stamp()
 
     @auto_save
     def review(self):
