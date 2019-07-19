@@ -389,12 +389,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def add_item(self, number=None, level=None, reorder=True):
+    def add_item(self, number=None, level=None, reorder=True, template=None):
         """Create a new item for the document and return it.
 
         :param number: desired item number
         :param level: desired item level
         :param reorder: update levels of document items
+        :param template: template used for default content
 
         :return: added :class:`~doorstop.core.item.Item`
 
@@ -415,7 +416,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
+        item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level, template=template)
         if self._attribute_defaults:
             item.set_attributes(self._attribute_defaults)
         if level and reorder:

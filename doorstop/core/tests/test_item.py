@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.tests import EMPTY, EXTERNAL, FILES, ROOT_TEMPLATE, MockItem, MockSimpleDocument
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -595,12 +595,30 @@ class TestItem(unittest.TestCase):
         """Verify items can be created."""
         MockItem._create.reset_mock()
         item = MockItem.new(
-            None, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3)
+            None, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3), template=None
         )
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
         MockItem._create.assert_called_once_with(path, name='item')
+
+    @patch('doorstop.core.item.Item', MockItem)
+    def test_new_default_template(self):
+        """Verify items can be created with a default template."""
+        MockItem._create.reset_mock()
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, ROOT_TEMPLATE, 'TEST00042', level=(1, 2, 3), template=None
+        )
+        self.assertEqual("This is a default template.", item.text)
+
+    @patch('doorstop.core.item.Item', MockItem)
+    def test_new_custom_template(self):
+        """Verify items can be created with a custom template."""
+        MockItem._create.reset_mock()
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, ROOT_TEMPLATE, 'TEST00042', level=(1, 2, 3), template="custom.md"
+        )
+        self.assertEqual("This is a custom template.", item.text)
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_cache(self):

@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
-from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, MockDocument, MockItem
+from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, ROOT_TEMPLATE, MockDocument, MockItem
 from doorstop.core.types import Level
 
 YAML_DEFAULT = """
@@ -406,7 +406,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2')
+            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2'), template=None
         )
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -417,7 +417,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level='4.2'
+            None, self.document, FILES, ROOT, 'REQ006', level='4.2', template=None
         )
         mock_reorder.assert_called_once_with(keep=item)
 
@@ -426,7 +426,7 @@ outline:
         """Verify an item can be added to a document with a number."""
         self.document.add_item(number=999)
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
+            None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2'), template=None
         )
 
     @patch('doorstop.core.item.Item.new')
@@ -436,7 +436,37 @@ outline:
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item(reorder=False))
         mock_new.assert_called_once_with(
-            None, document, NEW, ROOT, 'NEW001', level=None
+            None, document, NEW, ROOT, 'NEW001', level=None, template=None
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_template_no_template_folder(self, mock_new):
+        """Verify an item can be added to an new document when no template folder exists."""
+        document = MockDocument(NEW, ROOT)
+        document.prefix = 'NEW'
+        self.assertIsNot(None, document.add_item(reorder=False))
+        mock_new.assert_called_once_with(
+            None, document, NEW, ROOT, 'NEW001', level=None, template=None
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_template_default(self, mock_new):
+        """Verify an item with a default template can be added to an new document."""
+        document = MockDocument(NEW, ROOT_TEMPLATE)
+        document.prefix = 'NEW'
+        self.assertIsNot(None, document.add_item(reorder=False))
+        mock_new.assert_called_once_with(
+            None, document, NEW, ROOT_TEMPLATE, 'NEW001', level=None, template=None
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_template_custom(self, mock_new):
+        """Verify an item with a custom template can be added to an new document."""
+        document = MockDocument(NEW, ROOT_TEMPLATE)
+        document.prefix = 'NEW'
+        self.assertIsNot(None, document.add_item(reorder=False, template="custom.md"))
+        mock_new.assert_called_once_with(
+            None, document, NEW, ROOT_TEMPLATE, 'NEW001', level=None, template="custom.md"
         )
 
     @patch('doorstop.core.item.Item.new')
@@ -448,7 +478,7 @@ outline:
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ002', level=Level('1.1')
+            None, self.document, FILES, ROOT, 'REQ002', level=Level('1.1'), template=None
         )
 
     def test_add_item_contains(self):

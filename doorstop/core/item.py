@@ -88,7 +88,20 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['normative'] = Item.DEFAULT_NORMATIVE
         self._data['derived'] = Item.DEFAULT_DERIVED
         self._data['reviewed'] = Item.DEFAULT_REVIEWED
-        self._data['text'] = Item.DEFAULT_TEXT
+
+        default_text = Item.DEFAULT_TEXT
+        if os.path.isdir(os.path.join(root, '.doorstop')):
+            template_name = kwargs.get('template', 'default.md')
+
+            if not template_name:
+                template_name = 'default.md'
+
+            template_path = os.path.join(root, '.doorstop', template_name)
+            if os.path.isfile(template_path):
+                with open(template_path, 'r') as template_file:
+                    default_text = Text(template_file.read())
+
+        self._data['text'] = default_text
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
         if settings.ENABLE_HEADERS:
@@ -112,7 +125,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_item
     def new(
-        tree, document, path, root, uid, level=None, auto=None
+        tree, document, path, root, uid, level=None, template=None, auto=None
     ):  # pylint: disable=R0913
         """Create a new item.
 
@@ -124,6 +137,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param uid: UID for the new item
 
         :param level: level for the new item
+        :param template: template content for new item
         :param auto: automatically save the item
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
@@ -139,7 +153,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
-        item = Item(document, path2, root=root, tree=tree, auto=False)
+        item = Item(document, path2, root=root, tree=tree, template=template, auto=False)
         item.level = level if level is not None else item.level
         if auto or (auto is None and Item.auto):
             item.save()

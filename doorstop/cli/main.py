@@ -227,6 +227,17 @@ def _add(subs, shared):
         help="number of items to create",
     )
     sub.add_argument(
+        '--template',
+        default=None,
+        help=(
+            "Template content file to be added to the new item. "
+            "Will search for the file in a folder called .doorstop "
+            "in the root directory, if this argument is not specified "
+            "and a .doorstop/default.md file exists that file will be "
+            "loaded by default."
+        ),
+    )
+    sub.add_argument(
         '--edit',
         action='store_true',
         help=(
