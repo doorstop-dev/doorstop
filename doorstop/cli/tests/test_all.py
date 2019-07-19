@@ -167,6 +167,18 @@ class TestAdd(unittest.TestCase):
         self.assertIs(None, main(['add', 'TUT', '--level', '1.42']))
         self.assertTrue(os.path.isfile(self.path))
 
+    def test_add_custom_template(self):
+        """Verify 'doorstop add' can be called with a custom template."""
+        os.mkdir('.doorstop')
+        with open(os.path.join('.doorstop', 'custom.md'), 'w') as template_file:
+            template_file.write("This is a custom template.")
+        self.assertIs(None, main(['add', 'TUT', '--template', 'custom.md']))
+        self.assertTrue(os.path.isfile(self.path))
+        with open(self.path, 'r') as test_item:
+            self.assertIn("This is a custom template.", test_item.read())
+        os.remove(os.path.join('.doorstop', 'custom.md'))
+        os.rmdir('.doorstop')
+
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ['add', 'UNKNOWN'])
