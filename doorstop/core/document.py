@@ -416,7 +416,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
         uid = UID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level, template=template)
+        item = Item.new(
+            self.tree,
+            self,
+            self.path,
+            self.root,
+            uid,
+            level=next_level,
+            template=template,
+        )
         if self._attribute_defaults:
             item.set_attributes(self._attribute_defaults)
         if level and reorder:

@@ -97,13 +97,15 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 template_name = 'default.md'
 
             template_path = os.path.join(root, '.doorstop', template_name)
-            
+
             if os.path.isfile(template_path):
                 with open(template_path, 'r') as template_file:
                     default_text = Text(template_file.read())
             else:
                 if template_name != 'default.md':
-                    raise DoorstopError("item template does not exist: {}".format(template_name))
+                    raise DoorstopError(
+                        "item template does not exist: {}".format(template_name)
+                    )
 
         self._data['text'] = default_text
         self._data['ref'] = Item.DEFAULT_REF
@@ -157,7 +159,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name='item')
         # Initialize the item
-        item = Item(document, path2, root=root, tree=tree, template=template, auto=False)
+        item = Item(
+            document, path2, root=root, tree=tree, template=template, auto=False
+        )
         item.level = level if level is not None else item.level
         if auto or (auto is None and Item.auto):
             item.save()

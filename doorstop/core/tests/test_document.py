@@ -13,7 +13,15 @@ from unittest.mock import MagicMock, Mock, call, patch
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
-from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, ROOT_TEMPLATE, MockDocument, MockItem
+from doorstop.core.tests import (
+    EMPTY,
+    FILES,
+    NEW,
+    ROOT,
+    ROOT_TEMPLATE,
+    MockDocument,
+    MockItem,
+)
 from doorstop.core.types import Level
 
 YAML_DEFAULT = """
@@ -406,7 +414,13 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2'), template=None
+            None,
+            self.document,
+            FILES,
+            ROOT,
+            'REQ006',
+            level=Level('2.2'),
+            template=None,
         )
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -426,7 +440,13 @@ outline:
         """Verify an item can be added to a document with a number."""
         self.document.add_item(number=999)
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2'), template=None
+            None,
+            self.document,
+            FILES,
+            ROOT,
+            'REQ999',
+            level=Level('2.2'),
+            template=None,
         )
 
     @patch('doorstop.core.item.Item.new')
@@ -466,7 +486,13 @@ outline:
         document.prefix = 'NEW'
         self.assertIsNot(None, document.add_item(reorder=False, template="custom.md"))
         mock_new.assert_called_once_with(
-            None, document, NEW, ROOT_TEMPLATE, 'NEW001', level=None, template="custom.md"
+            None,
+            document,
+            NEW,
+            ROOT_TEMPLATE,
+            'NEW001',
+            level=None,
+            template="custom.md",
         )
 
     @patch('doorstop.core.item.Item.new')
@@ -478,7 +504,13 @@ outline:
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ002', level=Level('1.1'), template=None
+            None,
+            self.document,
+            FILES,
+            ROOT,
+            'REQ002',
+            level=Level('1.1'),
+            template=None,
         )
 
     def test_add_item_contains(self):
