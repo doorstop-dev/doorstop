@@ -376,6 +376,9 @@ def _clear(subs, shared):
         action='store_true',
         help="indicates the 'label' is a document prefix",
     )
+    sub.add_argument(
+        'parents', nargs='*', help="only clear links with these parent item UIDs"
+    )
 
 
 def _review(subs, shared):

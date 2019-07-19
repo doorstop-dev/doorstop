@@ -1,0 +1,11 @@
+active: true
+derived: false
+level: 1.0
+links:
+- C002: deadbeefdeadbeefdeadbeefdeadbeef
+- C003: deadbeefdeadbeefdeadbeefdeadbeef
+normative: true
+ref: ''
+reviewed: 918294db8654e4443cc4b221a51d618b
+text: |
+  C001
