@@ -37,12 +37,12 @@ class TestBase(unittest.TestCase):
         shutil.rmtree(self.temp)
 
     @staticmethod
-    def doorstop(args=""):
+    def doorstop(args="", returncode=0, stdout=None):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        cp = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        if cp.returncode != 0:
+        cp = subprocess.run(cmd, shell=True, stdout=stdout, stderr=subprocess.PIPE)
+        if cp.returncode != returncode:
             raise AssertionError("command failed: doorstop {}".format(args))
         return cp
 
@@ -183,6 +183,42 @@ class TestSection1(TestBase):
             b'WARNING: A: A001: detected a cycle with a back edge from A002 to A002',
             cp.stderr,
         )
+
+    def test_clear_links(self):
+        """Verify clear links is working."""
+
+        self.doorstop("create C .")
+
+        src = os.path.join(FILES, 'C001.txt')
+        dst = os.path.join(self.temp, 'C001.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'C002.txt')
+        dst = os.path.join(self.temp, 'C002.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'C003.txt')
+        dst = os.path.join(self.temp, 'C003.yml')
+        shutil.copy(src, dst)
+
+        cp = self.doorstop()
+        self.assertIn(b'WARNING: C: C001: suspect link: C002', cp.stderr)
+        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+
+        cp = self.doorstop("clear C001 C004", 1)
+        self.assertIn(b'ERROR: no item with UID: C004', cp.stderr)
+
+        cp = self.doorstop("clear C001 C001 C002", stdout=subprocess.PIPE)
+        self.assertIn(
+            b'clearing item C001\'s suspect links to C001, C002...', cp.stdout
+        )
+
+        cp = self.doorstop()
+        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+
+        cp = self.doorstop("clear C001", stdout=subprocess.PIPE)
+        self.assertIn(b'clearing item C001\'s suspect links...', cp.stdout)
+
+        cp = self.doorstop()
+        self.assertNotIn(b'suspect link', cp.stderr)
 
 
 if __name__ == '__main__':
