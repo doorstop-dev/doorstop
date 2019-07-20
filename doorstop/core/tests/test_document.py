@@ -2,7 +2,7 @@
 
 """Unit tests for the doorstop.core.document module."""
 
-# pylint: disable=unused-argument,protected-access
+# pylint: disable=unused-argument,protected-access,C0302
 
 import logging
 import os
