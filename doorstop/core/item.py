@@ -88,26 +88,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['normative'] = Item.DEFAULT_NORMATIVE
         self._data['derived'] = Item.DEFAULT_DERIVED
         self._data['reviewed'] = Item.DEFAULT_REVIEWED
-
-        default_text = Item.DEFAULT_TEXT
-
-        template_name = kwargs.get('template', 'default.md')
-        if os.path.isdir(os.path.join(root, '.doorstop')):
-            if not template_name:
-                template_name = 'default.md'
-
-            template_path = os.path.join(root, '.doorstop', template_name)
-
-            if os.path.isfile(template_path):
-                with open(template_path, 'r') as template_file:
-                    default_text = Text(template_file.read())
-            else:
-                if template_name != 'default.md':
-                    raise DoorstopError(
-                        "item template does not exist: {}".format(template_name)
-                    )
-
-        self._data['text'] = default_text
+        self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
         self._data['links'] = set()
         if settings.ENABLE_HEADERS:
@@ -163,6 +144,23 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             document, path2, root=root, tree=tree, template=template, auto=False
         )
         item.level = level if level is not None else item.level
+        # Load in templated text if a template is specified.
+        if os.path.isdir(os.path.join(root, '.doorstop')):
+            if not template:
+                template = 'default.md'
+            template_path = os.path.join(root, '.doorstop', template)
+            if os.path.exists(template_path):
+                with open(template_path, 'r') as template_file:
+                    item.text = template_file.read()
+            else:
+                if template != 'default.md':
+                    raise DoorstopError(
+                        "item template does not exist: {}".format(template)
+                    )
+        else:
+            if template:
+                log.warning("Template folder .doorstop does not exist!")
+
         if auto or (auto is None and Item.auto):
             item.save()
         # Return the item
