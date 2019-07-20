@@ -630,19 +630,21 @@ class TestItem(unittest.TestCase):
             template="custom.md",
         )
         self.assertEqual("This is a custom template.", item.text)
-    
+
     @patch('doorstop.core.item.Item', MockItem)
     def test_new_non_existent_template(self):
         """Verify items created without a template are rejected."""
         MockItem._create.reset_mock()
-        self.assertRaises(DoorstopError, MockItem.new,
+        self.assertRaises(
+            DoorstopError,
+            MockItem.new,
             None,
             MockSimpleDocument(),
             EMPTY,
             ROOT_TEMPLATE,
             'TEST00042',
             level=(1, 2, 3),
-            template="fake.md"
+            template="fake.md",
         )
 
     @patch('doorstop.core.item.Item', MockItem)
