@@ -648,6 +648,22 @@ class TestItem(unittest.TestCase):
         )
 
     @patch('doorstop.core.item.Item', MockItem)
+    def test_new_non_existent_template_dir(self):
+        """Verify items created without a template are rejected."""
+        MockItem._create.reset_mock()
+        self.assertRaises(
+            DoorstopError,
+            MockItem.new,
+            None,
+            MockSimpleDocument(),
+            EMPTY,
+            FILES,
+            'TEST00042',
+            level=(1, 2, 3),
+            template="custom.md",
+        )
+
+    @patch('doorstop.core.item.Item', MockItem)
     def test_new_cache(self):
         """Verify new items are cached."""
         mock_tree = Mock()
