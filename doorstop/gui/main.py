@@ -423,7 +423,7 @@ class Application(ttk.Frame):
                 value = thewidget.get('1.0', tk.END)
                 self.stringvar_extendedvalue.set(value)
 
-            # Place widgets
+            # Selected Item
             widget.Label(frame, text="Selected Item:").grid(
                 row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
@@ -433,35 +433,41 @@ class Application(ttk.Frame):
             self.text_item.bind('<FocusIn>', text_focusin)
             self.text_item.bind('<FocusOut>', text_item_focusout)
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
+
+            # Column: Properties
             widget.Label(frame, text="Properties:").grid(
                 row=2, column=0, sticky=tk.W, **kw_gp
-            )
-            widget.Label(frame, text="Links:").grid(
-                row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp
             )
             widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(
                 row=3, column=0, sticky=tk.W, **kw_gp
             )
-            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
-            self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
-                row=3, column=2, sticky=tk.EW + tk.N, **kw_gp
-            )
             widget.Checkbutton(
                 frame, text="Derived", variable=self.intvar_derived
             ).grid(row=4, column=0, sticky=tk.W, **kw_gp)
-            widget.Button(frame, text="<< Link Item", command=self.link).grid(
-                row=4, column=2, **kw_gp
-            )
             widget.Checkbutton(
                 frame, text="Normative", variable=self.intvar_normative
             ).grid(row=5, column=0, sticky=tk.W, **kw_gp)
             widget.Checkbutton(
                 frame, text="Heading", variable=self.intvar_heading
             ).grid(row=6, column=0, sticky=tk.W, **kw_gp)
+
+            # Column: Links
+            widget.Label(frame, text="Links:").grid(
+                row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp
+            )
+            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
+            self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
+            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
+                row=3, column=2, sticky=tk.EW + tk.N, **kw_gp
+            )
+            widget.Button(frame, text="<< Link Item", command=self.link).grid(
+                row=4, column=2, **kw_gp
+            )
             widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
                 row=6, column=2, **kw_gp
             )
+
+            # External Reference
             widget.Label(frame, text="External Reference:").grid(
                 row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
