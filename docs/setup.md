@@ -4,11 +4,9 @@ Doorstop will open files using the editor specified by the `$EDITOR` environment
 
 ## Git
 
-### Windows
+**Windows**
 
 Windows deals with line-endings differently to most systems, favoring `CRLF` (`\r\n`) over the more traditional `LF` (`\n`).
-
-**Symptom:**\
 The `YAML` files saved and revision-controlled by Doorstop have `LF`
 line-endings, which can cause the following warnings:
 
@@ -28,10 +26,7 @@ reordered document: TS
 ```
 
 These warnings come from Git as a sub-process of the main Doorstop processes,
-so the solution to this problem is a Git setting.
-
-**Recommendation:**\
-Add the following to your `.gitattributes` file:
+so the solution is to add the following to your `.gitattributes` file:
 
 ```
 *.yml text eol=lf

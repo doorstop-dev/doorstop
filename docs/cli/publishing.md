@@ -25,6 +25,6 @@ publishing TST to path/to/tst.md...
 
 Supported formats:
 
-- Text: **.txt**
-- Markdown: **.md**
-- HTML: **.html**
+- Text: `.txt`
+- Markdown: `.md`
+- HTML: `.html`

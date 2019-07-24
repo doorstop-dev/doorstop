@@ -22,7 +22,9 @@ nav:
 - Web Interface: web.md
 - Scripting Interface: api/scripting.md
 - Reference:
-  - Items: reference/items.md
+  - Tree: reference/tree.md
+  - Document: reference/document.md
+  - Item: reference/item.md
 - Examples: examples.md
 - About:
   - Release Notes: about/changelog.md

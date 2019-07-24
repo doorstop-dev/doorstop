@@ -4,4 +4,4 @@ Running `doorstop` in Docker: [tlwt/doorstop-docker](https://github.com/tlwt/doo
 
 # Sample Projects
 
-> (add your open source project here)
+[(add your open source project here)](https://github.com/jacebrowning/doorstop/edit/develop/docs/examples.md)
