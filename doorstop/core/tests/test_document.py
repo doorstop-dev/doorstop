@@ -38,6 +38,14 @@ settings:
   sep: '-'
 """.lstrip()
 
+YAML_STAMP = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+  stamp: sha256
+""".lstrip()
+
 YAML_INVALID = """
 settings:
   digits: oops
@@ -133,6 +141,17 @@ class TestDocument(unittest.TestCase):
         self.document.load()
         self.assertEqual('PARENT', self.document.parent)
 
+    def test_load_and_save_stamp(self):
+        """Verify the document config with stamp can be loaded and saved."""
+        self.document._file = YAML_STAMP
+        self.document.load()
+        self.assertEqual(
+            '2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881',
+            self.document.stamp('x'),
+        )
+        self.document.save()
+        self.assertIn("stamp: sha256", self.document._file)
+
     def test_load_invalid(self):
         """Verify that an invalid document config raises an exception."""
         self.document._file = YAML_INVALID
@@ -180,6 +199,12 @@ class TestDocument(unittest.TestCase):
         self.document.parent = 'SYS'
         self.document.save()
         self.assertIn("parent: SYS", self.document._file)
+
+    def test_no_save_stamp(self):
+        """Verify not saving of not present stamp setting."""
+        self.document._extended_reviewed = []
+        self.document.save()
+        self.assertNotIn("stamp", self.document._file)
 
     def test_save_custom(self):
         """Verify a document can be saved with a custom attribute."""

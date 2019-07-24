@@ -95,7 +95,7 @@ class UID:
         if values and isinstance(values[0], UID):
             self.stamp = stamp or values[0].stamp
             return
-        self.stamp = stamp or Stamp()
+        self.stamp = stamp or Stamp(None)
         # Join values
         if len(values) == 0:  # pylint: disable=len-as-condition
             self.value = ''
@@ -516,22 +516,13 @@ class Stamp:
 
     """
 
-    def __init__(self, *values):
-        if not values:
+    def __init__(self, value):
+        if to_bool(value):
+            self.value = True
+        elif value and isinstance(value, str):
+            self.value = value
+        else:
             self.value = None
-            return
-        if len(values) == 1:
-            value = values[0]
-            if to_bool(value):
-                self.value = True
-                return
-            if not value:
-                self.value = None
-                return
-            if isinstance(value, str):
-                self.value = value
-                return
-        self.value = self.digest(*values)
 
     def __repr__(self):
         return "Stamp({})".format(repr(self.value))
@@ -557,12 +548,28 @@ class Stamp:
         return self.value
 
     @staticmethod
-    def digest(*values):
-        """Hash the values for later comparison."""
-        md5 = hashlib.md5()
+    def new_md5(*values):
+        """Get new stamp for the values using MD5."""
+        hsh = hashlib.md5()
         for value in values:
-            md5.update(str(value).encode())
-        return md5.hexdigest()
+            hsh.update(str(value).encode())
+        return Stamp(hsh.hexdigest())
+
+    @staticmethod
+    def new_sha256(*values):
+        """Get new stamp for the values using SHA256."""
+        hsh = hashlib.sha256()
+        for value in values:
+            hsh.update(str(value).encode())
+        return Stamp(hsh.hexdigest())
+
+    @staticmethod
+    def new_sha512(*values):
+        """Get new stamp for the values using SHA512."""
+        hsh = hashlib.sha512()
+        for value in values:
+            hsh.update(str(value).encode())
+        return Stamp(hsh.hexdigest())
 
 
 class Reference:

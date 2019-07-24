@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop.core.base import BaseFileObject
 from doorstop.core.document import Document
 from doorstop.core.item import Item
+from doorstop.core.types import Stamp
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -87,6 +88,7 @@ class MockSimpleDocument:
         self.prefix = 'RQ'
         self._items = []
         self.extended_reviewed = []
+        self.stamp = Stamp.new_md5
 
     def __iter__(self):
         yield from self._items

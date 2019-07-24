@@ -68,6 +68,12 @@ manually editing the configuration file.  The list of options follows:
     manually before an item is created.  Afterwards, it should be considered as
     read-only.  This document setting is mandatory.
 
+  * *stamp*: defines the item stamp method.  By default, the MD5 hash algorithm
+    is used.  Valid values for the `stamp` setting are `md5`, `sha256`, and
+    `sha512`.  You have to set it manually before an item is created.
+    Afterwards, it should be considered as read-only.  This document setting is
+    optional.
+
 * *attributes*
 
   * *defaults*: defines the

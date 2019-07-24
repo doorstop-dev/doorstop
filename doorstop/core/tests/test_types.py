@@ -393,10 +393,12 @@ class TestStamp(unittest.TestCase):
 
     def setUp(self):
         self.stamp1 = Stamp('abc123')
-        self.stamp2 = Stamp("Hello, world!", 42, False)
+        self.stamp2 = Stamp.new_md5("Hello, world!", 42, False)
         self.stamp3 = Stamp(True)
         self.stamp4 = Stamp(False)
-        self.stamp5 = Stamp()
+        self.stamp5 = Stamp(None)
+        self.stamp6 = Stamp.new_sha256("Hello, world!", 42, False)
+        self.stamp7 = Stamp.new_sha512("Hello, world!", 42, False)
 
     def test_repr(self):
         """Verify stamps can be represented."""
@@ -405,6 +407,14 @@ class TestStamp(unittest.TestCase):
         self.assertEqual("Stamp(True)", repr(self.stamp3))
         self.assertEqual("Stamp(None)", repr(self.stamp4))
         self.assertEqual("Stamp(None)", repr(self.stamp5))
+        self.assertEqual(
+            "Stamp('bb4b78a844d6c8f3cfcdc46ee4aff68823001a07cb37c6c33f87a7047a81b168')",
+            repr(self.stamp6),
+        )
+        self.assertEqual(
+            "Stamp('1de4d2059c5655f565cbc88a44c0b4402fffa5f906eb9c568df3612125e0fc71f86e61f789abf77b0ab7f49a204bf2cba25a30b04ca04b4a4356d6d13cf61727')",
+            repr(self.stamp7),
+        )
 
     def test_str(self):
         """Verify stamps can be converted to strings."""
@@ -413,6 +423,14 @@ class TestStamp(unittest.TestCase):
         self.assertEqual('', str(self.stamp3))
         self.assertEqual('', str(self.stamp4))
         self.assertEqual('', str(self.stamp5))
+        self.assertEqual(
+            'bb4b78a844d6c8f3cfcdc46ee4aff68823001a07cb37c6c33f87a7047a81b168',
+            str(self.stamp6),
+        )
+        self.assertEqual(
+            '1de4d2059c5655f565cbc88a44c0b4402fffa5f906eb9c568df3612125e0fc71f86e61f789abf77b0ab7f49a204bf2cba25a30b04ca04b4a4356d6d13cf61727',
+            str(self.stamp7),
+        )
 
     def test_bool(self):
         """Verify stamps can be converted to boolean."""
@@ -421,6 +439,8 @@ class TestStamp(unittest.TestCase):
         self.assertTrue(self.stamp3)
         self.assertFalse(self.stamp4)
         self.assertFalse(self.stamp5)
+        self.assertTrue(self.stamp6)
+        self.assertTrue(self.stamp7)
 
     def test_eq(self):
         """Verify stamps can be equated."""
@@ -431,6 +451,14 @@ class TestStamp(unittest.TestCase):
         self.assertNotEqual(self.stamp1, self.stamp2)
         self.assertNotEqual(self.stamp3, self.stamp4)
         self.assertEqual(self.stamp4, self.stamp5)
+        self.assertEqual(
+            'bb4b78a844d6c8f3cfcdc46ee4aff68823001a07cb37c6c33f87a7047a81b168',
+            self.stamp6,
+        )
+        self.assertEqual(
+            '1de4d2059c5655f565cbc88a44c0b4402fffa5f906eb9c568df3612125e0fc71f86e61f789abf77b0ab7f49a204bf2cba25a30b04ca04b4a4356d6d13cf61727',
+            self.stamp7,
+        )
 
     def test_yaml(self):
         """Verify stamps can be converted to their YAML dump format."""
@@ -439,6 +467,14 @@ class TestStamp(unittest.TestCase):
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)
+        self.assertEqual(
+            'bb4b78a844d6c8f3cfcdc46ee4aff68823001a07cb37c6c33f87a7047a81b168',
+            self.stamp6.yaml,
+        )
+        self.assertEqual(
+            '1de4d2059c5655f565cbc88a44c0b4402fffa5f906eb9c568df3612125e0fc71f86e61f789abf77b0ab7f49a204bf2cba25a30b04ca04b4a4356d6d13cf61727',
+            self.stamp7.yaml,
+        )
 
 
 class TestReference(unittest.TestCase):

@@ -48,7 +48,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
-    DEFAULT_REVIEWED = Stamp()
+    DEFAULT_REVIEWED = Stamp(None)
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
@@ -858,7 +858,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 log.warning(
                     "{}: missing extended reviewed attribute: {}".format(self.uid, key)
                 )
-        return Stamp(*values)
+        return self.document.stamp(*values)
 
     @auto_save
     def clear(self, parents=None):

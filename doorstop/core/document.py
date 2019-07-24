@@ -19,9 +19,18 @@ from doorstop.core.base import (
     edit_document,
 )
 from doorstop.core.item import Item
-from doorstop.core.types import UID, Level, Prefix
+from doorstop.core.types import UID, Level, Prefix, Stamp
 
 log = common.logger(__name__)
+
+
+def _get_new_stamp(which):
+    variants = {
+        'md5': Stamp.new_md5,
+        'sha256': Stamp.new_sha256,
+        'sha512': Stamp.new_sha512,
+    }
+    return variants[which]
 
 
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
@@ -64,6 +73,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._items = []
         self._itered = False
         self.children = []
+        self.stamp = Stamp.new_md5
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -148,12 +158,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     self._data[key] = value.strip()
                 elif key == 'digits':
                     self._data[key] = int(value)
+                elif key == 'stamp':
+                    self.stamp = _get_new_stamp(value)
+                    self._data[key] = value
                 else:
                     msg = "unexpected document setting '{}' in: {}".format(
                         key, self.config
                     )
                     raise DoorstopError(msg)
-            except (AttributeError, TypeError, ValueError):
+            except (AttributeError, KeyError, TypeError, ValueError):
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
                 raise DoorstopError(msg)
         # Store parsed attributes
