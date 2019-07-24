@@ -90,10 +90,12 @@ e.g. `level: '1.10'`.
 
 ## ``header``
 
-This is **different** from _heading_. If you want a Heading item, following instructions for Heading above.
+Gives a header (i.e. title) for the item. It will be printed alongside the item
+UID when published as HTML and Markdown. Links will also include the header
+text.  This is **different** from a [heading item](item.md#example-heading).
 
-Gives a header (i.e. title) for the item. It will be printed alongside the item UID when published as HTML and Markdown. Links will also include the header text.
-
+The value of this attribute does **not** contribute to the
+[fingerprint](item.md#reviewed) of the item.
 
 ### Example: Header
 
