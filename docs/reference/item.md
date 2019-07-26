@@ -285,7 +285,7 @@ In this example, an extended attribute `invented-by` is added to the item.
 invented-by: jane@example.com
 ```
 
-**Defaults for extended attributes**
+## Defaults for extended attributes
 
 Optionally, you can add custom default values for extended attributes.  Add
 them as key-value pairs to the `defaults` dictionary under the `attributes`
@@ -310,7 +310,7 @@ attributes:
     attribute-key-3: ... default values can be arbitrarily complex
 ```
 
-**Extended reviewed attributes**
+## Extended reviewed attributes
 
 By default, the values of extended attributes do **not** contribute to the
 [fingerprint](item.md#reviewed) of the item.  Optionally, you can add the
