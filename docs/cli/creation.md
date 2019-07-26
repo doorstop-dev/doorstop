@@ -39,3 +39,41 @@ linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 
 It is not allowed to create links which would end up in a self reference or
 cyclic dependency.
+
+# Document Configuration
+
+The settings and attribute options of each document are stored in a
+corresponding `.doorstop.yml` file.  Some configuration options can be set via
+`doorstop create` command line parameters such as the document *prefix*, the
+item UID *digits*, and the *parent* prefix.  Others can only be changed by
+manually editing the configuration file.  The list of options follows:
+
+* *settings*
+
+  * *digits*: defines the number of digits in an item UID. The default value
+    is 3.  Optionally, you can set it through the `-d` command line option of
+    the `doorstop create` command.  It is a mandatory and read-only document
+    setting.
+
+  * *parent*: defines the parent document prefix.  You set it through the `-p`
+    command line option of the `doorstop create` command.  It is an optional
+    and read-only document setting.
+
+  * *prefix*: defines the document prefix.  You set it through the prefix of
+    the `doorstop create` command.  It is a mandatory and read-only document
+    setting.
+
+  * *sep*: defines the separator between the document prefix and the number in
+    an item UID.  The default value is the empty string.  You have to set it
+    manually before an item is created.  Afterwards, it should be considered as
+    read-only.  This document setting is mandatory.
+
+* *attributes*
+
+  * *defaults*: defines the
+    [defaults for extended attributes](../reference/item.md#defaults-for-extended-attributes).
+    This is an optional document configuration option.
+
+  * *reviewed*: defines which
+    [ extended attributes contribute to the item fingerprint](../reference/item.md#extended-reviewed-attributes).
+    This is an optional document configuration option.
