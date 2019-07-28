@@ -236,7 +236,6 @@ class Application(ttk.Frame):
 
         # Shared arguments
         width_text = 30
-        width_uid = 10
         height_text = 10
         height_ext = 5
 
@@ -440,19 +439,8 @@ class Application(ttk.Frame):
             )
 
             # Column: Links
-            widget.Label(frame, text="Links:").grid(
-                row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp
-            )
-            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
-            self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
-                row=3, column=2, sticky=tk.EW + tk.N, **kw_gp
-            )
-            widget.Button(frame, text="<< Link Item", command=self.link).grid(
-                row=4, column=2, **kw_gp
-            )
-            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
-                row=6, column=2, **kw_gp
+            self.create_links_widget(frame).grid(
+                row=2, rowspan=5, column=1, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # External Reference
@@ -917,6 +905,35 @@ class Application(ttk.Frame):
         ).grid(row=3, column=0, sticky=tk.NW)
         widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(
             row=4, column=0, sticky=tk.NW
+        )
+
+        return frame
+
+    def create_links_widget(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+        frame.rowconfigure(0, weight=0)
+        frame.rowconfigure(1, weight=0)
+        frame.rowconfigure(2, weight=1)
+
+        widget.Label(frame, text="Links:").grid(
+            row=0, column=0, columnspan=1, sticky=tk.NW
+        )
+
+        width_uid = 10
+        self.listbox_links = widget.Listbox(frame, width=width_uid)
+        self.listbox_links.grid(row=1, column=0, rowspan=2, pady=(3, 10), sticky=tk.NSEW)
+
+        widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
+            row=0, column=1, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="<< Link Item", command=self.link).grid(
+            row=1, column=1, sticky=tk.EW + tk.N, rowspan=1
+        )
+        widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
+            row=2, column=1, sticky=tk.EW + tk.N
         )
 
         return frame
