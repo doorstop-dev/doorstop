@@ -435,21 +435,9 @@ class Application(ttk.Frame):
             self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
 
             # Column: Properties
-            widget.Label(frame, text="Properties:").grid(
-                row=2, column=0, sticky=tk.W, **kw_gp
+            self.create_properties_widget(frame).grid(
+                row=2, rowspan=5, column=0, columnspan=1, sticky=tk.NSEW, **kw_gp
             )
-            widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(
-                row=3, column=0, sticky=tk.W, **kw_gp
-            )
-            widget.Checkbutton(
-                frame, text="Derived", variable=self.intvar_derived
-            ).grid(row=4, column=0, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(
-                frame, text="Normative", variable=self.intvar_normative
-            ).grid(row=5, column=0, sticky=tk.W, **kw_gp)
-            widget.Checkbutton(
-                frame, text="Heading", variable=self.intvar_heading
-            ).grid(row=6, column=0, sticky=tk.W, **kw_gp)
 
             # Column: Links
             widget.Label(frame, text="Links:").grid(
@@ -906,6 +894,32 @@ class Application(ttk.Frame):
 
         # load the good Item
         self.stringvar_item.set(uid)
+
+    def create_properties_widget(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
+        frame.rowconfigure(2, weight=1)
+        frame.rowconfigure(3, weight=1)
+        frame.rowconfigure(4, weight=1)
+
+        widget.Label(frame, text="Properties:").grid(row=0, column=0, sticky=tk.NW)
+        widget.Checkbutton(frame, text="Active", variable=self.intvar_active).grid(
+            row=1, column=0, sticky=tk.NW
+        )
+        widget.Checkbutton(frame, text="Derived", variable=self.intvar_derived).grid(
+            row=2, column=0, sticky=tk.NW
+        )
+        widget.Checkbutton(
+            frame, text="Normative", variable=self.intvar_normative
+        ).grid(row=3, column=0, sticky=tk.NW)
+        widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(
+            row=4, column=0, sticky=tk.NW
+        )
+
+        return frame
 
 
 if __name__ == '__main__':
