@@ -397,9 +397,8 @@ class Application(ttk.Frame):
             frame.rowconfigure(9, weight=0)
             frame.rowconfigure(10, weight=0)
             frame.rowconfigure(11, weight=4)
-            frame.columnconfigure(0, weight=0, pad=kw_f['padding'] * 2)
+            frame.columnconfigure(0, weight=1, pad=kw_f['padding'] * 2)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=1)
 
             @_log
             def text_focusin(_):
@@ -435,12 +434,12 @@ class Application(ttk.Frame):
 
             # Column: Properties
             self.create_properties_widget(frame).grid(
-                row=2, rowspan=5, column=0, columnspan=1, sticky=tk.NSEW, **kw_gp
+                row=2, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # Column: Links
             self.create_links_widget(frame).grid(
-                row=2, rowspan=5, column=1, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=4, rowspan=3, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # External Reference
@@ -914,26 +913,34 @@ class Application(ttk.Frame):
 
         frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
-        frame.rowconfigure(0, weight=0)
-        frame.rowconfigure(1, weight=0)
+        frame.columnconfigure(2, weight=0)
+        frame.columnconfigure(3, weight=0)
+        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
         frame.rowconfigure(2, weight=1)
 
+        width_uid = 10
         widget.Label(frame, text="Links:").grid(
             row=0, column=0, columnspan=1, sticky=tk.NW
         )
-
-        width_uid = 10
+        widget.Entry(frame, textvariable=self.stringvar_link).grid(
+            row=1, column=0, columnspan=2, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="+", command=self.link).grid(
+            row=1, column=2, columnspan=1, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="-", command=self.unlink).grid(
+            row=1, column=3, columnspan=1, sticky=tk.EW + tk.N
+        )
         self.listbox_links = widget.Listbox(frame, width=width_uid)
-        self.listbox_links.grid(row=1, column=0, rowspan=2, pady=(3, 10), sticky=tk.NSEW)
-
-        widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
-            row=0, column=1, sticky=tk.EW + tk.N
-        )
-        widget.Button(frame, text="<< Link Item", command=self.link).grid(
-            row=1, column=1, sticky=tk.EW + tk.N, rowspan=1
-        )
-        widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
-            row=2, column=1, sticky=tk.EW + tk.N
+        self.listbox_links.grid(
+            row=2,
+            column=0,
+            rowspan=2,
+            columnspan=4,
+            padx=(3, 0),
+            pady=(3, 0),
+            sticky=tk.NSEW,
         )
 
         return frame
