@@ -270,7 +270,7 @@ def _get_xlsx(obj, auto):
         worksheet.column_dimensions[col_letter].width = width
 
     # Freeze top row
-    worksheet.freeze_panes = worksheet.cell(row=1, column=1)
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
 
     return workbook
 
