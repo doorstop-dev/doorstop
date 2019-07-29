@@ -443,12 +443,10 @@ class Application(ttk.Frame):
             )
 
             # External Reference
-            widget.Label(frame, text="External Reference:").grid(
-                row=7, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            self.create_reference_widget(frame).grid(
+                row=7, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
-            widget.Entry(frame, width=width_text, textvariable=self.stringvar_ref).grid(
-                row=8, column=0, columnspan=3, **kw_gsp
-            )
+
             widget.Label(frame, text="Extended Attributes:").grid(
                 row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
@@ -941,6 +939,22 @@ class Application(ttk.Frame):
             padx=(3, 0),
             pady=(3, 0),
             sticky=tk.NSEW,
+        )
+
+        return frame
+
+    def create_reference_widget(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
+
+        widget.Label(frame, text="External Reference:").grid(
+            row=0, column=0, sticky=tk.W
+        )
+        widget.Entry(frame, textvariable=self.stringvar_ref).grid(
+            row=1, column=0, sticky=tk.NSEW
         )
 
         return frame
