@@ -236,7 +236,6 @@ class Application(ttk.Frame):
 
         # Shared arguments
         width_text = 30
-        width_uid = 10
         height_text = 10
         height_ext = 5
 
@@ -398,9 +397,8 @@ class Application(ttk.Frame):
             frame.rowconfigure(9, weight=0)
             frame.rowconfigure(10, weight=0)
             frame.rowconfigure(11, weight=4)
-            frame.columnconfigure(0, weight=0, pad=kw_f['padding'] * 2)
+            frame.columnconfigure(0, weight=1, pad=kw_f['padding'] * 2)
             frame.columnconfigure(1, weight=1)
-            frame.columnconfigure(2, weight=1)
 
             @_log
             def text_focusin(_):
@@ -436,23 +434,12 @@ class Application(ttk.Frame):
 
             # Column: Properties
             self.create_properties_widget(frame).grid(
-                row=2, rowspan=5, column=0, columnspan=1, sticky=tk.NSEW, **kw_gp
+                row=2, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # Column: Links
-            widget.Label(frame, text="Links:").grid(
-                row=2, column=1, columnspan=2, sticky=tk.W, **kw_gp
-            )
-            self.listbox_links = widget.Listbox(frame, width=width_uid, height=6)
-            self.listbox_links.grid(row=3, column=1, rowspan=4, **kw_gsp)
-            widget.Entry(frame, width=width_uid, textvariable=self.stringvar_link).grid(
-                row=3, column=2, sticky=tk.EW + tk.N, **kw_gp
-            )
-            widget.Button(frame, text="<< Link Item", command=self.link).grid(
-                row=4, column=2, **kw_gp
-            )
-            widget.Button(frame, text=">> Unlink Item", command=self.unlink).grid(
-                row=6, column=2, **kw_gp
+            self.create_links_widget(frame).grid(
+                row=4, rowspan=3, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # External Reference
@@ -917,6 +904,43 @@ class Application(ttk.Frame):
         ).grid(row=3, column=0, sticky=tk.NW)
         widget.Checkbutton(frame, text="Heading", variable=self.intvar_heading).grid(
             row=4, column=0, sticky=tk.NW
+        )
+
+        return frame
+
+    def create_links_widget(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+        frame.columnconfigure(2, weight=0)
+        frame.columnconfigure(3, weight=0)
+        frame.rowconfigure(0, weight=1)
+        frame.rowconfigure(1, weight=1)
+        frame.rowconfigure(2, weight=1)
+
+        width_uid = 10
+        widget.Label(frame, text="Links:").grid(
+            row=0, column=0, columnspan=1, sticky=tk.NW
+        )
+        widget.Entry(frame, textvariable=self.stringvar_link).grid(
+            row=1, column=0, columnspan=2, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="+", command=self.link).grid(
+            row=1, column=2, columnspan=1, sticky=tk.EW + tk.N
+        )
+        widget.Button(frame, text="-", command=self.unlink).grid(
+            row=1, column=3, columnspan=1, sticky=tk.EW + tk.N
+        )
+        self.listbox_links = widget.Listbox(frame, width=width_uid)
+        self.listbox_links.grid(
+            row=2,
+            column=0,
+            rowspan=2,
+            columnspan=4,
+            padx=(3, 0),
+            pady=(3, 0),
+            sticky=tk.NSEW,
         )
 
         return frame
