@@ -857,8 +857,10 @@ class Application(ttk.Frame):
     @_log
     def unlink(self):
         """Remove the currently selected link from the current item."""
-        # Remove the selected link from the list
+        # Remove the selected link from the list (if selected)
         index = self.listbox_links.curselection()
+        if not index:
+            return
         self.listbox_links.delete(index)
 
         # Update the current item
