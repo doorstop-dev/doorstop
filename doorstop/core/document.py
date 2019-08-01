@@ -183,15 +183,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for key, value in self._data.items():
             if key == 'prefix':
                 sets[key] = str(value)
-            elif key == 'sep':
-                sets[key] = value
-            elif key == 'digits':
-                sets[key] = value
             elif key == 'parent':
                 if value:
                     sets[key] = value
             else:
-                data[key] = value
+                sets[key] = value
         data['settings'] = sets
         # Save the attributes
         attributes = {}
