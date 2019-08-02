@@ -287,6 +287,12 @@ def _lines_text(obj, indent=8, width=79, **_):
                 ref = _format_text_ref(item)
                 yield from _chunks(ref, width, indent)
 
+            # References
+            if item.references:
+                yield ""  # break before reference
+                ref = _format_text_references(item)
+                yield from _chunks(ref, width, indent)
+
             # Links
             if item.links:
                 yield ""  # break before links
@@ -370,6 +376,11 @@ def _lines_markdown(obj, **kwargs):
                 yield ""  # break before reference
                 yield _format_md_ref(item)
 
+            # Reference
+            if item.references:
+                yield ""  # break before reference
+                yield _format_md_references(item)
+
             # Parent links
             if item.links:
                 yield ""  # break before links
@@ -421,6 +432,26 @@ def _format_text_ref(item):
         return "Reference: '{r}'".format(r=item.ref)
 
 
+def _format_text_references(item):
+    """Format an external reference in text."""
+    if settings.CHECK_REF:
+        ref = item.find_references()
+        text_refs = []
+        for ref_item in ref:
+            path = ref_item['path']
+            path = path.replace('\\', '/')  # always use unix-style paths
+            text_refs.append("{p}".format(p=path))
+        return "Reference: {}".format(', '.join(ref for ref in text_refs))
+    else:
+        references = item.references
+        text_refs = []
+        for ref_item in references:
+            path = ref_item['path']
+            path = path.replace('\\', '/')  # always use unix-style paths
+            text_refs.append("'{p}'".format(p=path))
+        return "Reference: {}".format(', '.join(text_ref for text_ref in text_refs))
+
+
 def _format_md_ref(item):
     """Format an external reference in Markdown."""
     if settings.CHECK_REF:
@@ -432,6 +463,26 @@ def _format_md_ref(item):
             return "> `{p}`".format(p=path)
     else:
         return "> '{r}'".format(r=item.ref)
+
+
+def _format_md_references(item):
+    """Format an external reference in Markdown."""
+    if settings.CHECK_REF:
+        references = item.find_references()
+        text_refs = []
+        for ref_item in references:
+            path = ref_item['path']
+            path = path.replace('\\', '/')  # always use unix-style paths
+            text_refs.append("> `{p}`".format(p=path))
+        return '\n'.join(ref for ref in text_refs)
+    else:
+        references = item.references
+        text_refs = []
+        for ref_item in references:
+            path = ref_item["path"]
+            path = path.replace('\\', '/')  # always use unix-style paths
+            text_refs.append("> '{r}'".format(r=path))
+        return '\n'.join(ref for ref in text_refs)
 
 
 def _format_md_links(items, linkify):

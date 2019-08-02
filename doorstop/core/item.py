@@ -116,6 +116,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data['reviewed'] = Item.DEFAULT_REVIEWED
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
+        self._data['references'] = None
         self._data['links'] = set()
         if settings.ENABLE_HEADERS:
             self._data['header'] = Item.DEFAULT_HEADER
@@ -189,6 +190,14 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = Text(value)
             elif key == 'ref':
                 value = value.strip()
+            elif key == 'references':
+                if not isinstance(value, list):
+                    continue
+
+                stripped_value = []
+                for el in value:
+                    stripped_value.append({"type": "file", "path": el["path"].strip()})
+                value = stripped_value
             elif key == 'links':
                 value = set(UID(part) for part in value)
             elif key == 'header':
@@ -241,6 +250,14 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     value = ''
             elif key == 'ref':
                 value = value.strip()
+            elif key == 'references':
+                if value is None:
+                    continue
+                assert isinstance(value, list)
+                stripped_value = []
+                for el in value:
+                    stripped_value.append({"type": "file", "path": el["path"].strip()})
+                value = stripped_value
             elif key == 'links':
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]
             elif key == 'reviewed':
@@ -441,6 +458,25 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
+    def references(self):
+        """Get the item's external file references.
+
+        An external reference can be part of a line in a text file or
+        the filename of any type of file.
+
+        """
+        return self._data['references']
+
+    @references.setter
+    @auto_save
+    def references(self, value):
+        """Set the item's external file reference."""
+        if value is not None:
+            assert isinstance(value, list)
+        self._data['references'] = value
+
+    @property
+    @auto_load
     def links(self):
         """Get a list of the item UIDs this item links to."""
         return sorted(self._data['links'])
@@ -606,6 +642,48 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
 
+    @requires_tree
+    def find_references(self):
+        """Get the array of references. Check each references before returning.
+
+        :raises: :class:`~doorstop.common.DoorstopError` when no
+            reference is found
+
+        :return: relative path to file or None (when no reference
+            set),
+            line number (when found in file) or None (when found as
+            filename) or None (when no reference set)
+
+        """
+        # Return immediately if no external reference
+        if not self.references:
+            log.debug("no external reference to search for")
+            return []
+        # Update the cache
+        if not settings.CACHE_PATHS:
+            pyficache.clear_file_cache()
+
+        # TODO: the find&validate code does not look optimal.
+        references = self.references
+        for ref_item in references:
+            path = ref_item["path"]
+            self._find_external_file_ref(path)
+        return references
+
+    def _find_external_file_ref(self, ref_path):
+        log.debug("searching for ref '{}'...".format(ref_path))
+        ref_full_path = os.path.join(self.root, ref_path)
+
+        for path, filename, relpath in self.tree.vcs.paths:
+            # Skip the item's file while searching
+            if path == self.path:
+                continue
+            if path == ref_full_path:
+                return True
+
+        msg = "external reference not found: {}".format(ref_path)
+        raise DoorstopError(msg)
+
     def find_child_links(self, find_all=True):
         """Get a list of item UIDs that link to this item (reverse links).
 
@@ -692,7 +770,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def stamp(self, links=False):
         """Hash the item's key content for later comparison."""
-        values = [self.uid, self.text, self.ref]
+        values = [self.uid, self.text, self.ref, self.references]
+
         if links:
             values.extend(self.links)
         for key in self.document.extended_reviewed:

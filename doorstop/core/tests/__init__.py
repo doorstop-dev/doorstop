@@ -16,6 +16,7 @@ from doorstop.core.vcs.mockvcs import WorkingCopy
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
+TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), 'files')
 SYS = os.path.join(FILES, 'parent')
 TST = os.path.join(FILES, 'child')
@@ -227,5 +228,18 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
             "level: 2.1.2" + '\n'
             "normative: false" + '\n'
             "ref: 'abc123'"
+        ),
+    )
+
+    item6 = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=(
+            "links: [sys3]" + '\n'
+            "text: 'Heading'" + '\n'
+            "level: 2.1.2" + '\n'
+            "normative: false" + '\n'
+            "references:" + '\n'
+            "  - path: abc1" + '\n'
+            "  - path: abc2" + '\n'
         ),
     )

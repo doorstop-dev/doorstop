@@ -12,7 +12,14 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.tests import (
+    EMPTY,
+    EXTERNAL,
+    FILES,
+    TESTS_ROOT,
+    MockItem,
+    MockSimpleDocument,
+)
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -388,7 +395,23 @@ class TestItem(unittest.TestCase):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
+        self.assertNotIn("references:", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
+
+    def test_references(self):
+        """Verify an item's reference can be set and read."""
+        references = [
+            {'type': 'file', 'path': 'abc1'},
+            {"type": "file", "path": "abc2"},
+        ]
+        self.item.references = references
+        self.assertIn(
+            "references:\n- path: abc1\n  type: file\n- path: abc2\n  type: file",
+            self.item._write.call_args[0][0],
+        )
+        # We let 'references' and 'ref' co-exist for now.
+        self.assertIn("ref: ''", self.item._write.call_args[0][0])
+        self.assertListEqual(references, self.item.references)
 
     def test_extended(self):
         """Verify an extended attribute (`str`) can be used."""
@@ -575,6 +598,38 @@ class TestItem(unittest.TestCase):
         self.item.tree = Mock()
         self.assertEqual((None, None), self.item.find_ref())
 
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml"},
+            {"path": "files/REQ002.yml"},
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(2, len(ref))
+
+        relpath1 = ref[0]['path']
+        self.assertEqual('files/REQ001.yml', relpath1)
+
+        relpath2 = ref[1]['path']
+        self.assertEqual('files/REQ002.yml', relpath2)
+
+    def test_find_ref_error_multiple(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.references = [{"path": "this/path/does/not/exist.yml"}]
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_references)
+
     def test_find_child_objects(self):
         """Verify an item's child objects can be found."""
 
@@ -673,6 +728,19 @@ class TestItem(unittest.TestCase):
         """Verify an item's contents can be stamped."""
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_contribution_references(self):
+        """Verify that references attribute contributes to a stamp."""
+        expected_stamp_before = '45094d2c26df2b772638f609bcb1fc8f'
+        expected_stamp_after = 'f7b1522e23c0835a03794c48bd1334b3'
+
+        stamp_before = self.item.stamp()
+        self.assertEqual(expected_stamp_before, stamp_before)
+
+        self.item.references = [{'type': 'file', 'path': 'foo'}]
+
+        stamp_after = self.item.stamp()
+        self.assertEqual(expected_stamp_after, stamp_after)
 
     def test_stamp_with_one_extended_reviewed(self):
         """Verify fingerprint with one extended reviewed attribute."""
