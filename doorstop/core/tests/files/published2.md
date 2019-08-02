@@ -19,6 +19,15 @@ Unicode: -40° ±1%
 
 *Links: REQ001*
 
+## 1.5 REQ006 {#REQ006 }
+
+Hello, world!
+
+> `external/text.txt` (line 3)
+> `external/text2.txt`
+
+*Links: REQ001*
+
 ## 1.6 REQ004 {#REQ004 }
 
 Hello, world!

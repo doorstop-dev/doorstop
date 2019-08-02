@@ -213,6 +213,16 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
 
+    def test_lines_text_item_references(self):
+        """Verify references can be published to a text file from an item."""
+        mock_value = [('path/to/mock/file1', 3), ('path/to/mock/file2', None)]
+        with patch.object(self.item6, 'find_references', Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item6, '.txt')
+            text = ''.join(line + '\n' for line in lines)
+        self.assertIn(
+            "Reference: path/to/mock/file1 (line 3), path/to/mock/file2", text
+        )
+
     def test_lines_text_item_heading(self):
         """Verify text can be published from an item (heading)."""
         expected = "1.1     Heading\n\n"
@@ -294,11 +304,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     @patch('doorstop.settings.CHECK_REF', False)
-    def test_lines_text_item_no_ref(self):
+    def test_lines_text_item_no_ref_check(self):
         """Verify text can be published without checking references."""
         lines = publisher.publish_lines(self.item5, '.txt')
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: 'abc123'", text)
+
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_lines_text_item_no_references_check(self):
+        """Verify text can be published without checking references."""
+        lines = publisher.publish_lines(self.item6, '.txt')
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("Reference: 'abc1', 'abc2'", text)
 
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
     def test_lines_text_item_with_child_links(self):
@@ -317,6 +334,17 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             lines = publisher.publish_lines(self.item5, '.md')
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("> `path/to/mock/file` (line 42)", text)
+
+    def test_lines_markdown_item_references(self):
+        """Verify Markdown can be published from an item."""
+        references_mock = [('path/to/mock/file1', 3), ('path/to/mock/file2', None)]
+
+        with patch.object(
+            self.item6, 'find_references', Mock(return_value=references_mock)
+        ):
+            lines = publisher.publish_lines(self.item6, '.md')
+            text = ''.join(line + '\n' for line in lines)
+        self.assertIn("> `path/to/mock/file1` (line 3)\n> `path/to/mock/file2`", text)
 
     def test_lines_markdown_item_heading(self):
         """Verify Markdown can be published from an item (heading)."""
@@ -387,11 +415,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, text)
 
     @patch('doorstop.settings.CHECK_REF', False)
-    def test_lines_markdown_item_no_ref(self):
+    def test_lines_markdown_item_no_ref_check(self):
         """Verify Markdown can be published without checking references."""
         lines = publisher.publish_lines(self.item5, '.md')
         text = ''.join(line + '\n' for line in lines)
         self.assertIn("> 'abc123'", text)
+
+    @patch('doorstop.settings.CHECK_REF', False)
+    def test_lines_markdown_item_no_references_check(self):
+        """Verify Markdown can be published without checking references."""
+        lines = publisher.publish_lines(self.item6, '.md')
+        text = ''.join(line + '\n' for line in lines)
+        self.assertIn("> 'abc1'\n> 'abc2'", text)
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
@@ -474,6 +509,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * 1.2.3 REQ001
     * 1.4 REQ003
+    * 1.5 REQ006
     * 1.6 REQ004
     * 2.1 Plantuml
     * 2.1 REQ2-001\n'''
@@ -488,6 +524,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * REQ001
     * REQ003
+    * REQ006
     * REQ004
     * Plantuml
     * REQ2-001\n'''
@@ -501,6 +538,7 @@ class TestTableOfContents(unittest.TestCase):
 
         * [1.2.3 REQ001](#REQ001)
     * [1.4 REQ003](#REQ003)
+    * [1.5 REQ006](#REQ006)
     * [1.6 REQ004](#REQ004)
     * [2.1 Plantuml](#REQ002)
     * [2.1 REQ2-001](#REQ2-001)\n'''

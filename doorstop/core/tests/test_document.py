@@ -276,12 +276,12 @@ class TestDocument(unittest.TestCase):
 
     def test_len(self):
         """Verify a document has a length."""
-        self.assertEqual(5, len(self.document))
+        self.assertEqual(6, len(self.document))
 
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
-        self.assertEqual(5, len(items))
+        self.assertEqual(6, len(items))
         for item in self.document:
             logging.debug("item: {}".format(item))
             self.assertIs(self.document, item.document)
@@ -292,7 +292,7 @@ class TestDocument(unittest.TestCase):
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
         print(self.document.items)
-        self.assertEqual(6, len(self.document.tree._item_cache))
+        self.assertEqual(7, len(self.document.tree._item_cache))
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -353,7 +353,7 @@ class TestDocument(unittest.TestCase):
 
     def test_next_number(self):
         """Verify the next item number can be determined."""
-        self.assertEqual(6, self.document.next_number)
+        self.assertEqual(7, self.document.next_number)
 
     def test_next_number_server(self):
         """Verify the next item number can be determined with a server."""
@@ -377,6 +377,7 @@ class TestDocument(unittest.TestCase):
             'outline:',
             '            - REQ001: # Lorem ipsum d...',
             '        - REQ003: # Unicode: -40° ±1%',
+            '        - REQ006: # Hello, world!',
             '        - REQ004: # Hello, world!',
             '        - REQ002: # Hello, world!',
             '        - REQ2-001: # Hello, world!',
@@ -434,7 +435,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2')
+            None, self.document, FILES, ROOT, 'REQ007', level=Level('2.2')
         )
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -445,7 +446,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level='4.2'
+            None, self.document, FILES, ROOT, 'REQ007', level='4.2'
         )
         mock_reorder.assert_called_once_with(keep=item)
 
@@ -659,7 +660,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.assertTrue(self.document.validate())
         mock_reorder.assert_called_once_with(_items=self.document.items)
-        self.assertEqual(5, mock_get_issues.call_count)
+        self.assertEqual(6, mock_get_issues.call_count)
 
     @patch(
         'doorstop.core.validators.item_validator.ItemValidator.get_issues',
@@ -683,14 +684,14 @@ outline:
         """Verify an item hook can be called."""
         mock_hook = MagicMock()
         self.document.validate(item_hook=mock_hook)
-        self.assertEqual(5, mock_hook.call_count)
+        self.assertEqual(6, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
     @patch('os.rmdir')
     def test_delete(self, mock_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(7, mock_item_delete.call_count)
         self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
@@ -700,7 +701,7 @@ outline:
         """Verify a document's assets aren't deleted."""
         mock_delete.side_effect = OSError
         self.document.delete()
-        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(7, mock_item_delete.call_count)
         self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
