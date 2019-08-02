@@ -48,6 +48,35 @@ text: |
   something
 """.lstrip()
 
+YAML_STRING_ATTRIBUTES = """
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: |
+  b
+active: true
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc: d
+derived: false
+e: |
+  fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+g: hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+header: ''
+i:
+  jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj: |
+    k
+  llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll: m
+  n: |
+    ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  p: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+  r:
+  - |
+    ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+  - ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: ''
+""".lstrip()
+
 
 class ListLogHandler(logging.NullHandler):
     def __init__(self, log):
@@ -117,6 +146,28 @@ class TestItem(unittest.TestCase):
         self.item._write.assert_called_once_with(
             YAML_EXTENDED_ATTRIBUTES, self.item.path
         )
+
+    def test_string_attributes(self):
+        """Verify string attributes are properly formatted."""
+        self.item.set_attributes(
+            {
+                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa': 'b',
+                'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc': 'd',
+                'e': 'fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                'g': 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
+                'i': {
+                    'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj': 'k',
+                    'llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll': 'm',
+                    'n': 'ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+                    'p': 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq',
+                    'r': [
+                        'ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+                        'ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt',
+                    ],
+                },
+            }
+        )
+        self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):

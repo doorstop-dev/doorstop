@@ -25,6 +25,32 @@ from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
 log = common.logger(__name__)
 
 
+def _convert_to_yaml(indent, prefix, value):
+    """Convert value to YAML output format.
+
+    :param indent: the indentation level
+    :param prefix: the length of the prefix before the value, e.g. '- ' for
+    lists or 'key: ' for keys
+    :param value: the value to convert
+
+    :return: the value converted to YAML output format
+
+    """
+    if isinstance(value, str):
+        length = indent + prefix + len(value)
+        if length > settings.MAX_LINE_LENGTH or '\n' in value:
+            value = Text.save_text(value.strip())
+        else:
+            value = str(value)  # line is short enough as a string
+    elif isinstance(value, list):
+        value = [_convert_to_yaml(indent, 2, v) for v in value]
+    elif isinstance(value, dict):
+        value = {
+            k: _convert_to_yaml(indent + 2, len(k) + 2, v) for k, v in value.items()
+        }
+    return value
+
+
 def requires_tree(func):
     """Require a tree reference."""
 
@@ -167,9 +193,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 value = set(UID(part) for part in value)
             elif key == 'header':
                 value = Text(value)
-            else:
-                if isinstance(value, str):
-                    value = Text(value)
             self._data[key] = value
 
     def load(self, reload=False):
@@ -223,13 +246,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             elif key == 'reviewed':
                 value = value.yaml
             else:
-                if isinstance(value, str):
-                    # length of "key_text: value_text"
-                    length = len(key) + 2 + len(value)
-                    if length > settings.MAX_LINE_LENGTH or '\n' in value:
-                        value = Text.save_text(value)
-                    else:
-                        value = str(value)  # line is short enough as a string
+                value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
         return data
 
