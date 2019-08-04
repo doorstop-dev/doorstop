@@ -11,6 +11,7 @@ omit =
 
 omit =
     */gui/main.py
+    */gui/application.py
     */gui/utilTkinter.py
     */gui/widget.py
 
