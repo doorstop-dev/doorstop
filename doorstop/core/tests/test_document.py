@@ -85,6 +85,22 @@ attributes:
     k: null
 """.lstrip()
 
+YAML_INCLUDE_DEFAULTS = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes: !include a/template.yml
+""".lstrip()
+
+YAML_INCLUDE_NO_SUCH_FILE = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes: !include no/such/file.yml
+""".lstrip()
+
 
 @patch('doorstop.settings.REORDER', False)
 @patch('doorstop.core.item.Item', MockItem)
@@ -151,6 +167,12 @@ class TestDocument(unittest.TestCase):
         msg = "^unexpected attributes configuration 'unknown' in: .*\\.doorstop.yml$"
         self.assertRaisesRegex(DoorstopError, msg, self.document.load)
 
+    def test_load_with_non_existing_include(self):
+        """Verify include of non-existing file fails."""
+        self.document._file = YAML_INCLUDE_NO_SUCH_FILE
+        msg = "^include in '.*\\.doorstop.yml' failed: .*$"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.load)
+
     def test_load_extended_reviewed(self):
         """Verify loaded extended reviewed attribute keys of a document."""
         self.document._file = YAML_EXTENDED_REVIEWED
@@ -167,6 +189,12 @@ class TestDocument(unittest.TestCase):
             self.document._attribute_defaults,
             {'a': ['b', 'c'], 'd': {'e': 'f', 'g': 'h'}, 'i': 'j', 'k': None},
         )
+
+    def test_load_defaults_via_include(self):
+        """Verify loaded defaults for attributes via includes."""
+        self.document._file = YAML_INCLUDE_DEFAULTS
+        self.document.load()
+        self.assertEqual(self.document._attribute_defaults, {'text': 'Some text'})
 
     def test_save_empty(self):
         """Verify saving calls write."""
