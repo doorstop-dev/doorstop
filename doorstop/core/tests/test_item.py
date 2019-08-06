@@ -177,6 +177,30 @@ class TestItem(unittest.TestCase):
         )
         self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
 
+    def test_set_attributes_reference_valid_input(self):
+        """Verify that setting 'references' with a correct value does not raise errors."""
+        try:
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 'some/path'}]}
+            )
+        except AttributeError:
+            self.fail("didn't expect _set_attributes to raise AttributeError")
+
+    def test_set_attributes_reference_malformed_input(self):
+        """Verify that setting 'references' with a wrong value raises errors."""
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': 'foo'})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': ['foo']})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'FOO'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'file'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 0xDEAD}]}
+            )
+
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
@@ -731,8 +755,7 @@ class TestItem(unittest.TestCase):
 
     def test_stamp_contribution_references(self):
         """Verify that references attribute contributes to a stamp."""
-        expected_stamp_before = '45094d2c26df2b772638f609bcb1fc8f'
-        expected_stamp_after = 'f7b1522e23c0835a03794c48bd1334b3'
+        expected_stamp_before = 'c6a87755b8756b61731c704c6a7be4a2'
 
         stamp_before = self.item.stamp()
         self.assertEqual(expected_stamp_before, stamp_before)
@@ -740,7 +763,7 @@ class TestItem(unittest.TestCase):
         self.item.references = [{'type': 'file', 'path': 'foo'}]
 
         stamp_after = self.item.stamp()
-        self.assertEqual(expected_stamp_after, stamp_after)
+        self.assertNotEqual(stamp_after, expected_stamp_before)
 
     def test_stamp_with_one_extended_reviewed(self):
         """Verify fingerprint with one extended reviewed attribute."""

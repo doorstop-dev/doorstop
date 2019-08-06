@@ -240,6 +240,8 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
             "normative: false" + '\n'
             "references:" + '\n'
             "  - path: abc1" + '\n'
+            "    type: file" + '\n'
             "  - path: abc2" + '\n'
+            "    type: file" + '\n'
         ),
     )

@@ -191,12 +191,40 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == 'ref':
                 value = value.strip()
             elif key == 'references':
-                if not isinstance(value, list):
+                if value is None:
                     continue
 
+                if not isinstance(value, list):
+                    raise AttributeError("'references' must be an array")
+
                 stripped_value = []
-                for el in value:
-                    stripped_value.append({"type": "file", "path": el["path"].strip()})
+                for ref_dict in value:
+                    if not isinstance(ref_dict, dict):
+                        raise AttributeError("'references' member must be a dictionary")
+
+                    ref_keys = ref_dict.keys()
+                    if 'type' not in ref_keys:
+                        raise AttributeError(
+                            "'references' member must have a 'type' key"
+                        )
+                    if 'path' not in ref_keys:
+                        raise AttributeError(
+                            "'references' member must have a 'path' key"
+                        )
+
+                    ref_type = ref_dict['type']
+                    if ref_type != 'file':
+                        raise AttributeError(
+                            "'references' member's 'type' value must be a 'file'"
+                        )
+
+                    ref_path = ref_dict['path']
+                    if not isinstance(ref_path, str):
+                        raise AttributeError(
+                            "'references' member's path must be a string value"
+                        )
+
+                    stripped_value.append({"type": ref_type, "path": ref_path.strip()})
                 value = stripped_value
             elif key == 'links':
                 value = set(UID(part) for part in value)
@@ -770,7 +798,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def stamp(self, links=False):
         """Hash the item's key content for later comparison."""
-        values = [self.uid, self.text, self.ref, self.references]
+        values = [self.uid, self.text, self.ref]
+
+        if self.references:
+            values.append(self.references)
 
         if links:
             values.extend(self.links)
