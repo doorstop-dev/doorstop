@@ -20,7 +20,9 @@ from doorstop.core.base import (
     delete_item,
     edit_item,
 )
+from doorstop.core.reference_finder import ReferenceFinder
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
+from doorstop.core.yaml_validator import YamlValidator
 
 log = common.logger(__name__)
 
@@ -108,6 +110,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self.document = document
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Item.auto)
+        self.reference_finder = ReferenceFinder()
+        self.yaml_validator = YamlValidator()
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -175,6 +179,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     def _set_attributes(self, attributes):
         """Set the item's attributes."""
+        self.yaml_validator.validate_item_yaml(attributes)
         for key, value in attributes.items():
             if key == 'level':
                 value = Level(value)
@@ -194,36 +199,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 if value is None:
                     continue
 
-                if not isinstance(value, list):
-                    raise AttributeError("'references' must be an array")
-
                 stripped_value = []
                 for ref_dict in value:
-                    if not isinstance(ref_dict, dict):
-                        raise AttributeError("'references' member must be a dictionary")
-
-                    ref_keys = ref_dict.keys()
-                    if 'type' not in ref_keys:
-                        raise AttributeError(
-                            "'references' member must have a 'type' key"
-                        )
-                    if 'path' not in ref_keys:
-                        raise AttributeError(
-                            "'references' member must have a 'path' key"
-                        )
-
                     ref_type = ref_dict['type']
-                    if ref_type != 'file':
-                        raise AttributeError(
-                            "'references' member's 'type' value must be a 'file'"
-                        )
-
                     ref_path = ref_dict['path']
-                    if not isinstance(ref_path, str):
-                        raise AttributeError(
-                            "'references' member's path must be a string value"
-                        )
-
                     stripped_value.append({"type": ref_type, "path": ref_path.strip()})
                 value = stripped_value
             elif key == 'links':
@@ -281,7 +260,6 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == 'references':
                 if value is None:
                     continue
-                assert isinstance(value, list)
                 stripped_value = []
                 for el in value:
                     stripped_value.append({"type": "file", "path": el["path"].strip()})
@@ -643,32 +621,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if not settings.CACHE_PATHS:
             pyficache.clear_file_cache()
         # Search for the external reference
-        log.debug("seraching for ref '{}'...".format(self.ref))
-        pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        log.trace("regex: {}".format(pattern))  # type: ignore
-        regex = re.compile(pattern)
-        for path, filename, relpath in self.tree.vcs.paths:
-            # Skip the item's file while searching
-            if path == self.path:
-                continue
-            # Check for a matching filename
-            if filename == self.ref:
-                return relpath, None
-            # Skip extensions that should not be considered text
-            if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
-                continue
-            # Search for the reference in the file
-            lines = pyficache.getlines(path)
-            if lines is None:
-                log.trace("unable to read lines from: {}".format(path))  # type: ignore
-                continue
-            for lineno, line in enumerate(lines, start=1):
-                if regex.search(line):
-                    log.debug("found ref: {}".format(relpath))
-                    return relpath, lineno
-
-        msg = "external reference not found: {}".format(self.ref)
-        raise DoorstopError(msg)
+        return self.reference_finder.find_ref(self.ref, self.tree, self.path)
 
     @requires_tree
     def find_references(self):
@@ -683,20 +636,15 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             filename) or None (when no reference set)
 
         """
-        # Return immediately if no external reference
         if not self.references:
             log.debug("no external reference to search for")
             return []
-        # Update the cache
         if not settings.CACHE_PATHS:
             pyficache.clear_file_cache()
-
-        # TODO: the find&validate code does not look optimal.
-        references = self.references
-        for ref_item in references:
+        for ref_item in self.references:
             path = ref_item["path"]
-            self._find_external_file_ref(path)
-        return references
+            self.reference_finder.find_file_reference(path, self.root, self.tree, path)
+        return self.references
 
     def _find_external_file_ref(self, ref_path):
         log.debug("searching for ref '{}'...".format(ref_path))
