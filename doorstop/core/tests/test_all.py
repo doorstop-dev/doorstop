@@ -653,7 +653,7 @@ def log_data(expected, actual):
 def read_yml(path):
     """Return a dictionary of items from a YAML file."""
     text = common.read_text(path)
-    data = yaml.load(text, Loader=yaml.FullLoader)
+    data = yaml.load(text, Loader=yaml.SafeLoader)
     return data
 
 

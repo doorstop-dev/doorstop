@@ -126,7 +126,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text, Loader=yaml.FullLoader) or {}
+        data = yaml.load(text, Loader=yaml.SafeLoader) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
