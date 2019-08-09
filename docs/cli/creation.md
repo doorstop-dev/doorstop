@@ -77,3 +77,27 @@ manually editing the configuration file.  The list of options follows:
   * *reviewed*: defines which
     [ extended attributes contribute to the item fingerprint](../reference/item.md#extended-reviewed-attributes).
     This is an optional document configuration option.
+
+In the document configuration files, you can include other YAML files through a
+value tagged with `!include`.  The path to the included file is always relative
+to the directory of the file with the include tag.  Absolute paths are not
+supported.  Please have a look at this example:
+
+.doorstop.yml
+```yaml
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  defaults:
+    text: !include path/to/file.yml
+```
+
+path/to/file.yml
+```yaml
+|
+  Some template text, which may
+  have several
+  lines.
+```

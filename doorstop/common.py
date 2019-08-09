@@ -115,7 +115,7 @@ def read_text(path, encoding='utf-8'):
     return text
 
 
-def load_yaml(text, path):
+def load_yaml(text, path, loader=yaml.SafeLoader):
     """Parse a dictionary from YAML text.
 
     :param text: string containing dumped YAML data
@@ -126,7 +126,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text, Loader=yaml.FullLoader) or {}
+        data = yaml.load(text, Loader=loader) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None

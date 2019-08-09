@@ -259,7 +259,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         return common.read_text(path)
 
     @staticmethod
-    def _load(text, path):
+    def _load(text, path, **kwargs):
         """Load YAML data from text.
 
         :param text: text read from a file
@@ -268,7 +268,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         :return: dictionary of YAML data
 
         """
-        return common.load_yaml(text, path)
+        return common.load_yaml(text, path, **kwargs)
 
     @abc.abstractmethod
     def save(self):

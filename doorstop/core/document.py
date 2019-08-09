@@ -7,6 +7,8 @@ import re
 from collections import OrderedDict
 from itertools import chain
 
+import yaml
+
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.base import (
@@ -132,10 +134,28 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if self._loaded and not reload:
             return
         log.debug("loading {}...".format(repr(self)))
+        config = self.config
         # Read text from file
-        text = self._read(self.config)
+        text = self._read(config)
         # Parse YAML data from text
-        data = self._load(text, self.config)
+        class IncludeLoader(yaml.SafeLoader):
+            def include(self, node):
+                container = IncludeLoader.filenames[0]
+                dirname = os.path.dirname(container)
+                filename = os.path.join(dirname, self.construct_scalar(node))
+                IncludeLoader.filenames.insert(0, filename)
+                try:
+                    with open(filename, 'r') as f:
+                        data = yaml.load(f, IncludeLoader)
+                except Exception as ex:
+                    msg = "include in '{}' failed: {}".format(container, ex)
+                    raise DoorstopError(msg)
+                IncludeLoader.filenames.pop()
+                return data
+
+        IncludeLoader.add_constructor('!include', IncludeLoader.include)
+        IncludeLoader.filenames = [config]
+        data = self._load(text, config, loader=IncludeLoader)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():

@@ -1,0 +1,1 @@
+defaults: !include b/template.yml
