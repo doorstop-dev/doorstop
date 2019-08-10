@@ -1,13 +1,13 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: LGPL-3.0-only
 
 """REST client to request item numbers."""
 
 import requests
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.server import utilities
-from doorstop import settings
 
 log = common.logger(__name__)
 
@@ -59,8 +59,9 @@ def get_next_number(prefix):
     return number
 
 
-if __name__ == '__main__':  # pragma: no cover (manual test)
+if __name__ == '__main__':
     import sys
+
     if len(sys.argv) != 2:
         exit("Usage: {} <PREFIX>".format(sys.argv[0]))
     print(get_next_number(sys.argv[-1]))

@@ -1,14 +1,16 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: LGPL-3.0-only
 
 """Graphical Widget creator and controller for doorstop."""
 
 import sys
 from unittest.mock import Mock
-try:  # pragma: no cover (manual test)
+
+try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter import font
-except ImportError as _exc:  # pragma: no cover (manual test)
+except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
     ttk = Mock()
@@ -41,7 +43,7 @@ styleDsTreeviewHeading = None
 # # Widget
 
 
-class _Listbox2(tk.Listbox):  # pragma: no cover (manual test), pylint: disable=R0901
+class _Listbox2(tk.Listbox):
     """Listbox class with automatic width adjustment."""
 
     def autowidth(self, maxwidth=250):
@@ -108,12 +110,16 @@ def TreeView(parent, *args, **kwargs):
 
 
 def ScrollbarH(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs)
+    result = ttk.Scrollbar(
+        parent, *args, orient="horizontal", style="ds.Horizontal.TScrollbar", **kwargs
+    )
     return result
 
 
 def ScrollbarV(parent, *args, **kwargs):
-    result = ttk.Scrollbar(parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs)
+    result = ttk.Scrollbar(
+        parent, *args, orient="vertical", style="ds.Vertical.TScrollbar", **kwargs
+    )
     return result
 
 
@@ -181,7 +187,9 @@ def Tk():
     # Style for Progressbar
     global styleDsHorizontalTProgressbar
     styleDsHorizontalTProgressbar = ttk.Style()
-    styleDsHorizontalTProgressbar.configure('ds.Horizontal.TProgressbar', font=fontNormal)
+    styleDsHorizontalTProgressbar.configure(
+        'ds.Horizontal.TProgressbar', font=fontNormal
+    )
     global styleDsVerticalTProgressbar
     styleDsVerticalTProgressbar = ttk.Style()
     styleDsVerticalTProgressbar.configure('ds.Vertical.TProgressbar', font=fontNormal)
@@ -229,6 +237,7 @@ def Tk():
     resetFontSize()
     result.option_add('*TCombobox*Listbox.font', fontNormal)
     return result
+
 
 # Manage font size.
 

@@ -1,13 +1,14 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Shared functions for the `doorstop.cli` package."""
 
-import os
 import ast
-from argparse import ArgumentTypeError
 import logging
+import os
 import warnings
+from argparse import ArgumentTypeError
 
-from doorstop import common
-from doorstop import settings
+from doorstop import common, settings
 
 log = common.logger(__name__)
 
@@ -64,7 +65,7 @@ def configure_logging(verbosity=0):
         default_format = verbose_format = settings.VERBOSE2_LOGGING_FORMAT
 
     # Set a custom formatter
-    if not logging.root.handlers:  # pragma: no cover (manual test)
+    if not logging.root.handlers:
         logging.basicConfig(level=level)
         logging.captureWarnings(True)
         formatter = common.WarningFormatter(default_format, verbose_format)
@@ -107,10 +108,6 @@ def configure_settings(args):
         settings.WARN_ALL = args.warn_all is True
     if args.error_all is not None:
         settings.ERROR_ALL = args.error_all is True
-    if args.beta is not None:
-        print(args.beta)
-        if 'header' in args.beta:
-            settings.ENABLE_HEADERS = True
 
     # Parse `add` settings
     if hasattr(args, 'server') and args.server is not None:
@@ -182,12 +179,14 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         log.debug("extension based on path: {}".format(ext or None))
 
     # Override the extension if a format is specified
-    for _ext, option in {'.txt': 'text',
-                         '.md': 'markdown',
-                         '.html': 'html',
-                         '.yml': 'yaml',
-                         '.csv': 'csv',
-                         '.xlsx': 'xlsx'}.items():
+    for _ext, option in {
+        '.txt': 'text',
+        '.md': 'markdown',
+        '.html': 'html',
+        '.yml': 'yaml',
+        '.csv': 'csv',
+        '.xlsx': 'xlsx',
+    }.items():
         try:
             if getattr(args, option):
                 ext = _ext
@@ -229,13 +228,8 @@ def ask(question, default=None):
     :return: True = 'yes', False = 'no'
 
     """
-    valid = {"yes": True,
-             "y": True,
-             "no": False,
-             "n": False}
-    prompts = {'yes': " [Y/n] ",
-               'no': " [y/N] ",
-               None: " [y/n] "}
+    valid = {"yes": True, "y": True, "no": False, "n": False}
+    prompts = {'yes': " [Y/n] ", 'no': " [y/N] ", None: " [y/n] "}
 
     prompt = prompts.get(default, prompts[None])
     message = question + prompt

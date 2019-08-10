@@ -1,9 +1,29 @@
 active: true
 derived: false
+header: |
+  Plantuml
 level: 2.1
 links: []
 normative: true
 ref: ''
-reviewed: b5fbcc355112791bbcd2ea881c7c5f81
+reviewed: 50ae164a198e612dee696cc80942dc29
 text: |
   Hello, world!
+
+  ```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+  @startuml
+  Author --> (Create Document)
+  Author --> (Create Item)
+  Author --> (Link Item to Document)
+  Author --> (Link Item to other Item)
+  Author --> (Edit Item)
+  Author --> (Review Item)
+  Author -> (Delete Item)
+  Author -> (Delete Document)
+  (Export) <- (Author)
+  (Import) <- (Author)
+  Reviewer --> (Review Item)
+  System --> (Suspect Changes)
+  System --> (Integrity)
+  @enduml
+  ```

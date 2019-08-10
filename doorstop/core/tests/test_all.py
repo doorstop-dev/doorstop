@@ -1,29 +1,26 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Tests for the doorstop.core package."""
 
 # pylint: disable=protected-access,unidiomatic-typecheck
 
-import unittest
-from unittest.mock import patch, Mock
-
-import os
 import csv
-import tempfile
-import shutil
-import pprint
 import logging
-import warnings
+import os
+import pprint
+import shutil
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
 
-import yaml
 import openpyxl
+import yaml
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop import core
-from doorstop.core.builder import _get_tree, _clear_tree
+from doorstop import common, core
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core.builder import _clear_tree, _get_tree
+from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
 from doorstop.core.vcs import mockvcs
-
-from doorstop.core.tests import ENV, REASON, ROOT, FILES, EMPTY, SYS, FILES_BETA
-from doorstop.core.tests import DocumentNoSkip
 
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False
@@ -46,7 +43,7 @@ class TestItem(unittest.TestCase):
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
+        self.item = core.Item(None, self.path)
         self.item.tree = Mock()
         self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
 
@@ -58,7 +55,7 @@ class TestItem(unittest.TestCase):
         self.item.level = '1.2.3'
         self.item.text = "Hello, world!"
         self.item.links = ['SYS001', 'SYS002']
-        item2 = core.Item(os.path.join(FILES, 'REQ001.yml'))
+        item2 = core.Item(None, os.path.join(FILES, 'REQ001.yml'))
         self.assertEqual((1, 2, 3), item2.level)
         self.assertEqual("Hello, world!", item2.text)
         self.assertEqual(['SYS001', 'SYS002'], item2.links)
@@ -66,12 +63,11 @@ class TestItem(unittest.TestCase):
     @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_find_ref(self):
         """Verify an item's external reference can be found."""
-        item = core.Item(os.path.join(FILES, 'REQ003.yml'))
+        item = core.Item(None, os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
         item.tree.vcs = mockvcs.WorkingCopy(ROOT)
         path, line = item.find_ref()
-        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'),
-                                  ROOT)
+        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), ROOT)
         self.assertEqual(relpath, path)
         self.assertEqual(3, line)
 
@@ -102,9 +98,7 @@ class TestDocument(unittest.TestCase):
 
     def test_new(self):
         """Verify a new document can be created."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='SYS', digits=4)
+        document = core.Document.new(None, EMPTY, FILES, prefix='SYS', digits=4)
         self.assertEqual('SYS', document.prefix)
         self.assertEqual(4, document.digits)
         self.assertEqual(0, len(document.items))
@@ -150,9 +144,7 @@ class TestDocument(unittest.TestCase):
 
     def test_add_item_with_reordering(self):
         """Verify an item can be inserted into a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # will get displaced
         item_1_1 = document.add_item(level='1.1')
@@ -162,9 +154,7 @@ class TestDocument(unittest.TestCase):
 
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed from a document."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         item_1_0 = document.add_item()
         item_1_2 = document.add_item()  # to be removed
         item_1_1 = document.add_item(level='1.1')  # will get relocated
@@ -174,9 +164,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder(self):
         """Verify a document's order can be corrected."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -190,9 +178,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_keep(self):
         """Verify a document's order can be corrected with a kept level."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         item = document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.0', reorder=False)
@@ -204,9 +190,7 @@ class TestDocument(unittest.TestCase):
 
     def test_reorder_with_start(self):
         """Verify a document's order can be corrected with a given start."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='2.0', reorder=False)
         document.add_item(level='2.1', reorder=False)
         document.add_item(level='2.1', reorder=False)
@@ -222,9 +206,7 @@ class TestDocument(unittest.TestCase):
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_with_reordering(self):
         """Verify a document's order is corrected during validation."""
-        document = core.Document.new(None,
-                                     EMPTY, FILES,
-                                     prefix='TMP')
+        document = core.Document.new(None, EMPTY, FILES, prefix='TMP')
         document.add_item(level='1.0', reorder=False)
         document.add_item(level='1.1', reorder=False)
         document.add_item(level='1.2.0', reorder=False)
@@ -243,7 +225,7 @@ class TestTree(unittest.TestCase):
     def setUp(self):
         self.path = os.path.join(FILES, 'REQ001.yml')
         self.backup = common.read_text(self.path)
-        self.item = core.Item(self.path)
+        self.item = core.Item(None, self.path)
         self.tree = core.Tree(core.Document(SYS))
         self.tree._place(core.Document(FILES))
 
@@ -382,28 +364,6 @@ class TestImporter(unittest.TestCase):
         log_data(expected, actual)
         self.assertListEqual(expected, actual)
 
-    # TODO: determine when this test should be run (if at all)
-    # currently, 'TEST_LONG' isn't set under any condition
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    @unittest.skipUnless(os.getenv('TEST_LONG'), "this test takes too long")
-    @unittest.skipIf(os.getenv('TRAVIS'), "this test takes too long")
-    def test_import_xlsx_huge(self):
-        """Verify huge XLSX files are handled."""
-        path = os.path.join(FILES, 'exported-huge.xlsx')
-        _path = os.path.join(self.temp, 'imports', 'req')
-        _tree = _get_tree()
-        document = _tree.create_document(_path, 'REQ')
-        # Act
-        with warnings.catch_warnings(record=True) as warns:
-            core.importer.import_file(path, document)
-            # Assert
-        self.assertEqual(1, len(warns))
-        self.assertIn("maximum number of rows", str(warns[-1].message))
-        expected = []
-        actual = [item.data for item in document.items]
-        log_data(expected, actual)
-        self.assertListEqual(expected, actual)
-
     def test_create_document(self):
         """Verify a new document can be created to import items."""
         document = core.importer.create_document(self.prefix, self.path)
@@ -415,8 +375,9 @@ class TestImporter(unittest.TestCase):
         # Verify the document does not already exist
         self.assertRaises(DoorstopError, core.find_document, self.prefix)
         # Import a document
-        document = core.importer.create_document(self.prefix, self.path,
-                                                 parent=self.parent)
+        document = core.importer.create_document(
+            self.prefix, self.path, parent=self.parent
+        )
         # Verify the imported document's attributes are correct
         self.assertEqual(self.prefix, document.prefix)
         self.assertEqual(self.path, document.path)
@@ -430,8 +391,9 @@ class TestImporter(unittest.TestCase):
         # Create a document
         core.importer.create_document(self.prefix, self.path)
         # Attempt to create the same document
-        self.assertRaises(DoorstopError, core.importer.create_document,
-                          self.prefix, self.path)
+        self.assertRaises(
+            DoorstopError, core.importer.create_document, self.prefix, self.path
+        )
 
     def test_add_item(self):
         """Verify an item can be imported into a document."""
@@ -456,8 +418,7 @@ class TestImporter(unittest.TestCase):
         core.importer.create_document(self.prefix, self.path)
         # Import an item
         attrs = {'text': "Item text", 'ext1': "Extended 1"}
-        item = core.importer.add_item(self.prefix, self.uid,
-                                      attrs=attrs)
+        item = core.importer.add_item(self.prefix, self.uid, attrs=attrs)
         # Verify the item is correct
         self.assertEqual(self.uid, item.uid)
         self.assertEqual(attrs['text'], item.text)
@@ -629,8 +590,7 @@ class TestPublisher(unittest.TestCase):
         path = os.path.join(FILES, 'published.html')
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, '.html',
-                                             linkify=True)
+        lines = core.publisher.publish_lines(self.document, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -644,24 +604,6 @@ class TestPublisher(unittest.TestCase):
         expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, '.html')
-        text = ''.join(line + '\n' for line in lines)
-        # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
-
-    @patch('doorstop.core.document.Document', DocumentNoSkip)
-    @patch('doorstop.settings.PUBLISH_CHILD_LINKS', True)
-    @patch('doorstop.settings.ENABLE_HEADERS', True)
-    def test_lines_html_document_with_header(self):
-        """Verify HTML can be published from a document with headers and child links contain header"""
-        path = os.path.join(FILES_BETA, 'published3.html')
-        expected = common.read_text(path)
-        beta_features_tree = core.build(cwd=FILES_BETA, root=FILES_BETA)
-        document_with_header = beta_features_tree.find_document('REQHEADER')
-        # Act
-        lines = core.publisher.publish_lines(document_with_header, '.html',
-                                             linkify=True)
         text = ''.join(line + '\n' for line in lines)
         # Assert
         if CHECK_PUBLISHED_CONTENT:
@@ -701,16 +643,17 @@ class TestModule(unittest.TestCase):
 def log_data(expected, actual):
     """Log list values."""
     for index, (evalue, avalue) in enumerate(zip(expected, actual)):
-        logging.debug("\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-            i=index,
-            e=pprint.pformat(evalue),
-            a=pprint.pformat(avalue)))
+        logging.debug(
+            "\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
+                i=index, e=pprint.pformat(evalue), a=pprint.pformat(avalue)
+            )
+        )
 
 
 def read_yml(path):
     """Return a dictionary of items from a YAML file."""
     text = common.read_text(path)
-    data = yaml.load(text)
+    data = yaml.load(text, Loader=yaml.SafeLoader)
     return data
 
 
@@ -739,9 +682,13 @@ def read_xlsx(path):
         worksheet = workbook.active
         for row in worksheet.rows:
             for cell in row:
-                values = (cell.value,
-                          cell.style,
-                          worksheet.column_dimensions[cell.column].width)
+                values = (
+                    cell.value,
+                    cell.style,
+                    worksheet.column_dimensions[
+                        openpyxl.utils.get_column_letter(cell.column)
+                    ].width,
+                )
                 data.append(values)
         data.append(worksheet.auto_filter.ref)
 

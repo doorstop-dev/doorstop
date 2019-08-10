@@ -3,12 +3,13 @@
 *.egg-info
 __pycache__
 .ipynb_checkpoints
+setup.py
 
 # Temporary OS files
 Icon*
 
 # Temporary virtual environment files
-/.*cache/
+/.cache/
 /.venv/
 
 # Temporary server files
@@ -20,7 +21,6 @@ Icon*
 /docs/apidocs/
 /site/
 /*.html
-/*.rst
 /docs/*.png
 
 # Google Drive
@@ -42,6 +42,7 @@ Icon*
 /build/
 /dist/
 *.spec
+**/MathJax
 
 # Sublime Text
 *.sublime-workspace

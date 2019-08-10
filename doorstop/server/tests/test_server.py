@@ -1,8 +1,9 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.server.main module."""
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
-
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.server import main as server
 
@@ -136,17 +137,17 @@ class TestRoutesJSON(BaseTestCase):
     def test_get_document(self):
         """Verify `/document/PREFIX` works (JSON)."""
         data = server.get_document('prefix')
-        self.assertEqual({'UID': {'links': ['UID3', 'UID4'],
-                                  'text': 'TEXT'},
-                          'UID2': {}}, data)
+        self.assertEqual(
+            {'UID': {'links': ['UID3', 'UID4'], 'text': 'TEXT'}, 'UID2': {}}, data
+        )
 
     def test_get_all_documents(self):
         """Verify `/documents/all` works (JSON)."""
         data = server.get_all_documents()
-        expected = {'PREFIX': {'UID': {'links': ['UID3', 'UID4'],
-                                       'text': 'TEXT'},
-                               'UID2': {}},
-                    'PREFIX2': {}}
+        expected = {
+            'PREFIX': {'UID': {'links': ['UID3', 'UID4'], 'text': 'TEXT'}, 'UID2': {}},
+            'PREFIX2': {},
+        }
         self.assertEqual(expected, data)
 
     def test_get_items(self):
@@ -157,8 +158,7 @@ class TestRoutesJSON(BaseTestCase):
     def test_get_item(self):
         """Verify `/document/PREFIX/items/UID` works (JSON)."""
         data = server.get_item('prefix', 'uid')
-        self.assertEqual({'data': {'links': ['UID3', 'UID4'],
-                                   'text': 'TEXT'}}, data)
+        self.assertEqual({'data': {'links': ['UID3', 'UID4'], 'text': 'TEXT'}}, data)
 
     def test_get_attrs(self):
         """Verify `/document/PREFIX/items/UID/attrs` works (JSON)."""

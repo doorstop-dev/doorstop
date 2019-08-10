@@ -1,12 +1,30 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Package for doorstop."""
 
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core import Item, Document, Tree
-from doorstop.core import build, find_document, find_item
-from doorstop.core import importer, exporter, builder, editor, publisher
+from pkg_resources import DistributionNotFound, get_distribution
+
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core import (
+    Document,
+    Item,
+    Tree,
+    build,
+    builder,
+    editor,
+    exporter,
+    find_document,
+    find_item,
+    importer,
+    publisher,
+)
 
 __project__ = 'Doorstop'
-__version__ = '1.5'
+
+try:
+    __version__ = get_distribution(__project__).version
+except DistributionNotFound:
+    __version__ = '(local)'
 
 CLI = 'doorstop'
 GUI = 'doorstop-gui'

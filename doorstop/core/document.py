@@ -1,18 +1,27 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Representation of a collection of items."""
 
 import os
-from itertools import chain
-from collections import OrderedDict
 import re
+from collections import OrderedDict
+from itertools import chain
 
-from doorstop import common
-from doorstop.common import DoorstopError, DoorstopWarning, DoorstopInfo
-from doorstop.core.base import (add_document, edit_document, delete_document,
-                                auto_load, auto_save,
-                                BaseValidatable, BaseFileObject)
-from doorstop.core.types import Prefix, UID, Level
+import yaml
+
+from doorstop import common, settings
+from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core.base import (
+    BaseFileObject,
+    BaseValidatable,
+    add_document,
+    auto_load,
+    auto_save,
+    delete_document,
+    edit_document,
+)
 from doorstop.core.item import Item
-from doorstop import settings
+from doorstop.core.types import UID, Level, Prefix
 
 log = common.logger(__name__)
 
@@ -48,10 +57,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Document.auto)
         # Set default values
+        self._attribute_defaults = None
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
+        self._extended_reviewed = []
         self._items = []
         self._itered = False
         self.children = []
@@ -77,7 +88,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     @add_document
-    def new(tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None):  # pylint: disable=R0913,C0301
+    def new(
+        tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None
+    ):  # pylint: disable=R0913,C0301
         """Create a new document.
 
         :param tree: reference to tree that contains this document
@@ -116,26 +129,68 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return the document
         return document
 
+    def _load_with_include(self, yamlfile):
+        """Load the YAML file and process input tags."""
+        # Read text from file
+        text = self._read(yamlfile)
+        # Parse YAML data from text
+        class IncludeLoader(yaml.SafeLoader):
+            def include(self, node):
+                container = IncludeLoader.filenames[0]
+                dirname = os.path.dirname(container)
+                filename = os.path.join(dirname, self.construct_scalar(node))
+                IncludeLoader.filenames.insert(0, filename)
+                try:
+                    with open(filename, 'r') as f:
+                        data = yaml.load(f, IncludeLoader)
+                except Exception as ex:
+                    msg = "include in '{}' failed: {}".format(container, ex)
+                    raise DoorstopError(msg)
+                IncludeLoader.filenames.pop()
+                return data
+
+        IncludeLoader.add_constructor('!include', IncludeLoader.include)
+        IncludeLoader.filenames = [yamlfile]
+        return self._load(text, yamlfile, loader=IncludeLoader)
+
     def load(self, reload=False):
         """Load the document's properties from its file."""
         if self._loaded and not reload:
             return
         log.debug("loading {}...".format(repr(self)))
-        # Read text from file
-        text = self._read(self.config)
-        # Parse YAML data from text
-        data = self._load(text, self.config)
+        data = self._load_with_include(self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
-            if key == 'prefix':
-                self._data['prefix'] = Prefix(value)
-            elif key == 'sep':
-                self._data['sep'] = value.strip()
-            elif key == 'parent':
-                self._data['parent'] = value.strip()
-            elif key == 'digits':
-                self._data['digits'] = int(value)
+            try:
+                if key == 'prefix':
+                    self._data[key] = Prefix(value)
+                elif key == 'sep':
+                    self._data[key] = value.strip()
+                elif key == 'parent':
+                    self._data[key] = value.strip()
+                elif key == 'digits':
+                    self._data[key] = int(value)
+                else:
+                    msg = "unexpected document setting '{}' in: {}".format(
+                        key, self.config
+                    )
+                    raise DoorstopError(msg)
+            except (AttributeError, TypeError, ValueError):
+                msg = "invalid value for '{}' in: {}".format(key, self.config)
+                raise DoorstopError(msg)
+        # Store parsed attributes
+        attributes = data.get('attributes', {})
+        for key, value in attributes.items():
+            if key == 'defaults':
+                self._attribute_defaults = value
+            elif key == 'reviewed':
+                self._extended_reviewed = sorted(set(v for v in value))
+            else:
+                msg = "unexpected attributes configuration '{}' in: {}".format(
+                    key, self.config
+                )
+                raise DoorstopError(msg)
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -150,17 +205,21 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         sets = {}
         for key, value in self._data.items():
             if key == 'prefix':
-                sets['prefix'] = str(value)
-            elif key == 'sep':
-                sets['sep'] = value
-            elif key == 'digits':
-                sets['digits'] = value
+                sets[key] = str(value)
             elif key == 'parent':
                 if value:
-                    sets['parent'] = value
+                    sets[key] = value
             else:
-                data[key] = value
+                sets[key] = value
         data['settings'] = sets
+        # Save the attributes
+        attributes = {}
+        if self._attribute_defaults:
+            attributes['defaults'] = self._attribute_defaults
+        if self._extended_reviewed:
+            attributes['reviewed'] = self._extended_reviewed
+        if attributes:
+            data['attributes'] = attributes
         # Dump the data to YAML
         text = self._dump(data)
         # Save the YAML to file
@@ -189,8 +248,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(path, root=self.root,
-                                document=self, tree=self.tree)
+                    item = Item(self, path, root=self.root, tree=self.tree)
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
@@ -241,6 +299,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the document's prefix."""
         self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
+
+    @property
+    @auto_load
+    def extended_reviewed(self):
+        """Get the document's extended reviewed attribute keys."""
+        return self._extended_reviewed
 
     @property
     @auto_load
@@ -344,7 +408,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def add_item(self, number=None, level=None, reorder=True):
+    def add_item(self, number=None, level=None, reorder=True, defaults=None):
         """Create a new item for the document and return it.
 
         :param number: desired item number
@@ -369,10 +433,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
+
+        # Load more defaults before the item is created to avoid partially
+        # constructed items in case the loading fails.
+        more_defaults = self._load_with_include(defaults) if defaults else None
+
         uid = UID(self.prefix, self.sep, number, self.digits)
-        item = Item.new(self.tree, self,
-                        self.path, self.root, uid,
-                        level=next_level)
+        item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
+        if self._attribute_defaults:
+            item.set_attributes(self._attribute_defaults)
+        if more_defaults:
+            item.set_attributes(more_defaults)
         if level and reorder:
             self.reorder(keep=item)
         return item
@@ -398,8 +469,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         return item
 
     # decorators are applied to methods in the associated classes
-    def reorder(self, manual=True, automatic=True, start=None, keep=None,
-                _items=None):
+    def reorder(self, manual=True, automatic=True, start=None, keep=None, _items=None):
         """Reorder a document's items.
 
         Two methods are using to create the outline order:
@@ -445,7 +515,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             comment = lines[0] if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
-                line = line[:settings.MAX_LINE_LENGTH - 3] + '...'
+                line = line[: settings.MAX_LINE_LENGTH - 3] + '...'
             yield line
 
     @staticmethod
@@ -531,7 +601,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
             # Process each subsection
             for index, subsection in enumerate(section):
-                Document._reorder_section(subsection, level + index, document, list_of_ids)
+                Document._reorder_section(
+                    subsection, level + index, document, list_of_ids
+                )
 
     @staticmethod
     def _reorder_automatic(items, start=None, keep=None):
@@ -631,7 +703,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):  # pylint: disable=unused-argument
+    def get_issues(
+        self, skip=None, document_hook=None, item_hook=None
+    ):  # pylint: disable=unused-argument
         """Yield all the document's issues.
 
         :param skip: list of document prefixes to skip
@@ -668,8 +742,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for item in items:
 
             # Check item
-            for issue in chain(hook(item=item, document=self, tree=self.tree),
-                               item.get_issues(skip=skip)):
+            for issue in chain(
+                hook(item=item, document=self, tree=self.tree),
+                item.get_issues(skip=skip),
+            ):
 
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
@@ -696,13 +772,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 # Types of skipped levels:
                 #         1. over: 1.0 --> 1.2
                 #         2. out: 1.1 --> 3.0
-                if (nlev.value[index] - plev.value[index] > 1 or
-                        # 3. over and out: 1.1 --> 2.2
-                        (plev.value[index] != nlev.value[index] and
-                         index + 1 < length and
-                         nlev.value[index + 1] not in (0, 1))):
-                    msg = "skipped level: {} ({}), {} ({})".format(plev, puid,
-                                                                   nlev, nuid)
+                if (
+                    nlev.value[index] - plev.value[index] > 1
+                    or
+                    # 3. over and out: 1.1 --> 2.2
+                    (
+                        plev.value[index] != nlev.value[index]
+                        and index + 1 < length
+                        and nlev.value[index + 1] not in (0, 1)
+                    )
+                ):
+                    msg = "skipped level: {} ({}), {} ({})".format(
+                        plev, puid, nlev, nuid
+                    )
                     yield DoorstopInfo(msg)
                     break
             prev = item

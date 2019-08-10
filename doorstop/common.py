@@ -1,10 +1,12 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Common exceptions, classes, and functions for Doorstop."""
 
+import argparse
+import glob
+import logging
 import os
 import shutil
-import argparse
-import logging
-import glob
 
 import yaml
 
@@ -14,7 +16,7 @@ STR_VERBOSITY = 3  # minimum verbosity to use verbose `__str__`
 MAX_VERBOSITY = 4  # maximum verbosity level implemented
 
 
-def _trace(self, message, *args, **kws):  # pragma: no cover (manual test)
+def _trace(self, message, *args, **kws):
     if self.isEnabledFor(logging.DEBUG - 1):
         self._log(logging.DEBUG - 1, message, args, **kws)  # pylint: disable=W0212
 
@@ -44,6 +46,7 @@ class DoorstopWarning(DoorstopError, Warning):
 class DoorstopInfo(DoorstopWarning, Warning):
     """Generic Doorstop info."""
 
+
 # logging classes ############################################################
 
 
@@ -62,7 +65,7 @@ class WarningFormatter(logging.Formatter):
         self.default_format = default_format
         self.verbose_format = verbose_format
 
-    def format(self, record):  # pragma: no cover (manual test)
+    def format(self, record):
         """Python 3 hack to change the formatting style dynamically."""
         if record.levelno > logging.INFO:
             self._style._fmt = self.verbose_format  # pylint: disable=W0212
@@ -107,12 +110,15 @@ def read_text(path, encoding='utf-8'):
 
     """
     log.trace("reading text from '{}'...".format(path))
-    with open(path, 'r', encoding=encoding) as stream:
-        text = stream.read()
-    return text
+    try:
+        with open(path, 'r', encoding=encoding) as stream:
+            return stream.read()
+    except Exception as ex:
+        msg = "reading '{}' failed: {}".format(path, ex)
+        raise DoorstopError(msg)
 
 
-def load_yaml(text, path):
+def load_yaml(text, path, loader=yaml.SafeLoader):
     """Parse a dictionary from YAML text.
 
     :param text: string containing dumped YAML data
@@ -123,7 +129,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text) or {}
+        data = yaml.load(text, Loader=loader) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
@@ -172,7 +178,7 @@ def write_text(text, path, encoding='utf-8'):
     return path
 
 
-def touch(path):  # pragma: no cover (integration test)
+def touch(path):
     """Ensure a file exists."""
     if not os.path.exists(path):
         log.trace("creating empty '{}'...".format(path))
@@ -185,9 +191,13 @@ def copy_dir_contents(src, dst):
         dest_path = os.path.join(dst, os.path.split(fpath)[-1])
         if os.path.exists(dest_path):
             if os.path.basename(fpath) == "doorstop":
-                msg = "Skipping '{}' as this directory name is required by doorstop".format(fpath)
+                msg = "Skipping '{}' as this directory name is required by doorstop".format(
+                    fpath
+                )
             else:
-                msg = "Skipping '{}' as a file or directory with this name already exists".format(fpath)
+                msg = "Skipping '{}' as a file or directory with this name already exists".format(
+                    fpath
+                )
             log.warning(msg)
         else:
             if os.path.isdir(fpath):
@@ -196,7 +206,7 @@ def copy_dir_contents(src, dst):
                 shutil.copyfile(fpath, dest_path)
 
 
-def delete(path):  # pragma: no cover (integration test)
+def delete(path):
     """Delete a file or directory with error handling."""
     if os.path.isdir(path):
         try:
@@ -220,6 +230,7 @@ def delete_contents(dirname):
             try:
                 os.remove(os.path.join(dirname, file))
             except FileExistsError:
-                log.warning("Two assets folders have files or directories "
-                            "with the same name")
+                log.warning(
+                    "Two assets folders have files or directories " "with the same name"
+                )
                 raise

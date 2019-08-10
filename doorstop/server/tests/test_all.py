@@ -1,15 +1,16 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Integration tests for the doorstop.server package."""
 
+import logging
 import os
 import time
 import unittest
-from unittest.mock import patch
 from multiprocessing import Process
-import logging
+from unittest.mock import patch
 
 from doorstop import server
 from doorstop.server import main
-
 from doorstop.server.tests import ENV, REASON
 
 

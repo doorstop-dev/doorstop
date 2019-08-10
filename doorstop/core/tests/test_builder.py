@@ -1,13 +1,13 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.core.builder module."""
 
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
+from doorstop.core.builder import _clear_tree, build, find_document, find_item
+from doorstop.core.tests import EMPTY, FILES, MockDocumentNoSkip, MockDocumentSkip
 from doorstop.core.tree import Tree
-from doorstop.core.builder import build, find_document, find_item, _clear_tree
-
-from doorstop.core.tests import FILES, EMPTY
-from doorstop.core.tests import MockDocumentSkip, MockDocumentNoSkip
 
 
 class TestModule(unittest.TestCase):

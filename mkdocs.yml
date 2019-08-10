@@ -1,23 +1,30 @@
 site_name: Doorstop
 site_description: Requirements management using version control.
 site_author: Jace Browning
+
 repo_url: https://github.com/jacebrowning/doorstop
+edit_uri: https://github.com/jacebrowning/doorstop/edit/develop/docs
 
 theme: readthedocs
 extra_css: []
 extra_javascript: []
 
-pages:
+nav:
 - Home: index.md
+- Setup: setup.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
   - Reordering Documents: cli/reordering.md
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
-- Graphical Interface: gui/coming-soon.md
+- Desktop Interface: gui/overview.md
+- Web Interface: web.md
 - Scripting Interface: api/scripting.md
-- Item reference: reference/items.md
+- Reference:
+  - Tree: reference/tree.md
+  - Document: reference/document.md
+  - Item: reference/item.md
 - Examples: examples.md
 - About:
   - Release Notes: about/changelog.md

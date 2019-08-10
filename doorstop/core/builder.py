@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Functions to build a tree and access documents and items."""
 
 import os
@@ -5,8 +7,8 @@ import os
 from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core import vcs
-from doorstop.core.tree import Tree
 from doorstop.core.document import Document
+from doorstop.core.tree import Tree
 
 log = common.logger(__name__)
 _tree = None  # implicit tree for convenience functions

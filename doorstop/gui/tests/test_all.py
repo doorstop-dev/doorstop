@@ -1,13 +1,14 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Integration tests for the doorstop.cli package."""
 
-import unittest
-from unittest.mock import patch, Mock
-
-import sys
 import imp
+import sys
+import unittest
+from unittest.mock import Mock, patch
 
-from doorstop.gui.main import main
 from doorstop.gui import main as gui
+from doorstop.gui.main import main
 
 
 class TestMain(unittest.TestCase):

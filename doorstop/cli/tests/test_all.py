@@ -1,20 +1,26 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Integration tests for the doorstop.cli package."""
 
-import unittest
-from unittest.mock import patch, Mock
-
 import os
-import tempfile
 import shutil
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
 
+from doorstop import common, settings
 from doorstop.cli.main import main
-from doorstop import common
+from doorstop.cli.tests import (
+    ENV,
+    FILES,
+    REASON,
+    REQS,
+    ROOT,
+    TUTORIAL,
+    SettingsTestCase,
+)
 from doorstop.core.builder import _clear_tree
-from doorstop import settings
 from doorstop.core.document import Document
-
-from doorstop.cli.tests import ENV, REASON, ROOT, FILES, REQS, TUTORIAL
-from doorstop.cli.tests import SettingsTestCase
 
 REQ_COUNT = 17
 ALL_COUNT = 49
@@ -77,19 +83,21 @@ class TestMain(SettingsTestCase):
 class TestCreate(TempTestCase):
     """Integration tests for the 'doorstop create' command."""
 
+    @patch('subprocess.call', Mock())
     def test_create(self):
         """Verify 'doorstop create' can be called."""
         self.assertIs(None, main(['create', '_TEMP', self.temp, '-p', 'REQ']))
 
+    @patch('subprocess.call', Mock())
     def test_create_error_unknwon_parent(self):
         """Verify 'doorstop create' returns an error with an unknown parent."""
-        self.assertRaises(SystemExit, main,
-                          ['create', '_TEMP', self.temp, '-p', 'UNKNOWN'])
+        self.assertRaises(
+            SystemExit, main, ['create', '_TEMP', self.temp, '-p', 'UNKNOWN']
+        )
 
     def test_create_error_reserved_prefix(self):
         """Verify 'doorstop create' returns an error with a reserved prefix."""
-        self.assertRaises(SystemExit, main,
-                          ['create', 'ALL', self.temp, '-p', 'REQ'])
+        self.assertRaises(SystemExit, main, ['create', 'ALL', self.temp, '-p', 'REQ'])
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -110,9 +118,9 @@ def get_next_number():
     """Helper function to get the next document number."""
     last = None
     for last in sorted(os.listdir(TUTORIAL), reverse=True):
-        if "index" not in last:
+        if last.endswith('.yml'):
             break
-    assert last
+    assert last, "Unable to find last item"
     number = int(last.replace('TUT', '').replace('.yml', '')) + 1
     return number
 
@@ -193,7 +201,7 @@ class TestAddServer(unittest.TestCase):
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
-        mock_add_item.assert_called_once_with(level=None)
+        mock_add_item.assert_called_once_with(defaults=None, level=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
@@ -241,7 +249,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_yes(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (yes)."""
         self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -249,7 +257,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_no(self, mock_launch):
         """Verify 'doorstop reorder' can be called with a document (no)."""
         self.assertIs(None, main(['reorder', self.prefix]))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertFalse(os.path.exists(self.path))
 
     @patch('doorstop.core.editor.launch')
@@ -264,7 +272,7 @@ class TestReorder(unittest.TestCase):
     def test_reorder_document_manual(self, mock_launch, mock_reorder_auto):
         """Verify 'doorstop reorder' can be called with a document (manual)."""
         self.assertIs(None, main(['reorder', self.prefix, '--manual']))
-        mock_launch.assert_called_once_with(self.path, tool=None)
+        mock_launch.assert_called_once_with(self.path, tool=os.getenv('EDITOR'))
         self.assertEqual(0, mock_reorder_auto.call_count)
         self.assertFalse(os.path.exists(self.path))
 
@@ -292,10 +300,11 @@ class TestReorder(unittest.TestCase):
 class TestEdit(unittest.TestCase):
     """Integration tests for the 'doorstop edit' command."""
 
+    @patch('subprocess.call', Mock())
     @patch('doorstop.core.editor.launch')
     def test_edit_item(self, mock_launch):
-        """Verify 'doorstop edit' can be called with an item."""
-        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor']))
+        """Verify 'doorstop edit' can be called with an item (all)."""
+        self.assertIs(None, main(['edit', 'tut2', '-T', 'my_editor', '--all']))
         path = os.path.join(TUTORIAL, 'TUT002.yml')
         mock_launch.assert_called_once_with(os.path.normpath(path), tool='my_editor')
 
@@ -496,13 +505,13 @@ class TestImport(unittest.TestCase):
 
     def test_import_document(self):
         """Verify 'doorstop import' can import a document."""
-        self.assertRaises(SystemExit,
-                          main, ['import', '--document', 'TMP', 'tmp'])
+        self.assertRaises(SystemExit, main, ['import', '--document', 'TMP', 'tmp'])
 
     def test_import_document_with_parent(self):
         """Verify 'doorstop import' can import a document with a parent."""
-        self.assertIs(None, main(['import', '--document', 'TMP', 'tmp',
-                                  '--parent', 'REQ']))
+        self.assertIs(
+            None, main(['import', '--document', 'TMP', 'tmp', '--parent', 'REQ'])
+        )
 
     def test_import_item(self):
         """Verify 'doorstop import' can import an item.."""
@@ -510,8 +519,19 @@ class TestImport(unittest.TestCase):
 
     def test_import_item_with_attrs(self):
         """Verify 'doorstop import' can import an item with attributes."""
-        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099',
-                                  '--attrs', "{'text': 'The item text.'}"]))
+        self.assertIs(
+            None,
+            main(
+                [
+                    'import',
+                    '--item',
+                    'REQ',
+                    'REQ099',
+                    '--attrs',
+                    "{'text': 'The item text.'}",
+                ]
+            ),
+        )
 
     def test_import_error(self):
         """Verify 'doorstop import' requires a document or item."""
@@ -531,10 +551,8 @@ class TestImportFile(MockTestCase):
     def test_import_file_extra_flags(self):
         """Verify 'doorstop import' returns an error with extra flags."""
         path = os.path.join(FILES, 'exported.xlsx')
-        self.assertRaises(SystemExit,
-                          main, ['import', path, 'PREFIX', '-d', '_', '_'])
-        self.assertRaises(SystemExit,
-                          main, ['import', path, 'PREFIX', '-i', '_', '_'])
+        self.assertRaises(SystemExit, main, ['import', path, 'PREFIX', '-d', '_', '_'])
+        self.assertRaises(SystemExit, main, ['import', path, 'PREFIX', '-i', '_', '_'])
 
     def test_import_file_to_document_unknown(self):
         """Verify 'doorstop import' returns an error for unknown documents."""
@@ -547,8 +565,9 @@ class TestImportFile(MockTestCase):
         dirpath = os.path.join(self.temp, 'imported', 'prefix')
         main(['create', 'PREFIX', dirpath])
         # Act
-        self.assertIs(None, main(['import', path, 'PREFIX',
-                                  '--map', "{'mylevel': 'level'}"]))
+        self.assertIs(
+            None, main(['import', path, 'PREFIX', '--map', "{'mylevel': 'level'}"])
+        )
         # Assert
         path = os.path.join(dirpath, 'REQ001.yml')
         self.assertTrue(os.path.isfile(path))
@@ -558,8 +577,7 @@ class TestImportFile(MockTestCase):
     def test_import_file_with_map_invalid(self):
         """Verify 'doorstop import' returns an error with an invalid map."""
         path = os.path.join(FILES, 'exported.csv')
-        self.assertRaises(SystemExit,
-                          main, ['import', path, 'PREFIX', '--map', "{'my"])
+        self.assertRaises(SystemExit, main, ['import', path, 'PREFIX', '--map', "{'my"])
 
     def test_import_csv_to_document_existing(self):
         """Verify 'doorstop import' can import CSV to an existing document."""
@@ -606,8 +624,7 @@ class TestImportServer(unittest.TestCase):
 
     def test_import_item_force(self):
         """Verify 'doorstop import' can import an item without a server."""
-        self.assertIs(None,
-                      main(['import', '--item', 'REQ', 'REQ099', '--force']))
+        self.assertIs(None, main(['import', '--item', 'REQ', 'REQ099', '--force']))
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -671,13 +688,11 @@ class TestPublish(TempTestCase):
 
     def setUp(self):
         super().setUp()
-        self.backup = (settings.PUBLISH_CHILD_LINKS,
-                       settings.PUBLISH_BODY_LEVELS)
+        self.backup = (settings.PUBLISH_CHILD_LINKS, settings.PUBLISH_BODY_LEVELS)
 
     def tearDown(self):
         super().tearDown()
-        (settings.PUBLISH_CHILD_LINKS,
-         settings.PUBLISH_BODY_LEVELS) = self.backup
+        (settings.PUBLISH_CHILD_LINKS, settings.PUBLISH_BODY_LEVELS) = self.backup
 
     def test_publish_unknown(self):
         """Verify 'doorstop publish' returns an error for an unknown format."""
@@ -784,18 +799,20 @@ class TestPublishCommand(TempTestCase):
     def test_publish_document_template(self, mock_publish):
         """Verify 'doorstop publish' is called with template."""
         path = os.path.join(self.temp, 'req.html')
-        self.assertIs(None, main(['publish', '--template',
-                                  'my_template.html', 'req', path]))
-        mock_publish.assert_called_once_with(Document(os.path.abspath(REQS)),
-                                             path, '.html',
-                                             template='my_template.html')
+        self.assertIs(
+            None, main(['publish', '--template', 'my_template.html', 'req', path])
+        )
+        mock_publish.assert_called_once_with(
+            Document(os.path.abspath(REQS)), path, '.html', template='my_template.html'
+        )
 
     @patch('doorstop.core.publisher.publish_lines')
     def test_publish_document_to_stdout(self, mock_publish_lines):
         """Verify 'doorstop publish_lines' is called when no output path specified"""
         self.assertIs(None, main(['publish', 'req']))
-        mock_publish_lines.assert_called_once_with(Document(os.path.abspath(REQS)),
-                                                   '.txt')
+        mock_publish_lines.assert_called_once_with(
+            Document(os.path.abspath(REQS)), '.txt'
+        )
 
 
 @patch('doorstop.cli.commands.run', Mock(return_value=True))

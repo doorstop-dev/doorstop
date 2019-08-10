@@ -1,13 +1,15 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.vcs plugin modules."""
 
 import unittest
-from unittest.mock import patch, Mock, call
+from unittest.mock import Mock, call, patch
 
-from doorstop.core.vcs import load
 from doorstop.common import DoorstopError
+from doorstop.core.vcs import load
 
 
-class BaseTestCase():  # pylint: disable=R0904
+class BaseTestCase:
     """Base TestCase for tests that need a working copy."""
 
     DIRECTORY = None
@@ -46,7 +48,7 @@ class BaseTestCase():  # pylint: disable=R0904
         self.assertRaises(DoorstopError, self.add)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestGit(BaseTestCase, unittest.TestCase):
     """Tests for the Git plugin."""
 
@@ -79,12 +81,14 @@ class TestGit(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Git can commit files."""
         self.commit()
-        calls = [call(("git", "commit", "--all", "--message", self.message)),
-                 call(("git", "push"))]
+        calls = [
+            call(("git", "commit", "--all", "--message", self.message)),
+            call(("git", "push")),
+        ]
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestSubversion(BaseTestCase, unittest.TestCase):
     """Tests for the Subversion plugin."""
 
@@ -93,8 +97,7 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
     def test_lock(self, mock_call):
         """Verify Subversion can lock files."""
         self.lock()
-        calls = [call(("svn", "update")),
-                 call(("svn", "lock", self.path))]
+        calls = [call(("svn", "update")), call(("svn", "lock", self.path))]
         mock_call.assert_has_calls(calls)
 
     def test_edit(self, mock_call):
@@ -122,7 +125,7 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestVeracity(BaseTestCase, unittest.TestCase):
     """Tests for the Veracity plugin."""
 
@@ -131,8 +134,7 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
     def test_lock(self, mock_call):
         """Verify Veracity can lock files."""
         self.lock()
-        calls = [call(("vv", "pull")),
-                 call(("vv", "update"))]
+        calls = [call(("vv", "pull")), call(("vv", "update"))]
         mock_call.assert_has_calls(calls)
 
     def test_edit(self, mock_call):
@@ -156,12 +158,14 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Veracity can commit files."""
         self.commit()
-        calls = [call(("vv", "commit", "--message", self.message)),
-                 call(("vv", "push"))]
+        calls = [
+            call(("vv", "commit", "--message", self.message)),
+            call(("vv", "push")),
+        ]
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')  # pylint: disable=R0904
+@patch('subprocess.call')
 class TestMercurial(BaseTestCase, unittest.TestCase):
     """Tests for the Mercurial plugin."""
 
@@ -194,6 +198,8 @@ class TestMercurial(BaseTestCase, unittest.TestCase):
     def test_commit(self, mock_call):
         """Verify Mercurial can commit files."""
         self.commit()
-        calls = [call(("hg", "commit", "--message", self.message)),
-                 call(("hg", "push"))]
+        calls = [
+            call(("hg", "commit", "--message", self.message)),
+            call(("hg", "push")),
+        ]
         mock_call.assert_has_calls(calls)

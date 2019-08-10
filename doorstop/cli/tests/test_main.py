@@ -1,10 +1,11 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.cli.main module."""
 
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
-from doorstop.cli import main
 from doorstop import settings
-
+from doorstop.cli import main
 from doorstop.cli.tests import SettingsTestCase
 
 
@@ -42,16 +43,23 @@ class TestMain(SettingsTestCase):
     @patch('doorstop.cli.commands.run', Mock())
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
-        self.assertIs(None, main.main(['--no-reformat',
-                                       '--no-ref-check',
-                                       '--no-child-check',
-                                       '--reorder',
-                                       '--no-level-check',
-                                       '--no-suspect-check',
-                                       '--no-review-check',
-                                       '--no-cache',
-                                       '--warn-all',
-                                       '--error-all']))
+        self.assertIs(
+            None,
+            main.main(
+                [
+                    '--no-reformat',
+                    '--no-ref-check',
+                    '--no-child-check',
+                    '--reorder',
+                    '--no-level-check',
+                    '--no-suspect-check',
+                    '--no-review-check',
+                    '--no-cache',
+                    '--warn-all',
+                    '--error-all',
+                ]
+            ),
+        )
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.CHECK_REF)
         self.assertFalse(settings.CHECK_CHILD_LINKS)

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Configuration file for sniffer."""
 # pylint: disable=superfluous-parens,bad-continuation
 
@@ -27,7 +29,6 @@ class Options:
         (('make', 'check'), "Static Analysis", True),
         (('make', 'demo'), "Run Demo", False),
         (('make', 'docs'), None, True),
-        (('make', 'dist'), None, True),
     ]
 
 

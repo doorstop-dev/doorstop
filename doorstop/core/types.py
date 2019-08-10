@@ -1,14 +1,15 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Common classes and functions for the `doorstop.core` package."""
 
+import hashlib
 import os
 import re
-import hashlib
 
 import yaml
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop import settings
 
 log = common.logger(__name__)
 
@@ -143,8 +144,7 @@ class UID:
         if not isinstance(other, UID):
             other = UID(other)
         try:
-            return all((self.prefix == other.prefix,
-                        self.number == other.number))
+            return all((self.prefix == other.prefix, self.number == other.number))
         except DoorstopError:
             return self.value.lower() == other.value.lower()
 
@@ -189,7 +189,7 @@ class UID:
     def check(self):
         """Verify an UID is valid."""
         if self._exc:
-            raise self._exc
+            raise self._exc  # pylint: disable=raising-bad-type
 
     @staticmethod
     def split_uid(text):
@@ -235,8 +235,9 @@ class _Literal(str):
     @staticmethod
     def representer(dumper, data):
         """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
-                                       style='|' if data else '')
+        return dumper.represent_scalar(
+            'tag:yaml.org,2002:str', data, style='|' if data else ''
+        )
 
 
 yaml.add_representer(_Literal, _Literal.representer)

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Plug-in module to store requirements in a Veracity repository."""
 
 from doorstop import common

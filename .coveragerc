@@ -5,3 +5,20 @@ branch = true
 omit =
     .venv/*
     */tests/*
+    */__main__.py
+
+[report]
+
+omit =
+    */gui/main.py
+    */gui/application.py
+    */gui/utilTkinter.py
+    */gui/widget.py
+
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    except DistributionNotFound
+    if __name__ == '__main__'
+
+skip_covered = true

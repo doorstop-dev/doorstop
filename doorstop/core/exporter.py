@@ -1,17 +1,18 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Functions to export documents and items."""
 
-import os
 import csv
 import datetime
+import os
 from collections import defaultdict
 
-import yaml
 import openpyxl
+import yaml
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
-from doorstop import settings
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
@@ -234,30 +235,30 @@ def _get_xlsx(obj, auto):
     # Populate cells
     for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
         for col_idx, value in enumerate(data, start=1):
-            col = openpyxl.cell.get_column_letter(col_idx)
-            cell = worksheet.cell('%s%s' % (col, row))
+            cell = worksheet.cell(column=col_idx, row=row)
 
             # wrap text in every cell
-            alignment = openpyxl.styles.Alignment(vertical='top',
-                                                  horizontal='left',
-                                                  wrap_text=True)
-            style = cell.style.copy(alignment=alignment)
+            alignment = openpyxl.styles.Alignment(
+                vertical='top', horizontal='left', wrap_text=True
+            )
+            cell.alignment = alignment
             # and bold header rows
             if row == 1:
-                style = style.copy(font=openpyxl.styles.Font(bold=True))
-            cell.style = style
+                cell.font = openpyxl.styles.Font(bold=True)
 
             # convert incompatible Excel types:
             # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
-            if not isinstance(value, (int, float, str, datetime.datetime)):
-                value = str(value)
-            cell.value = value
+            if isinstance(value, (int, float, datetime.datetime)):
+                cell.value = value
+            else:
+                cell.value = str(value)
 
             # track cell width
-            col_widths[col] = max(col_widths[col], _width(str(value)))
+            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
 
     # Add filter up to the last column
-    worksheet.auto_filter.ref = "A1:%s1" % col
+    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
+    worksheet.auto_filter.ref = "A1:%s1" % col_letter
 
     # Set column width based on column contents
     for col in col_widths:
@@ -265,10 +266,11 @@ def _get_xlsx(obj, auto):
             width = XLSX_MAX_WIDTH
         else:
             width = col_widths[col] + XLSX_FILTER_PADDING
-        worksheet.column_dimensions[col].width = width
+        col_letter = openpyxl.utils.get_column_letter(col)
+        worksheet.column_dimensions[col_letter].width = width
 
     # Freeze top row
-    worksheet.freeze_panes = worksheet.cell('A2')
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
 
     return workbook
 
@@ -284,9 +286,7 @@ def _width(text):
 # Mapping from file extension to lines generator
 FORMAT_LINES = {'.yml': _lines_yaml}
 # Mapping from file extension to file generator
-FORMAT_FILE = {'.csv': _file_csv,
-               '.tsv': _file_tsv,
-               '.xlsx': _file_xlsx}
+FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx}
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))
 

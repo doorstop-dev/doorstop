@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Settings for the Doorstop package."""
 
 import logging
@@ -6,7 +8,9 @@ import logging
 DEFAULT_LOGGING_FORMAT = "%(message)s"
 LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
-VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s @%(lineno)4d) %(message)s"  # pylint: disable=C0301
+VERBOSE2_LOGGING_FORMAT = (
+    "[%(levelname)-8s] (%(name)s @%(lineno)4d) %(message)s"
+)  # pylint: disable=C0301
 QUIET_LOGGING_LEVEL = logging.WARNING
 TIMED_LOGGING_FORMAT = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
 DEFAULT_LOGGING_LEVEL = logging.WARNING
@@ -46,6 +50,7 @@ STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = True  # include levels on header items
+ENABLE_HEADERS = True  # use headers if defined
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files
@@ -58,6 +63,3 @@ CACHE_PATHS = True  # cache file/directory paths and contents
 # Server settings
 SERVER_HOST = None  # '' = server not specified, None = no server in use
 SERVER_PORT = 7867
-
-# Beta Features
-ENABLE_HEADERS = False

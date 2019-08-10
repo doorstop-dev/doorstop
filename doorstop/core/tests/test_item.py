@@ -1,23 +1,74 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
+
 """Unit tests for the doorstop.core.item module."""
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock
-
+import logging
 import os
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
-from doorstop import common
+from doorstop import common, core
 from doorstop.common import DoorstopError
-from doorstop.core.types import Text, Stamp
 from doorstop.core.item import Item, UnknownItem
+from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
-
-from doorstop.core.tests import FILES, EMPTY, EXTERNAL
-from doorstop.core.tests import MockItem
-
 
 YAML_DEFAULT = """
 active: true
 derived: false
+header: ''
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: ''
+""".lstrip()
+
+YAML_EXTENDED_ATTRIBUTES = """
+a:
+- b
+- c
+active: true
+d:
+  e: f
+  g: h
+derived: false
+header: ''
+i: j
+k: null
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  something
+""".lstrip()
+
+YAML_STRING_ATTRIBUTES = """
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: |
+  b
+active: true
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc: d
+derived: false
+e: |
+  fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+g: hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+header: ''
+i:
+  jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj: |
+    k
+  llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll: m
+  n: |
+    ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  p: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+  r:
+  - |
+    ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+  - ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
 level: 1.0
 links: []
 normative: true
@@ -27,6 +78,23 @@ text: ''
 """.lstrip()
 
 
+class ListLogHandler(logging.NullHandler):
+    def __init__(self, log):
+        super().__init__()
+        self.records = []
+        self.log = log
+
+    def __enter__(self):
+        self.log.addHandler(self)
+        return self
+
+    def __exit__(self, kind, value, traceback):
+        self.log.removeHandler(self)
+
+    def handle(self, record):
+        self.records.append(str(record.msg))
+
+
 class TestItem(unittest.TestCase):
     """Unit tests for the Item class."""
 
@@ -34,15 +102,14 @@ class TestItem(unittest.TestCase):
 
     def setUp(self):
         path = os.path.join('path', 'to', 'RQ001.yml')
-        self.item = MockItem(path)
+        self.item = MockItem(MockSimpleDocument(), path)
 
     def test_init_invalid(self):
         """Verify an item cannot be initialized from an invalid path."""
-        self.assertRaises(DoorstopError, Item, 'not/a/path')
+        self.assertRaises(DoorstopError, Item, None, 'not/a/path')
 
-    def test_object_references(self):
-        """Verify a standalone item does not have object references."""
-        self.assertIs(None, self.item.document)
+    def test_no_tree_references(self):
+        """Verify a standalone item has no tree reference."""
         self.assertIs(None, self.item.tree)
 
     def test_load_empty(self):
@@ -65,6 +132,43 @@ class TestItem(unittest.TestCase):
         self.item.save()
         self.item._write.assert_called_once_with(YAML_DEFAULT, self.item.path)
 
+    def test_set_attributes(self):
+        """Verify setting attributes calls write with the attributes."""
+        self.item.set_attributes(
+            {
+                'a': ['b', 'c'],
+                'd': {'e': 'f', 'g': 'h'},
+                'i': 'j',
+                'k': None,
+                'text': 'something',
+            }
+        )
+        self.item._write.assert_called_once_with(
+            YAML_EXTENDED_ATTRIBUTES, self.item.path
+        )
+
+    def test_string_attributes(self):
+        """Verify string attributes are properly formatted."""
+        self.item.set_attributes(
+            {
+                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa': 'b',
+                'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc': 'd',
+                'e': 'fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                'g': 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
+                'i': {
+                    'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj': 'k',
+                    'llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll': 'm',
+                    'n': 'ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+                    'p': 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq',
+                    'r': [
+                        'ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+                        'ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt',
+                    ],
+                },
+            }
+        )
+        self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
+
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
@@ -78,9 +182,9 @@ class TestItem(unittest.TestCase):
 
     def test_hash(self):
         """Verify items can be hashed."""
-        item1 = MockItem('path/to/fake1.yml')
-        item2 = MockItem('path/to/fake2.yml')
-        item3 = MockItem('path/to/fake2.yml')
+        item1 = MockItem(None, 'path/to/fake1.yml')
+        item2 = MockItem(None, 'path/to/fake2.yml')
+        item3 = MockItem(None, 'path/to/fake2.yml')
         my_set = set()
         # Act
         my_set.add(item1)
@@ -95,11 +199,11 @@ class TestItem(unittest.TestCase):
 
     def test_lt(self):
         """Verify items can be compared."""
-        item1 = MockItem('path/to/fake1.yml')
+        item1 = MockItem(None, 'path/to/fake1.yml')
         item1.level = (1, 1)
-        item2 = MockItem('path/to/fake1.yml')
+        item2 = MockItem(None, 'path/to/fake1.yml')
         item2.level = (1, 1, 1)
-        item3 = MockItem('path/to/fake1.yml')
+        item3 = MockItem(None, 'path/to/fake1.yml')
         item3.level = (1, 1, 2)
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
@@ -201,20 +305,6 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_cleared(self):
-        """Verify an item's suspect link status can be set and read."""
-        mock_item = Mock()
-        mock_item.uid = 'mock_uid'
-        mock_item.stamp = Mock(return_value=Stamp('abc123'))
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.tree = mock_tree
-        self.item.link('mock_uid')
-        self.item.cleared = 1  # updates each stamp
-        self.assertTrue(self.item.cleared)
-        self.item.cleared = 0  # sets each stamp to None
-        self.assertFalse(self.item.cleared)
-
     def test_reviwed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
@@ -234,13 +324,19 @@ class TestItem(unittest.TestCase):
 
     def test_text_sbd(self):
         """Verify newlines separate sentences in an item's text."""
-        value = ("A sentence. Another sentence! Hello? Hi.\n"
-                 "A new line (here). And another sentence.")
-        text = ("A sentence. Another sentence! Hello? Hi.\n"
-                "A new line (here). And another sentence.")
-        yaml = ("text: |\n"
-                "  A sentence. Another sentence! Hello? Hi.\n"
-                "  A new line (here). And another sentence.\n")
+        value = (
+            "A sentence. Another sentence! Hello? Hi.\n"
+            "A new line (here). And another sentence."
+        )
+        text = (
+            "A sentence. Another sentence! Hello? Hi.\n"
+            "A new line (here). And another sentence."
+        )
+        yaml = (
+            "text: |\n"
+            "  A sentence. Another sentence! Hello? Hi.\n"
+            "  A new line (here). And another sentence.\n"
+        )
         self.item.text = value
         self.assertEqual(text, self.item.text)
         self.assertIn(yaml, self.item._write.call_args[0][0])
@@ -362,14 +458,14 @@ class TestItem(unittest.TestCase):
     def test_link_by_item(self):
         """Verify links can be added to an item (by item)."""
         path = os.path.join('path', 'to', 'ABC123.yml')
-        item = MockItem(path)
+        item = MockItem(None, path)
         self.item.link(item)
         self.assertEqual(['ABC123'], self.item.links)
 
     def test_unlink_by_item(self):
         """Verify links can be removed (by item)."""
         path = os.path.join('path', 'to', 'ABC123.yml')
-        item = MockItem(path)
+        item = MockItem(None, path)
         self.item.links = ['ABC123']
         self.item.unlink(item)
         self.assertEqual([], self.item.links)
@@ -430,11 +526,6 @@ class TestItem(unittest.TestCase):
         documents = self.item.parent_documents
         # Assert
         self.assertEqual([], documents)
-
-    def test_parent_documents_no_document(self):
-        """Verify 'parent_documents' is only valid with a document."""
-        self.item.tree = Mock()
-        self.assertIs(None, self.item.parent_documents)
 
     @patch('doorstop.settings.CACHE_PATHS', False)
     def test_find_ref(self):
@@ -528,21 +619,21 @@ class TestItem(unittest.TestCase):
 
     def test_invalid_file_name(self):
         """Verify an invalid file name cannot be a requirement."""
-        self.assertRaises(DoorstopError, MockItem, "path/to/REQ.yaml")
-        self.assertRaises(DoorstopError, MockItem, "path/to/001.yaml")
+        self.assertRaises(DoorstopError, MockItem, None, "path/to/REQ.yaml")
+        self.assertRaises(DoorstopError, MockItem, None, "path/to/001.yaml")
 
     def test_invalid_file_ext(self):
         """Verify an invalid file extension cannot be a requirement."""
-        self.assertRaises(DoorstopError, MockItem, "path/to/REQ001")
-        self.assertRaises(DoorstopError, MockItem, "path/to/REQ001.txt")
+        self.assertRaises(DoorstopError, MockItem, None, "path/to/REQ001")
+        self.assertRaises(DoorstopError, MockItem, None, "path/to/REQ001.txt")
 
     @patch('doorstop.core.item.Item', MockItem)
     def test_new(self):
         """Verify items can be created."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
-                            EMPTY, FILES, 'TEST00042',
-                            level=(1, 2, 3))
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3)
+        )
         path = os.path.join(EMPTY, 'TEST00042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1, 2, 3), item.level)
@@ -553,9 +644,9 @@ class TestItem(unittest.TestCase):
         """Verify new items are cached."""
         mock_tree = Mock()
         mock_tree._item_cache = {}
-        item = MockItem.new(mock_tree, None,
-                            EMPTY, FILES, 'TEST00042',
-                            level=(1, 2, 3))
+        item = MockItem.new(
+            mock_tree, MockSimpleDocument(), EMPTY, FILES, 'TEST00042', level=(1, 2, 3)
+        )
         self.assertEqual(item, mock_tree._item_cache[item.uid])
         mock_tree.vcs.add.assert_called_once_with(item.path)
 
@@ -563,9 +654,9 @@ class TestItem(unittest.TestCase):
     def test_new_special(self):
         """Verify items can be created with a specially named prefix."""
         MockItem._create.reset_mock()
-        item = MockItem.new(None, None,
-                            EMPTY, FILES, 'VSM.HLR_01-002-042',
-                            level=(1, 0))
+        item = MockItem.new(
+            None, MockSimpleDocument(), EMPTY, FILES, 'VSM.HLR_01-002-042', level=(1, 0)
+        )
         path = os.path.join(EMPTY, 'VSM.HLR_01-002-042.yml')
         self.assertEqual(path, item.path)
         self.assertEqual((1,), item.level)
@@ -573,22 +664,24 @@ class TestItem(unittest.TestCase):
 
     def test_new_existing(self):
         """Verify an exception is raised if the item already exists."""
-        self.assertRaises(DoorstopError, Item.new,
-                          None, None,
-                          FILES, FILES, 'REQ002',
-                          level=(1, 2, 3))
+        self.assertRaises(
+            DoorstopError, Item.new, None, None, FILES, FILES, 'REQ002', level=(1, 2, 3)
+        )
 
     def test_validate_invalid_ref(self):
         """Verify an invalid reference fails validity."""
-        with patch('doorstop.core.item.Item.find_ref',
-                   Mock(side_effect=DoorstopError)):
-            self.assertFalse(self.item.validate())
+        with patch(
+            'doorstop.core.item.Item.find_ref',
+            Mock(side_effect=DoorstopError("test invalid ref")),
+        ):
+            with ListLogHandler(core.base.log) as handler:
+                self.assertFalse(self.item.validate())
+                self.assertIn("test invalid ref", handler.records)
 
     def test_validate_inactive(self):
         """Verify an inactive item is not checked."""
         self.item.active = False
-        with patch('doorstop.core.item.Item.find_ref',
-                   Mock(side_effect=DoorstopError)):
+        with patch('doorstop.core.item.Item.find_ref', Mock(side_effect=DoorstopError)):
             self.assertTrue(self.item.validate())
 
     def test_validate_reviewed(self):
@@ -609,7 +702,9 @@ class TestItem(unittest.TestCase):
     def test_validate_reviewed_second(self):
         """Verify that a modified stamp fails review."""
         self.item._data['reviewed'] = Stamp('abc123')
-        self.assertFalse(self.item.validate())
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("unreviewed changes", handler.records)
 
     def test_validate_cleared(self):
         """Verify that checking a cleared link updates the stamp."""
@@ -619,6 +714,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
         self.item.links = [{'mock_uid': True}]
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
@@ -630,6 +726,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.tree = mock_tree
         self.item.links = [{'mock_uid': None}]
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
         self.assertEqual('abc123', self.item.links[0].stamp)
 
@@ -637,6 +734,7 @@ class TestItem(unittest.TestCase):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
         self.item.links = ['a']
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
@@ -648,6 +746,7 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
         self.item.tree = mock_tree
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
@@ -659,30 +758,27 @@ class TestItem(unittest.TestCase):
         mock_tree.find_item = Mock(return_value=mock_item)
         self.item.links = ['a']
         self.item.tree = mock_tree
+        self.item.disable_get_issues_document()
         self.assertTrue(self.item.validate())
 
     def test_validate_document(self):
         """Verify an item can be checked against a document."""
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
+        self.item.document.parent = 'fake'
         self.assertTrue(self.item.validate())
 
     def test_validate_document_with_links(self):
         """Verify an item can be checked against a document with links."""
         self.item.link('unknown1')
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
+        self.item.document.parent = 'fake'
         self.assertTrue(self.item.validate())
 
     def test_validate_document_with_bad_link_uids(self):
         """Verify an item can be checked against a document w/ bad links."""
         self.item.link('invalid')
-        mock_document = Mock()
-        mock_document.parent = 'fake'
-        self.item.document = mock_document
-        self.assertFalse(self.item.validate())
+        self.item.document.parent = 'fake'
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("invalid UID in links: invalid", handler.records)
 
     @patch('doorstop.settings.STAMP_NEW_LINKS', False)
     def test_validate_tree(self):
@@ -719,7 +815,9 @@ class TestItem(unittest.TestCase):
         mock_tree = MagicMock()
         mock_tree.find_item = Mock(side_effect=DoorstopError)
         self.item.tree = mock_tree
-        self.assertFalse(self.item.validate())
+        with ListLogHandler(core.base.log) as handler:
+            self.assertFalse(self.item.validate())
+            self.assertIn("linked to unknown item: fake1", handler.records)
 
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
     def test_validate_both(self):
@@ -731,20 +829,18 @@ class TestItem(unittest.TestCase):
             def _iter(self):  # pylint: disable=W0613
                 """Mock __iter__method."""
                 yield from seq
+
             return _iter
 
         mock_item = Mock()
         mock_item.links = [self.item.uid]
 
-        mock_document = Mock()
-        mock_document.parent = 'BOTH'
-        mock_document.prefix = 'BOTH'
+        self.item.document.parent = 'BOTH'
+        self.item.document.prefix = 'BOTH'
+        self.item.document.set_items([mock_item])
 
-        mock_document.__iter__ = mock_iter([mock_item])
         mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter([mock_document])
-
-        self.item.document = mock_document
+        mock_tree.__iter__ = mock_iter([self.item.document])
         self.item.tree = mock_tree
 
         self.assertTrue(self.item.validate())
@@ -771,14 +867,9 @@ class TestItem(unittest.TestCase):
 
         self.item.link('fake1')
 
-        mock_document = Mock()
-        mock_document.prefix = 'RQ'
-
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda uid: Mock(uid='fake1')
-
-        self.item.document = mock_document
         self.item.tree = mock_tree
 
         self.assertTrue(self.item.validate())
@@ -792,6 +883,45 @@ class TestItem(unittest.TestCase):
         """Verify an item's contents can be stamped."""
         stamp = 'c6a87755b8756b61731c704c6a7be4a2'
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_one_extended_reviewed(self):
+        """Verify fingerprint with one extended reviewed attribute."""
+        self.item._data['type'] = 'functional'
+        self.item.document.extended_reviewed = ['type']
+        stamp = '04fdd093f67ce3a3160dfdc5d93e7813'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_two_extended_reviewed(self):
+        """Verify fingerprint with two extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['type', 'verification-method']
+        stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_reversed_extended_reviewed_reverse(self):
+        """Verify fingerprint with reversed extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = ['verification-method', 'type']
+        stamp = '7b14dfcc17026e98790284c5cddb0900'
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_missing_extended_reviewed_reverse(self):
+        """Verify fingerprint with missing extended reviewed attribute."""
+        with ListLogHandler(core.item.log) as handler:
+            self.item._data['type'] = 'functional'
+            self.item._data['verification-method'] = 'test'
+            self.item.document.extended_reviewed = [
+                'missing',
+                'type',
+                'verification-method',
+            ]
+            stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+            self.assertEqual(stamp, self.item.stamp())
+            self.assertIn(
+                "RQ001: missing extended reviewed attribute: missing", handler.records
+            )
 
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
@@ -812,6 +942,28 @@ class TestItem(unittest.TestCase):
         self.assertEqual(None, self.item.links[0].stamp)
         # Act
         self.item.clear()
+        # Assert
+        self.assertTrue(self.item.cleared)
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
+    def test_clear_by_uid(self):
+        """Verify an item's links can be cleared as suspect by UID."""
+        mock_item = Mock()
+        mock_item.uid = 'mock_uid'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_uid')
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['other_uid'])
+        # Assert
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['mock_uid'])
         # Assert
         self.assertTrue(self.item.cleared)
         self.assertEqual('abc123', self.item.links[0].stamp)
@@ -852,7 +1004,7 @@ class TestFormatting(unittest.TestCase):
 
     def test_load_save(self):
         """Verify text formatting is preserved."""
-        item = Item(self.ITEM)
+        item = Item(None, self.ITEM)
         item.load()
         item.save()
         text = common.read_text(self.ITEM)
@@ -911,7 +1063,7 @@ class TestUnknownItem(unittest.TestCase):
     @patch('doorstop.core.item.log.debug')
     def test_attributes_with_spec(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
-        spec = Item(os.path.join(FILES, 'REQ001.yml'))
+        spec = Item(None, os.path.join(FILES, 'REQ001.yml'))
         self.item = UnknownItem(self.item.uid, spec=spec)
         self.assertRaises(AttributeError, getattr, self.item, 'path')
         self.assertRaises(AttributeError, getattr, self.item, 'text')

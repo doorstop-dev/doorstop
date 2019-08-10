@@ -1,11 +1,13 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Interfaces to version control systems."""
 
-import os
 import logging
+import os
 
 from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core.vcs import git, subversion, veracity, mockvcs, mercurial
+from doorstop.core.vcs import git, mercurial, mockvcs, subversion, veracity
 
 DEFAULT = mockvcs.WorkingCopy
 DIRECTORIES = {
@@ -38,8 +40,7 @@ def find_root(cwd):
         if path == parent:
             msg = "no working copy found from: {}".format(cwd)
             raise DoorstopError(msg)
-        else:
-            path = parent
+        path = parent
 
     log.debug("found working copy: {}".format(path))
     return path

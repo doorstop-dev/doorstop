@@ -1,10 +1,12 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.vcs.base module."""
 
 import unittest
 from unittest.mock import patch
 
-from doorstop.core.vcs.base import BaseWorkingCopy
 from doorstop.core.tests import ROOT
+from doorstop.core.vcs.base import BaseWorkingCopy
 
 
 class SampleWorkingCopy(BaseWorkingCopy):

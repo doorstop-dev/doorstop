@@ -1,9 +1,10 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Integration tests for the doorstop.core.vcs package."""
 
-import unittest
-from unittest.mock import patch, Mock
-
 import os
+import unittest
+from unittest.mock import Mock, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import vcs

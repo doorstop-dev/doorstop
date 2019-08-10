@@ -1,15 +1,15 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.cli.utilities module."""
 
 import sys
 import unittest
-from unittest.mock import patch, Mock
 from argparse import ArgumentTypeError
+from unittest.mock import Mock, patch
 from warnings import catch_warnings
 
+from doorstop import common, settings
 from doorstop.cli import utilities
-from doorstop import common
-from doorstop import settings
-
 from doorstop.cli.tests import SettingsTestCase
 
 
@@ -62,7 +62,7 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.PUBLISH_BODY_LEVELS)
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
-        self.assertFalse(settings.ENABLE_HEADERS)
+        self.assertTrue(settings.ENABLE_HEADERS)
         if sys.version_info[:2] == (3, 3):
             pass  # warnings appear to be shown inconsistently in Python 3.3
         else:

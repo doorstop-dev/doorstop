@@ -1,20 +1,20 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Functions to import exiting documents and items."""
 
+import csv
 import os
 import re
-import csv
 import warnings
 
 import openpyxl
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import UID
+from doorstop.core.builder import _get_tree
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.core.builder import _get_tree
-from doorstop import settings
-
+from doorstop.core.types import UID
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
@@ -65,9 +65,7 @@ def create_document(prefix, path, parent=None, tree=None):
             raise exc from None  # pylint: disable=raising-bad-type
 
         # Create the document despite an unavailable parent
-        document = Document.new(tree,
-                                path, tree.root, prefix,
-                                parent=parent)
+        document = Document.new(tree, path, tree.root, prefix, parent=parent)
         log.warning(exc)
         _documents.append(document)
 
@@ -100,9 +98,7 @@ def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
-    item = Item.new(tree, document,
-                    document.path, document.root, uid,
-                    auto=False)
+    item = Item.new(tree, document, document.path, document.root, uid, auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
@@ -193,7 +189,7 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path, use_iterators=True)
+    workbook = openpyxl.load_workbook(path, data_only=True)
     worksheet = workbook.active
 
     index = 0
@@ -210,7 +206,7 @@ def _file_xlsx(path, document, mapping=None):
             data.append(row2)
 
     # Warn about workbooks that may be sized incorrectly
-    if index >= 2 ** 20 - 1:  # pragma: no cover (integration test)
+    if index >= 2 ** 20 - 1:
         msg = "workbook contains the maximum number of rows"
         warnings.warn(msg, Warning)
 
@@ -264,8 +260,9 @@ def _itemize(header, data, document, mapping=None):
 
         # Get the next UID if the row is a new item
         if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
-            uid = UID(document.prefix, document.sep,
-                      document.next_number, document.digits)
+            uid = UID(
+                document.prefix, document.sep, document.next_number, document.digits
+            )
 
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
@@ -281,8 +278,7 @@ def _itemize(header, data, document, mapping=None):
 
             # Import the item
             try:
-                item = add_item(document.prefix, uid,
-                                attrs=attrs, document=document)
+                item = add_item(document.prefix, uid, attrs=attrs, document=document)
             except DoorstopError as exc:
                 log.warning(exc)
 
@@ -296,10 +292,12 @@ def _split_list(value):
 
 
 # Mapping from file extension to file reader
-FORMAT_FILE = {'.yml': _file_yml,
-               '.csv': _file_csv,
-               '.tsv': _file_tsv,
-               '.xlsx': _file_xlsx}
+FORMAT_FILE = {
+    '.yml': _file_yml,
+    '.csv': _file_csv,
+    '.tsv': _file_tsv,
+    '.xlsx': _file_xlsx,
+}
 
 
 def check(ext):

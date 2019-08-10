@@ -1,18 +1,26 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 """Unit tests for the doorstop.core.publisher module."""
 
 # pylint: disable=unused-argument,protected-access
 
-import unittest
-from unittest.mock import patch, Mock, MagicMock, call
-from unittest import mock
-
 import os
+import unittest
+from unittest import mock
+from unittest.mock import MagicMock, Mock, call, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
-from doorstop.core.tests import (FILES, EMPTY, ROOT, MockDataMixIn,
-                                 MockItemAndVCS, MockItem, MockDocument)
+from doorstop.core.tests import (
+    EMPTY,
+    FILES,
+    ROOT,
+    MockDataMixIn,
+    MockDocument,
+    MockItem,
+    MockItemAndVCS,
+)
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -47,30 +55,41 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         mock_open.assert_called_once_with(path, 'wb')
-        mock_lines.assert_called_once_with(self.document, '.html',
-                                           template=publisher.HTMLTEMPLATE, toc=True,
-                                           linkify=False)
+        mock_lines.assert_called_once_with(
+            self.document,
+            '.html',
+            template=publisher.HTMLTEMPLATE,
+            toc=True,
+            linkify=False,
+        )
 
     @patch('os.path.isdir', Mock(side_effect=[True, False, False, False]))
     @patch('os.remove')
     @patch('glob.glob')
     @patch('builtins.open')
     @patch('doorstop.core.publisher.publish_lines')
-    def test_publish_document_deletes_the_contents_of_assets_folder(self, mock_lines, mock_open, mock_glob, mock_rm):
+    def test_publish_document_deletes_the_contents_of_assets_folder(
+        self, mock_lines, mock_open, mock_glob, mock_rm
+    ):
         """Verify that the contents of an assets directory next to the published file is deleted"""
         dirpath = os.path.abspath(os.path.join('mock', 'directory'))
         path = os.path.join(dirpath, 'published.custom')
-        assets = [os.path.join(dirpath, Document.ASSETS, dir) for dir in ['css', 'logo.png']]
+        assets = [
+            os.path.join(dirpath, Document.ASSETS, dir) for dir in ['css', 'logo.png']
+        ]
         mock_glob.return_value = assets
         # Act
         path2 = publisher.publish(self.document, path, '.html')
         # Assert
         self.assertIs(path, path2)
         mock_open.assert_called_once_with(path, 'wb')
-        mock_lines.assert_called_once_with(self.document, '.html',
-                                           template=publisher.HTMLTEMPLATE,
-                                           toc=True,
-                                           linkify=False)
+        mock_lines.assert_called_once_with(
+            self.document,
+            '.html',
+            template=publisher.HTMLTEMPLATE,
+            toc=True,
+            linkify=False,
+        )
         calls = [call(assets[0]), call(assets[1])]
         self.assertEqual(calls, mock_rm.call_args_list)
 
@@ -78,13 +97,17 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.core.document.Document.copy_assets')
     @patch('os.makedirs')
     @patch('builtins.open')
-    def test_publish_document_copies_assets(self, mock_open, mock_makedirs, mock_copyassets):
+    def test_publish_document_copies_assets(
+        self, mock_open, mock_makedirs, mock_copyassets
+    ):
         """Verify that assets are published"""
         dirpath = os.path.join('mock', 'directory')
         assets_path = os.path.join(dirpath, 'assets')
         path = os.path.join(dirpath, 'published.custom')
         document = MockDocument('/some/path')
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
+            read_data="$body"
+        ).return_value
         # Act
         path2 = publisher.publish(document, path, '.html')
         # Assert
@@ -94,10 +117,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_publish_document_unknown(self):
         """Verify an exception is raised when publishing unknown formats."""
-        self.assertRaises(DoorstopError,
-                          publisher.publish, self.document, 'a.a')
-        self.assertRaises(DoorstopError,
-                          publisher.publish, self.document, 'a.txt', '.a')
+        self.assertRaises(DoorstopError, publisher.publish, self.document, 'a.a')
+        self.assertRaises(
+            DoorstopError, publisher.publish, self.document, 'a.txt', '.a'
+        )
 
     @patch('os.path.isdir', Mock(return_value=False))
     @patch('os.makedirs')
@@ -106,7 +129,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
+            read_data="$body"
+        ).return_value
         expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath)
@@ -122,7 +147,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
         dirpath = os.path.join('mock', 'directory')
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(read_data="$body").return_value
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
+            read_data="$body"
+        ).return_value
         expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb')]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
@@ -179,8 +206,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""
-        with patch.object(self.item5, 'find_ref',
-                          Mock(return_value=('path/to/mock/file', 42))):
+        with patch.object(
+            self.item5, 'find_ref', Mock(return_value=('path/to/mock/file', 42))
+        ):
             lines = publisher.publish_lines(self.item5, '.txt')
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
@@ -215,11 +243,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_multi_line_heading_to_markdown(self):
         """Verify a multi line heading is published as a heading with an attribute equal to the item id"""
-        item = MockItemAndVCS('path/to/req3.yml',
-                              _file=("links: [sys3]" + '\n'
-                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
-                                     "level: 1.1.0" + '\n'
-                                     "normative: false"))
+        item = MockItemAndVCS(
+            'path/to/req3.yml',
+            _file=(
+                "links: [sys3]" + '\n'
+                "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                "level: 1.1.0" + '\n'
+                "normative: false"
+            ),
+        )
         expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
         lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
@@ -230,11 +262,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_HEADING_LEVELS', False)
     def test_multi_line_heading_to_markdown_no_heading_levels(self):
         """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
-        item = MockItemAndVCS('path/to/req3.yml',
-                              _file=("links: [sys3]" + '\n'
-                                     "text: 'Heading\n\nThis section describes publishing.'" + '\n'
-                                     "level: 1.1.0" + '\n'
-                                     "normative: false"))
+        item = MockItemAndVCS(
+            'path/to/req3.yml',
+            _file=(
+                "links: [sys3]" + '\n'
+                "text: 'Heading\n\nThis section describes publishing.'" + '\n'
+                "level: 1.1.0" + '\n'
+                "normative: false"
+            ),
+        )
         expected = "## Heading {#req3 }\nThis section describes publishing.\n\n"
         lines = publisher.publish_lines(item, '.md', linkify=True)
         # Act
@@ -245,10 +281,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_text_item_normative(self):
         """Verify text can be published from an item (normative)."""
-        expected = ("1.2     req4" + '\n\n'
-                    "        This shall..." + '\n\n'
-                    "        Reference: Doorstop.sublime-project" + '\n\n'
-                    "        Links: sys4" + '\n\n')
+        expected = (
+            "1.2     req4" + '\n\n'
+            "        This shall..." + '\n\n'
+            "        Reference: Doorstop.sublime-project" + '\n\n'
+            "        Links: sys4" + '\n\n'
+        )
         lines = publisher.publish_lines(self.item3, '.txt')
         # Act
         text = ''.join(line + '\n' for line in lines)
@@ -273,8 +311,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_markdown_item(self):
         """Verify Markdown can be published from an item."""
-        with patch.object(self.item5, 'find_ref',
-                          Mock(return_value=('path/to/mock/file', 42))):
+        with patch.object(
+            self.item5, 'find_ref', Mock(return_value=('path/to/mock/file', 42))
+        ):
             lines = publisher.publish_lines(self.item5, '.md')
             text = ''.join(line + '\n' for line in lines)
         self.assertIn("> `path/to/mock/file` (line 42)", text)
@@ -301,10 +340,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
-        expected = ("## 1.2 req4 {#req4 }" + '\n\n'
-                    "This shall..." + '\n\n'
-                    "> `Doorstop.sublime-project`" + '\n\n'
-                    "*Links: sys4*" + '\n\n')
+        expected = (
+            "## 1.2 req4 {#req4 }" + '\n\n'
+            "This shall..." + '\n\n'
+            "> `Doorstop.sublime-project`" + '\n\n'
+            "*Links: sys4*" + '\n\n'
+        )
         # Act
         lines = publisher.publish_lines(self.item3, '.md', linkify=False)
         text = ''.join(line + '\n' for line in lines)
@@ -333,10 +374,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_markdown_item_without_body_levels(self):
         """Verify Markdown can be published from an item (no body levels)."""
-        expected = ("## req4 {#req4 }" + '\n\n'
-                    "This shall..." + '\n\n'
-                    "> `Doorstop.sublime-project`" + '\n\n'
-                    "*Links: sys4*" + '\n\n')
+        expected = (
+            "## req4 {#req4 }" + '\n\n'
+            "This shall..." + '\n\n'
+            "> `Doorstop.sublime-project`" + '\n\n'
+            "*Links: sys4*" + '\n\n'
+        )
         # Act
         lines = publisher.publish_lines(self.item3, '.md', linkify=False)
         text = ''.join(line + '\n' for line in lines)
@@ -352,7 +395,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        expected = (
+            '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        )
         # Act
         lines = publisher.publish_lines(self.item, '.html')
         text = ''.join(line + '\n' for line in lines)
@@ -371,7 +416,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item_linkify(self):
         """Verify HTML (hyper) can be published from an item."""
-        expected = '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        expected = (
+            '<section class="section2" id="req3"><h2>1.1 Heading</h2>\n</section>\n'
+        )
         # Act
         lines = publisher.publish_lines(self.item, '.html', linkify=True)
         text = ''.join(line + '\n' for line in lines)
@@ -428,7 +475,7 @@ class TestTableOfContents(unittest.TestCase):
         * 1.2.3 REQ001
     * 1.4 REQ003
     * 1.6 REQ004
-    * 2.1 REQ002
+    * 2.1 Plantuml
     * 2.1 REQ2-001\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=None)
         print(toc)
@@ -442,7 +489,7 @@ class TestTableOfContents(unittest.TestCase):
         * REQ001
     * REQ003
     * REQ004
-    * REQ002
+    * Plantuml
     * REQ2-001\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=None)
         print(toc)
@@ -455,7 +502,7 @@ class TestTableOfContents(unittest.TestCase):
         * [1.2.3 REQ001](#REQ001)
     * [1.4 REQ003](#REQ003)
     * [1.6 REQ004](#REQ004)
-    * [2.1 REQ002](#REQ002)
+    * [2.1 Plantuml](#REQ002)
     * [2.1 REQ2-001](#REQ2-001)\n'''
         toc = publisher._table_of_contents_md(self.document, linkify=True)
         self.assertEqual(expected, toc)
