@@ -4,6 +4,10 @@ Doorstop will open files using the editor specified by the `$EDITOR` environment
 
 ## Git
 
+**Linux / macOS**
+
+No additional configuration should be neccesary.
+
 **Windows**
 
 Windows deals with line-endings differently to most systems, favoring `CRLF` (`\r\n`) over the more traditional `LF` (`\n`).
