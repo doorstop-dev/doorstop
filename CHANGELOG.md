@@ -1,4 +1,4 @@
-# 1.6 (unreleased)
+# 1.6 (2019-08-10)
 
 - Updated `edit` and `reorder` commands to use `$EDITOR` ([@aars](https://github.com/jacebrowning/doorstop/pull/316)
 - Promoted support for item headers out of beta. ([@michaelnt](https://github.com/jacebrowning/doorstop/pull/369))
