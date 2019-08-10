@@ -178,7 +178,7 @@ def run_add(args, cwd, _, catch=True):
 
         # add items to it
         for _ in range(args.count):
-            item = document.add_item(level=args.level)
+            item = document.add_item(level=args.level, defaults=args.defaults)
             utilities.show("added item: {} ({})".format(item.uid, item.relpath))
 
         # Edit item if requested

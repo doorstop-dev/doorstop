@@ -129,14 +129,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return the document
         return document
 
-    def load(self, reload=False):
-        """Load the document's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        config = self.config
+    def _load_with_include(self, yamlfile):
+        """Load the YAML file and process input tags."""
         # Read text from file
-        text = self._read(config)
+        text = self._read(yamlfile)
         # Parse YAML data from text
         class IncludeLoader(yaml.SafeLoader):
             def include(self, node):
@@ -154,8 +150,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 return data
 
         IncludeLoader.add_constructor('!include', IncludeLoader.include)
-        IncludeLoader.filenames = [config]
-        data = self._load(text, config, loader=IncludeLoader)
+        IncludeLoader.filenames = [yamlfile]
+        return self._load(text, yamlfile, loader=IncludeLoader)
+
+    def load(self, reload=False):
+        """Load the document's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        data = self._load_with_include(self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
@@ -405,7 +408,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def add_item(self, number=None, level=None, reorder=True):
+    def add_item(self, number=None, level=None, reorder=True, defaults=None):
         """Create a new item for the document and return it.
 
         :param number: desired item number
@@ -430,10 +433,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
+
+        # Load more defaults before the item is created to avoid partially
+        # constructed items in case the loading fails.
+        more_defaults = self._load_with_include(defaults) if defaults else None
+
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
         if self._attribute_defaults:
             item.set_attributes(self._attribute_defaults)
+        if more_defaults:
+            item.set_attributes(more_defaults)
         if level and reorder:
             self.reorder(keep=item)
         return item

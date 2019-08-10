@@ -40,6 +40,31 @@ linked item: TST001 (@/reqs/tests/TST001.yml) -> REQ001 (@/reqs/REQ001.yml)
 It is not allowed to create links which would end up in a self reference or
 cyclic dependency.
 
+# Add Items with Custom Default Attributes
+
+Items can be added to documents with custom default values for attributes
+specified by the command line:
+
+```sh
+$ doorstop add -d defaults.yml REQ
+building tree...
+added item: REQ001 (@/reqs/REQ001.yml)
+
+$ doorstop publish REQ
+building tree...
+1.0     REQ001
+
+        My default text.
+```
+
+defaults.yml
+```yaml
+text: 'My default text.'
+```
+
+The command line specified default values override values from the document
+configuration.
+
 # Document Configuration
 
 The settings and attribute options of each document are stored in a

@@ -457,6 +457,13 @@ outline:
             None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
         )
 
+    @patch('doorstop.core.item.Item.set_attributes')
+    def test_add_item_with_defaults(self, mock_set_attributes):
+        """Verify an item can be added to a document with defaults."""
+        self.document._file = "text: 'abc'"
+        self.document.add_item(defaults='mock.yml')
+        mock_set_attributes.assert_called_once_with({'text': 'abc'})
+
     @patch('doorstop.core.item.Item.new')
     def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""

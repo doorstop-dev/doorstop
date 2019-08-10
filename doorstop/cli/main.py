@@ -246,6 +246,12 @@ def _add(subs, shared):
             "environment). Useless option without --edit"
         ),
     )
+    sub.add_argument(
+        '-d',
+        '--defaults',
+        metavar='FILE',
+        help=("file in YAML format with default values for attributes of the new item"),
+    )
 
 
 def _remove(subs, shared):

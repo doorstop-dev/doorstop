@@ -220,6 +220,32 @@ class TestSection1(TestBase):
         cp = self.doorstop()
         self.assertNotIn(b'suspect link', cp.stderr)
 
+    def test_custom_defaults(self):
+        """Verify new item with custom defaults is working."""
+
+        self.doorstop("create REQ .")
+
+        cp = self.doorstop("add -d no/such/file.yml REQ", 1)
+        self.assertIn(b'ERROR: reading ', cp.stderr)
+
+        self.assertFalse(os.path.isfile('REQ001.yml'))
+
+        template = os.path.join(FILES, 'template.yml')
+        self.doorstop("add -d {} REQ".format(template))
+
+        self.assertTrue(os.path.isfile('REQ001.yml'))
+
+        cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
+        self.assertIn(
+            b'''1.0     REQ001
+
+        Some text
+        with more than
+        one line.
+''',
+            cp.stdout,
+        )
+
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
