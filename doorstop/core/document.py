@@ -129,14 +129,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Return the document
         return document
 
-    def load(self, reload=False):
-        """Load the document's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        config = self.config
+    def _load_with_include(self, yamlfile):
+        """Load the YAML file and process input tags."""
         # Read text from file
-        text = self._read(config)
+        text = self._read(yamlfile)
         # Parse YAML data from text
         class IncludeLoader(yaml.SafeLoader):
             def include(self, node):
@@ -154,8 +150,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 return data
 
         IncludeLoader.add_constructor('!include', IncludeLoader.include)
-        IncludeLoader.filenames = [config]
-        data = self._load(text, config, loader=IncludeLoader)
+        IncludeLoader.filenames = [yamlfile]
+        return self._load(text, yamlfile, loader=IncludeLoader)
+
+    def load(self, reload=False):
+        """Load the document's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        data = self._load_with_include(self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
