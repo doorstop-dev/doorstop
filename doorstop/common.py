@@ -110,9 +110,12 @@ def read_text(path, encoding='utf-8'):
 
     """
     log.trace("reading text from '{}'...".format(path))
-    with open(path, 'r', encoding=encoding) as stream:
-        text = stream.read()
-    return text
+    try:
+        with open(path, 'r', encoding=encoding) as stream:
+            return stream.read()
+    except Exception as ex:
+        msg = "reading '{}' failed: {}".format(path, ex)
+        raise DoorstopError(msg)
 
 
 def load_yaml(text, path, loader=yaml.SafeLoader):
