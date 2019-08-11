@@ -9,7 +9,6 @@ version = "0.16.1"
 [[package]]
 category = "dev"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "appdirs"
 optional = false
 python-versions = "*"
@@ -32,7 +31,6 @@ wrapt = "*"
 [[package]]
 category = "dev"
 description = "Classes Without Boilerplate"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "attrs"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -49,7 +47,6 @@ version = "1.0.0"
 [[package]]
 category = "dev"
 description = "The uncompromising code formatter."
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "black"
 optional = false
 python-versions = ">=3.6"
@@ -67,7 +64,7 @@ description = "Fast and simple WSGI-framework for small web-applications."
 name = "bottle"
 optional = false
 python-versions = "*"
-version = "0.12.13"
+version = "0.12.17"
 
 [[package]]
 category = "main"
@@ -397,7 +394,7 @@ description = "Cache lines and file information which are generally Python progr
 name = "pyficache"
 optional = false
 python-versions = "*"
-version = "0.3.1"
+version = "0.3.2"
 
 [package.dependencies]
 coverage = "*"
@@ -534,7 +531,6 @@ version = "1.9.0"
 [[package]]
 category = "dev"
 description = "Python Library for Tom's Obvious, Minimal Language"
-marker = "python_version >= \"3.6\" and python_version < \"4.0\""
 name = "toml"
 optional = false
 python-versions = "*"
@@ -592,8 +588,8 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "2651989996a4b4edc910deeaaa8f42d812ad4b930dab37f3ad876b5ffb2475ce"
-python-versions = "^3.5"
+content-hash = "0d354dc046153f769c189cb071a3be27bdf60b58854c7833bb8bab9bd6503567"
+python-versions = "^3.6"
 
 [metadata.hashes]
 altgraph = ["d6814989f242b2b43025cba7161fc1b8fb487a62cd49c49245d6fd01c18ac997", "ddf5320017147ba7b810198e0b6619bd7b5563aa034da388cea8546b877f9b0c"]
@@ -602,7 +598,7 @@ astroid = ["6560e1e1749f68c64a4b5dee4e091fce798d2f0d84ebe638cf0e0585a343acf4", "
 attrs = ["69c0dbf2ed392de1cb5ec704444b08a5ef81680a61cb899dc08127123af36a79", "f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"]
 "backports.shutil-get-terminal-size" = ["0975ba55054c15e346944b38956a4c9cbee9009391e41b86c68990effb8c1f64", "713e7a8228ae80341c70586d1cc0a8caa5207346927e23d09dcbcaf18eadec80"]
 black = ["09a9dcb7c46ed496a9850b76e4e825d6049ecd38b611f1224857a79bd985a8cf", "68950ffd4d9169716bcb8719a56c07a2f4485354fec061cdd5910aa07369731c"]
-bottle = ["39b751aee0b167be8dffb63ca81b735bbf1dd0905b3bc42761efedee8f123355"]
+bottle = ["1896a33b2c7c5be07491e6789e341f2e9593a0ff024cc0374615118587c81647", "e9eaa412a60cc3d42ceb42f58d15864d9ed1b92e9d630b8130c871c5bb16107c"]
 certifi = ["046832c04d4e752f37383b628bc601a7ea7211496b4638f6514d0e5b9acc4939", "945e3ba63a0b9f577b1395204e13c3a231f9bc0223888be653286534e5873695"]
 chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"]
 click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"]
@@ -636,7 +632,7 @@ openpyxl = ["1d2af392cef8c8227bd2ac3ebe3a28b25aba74fd4fa473ce106065f0b73bfe2e"]
 plantuml = ["a117593c4864fce120e659db44e7235c34e7b3930c0fed421d659cfebf2ddabf"]
 plantuml-markdown = ["47d591040c8416265f3babd071cf039686d0f3a4e313d1c31dc38fa3c6f2ff70", "d0163fb49e605b146a22febd0b972ed070980f84b4be1320ad9cdd8fa67ad8d4"]
 pydocstyle = ["58c421dd605eec0bce65df8b8e5371bb7ae421582cdf0ba8d9435ac5b0ffc36a"]
-pyficache = ["1b285d0ff7e2463b92dca5e3f813dd35229d85b3f2928c39ca5aa0b8403d4b04", "1ef1c7d56b7d926339a12d003e6a1e908c0a71fd4c1af8a7782471cc3b418ff6", "3bafda326b51729b3e7ea3929b0c72b858d449f14bbbdbf69f3d19fac47c2a5f", "67e35c7d996190d2ecf20333b04ebe7ec0eb8f107d9603c798ec36468dc12f3f", "87a48acb7a587798fcc9f430256ed72bcbe60c726ae7ce7eaab9f462d6f86cf5", "d20906865be805f0b86a6082dbf753a89c5a05c0d582420d8d9a480b9a33d21f"]
+pyficache = ["13cf262dcbcf0c4d64224145cb113455232cee102b0f0aa892742ef69ddc236c", "67c924af803d9ee2ebe1b878e1516944e9e157ab33c4504f50242810c56b6cb6", "83d11537a97b66e094a97743ed34855201b7f3ed56c0bb1d7a865eff1bdd2e86", "8d2bf6cd55afa09e8fea03f072fe806bcce18b9d0afe9502155d7420c4e43861", "93139ab7f6a049f40a4c78bdf9074086b856aa5bd85bd920b6258e37b799cda8", "b8346fa834cbd14a6fb61333b72380a3338ac0f161293be5477895fc5c8a222b", "ba132a930eff6ff75e93c33dda17c56ae23f7abac22c8f3b6fce61c24ee79466", "d73cede5860f5a55115ea551e22b0457d6f2d5caf016ff845c008b7414b2cf4c", "d96d16d68268b8caa00e5b4b4603515dae478e186808db0f823e26b4e0d0e6b7", "ded6ed350cb1c3b5183606e2965ff18e848e6eb565baeeacfa81a6fc90f2160a", "fb3a0ba202fa25f6f2983245d260f420ed4ce8a8fa29ad6f9bd3a6893a62b0af"]
 pygments = ["71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127", "881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297"]
 pyinstaller = ["ee7504022d1332a3324250faf2135ea56ac71fdb6309cff8cd235de26b1d0a96"]
 pylint = ["5d77031694a5fb97ea95e828c8d10fc770a1df6eb3906067aaed42201a8a6a09", "723e3db49555abaf9bf79dc474c6b9e2935ad82230b10c1138a71ea41ac0fff1"]

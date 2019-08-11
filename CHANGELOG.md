@@ -1,3 +1,7 @@
+# 2.0 (unreleased)
+
+- Dropped support for Python 3.5.
+
 # 1.6 (2019-08-10)
 
 - Updated `edit` and `reorder` commands to use `$EDITOR`.
