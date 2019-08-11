@@ -207,7 +207,7 @@ class TestTree(unittest.TestCase):
         self.tree._vcs = Mock()  # pylint: disable=W0212
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
-    def test_palce_empty(self):
+    def test_place_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
         doc = MockDocumentSkip.new(tree, os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
@@ -215,7 +215,7 @@ class TestTree(unittest.TestCase):
         self.assertEqual(1, len(tree))
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
-    def test_palce_empty_no_parent(self):
+    def test_place_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
         doc = MockDocumentSkip.new(
@@ -412,7 +412,7 @@ class TestTree(unittest.TestCase):
         self.assertIs(item2, item)
 
     def test_find_document(self):
-        """Verify an document can be found by prefix"""
+        """Verify an document can be found by prefix."""
         # Cache miss
         document = self.tree.find_document('req')
         self.assertIsNot(None, document)

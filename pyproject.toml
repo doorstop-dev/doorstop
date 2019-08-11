@@ -59,7 +59,7 @@ black = "=19.3b0"
 isort = "=4.3.21"
 
 # Linters
-mypy = "*"
+mypy = "^0.720"
 pydocstyle = "*"
 pylint = "^2.0"
 
@@ -82,6 +82,7 @@ pyinstaller = "*"
 sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
+rope = "^0.14.0"
 
 [tool.poetry.scripts]
 

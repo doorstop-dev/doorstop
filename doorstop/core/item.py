@@ -5,6 +5,7 @@
 import functools
 import os
 import re
+from typing import TYPE_CHECKING, List
 
 import pyficache
 
@@ -21,6 +22,9 @@ from doorstop.core.base import (
     edit_item,
 )
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
+
+if TYPE_CHECKING:
+    from .document import Document
 
 log = common.logger(__name__)
 
@@ -250,7 +254,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             data[key] = value
         return data
 
-    @property
+    @property  # type: ignore
     @auto_load
     def data(self):
         """Load and get all the item's data formatted for YAML dumping."""
@@ -272,13 +276,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Get the item UID's number."""
         return self.uid.number
 
-    @property
+    @property  # type: ignore
     @auto_load
     def level(self):
         """Get the item's level."""
         return self._data['level']
 
-    @level.setter
+    @level.setter  # type: ignore
     @auto_save
     def level(self, value):
         """Set the item's level."""
@@ -289,7 +293,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Get the item's heading order based on it's level."""
         return len(self.level)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def active(self):
         """Get the item's active status.
@@ -305,13 +309,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         return self._data['active']
 
-    @active.setter
+    @active.setter  # type: ignore
     @auto_save
     def active(self, value):
         """Set the item's active status."""
         self._data['active'] = to_bool(value)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def derived(self):
         """Get the item's derived status.
@@ -323,13 +327,13 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         return self._data['derived']
 
-    @derived.setter
+    @derived.setter  # type: ignore
     @auto_save
     def derived(self, value):
         """Set the item's derived status."""
         self._data['derived'] = to_bool(value)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def normative(self):
         """Get the item's normative status.
@@ -344,7 +348,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         return self._data['normative']
 
-    @normative.setter
+    @normative.setter  # type: ignore
     @auto_save
     def normative(self, value):
         """Set the item's normative status."""
@@ -359,7 +363,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         return self.level.heading and not self.normative
 
-    @heading.setter
+    @heading.setter  # type: ignore
     @auto_save
     def heading(self, value):
         """Set the item's heading status."""
@@ -371,7 +375,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.level.heading = False
             self.normative = True
 
-    @property
+    @property  # type: ignore
     @auto_load
     def cleared(self):
         """Indicate if no links are suspect."""
@@ -380,7 +384,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 return False
         return True
 
-    @property
+    @property  # type: ignore
     @auto_load
     def reviewed(self):
         """Indicate if the item has been reviewed."""
@@ -389,25 +393,25 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self._data['reviewed'] = stamp
         return self._data['reviewed'] == stamp
 
-    @reviewed.setter
+    @reviewed.setter  # type: ignore
     @auto_save
     def reviewed(self, value):
         """Set the item's review status."""
         self._data['reviewed'] = Stamp(value)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def text(self):
         """Get the item's text."""
         return self._data['text']
 
-    @text.setter
+    @text.setter  # type: ignore
     @auto_save
     def text(self, value):
         """Set the item's text."""
         self._data['text'] = Text(value)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def header(self):
         """Get the item's header."""
@@ -415,14 +419,14 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             return self._data['header']
         return None
 
-    @header.setter
+    @header.setter  # type: ignore
     @auto_save
     def header(self, value):
         """Set the item's header."""
         if settings.ENABLE_HEADERS:
             self._data['header'] = Text(value)
 
-    @property
+    @property  # type: ignore
     @auto_load
     def ref(self):
         """Get the item's external file reference.
@@ -433,19 +437,19 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         return self._data['ref']
 
-    @ref.setter
+    @ref.setter  # type: ignore
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
         self._data['ref'] = str(value) if value else ""
 
-    @property
+    @property  # type: ignore
     @auto_load
     def links(self):
         """Get a list of the item UIDs this item links to."""
         return sorted(self._data['links'])
 
-    @links.setter
+    @links.setter  # type: ignore
     @auto_save
     def links(self, value):
         """Set the list of item UIDs this item links to."""
@@ -477,7 +481,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Get a list of items that this item links to."""
         return [item for uid, item in self._get_parent_uid_and_item()]
 
-    @property
+    @property  # type: ignore
     @requires_tree
     def parent_documents(self):
         """Get a list of documents that this item's document should link to.
@@ -490,7 +494,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         try:
             return [self.tree.find_document(self.document.prefix)]
         except DoorstopError:
-            log.warning(Prefix.UNKNOWN_MESSGE.format(self.document.prefix))
+            log.warning(Prefix.UNKNOWN_MESSAGE.format(self.document.prefix))
             return []
 
     # actions ################################################################
@@ -754,7 +758,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Search for the external reference
         log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        log.trace("regex: {}".format(pattern))
+        log.trace("regex: {}".format(pattern))  # type: ignore
         regex = re.compile(pattern)
         for path, filename, relpath in self.tree.vcs.paths:
             # Skip the item's file while searching
@@ -769,7 +773,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             # Search for the reference in the file
             lines = pyficache.getlines(path)
             if lines is None:
-                log.trace("unable to read lines from: {}".format(path))
+                log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
             for lineno, line in enumerate(lines, start=1):
                 if regex.search(line):
@@ -827,8 +831,8 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: list of found items, list of all child documents
 
         """
-        child_items = []
-        child_documents = []
+        child_items: List[Item] = []
+        child_documents: List[Document] = []
         document = document or self.document
         tree = tree or self.tree
         if not document or not tree:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-3.0-only
+# type: ignore
 
 import sys
 from unittest.mock import Mock

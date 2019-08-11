@@ -3,6 +3,7 @@
 """Functions to build a tree and access documents and items."""
 
 import os
+from typing import List, Optional
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -11,10 +12,10 @@ from doorstop.core.document import Document
 from doorstop.core.tree import Tree
 
 log = common.logger(__name__)
-_tree = None  # implicit tree for convenience functions
+_tree: Optional[Tree] = None  # implicit tree for convenience functions
 
 
-def build(cwd=None, root=None, request_next_number=None):
+def build(cwd=None, root=None, request_next_number=None) -> Tree:
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
@@ -27,7 +28,7 @@ def build(cwd=None, root=None, request_next_number=None):
     :return: new :class:`~doorstop.core.tree.Tree`
 
     """
-    documents = []
+    documents: List[Document] = []
 
     # Find the root of the working copy
     cwd = cwd or os.getcwd()
@@ -91,7 +92,7 @@ def find_item(uid):
 
 def _get_tree(request_next_number=None):
     """Get a shared tree for convenience functions."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     if _tree is None:
         _tree = build()
     _tree.request_next_number = request_next_number
@@ -100,11 +101,11 @@ def _get_tree(request_next_number=None):
 
 def _set_tree(value):
     """Set the shared tree to a specific value (for testing)."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     _tree = value
 
 
 def _clear_tree():
     """Force the shared tree to be rebuilt."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     _tree = None
