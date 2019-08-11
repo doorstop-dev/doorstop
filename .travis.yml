@@ -16,8 +16,10 @@ env:
     - RANDOM_SEED=0
 
 before_install:
-  - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-  - source $HOME/.poetry/env
+  # https://github.com/sdispater/poetry/issues/613
+  # - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+  # - source $HOME/.poetry/env
+  - pip install poetry
   - make doctor
 
 install:
