@@ -61,7 +61,7 @@ poetry.lock: pyproject.toml
 .PHONY: format
 format: install
 	poetry run isort $(PACKAGES) --recursive --apply
-	poetry run black $(PACKAGES) || echo "black requires Python 3.6+"
+	poetry run black $(PACKAGES)
 	@ echo
 
 .PHONY: check
