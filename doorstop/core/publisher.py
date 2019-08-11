@@ -5,6 +5,7 @@
 import os
 import tempfile
 import textwrap
+from typing import Optional
 
 import bottle
 import markdown
@@ -13,7 +14,7 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core import Document
+from doorstop.core import Document, Tree
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -140,7 +141,7 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
         log.warning("no files for {}".format(index))
 
 
-def _lines_index(filenames, charset='UTF-8', tree=None):
+def _lines_index(filenames, charset='UTF-8', tree: Optional[Tree] = None):
     """Yield lines of HTML for index.html.
 
     :param filesnames: list of filenames to add to the index
@@ -191,10 +192,10 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<p>'
         yield '<table>'
         # header
-        for document in documents:
+        for document in documents:  # pylint: disable=not-an-iterable
             yield '<col width="100">'
         yield '<tr>'
-        for document in documents:
+        for document in documents:  # pylint: disable=not-an-iterable
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
             yield ('  <th height="25" align="center"> {link} </th>'.format(link=link))
         yield '</tr>'
