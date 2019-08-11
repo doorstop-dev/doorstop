@@ -3,15 +3,15 @@ derived: false
 header: ''
 level: 2.1
 links:
-- REQ009: 6c23761dd907de37c62614155cca22cc
-- REQ011: e58a22974b6610a0698866fce6c1ad14
-- REQ012: 456cf6a9040c790588ca8c78e1ed350f
-- REQ013: 3dce36a426be6e9901feac6de75c1d71
-- REQ014: 634e782d9c7ec27a279e4fd303afe05f
-- REQ015: 5057c48dd88b53fe5e639e1e33126714
+- REQ009: 3a79f9de8bd0e2fc84eb91deb273b95841218d4b
+- REQ011: f181ebd7de3accb814b6b7c640a7fd3c1ee3aa38
+- REQ012: 8460eeebdc82b02f3d5eaedd7ad29fea2522deeb
+- REQ013: 98ebee212277dcd44eedf9d52268f7864bcc0640
+- REQ014: f54bcf308423708ed1c12dba8e798f284ed84349
+- REQ015: cd928ef8c5fc581dd40e94b237569a34e6da74f4
 normative: true
 ref: ''
-reviewed: e865230b7f344df2b0122ca90e278fce
+reviewed: aef57dbea6896f9809e84a442dbcc197ee17d9ee
 text: |
   These checks ensure the version control system (VCS) meets the needs of
   requirements management:

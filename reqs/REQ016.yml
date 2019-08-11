@@ -6,7 +6,7 @@ level: 2.4
 links: []
 normative: true
 ref: ''
-reviewed: cd08e04c45e8f91de19227a183f78777
+reviewed: 5b2a9b43d12b79e229c909dd0e1a68b967f90982
 text: |
   Doorstop **shall** be able to import content from other requirments
   management tools.

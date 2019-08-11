@@ -559,10 +559,10 @@ class Stamp:
     @staticmethod
     def digest(*values):
         """Hash the values for later comparison."""
-        md5 = hashlib.md5()
+        sha = hashlib.sha1()
         for value in values:
-            md5.update(str(value).encode())
-        return md5.hexdigest()
+            sha.update(str(value).encode())
+        return sha.hexdigest()
 
 
 class Reference:

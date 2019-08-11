@@ -170,7 +170,7 @@ class TestModule(unittest.TestCase):
                 False,
                 'Plantuml',
                 True,
-                '50ae164a198e612dee696cc80942dc29',
+                '7186a9a1fd2d84d5c92ebcbaf6d3291f32f998ee',
             ],
             [
                 'REQ2-001',
@@ -331,7 +331,7 @@ class TestModule(unittest.TestCase):
                 False,
                 'Plantuml',
                 True,
-                '50ae164a198e612dee696cc80942dc29',
+                '7186a9a1fd2d84d5c92ebcbaf6d3291f32f998ee',
             ],
             [
                 'REQ2-001',

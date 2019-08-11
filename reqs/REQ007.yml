@@ -6,6 +6,6 @@ level: 3.1
 links: []
 normative: true
 ref: ''
-reviewed: 1b2201126b830e4ea9f57c77dbd6a38e
+reviewed: 7d4c073d419c612b53b77875750b6982fe1d3b92
 text: |
   Doorstop **shall** provide a way to view requirements as a document.

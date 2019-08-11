@@ -3,11 +3,11 @@ derived: false
 header: ''
 level: 1.3
 links:
-- TUT012: 000c0e9c39a92c6eb93902e4ea972740
-- TUT013: d9ecaf05f4eba86402b07d0ef10ff8f6
-- TUT016: 1e9933f973dc2d1ebbc101b414046fa1
+- TUT012: a2c5b8751bd0b8190a024cfcd5e1917256cd6542
+- TUT013: 8629425e3cceb461cf6ca38c0707254e3074db1e
+- TUT016: aec0b79e6241355a7c239c44540a9a7ad5612bd4
 normative: true
 ref: test_tutorial_section_3
-reviewed: b69dc79fcd47cc1fca2cdea7f8c1ac1e
+reviewed: 947618b8412bc32df20f1abe1e15e8aef64479aa
 text: |
   Tutorial Section 3.0:

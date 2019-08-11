@@ -3,11 +3,11 @@ derived: false
 header: ''
 level: 1.1
 links:
-- REQ003: 1f33605bbc5d1a39c9a6441b91389e88
-- REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
+- REQ003: 5c2d6b7b1811d0dc0feb44fbb97773c470cf178c
+- REQ004: 1c829dc91debd634f189d5746ba3c67f384cf8b7
 normative: true
 ref: ''
-reviewed: 95fa17ae70576ef02c6c46097095f52d
+reviewed: 5bdb690c4e2b172bfb39789c99208011cb8ceb01
 text: |
   **Creating a New Document and Adding Items**
 

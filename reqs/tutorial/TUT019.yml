@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.6.1
 links:
-- REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
+- REQ004: 1c829dc91debd634f189d5746ba3c67f384cf8b7
 normative: true
 ref: ''
-reviewed: e48e28000b262f0165edd2e4cbf7914d
+reviewed: 8ef7a39936101ee74890c6bbab2143a0e9b0e6c7
 text: |
   Sub headings can be created by a level that ends in .0

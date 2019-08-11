@@ -3,10 +3,10 @@ derived: false
 header: ''
 level: 2.1
 links:
-- REQ007: 1b2201126b830e4ea9f57c77dbd6a38e
+- REQ007: 7d4c073d419c612b53b77875750b6982fe1d3b92
 normative: true
 ref: ''
-reviewed: 0dbaa40898950a780a11c481492f6366
+reviewed: cbdf86c0bc333f4b8c6d66854caa80ff2a918b3a
 text: |
   **Publishing a Document as Text**
 

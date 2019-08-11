@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.4
 links:
-- TUT015: 208dbf9e5350223aa2c261411b9075ea
+- TUT015: 55f6a7bb5f4d1cb0dfe95ff8ec1cc792d51a1903
 normative: true
 ref: test_tutorial_section_4
-reviewed: 05cc1129d5beef4a69808529b68147f0
+reviewed: 67e7fc5f0ed7cbcf515342c2516de99b71c15d5f
 text: |
   Tutorial Section 4.0:

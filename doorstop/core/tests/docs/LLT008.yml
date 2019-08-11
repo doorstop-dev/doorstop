@@ -3,10 +3,10 @@ derived: false
 header: ''
 level: 2.2
 links:
-- REQ015: 5057c48dd88b53fe5e639e1e33126714
+- REQ015: cd928ef8c5fc581dd40e94b237569a34e6da74f4
 normative: true
 ref: ''
-reviewed: 05bcc369bcf9b1869049674546b41dba
+reviewed: f1cd325fc67bf844f15c238b336c57009da6d259
 text: |
   These checks ensure the Python package is distributed properly:
 

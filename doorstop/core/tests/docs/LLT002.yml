@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.2
 links:
-- REQ004: 94f4db8d1a50ab62ee0edec1e28c0afb
+- REQ004: 1c829dc91debd634f189d5746ba3c67f384cf8b7
 normative: true
 ref: Verify Markdown can be published from a document.
-reviewed: ac1b90d6b6404a0c4b6f512bf8c4644a
+reviewed: aa983ec235ec4a4c8540545672b0feb87fad063c
 text: |
   Test publishing Markdown:

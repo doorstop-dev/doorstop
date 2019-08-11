@@ -6,6 +6,6 @@ level: 4.2
 links: []
 normative: true
 ref: ''
-reviewed: 456cf6a9040c790588ca8c78e1ed350f
+reviewed: 8460eeebdc82b02f3d5eaedd7ad29fea2522deeb
 text: |
   Doorstop **shall** handle change management of the requirements.

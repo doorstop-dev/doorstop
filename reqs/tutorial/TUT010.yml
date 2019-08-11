@@ -3,10 +3,10 @@ derived: false
 header: ''
 level: 2.2
 links:
-- REQ007: 1b2201126b830e4ea9f57c77dbd6a38e
+- REQ007: 7d4c073d419c612b53b77875750b6982fe1d3b92
 normative: true
 ref: ''
-reviewed: 260ebc296fee841bda6010189194c56d
+reviewed: 07a77f20c7b5e949fa820097307f6faf21d70361
 text: |
   **Publishing All Documents as an HTML Directory**
 

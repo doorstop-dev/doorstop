@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.3
 links:
-- REQ007: 1b2201126b830e4ea9f57c77dbd6a38e
+- REQ007: 7d4c073d419c612b53b77875750b6982fe1d3b92
 normative: true
 ref: Verify text can be published from a document.
-reviewed: bbe335058ebdee8d5d3740ae8e601120
+reviewed: 7c60fd7de48c91d8e9ce4a975072dbd4ce8076cb
 text: |
   Test publishing text:

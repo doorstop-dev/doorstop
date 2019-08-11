@@ -3,10 +3,10 @@ derived: false
 header: ''
 level: 1.2
 links:
-- TUT009: 49abe5f194cc21ad59a12973f320e93e
-- TUT010: 8617d77ba54ccf850c3e590dd6fa0222
+- TUT009: 2a413b7374dace8203cdf95c9c7cb1dcfbf057b6
+- TUT010: 802890c189cb1b8c36c3d27911c8d4e9e6897228
 normative: true
 ref: test_tutorial_section_2
-reviewed: ff6c3f091c35d597121a1466bf157b7a
+reviewed: 432e9569840c57c53a5ee5d81ca4950b88adb6a5
 text: |
   Tutorial Section 2.0:
