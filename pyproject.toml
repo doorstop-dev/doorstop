@@ -78,7 +78,7 @@ mkdocs = "^1.0"
 pygments = "*"
 
 # Tooling
-pyinstaller = "*"
+pyinstaller = { version = "*", python = "!=3.8" }
 sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }

@@ -1,6 +1,7 @@
 [[package]]
 category = "dev"
 description = "Python graph (network) package"
+marker = "python_version < \"3.8\" or python_version > \"3.8\""
 name = "altgraph"
 optional = false
 python-versions = "*"
@@ -411,6 +412,7 @@ version = "2.4.2"
 [[package]]
 category = "dev"
 description = "PyInstaller bundles a Python application and all its dependencies into a single package."
+marker = "python_version < \"3.8\" or python_version > \"3.8\""
 name = "pyinstaller"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -588,7 +590,7 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "0d354dc046153f769c189cb071a3be27bdf60b58854c7833bb8bab9bd6503567"
+content-hash = "9d0f6e25938a477200b14b088e755cb641f09fe33f267b01533139d7d0b8269a"
 python-versions = "^3.6"
 
 [metadata.hashes]
