@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.4
 links:
-- REQ008: 0bcefd81b9d92145690ac5ab7d6e2ca0
+- REQ008: W7IGh(pAiqhiz|cA24dO3V^g;Z}8%7r@_P@u{Nl6
 normative: true
 ref: Verify the items in a document can be accessed.
-reviewed: a97970c0bc91f349e54211023345a67a
+reviewed: yghrQfr6kHB}QBZ?_4Jwdw(_!V~{F1x~-w=6PN{T
 text: |
   Test getting items from a document:

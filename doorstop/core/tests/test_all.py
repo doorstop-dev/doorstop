@@ -27,14 +27,14 @@ from doorstop.core.vcs import mockvcs
 #  2. re-run all tests
 #  3. manually verify the newly exported content is correct
 #  4. set CHECK_EXPORTED_CONTENT to True
-CHECK_EXPORTED_CONTENT = True
+CHECK_EXPORTED_CONTENT = False
 
 # Whenever the publish format is changed:
 #  1. set CHECK_PUBLISHED_CONTENT to False
 #  2. re-run all tests
 #  3. manually verify the newly published content is correct
 #  4. set CHECK_PUBLISHED_CONTENT to True
-CHECK_PUBLISHED_CONTENT = True
+CHECK_PUBLISHED_CONTENT = False
 
 
 class TestItem(unittest.TestCase):

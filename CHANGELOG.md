@@ -1,6 +1,7 @@
 # 2.0 (unreleased)
 
 - Dropped support for Python 3.5.
+- **BREAKING:** Switched to SHA256 for tracking changes to files.
 
 # 1.6 (2019-08-10)
 

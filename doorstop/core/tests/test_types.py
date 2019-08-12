@@ -399,7 +399,9 @@ class TestStamp(unittest.TestCase):
     def test_repr(self):
         """Verify stamps can be represented."""
         self.assertEqual("Stamp('abc123')", repr(self.stamp1))
-        self.assertEqual("Stamp('2645439971b8090da05c7403320afcfa')", repr(self.stamp2))
+        self.assertEqual(
+            "Stamp('yGwYeMApdj&&|Yc<gfOKBLEr)%QwcuKZmCTdV#TM')", repr(self.stamp2)
+        )
         self.assertEqual("Stamp(True)", repr(self.stamp3))
         self.assertEqual("Stamp(None)", repr(self.stamp4))
         self.assertEqual("Stamp(None)", repr(self.stamp5))
@@ -407,7 +409,7 @@ class TestStamp(unittest.TestCase):
     def test_str(self):
         """Verify stamps can be converted to strings."""
         self.assertEqual('abc123', str(self.stamp1))
-        self.assertEqual('2645439971b8090da05c7403320afcfa', str(self.stamp2))
+        self.assertEqual('yGwYeMApdj&&|Yc<gfOKBLEr)%QwcuKZmCTdV#TM', str(self.stamp2))
         self.assertEqual('', str(self.stamp3))
         self.assertEqual('', str(self.stamp4))
         self.assertEqual('', str(self.stamp5))
@@ -423,7 +425,7 @@ class TestStamp(unittest.TestCase):
     def test_eq(self):
         """Verify stamps can be equated."""
         self.assertEqual('abc123', self.stamp1)
-        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2)
+        self.assertEqual('yGwYeMApdj&&|Yc<gfOKBLEr)%QwcuKZmCTdV#TM', self.stamp2)
         self.assertEqual(True, self.stamp3)
         self.assertEqual(None, self.stamp4)
         self.assertNotEqual(self.stamp1, self.stamp2)
@@ -433,7 +435,7 @@ class TestStamp(unittest.TestCase):
     def test_yaml(self):
         """Verify stamps can be converted to their YAML dump format."""
         self.assertEqual('abc123', self.stamp1.yaml)
-        self.assertEqual('2645439971b8090da05c7403320afcfa', self.stamp2.yaml)
+        self.assertEqual('yGwYeMApdj&&|Yc<gfOKBLEr)%QwcuKZmCTdV#TM', self.stamp2.yaml)
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)

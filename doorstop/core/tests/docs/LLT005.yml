@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.5
 links:
-- REQ001: 37a3faae380b4e466aaf18c31f2184c0
+- REQ001: YWy3PqvDt{b~*&>L?!V=^L!NuR0V2}A$hxzBz@#A
 normative: true
 ref: Verify an item's reference can also be a filename.
-reviewed: 3d708f9247d638ef3580312c99a873e7
+reviewed: 8{V<00r(0vb&GaziEC6Tw!@0Uirc|EiccCM*D}+v
 text: |
   Test referencing an external file by name:

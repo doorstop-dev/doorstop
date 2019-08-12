@@ -689,7 +689,7 @@ class TestItem(unittest.TestCase):
         """Verify that checking a reviewed item updates the stamp."""
         self.item._data['reviewed'] = True
         self.assertTrue(self.item.validate())
-        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        stamp = 'I)Tol8SA&ptnQe64O#Q#s?f8g0jfXzFhBwWNEW6x'
         self.assertEqual(stamp, self.item._data['reviewed'])
 
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
@@ -882,14 +882,14 @@ class TestItem(unittest.TestCase):
 
     def test_stamp(self):
         """Verify an item's contents can be stamped."""
-        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        stamp = 'I)Tol8SA&ptnQe64O#Q#s?f8g0jfXzFhBwWNEW6x'
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_one_extended_reviewed(self):
         """Verify fingerprint with one extended reviewed attribute."""
         self.item._data['type'] = 'functional'
         self.item.document.extended_reviewed = ['type']
-        stamp = '04fdd093f67ce3a3160dfdc5d93e7813'
+        stamp = '<|xZh6xSFj4f|{ywFJ=R$#(ga!!hfm4pqa;LxBir'
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_two_extended_reviewed(self):
@@ -897,7 +897,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['type', 'verification-method']
-        stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+        stamp = '#%1X@g7lct=JW1GYi<=Jw>fXpcDB*D8^zTcxC0gC'
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_reversed_extended_reviewed_reverse(self):
@@ -905,7 +905,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['verification-method', 'type']
-        stamp = '7b14dfcc17026e98790284c5cddb0900'
+        stamp = '*l?|_V79e^DHf2eG^hR#iT|@gE5_k2h+n#Kp0IYk'
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_missing_extended_reviewed_reverse(self):
@@ -918,7 +918,7 @@ class TestItem(unittest.TestCase):
                 'type',
                 'verification-method',
             ]
-            stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+            stamp = '#%1X@g7lct=JW1GYi<=Jw>fXpcDB*D8^zTcxC0gC'
             self.assertEqual(stamp, self.item.stamp())
             self.assertIn(
                 "RQ001: missing extended reviewed attribute: missing", handler.records
@@ -927,7 +927,7 @@ class TestItem(unittest.TestCase):
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
         self.item.link('mock_link')
-        stamp = '1020719292bbdc4090bd236cf41cd104'
+        stamp = '$WGX@8)vB;&#xn_n9@3)N0FFMdo1vE_2;KwM)`1w'
         self.assertEqual(stamp, self.item.stamp(links=True))
 
     def test_clear(self):
