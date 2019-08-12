@@ -201,11 +201,11 @@ class TestItem(unittest.TestCase):
     def test_lt(self):
         """Verify items can be compared."""
         item1 = MockItem(None, 'path/to/fake1.yml')
-        item1.level = (1, 1)
+        item1.level = (1, 1)  # type: ignore
         item2 = MockItem(None, 'path/to/fake1.yml')
-        item2.level = (1, 1, 1)
+        item2.level = (1, 1, 1)  # type: ignore
         item3 = MockItem(None, 'path/to/fake1.yml')
-        item3.level = (1, 1, 2)
+        item3.level = (1, 1, 2)  # type: ignore
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
         self.assertGreater(item3, item1)

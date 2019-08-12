@@ -114,19 +114,29 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
+
         # Check for an existing document
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
+
         # Create the document directory
         Document._create(config, name='document')
+
         # Initialize the document
         document = Document(path, root=root, tree=tree, auto=False)
-        document.prefix = prefix if prefix is not None else document.prefix
-        document.sep = sep if sep is not None else document.sep
-        document.digits = digits if digits is not None else document.digits
-        document.parent = parent if parent is not None else document.parent
+        document.prefix = (  # type: ignore
+            prefix if prefix is not None else document.prefix
+        )
+        document.sep = sep if sep is not None else document.sep  # type: ignore
+        document.digits = (  # type: ignore
+            digits if digits is not None else document.digits
+        )
+        document.parent = (  # type: ignore
+            parent if parent is not None else document.parent
+        )
         if auto or (auto is None and Document.auto):
             document.save()
+
         # Return the document
         return document
 

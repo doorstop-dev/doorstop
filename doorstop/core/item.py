@@ -5,7 +5,7 @@
 import functools
 import os
 import re
-from typing import TYPE_CHECKING, List
+from typing import Any, List
 
 import pyficache
 
@@ -22,9 +22,6 @@ from doorstop.core.base import (
     edit_item,
 )
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
-
-if TYPE_CHECKING:
-    from .document import Document
 
 log = common.logger(__name__)
 
@@ -170,7 +167,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         Item._create(path2, name='item')
         # Initialize the item
         item = Item(document, path2, root=root, tree=tree, auto=False)
-        item.level = level if level is not None else item.level
+        item.level = level if level is not None else item.level  # type: ignore
         if auto or (auto is None and Item.auto):
             item.save()
         # Return the item
@@ -832,7 +829,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         child_items: List[Item] = []
-        child_documents: List[Document] = []
+        child_documents: List[Any] = []  # `List[Document]`` creats an import cycle
         document = document or self.document
         tree = tree or self.tree
         if not document or not tree:
