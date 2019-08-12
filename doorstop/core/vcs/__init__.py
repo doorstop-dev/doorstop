@@ -50,7 +50,7 @@ def load(path):
     """Return a working copy for the specified path."""
     for directory in os.listdir(path):
         if directory in DIRECTORIES:
-            return DIRECTORIES[directory](path)
+            return DIRECTORIES[directory](path)  # type: ignore
 
     log.warning("no working copy found at: {}".format(path))
     return DEFAULT(path)

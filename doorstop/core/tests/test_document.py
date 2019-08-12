@@ -468,7 +468,7 @@ outline:
     def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
-        document.prefix = 'NEW'
+        document.prefix = 'NEW'  # type: ignore
         self.assertIsNot(None, document.add_item(reorder=False))
         mock_new.assert_called_once_with(
             None, document, NEW, ROOT, 'NEW001', level=None

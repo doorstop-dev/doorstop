@@ -25,6 +25,7 @@ class TestBase(unittest.TestCase):
     """Base class for tutorial tests."""
 
     def setUp(self):
+        print()
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
         print("$ cd {}".format(self.temp))
@@ -249,4 +250,4 @@ class TestSection1(TestBase):
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
-    unittest.main()
+    unittest.main(verbosity=0)

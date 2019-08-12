@@ -69,8 +69,7 @@ check: install format  ## Run formaters, linters, and static analysis
 ifdef CI
 	git diff --exit-code
 endif
-	# TODO: Enable mypy for type checking
-	# poetry run mypy $(PACKAGES) --config-file=.mypy.ini
+	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
 	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
 	poetry run pydocstyle $(PACKAGES) $(CONFIG)
 

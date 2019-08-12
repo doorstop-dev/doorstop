@@ -6,6 +6,7 @@
 import logging
 import os
 import unittest
+from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import common, core
@@ -81,7 +82,7 @@ text: ''
 class ListLogHandler(logging.NullHandler):
     def __init__(self, log):
         super().__init__()
-        self.records = []
+        self.records: List[str] = []
         self.log = log
 
     def __enter__(self):
@@ -200,11 +201,11 @@ class TestItem(unittest.TestCase):
     def test_lt(self):
         """Verify items can be compared."""
         item1 = MockItem(None, 'path/to/fake1.yml')
-        item1.level = (1, 1)
+        item1.level = (1, 1)  # type: ignore
         item2 = MockItem(None, 'path/to/fake1.yml')
-        item2.level = (1, 1, 1)
+        item2.level = (1, 1, 1)  # type: ignore
         item3 = MockItem(None, 'path/to/fake1.yml')
-        item3.level = (1, 1, 2)
+        item3.level = (1, 1, 2)  # type: ignore
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
         self.assertGreater(item3, item1)
@@ -305,7 +306,7 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_reviwed(self):
+    def test_reviewed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
         self.item.reviewed = 1  # calls `review()`
@@ -824,7 +825,7 @@ class TestItem(unittest.TestCase):
         """Verify an item can be checked against both."""
 
         def mock_iter(seq):
-            """Creates a mock __iter__ method."""
+            """Create a mock __iter__ method."""
 
             def _iter(self):  # pylint: disable=W0613
                 """Mock __iter__method."""

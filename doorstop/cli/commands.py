@@ -4,6 +4,7 @@
 
 import os
 import time
+from typing import Set
 
 from doorstop import common, server
 from doorstop.cli import utilities
@@ -25,8 +26,8 @@ class CycleTracker:
 
     def __init__(self):
         """Initialize a cycle tracker."""
-        self.discovered = set()
-        self.finished = set()
+        self.discovered: Set[str] = set()
+        self.finished: Set[str] = set()
 
     def _dfs_visit(self, uid, tree):
         """Do a depth first search visit of the specified item.

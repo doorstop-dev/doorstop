@@ -74,7 +74,9 @@ def main(args=None):  # pylint: disable=R0915
     }
 
     # Build main parser
-    parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION, **shared)
+    parser = argparse.ArgumentParser(  # type: ignore
+        prog=CLI, description=DESCRIPTION, **shared
+    )
     parser.add_argument(
         '-F',
         '--no-reformat',

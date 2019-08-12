@@ -135,13 +135,13 @@ class TestTreeStrings(unittest.TestCase):
     def test_from_list(self):
         """Verify a tree can be created from a list."""
         a = MockDocumentSkip(EMPTY)
-        a.prefix = 'A'
+        a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
-        b.prefix = 'B'
-        b.parent = 'A'
+        b.prefix = 'B'  # type: ignore
+        b.parent = 'A'  # type: ignore
         c = MockDocumentSkip(EMPTY)
-        c.prefix = 'C'
-        c.parent = 'B'
+        c.prefix = 'C'  # type: ignore
+        c.parent = 'B'  # type: ignore
         docs = [a, b, c]
         tree = Tree.from_list(docs)
         self.assertEqual(3, len(tree))
@@ -150,20 +150,20 @@ class TestTreeStrings(unittest.TestCase):
     def test_from_list_no_root(self):
         """Verify an error occurs when the tree has no root."""
         a = MockDocumentSkip(EMPTY)
-        a.prefix = 'A'
-        a.parent = 'B'
+        a.prefix = 'A'  # type: ignore
+        a.parent = 'B'  # type: ignore
         b = MockDocumentSkip(EMPTY)
-        b.prefix = 'B'
-        b.parent = 'A'
+        b.prefix = 'B'  # type: ignore
+        b.parent = 'A'  # type: ignore
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
     def test_from_list_multiple_roots(self):
         """Verify an error occurs when the tree has multiple roots."""
         a = MockDocumentSkip(EMPTY)
-        a.prefix = 'A'
+        a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
-        b.prefix = 'B'
+        b.prefix = 'B'  # type: ignore
         docs = [a, b]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
@@ -171,13 +171,13 @@ class TestTreeStrings(unittest.TestCase):
         """Verify an error occurs when a node has a missing parent."""
 
         a = MockDocumentSkip(EMPTY)
-        a.prefix = 'A'
+        a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
-        b.prefix = 'B'
-        b.parent = 'A'
+        b.prefix = 'B'  # type: ignore
+        b.parent = 'A'  # type: ignore
         c = MockDocumentSkip(EMPTY)
-        c.prefix = 'C'
-        c.parent = '?'
+        c.prefix = 'C'  # type: ignore
+        c.parent = '?'  # type: ignore
         docs = [a, b, c]
         self.assertRaises(DoorstopError, Tree.from_list, docs)
 
@@ -185,9 +185,9 @@ class TestTreeStrings(unittest.TestCase):
         """Verify an error occurs when a node is missing a parent."""
 
         a = MockDocumentSkip(EMPTY)
-        a.prefix = 'A'
+        a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
-        b.prefix = 'B'
+        b.prefix = 'B'  # type: ignore
         tree = Tree(a)
         self.assertRaises(DoorstopError, tree._place, b)  # pylint: disable=W0212
 
@@ -207,7 +207,7 @@ class TestTree(unittest.TestCase):
         self.tree._vcs = Mock()  # pylint: disable=W0212
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
-    def test_palce_empty(self):
+    def test_place_empty(self):
         """Verify a document can be placed in an empty tree."""
         tree = build(EMPTY)
         doc = MockDocumentSkip.new(tree, os.path.join(EMPTY, 'temp'), EMPTY, 'TEMP')
@@ -215,7 +215,7 @@ class TestTree(unittest.TestCase):
         self.assertEqual(1, len(tree))
 
     @patch('doorstop.core.vcs.find_root', Mock(return_value=EMPTY))
-    def test_palce_empty_no_parent(self):
+    def test_place_empty_no_parent(self):
         """Verify a document with parent cannot be placed in an empty tree."""
         tree = build(EMPTY)
         doc = MockDocumentSkip.new(
@@ -412,7 +412,7 @@ class TestTree(unittest.TestCase):
         self.assertIs(item2, item)
 
     def test_find_document(self):
-        """Verify an document can be found by prefix"""
+        """Verify an document can be found by prefix."""
         # Cache miss
         document = self.tree.find_document('req')
         self.assertIsNot(None, document)

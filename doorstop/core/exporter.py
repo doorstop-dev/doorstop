@@ -6,6 +6,7 @@ import csv
 import datetime
 import os
 from collections import defaultdict
+from typing import Any, Dict
 
 import openpyxl
 import yaml
@@ -16,7 +17,7 @@ from doorstop.core.types import iter_documents, iter_items
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
-XLSX_MAX_WIDTH = 65  # maximum width for a column
+XLSX_MAX_WIDTH = 65.0  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
 log = common.logger(__name__)
@@ -225,7 +226,7 @@ def _get_xlsx(obj, auto):
     :return: new workbook
 
     """
-    col_widths = defaultdict(int)
+    col_widths: Dict[Any, float] = defaultdict(float)
     col = 'A'
 
     # Create a new workbook
@@ -288,7 +289,7 @@ FORMAT_LINES = {'.yml': _lines_yaml}
 # Mapping from file extension to file generator
 FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx}
 # Union of format dictionaries
-FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))
+FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))  # type: ignore
 
 
 def check(ext, get_lines_gen=False, get_file_func=False):

@@ -7,7 +7,7 @@ import unittest
 import yaml
 
 from doorstop.common import DoorstopError
-from doorstop.core.types import UID, Level, Prefix, Reference, Stamp, Text
+from doorstop.core.types import UID, Level, Prefix, Stamp, Text
 
 
 class TestPrefix(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestPrefix(unittest.TestCase):
         self.assertEqual(Prefix(''), Prefix(None))
         self.assertEqual(Prefix(''), Prefix(''))
 
-    def test_init_reseved(self):
+    def test_init_reserved(self):
         """Verify an exception is raised for a reserved word."""
         self.assertRaises(DoorstopError, Prefix, 'ALL')
 
@@ -195,14 +195,12 @@ class TestText(unittest.TestCase):
         self.assertEqual('|\n  Hello,\n   World!\n', yaml.dump(text.yaml))
 
     def test_dump_yaml_space(self):
-        """Text starting with a space is encoded to a yaml literal string
-        with a hint as to the indent."""
+        """Text starting with a space is encoded to a yaml literal string."""
         text = Text(' abc ')
         self.assertEqual('|2\n   abc\n', yaml.dump(text.yaml))
 
     def test_dump_yaml_space_before_newline(self):
-        """Text starting with a space is encoded to a yaml literal string
-        with a hint as to the indent."""
+        """Text starting with a space is encoded to a yaml literal string."""
         text = Text('hello \nworld\n')
         self.assertEqual('|\n  hello\n  world\n', yaml.dump(text.yaml))
 
@@ -439,13 +437,3 @@ class TestStamp(unittest.TestCase):
         self.assertEqual(True, self.stamp3.yaml)
         self.assertEqual(None, self.stamp4.yaml)
         self.assertEqual(None, self.stamp5.yaml)
-
-
-class TestReference(unittest.TestCase):
-    """Unit tests for the Reference class."""
-
-    def setUp(self):
-        self.ref1 = Reference('abc123')
-        self.ref2 = Reference('path/to/external.txt', 5, 10)
-        self.ref2 = Reference('path/to/external.dat', None, None)
-        self.ref3 = Reference()

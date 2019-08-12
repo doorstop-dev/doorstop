@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from doorstop.gui import main as gui
-from doorstop.gui.main import main
+from doorstop.gui.main import main  # type: ignore
 
 
 class TestMain(unittest.TestCase):
