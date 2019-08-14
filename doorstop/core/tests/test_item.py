@@ -426,8 +426,9 @@ class TestItem(unittest.TestCase):
         self.item.set('text', "extended access")
         self.assertEqual("extended access", self.item.text)
 
+    @patch('doorstop.core.item.Item.load')
     @patch('doorstop.core.editor.launch')
-    def test_edit(self, mock_launch):
+    def test_edit(self, mock_launch, mock_load):
         """Verify an item can be edited."""
         self.item.tree = Mock()
         # Act
@@ -436,6 +437,7 @@ class TestItem(unittest.TestCase):
         self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
         self.item.tree.vcs.edit.assert_called_once_with(self.item.path)
         mock_launch.assert_called_once_with(self.item.path, tool='mock_editor')
+        mock_load.assert_called_once_with(True)
 
     def test_link(self):
         """Verify links can be added to an item."""

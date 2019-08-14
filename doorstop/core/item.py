@@ -501,7 +501,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the item's attributes and save them."""
         self._set_attributes(attributes)
 
-    @auto_save
     def edit(self, tool=None, edit_all=True):
         """Open the item for editing.
 
@@ -515,7 +514,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             self.tree.vcs.lock(self.path)
         # Edit the whole file in an editor
         if edit_all:
+            self.save()
             editor.edit(self.path, tool=tool)
+            self.load(True)
         # Edit only the text part in an editor
         else:
             # Edit the text in a temporary file
@@ -524,10 +525,6 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             )
             # Save the text in the actual item file
             self.text = edited_text
-            self.save()
-
-        # Force reloaded
-        self._loaded = False
 
     @auto_save
     def link(self, value):
