@@ -6,6 +6,9 @@ import os
 import re
 from collections import OrderedDict
 from itertools import chain
+from typing import Dict, List
+
+import yaml
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
@@ -60,10 +63,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS
         self._data['parent'] = None  # the root document does not have a parent
-        self._extended_reviewed = []
-        self._items = []
+        self._extended_reviewed: List[str] = []
+        self._items: List[Item] = []
         self._itered = False
-        self.children = []
+        self.children: List[Document] = []
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -111,31 +114,62 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # TODO: raise a specific exception for invalid separator characters?
         assert not sep or sep in settings.SEP_CHARS
         config = os.path.join(path, Document.CONFIG)
+
         # Check for an existing document
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
+
         # Create the document directory
         Document._create(config, name='document')
+
         # Initialize the document
         document = Document(path, root=root, tree=tree, auto=False)
-        document.prefix = prefix if prefix is not None else document.prefix
-        document.sep = sep if sep is not None else document.sep
-        document.digits = digits if digits is not None else document.digits
-        document.parent = parent if parent is not None else document.parent
+        document.prefix = (  # type: ignore
+            prefix if prefix is not None else document.prefix
+        )
+        document.sep = sep if sep is not None else document.sep  # type: ignore
+        document.digits = (  # type: ignore
+            digits if digits is not None else document.digits
+        )
+        document.parent = (  # type: ignore
+            parent if parent is not None else document.parent
+        )
         if auto or (auto is None and Document.auto):
             document.save()
+
         # Return the document
         return document
+
+    def _load_with_include(self, yamlfile):
+        """Load the YAML file and process input tags."""
+        # Read text from file
+        text = self._read(yamlfile)
+        # Parse YAML data from text
+        class IncludeLoader(yaml.SafeLoader):
+            def include(self, node):
+                container = IncludeLoader.filenames[0]  # type: ignore
+                dirname = os.path.dirname(container)
+                filename = os.path.join(dirname, self.construct_scalar(node))
+                IncludeLoader.filenames.insert(0, filename)  # type: ignore
+                try:
+                    with open(filename, 'r') as f:
+                        data = yaml.load(f, IncludeLoader)
+                except Exception as ex:
+                    msg = "include in '{}' failed: {}".format(container, ex)
+                    raise DoorstopError(msg)
+                IncludeLoader.filenames.pop()  # type: ignore
+                return data
+
+        IncludeLoader.add_constructor('!include', IncludeLoader.include)
+        IncludeLoader.filenames = [yamlfile]  # type: ignore
+        return self._load(text, yamlfile, loader=IncludeLoader)
 
     def load(self, reload=False):
         """Load the document's properties from its file."""
         if self._loaded and not reload:
             return
         log.debug("loading {}...".format(repr(self)))
-        # Read text from file
-        text = self._read(self.config)
-        # Parse YAML data from text
-        data = self._load(text, self.config)
+        data = self._load_with_include(self.config)
         # Store parsed data
         sets = data.get('settings', {})
         for key, value in sets.items():
@@ -183,15 +217,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for key, value in self._data.items():
             if key == 'prefix':
                 sets[key] = str(value)
-            elif key == 'sep':
-                sets[key] = value
-            elif key == 'digits':
-                sets[key] = value
             elif key == 'parent':
                 if value:
                     sets[key] = value
             else:
-                data[key] = value
+                sets[key] = value
         data['settings'] = sets
         # Save the attributes
         attributes = {}
@@ -225,7 +255,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if os.path.exists(path):
                     path = os.path.dirname(path)
                     dirnames.remove(dirname)
-                    log.trace("skipped embedded document: {}".format(path))
+                    log.trace(  # type: ignore
+                        "skipped embedded document: {}".format(path)
+                    )
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
@@ -241,8 +273,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                             log.error("Unable to load: %s", item)
                             raise
                     if settings.CACHE_ITEMS and self.tree:
-                        self.tree._item_cache[item.uid] = item  # pylint: disable=W0212
-                        log.trace("cached item: {}".format(item))
+                        self.tree._item_cache[  # pylint: disable=protected-access
+                            item.uid
+                        ] = item
+                        log.trace("cached item: {}".format(item))  # type: ignore
         # Set meta attributes
         self._itered = True
         # Yield items
@@ -267,13 +301,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         path = os.path.join(self.path, Document.ASSETS)
         return path if os.path.isdir(path) else None
 
-    @property
+    @property  # type: ignore
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
         return self._data['prefix']
 
-    @prefix.setter
+    @prefix.setter  # type: ignore
     @auto_save
     @auto_load
     def prefix(self, value):
@@ -281,19 +315,19 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['prefix'] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
 
-    @property
+    @property  # type: ignore
     @auto_load
     def extended_reviewed(self):
         """Get the document's extended reviewed attribute keys."""
         return self._extended_reviewed
 
-    @property
+    @property  # type: ignore
     @auto_load
     def sep(self):
         """Get the prefix-number separator to use for new item UIDs."""
         return self._data['sep']
 
-    @sep.setter
+    @sep.setter  # type: ignore
     @auto_save
     @auto_load
     def sep(self, value):
@@ -303,13 +337,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['sep'] = value.strip()
         # TODO: should the new separator be applied to all items?
 
-    @property
+    @property  # type: ignore
     @auto_load
     def digits(self):
         """Get the number of digits to use for new item UIDs."""
         return self._data['digits']
 
-    @digits.setter
+    @digits.setter  # type: ignore
     @auto_save
     @auto_load
     def digits(self, value):
@@ -317,13 +351,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data['digits'] = value
         # TODO: should the new digits be applied to all items?
 
-    @property
+    @property  # type: ignore
     @auto_load
     def parent(self):
         """Get the document's parent document prefix."""
         return self._data['parent']
 
-    @parent.setter
+    @parent.setter  # type: ignore
     @auto_save
     @auto_load
     def parent(self, value):
@@ -389,7 +423,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def add_item(self, number=None, level=None, reorder=True):
+    def add_item(self, number=None, level=None, reorder=True, defaults=None):
         """Create a new item for the document and return it.
 
         :param number: desired item number
@@ -414,10 +448,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             else:
                 next_level = last.level + 1
         log.debug("next level: {}".format(next_level))
+
+        # Load more defaults before the item is created to avoid partially
+        # constructed items in case the loading fails.
+        more_defaults = self._load_with_include(defaults) if defaults else None
+
         uid = UID(self.prefix, self.sep, number, self.digits)
         item = Item.new(self.tree, self, self.path, self.root, uid, level=next_level)
         if self._attribute_defaults:
             item.set_attributes(self._attribute_defaults)
+        if more_defaults:
+            item.set_attributes(more_defaults)
         if level and reorder:
             self.reorder(keep=item)
         return item
@@ -519,7 +560,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         outline = data.get('outline', [])
         # Update levels
         level = Level(initial)
-        ids_after_reorder = []
+        ids_after_reorder: List[str] = []
         Document._reorder_section(outline, level, document, ids_after_reorder)
         for item in document.items:
             if item.uid not in ids_after_reorder:
@@ -639,7 +680,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def _items_by_level(items, keep=None):
         """Iterate through items by level with the kept item first."""
         # Collect levels
-        levels = OrderedDict()
+        levels: Dict[Level, List[Item]] = OrderedDict()
         for item in items:
             if item.level in levels:
                 levels[item.level].append(item)
@@ -673,7 +714,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if item.active:
                     return item
                 else:
-                    log.trace("item is inactive: {}".format(item))
+                    log.trace("item is inactive: {}".format(item))  # type: ignore
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 

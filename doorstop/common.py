@@ -22,11 +22,10 @@ def _trace(self, message, *args, **kws):
 
 
 logging.addLevelName(logging.DEBUG - 1, "TRACE")
-logging.Logger.trace = _trace
+logging.Logger.trace = _trace  # type: ignore
 
 logger = logging.getLogger
 log = logger(__name__)
-
 
 # exception classes ##########################################################
 
@@ -54,7 +53,8 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, max_help_position=40, **kwargs)
+        kwargs['max_help_position'] = 40
+        super().__init__(*args, **kwargs)
 
 
 class WarningFormatter(logging.Formatter):
@@ -94,7 +94,7 @@ def read_lines(path, encoding='utf-8'):
     :return: path of new file
 
     """
-    log.trace("reading lines from '{}'...".format(path))
+    log.trace("reading lines from '{}'...".format(path))  # type: ignore
     with open(path, 'r', encoding=encoding) as stream:
         for line in stream:
             yield line
@@ -109,13 +109,16 @@ def read_text(path, encoding='utf-8'):
     :return: string
 
     """
-    log.trace("reading text from '{}'...".format(path))
-    with open(path, 'r', encoding=encoding) as stream:
-        text = stream.read()
-    return text
+    log.trace("reading text from '{}'...".format(path))  # type: ignore
+    try:
+        with open(path, 'r', encoding=encoding) as stream:
+            return stream.read()
+    except Exception as ex:
+        msg = "reading '{}' failed: {}".format(path, ex)
+        raise DoorstopError(msg)
 
 
-def load_yaml(text, path):
+def load_yaml(text, path, loader=yaml.SafeLoader):
     """Parse a dictionary from YAML text.
 
     :param text: string containing dumped YAML data
@@ -126,7 +129,7 @@ def load_yaml(text, path):
     """
     # Load the YAML data
     try:
-        data = yaml.load(text, Loader=yaml.FullLoader) or {}
+        data = yaml.load(text, Loader=loader) or {}
     except yaml.error.YAMLError as exc:
         msg = "invalid contents: {}:\n{}".format(path, exc)
         raise DoorstopError(msg) from None
@@ -149,7 +152,7 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
     :return: path of new file
 
     """
-    log.trace("writing lines to '{}'...".format(path))
+    log.trace("writing lines to '{}'...".format(path))  # type: ignore
     with open(path, 'wb') as stream:
         for line in lines:
             data = (line + end).encode(encoding)
@@ -168,7 +171,7 @@ def write_text(text, path, encoding='utf-8'):
 
     """
     if text:
-        log.trace("writing text to '{}'...".format(path))
+        log.trace("writing text to '{}'...".format(path))  # type: ignore
     with open(path, 'wb') as stream:
         data = text.encode(encoding)
         stream.write(data)
@@ -178,7 +181,7 @@ def write_text(text, path, encoding='utf-8'):
 def touch(path):
     """Ensure a file exists."""
     if not os.path.exists(path):
-        log.trace("creating empty '{}'...".format(path))
+        log.trace("creating empty '{}'...".format(path))  # type: ignore
         write_text('', path)
 
 
@@ -207,14 +210,14 @@ def delete(path):
     """Delete a file or directory with error handling."""
     if os.path.isdir(path):
         try:
-            log.trace("deleting '{}'...".format(path))
+            log.trace("deleting '{}'...".format(path))  # type: ignore
             shutil.rmtree(path)
         except IOError:
             # bug: http://code.activestate.com/lists/python-list/159050
             msg = "unable to delete: {}".format(path)
             log.warning(msg)
     elif os.path.isfile(path):
-        log.trace("deleting '{}'...".format(path))
+        log.trace("deleting '{}'...".format(path))  # type: ignore
         os.remove(path)
 
 

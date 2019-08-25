@@ -11,15 +11,12 @@ Doorstop is a [requirements management](http://alternativeto.net/software/doorst
 
 <img align="left" width="100" src="https://raw.githubusercontent.com/jacebrowning/doorstop/develop/docs/images/logo-black-white.png"/>
 
-When a project utilizes this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
+When a project leverages this tool, each linkable item (requirement, test case, etc.) is stored as a YAML file in a designated directory. The items in each directory form a document. The relationship between documents forms a tree hierarchy. Doorstop provides mechanisms for modifying this tree, validating item traceability, and publishing documents in several formats.
 
 Doorstop is under active development and we welcome contributions.
-
 The project is licensed as [LGPLv3](https://github.com/jacebrowning/doorstop/blob/develop/LICENSE.md).
-
 To report a problem or a security vulnerability please [raise an issue](https://github.com/jacebrowning/doorstop/issues).
-
-Additional reading:
+Additional references:
 
 - publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)

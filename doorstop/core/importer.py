@@ -6,6 +6,7 @@ import csv
 import os
 import re
 import warnings
+from typing import Any
 
 import openpyxl
 
@@ -147,6 +148,7 @@ def _file_csv(path, document, delimiter=',', mapping=None):
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []
+            value: Any
             for value in _row:
                 # convert string booleans
                 if isinstance(value, str):
@@ -189,7 +191,7 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path)
+    workbook = openpyxl.load_workbook(path, data_only=True)
     worksheet = workbook.active
 
     index = 0

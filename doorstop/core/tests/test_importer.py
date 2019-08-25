@@ -349,6 +349,39 @@ class TestModule(unittest.TestCase):
         self.assertEqual(expected_data, data)
         self.assertIs(mock_document, document)
 
+    @patch('doorstop.core.importer._itemize')
+    def test_file_xlsx_formula(self, mock_itemize):
+        """Verify a XLSX file with formula can be imported."""
+        path = os.path.join(FILES, 'formula.xlsx')
+        mock_document = Mock()
+        # Act
+        with catch_warnings():
+            importer._file_xlsx(path, mock_document)
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        expected_header = [
+            'uid',
+            'level',
+            'text',
+            'ref',
+            'links',
+            'active',
+            'derived',
+            'header',
+            'normative',
+            'reviewed',
+        ]
+        self.assertEqual(expected_header, header)
+        expected_data = [
+            ['REQ001', '1.2.3', 'active', None, None, 1, 0, None, 1, None],
+            ['REQ002', '1.2.4', 'inactive', None, None, 0, 0, None, 1, None],
+        ]
+        self.assertEqual(expected_data, data)
+        self.assertIs(mock_document, document)
+
     @patch('doorstop.core.importer.add_item')
     def test_itemize(self, mock_add_item):
         """Verify item data can be converted to items."""

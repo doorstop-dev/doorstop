@@ -5,6 +5,7 @@
 import logging
 import os
 import unittest
+from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
@@ -41,7 +42,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
     def __init__(self, *args, **kwargs):
         self._file = kwargs.pop('_file', "")  # mock file system contents
         with patch('os.path.isfile', Mock(return_value=True)):
-            super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)  # type: ignore
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
@@ -85,8 +86,8 @@ class MockSimpleDocument:
     def __init__(self):
         self.parent = None
         self.prefix = 'RQ'
-        self._items = []
-        self.extended_reviewed = []
+        self._items: List[Item] = []
+        self.extended_reviewed: List[str] = []
 
     def __iter__(self):
         yield from self._items
@@ -153,8 +154,8 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     _mock_item2.uid = 'tst1'
     _mock_item2.document.prefix = 'tst'
     # pylint: disable=undefined-variable
-    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]
-    item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
+    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]  # type: ignore
+    item2.find_child_items = lambda: [MockDataMixIn._mock_item2]  # type: ignore
 
     document = MagicMock(spec=['items'])
     document.items = [

@@ -74,7 +74,9 @@ def main(args=None):  # pylint: disable=R0915
     }
 
     # Build main parser
-    parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION, **shared)
+    parser = argparse.ArgumentParser(  # type: ignore
+        prog=CLI, description=DESCRIPTION, **shared
+    )
     parser.add_argument(
         '-F',
         '--no-reformat',
@@ -246,6 +248,12 @@ def _add(subs, shared):
             "environment). Useless option without --edit"
         ),
     )
+    sub.add_argument(
+        '-d',
+        '--defaults',
+        metavar='FILE',
+        help=("file in YAML format with default values for attributes of the new item"),
+    )
 
 
 def _remove(subs, shared):
@@ -375,6 +383,9 @@ def _clear(subs, shared):
         '--document',
         action='store_true',
         help="indicates the 'label' is a document prefix",
+    )
+    sub.add_argument(
+        'parents', nargs='*', help="only clear links with these parent item UIDs"
     )
 
 

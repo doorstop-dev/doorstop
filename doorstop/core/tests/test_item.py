@@ -6,6 +6,7 @@
 import logging
 import os
 import unittest
+from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import common, core
@@ -48,11 +49,40 @@ text: |
   something
 """.lstrip()
 
+YAML_STRING_ATTRIBUTES = """
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: |
+  b
+active: true
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc: d
+derived: false
+e: |
+  fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+g: hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+header: ''
+i:
+  jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj: |
+    k
+  llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll: m
+  n: |
+    ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  p: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+  r:
+  - |
+    ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+  - ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+level: 1.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: ''
+""".lstrip()
+
 
 class ListLogHandler(logging.NullHandler):
     def __init__(self, log):
         super().__init__()
-        self.records = []
+        self.records: List[str] = []
         self.log = log
 
     def __enter__(self):
@@ -118,6 +148,28 @@ class TestItem(unittest.TestCase):
             YAML_EXTENDED_ATTRIBUTES, self.item.path
         )
 
+    def test_string_attributes(self):
+        """Verify string attributes are properly formatted."""
+        self.item.set_attributes(
+            {
+                'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa': 'b',
+                'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc': 'd',
+                'e': 'fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                'g': 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
+                'i': {
+                    'jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj': 'k',
+                    'llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll': 'm',
+                    'n': 'ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+                    'p': 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq',
+                    'r': [
+                        'ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+                        'ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt',
+                    ],
+                },
+            }
+        )
+        self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
+
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
@@ -149,11 +201,11 @@ class TestItem(unittest.TestCase):
     def test_lt(self):
         """Verify items can be compared."""
         item1 = MockItem(None, 'path/to/fake1.yml')
-        item1.level = (1, 1)
+        item1.level = (1, 1)  # type: ignore
         item2 = MockItem(None, 'path/to/fake1.yml')
-        item2.level = (1, 1, 1)
+        item2.level = (1, 1, 1)  # type: ignore
         item3 = MockItem(None, 'path/to/fake1.yml')
-        item3.level = (1, 1, 2)
+        item3.level = (1, 1, 2)  # type: ignore
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
         self.assertGreater(item3, item1)
@@ -254,21 +306,7 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_cleared(self):
-        """Verify an item's suspect link status can be set and read."""
-        mock_item = Mock()
-        mock_item.uid = 'mock_uid'
-        mock_item.stamp = Mock(return_value=Stamp('abc123'))
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.tree = mock_tree
-        self.item.link('mock_uid')
-        self.item.cleared = 1  # updates each stamp
-        self.assertTrue(self.item.cleared)
-        self.item.cleared = 0  # sets each stamp to None
-        self.assertFalse(self.item.cleared)
-
-    def test_reviwed(self):
+    def test_reviewed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
         self.item.reviewed = 1  # calls `review()`
@@ -787,7 +825,7 @@ class TestItem(unittest.TestCase):
         """Verify an item can be checked against both."""
 
         def mock_iter(seq):
-            """Creates a mock __iter__ method."""
+            """Create a mock __iter__ method."""
 
             def _iter(self):  # pylint: disable=W0613
                 """Mock __iter__method."""
@@ -905,6 +943,28 @@ class TestItem(unittest.TestCase):
         self.assertEqual(None, self.item.links[0].stamp)
         # Act
         self.item.clear()
+        # Assert
+        self.assertTrue(self.item.cleared)
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
+    def test_clear_by_uid(self):
+        """Verify an item's links can be cleared as suspect by UID."""
+        mock_item = Mock()
+        mock_item.uid = 'mock_uid'
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.link('mock_uid')
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['other_uid'])
+        # Assert
+        self.assertFalse(self.item.cleared)
+        self.assertEqual(None, self.item.links[0].stamp)
+        # Act
+        self.item.clear(['mock_uid'])
         # Assert
         self.assertTrue(self.item.cleared)
         self.assertEqual('abc123', self.item.links[0].stamp)

@@ -26,10 +26,10 @@ exported: path/to/tst.csv
 
 Supported formats:
 
-- YAML: **.yml**
-- Comma-Separated Values: **.csv**
-- Tab-Separated Values: **.tsv**
-- Microsoft Office Excel: **.xlsx**
+- YAML: `.yml`
+- Comma-Separated Values: `.csv`
+- Tab-Separated Values: `.tsv`
+- Microsoft Office Excel: `.xlsx`
 
 # Importing Requirements
 

@@ -5,6 +5,7 @@
 import abc
 import functools
 import os
+from typing import Dict
 
 import yaml
 
@@ -27,7 +28,7 @@ def add_item(func):
             item.document._items.append(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = item
-            log.trace("cached item: {}".format(item))
+            log.trace("cached item: {}".format(item))  # type: ignore
         return item
 
     return wrapped
@@ -59,7 +60,7 @@ def delete_item(func):
             item.document._items.remove(item)
         if settings.CACHE_ITEMS and item.tree:
             item.tree._item_cache[item.uid] = None
-            log.trace("expunged item: {}".format(item))
+            log.trace("expunged item: {}".format(item))  # type: ignore
         BaseFileObject.delete(item, item.path)
         return item
 
@@ -77,7 +78,7 @@ def add_document(func):
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = document
-            log.trace("cached document: {}".format(document))
+            log.trace("cached document: {}".format(document))  # type: ignore
         return document
 
     return wrapped
@@ -107,7 +108,7 @@ def delete_document(func):
         # pylint: disable=W0212
         if settings.CACHE_DOCUMENTS and document.tree:
             document.tree._document_cache[document.prefix] = None
-            log.trace("expunged document: {}".format(document))
+            log.trace("expunged document: {}".format(document))  # type: ignore
         try:
             os.rmdir(document.path)
         except OSError:
@@ -206,7 +207,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
     def __init__(self):
         self.path = None
         self.root = None
-        self._data = {}
+        self._data: Dict[str, str] = {}
         self._exists = True
         self._loaded = False
 
@@ -259,7 +260,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         return common.read_text(path)
 
     @staticmethod
-    def _load(text, path):
+    def _load(text, path, **kwargs):
         """Load YAML data from text.
 
         :param text: text read from a file
@@ -268,7 +269,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         :return: dictionary of YAML data
 
         """
-        return common.load_yaml(text, path)
+        return common.load_yaml(text, path, **kwargs)
 
     @abc.abstractmethod
     def save(self):
@@ -310,7 +311,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
 
     # extended attributes ####################################################
 
-    @property
+    @property  # type: ignore
     @auto_load
     def extended(self):
         """Get a list of all extended attribute names."""
@@ -333,7 +334,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be accessed from {c}.{n}".format(n=name, c=cname)
-            log.trace(msg)
+            log.trace(msg)  # type: ignore
             return getattr(self, name)
         else:
             return self._data.get(name, default)
@@ -350,7 +351,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         if hasattr(self, name):
             cname = self.__class__.__name__
             msg = "'{n}' can be set from {c}.{n}".format(n=name, c=cname)
-            log.trace(msg)
+            log.trace(msg)  # type: ignore
             setattr(self, name, value)
         else:
             self._data[name] = value

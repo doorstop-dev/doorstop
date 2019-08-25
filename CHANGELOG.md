@@ -1,6 +1,14 @@
-# 1.6 (unreleased)
+# 2.0 (unreleased)
 
-- Updated `edit` and `reorder` commands to use `$EDITOR` ([@aars](https://github.com/jacebrowning/doorstop/pull/316)
+- Dropped support for Python 3.5.
+
+# 1.6 (2019-08-10)
+
+- Updated `edit` and `reorder` commands to use `$EDITOR`.
+- Promoted support for item headers out of beta.
+- Fixed bug with Doorstop attempting to import formulas from XLSX.
+- Added support for `!include` statements in YAML to share configuration.
+- Added `--default` option to `add` to specify a file with defaults values.
 
 # 1.5 (2018-09-19)
 

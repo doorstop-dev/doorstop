@@ -25,6 +25,7 @@ class TestBase(unittest.TestCase):
     """Base class for tutorial tests."""
 
     def setUp(self):
+        print()
         self.cwd = os.getcwd()
         self.temp = tempfile.mkdtemp()
         print("$ cd {}".format(self.temp))
@@ -37,12 +38,12 @@ class TestBase(unittest.TestCase):
         shutil.rmtree(self.temp)
 
     @staticmethod
-    def doorstop(args=""):
+    def doorstop(args="", returncode=0, stdout=None):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
-        cp = subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        if cp.returncode != 0:
+        cp = subprocess.run(cmd, shell=True, stdout=stdout, stderr=subprocess.PIPE)
+        if cp.returncode != returncode:
             raise AssertionError("command failed: doorstop {}".format(args))
         return cp
 
@@ -184,7 +185,69 @@ class TestSection1(TestBase):
             cp.stderr,
         )
 
+    def test_clear_links(self):
+        """Verify clear links is working."""
+
+        self.doorstop("create C .")
+
+        src = os.path.join(FILES, 'C001.txt')
+        dst = os.path.join(self.temp, 'C001.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'C002.txt')
+        dst = os.path.join(self.temp, 'C002.yml')
+        shutil.copy(src, dst)
+        src = os.path.join(FILES, 'C003.txt')
+        dst = os.path.join(self.temp, 'C003.yml')
+        shutil.copy(src, dst)
+
+        cp = self.doorstop()
+        self.assertIn(b'WARNING: C: C001: suspect link: C002', cp.stderr)
+        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+
+        cp = self.doorstop("clear C001 C004", 1)
+        self.assertIn(b'ERROR: no item with UID: C004', cp.stderr)
+
+        cp = self.doorstop("clear C001 C001 C002", stdout=subprocess.PIPE)
+        self.assertIn(
+            b'clearing item C001\'s suspect links to C001, C002...', cp.stdout
+        )
+
+        cp = self.doorstop()
+        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+
+        cp = self.doorstop("clear C001", stdout=subprocess.PIPE)
+        self.assertIn(b'clearing item C001\'s suspect links...', cp.stdout)
+
+        cp = self.doorstop()
+        self.assertNotIn(b'suspect link', cp.stderr)
+
+    def test_custom_defaults(self):
+        """Verify new item with custom defaults is working."""
+
+        self.doorstop("create REQ .")
+
+        cp = self.doorstop("add -d no/such/file.yml REQ", 1)
+        self.assertIn(b'ERROR: reading ', cp.stderr)
+
+        self.assertFalse(os.path.isfile('REQ001.yml'))
+
+        template = os.path.join(FILES, 'template.yml')
+        self.doorstop("add -d {} REQ".format(template))
+
+        self.assertTrue(os.path.isfile('REQ001.yml'))
+
+        cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
+        self.assertIn(
+            b'''1.0     REQ001
+
+        Some text
+        with more than
+        one line.
+''',
+            cp.stdout,
+        )
+
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
-    unittest.main()
+    unittest.main(verbosity=0)

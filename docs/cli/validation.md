@@ -17,16 +17,18 @@ REQ
 └── LLT
 ```
 
-By default, the validation run displays messages with a *WARNING* and *ERROR*
-level.  In case verbose output is enabled, also messages with an *INFO* level
-are shown.  *INFO* level messages are generated under the following conditions:
+By default, the validation run displays messages with a `WARNING` and `ERROR` level.
+In case verbose output is enabled, also messages with an `INFO` level
+are shown.
+
+`INFO` level messages are generated under the following conditions:
 
 * Skipped levels within the items of a document.
 * No initial review done for an item.
 * The prefix of an UID is not equal to the document prefix.
 * The prefix of a link UID is not equal to the parent document prefix.
 
-*WARNING* level messages are generated under the following conditions:
+`WARNING` level messages are generated under the following conditions:
 
 * A document contains no items.
 * Duplicated levels within the items of a document.
@@ -42,7 +44,7 @@ are shown.  *INFO* level messages are generated under the following conditions:
 * A non-normative items has links.
 * There is a cycle of item links.
 
-*ERROR* level messages are generated under the following conditions:
+`ERROR` level messages are generated under the following conditions:
 
 * Link with a invalid UID.
 * Unknown item for an UID.
@@ -72,4 +74,43 @@ REQ
 │   └── HLT
 │
 └── LLT
+```
+
+## Clear Suspect Links
+
+Each link consists of the parent item UID and the
+[fingerprint](../reference/item.md#reviewed) of the parent item.  When the
+fingerprint of a parent item changes, the link is reported as suspect during
+validation.
+
+```sh
+doorstop
+building tree...
+loading documents...
+validating items...
+WARNING: LLT: LLT005: suspect link: REQ001
+
+REQ
+│
+├── TUT
+│   │
+│   └── HLT
+│
+└── LLT
+```
+
+You can clear suspect links with the `doorstop clear` command.
+
+```sh
+$ doorstop clear LLT005
+building tree...
+clearing item LLT005's suspect links...
+```
+
+Optionally, you can clear only suspect links to specific parent items.
+
+```sh
+$ doorstop clear LLT005 REQ002 REQ003
+building tree...
+clearing item LLT005's suspect links to REQ002, REQ003...
 ```

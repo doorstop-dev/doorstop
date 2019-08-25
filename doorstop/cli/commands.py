@@ -4,6 +4,7 @@
 
 import os
 import time
+from typing import Set
 
 from doorstop import common, server
 from doorstop.cli import utilities
@@ -25,8 +26,8 @@ class CycleTracker:
 
     def __init__(self):
         """Initialize a cycle tracker."""
-        self.discovered = set()
-        self.finished = set()
+        self.discovered: Set[str] = set()
+        self.finished: Set[str] = set()
 
     def _dfs_visit(self, uid, tree):
         """Do a depth first search visit of the specified item.
@@ -178,7 +179,7 @@ def run_add(args, cwd, _, catch=True):
 
         # add items to it
         for _ in range(args.count):
-            item = document.add_item(level=args.level)
+            item = document.add_item(level=args.level, defaults=args.defaults)
             utilities.show("added item: {} ({})".format(item.uid, item.relpath))
 
         # Edit item if requested
@@ -382,11 +383,21 @@ def run_clear(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+        tree = _get_tree(args, cwd)
 
-        for item in _iter_items(args, cwd, error):
-            msg = "clearing item {}'s suspect links...".format(item.uid)
+        if args.parents:
+            # Check that the parent item UIDs exist
+            for pid in args.parents:
+                tree.find_item(pid)
+
+            pids = " to " + ", ".join(args.parents)
+        else:
+            pids = ""
+
+        for item in _iter_items(args, tree, error):
+            msg = "clearing item {}'s suspect links{}...".format(item.uid, pids)
             utilities.show(msg)
-            item.clear()
+            item.clear(parents=args.parents)
 
     if not success:
         return False
@@ -404,8 +415,9 @@ def run_review(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
+        tree = _get_tree(args, cwd)
 
-        for item in _iter_items(args, cwd, error):
+        for item in _iter_items(args, tree, error):
             utilities.show("marking item {} as reviewed...".format(item.uid))
             item.review()
 
@@ -612,11 +624,11 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
     return tree
 
 
-def _iter_items(args, cwd, error):
-    """Build a tree and iterate through items.
+def _iter_items(args, tree, error):
+    """Iterate through items.
 
     :param args: Namespace of CLI arguments
-    :param cwd: current working directory
+    :param tree: the document hierarchy tree
     :param error: function to call for CLI errors
 
     Items are filtered to:
@@ -641,7 +653,6 @@ def _iter_items(args, cwd, error):
     # Build tree
     item = None
     document = None
-    tree = tree = _get_tree(args, cwd)
 
     # Determine if tree, document, or item was requested
     if args.label != 'all':
