@@ -8,6 +8,7 @@ import unittest
 from doorstop import settings
 from doorstop.cli.main import main
 
+CLI_TESTS_DIR = os.path.dirname(__file__)
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 REQS = os.path.join(ROOT, 'reqs')
 TUTORIAL = os.path.join(REQS, 'tutorial')

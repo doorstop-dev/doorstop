@@ -15,6 +15,7 @@ from doorstop.cli.tests import (
     FILES,
     REASON,
     REQS,
+    CLI_TESTS_DIR,
     ROOT,
     TUTORIAL,
     SettingsTestCase,
@@ -500,7 +501,7 @@ class TestImport(unittest.TestCase):
     """Integration tests for the 'doorstop import' command."""
 
     def tearDown(self):
-        common.delete(os.path.join(ROOT, 'tmp'))
+        common.delete(os.path.join(CLI_TESTS_DIR, 'tmp'))
         common.delete(os.path.join(REQS, 'REQ099.yml'))
 
     def test_import_document(self):
