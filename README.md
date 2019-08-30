@@ -1,9 +1,9 @@
-[![Build Status](http://img.shields.io/travis/jacebrowning/doorstop/master.svg)](https://travis-ci.org/jacebrowning/doorstop)
-[![Coverage Status](http://img.shields.io/coveralls/jacebrowning/doorstop/master.svg)](https://coveralls.io/r/jacebrowning/doorstop)
-[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/jacebrowning/doorstop.svg)](https://scrutinizer-ci.com/g/jacebrowning/doorstop/?branch=master)
+[![Build Status](http://img.shields.io/travis/doorstop-dev/doorstop/master.svg)](https://travis-ci.org/doorstop-dev/doorstop)
+[![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/master.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
+[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
 [![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754)
-[![Gitter](https://badges.gitter.im/jacebrowning/doorstop.svg)](https://gitter.im/jacebrowning/doorstop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/doorstop-dev/doorstop.svg)](https://gitter.im/doorstop-dev/doorstop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Overview
 
