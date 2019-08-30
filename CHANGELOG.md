@@ -12,17 +12,17 @@
 
 # 1.5 (2018-09-19)
 
-- Added preliminary support for item headers ([@rickeywang](https://github.com/jacebrowning/doorstop/pull/285)
-- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/jacebrowning/doorstop/pull/290))
+- Added preliminary support for item headers ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285)
+- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/doorstop-dev/doorstop/pull/290))
     + Converted document outline to a tree view.
     + Made documents navigable via clicking links.
     + Added an icon for Linux and Windows.
-- Fixed duplicate headings when publishing. ([@guille-r](https://github.com/jacebrowning/doorstop/pull/302))
+- Fixed duplicate headings when publishing. ([@guille-r](https://github.com/doorstop-dev/doorstop/pull/302))
 - Added Python 3.7 support.
 
 # 1.4 (2017-10-22)
 
-- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
+- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/doorstop-dev/doorstop/pull/281))
 
 # 1.3.1 (2017-08-26)
 

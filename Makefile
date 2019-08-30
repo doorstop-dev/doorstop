@@ -1,7 +1,7 @@
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
-REPOSITORY := jacebrowning/doorstop
+REPOSITORY := doorstop-dev/doorstop
 
 # Project paths
 PACKAGES := $(PACKAGE)
