@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop.core.base import BaseFileObject
 from doorstop.core.document import Document
 from doorstop.core.item import Item
+from doorstop.core.validators.item_validator import ItemValidator
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -68,7 +69,13 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
     """Mock Item class with stubbed file IO."""
 
-    def _no_get_issues_document(self, document, skip):  # pylint: disable=W0613,R0201
+
+class MockItemValidator(ItemValidator):  # pylint: disable=W0223,R0902
+    """Mock Item class with stubbed file IO."""
+
+    def _no_get_issues_document(
+        self, item, document, skip
+    ):  # pylint: disable=W0613,R0201
         return
         yield  # pylint: disable=W0101
 
