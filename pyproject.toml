@@ -12,7 +12,7 @@ readme = "README.md"
 
 homepage = "https://pypi.org/project/Doorstop"
 documentation = "https://doorstop.readthedocs.io"
-repository = "https://github.com/jacebrowning/doorstop"
+repository = "https://github.com/doorstop-dev/doorstop"
 
 keywords = [
   "requirements-management",
