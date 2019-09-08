@@ -553,7 +553,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             log.warning("link to {0} does not exist".format(uid))
 
     def is_reviewed(self):
-        return not self._data['reviewed']
+        return self._data['reviewed']
 
     def set_links(self, links):
         self._data['links'] = links
