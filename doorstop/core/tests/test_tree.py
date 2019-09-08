@@ -298,7 +298,7 @@ class TestTree(unittest.TestCase):
 
     @patch('doorstop.core.document.Document.add_item')
     def test_add_item(self, mock_add_item):
-        """Verify an item can be added to a document."""
+        """Remove for a test."""
         self.tree.add_item('REQ')
         mock_add_item.assert_called_once_with(number=None, level=None, reorder=True)
 
