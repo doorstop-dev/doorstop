@@ -5,6 +5,7 @@
 import hashlib
 import os
 import re
+from typing import Union
 
 import yaml
 
@@ -17,7 +18,7 @@ log = common.logger(__name__)
 class Prefix(str):
     """Unique document prefixes."""
 
-    UNKNOWN_MESSGE = "no document with prefix: {}"
+    UNKNOWN_MESSAGE = "no document with prefix: {}"
 
     def __new__(cls, value=""):
         if isinstance(value, Prefix):
@@ -25,7 +26,7 @@ class Prefix(str):
         else:
             if str(value).lower() in settings.RESERVED_WORDS:
                 raise DoorstopError("cannot use reserved word: %s" % value)
-            obj = super().__new__(cls, Prefix.load_prefix(value))
+            obj = super().__new__(cls, Prefix.load_prefix(value))  # type: ignore
             return obj
 
     def __repr__(self):
@@ -93,7 +94,7 @@ class UID:
 
         """
         if values and isinstance(values[0], UID):
-            self.stamp = stamp or values[0].stamp
+            self.stamp: Stamp = stamp or values[0].stamp
             return
         self.stamp = stamp or Stamp()
         # Join values
@@ -106,9 +107,9 @@ class UID:
                 pair = value.rsplit(':', 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
-                pair = list(value.items())[0]
-                self.value = str(pair[0])
-                self.stamp = self.stamp or Stamp(pair[1])
+                first = list(value.items())[0]
+                self.value = str(first[0])
+                self.stamp = self.stamp or Stamp(first[1])
             else:
                 self.value = str(value) if values[0] else ''
         elif len(values) == 4:
@@ -248,7 +249,7 @@ class Text(str):
 
     def __new__(cls, value=""):
         assert not isinstance(value, Text)
-        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        obj = super(Text, cls).__new__(cls, Text.load_text(value))  # type: ignore
         return obj
 
     @property
@@ -299,7 +300,7 @@ class Level:
         """
         if isinstance(value, Level):
             self._parts = list(value)
-            self.heading = value.heading
+            self.heading: bool = value.heading
         else:
             parts = self.load_level(value)
             if parts and parts[-1] == 0:
@@ -475,7 +476,7 @@ class Level:
         return parts
 
     @staticmethod
-    def save_level(parts):
+    def save_level(parts) -> Union[int, float, str]:
         """Convert a level's part into non-quoted YAML value.
 
         >>> Level.save_level((1,))
@@ -493,9 +494,9 @@ class Level:
 
         # Convert formats to cleaner YAML formats
         if len(parts) == 1:
-            level = int(level)
+            return int(level)
         elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-            level = float(level)
+            return float(level)
 
         return level
 
@@ -563,10 +564,6 @@ class Stamp:
         for value in values:
             md5.update(str(value).encode())
         return md5.hexdigest()
-
-
-class Reference:
-    """External reference to a file or lines in a file."""
 
 
 def to_bool(obj):

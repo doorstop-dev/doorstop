@@ -8,11 +8,12 @@ import logging
 import os
 import webbrowser
 from collections import defaultdict
+from typing import Dict
 
 import bottle
 from bottle import get, hook, post, request, response, template
 
-from doorstop import build, common, publisher, settings
+from doorstop import Tree, build, common, publisher, settings
 from doorstop.common import HelpFormatter
 from doorstop.core import vcs
 from doorstop.server import utilities
@@ -20,8 +21,8 @@ from doorstop.server import utilities
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
-tree = None  # set in `run`, read in the route functions
-numbers = defaultdict(int)  # cache of next document numbers
+tree: Tree = None  # type: ignore, set in `run`, read in the route functions
+numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
 
 
 def main(args=None):
@@ -36,7 +37,9 @@ def main(args=None):
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Build main parser
-    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__, **shared)
+    parser = argparse.ArgumentParser(  # type: ignore
+        prog=SERVER, description=__doc__, **shared
+    )
     cwd = os.getcwd()
 
     parser.add_argument(
@@ -86,7 +89,7 @@ def run(args, cwd, _):
     :param error: function to call for CLI errors
 
     """
-    global tree  # pylint: disable=W0603
+    global tree
     tree = build(cwd=cwd, root=args.project)
     tree.load()
     host = args.host

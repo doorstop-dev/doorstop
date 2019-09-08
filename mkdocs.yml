@@ -2,8 +2,8 @@ site_name: Doorstop
 site_description: Requirements management using version control.
 site_author: Jace Browning
 
-repo_url: https://github.com/jacebrowning/doorstop
-edit_uri: https://github.com/jacebrowning/doorstop/edit/develop/docs
+repo_url: https://github.com/doorstop-dev/doorstop
+edit_uri: https://github.com/doorstop-dev/doorstop/edit/develop/docs
 
 theme: readthedocs
 extra_css: []

@@ -468,7 +468,7 @@ outline:
     def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
-        document.prefix = 'NEW'
+        document.prefix = 'NEW'  # type: ignore
         self.assertIsNot(None, document.add_item(reorder=False))
         mock_new.assert_called_once_with(
             None, document, NEW, ROOT, 'NEW001', level=None
@@ -651,7 +651,7 @@ outline:
         """Verify an exception is raised on an unknown UID."""
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
-    @patch('doorstop.core.item.Item.get_issues')
+    @patch('doorstop.core.validators.item_validator.ItemValidator.get_issues')
     @patch('doorstop.core.document.Document.reorder')
     def test_validate(self, mock_reorder, mock_get_issues):
         """Verify a document can be validated."""
@@ -662,7 +662,7 @@ outline:
         self.assertEqual(5, mock_get_issues.call_count)
 
     @patch(
-        'doorstop.core.item.Item.get_issues',
+        'doorstop.core.validators.item_validator.ItemValidator.get_issues',
         Mock(
             return_value=[
                 DoorstopError('error'),
@@ -675,7 +675,10 @@ outline:
         """Verify an item error fails the document check."""
         self.assertFalse(self.document.validate())
 
-    @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
+    @patch(
+        'doorstop.core.validators.item_validator.ItemValidator.get_issues',
+        Mock(return_value=[]),
+    )
     def test_validate_hook(self):
         """Verify an item hook can be called."""
         mock_hook = MagicMock()

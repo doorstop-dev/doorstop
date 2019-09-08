@@ -12,7 +12,7 @@ from doorstop.core.vcs import load
 class BaseTestCase:
     """Base TestCase for tests that need a working copy."""
 
-    DIRECTORY = None
+    DIRECTORY = ''
 
     path = "path/to/mock/file.txt"
     dirpath = "path/to/mock/directory/"
@@ -43,7 +43,7 @@ class BaseTestCase:
         self.wc.commit(self.message)
 
     def test_missing_command(self, mock_call):
-        """Verify that a missing command raises a DoorstopError"""
+        """Verify that a missing command raises a DoorstopError."""
         mock_call.side_effect = FileNotFoundError
         self.assertRaises(DoorstopError, self.add)
 
@@ -103,8 +103,7 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
     def test_edit(self, mock_call):
         """Verify Subversion can (fake) edit files."""
         self.edit()
-        calls = []
-        mock_call.assert_has_calls(calls)
+        mock_call.assert_has_calls([])
 
     def test_add(self, mock_call):
         """Verify Subversion can add files."""
@@ -140,8 +139,7 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
     def test_edit(self, mock_call):
         """Verify Veracity can (fake) edit files."""
         self.edit()
-        calls = []
-        mock_call.assert_has_calls(calls)
+        mock_call.assert_has_calls([])
 
     def test_add(self, mock_call):
         """Verify Veracity can add files."""

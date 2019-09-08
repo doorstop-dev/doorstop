@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-3.0-only
+# type: ignore
 
 """Graphical interface for Doorstop."""
 

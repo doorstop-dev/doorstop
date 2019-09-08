@@ -12,7 +12,7 @@ readme = "README.md"
 
 homepage = "https://pypi.org/project/Doorstop"
 documentation = "https://doorstop.readthedocs.io"
-repository = "https://github.com/jacebrowning/doorstop"
+repository = "https://github.com/doorstop-dev/doorstop"
 
 keywords = [
   "requirements-management",
@@ -62,7 +62,7 @@ isort = "=4.3.21"
 mypy = "*"
 pydocstyle = "*"
 pylint = "^2.0"
-astroid = { git = "https://github.com/PyCQA/astroid", sha = "29581ccb6fc097f24f7f9fd1cd5e693039f45740" } # for Python 3.8 support
+astroid = { git = "https://github.com/PyCQA/astroid", sha = "b6f51e3dc7d2381d236c963df54f62c4acd80a14" } # for Python 3.8 support
 
 # Testing
 nose = "^1.3"
@@ -83,6 +83,7 @@ pyinstaller = { version = "*", python = "!=3.8" }
 sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
+rope = "^0.14.0"
 
 [tool.poetry.scripts]
 

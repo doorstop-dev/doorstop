@@ -6,12 +6,14 @@
 
 import sys
 from itertools import chain
+from typing import Dict, List, Optional
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopWarning
 from doorstop.core import vcs
 from doorstop.core.base import BaseValidatable
 from doorstop.core.document import Document
+from doorstop.core.item import Item
 from doorstop.core.types import UID, Prefix
 
 UTF8 = 'utf-8'
@@ -89,12 +91,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self.document = document
         self.root = root or document.root  # enables mock testing
         self.parent = parent
-        self.children = []
+        self.children: List[Tree] = []
         self._vcs = None  # working copy reference loaded in a property
         self.request_next_number = None  # server method injected by clients
         self._loaded = False
-        self._item_cache = {}
-        self._document_cache = {}
+        self._item_cache: Dict[str, Item] = {}
+        self._document_cache: Dict[str, Optional[Document]] = {}
 
     def __repr__(self):
         return "<Tree {}>".format(self._draw_line())
@@ -356,7 +358,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Return the item
         return item
 
-    def find_document(self, value):
+    def find_document(self, value) -> Document:
         """Get a document by its prefix.
 
         :param value: document or prefix
@@ -372,24 +374,29 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             document = self._document_cache[prefix]
             if document:
-                log.trace("found cached document: {}".format(document))
+                log.trace("found cached document: {}".format(document))  # type: ignore
                 return document
             else:
-                log.trace("found cached unknown: {}".format(prefix))
+                log.trace("found cached unknown: {}".format(prefix))  # type: ignore
         except KeyError:
             for document in self:
+                if not document:
+                    # TODO: mypy seems to think document can be None here, but that shouldn't be possible
+                    continue
                 if document.prefix == prefix:
-                    log.trace("found document: {}".format(document))
+                    log.trace("found document: {}".format(document))  # type: ignore
                     if settings.CACHE_DOCUMENTS:
                         self._document_cache[prefix] = document
-                        log.trace("cached document: {}".format(document))
+                        log.trace(  # type: ignore
+                            "cached document: {}".format(document)
+                        )
                     return document
             log.debug("could not find document: {}".format(prefix))
             if settings.CACHE_DOCUMENTS:
                 self._document_cache[prefix] = None
-                log.trace("cached unknown: {}".format(prefix))
+                log.trace("cached unknown: {}".format(prefix))  # type: ignore
 
-        raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
+        raise DoorstopError(Prefix.UNKNOWN_MESSAGE.format(prefix))
 
     def find_item(self, value, _kind=''):
         """Get an item by its UID.
@@ -408,13 +415,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             item = self._item_cache[uid]
             if item:
-                log.trace("found cached item: {}".format(item))
+                log.trace("found cached item: {}".format(item))  # type: ignore
                 if item.active:
                     return item
                 else:
-                    log.trace("item is inactive: {}".format(item))
+                    log.trace("item is inactive: {}".format(item))  # type: ignore
             else:
-                log.trace("found cached unknown: {}".format(uid))
+                log.trace("found cached unknown: {}".format(uid))  # type: ignore
         except KeyError:
             for document in self:
                 try:
@@ -422,19 +429,19 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
-                    log.trace("found item: {}".format(item))
+                    log.trace("found item: {}".format(item))  # type: ignore
                     if settings.CACHE_ITEMS:
                         self._item_cache[uid] = item
-                        log.trace("cached item: {}".format(item))
+                        log.trace("cached item: {}".format(item))  # type: ignore
                     if item.active:
                         return item
                     else:
-                        log.trace("item is inactive: {}".format(item))
+                        log.trace("item is inactive: {}".format(item))  # type: ignore
 
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
                 self._item_cache[uid] = None
-                log.trace("cached unknown: {}".format(uid))
+                log.trace("cached unknown: {}".format(uid))  # type: ignore
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
@@ -582,7 +589,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
             - `'utf-8'` - all characters
             - `'cp437'` - Code Page 437 characters
-            - (other) - ACSII characters
+            - (other) - ASCII characters
 
         """
         encoding = encoding or getattr(sys.stdout, 'encoding', None)

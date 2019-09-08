@@ -182,7 +182,7 @@ def _lines_index(filenames, charset='UTF-8', tree: Optional[Tree] = None):
         yield '</p>'
     # Traceability table
     documents = tree.documents if tree else None
-    if documents:
+    if documents and tree:
         if text or filenames:
             yield ''
             yield '<hr>'
