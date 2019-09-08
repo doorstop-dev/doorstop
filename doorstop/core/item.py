@@ -7,8 +7,6 @@ import os
 import re
 from typing import Any, List
 
-import pyficache
-
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core import editor
@@ -22,6 +20,9 @@ from doorstop.core.base import (
     edit_item,
 )
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
+
+
+cached_files = {}
 
 log = common.logger(__name__)
 
@@ -732,6 +733,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         msg = 'no links from document: {}'.format(child)
                         yield DoorstopWarning(msg)
 
+    def getlines(self, path):
+        if path not in cached_files:
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    cached_files[path] = f.readlines()
+            else:
+                log.warning("COULD NOT OPEN FILE FOR REF SEARCH: %s", path)
+                return None
+        return cached_files[path]
+
     @requires_tree
     def find_ref(self):
         """Get the external file reference and line number.
@@ -751,7 +762,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             return None, None
         # Update the cache
         if not settings.CACHE_PATHS:
-            pyficache.clear_file_cache()
+            cached_files = {}
         # Search for the external reference
         log.debug("seraching for ref '{}'...".format(self.ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
@@ -768,14 +779,16 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
                 continue
             # Search for the reference in the file
-            lines = pyficache.getlines(path)
+            lines = self.getlines(path)
             if lines is None:
                 log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
-            for lineno, line in enumerate(lines, start=1):
+            lineno = 1
+            for line in lines:
                 if regex.search(line):
                     log.debug("found ref: {}".format(relpath))
                     return relpath, lineno
+                lineno += 1
 
         msg = "external reference not found: {}".format(self.ref)
         raise DoorstopError(msg)
