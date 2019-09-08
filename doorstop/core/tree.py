@@ -5,6 +5,7 @@
 """Representation of a hierarchy of documents."""
 
 import sys
+import os
 from itertools import chain
 from typing import Dict, List, Optional
 
@@ -97,6 +98,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._loaded = False
         self._item_cache: Dict[str, Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
+        self.cached_ref_files = {}
 
     def __repr__(self):
         return "<Tree {}>".format(self._draw_line())
@@ -644,6 +646,17 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         if encoding not in (UTF8, CP437):
             encoding = ASCII
         return BOX[name][encoding]
+
+    def getlines(self, path):
+        if path not in self.cached_ref_files:
+            log.debug("Adding '%s' to file cache.")
+            if os.path.exists(path):
+                with open(path, 'rb') as f:
+                    self.cached_ref_files[path] = f.readlines()
+            else:
+                log.warning("COULD NOT OPEN FILE FOR REF SEARCH: %s", path)
+                return None
+        return self.cached_ref_files[path]
 
     # decorators are applied to methods in the associated classes
     def delete(self):

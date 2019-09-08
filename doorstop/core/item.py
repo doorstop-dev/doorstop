@@ -21,9 +21,6 @@ from doorstop.core.base import (
 )
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
 
-
-cached_files = {}
-
 log = common.logger(__name__)
 
 
@@ -733,16 +730,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         msg = 'no links from document: {}'.format(child)
                         yield DoorstopWarning(msg)
 
-    def getlines(self, path):
-        if path not in cached_files:
-            log.debug("Adding '%s' to file cache.")
-            if os.path.exists(path):
-                with open(path, 'rb') as f:
-                    cached_files[path] = f.readlines()
-            else:
-                log.warning("COULD NOT OPEN FILE FOR REF SEARCH: %s", path)
-                return None
-        return cached_files[path]
+
 
     @requires_tree
     def find_ref(self):
@@ -780,7 +768,7 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
                 continue
             # Search for the reference in the file
-            lines = self.getlines(path)
+            lines = self.tree.getlines(path)
             if lines is None:
                 log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
