@@ -98,7 +98,7 @@ class ItemValidator:
         # Check review status
         if not item.reviewed:
             if settings.CHECK_REVIEW_STATUS:
-                if item.is_reviewed():
+                if not item.is_reviewed():
                     if settings.REVIEW_NEW_ITEMS:
                         item.review()
                     else:
