@@ -735,8 +735,9 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     def getlines(self, path):
         if path not in cached_files:
+            log.debug("Adding '%s' to file cache.")
             if os.path.exists(path):
-                with open(path, 'r') as f:
+                with open(path, 'rb') as f:
                     cached_files[path] = f.readlines()
             else:
                 log.warning("COULD NOT OPEN FILE FOR REF SEARCH: %s", path)
@@ -785,9 +786,12 @@ class Item(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 continue
             lineno = 1
             for line in lines:
-                if regex.search(line):
-                    log.debug("found ref: {}".format(relpath))
-                    return relpath, lineno
+                try:
+                    if regex.search(line.decode('utf-8')):
+                        log.debug("found ref: {}".format(relpath))
+                        return relpath, lineno
+                except:
+                    pass
                 lineno += 1
 
         msg = "external reference not found: {}".format(self.ref)
