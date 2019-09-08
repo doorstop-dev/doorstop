@@ -23,6 +23,7 @@ from doorstop.core.base import (
 )
 from doorstop.core.item import Item
 from doorstop.core.types import UID, Level, Prefix
+from doorstop.core.validators.item_validator import ItemValidator
 
 log = common.logger(__name__)
 
@@ -753,13 +754,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         elif settings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
 
+        item_validator = ItemValidator()
+
         # Check each item
         for item in items:
 
             # Check item
             for issue in chain(
                 hook(item=item, document=self, tree=self.tree),
-                item.get_issues(skip=skip),
+                item_validator.get_issues(item, skip=skip),
             ):
 
                 # Prepend the item's UID to yielded exceptions
