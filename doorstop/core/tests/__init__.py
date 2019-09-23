@@ -4,7 +4,6 @@
 
 import logging
 import os
-import unittest
 from typing import List
 from unittest.mock import MagicMock, Mock, patch
 

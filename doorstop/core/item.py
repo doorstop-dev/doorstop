@@ -4,7 +4,6 @@
 
 import functools
 import os
-import re
 from typing import Any, List
 
 import pyficache
@@ -106,7 +105,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             raise DoorstopError(msg)
         # Initialize the item
         self.path = path
-        self.root = root
+        self.root: str = root
         self.document = document
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Item.auto)
@@ -473,7 +472,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """
         return self._data['references']
 
-    @references.setter
+    @references.setter  # type: ignore
     @auto_save
     def references(self, value):
         """Set the item's external file reference."""
@@ -481,7 +480,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             assert isinstance(value, list)
         self._data['references'] = value
 
-    @property
+    @property  # type: ignore
     @auto_load
     def links(self):
         """Get a list of the item UIDs this item links to."""

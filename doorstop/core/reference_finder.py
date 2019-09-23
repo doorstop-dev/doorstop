@@ -33,7 +33,7 @@ class ReferenceFinder:
         # Search for the external reference
         log.debug("searching for ref '{}'...".format(ref))
         pattern = r"(\b|\W){}(\b|\W)".format(re.escape(ref))
-        log.trace("regex: {}".format(pattern))
+        log.trace("regex: {}".format(pattern))  # type: ignore
         regex = re.compile(pattern)
         for path, filename, relpath in tree.vcs.paths:
             # Skip the item's file while searching
@@ -48,7 +48,7 @@ class ReferenceFinder:
             # Search for the reference in the file
             lines = pyficache.getlines(path)
             if lines is None:
-                log.trace("unable to read lines from: {}".format(path))
+                log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
             for lineno, line in enumerate(lines, start=1):
                 if regex.search(line):
