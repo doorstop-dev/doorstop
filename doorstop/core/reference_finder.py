@@ -59,7 +59,7 @@ class ReferenceFinder:
         raise DoorstopError(msg)
 
     @staticmethod
-    def find_file_reference(ref_path, root, tree, item_path):
+    def check_file_reference(ref_path, root, tree, item_path, keyword=None):
         """Find the external file reference.
 
         :raises: :class:`~doorstop.common.DoorstopError` when no
@@ -77,7 +77,25 @@ class ReferenceFinder:
             if path == item_path:
                 continue
             if path == ref_full_path:
-                return True
+                if keyword is None:
+                    return True
+
+                # Search for the reference in the file
+                lines = pyficache.getlines(path)
+                if lines is None:
+                    log.trace(  # type: ignore
+                        "unable to read lines from: {}".format(path)
+                    )  # type: ignore
+                    continue
+
+                log.debug("searching for ref '{}'...".format(keyword))
+                pattern = r"(\b|\W){}(\b|\W)".format(re.escape(keyword))
+                log.trace("regex: {}".format(pattern))  # type: ignore
+                regex = re.compile(pattern)
+                for lineno, line in enumerate(lines, start=1):
+                    if regex.search(line):
+                        log.debug("found ref: {}".format(relpath))
+                        return True
 
         msg = "external reference not found: {}".format(ref_path)
         raise DoorstopError(msg)

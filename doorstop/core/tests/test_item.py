@@ -646,6 +646,43 @@ class TestItem(unittest.TestCase):
         relpath2 = ref[1]['path']
         self.assertEqual('files/REQ002.yml', relpath2)
 
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_valid_keyword(self):
+        """Verify an item's references can be found."""
+        keyword = "Lorem ipsum dolor sit amet"
+        self.item.references = [{"path": "files/REQ001.yml", "keyword": keyword}]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(1, len(ref))
+
+        ref_path = ref[0]['path']
+        ref_keyword = ref[0]['keyword']
+        self.assertEqual('files/REQ001.yml', ref_path)
+        self.assertEqual(ref_keyword, keyword)
+
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_invalid_keyword(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml", "keyword": "INVALID KEYWORD"}
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        with self.assertRaises(DoorstopError) as context:
+            self.item.find_references()
+
+        self.assertTrue('external reference not found' in str(context.exception))
+
     def test_find_ref_error_multiple(self):
         """Verify an error occurs when no external reference found."""
         self.item.references = [{"path": "this/path/does/not/exist.yml"}]

@@ -12,7 +12,9 @@ class YamlValidator:
         for key, value in item_dict.items():
             if key == 'references':
                 if value is None:
-                    continue
+                    raise AttributeError(
+                        "'references' must be an array with at least one reference element"
+                    )
 
                 if not isinstance(value, list):
                     raise AttributeError("'references' must be an array")
@@ -42,3 +44,12 @@ class YamlValidator:
                         raise AttributeError(
                             "'references' member's path must be a string value"
                         )
+
+                    if 'keyword' in ref_dict:
+                        keyword = ref_dict['keyword']
+                        if not isinstance(keyword, str):
+                            raise AttributeError(
+                                "'references' member's 'keyword' must be a string value"
+                            )
+
+        return True

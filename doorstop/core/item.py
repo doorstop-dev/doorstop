@@ -642,7 +642,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             pyficache.clear_file_cache()
         for ref_item in self.references:
             path = ref_item["path"]
-            self.reference_finder.find_file_reference(path, self.root, self.tree, path)
+            keyword = ref_item["keyword"] if "keyword" in ref_item else None
+
+            self.reference_finder.check_file_reference(
+                path, self.root, self.tree, path, keyword
+            )
         return self.references
 
     def _find_external_file_ref(self, ref_path):
