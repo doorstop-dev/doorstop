@@ -65,9 +65,9 @@ class TestItem(unittest.TestCase):
         """Verify an item's external reference can be found."""
         item = core.Item(None, os.path.join(FILES, 'REQ003.yml'))
         item.tree = Mock()
-        item.tree.vcs = mockvcs.WorkingCopy(ROOT)
+        item.tree.vcs = mockvcs.WorkingCopy(FILES)
         path, line = item.find_ref()
-        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), ROOT)
+        relpath = os.path.relpath(os.path.join(FILES, 'external', 'text.txt'), FILES)
         self.assertEqual(relpath, path)
         self.assertEqual(3, line)
 

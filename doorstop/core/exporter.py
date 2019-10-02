@@ -171,12 +171,18 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
                 if value is None:
                     value = ''
                 else:
-                    assert isinstance(value, list)
                     ref_strings = []
                     for ref_item in value:
                         ref_type = ref_item['type']
                         ref_path = ref_item['path']
-                        ref_strings.append("type:{},path:{}".format(ref_type, ref_path))
+
+                        ref_string = "type:{},path:{}".format(ref_type, ref_path)
+
+                        if 'keyword' in ref_item:
+                            keyword = ref_item['keyword']
+                            ref_string += ",keyword:{}".format(keyword)
+
+                        ref_strings.append(ref_string)
                     value = '\n'.join(ref_string for ref_string in ref_strings)
             elif isinstance(value, str) and key not in ('reviewed',):
                 # remove sentence boundaries and line wrapping

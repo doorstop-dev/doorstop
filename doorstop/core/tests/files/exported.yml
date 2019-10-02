@@ -42,7 +42,8 @@ REQ006:
   normative: true
   ref: ''
   references:
-  - path: external/text.txt
+  - keyword: REF123
+    path: external/text.txt
     type: file
   - path: external/text2.txt
     type: file

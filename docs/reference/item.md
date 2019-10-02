@@ -205,8 +205,21 @@ original `ref` attribute's string behavior. The old behavior supports referencin
 only one file via file name or referencing a file that contains a given
 keyword.
 
-The new behavior of `references` attribute allows referencing many files. It
-discards referencing files via keywords and only supports referencing files.
+The new behavior of `references` attribute allows referencing many files. The
+old behavior matching a specified keyword is enabled via optional `keyword`
+parameter:
+
+```yaml
+references:
+- path: tests/test1.cpp
+  type: file
+  keyword: REQ1
+- path: tests/test2.cpp
+  type: file
+  keyword: REQ2
+```
+
+Doorstop will search a specified file to find the specified reference.
 
 ## `ref` (deprecated behavior, see 'references')
 

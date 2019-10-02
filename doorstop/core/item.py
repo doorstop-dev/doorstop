@@ -195,14 +195,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             elif key == 'ref':
                 value = value.strip()
             elif key == 'references':
-                if value is None:
-                    continue
-
                 stripped_value = []
                 for ref_dict in value:
                     ref_type = ref_dict['type']
                     ref_path = ref_dict['path']
-                    stripped_value.append({"type": ref_type, "path": ref_path.strip()})
+
+                    stripped_ref_dict = {"type": ref_type, "path": ref_path.strip()}
+                    if 'keyword' in ref_dict:
+                        ref_keyword = ref_dict['keyword']
+                        stripped_ref_dict['keyword'] = ref_keyword
+
+                    stripped_value.append(stripped_ref_dict)
+
                 value = stripped_value
             elif key == 'links':
                 value = set(UID(part) for part in value)
@@ -261,7 +265,16 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     continue
                 stripped_value = []
                 for el in value:
-                    stripped_value.append({"type": "file", "path": el["path"].strip()})
+                    ref_dict = {
+                        "path": el["path"].strip(),
+                        "type": "file"
+                    }
+
+                    if 'keyword' in el:
+                        ref_dict['keyword'] = el['keyword']
+
+                    stripped_value.append(ref_dict)
+
                 value = stripped_value
             elif key == 'links':
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]
@@ -648,20 +661,6 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 path, self.root, self.tree, path, keyword
             )
         return self.references
-
-    def _find_external_file_ref(self, ref_path):
-        log.debug("searching for ref '{}'...".format(ref_path))
-        ref_full_path = os.path.join(self.root, ref_path)
-
-        for path, filename, relpath in self.tree.vcs.paths:
-            # Skip the item's file while searching
-            if path == self.path:
-                continue
-            if path == ref_full_path:
-                return True
-
-        msg = "external reference not found: {}".format(ref_path)
-        raise DoorstopError(msg)
 
     def find_child_links(self, find_all=True):
         """Get a list of item UIDs that link to this item (reverse links).

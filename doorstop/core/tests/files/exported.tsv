@@ -9,7 +9,7 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
 deserunt mollit anim id est laborum."			"SYS001
 SYS002:abc123"	True	False		True	
 REQ003	1.4	Unicode: -40° ±1%	REF123		REQ001	True	False		True	
-REQ006	1.5	Hello, world!		"type:file,path:external/text.txt
+REQ006	1.5	Hello, world!		"type:file,path:external/text.txt,keyword:REF123
 type:file,path:external/text2.txt"	REQ001:35ed54323e3054c33ae5545fffdbbbf5	True	False		True	c442316131ca0225595ae257f3b4583d
 REQ004	1.6	Hello, world!				True	False		True	
 REQ002	2.1	"Hello, world!
