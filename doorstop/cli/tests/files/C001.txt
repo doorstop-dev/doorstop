@@ -1,11 +1,12 @@
 active: true
 derived: false
+header: ''
 level: 1.0
 links:
-- C002: deadbeefdeadbeefdeadbeefdeadbeef
-- C003: deadbeefdeadbeefdeadbeefdeadbeef
+- C002: ThisIsTheFingerprintOfASuspectLinkABCDEFGHI=
+- C003: ThisIsTheFingerprintOfASuspectLinkABCDEFGHI=
 normative: true
 ref: ''
-reviewed: 918294db8654e4443cc4b221a51d618b
+reviewed: czv54TPcUklkenTWIS96RvaEKb_vYY9wKgwD5TJcKsA=
 text: |
   C001

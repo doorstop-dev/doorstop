@@ -62,7 +62,7 @@ class TestItemValidator(unittest.TestCase):
         """Verify that checking a reviewed item updates the stamp."""
         self.item._data['reviewed'] = True
         self.assertTrue(self.item_validator.validate(self.item))
-        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        stamp = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
         self.assertEqual(stamp, self.item._data['reviewed'])
 
     @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
