@@ -552,9 +552,6 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def is_reviewed(self):
         return self._data['reviewed']
 
-    def set_links(self, links):
-        self._data['links'] = links
-
     @requires_tree
     def find_ref(self):
         """Get the external file reference and line number.
