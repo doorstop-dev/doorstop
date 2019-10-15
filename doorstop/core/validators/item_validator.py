@@ -158,35 +158,34 @@ class ItemValidator:
         identifiers = set()
         for uid in item.links:
             try:
-                item = tree.find_item(uid)
+                parent = tree.find_item(uid)
             except DoorstopError:
                 identifiers.add(uid)  # keep the invalid UID
                 msg = "linked to unknown item: {}".format(uid)
                 yield DoorstopError(msg)
             else:
-                # check the linked item
-                if not item.active:
-                    msg = "linked to inactive item: {}".format(item)
+                # check the parent item
+                if not parent.active:
+                    msg = "linked to inactive item: {}".format(parent)
                     yield DoorstopInfo(msg)
-                if not item.normative:
-                    msg = "linked to non-normative item: {}".format(item)
+                if not parent.normative:
+                    msg = "linked to non-normative item: {}".format(parent)
                     yield DoorstopWarning(msg)
                 # check the link status
                 if uid.stamp == Stamp(True):
-                    uid.stamp = item.stamp()
+                    uid.stamp = parent.stamp()
                 elif not str(uid.stamp) and settings.STAMP_NEW_LINKS:
-                    uid.stamp = item.stamp()
-                elif uid.stamp != item.stamp():
+                    uid.stamp = parent.stamp()
+                elif uid.stamp != parent.stamp():
                     if settings.CHECK_SUSPECT_LINKS:
-                        msg = "suspect link: {}".format(item)
+                        msg = "suspect link: {}".format(parent)
                         yield DoorstopWarning(msg)
                 # reformat the item's UID
-                identifier2 = UID(item.uid, stamp=uid.stamp)
-                identifiers.add(identifier2)
+                identifiers.add(UID(parent.uid, stamp=uid.stamp))
 
         # Apply the reformatted item UIDs
         if settings.REFORMAT:
-            item.set_links(identifiers)
+            item.links = identifiers
 
     def _get_issues_both(self, item, document, tree, skip):
         """Yield all the item's issues against its document and tree."""

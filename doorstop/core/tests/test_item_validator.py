@@ -104,6 +104,45 @@ class TestItemValidator(unittest.TestCase):
         self.assertTrue(self.item_validator.validate(self.item))
         self.assertEqual('abc123', self.item.links[0].stamp)
 
+    @patch('doorstop.settings.REFORMAT', True)
+    def test_validate_reformat_when_setting_is_set(self):
+        """Verify that new links are stamped automatically."""
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_uid': None}, {'mock_uid': None}]
+        self.item_validator.disable_get_issues_document()
+        self.assertTrue(self.item_validator.validate(self.item))
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
+        # two calls:
+        # 1) setting up mock links with self.item.links above
+        # 2) calling item.links because of REFORMAT == True
+        self.assertEqual(self.item._write.call_count, 2)
+
+    @patch('doorstop.settings.REFORMAT', False)
+    def test_validate_no_reformat_when_setting_is_not_set(self):
+        """Verify that new links are stamped automatically."""
+
+        mock_item = Mock()
+        mock_item.stamp = Mock(return_value=Stamp('abc123'))
+
+        mock_tree = MagicMock()
+        mock_tree.find_item = Mock(return_value=mock_item)
+        self.item.tree = mock_tree
+        self.item.links = [{'mock_uid': None}, {'mock_uid': None}]
+        self.item_validator.disable_get_issues_document()
+        self.assertTrue(self.item_validator.validate(self.item))
+        self.assertEqual('abc123', self.item.links[0].stamp)
+
+        # two calls:
+        # 1) setting up mock links with self.item.links above
+        # 2) calling item.review()
+        self.assertEqual(self.item._write.call_count, 2)
+
     def test_validate_nonnormative_with_links(self):
         """Verify a non-normative item with links can be checked."""
         self.item.normative = False
