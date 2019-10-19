@@ -5,6 +5,7 @@
 import hashlib
 import os
 import re
+from base64 import urlsafe_b64encode
 from typing import Union
 
 import yaml
@@ -558,12 +559,12 @@ class Stamp:
         return self.value
 
     @staticmethod
-    def digest(*values):
+    def digest(*values) -> str:
         """Hash the values for later comparison."""
-        md5 = hashlib.md5()
+        hsh = hashlib.sha256()
         for value in values:
-            md5.update(str(value).encode())
-        return md5.hexdigest()
+            hsh.update(str(value).encode())
+        return urlsafe_b64encode(hsh.digest()).decode('utf-8')
 
 
 def to_bool(obj):

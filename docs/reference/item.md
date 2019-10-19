@@ -133,7 +133,8 @@ values of extended attributes can be added to the fingerprint through a
 The value of the *reviewed* attribute indicates the fingerprint of the item
 when it was last reviewed. "null" if the item has not yet been reviewed.
 Doorstop will use this to detect unreviewed changes to an item by comparing the
-current item fingerprint to the last reviewed fingerprint.
+current item fingerprint to the last reviewed fingerprint.  The fingerprint
+hash algorithm is SHA256 stored in URL-safe Base64 encoding.
 
 You should not calculate this value manually, use `doorstop review`.
 

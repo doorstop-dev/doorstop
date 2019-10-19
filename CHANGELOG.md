@@ -1,6 +1,10 @@
 # 2.0 (unreleased)
 
 - Dropped support for Python 3.5.
+- **BREAKING:** Switched to SHA256 for tracking changes to files.  Use
+  `doorstop review all` followed by `doorstop clear all` to update an existing
+  project.  Warning: this marks all items as reviewed and clears all suspect
+  links.
 
 # 1.6 (2019-08-10)
 

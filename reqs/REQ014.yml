@@ -6,6 +6,6 @@ level: 4.4
 links: []
 normative: true
 ref: ''
-reviewed: 634e782d9c7ec27a279e4fd303afe05f
+reviewed: r_QHE6crBVcD_cEeXXtztbaeU7PoTnvpQ6uSpR3M63w=
 text: |
   Doorstop **shall** be scalable to support thousands of requirements.
