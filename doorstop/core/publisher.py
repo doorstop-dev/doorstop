@@ -191,10 +191,10 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
         yield '<p>'
         yield '<table>'
         # header
-        for document in documents:
+        for document in documents:  # pylint: disable=not-an-iterable
             yield '<col width="100">'
         yield '<tr>'
-        for document in documents:
+        for document in documents:  # pylint: disable=not-an-iterable
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
             yield ('  <th height="25" align="center"> {link} </th>'.format(link=link))
         yield '</tr>'
