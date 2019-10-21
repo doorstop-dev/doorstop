@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
 
 """Unit tests for the doorstop.core.document module."""
 
@@ -462,6 +463,47 @@ outline:
         self.document.add_item(number=999)
         mock_new.assert_called_once_with(
             None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
+        )
+
+    def test_add_item_with_no_sep(self):
+        """Verify an item cannot be added to a document without a separator with a name."""
+        msg = "cannot add item with name 'ABC' to document 'REQ' without a separator"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_sep(self):
+        """Verify an item cannot be added to a document with an invalid separator with a name."""
+        self.document._data['sep'] = 'X'
+        msg = "cannot add item with name 'ABC' to document 'REQ' with an invalid separator 'X'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_name(self):
+        """Verify an item cannot be added to a document with an invalid name."""
+        self.document.sep = '-'
+        msg = "invalid item name 'A-B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A-B')
+        msg = "invalid item name 'A_B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A_B')
+        msg = "invalid item name 'A.B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A.B')
+        msg = "invalid item name 'X/Y'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='X/Y')
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_name(self, mock_new):
+        """Verify an item can be added to a document with a name."""
+        self.document.sep = '-'
+        self.document.add_item(name='ABC')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-ABC', level=Level('2.2')
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_number_name(self, mock_new):
+        """Verify an item can be added to a document with a number as name."""
+        self.document.sep = '-'
+        self.document.add_item(name='99')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-099', level=Level('2.2')
         )
 
     @patch('doorstop.core.item.Item.set_attributes')
