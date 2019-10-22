@@ -201,7 +201,7 @@ class TestAddServer(unittest.TestCase):
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
-        mock_add_item.assert_called_once_with(defaults=None, level=None)
+        mock_add_item.assert_called_once_with(defaults=None, level=None, name=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""

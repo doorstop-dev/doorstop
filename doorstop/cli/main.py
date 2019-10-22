@@ -232,6 +232,16 @@ def _add(subs, shared):
     sub.add_argument('prefix', help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
     sub.add_argument(
+        '-n',
+        '--name',
+        help=(
+            "use the specified NAME instead of an automatically "
+            "generated number for the UID (together with the document prefix "
+            "and separator); the NAME must not contain separator characters "
+            "or digits"
+        ),
+    )
+    sub.add_argument(
         '-c',
         '--count',
         default=1,

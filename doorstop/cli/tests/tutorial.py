@@ -247,6 +247,36 @@ class TestSection1(TestBase):
             cp.stdout,
         )
 
+    def test_item_with_name(self):
+        """Verify new item with custom defaults is working."""
+
+        self.doorstop("create -s - REQ .")
+
+        self.doorstop("add -n ABC REQ")
+        self.assertTrue(os.path.isfile('REQ-ABC.yml'))
+
+        self.doorstop("add -n 9 REQ")
+        self.assertTrue(os.path.isfile('REQ-009.yml'))
+
+        self.doorstop("add -n XYZ REQ")
+        self.assertTrue(os.path.isfile('REQ-XYZ.yml'))
+
+        self.doorstop("add -n 99 REQ")
+        self.assertTrue(os.path.isfile('REQ-099.yml'))
+
+        cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
+        self.assertIn(
+            b'''1.0     REQ-ABC
+
+1.1     REQ-009
+
+1.2     REQ-XYZ
+
+1.3     REQ-099
+''',
+            cp.stdout,
+        )
+
 
 if __name__ == '__main__':
     logging.basicConfig(format="%(message)s", level=logging.INFO)
