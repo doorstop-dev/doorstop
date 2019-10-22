@@ -221,11 +221,6 @@ class TestItem(unittest.TestCase):
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
 
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
-
     def test_level(self):
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
@@ -826,11 +821,6 @@ class TestUnknownItem(unittest.TestCase):
         text = "@{}{}".format(os.sep, '???')
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
-
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
 
     @patch('doorstop.core.item.log.debug')
     def test_attributes(self, mock_warning):

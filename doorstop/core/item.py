@@ -262,11 +262,6 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         filename = os.path.basename(self.path)
         return UID(os.path.splitext(filename)[0])
 
-    @property
-    def prefix(self):
-        """Get the item UID's prefix."""
-        return self.uid.prefix
-
     @property  # type: ignore
     @auto_load
     def level(self):
@@ -741,8 +736,6 @@ class UnknownItem:
     def uid(self):
         """Get the item's UID."""
         return self._uid
-
-    prefix = Item.prefix
 
     @property
     def relpath(self):

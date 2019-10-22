@@ -121,7 +121,7 @@ class ItemValidator:
             return
 
         # Verify an item's UID matches its document's prefix
-        if item.prefix != document.prefix:
+        if item.uid.prefix != document.prefix:
             msg = "prefix differs from document ({})".format(document.prefix)
             yield DoorstopInfo(msg)
 
