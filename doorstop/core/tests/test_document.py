@@ -14,7 +14,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, MockDocument, MockItem
-from doorstop.core.types import Level
+from doorstop.core.types import UID, Level
 
 YAML_DEFAULT = """
 settings:
@@ -485,7 +485,7 @@ outline:
     def test_add_item_after_header(self, mock_new):
         """Verify the next item after a header is indented."""
         mock_item = Mock()
-        mock_item.number = 1
+        mock_item.uid = UID('REQ001')
         mock_item.level = Level('1.0')
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()

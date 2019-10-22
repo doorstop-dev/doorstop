@@ -381,7 +381,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def next_number(self):
         """Get the next item number for the document."""
         try:
-            number = max(item.number for item in self) + 1
+            number = max(item.uid.number for item in self) + 1
         except ValueError:
             number = 1
         log.debug("next number (local): {}".format(number))
