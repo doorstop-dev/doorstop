@@ -11,6 +11,7 @@ can specify a name for the UID during item creation. The name must not contain
 separator characters.
 
 Example item:
+
 ```yaml
 active: true
 derived: false
@@ -54,6 +55,7 @@ The value of this attribute does **not** contribute to the
 Indicates if the item is normative (true) or non-normative (false).
 
 [Wikipedia on Normative](https://en.wikipedia.org/wiki/Normative) in standards documents:
+
 > 'In standards terminology still used by some organizations, "normative" means
 > "considered to be a prescriptive part of the standard". It characterizes
 > that part of the standard which describes what ought (see philosophy above) to
@@ -103,6 +105,7 @@ The value of this attribute does **not** contribute to the
 ### Example: Header
 
 TST007.yml
+
 ```yaml
 level: 1.5
 normative: true
@@ -111,7 +114,7 @@ links:
 header: |
     Gradual Temperature Drop Test
 text: |
-    Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+    Lower the external air temperature gradually from 0 to -15 degrees Celsius over a period of 30 minutes.
     Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
 ```
 
@@ -119,7 +122,7 @@ When this item is published, Doorstop will place the item's Header next to its U
 
 ```
 TST007 Gradual Temperature Drop Test
-  Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+  Lower the external air temperature gradually from 0 to -15 degrees Celsius over a period of 30 minutes.
   Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
 
   Parent Item: REQ023 Temperature Interlock
@@ -280,6 +283,7 @@ of the item.
 ### Example: Heading
 
 REQ001.yml
+
 ```yaml
 level: 1.1.0
 normative: false
@@ -295,6 +299,7 @@ When this item is published, Doorstop will create a new heading with the text
 ### Example: Normative item
 
 REQ001.yml
+
 ```yaml
 level: 1.1.0
 normative: true
@@ -305,13 +310,14 @@ text: |
 When this item is published, Doorstop will create a new heading with the text
 "1.1.0 REQ001" and put the all of the text in its body.
 
-### Example: LaTex-like math expressions
+### Example: LaTeX-like math expressions
 
-You can use math expressions in LaTex interpreted by the markdown extension
+You can use math expressions in LaTeX interpreted by the markdown extension
 [python-markdown-math](https://pypi.org/project/python-markdown-math/) and rendered by
 [MathJax](https://github.com/mathjax/MathJax), when using the HTML publisher.
 
 TST008.yml
+
 ```yaml
 level: 1.6
 normative: true

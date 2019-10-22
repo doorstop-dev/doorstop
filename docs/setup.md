@@ -6,7 +6,7 @@ Doorstop will open files using the editor specified by the `$EDITOR` environment
 
 **Linux / macOS**
 
-No additional configuration should be neccesary.
+No additional configuration should be necessary.
 
 **Windows**
 
