@@ -70,20 +70,47 @@ class TestUID(unittest.TestCase):
         """Verify UIDs are parsed correctly (string)."""
         uid = UID('REQ')
         self.assertRaises(DoorstopError, getattr, uid, 'prefix')
-        uid = UID('REQ-?')
         self.assertRaises(DoorstopError, getattr, uid, 'number')
+        self.assertRaises(DoorstopError, getattr, uid, 'name')
+        uid = UID('REQ-?')
+        self.assertRaises(DoorstopError, getattr, uid, 'prefix')
+        self.assertRaises(DoorstopError, getattr, uid, 'number')
+        self.assertRaises(DoorstopError, getattr, uid, 'name')
 
     def test_init_dict(self):
         """Verify UIDs are parsed correctly (dictionary)."""
         uid = UID({'REQ001': 'abc123'})
         self.assertEqual('REQ', uid.prefix)
         self.assertEqual(1, uid.number)
+        self.assertEqual('', uid.name)
         self.assertEqual('abc123', uid.stamp)
+
+    def test_init_name(self):
+        """Verify UIDs are parsed correctly (name)."""
+        uid = UID('REQ', '-', 'NAME')
+        self.assertEqual('REQ', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('NAME', uid.name)
+        uid = UID('REQ-NAME')
+        self.assertEqual('REQ', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('NAME', uid.name)
+        uid = UID('REQ-MIDDLE-NAME')
+        self.assertEqual('REQ-MIDDLE', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('NAME', uid.name)
+        uid = UID('REQ.A-B_C')
+        self.assertEqual('REQ.A-B', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('C', uid.name)
+        uid = UID('REQ.A-B_C more')
+        self.assertEqual('REQ.A-B', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('C', uid.name)
 
     def test_init_values(self):
         """Verify UIDs are parsed correctly (values)."""
         self.assertRaises(TypeError, UID, 'REQ', '-')
-        self.assertRaises(TypeError, UID, 'REQ', '-', 42)
         self.assertRaises(TypeError, UID, 'REQ', '-', 42, 3, 'extra')
 
     def test_init_empty(self):
@@ -118,6 +145,19 @@ class TestUID(unittest.TestCase):
         self.assertEqual('req1', UID('REQ001'))
         self.assertNotEqual(None, UID('REQ001'))
         self.assertEqual(self.uid1, self.uid4)
+        self.assertEqual(UID('a', '-', 'b'), UID('a', '-', 'b'))
+        self.assertNotEqual(UID('a', '-', 'b'), UID('a', '-', 'c'))
+
+    def test_le(self):
+        """Verify UID's less operator."""
+        self.assertTrue(UID('a', '-', 1, 0) < UID('a', '-', 2, 0))
+        self.assertFalse(UID('a', '-', 1, 0) < UID('a', '-', 1, 0))
+        self.assertFalse(UID('a', '-', 2, 0) < UID('a', '-', 1, 0))
+        self.assertTrue(UID('a', '-', 'a') < UID('a', '-', 'b'))
+        self.assertFalse(UID('a', '-', 'a') < UID('a', '-', 'a'))
+        self.assertFalse(UID('a', '-', 'b') < UID('a', '-', 'a'))
+        self.assertTrue(UID('a', '-', 'a') < UID('a', '-', 1, 0))
+        self.assertFalse(UID('a', '-', 1, 0) < UID('a', '-', 'a'))
 
     def test_sort(self):
         """Verify UIDs can be sorted."""
