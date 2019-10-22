@@ -56,11 +56,6 @@ class TestPrefix(unittest.TestCase):
         prefixes = [Prefix('a'), Prefix('B'), Prefix('c')]
         self.assertListEqual(prefixes, sorted(prefixes))
 
-    def test_short(self):
-        """Verify the short representation of prefixes is correct."""
-        self.assertEqual('req', self.prefix1.short)
-        self.assertEqual('tst', self.prefix2.short)
-
 
 class TestUID(unittest.TestCase):
     """Unit tests for the UID class."""  # pylint: disable=W0212
@@ -140,12 +135,6 @@ class TestUID(unittest.TestCase):
         self.assertEqual(1, self.uid1.number)
         self.assertEqual(2, self.uid2.number)
         self.assertEqual(3, self.uid3.number)
-
-    def test_short(self):
-        """Verify the short representation of IDs is correct."""
-        self.assertEqual('req1', self.uid1.short)
-        self.assertEqual('tst2', self.uid2.short)
-        self.assertEqual('sys3', self.uid3.short)
 
     def test_string(self):
         """Verify UIDs can be converted to string including stamps."""
