@@ -14,11 +14,12 @@ Example item:
 ```yaml
 active: true
 derived: false
+header: ''
 level: 2.1
-normative: true
-reviewed: 1f33605bbc5d1a39c9a6441b91389e88
 links: []
+normative: true
 ref: ''
+reviewed: d453ac2abfbd874608d82e49f9c61f2f
 text: |
   Doorstop **shall** provide unique and permanent identifiers to linkable
   sections of text.
@@ -149,7 +150,7 @@ In the following example, `REQ001` is a parent to the item.
 
 ```yaml
 links:
-- REQ001: 1f33605bbc5d1a39c9a6441b91389e88
+- REQ001: avwblqPimDJ2OgTrRCXxRPN8FQhUBWqPIXm7kSR95C4=
 ```
 
 A link consists of two parts, the parent item UID and the
