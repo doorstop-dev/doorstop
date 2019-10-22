@@ -112,8 +112,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: new :class:`~doorstop.core.document.Document`
 
         """
-        # TODO: raise a specific exception for invalid separator characters?
-        assert not sep or sep in settings.SEP_CHARS
+        # Check separator
+        if sep and sep not in settings.SEP_CHARS:
+            raise DoorstopError("invalid UID separator '{}'".format(sep))
+
         config = os.path.join(path, Document.CONFIG)
 
         # Check for an existing document

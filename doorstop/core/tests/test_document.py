@@ -310,6 +310,13 @@ class TestDocument(unittest.TestCase):
         """Verify an exception is raised if the document already exists."""
         self.assertRaises(DoorstopError, Document.new, None, FILES, ROOT, prefix='DUPL')
 
+    def test_new_invalid_sep(self):
+        """Verify an exception is raised if the separator is invalid."""
+        msg = "invalid UID separator 'X'"
+        self.assertRaisesRegex(
+            DoorstopError, msg, Document.new, None, FILES, ROOT, prefix='NEW', sep='X'
+        )
+
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new_cache(self):
         """Verify a new documents are cached."""

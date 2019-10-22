@@ -122,7 +122,11 @@ def run_create(args, cwd, _, catch=True):
 
         # create a new document
         document = tree.create_document(
-            args.path, args.prefix, parent=args.parent, digits=args.digits
+            args.path,
+            args.prefix,
+            parent=args.parent,
+            digits=args.digits,
+            sep=args.separator,
         )
 
     if not success:

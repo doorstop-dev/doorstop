@@ -202,6 +202,16 @@ def _create(subs, shared):
         help="number of digits in item UIDs",
         default=document.Document.DEFAULT_DIGITS,
     )
+    sub.add_argument(
+        '-s',
+        '--separator',
+        metavar='SEP',
+        help=(
+            "separator between the prefix and the number or name in an "
+            "item UID; the only valid separators are '-', '_', and '.'"
+        ),
+        default=document.Document.DEFAULT_SEP,
+    )
 
 
 def _delete(subs, shared):
