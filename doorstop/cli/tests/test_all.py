@@ -417,6 +417,12 @@ class TestClear(unittest.TestCase):
         self.assertIs(None, main(['clear', 'tut2']))
         self.assertEqual(1, mock_clear.call_count)
 
+    @patch('doorstop.core.item.Item.clear')
+    def test_clear_item_parent(self, mock_clear):
+        """Verify 'doorstop clear' can be called with an item and parent."""
+        self.assertIs(None, main(['clear', 'tut2', 'req2']))
+        self.assertEqual(1, mock_clear.call_count)
+
     def test_clear_item_unknown(self):
         """Verify 'doorstop clear' returns an error on an unknown item."""
         self.assertRaises(SystemExit, main, ['clear', '--item', 'FAKE001'])
