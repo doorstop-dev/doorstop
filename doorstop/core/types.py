@@ -141,7 +141,10 @@ class UID:
         if not isinstance(other, UID):
             other = UID(other)
         try:
-            return all((self.prefix == other.prefix, self.number == other.number))
+            self.check()
+            other.check()
+            # pylint: disable=protected-access
+            return self._prefix == other._prefix and self._number == other._number
         except DoorstopError:
             return self.value.lower() == other.value.lower()
 
@@ -150,10 +153,13 @@ class UID:
 
     def __lt__(self, other):
         try:
-            if self.prefix == other.prefix:
-                return self.number < other.number
+            self.check()
+            other.check()
+            # pylint: disable=protected-access
+            if self._prefix == other._prefix:
+                return self._number < other._number
             else:
-                return self.prefix < other.prefix
+                return self._prefix < other._prefix
         except DoorstopError:
             return self.value < other.value
 
