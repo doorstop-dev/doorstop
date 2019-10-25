@@ -258,10 +258,10 @@ class TestSection1(TestBase):
         self.doorstop("add -n 9 REQ")
         self.assertTrue(os.path.isfile('REQ-009.yml'))
 
-        self.doorstop("add -n XYZ REQ")
+        self.doorstop("add --name XYZ REQ")
         self.assertTrue(os.path.isfile('REQ-XYZ.yml'))
 
-        self.doorstop("add -n 99 REQ")
+        self.doorstop("add --number 99 REQ")
         self.assertTrue(os.path.isfile('REQ-099.yml'))
 
         cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)

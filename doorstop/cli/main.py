@@ -234,11 +234,13 @@ def _add(subs, shared):
     sub.add_argument(
         '-n',
         '--name',
+        '--number',
+        metavar='NANU',
         help=(
-            "use the specified NAME instead of an automatically "
+            "use the specified name or number NANU instead of an automatically "
             "generated number for the UID (together with the document prefix "
-            "and separator); the NAME must not contain separator characters "
-            "or digits"
+            "and separator); the NANU must be a number or a string which does "
+            "not contain separator characters or digits"
         ),
     )
     sub.add_argument(
