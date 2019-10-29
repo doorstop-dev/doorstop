@@ -215,14 +215,27 @@ class UID:
         >>> UID.split_uid('REQ2-001')
         (Prefix('REQ2'), 1, '', None)
 
+        >>> UID.split_uid('REQ2-NAME')
+        (Prefix('REQ2'), -1, 'NAME', None)
+
+        >>> UID.split_uid('REQ2-NAME007')
+        (Prefix('REQ2'), -1, 'NAME007', None)
+
+        >>> UID.split_uid('REQ2-123NAME')
+        (Prefix('REQ2'), -1, '123NAME', None)
+
         """
+        m = re.match("([\\w.-]+)[" + settings.SEP_CHARS + "](\\w+)", value)
+        if m:
+            try:
+                num = int(m.group(2))
+                return Prefix(m.group(1)), num, '', None
+            except ValueError:
+                return Prefix(m.group(1)), -1, m.group(2), None
         m = re.match(r"([\w.-]*\D)(\d+)", value)
         if m:
             num = m.group(2)
             return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), '', None
-        m = re.match("([\\w.-]+)[" + settings.SEP_CHARS + "](\\w+)", value)
-        if m:
-            return Prefix(m.group(1)), -1, m.group(2), None
         return None, None, None, DoorstopError("invalid UID: {}".format(value))
 
     @staticmethod

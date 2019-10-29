@@ -240,7 +240,7 @@ def _add(subs, shared):
             "use the specified name or number NANU instead of an automatically "
             "generated number for the UID (together with the document prefix "
             "and separator); the NANU must be a number or a string which does "
-            "not contain separator characters or digits"
+            "not contain separator characters"
         ),
     )
     sub.add_argument(

@@ -8,7 +8,7 @@ number or name. The two parts are divided by an optional separator. The prefix
 and separator are determined by the document to which the item belongs. By
 default, the number is automatically assigned by Doorstop. Optionally, a user
 can specify a name for the UID during item creation. The name must not contain
-separator characters or digits.
+separator characters.
 
 Example item:
 ```yaml

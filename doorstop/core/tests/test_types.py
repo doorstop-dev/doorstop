@@ -107,6 +107,18 @@ class TestUID(unittest.TestCase):
         self.assertEqual('REQ.A-B', uid.prefix)
         self.assertEqual(-1, uid.number)
         self.assertEqual('C', uid.name)
+        uid = UID('REQ.A-B_1C more')
+        self.assertEqual('REQ.A-B', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('1C', uid.name)
+        uid = UID('REQ.A-B_C2 more')
+        self.assertEqual('REQ.A-B', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('C2', uid.name)
+        uid = UID('REQ.A-B_C3D more')
+        self.assertEqual('REQ.A-B', uid.prefix)
+        self.assertEqual(-1, uid.number)
+        self.assertEqual('C3D', uid.name)
 
     def test_init_values(self):
         """Verify UIDs are parsed correctly (values)."""
