@@ -1,0 +1,11 @@
+; RUN: rm -rf %S/Sandbox
+; RUN: /bin/mkdir -p %S/Sandbox && cd %S/Sandbox
+;
+; Note: We must pass -j %S/Sandbox otherwise Doorstop walks up and finds
+; irrelevant files from the reqs folder outside of tests/ folder.
+; RUN: %DOORSTOP_EXEC -j %S/Sandbox 2>&1 | FileCheck %s
+;
+; CHECK: building tree...
+; CHECK-NEXT: loading documents...
+; CHECK-NEXT: validating items...
+; CHECK-NEXT: WARNING: no documents

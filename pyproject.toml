@@ -69,6 +69,7 @@ nose-cov = "*"
 nose-capturestderr = "*"
 nose-show-skipped = "*"
 expecter = "*"
+lit = "*"
 
 # Reports
 coveragespace = "*"

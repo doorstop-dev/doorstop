@@ -1,0 +1,13 @@
+#!/bin/bash
+
+file_check_path=`echo $(cd $(dirname "$0") && pwd -P)`
+
+echo $file_check_path
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  $file_check_path/FileCheck-Linux "$@"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  $file_check_path/FileCheck-macOS "$@"
+else
+  exit 1
+fi

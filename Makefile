@@ -9,7 +9,7 @@ CONFIG := $(wildcard *.py)
 MODULES := $(wildcard $(PACKAGE)/*.py)
 
 # Virtual environment paths
-VIRTUAL_ENV ?= .venv
+VIRTUAL_ENV ?= $(PWD)/.venv
 
 # MAIN TASKS ##################################################################
 
@@ -83,7 +83,7 @@ NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-
 endif
 
 .PHONY: test
-test: test-all ## Run unit and integration tests
+test: test-all test-lit ## Run unit and integration tests
 
 .PHONY: test-unit
 test-unit: install
@@ -92,6 +92,16 @@ test-unit: install
 
 .PHONY: test-int
 test-int: test-all
+
+.PHONY: test-lit
+DOORSTOP_EXEC=$(VIRTUAL_ENV)/bin/doorstop
+test-lit: install ## Run LIT integration tests
+	cd tests/integration && make clean
+	CURRENT_DIR=$(PWD) \
+		DOORSTOP_EXEC=$(DOORSTOP_EXEC) \
+		PATH=$(PWD)/tests/integration/tools/FileCheck:$(PWD)/tests/integration/tools:$$PATH \
+		poetry run lit \
+		-vv $(PWD)/tests/integration
 
 .PHONY: test-all
 test-all: install

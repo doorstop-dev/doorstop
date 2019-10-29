@@ -1,0 +1,24 @@
+#!/bin/bash
+
+lhs=$1
+rhs=$2
+
+lhs_files=$(cd $lhs; find . -type f -not -path *.git*)
+rhs_files=$(cd $rhs; find . -type f -not -path *.git*)
+echo $lhs_files
+echo $rhs_files
+
+if [[ $lhs_files != $rhs_files ]]; then
+  echo "folders do not have the same set of files";
+  exit 1;
+fi
+
+lhs_md5=$(cd $lhs; cat $lhs_files | md5)
+rhs_md5=$(cd $rhs; cat $rhs_files | md5)
+
+if [[ $lhs_md5 != $rhs_md5 ]]; then
+  echo "folders do not have the same content";
+  exit 1;
+fi
+
+exit 0;

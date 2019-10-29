@@ -1,0 +1,7 @@
+# Files produced by LLVM LIT
+**/Output/**
+*.script
+
+# Files produced by the test cases
+**/Sandbox/**
+

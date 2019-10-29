@@ -1,0 +1,7 @@
+; RUN: rm -rf %S/Sandbox
+; RUN: /bin/mkdir -p %S/Sandbox && cd %S/Sandbox
+; RUN: git init .
+; RUN: %DOORSTOP_EXEC create TST . | FileCheck %s
+; RUN: %COMPARE_EXEC %S/Sandbox %S/Expected
+; CHECK: building tree...
+; CHECK-NEXT: created document: TST (@/.)

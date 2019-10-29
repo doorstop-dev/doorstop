@@ -1,0 +1,14 @@
+; RUN: rm -rf %S/Sandbox
+; RUN: cp -r %S/Input %S/Sandbox && cd %S/Sandbox
+; RUN: git init .
+; RUN: %DOORSTOP_EXEC add TST \
+; RUN:   | FileCheck %s -check-prefix=CHECK-COMMAND1
+; RUN: %DOORSTOP_EXEC add TST \
+; RUN:   | FileCheck %s -check-prefix=CHECK-COMMAND2
+; RUN: %DOORSTOP_EXEC add TST \
+; RUN:   | FileCheck %s -check-prefix=CHECK-COMMAND3
+; RUN: %COMPARE_EXEC %S/Sandbox %S/Expected
+
+; CHECK-COMMAND1: added item: TST001 (@/TST001.yml)
+; CHECK-COMMAND2: added item: TST002 (@/TST002.yml)
+; CHECK-COMMAND3: added item: TST003 (@/TST003.yml)
