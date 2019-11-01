@@ -36,11 +36,22 @@ def build(cwd=None, root=None, request_next_number=None) -> Tree:
 
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
-    _document_from_path(root, root, documents)
-    for dirpath, dirnames, _ in os.walk(root):
-        for dirname in dirnames:
-            path = os.path.join(dirpath, dirname)
-            _document_from_path(path, root, documents)
+    skip_file_name = '.doorstop.skip-all'
+    if not os.path.isfile(os.path.join(root, skip_file_name)):
+        _document_from_path(root, root, documents)
+    exclude_dirnames = {'.git'}
+    if not os.path.isfile(os.path.join(root, skip_file_name)):
+        for dirpath, dirnames, _ in os.walk(root, topdown=True):
+            whilelist_dirnames = []
+            for dirname in dirnames:
+                if dirname in exclude_dirnames:
+                    continue
+                path = os.path.join(dirpath, dirname)
+                if os.path.isfile(os.path.join(path, skip_file_name)):
+                    continue
+                whilelist_dirnames.append(dirname)
+                _document_from_path(path, root, documents)
+            dirnames[:] = whilelist_dirnames
 
     # Build the tree
     if not documents:
