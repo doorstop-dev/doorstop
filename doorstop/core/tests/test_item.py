@@ -221,16 +221,6 @@ class TestItem(unittest.TestCase):
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
 
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
-
-    def test_number(self):
-        """Verify an item's number can be read but not set."""
-        self.assertEqual(1, self.item.number)
-        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
-
     def test_level(self):
         """Verify an item's level can be set and read."""
         self.item.level = (1, 2, 3)
@@ -826,21 +816,16 @@ class TestUnknownItem(unittest.TestCase):
         self.assertEqual('RQ001', self.item.uid)
         self.assertRaises(AttributeError, setattr, self.item, 'uid', 'RQ002')
 
+    def test_le(self):
+        """Verify unknown item's UID less operator."""
+        self.assertTrue(self.item < UnknownItem('RQ002'))
+        self.assertFalse(self.item < self.item)
+
     def test_relpath(self):
         """Verify an item's relative path string can be read but not set."""
         text = "@{}{}".format(os.sep, '???')
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
-
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
-
-    def test_number(self):
-        """Verify an item's number can be read but not set."""
-        self.assertEqual(1, self.item.number)
-        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
 
     @patch('doorstop.core.item.log.debug')
     def test_attributes(self, mock_warning):

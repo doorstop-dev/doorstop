@@ -65,6 +65,64 @@ text: 'My default text.'
 The command line specified default values override values from the document
 configuration.
 
+# Add Items with a Name in the UID
+
+By default, new items get a number assigned by Doorstop for their UID together
+with the document prefix and separator.  Doorstop allows you to specifiy an
+explicit number or a name for the item UID.  Names can be only used if the
+document was created with a separator.  Names cannot contain separators.
+Allowed separators are '-', '\_', and '.'.
+
+As an example, we create a document with a '-' separator:
+```sh
+$ doorstop create -s - REQ ./reqs
+building tree...
+created document: REQ (@/reqs)
+```
+
+You can add items as normal:
+```sh
+$ doorstop add REQ
+building tree...
+added item: REQ-001 (@/reqs/REQ-001.yml)
+```
+
+The first item has an UID of `REQ-001`.  Please note that this UID has the
+separator of the document included.  You can specify the number part of the UID
+for a new item:
+```sh
+$ doorstop add -n 3 REQ
+building tree...
+added item: REQ-003 (@/reqs/REQ-003.yml)
+```
+
+You can specify the name part of the UID for a new item:
+```sh
+$ doorstop add -n FOOBAR REQ
+building tree...
+added item: REQ-FOOBAR (@/reqs/REQ-FOOBAR.yml)
+```
+
+You can continue to add items as normal:
+```sh
+$ doorstop add REQ
+building tree...
+added item: REQ-004 (@/reqs/REQ-004.yml)
+```
+
+Your document contains now the following items:
+```sh
+$ doorstop publish REQ
+building tree...
+1.0     REQ-001
+
+1.1     REQ-003
+
+1.2     REQ-FOOBAR
+
+1.3     REQ-004
+```
+
 # Document Configuration
 
 The settings and attribute options of each document are stored in a

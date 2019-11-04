@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
 
 """Unit tests for the doorstop.core.document module."""
 
@@ -14,7 +15,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, MockDocument, MockItem
-from doorstop.core.types import Level
+from doorstop.core.types import UID, Level
 
 YAML_DEFAULT = """
 settings:
@@ -310,6 +311,13 @@ class TestDocument(unittest.TestCase):
         """Verify an exception is raised if the document already exists."""
         self.assertRaises(DoorstopError, Document.new, None, FILES, ROOT, prefix='DUPL')
 
+    def test_new_invalid_sep(self):
+        """Verify an exception is raised if the separator is invalid."""
+        msg = "invalid UID separator 'X'"
+        self.assertRaisesRegex(
+            DoorstopError, msg, Document.new, None, FILES, ROOT, prefix='NEW', sep='X'
+        )
+
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new_cache(self):
         """Verify a new documents are cached."""
@@ -457,6 +465,47 @@ outline:
             None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
         )
 
+    def test_add_item_with_no_sep(self):
+        """Verify an item cannot be added to a document without a separator with a name."""
+        msg = "cannot add item with name 'ABC' to document 'REQ' without a separator"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_sep(self):
+        """Verify an item cannot be added to a document with an invalid separator with a name."""
+        self.document._data['sep'] = 'X'
+        msg = "cannot add item with name 'ABC' to document 'REQ' with an invalid separator 'X'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_name(self):
+        """Verify an item cannot be added to a document with an invalid name."""
+        self.document.sep = '-'
+        msg = "invalid item name 'A-B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A-B')
+        msg = "invalid item name 'A_B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A_B')
+        msg = "invalid item name 'A.B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A.B')
+        msg = "invalid item name 'X/Y'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='X/Y')
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_name(self, mock_new):
+        """Verify an item can be added to a document with a name."""
+        self.document.sep = '-'
+        self.document.add_item(name='ABC')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-ABC', level=Level('2.2')
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_number_name(self, mock_new):
+        """Verify an item can be added to a document with a number as name."""
+        self.document.sep = '-'
+        self.document.add_item(name='99')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-099', level=Level('2.2')
+        )
+
     @patch('doorstop.core.item.Item.set_attributes')
     def test_add_item_with_defaults(self, mock_set_attributes):
         """Verify an item can be added to a document with defaults."""
@@ -478,7 +527,7 @@ outline:
     def test_add_item_after_header(self, mock_new):
         """Verify the next item after a header is indented."""
         mock_item = Mock()
-        mock_item.number = 1
+        mock_item.uid = UID('REQ001')
         mock_item.level = Level('1.0')
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
