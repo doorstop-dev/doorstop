@@ -9,7 +9,7 @@ import unittest
 from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
-from doorstop import common, core
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
 from doorstop.core.tests import (
@@ -799,7 +799,17 @@ class TestItem(unittest.TestCase):
         """Verify fingerprint with one extended reviewed attribute."""
         self.item._data['type'] = 'functional'
         self.item.document.extended_reviewed = ['type']
-        stamp = '5ijLUBTXGCkN-2wctQTQ5cl2-ZTDMeukDlXDy0OBCGg='
+        stamp = 'HViLqscmSeVfv2jYBFhXdceTcEWWc0r9uchEmX7xSTY='
+        self.assertEqual(stamp, self.item.stamp())
+        self.item.document.extended_reviewed = []
+        stamp = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_complex_extended_reviewed(self):
+        """Verify fingerprint with complex extended reviewed attribute."""
+        self.item._data['attr'] = ['a', 'b', ['c', {'d': 'e', 'f': ['g']}]]
+        self.item.document.extended_reviewed = ['attr']
+        stamp = 'H1frEDRLk8y7eaNQPpGbgpKlWLqXc3_QfiCq1qvrUtA='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_two_extended_reviewed(self):
@@ -807,32 +817,43 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['type', 'verification-method']
-        stamp = 'xmXpN4L0mNHm8-5Ga24VJLc5b9J2ttG4G8XVGrgDFeU='
+        stamp = 'S_yJkuwMTVG70Pcr3R6zdSR1VdviwxVWgG7q5b5NpjU='
         self.assertEqual(stamp, self.item.stamp())
 
-    def test_stamp_with_reversed_extended_reviewed_reverse(self):
+    def test_stamp_with_reversed_extended_reviewed(self):
         """Verify fingerprint with reversed extended reviewed attributes."""
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['verification-method', 'type']
-        stamp = '2HCtrWC2tYEpFpCtNKf-D4n_s0IrxuEuiF-6cZ6wdr0='
+        stamp = 'OhVM3nMW4mensMfWA-VIcbn5XYbxpPI_ZEDVcCjoGo0='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_missing_extended_reviewed_reverse(self):
-        """Verify fingerprint with missing extended reviewed attribute."""
-        with ListLogHandler(core.item.log) as handler:
-            self.item._data['type'] = 'functional'
-            self.item._data['verification-method'] = 'test'
-            self.item.document.extended_reviewed = [
-                'missing',
-                'type',
-                'verification-method',
-            ]
-            stamp = 'xmXpN4L0mNHm8-5Ga24VJLc5b9J2ttG4G8XVGrgDFeU='
-            self.assertEqual(stamp, self.item.stamp())
-            self.assertIn(
-                "RQ001: missing extended reviewed attribute: missing", handler.records
-            )
+        """Verify fingerprint with missing extended reviewed attributes."""
+        self.item._data['type'] = 'functional'
+        self.item._data['verification-method'] = 'test'
+        self.item.document.extended_reviewed = [
+            'missing',
+            'type',
+            'verification-method',
+        ]
+        stamp = 'S_yJkuwMTVG70Pcr3R6zdSR1VdviwxVWgG7q5b5NpjU='
+        self.assertEqual(stamp, self.item.stamp())
+        self.item.document.extended_reviewed = [
+            'missing',
+            'type',
+            'verification-method',
+            'missing-2',
+        ]
+        stamp = 'S_yJkuwMTVG70Pcr3R6zdSR1VdviwxVWgG7q5b5NpjU='
+        self.assertEqual(stamp, self.item.stamp())
+        self.item.document.extended_reviewed = [
+            'type',
+            'verification-method',
+            'missing-2',
+        ]
+        stamp = 'S_yJkuwMTVG70Pcr3R6zdSR1VdviwxVWgG7q5b5NpjU='
+        self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""

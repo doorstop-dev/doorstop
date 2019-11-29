@@ -52,6 +52,29 @@ def _convert_to_yaml(indent, prefix, value):
     return value
 
 
+def _convert_to_str(value, result):
+    """Convert value to a string serialization.
+
+    This function is independent of the YAML format and may be used for data
+    which should be independent of the actual item storage format.  It depends
+    only on the Python sorting function and string representation.
+
+    :param value: the value to convert
+    :param result: the current result of the string serialization
+
+    :return: the updated result of the string serialization
+    """
+    if isinstance(value, list):
+        for v in value:
+            result = _convert_to_str(v, result)
+        return result
+    if isinstance(value, dict):
+        for k in sorted(value.keys()):
+            result = _convert_to_str(value[k], result)
+        return result
+    return result + str(value)
+
+
 def requires_tree(func):
     """Require a tree reference."""
 
@@ -738,12 +761,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if links:
             values.extend(self.links)
         for key in self.document.extended_reviewed:
-            if key in self._data:
-                values.append(self._dump(self._data[key]))
-            else:
-                log.warning(
-                    "{}: missing extended reviewed attribute: {}".format(self.uid, key)
-                )
+            values.append(_convert_to_str(self._data.get(key, ""), ""))
         return Stamp(*values)
 
     @auto_save
