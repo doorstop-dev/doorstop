@@ -70,7 +70,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             for document in list(unplaced):
                 if document.parent is None:
                     log.info("root of the tree: {}".format(document))
-                    raise DoorstopError("multiple root documents")
+                    message = "multiple root documents:\n- {}: {}\n- {}: {}".format(
+                        tree.document.prefix,
+                        tree.document.path,
+                        document.prefix,
+                        document.path,
+                    )
+                    raise DoorstopError(message)
                 try:
                     tree._place(document)  # pylint: disable=W0212
                 except DoorstopError as error:
