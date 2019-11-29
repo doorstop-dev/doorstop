@@ -2,8 +2,10 @@
 [![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/master.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=master)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
-[![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754)
+<br>
 [![Gitter](https://badges.gitter.im/doorstop-dev/community.svg)](https://gitter.im/doorstop-dev/community)
+[![Google](https://img.shields.io/badge/forum-on_google-387eef)](https://groups.google.com/forum/#!forum/doorstop-dev)
+[![Best Practices](https://bestpractices.coreinfrastructure.org/projects/754/badge)](https://bestpractices.coreinfrastructure.org/projects/754)
 
 # Overview
 
