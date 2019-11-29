@@ -49,9 +49,11 @@ $(DEPENDENCIES): poetry.lock
 	poetry install
 	@ touch $@
 
+ifndef CI
 poetry.lock: pyproject.toml
 	poetry lock
 	@ touch $@
+endif
 
 .cache:
 	@ mkdir -p .cache
