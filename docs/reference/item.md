@@ -180,7 +180,53 @@ item of the reviewed attribute, not the parent item of the link).  The
 fingerprint of the link is does **not** contribute to the fingerprint of the
 item.
 
-## `ref`
+## `references` (new array behavior)
+
+An array of external references. An item may reference a number of external
+files. The external references are displayed in a published document.
+
+Doorstop will search in the project root for a file matching the specified
+reference. If multiple matching files exist, the first found will be used.
+
+The value of this attribute contributes to the [fingerprint](item.md#reviewed)
+of the item.
+
+### Example: Reference files
+
+```yaml
+references:
+- path: tests/test1.cpp
+  type: file
+- path: tests/test2.cpp
+  type: file
+```
+
+### Note: new behavior vs old behavior
+
+Note: Newer `references` attribute is a new array behavior compared to the 
+original `ref` attribute's string behavior. The old behavior supports referencing
+only one file via file name or referencing a file that contains a given
+keyword.
+
+The new behavior of `references` attribute allows referencing many files. The
+old behavior matching a specified keyword is enabled via optional `keyword`
+parameter:
+
+```yaml
+references:
+- path: tests/test1.cpp
+  type: file
+  keyword: REQ1
+- path: tests/test2.cpp
+  type: file
+  keyword: REQ2
+```
+
+Doorstop will search a specified file to find the specified reference.
+
+## `ref` (deprecated behavior, see 'references')
+
+Please check the "`references` (new array behavior)" section before reading further.
 
 External reference. An item may reference an external file or a line in an
 external file. An external reference is displayed in a published document.

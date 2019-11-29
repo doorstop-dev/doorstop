@@ -4,7 +4,6 @@
 
 import functools
 import os
-import re
 from typing import Any, List
 
 import pyficache
@@ -20,7 +19,9 @@ from doorstop.core.base import (
     delete_item,
     edit_item,
 )
+from doorstop.core.reference_finder import ReferenceFinder
 from doorstop.core.types import UID, Level, Prefix, Stamp, Text, to_bool
+from doorstop.core.yaml_validator import YamlValidator
 
 log = common.logger(__name__)
 
@@ -104,10 +105,12 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             raise DoorstopError(msg)
         # Initialize the item
         self.path = path
-        self.root = root
+        self.root: str = root
         self.document = document
         self.tree = kwargs.get('tree')
         self.auto = kwargs.get('auto', Item.auto)
+        self.reference_finder = ReferenceFinder()
+        self.yaml_validator = YamlValidator()
         # Set default values
         self._data['level'] = Item.DEFAULT_LEVEL
         self._data['active'] = Item.DEFAULT_ACTIVE
@@ -116,6 +119,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data['reviewed'] = Item.DEFAULT_REVIEWED
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
+        self._data['references'] = None
         self._data['links'] = set()
         if settings.ENABLE_HEADERS:
             self._data['header'] = Item.DEFAULT_HEADER
@@ -174,6 +178,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     def _set_attributes(self, attributes):
         """Set the item's attributes."""
+        self.yaml_validator.validate_item_yaml(attributes)
         for key, value in attributes.items():
             if key == 'level':
                 value = Level(value)
@@ -189,6 +194,20 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 value = Text(value)
             elif key == 'ref':
                 value = value.strip()
+            elif key == 'references':
+                stripped_value = []
+                for ref_dict in value:
+                    ref_type = ref_dict['type']
+                    ref_path = ref_dict['path']
+
+                    stripped_ref_dict = {"type": ref_type, "path": ref_path.strip()}
+                    if 'keyword' in ref_dict:
+                        ref_keyword = ref_dict['keyword']
+                        stripped_ref_dict['keyword'] = ref_keyword
+
+                    stripped_value.append(stripped_ref_dict)
+
+                value = stripped_value
             elif key == 'links':
                 value = set(UID(part) for part in value)
             elif key == 'header':
@@ -241,6 +260,19 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     value = ''
             elif key == 'ref':
                 value = value.strip()
+            elif key == 'references':
+                if value is None:
+                    continue
+                stripped_value = []
+                for el in value:
+                    ref_dict = {"path": el["path"].strip(), "type": "file"}
+
+                    if 'keyword' in el:
+                        ref_dict['keyword'] = el['keyword']
+
+                    stripped_value.append(ref_dict)
+
+                value = stripped_value
             elif key == 'links':
                 value = [{str(i): i.stamp.yaml} for i in sorted(value)]
             elif key == 'reviewed':
@@ -431,6 +463,20 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     @property  # type: ignore
     @auto_load
+    def references(self):
+        """Get the item's external file references."""
+        return self._data['references']
+
+    @references.setter  # type: ignore
+    @auto_save
+    def references(self, value):
+        """Set the item's external file references."""
+        if value is not None:
+            assert isinstance(value, list)
+        self._data['references'] = value
+
+    @property  # type: ignore
+    @auto_load
     def links(self):
         """Get a list of the item UIDs this item links to."""
         return sorted(self._data['links'])
@@ -563,32 +609,40 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if not settings.CACHE_PATHS:
             pyficache.clear_file_cache()
         # Search for the external reference
-        log.debug("seraching for ref '{}'...".format(self.ref))
-        pattern = r"(\b|\W){}(\b|\W)".format(re.escape(self.ref))
-        log.trace("regex: {}".format(pattern))  # type: ignore
-        regex = re.compile(pattern)
-        for path, filename, relpath in self.tree.vcs.paths:
-            # Skip the item's file while searching
-            if path == self.path:
-                continue
-            # Check for a matching filename
-            if filename == self.ref:
-                return relpath, None
-            # Skip extensions that should not be considered text
-            if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
-                continue
-            # Search for the reference in the file
-            lines = pyficache.getlines(path)
-            if lines is None:
-                log.trace("unable to read lines from: {}".format(path))  # type: ignore
-                continue
-            for lineno, line in enumerate(lines, start=1):
-                if regex.search(line):
-                    log.debug("found ref: {}".format(relpath))
-                    return relpath, lineno
+        return self.reference_finder.find_ref(self.ref, self.tree, self.path)
 
-        msg = "external reference not found: {}".format(self.ref)
-        raise DoorstopError(msg)
+    @requires_tree
+    def find_references(self):
+        """Get the array of references. Check each references before returning.
+
+        :raises: :class:`~doorstop.common.DoorstopError` when no
+            reference is found
+
+        :return: Array of tuples:
+            (
+              relative path to file or None (when no reference set),
+              line number (when found in file) or None (when found as
+              filename) or None (when no reference set)
+            )
+
+        """
+
+        if not self.references:
+            log.debug("no external reference to search for")
+            return []
+        if not settings.CACHE_PATHS:
+            pyficache.clear_file_cache()
+
+        references = []
+        for ref_item in self.references:
+            path = ref_item["path"]
+            keyword = ref_item["keyword"] if "keyword" in ref_item else None
+
+            reference = self.reference_finder.find_file_reference(
+                path, self.root, self.tree, path, keyword
+            )
+            references.append(reference)
+        return references
 
     def find_child_links(self, find_all=True):
         """Get a list of item UIDs that link to this item (reverse links).
@@ -677,6 +731,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def stamp(self, links=False):
         """Hash the item's key content for later comparison."""
         values = [self.uid, self.text, self.ref]
+
+        if self.references:
+            values.append(self.references)
+
         if links:
             values.extend(self.links)
         for key in self.document.extended_reviewed:

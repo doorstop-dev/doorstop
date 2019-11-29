@@ -90,7 +90,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(5, mock_add_item.call_count)
+        self.assertEqual(6, mock_add_item.call_count)
 
     @patch('doorstop.core.importer.add_item')
     def test_file_yml_duplicates(self, mock_add_item):
@@ -100,7 +100,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(5, mock_add_item.call_count)
+        self.assertEqual(6, mock_add_item.call_count)
 
     def test_file_yml_bad_format(self):
         """Verify YAML file import can handle bad data."""
@@ -124,6 +124,7 @@ class TestModule(unittest.TestCase):
             'level',
             'text',
             'ref',
+            'references',
             'links',
             'active',
             'derived',
@@ -137,6 +138,7 @@ class TestModule(unittest.TestCase):
                 'REQ001',
                 '1.2.3',
                 LOREM_IPSUM,
+                '',
                 '',
                 'SYS001\nSYS002:abc123',
                 True,
@@ -152,6 +154,7 @@ class TestModule(unittest.TestCase):
                 '1.4',
                 'Unicode: -40° ±1%',
                 'REF' '123',
+                '',
                 'REQ001',
                 True,
                 False,
@@ -159,11 +162,25 @@ class TestModule(unittest.TestCase):
                 True,
                 '',
             ],
-            ['REQ004', '1.6', 'Hello, world!', '', '', True, False, '', True, ''],
+            [
+                'REQ006',
+                '1.5',
+                'Hello, world!',
+                '',
+                'type:file,path:external/text.txt,keyword:REF123\ntype:file,path:external/text2.txt',
+                'REQ001:35ed54323e3054c33ae5545fffdbbbf5',
+                True,
+                False,
+                '',
+                True,
+                'c442316131ca0225595ae257f3b4583d',
+            ],
+            ['REQ004', '1.6', 'Hello, world!', '', '', '', True, False, '', True, ''],
             [
                 'REQ002',
                 '2.1',
                 'Hello, world!\n\n' + PLANTUML_TXT,
+                '',
                 '',
                 '',
                 True,
@@ -176,6 +193,7 @@ class TestModule(unittest.TestCase):
                 'REQ2-001',
                 '2.1',
                 'Hello, world!\n\n' + LATEX_MATH,
+                '',
                 '',
                 'REQ001',
                 True,
@@ -274,6 +292,7 @@ class TestModule(unittest.TestCase):
             'level',
             'text',
             'ref',
+            'references',
             'links',
             'active',
             'derived',
@@ -287,6 +306,7 @@ class TestModule(unittest.TestCase):
                 'REQ001',
                 '1.2.3',
                 LOREM_IPSUM,
+                None,
                 None,
                 'SYS001\nSYS002:abc123',
                 True,
@@ -302,6 +322,7 @@ class TestModule(unittest.TestCase):
                 '1.4',
                 'Unicode: -40° ±1%',
                 'REF' '123',
+                None,
                 'REQ001',
                 True,
                 False,
@@ -310,9 +331,23 @@ class TestModule(unittest.TestCase):
                 None,
             ],
             [
+                'REQ006',
+                '1.5',
+                'Hello, world!',
+                None,
+                'type:file,path:external/text.txt,keyword:REF123\ntype:file,path:external/text2.txt',
+                'REQ001:35ed54323e3054c33ae5545fffdbbbf5',
+                True,
+                False,
+                None,
+                True,
+                'c442316131ca0225595ae257f3b4583d',
+            ],
+            [
                 'REQ004',
                 '1.6',
                 'Hello, world!',
+                None,
                 None,
                 None,
                 True,
@@ -327,6 +362,7 @@ class TestModule(unittest.TestCase):
                 'Hello, world!\n\n```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"\n@startuml\nAuthor --> (Create Document)\nAuthor --> (Create Item)\nAuthor --> (Link Item to Document)\nAuthor --> (Link Item to other Item)\nAuthor --> (Edit Item)\nAuthor --> (Review Item)\nAuthor -> (Delete Item)\nAuthor -> (Delete Document)\n(Export) <- (Author)\n(Import) <- (Author)\nReviewer --> (Review Item)\nSystem --> (Suspect Changes)\nSystem --> (Integrity)\n@enduml\n```',
                 None,
                 None,
+                None,
                 True,
                 False,
                 'Plantuml',
@@ -337,6 +373,7 @@ class TestModule(unittest.TestCase):
                 'REQ2-001',
                 '2.1',
                 'Hello, world!\n\nTest Math Expressions in Latex Style:\n\nInline Style 1: $a \\ne 0$\nInline Style 2: \\(ax^2 + bx + c = 0\\)\nMultiline: $$x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}.$$',
+                None,
                 None,
                 'REQ001',
                 True,

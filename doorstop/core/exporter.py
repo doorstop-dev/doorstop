@@ -131,20 +131,38 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
     :return: iterator of rows of data
 
     """
-    yield_header = True
 
+    header = ['level', 'text', 'ref', 'links']
+
+    # 'at_least_one_ref' detects if at least one of the items still have a deprecated 'ref' field.
+    # If there is none, 'ref' header is excluded from the headers and is not exported.
+    at_least_one_ref = False
     for item in iter_items(obj):
-
         data = item.data
 
-        # Yield header
-        if yield_header:
-            header = ['level', 'text', 'ref', 'links']
-            for value in sorted(data.keys()):
-                if value not in header:
-                    header.append(value)
-            yield ['uid'] + header
-            yield_header = False
+        for value in sorted(data.keys()):
+            if value not in header:
+                header.append(value)
+
+        ref_value = data.get('ref')
+        if ref_value:
+            at_least_one_ref = True
+
+    try:
+        reference_index = header.index('references')
+
+        # Inserting 'references' header after the 'ref' header.
+        header.insert(3, header.pop(reference_index))
+
+        if not at_least_one_ref:
+            header.remove('ref')
+    except ValueError:
+        pass
+
+    yield ['uid'] + header
+
+    for item in iter_items(obj):
+        data = item.data
 
         # Yield row
         row = [item.uid]
@@ -156,6 +174,23 @@ def _tabulate(obj, sep=LIST_SEP, auto=False):
             elif key == 'links':
                 # separate identifiers with a delimiter
                 value = sep.join(uid.string for uid in item.links)
+            elif key == 'references':
+                if value is None:
+                    value = ''
+                else:
+                    ref_strings = []
+                    for ref_item in value:
+                        ref_type = ref_item['type']
+                        ref_path = ref_item['path']
+
+                        ref_string = "type:{},path:{}".format(ref_type, ref_path)
+
+                        if 'keyword' in ref_item:
+                            keyword = ref_item['keyword']
+                            ref_string += ",keyword:{}".format(keyword)
+
+                        ref_strings.append(ref_string)
+                    value = '\n'.join(ref_string for ref_string in ref_strings)
             elif isinstance(value, str) and key not in ('reviewed',):
                 # remove sentence boundaries and line wrapping
                 value = item.get(key)

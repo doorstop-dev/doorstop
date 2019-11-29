@@ -12,7 +12,14 @@ from unittest.mock import MagicMock, Mock, patch
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.tests import (
+    EMPTY,
+    EXTERNAL,
+    FILES,
+    TESTS_ROOT,
+    MockItem,
+    MockSimpleDocument,
+)
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -169,6 +176,30 @@ class TestItem(unittest.TestCase):
             }
         )
         self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
+
+    def test_set_attributes_reference_valid_input(self):
+        """Verify that setting 'references' with a correct value does not raise errors."""
+        try:
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 'some/path'}]}
+            )
+        except AttributeError:
+            self.fail("didn't expect _set_attributes to raise AttributeError")
+
+    def test_set_attributes_reference_malformed_input(self):
+        """Verify that setting 'references' with a wrong value raises errors."""
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': 'foo'})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': ['foo']})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'FOO'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'file'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 0xDEAD}]}
+            )
 
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
@@ -378,7 +409,23 @@ class TestItem(unittest.TestCase):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
+        self.assertNotIn("references:", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
+
+    def test_references(self):
+        """Verify an item's reference can be set and read."""
+        references = [
+            {'type': 'file', 'path': 'abc1'},
+            {"type": "file", "path": "abc2"},
+        ]
+        self.item.references = references
+        self.assertIn(
+            "references:\n- path: abc1\n  type: file\n- path: abc2\n  type: file",
+            self.item._write.call_args[0][0],
+        )
+        # We let 'references' and 'ref' co-exist for now.
+        self.assertIn("ref: ''", self.item._write.call_args[0][0])
+        self.assertListEqual(references, self.item.references)
 
     def test_extended(self):
         """Verify an extended attribute (`str`) can be used."""
@@ -567,6 +614,76 @@ class TestItem(unittest.TestCase):
         self.item.tree = Mock()
         self.assertEqual((None, None), self.item.find_ref())
 
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml"},
+            {"path": "files/REQ002.yml"},
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(2, len(ref))
+
+        relpath_1, keyword_line_1 = ref[0]
+        self.assertEqual(relpath_1, 'files/REQ001.yml')
+        self.assertEqual(keyword_line_1, None)
+
+        relpath_2, keyword_line_2 = ref[1]
+        self.assertEqual(relpath_2, 'files/REQ002.yml')
+        self.assertEqual(keyword_line_2, None)
+
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_valid_keyword(self):
+        """Verify an item's references can be found."""
+        keyword = "Lorem ipsum dolor sit amet"
+        self.item.references = [{"path": "files/REQ001.yml", "keyword": keyword}]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(1, len(ref))
+
+        ref_path, ref_keyword_line = ref[0]
+        self.assertEqual(ref_path, 'files/REQ001.yml')
+        self.assertEqual(ref_keyword_line, 12)
+
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_invalid_keyword(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml", "keyword": "INVALID KEYWORD"}
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        with self.assertRaises(DoorstopError) as context:
+            self.item.find_references()
+
+        self.assertTrue('external reference not found' in str(context.exception))
+
+    def test_find_ref_error_multiple(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.references = [{"path": "this/path/does/not/exist.yml"}]
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_references)
+
     def test_find_child_objects(self):
         """Verify an item's child objects can be found."""
 
@@ -665,6 +782,18 @@ class TestItem(unittest.TestCase):
         """Verify an item's contents can be stamped."""
         stamp = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_contribution_references(self):
+        """Verify that references attribute contributes to a stamp."""
+        expected_stamp_before = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
+
+        stamp_before = self.item.stamp()
+        self.assertEqual(expected_stamp_before, stamp_before)
+
+        self.item.references = [{'type': 'file', 'path': 'foo'}]
+
+        stamp_after = self.item.stamp()
+        self.assertNotEqual(stamp_after, expected_stamp_before)
 
     def test_stamp_with_one_extended_reviewed(self):
         """Verify fingerprint with one extended reviewed attribute."""

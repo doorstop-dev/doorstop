@@ -254,6 +254,25 @@ def _itemize(header, data, document, mapping=None):
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
+
+            elif key == 'references' and (value is not None):
+                ref_items = value.split('\n')
+                if ref_items[0] != '':
+                    ref = []
+                    for ref_item in ref_items:
+                        ref_item_components = ref_item.split(',')
+
+                        ref_type = ref_item_components[0].split(':')[1]
+                        ref_path = ref_item_components[1].split(':')[1]
+
+                        ref_dict = {'type': ref_type, 'path': ref_path}
+                        if len(ref_item_components) == 3:
+                            ref_keyword = ref_item_components[2].split(':')[1]
+                            ref_dict['keyword'] = ref_keyword
+
+                        ref.append(ref_dict)
+
+                    attrs[key] = ref
             elif key == 'active':
                 # require explicit disabling
                 attrs['active'] = value is not False
