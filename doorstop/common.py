@@ -100,7 +100,7 @@ def read_lines(path, encoding='utf-8'):
             yield line
 
 
-def read_text(path, encoding='utf-8'):
+def read_text(path):
     """Read text from a file.
 
     :param path: file path to read from
@@ -111,10 +111,10 @@ def read_text(path, encoding='utf-8'):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with open(path, 'r', encoding=encoding) as stream:
-            return stream.read()
-    except Exception as ex:
-        msg = "reading '{}' failed: {}".format(path, ex)
+        with open(path, 'r') as f:
+            return f.read()
+    except Exception as e:
+        msg = "reading '{}' failed: {}".format(path, e)
         raise DoorstopError(msg)
 
 
@@ -160,7 +160,7 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
     return path
 
 
-def write_text(text, path, encoding='utf-8'):
+def write_text(text, path):
     """Write text to a file.
 
     :param text: string
@@ -172,9 +172,8 @@ def write_text(text, path, encoding='utf-8'):
     """
     if text:
         log.trace("writing text to '{}'...".format(path))  # type: ignore
-    with open(path, 'wb') as stream:
-        data = text.encode(encoding)
-        stream.write(data)
+    with open(path, 'w') as f:
+        f.write(text)
     return path
 
 
