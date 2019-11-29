@@ -381,9 +381,13 @@ attributes:
 ```
 
 If attributes listed in `reviewed` do not exist in an item of this document,
-then a warning is issued by the validation command `doorstop`:
-
-```
-WARNING: REQ001: missing extended reviewed attribute: type
-WARNING: REQ001: missing extended reviewed attribute: verification-method
-```
+then these attributes are skipped in the fingerprint calculation and no warning
+is issued by the validation command `doorstop`.  Validation of items against a
+template should be done by third-party tools.  Changing the order of reviewed
+attributes listed in the document configuration changes the fingerprint of
+existing item of the documents which have these attributes.  Adding new
+reviewed attributes to the document configuration does not change the
+fingerprint of existing items of the document, if they do not have them,
+otherwise the fingerprint changes.  Removing a reviewed attribute from the
+document configuration changes the fingerprint of all items of the document
+with such an attribute.

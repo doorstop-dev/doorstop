@@ -1,3 +1,10 @@
+# 2.1 (future)
+
+- **BREAKING:** The fingerprint calculation method of reviewed extended
+attributes changed.  Use `doorstop review all` followed by `doorstop clear all`
+to update an existing project. WARNING: This marks all items as reviewed and
+clears all suspect links.
+
 # 2.0 (2019-11-29)
 
 - Dropped support for Python 3.5.
