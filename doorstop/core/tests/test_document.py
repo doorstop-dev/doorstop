@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=C0302
 
 """Unit tests for the doorstop.core.document module."""
 
@@ -14,7 +15,7 @@ from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.document import Document
 from doorstop.core.tests import EMPTY, FILES, NEW, ROOT, MockDocument, MockItem
-from doorstop.core.types import Level
+from doorstop.core.types import UID, Level
 
 YAML_DEFAULT = """
 settings:
@@ -276,12 +277,12 @@ class TestDocument(unittest.TestCase):
 
     def test_len(self):
         """Verify a document has a length."""
-        self.assertEqual(5, len(self.document))
+        self.assertEqual(6, len(self.document))
 
     def test_items(self):
         """Verify the items in a document can be accessed."""
         items = self.document.items
-        self.assertEqual(5, len(items))
+        self.assertEqual(6, len(items))
         for item in self.document:
             logging.debug("item: {}".format(item))
             self.assertIs(self.document, item.document)
@@ -292,7 +293,7 @@ class TestDocument(unittest.TestCase):
         self.document.tree = Mock()
         self.document.tree._item_cache = {}
         print(self.document.items)
-        self.assertEqual(6, len(self.document.tree._item_cache))
+        self.assertEqual(7, len(self.document.tree._item_cache))
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new(self):
@@ -309,6 +310,13 @@ class TestDocument(unittest.TestCase):
     def test_new_existing(self):
         """Verify an exception is raised if the document already exists."""
         self.assertRaises(DoorstopError, Document.new, None, FILES, ROOT, prefix='DUPL')
+
+    def test_new_invalid_sep(self):
+        """Verify an exception is raised if the separator is invalid."""
+        msg = "invalid UID separator 'X'"
+        self.assertRaisesRegex(
+            DoorstopError, msg, Document.new, None, FILES, ROOT, prefix='NEW', sep='X'
+        )
 
     @patch('doorstop.core.document.Document', MockDocument)
     def test_new_cache(self):
@@ -353,7 +361,7 @@ class TestDocument(unittest.TestCase):
 
     def test_next_number(self):
         """Verify the next item number can be determined."""
-        self.assertEqual(6, self.document.next_number)
+        self.assertEqual(7, self.document.next_number)
 
     def test_next_number_server(self):
         """Verify the next item number can be determined with a server."""
@@ -377,6 +385,7 @@ class TestDocument(unittest.TestCase):
             'outline:',
             '            - REQ001: # Lorem ipsum d...',
             '        - REQ003: # Unicode: -40° ±1%',
+            '        - REQ006: # Hello, world!',
             '        - REQ004: # Hello, world!',
             '        - REQ002: # Hello, world!',
             '        - REQ2-001: # Hello, world!',
@@ -434,7 +443,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.document.add_item()
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level=Level('2.2')
+            None, self.document, FILES, ROOT, 'REQ007', level=Level('2.2')
         )
         self.assertEqual(0, mock_reorder.call_count)
 
@@ -445,7 +454,7 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             item = self.document.add_item(level='4.2')
         mock_new.assert_called_once_with(
-            None, self.document, FILES, ROOT, 'REQ006', level='4.2'
+            None, self.document, FILES, ROOT, 'REQ007', level='4.2'
         )
         mock_reorder.assert_called_once_with(keep=item)
 
@@ -455,6 +464,47 @@ outline:
         self.document.add_item(number=999)
         mock_new.assert_called_once_with(
             None, self.document, FILES, ROOT, 'REQ999', level=Level('2.2')
+        )
+
+    def test_add_item_with_no_sep(self):
+        """Verify an item cannot be added to a document without a separator with a name."""
+        msg = "cannot add item with name 'ABC' to document 'REQ' without a separator"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_sep(self):
+        """Verify an item cannot be added to a document with an invalid separator with a name."""
+        self.document._data['sep'] = 'X'
+        msg = "cannot add item with name 'ABC' to document 'REQ' with an invalid separator 'X'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='ABC')
+
+    def test_add_item_with_invalid_name(self):
+        """Verify an item cannot be added to a document with an invalid name."""
+        self.document.sep = '-'
+        msg = "invalid item name 'A-B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A-B')
+        msg = "invalid item name 'A_B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A_B')
+        msg = "invalid item name 'A.B'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='A.B')
+        msg = "invalid item name 'X/Y'"
+        self.assertRaisesRegex(DoorstopError, msg, self.document.add_item, name='X/Y')
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_name(self, mock_new):
+        """Verify an item can be added to a document with a name."""
+        self.document.sep = '-'
+        self.document.add_item(name='ABC')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-ABC', level=Level('2.2')
+        )
+
+    @patch('doorstop.core.item.Item.new')
+    def test_add_item_with_number_name(self, mock_new):
+        """Verify an item can be added to a document with a number as name."""
+        self.document.sep = '-'
+        self.document.add_item(name='99')
+        mock_new.assert_called_once_with(
+            None, self.document, FILES, ROOT, 'REQ-099', level=Level('2.2')
         )
 
     @patch('doorstop.core.item.Item.set_attributes')
@@ -468,7 +518,7 @@ outline:
     def test_add_item_empty(self, mock_new):
         """Verify an item can be added to an new document."""
         document = MockDocument(NEW, ROOT)
-        document.prefix = 'NEW'
+        document.prefix = 'NEW'  # type: ignore
         self.assertIsNot(None, document.add_item(reorder=False))
         mock_new.assert_called_once_with(
             None, document, NEW, ROOT, 'NEW001', level=None
@@ -478,7 +528,7 @@ outline:
     def test_add_item_after_header(self, mock_new):
         """Verify the next item after a header is indented."""
         mock_item = Mock()
-        mock_item.number = 1
+        mock_item.uid = UID('REQ001')
         mock_item.level = Level('1.0')
         self.document._iter = Mock(return_value=[mock_item])
         self.document.add_item()
@@ -651,7 +701,7 @@ outline:
         """Verify an exception is raised on an unknown UID."""
         self.assertRaises(DoorstopError, self.document.find_item, 'unknown99')
 
-    @patch('doorstop.core.item.Item.get_issues')
+    @patch('doorstop.core.validators.item_validator.ItemValidator.get_issues')
     @patch('doorstop.core.document.Document.reorder')
     def test_validate(self, mock_reorder, mock_get_issues):
         """Verify a document can be validated."""
@@ -659,10 +709,10 @@ outline:
         with patch('doorstop.settings.REORDER', True):
             self.assertTrue(self.document.validate())
         mock_reorder.assert_called_once_with(_items=self.document.items)
-        self.assertEqual(5, mock_get_issues.call_count)
+        self.assertEqual(6, mock_get_issues.call_count)
 
     @patch(
-        'doorstop.core.item.Item.get_issues',
+        'doorstop.core.validators.item_validator.ItemValidator.get_issues',
         Mock(
             return_value=[
                 DoorstopError('error'),
@@ -675,19 +725,22 @@ outline:
         """Verify an item error fails the document check."""
         self.assertFalse(self.document.validate())
 
-    @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
+    @patch(
+        'doorstop.core.validators.item_validator.ItemValidator.get_issues',
+        Mock(return_value=[]),
+    )
     def test_validate_hook(self):
         """Verify an item hook can be called."""
         mock_hook = MagicMock()
         self.document.validate(item_hook=mock_hook)
-        self.assertEqual(5, mock_hook.call_count)
+        self.assertEqual(6, mock_hook.call_count)
 
     @patch('doorstop.core.item.Item.delete')
     @patch('os.rmdir')
     def test_delete(self, mock_delete, mock_item_delete):
         """Verify a document can be deleted."""
         self.document.delete()
-        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(7, mock_item_delete.call_count)
         self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 
@@ -697,7 +750,7 @@ outline:
         """Verify a document's assets aren't deleted."""
         mock_delete.side_effect = OSError
         self.document.delete()
-        self.assertEqual(6, mock_item_delete.call_count)
+        self.assertEqual(7, mock_item_delete.call_count)
         self.assertEqual(1, mock_delete.call_count)
         self.document.delete()  # ensure a second delete is ignored
 

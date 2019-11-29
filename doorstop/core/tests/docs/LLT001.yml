@@ -3,9 +3,9 @@ derived: false
 header: ''
 level: 1.1
 links:
-- REQ003: 1f33605bbc5d1a39c9a6441b91389e88
+- REQ003: 9TcFUzsQWUHhoh5wsqnhL7VRtSqMaIhrCXg7mfIkxKM=
 normative: true
 ref: Verify an item can be added to a document.
-reviewed: c87f21066512a269d35f83944607893c
+reviewed: 3cWsswJTpxB9WHng7lXLeM4jQW6zbPTZtt1vL1mZFMI=
 text: |
   Test adding items:

@@ -6,6 +6,7 @@ import fnmatch
 import os
 import subprocess
 from abc import ABCMeta, abstractmethod
+from typing import List, Optional, Tuple
 
 from doorstop import common, settings
 
@@ -15,13 +16,13 @@ log = common.logger(__name__)
 class BaseWorkingCopy(metaclass=ABCMeta):
     """Abstract base class for VCS working copies."""
 
-    DIRECTORY = None  # special hidden directory for the working copy
-    IGNORES = ()  # hidden filenames containing ignore patterns
+    DIRECTORY: Optional[str] = None  # special hidden directory for the working copy
+    IGNORES: Tuple = ()  # hidden filenames containing ignore patterns
 
     def __init__(self, path):
         self.path = path
-        self._ignores_cache = None
-        self._path_cache = None
+        self._ignores_cache: Optional[List[str]] = None
+        self._path_cache: Optional[List[Tuple[str, str, str]]] = None
 
     @staticmethod
     def relpath(path):

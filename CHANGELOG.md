@@ -1,3 +1,11 @@
+# 2.0 (2019-11-29)
+
+- Dropped support for Python 3.5.
+- **BREAKING:** Switched to SHA256 for tracking changes to files.  Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.
+- Fixed a bug with items not getting saved after edits.
+- Added the ability to explicitly name a requirement.
+- Improved the error message when there are multiple root documents.
+
 # 1.6 (2019-08-10)
 
 - Updated `edit` and `reorder` commands to use `$EDITOR`.
@@ -8,17 +16,17 @@
 
 # 1.5 (2018-09-19)
 
-- Added preliminary support for item headers ([@rickeywang](https://github.com/jacebrowning/doorstop/pull/285)
-- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/jacebrowning/doorstop/pull/290))
+- Added preliminary support for item headers ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285)
+- Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/doorstop-dev/doorstop/pull/290))
     + Converted document outline to a tree view.
     + Made documents navigable via clicking links.
     + Added an icon for Linux and Windows.
-- Fixed duplicate headings when publishing. ([@guille-r](https://github.com/jacebrowning/doorstop/pull/302))
+- Fixed duplicate headings when publishing. ([@guille-r](https://github.com/doorstop-dev/doorstop/pull/302))
 - Added Python 3.7 support.
 
 # 1.4 (2017-10-22)
 
-- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/jacebrowning/doorstop/pull/281))
+- Fixed issue running doorstop on CI. ([@ojohnny](https://github.com/doorstop-dev/doorstop/pull/281))
 
 # 1.3.1 (2017-08-26)
 

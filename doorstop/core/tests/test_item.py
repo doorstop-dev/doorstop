@@ -6,12 +6,20 @@
 import logging
 import os
 import unittest
+from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import common, core
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
-from doorstop.core.tests import EMPTY, EXTERNAL, FILES, MockItem, MockSimpleDocument
+from doorstop.core.tests import (
+    EMPTY,
+    EXTERNAL,
+    FILES,
+    TESTS_ROOT,
+    MockItem,
+    MockSimpleDocument,
+)
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -81,7 +89,7 @@ text: ''
 class ListLogHandler(logging.NullHandler):
     def __init__(self, log):
         super().__init__()
-        self.records = []
+        self.records: List[str] = []
         self.log = log
 
     def __enter__(self):
@@ -169,6 +177,30 @@ class TestItem(unittest.TestCase):
         )
         self.item._write.assert_called_once_with(YAML_STRING_ATTRIBUTES, self.item.path)
 
+    def test_set_attributes_reference_valid_input(self):
+        """Verify that setting 'references' with a correct value does not raise errors."""
+        try:
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 'some/path'}]}
+            )
+        except AttributeError:
+            self.fail("didn't expect _set_attributes to raise AttributeError")
+
+    def test_set_attributes_reference_malformed_input(self):
+        """Verify that setting 'references' with a wrong value raises errors."""
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': 'foo'})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': ['foo']})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'FOO'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes({'references': [{'type': 'file'}]})
+        with self.assertRaises(AttributeError):
+            self.item._set_attributes(
+                {'references': [{'type': 'file', 'path': 0xDEAD}]}
+            )
+
     @patch('doorstop.common.verbosity', 2)
     def test_str(self):
         """Verify an item can be converted to a string."""
@@ -200,11 +232,11 @@ class TestItem(unittest.TestCase):
     def test_lt(self):
         """Verify items can be compared."""
         item1 = MockItem(None, 'path/to/fake1.yml')
-        item1.level = (1, 1)
+        item1.level = (1, 1)  # type: ignore
         item2 = MockItem(None, 'path/to/fake1.yml')
-        item2.level = (1, 1, 1)
+        item2.level = (1, 1, 1)  # type: ignore
         item3 = MockItem(None, 'path/to/fake1.yml')
-        item3.level = (1, 1, 2)
+        item3.level = (1, 1, 2)  # type: ignore
         self.assertLess(item1, item2)
         self.assertLess(item2, item3)
         self.assertGreater(item3, item1)
@@ -219,16 +251,6 @@ class TestItem(unittest.TestCase):
         text = "@{}{}".format(os.sep, self.item.path)
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
-
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
-
-    def test_number(self):
-        """Verify an item's number can be read but not set."""
-        self.assertEqual(1, self.item.number)
-        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
 
     def test_level(self):
         """Verify an item's level can be set and read."""
@@ -305,7 +327,7 @@ class TestItem(unittest.TestCase):
         self.assertTrue(self.item.normative)
         self.assertFalse(self.item.heading)
 
-    def test_reviwed(self):
+    def test_reviewed(self):
         """Verify an item's review status can be set and read."""
         self.assertFalse(self.item.reviewed)  # not reviewed by default
         self.item.reviewed = 1  # calls `review()`
@@ -387,7 +409,23 @@ class TestItem(unittest.TestCase):
         """Verify an item's reference can be set and read."""
         self.item.ref = "abc123"
         self.assertIn("ref: abc123\n", self.item._write.call_args[0][0])
+        self.assertNotIn("references:", self.item._write.call_args[0][0])
         self.assertEqual("abc123", self.item.ref)
+
+    def test_references(self):
+        """Verify an item's reference can be set and read."""
+        references = [
+            {'type': 'file', 'path': 'abc1'},
+            {"type": "file", "path": "abc2"},
+        ]
+        self.item.references = references
+        self.assertIn(
+            "references:\n- path: abc1\n  type: file\n- path: abc2\n  type: file",
+            self.item._write.call_args[0][0],
+        )
+        # We let 'references' and 'ref' co-exist for now.
+        self.assertIn("ref: ''", self.item._write.call_args[0][0])
+        self.assertListEqual(references, self.item.references)
 
     def test_extended(self):
         """Verify an extended attribute (`str`) can be used."""
@@ -425,8 +463,9 @@ class TestItem(unittest.TestCase):
         self.item.set('text', "extended access")
         self.assertEqual("extended access", self.item.text)
 
+    @patch('doorstop.core.item.Item.load')
     @patch('doorstop.core.editor.launch')
-    def test_edit(self, mock_launch):
+    def test_edit(self, mock_launch, mock_load):
         """Verify an item can be edited."""
         self.item.tree = Mock()
         # Act
@@ -435,6 +474,7 @@ class TestItem(unittest.TestCase):
         self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
         self.item.tree.vcs.edit.assert_called_once_with(self.item.path)
         mock_launch.assert_called_once_with(self.item.path, tool='mock_editor')
+        mock_load.assert_called_once_with(True)
 
     def test_link(self):
         """Verify links can be added to an item."""
@@ -574,6 +614,76 @@ class TestItem(unittest.TestCase):
         self.item.tree = Mock()
         self.assertEqual((None, None), self.item.find_ref())
 
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml"},
+            {"path": "files/REQ002.yml"},
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(2, len(ref))
+
+        relpath_1, keyword_line_1 = ref[0]
+        self.assertEqual(relpath_1, 'files/REQ001.yml')
+        self.assertEqual(keyword_line_1, None)
+
+        relpath_2, keyword_line_2 = ref[1]
+        self.assertEqual(relpath_2, 'files/REQ002.yml')
+        self.assertEqual(keyword_line_2, None)
+
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_valid_keyword(self):
+        """Verify an item's references can be found."""
+        keyword = "Lorem ipsum dolor sit amet"
+        self.item.references = [{"path": "files/REQ001.yml", "keyword": keyword}]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        # Act
+        ref = self.item.find_references()
+
+        # Assert
+        self.assertEqual(1, len(ref))
+
+        ref_path, ref_keyword_line = ref[0]
+        self.assertEqual(ref_path, 'files/REQ001.yml')
+        self.assertEqual(ref_keyword_line, 12)
+
+    @patch('doorstop.settings.CACHE_PATHS', False)
+    def test_find_references_invalid_keyword(self):
+        """Verify an item's references can be found."""
+        self.item.references = [
+            {"path": "files/REQ001.yml", "keyword": "INVALID KEYWORD"}
+        ]
+
+        self.item.root = TESTS_ROOT
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(TESTS_ROOT)
+
+        with self.assertRaises(DoorstopError) as context:
+            self.item.find_references()
+
+        self.assertTrue('external reference not found' in str(context.exception))
+
+    def test_find_ref_error_multiple(self):
+        """Verify an error occurs when no external reference found."""
+        self.item.references = [{"path": "this/path/does/not/exist.yml"}]
+        self.item.tree = Mock()
+        self.item.tree.vcs = WorkingCopy(EMPTY)
+        # Act and assert
+        self.assertRaises(DoorstopError, self.item.find_references)
+
     def test_find_child_objects(self):
         """Verify an item's child objects can be found."""
 
@@ -668,227 +778,28 @@ class TestItem(unittest.TestCase):
             DoorstopError, Item.new, None, None, FILES, FILES, 'REQ002', level=(1, 2, 3)
         )
 
-    def test_validate_invalid_ref(self):
-        """Verify an invalid reference fails validity."""
-        with patch(
-            'doorstop.core.item.Item.find_ref',
-            Mock(side_effect=DoorstopError("test invalid ref")),
-        ):
-            with ListLogHandler(core.base.log) as handler:
-                self.assertFalse(self.item.validate())
-                self.assertIn("test invalid ref", handler.records)
-
-    def test_validate_inactive(self):
-        """Verify an inactive item is not checked."""
-        self.item.active = False
-        with patch('doorstop.core.item.Item.find_ref', Mock(side_effect=DoorstopError)):
-            self.assertTrue(self.item.validate())
-
-    def test_validate_reviewed(self):
-        """Verify that checking a reviewed item updates the stamp."""
-        self.item._data['reviewed'] = True
-        self.assertTrue(self.item.validate())
-        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
-        self.assertEqual(stamp, self.item._data['reviewed'])
-
-    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
-    def test_validate_reviewed_first(self):
-        """Verify that a missing initial review leaves the stamp empty."""
-        self.item._data['reviewed'] = Stamp(None)
-        self.assertTrue(self.item.validate())
-        self.assertEqual(Stamp(None), self.item._data['reviewed'])
-
-    @patch('doorstop.settings.ERROR_ALL', True)
-    def test_validate_reviewed_second(self):
-        """Verify that a modified stamp fails review."""
-        self.item._data['reviewed'] = Stamp('abc123')
-        with ListLogHandler(core.base.log) as handler:
-            self.assertFalse(self.item.validate())
-            self.assertIn("unreviewed changes", handler.records)
-
-    def test_validate_cleared(self):
-        """Verify that checking a cleared link updates the stamp."""
-        mock_item = Mock()
-        mock_item.stamp = Mock(return_value=Stamp('abc123'))
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.tree = mock_tree
-        self.item.links = [{'mock_uid': True}]
-        self.item.disable_get_issues_document()
-        self.assertTrue(self.item.validate())
-        self.assertEqual('abc123', self.item.links[0].stamp)
-
-    def test_validate_cleared_new(self):
-        """Verify that new links are stamped automatically."""
-        mock_item = Mock()
-        mock_item.stamp = Mock(return_value=Stamp('abc123'))
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.tree = mock_tree
-        self.item.links = [{'mock_uid': None}]
-        self.item.disable_get_issues_document()
-        self.assertTrue(self.item.validate())
-        self.assertEqual('abc123', self.item.links[0].stamp)
-
-    def test_validate_nonnormative_with_links(self):
-        """Verify a non-normative item with links can be checked."""
-        self.item.normative = False
-        self.item.links = ['a']
-        self.item.disable_get_issues_document()
-        self.assertTrue(self.item.validate())
-
-    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
-    def test_validate_link_to_inactive(self):
-        """Verify a link to an inactive item can be checked."""
-        mock_item = Mock()
-        mock_item.active = False
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.links = ['a']
-        self.item.tree = mock_tree
-        self.item.disable_get_issues_document()
-        self.assertTrue(self.item.validate())
-
-    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
-    def test_validate_link_to_nonnormative(self):
-        """Verify a link to an non-normative item can be checked."""
-        mock_item = Mock()
-        mock_item.normative = False
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(return_value=mock_item)
-        self.item.links = ['a']
-        self.item.tree = mock_tree
-        self.item.disable_get_issues_document()
-        self.assertTrue(self.item.validate())
-
-    def test_validate_document(self):
-        """Verify an item can be checked against a document."""
-        self.item.document.parent = 'fake'
-        self.assertTrue(self.item.validate())
-
-    def test_validate_document_with_links(self):
-        """Verify an item can be checked against a document with links."""
-        self.item.link('unknown1')
-        self.item.document.parent = 'fake'
-        self.assertTrue(self.item.validate())
-
-    def test_validate_document_with_bad_link_uids(self):
-        """Verify an item can be checked against a document w/ bad links."""
-        self.item.link('invalid')
-        self.item.document.parent = 'fake'
-        with ListLogHandler(core.base.log) as handler:
-            self.assertFalse(self.item.validate())
-            self.assertIn("invalid UID in links: invalid", handler.records)
-
-    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
-    def test_validate_tree(self):
-        """Verify an item can be checked against a tree."""
-
-        def mock_iter(self):  # pylint: disable=W0613
-            """Mock Tree.__iter__ to yield a mock Document."""
-            mock_document = Mock()
-            mock_document.parent = 'RQ'
-
-            def mock_iter2(self):  # pylint: disable=W0613
-                """Mock Document.__iter__ to yield a mock Item."""
-                mock_item = Mock()
-                mock_item.uid = 'TST001'
-                mock_item.links = ['RQ001']
-                yield mock_item
-
-            mock_document.__iter__ = mock_iter2
-            yield mock_document
-
-        self.item.link('fake1')
-
-        mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda uid: Mock(uid='fake1')
-
-        self.item.tree = mock_tree
-
-        self.assertTrue(self.item.validate())
-
-    def test_validate_tree_error(self):
-        """Verify an item can be checked against a tree with errors."""
-        self.item.link('fake1')
-        mock_tree = MagicMock()
-        mock_tree.find_item = Mock(side_effect=DoorstopError)
-        self.item.tree = mock_tree
-        with ListLogHandler(core.base.log) as handler:
-            self.assertFalse(self.item.validate())
-            self.assertIn("linked to unknown item: fake1", handler.records)
-
-    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
-    def test_validate_both(self):
-        """Verify an item can be checked against both."""
-
-        def mock_iter(seq):
-            """Creates a mock __iter__ method."""
-
-            def _iter(self):  # pylint: disable=W0613
-                """Mock __iter__method."""
-                yield from seq
-
-            return _iter
-
-        mock_item = Mock()
-        mock_item.links = [self.item.uid]
-
-        self.item.document.parent = 'BOTH'
-        self.item.document.prefix = 'BOTH'
-        self.item.document.set_items([mock_item])
-
-        mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter([self.item.document])
-        self.item.tree = mock_tree
-
-        self.assertTrue(self.item.validate())
-
-    @patch('doorstop.settings.STAMP_NEW_LINKS', False)
-    @patch('doorstop.settings.REVIEW_NEW_ITEMS', False)
-    def test_validate_both_no_reverse_links(self):
-        """Verify an item can be checked against both (no reverse links)."""
-
-        def mock_iter(self):  # pylint: disable=W0613
-            """Mock Tree.__iter__ to yield a mock Document."""
-            mock_document = Mock()
-            mock_document.parent = 'RQ'
-
-            def mock_iter2(self):  # pylint: disable=W0613
-                """Mock Document.__iter__ to yield a mock Item."""
-                mock_item = Mock()
-                mock_item.uid = 'TST001'
-                mock_item.links = []
-                yield mock_item
-
-            mock_document.__iter__ = mock_iter2
-            yield mock_document
-
-        self.item.link('fake1')
-
-        mock_tree = Mock()
-        mock_tree.__iter__ = mock_iter
-        mock_tree.find_item = lambda uid: Mock(uid='fake1')
-        self.item.tree = mock_tree
-
-        self.assertTrue(self.item.validate())
-
-    @patch('doorstop.core.item.Item.get_issues', Mock(return_value=[]))
-    def test_issues(self):
-        """Verify an item's issues convenience property can be accessed."""
-        self.assertEqual(0, len(self.item.issues))
-
     def test_stamp(self):
         """Verify an item's contents can be stamped."""
-        stamp = 'c6a87755b8756b61731c704c6a7be4a2'
+        stamp = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
         self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_contribution_references(self):
+        """Verify that references attribute contributes to a stamp."""
+        expected_stamp_before = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
+
+        stamp_before = self.item.stamp()
+        self.assertEqual(expected_stamp_before, stamp_before)
+
+        self.item.references = [{'type': 'file', 'path': 'foo'}]
+
+        stamp_after = self.item.stamp()
+        self.assertNotEqual(stamp_after, expected_stamp_before)
 
     def test_stamp_with_one_extended_reviewed(self):
         """Verify fingerprint with one extended reviewed attribute."""
         self.item._data['type'] = 'functional'
         self.item.document.extended_reviewed = ['type']
-        stamp = '04fdd093f67ce3a3160dfdc5d93e7813'
+        stamp = '5ijLUBTXGCkN-2wctQTQ5cl2-ZTDMeukDlXDy0OBCGg='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_two_extended_reviewed(self):
@@ -896,7 +807,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['type', 'verification-method']
-        stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+        stamp = 'xmXpN4L0mNHm8-5Ga24VJLc5b9J2ttG4G8XVGrgDFeU='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_reversed_extended_reviewed_reverse(self):
@@ -904,7 +815,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['verification-method', 'type']
-        stamp = '7b14dfcc17026e98790284c5cddb0900'
+        stamp = '2HCtrWC2tYEpFpCtNKf-D4n_s0IrxuEuiF-6cZ6wdr0='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_missing_extended_reviewed_reverse(self):
@@ -917,7 +828,7 @@ class TestItem(unittest.TestCase):
                 'type',
                 'verification-method',
             ]
-            stamp = 'cf8aaea03cd5765bac978ad74a42d729'
+            stamp = 'xmXpN4L0mNHm8-5Ga24VJLc5b9J2ttG4G8XVGrgDFeU='
             self.assertEqual(stamp, self.item.stamp())
             self.assertIn(
                 "RQ001: missing extended reviewed attribute: missing", handler.records
@@ -926,7 +837,7 @@ class TestItem(unittest.TestCase):
     def test_stamp_links(self):
         """Verify an item's contents can be stamped."""
         self.item.link('mock_link')
-        stamp = '1020719292bbdc4090bd236cf41cd104'
+        stamp = 'yE7YshtnqRzPryOsmNI6nkeRmE97LPB19eenX0b5cIk='
         self.assertEqual(stamp, self.item.stamp(links=True))
 
     def test_clear(self):
@@ -1034,31 +945,25 @@ class TestUnknownItem(unittest.TestCase):
         self.assertEqual('RQ001', self.item.uid)
         self.assertRaises(AttributeError, setattr, self.item, 'uid', 'RQ002')
 
+    def test_le(self):
+        """Verify unknown item's UID less operator."""
+        self.assertTrue(self.item < UnknownItem('RQ002'))
+        self.assertFalse(self.item < self.item)
+
     def test_relpath(self):
         """Verify an item's relative path string can be read but not set."""
         text = "@{}{}".format(os.sep, '???')
         self.assertEqual(text, self.item.relpath)
         self.assertRaises(AttributeError, setattr, self.item, 'relpath', '.')
 
-    def test_prefix(self):
-        """Verify an item's prefix can be read but not set."""
-        self.assertEqual('RQ', self.item.prefix)
-        self.assertRaises(AttributeError, setattr, self.item, 'prefix', 'REQ')
-
-    def test_number(self):
-        """Verify an item's number can be read but not set."""
-        self.assertEqual(1, self.item.number)
-        self.assertRaises(AttributeError, setattr, self.item, 'number', 2)
-
     @patch('doorstop.core.item.log.debug')
     def test_attributes(self, mock_warning):
         """Verify all other `Item` attributes raise an exception."""
         self.assertRaises(AttributeError, getattr, self.item, 'path')
         self.assertRaises(AttributeError, getattr, self.item, 'text')
-        self.assertRaises(AttributeError, getattr, self.item, 'get_issues')
         self.assertRaises(AttributeError, getattr, self.item, 'delete')
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
-        self.assertEqual(3, mock_warning.call_count)
+        self.assertEqual(2, mock_warning.call_count)
 
     @patch('doorstop.core.item.log.debug')
     def test_attributes_with_spec(self, mock_warning):
@@ -1067,10 +972,9 @@ class TestUnknownItem(unittest.TestCase):
         self.item = UnknownItem(self.item.uid, spec=spec)
         self.assertRaises(AttributeError, getattr, self.item, 'path')
         self.assertRaises(AttributeError, getattr, self.item, 'text')
-        self.assertRaises(AttributeError, getattr, self.item, 'get_issues')
         self.assertRaises(AttributeError, getattr, self.item, 'delete')
         self.assertRaises(AttributeError, getattr, self.item, 'not_on_item')
-        self.assertEqual(4, mock_warning.call_count)
+        self.assertEqual(3, mock_warning.call_count)
 
     def test_stamp(self):
         """Verify an unknown item has no stamp."""

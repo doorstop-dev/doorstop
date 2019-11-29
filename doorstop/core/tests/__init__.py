@@ -4,16 +4,18 @@
 
 import logging
 import os
-import unittest
+from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
 from doorstop.core.document import Document
 from doorstop.core.item import Item
+from doorstop.core.validators.item_validator import ItemValidator
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
+TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), 'files')
 SYS = os.path.join(FILES, 'parent')
 TST = os.path.join(FILES, 'child')
@@ -41,7 +43,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
     def __init__(self, *args, **kwargs):
         self._file = kwargs.pop('_file', "")  # mock file system contents
         with patch('os.path.isfile', Mock(return_value=True)):
-            super().__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)  # type: ignore
         self._read = Mock(side_effect=self._mock_read)
         self._write = Mock(side_effect=self._mock_write)
 
@@ -67,7 +69,13 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
 class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
     """Mock Item class with stubbed file IO."""
 
-    def _no_get_issues_document(self, document, skip):  # pylint: disable=W0613,R0201
+
+class MockItemValidator(ItemValidator):  # pylint: disable=W0223,R0902
+    """Mock Item class with stubbed file IO."""
+
+    def _no_get_issues_document(
+        self, item, document, skip
+    ):  # pylint: disable=W0613,R0201
         return
         yield  # pylint: disable=W0101
 
@@ -85,8 +93,8 @@ class MockSimpleDocument:
     def __init__(self):
         self.parent = None
         self.prefix = 'RQ'
-        self._items = []
-        self.extended_reviewed = []
+        self._items: List[Item] = []
+        self.extended_reviewed: List[str] = []
 
     def __iter__(self):
         yield from self._items
@@ -153,8 +161,8 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     _mock_item2.uid = 'tst1'
     _mock_item2.document.prefix = 'tst'
     # pylint: disable=undefined-variable
-    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]
-    item2.find_child_items = lambda: [MockDataMixIn._mock_item2]
+    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]  # type: ignore
+    item2.find_child_items = lambda: [MockDataMixIn._mock_item2]  # type: ignore
 
     document = MagicMock(spec=['items'])
     document.items = [
@@ -219,5 +227,20 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
             "level: 2.1.2" + '\n'
             "normative: false" + '\n'
             "ref: 'abc123'"
+        ),
+    )
+
+    item6 = MockItemAndVCS(
+        'path/to/req3.yml',
+        _file=(
+            "links: [sys3]" + '\n'
+            "text: 'Heading'" + '\n'
+            "level: 2.1.2" + '\n'
+            "normative: false" + '\n'
+            "references:" + '\n'
+            "  - path: abc1" + '\n'
+            "    type: file" + '\n'
+            "  - path: abc2" + '\n'
+            "    type: file" + '\n'
         ),
     )

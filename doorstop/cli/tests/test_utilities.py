@@ -2,7 +2,6 @@
 
 """Unit tests for the doorstop.cli.utilities module."""
 
-import sys
 import unittest
 from argparse import ArgumentTypeError
 from unittest.mock import Mock, patch
@@ -50,6 +49,7 @@ class TestConfigureSettings(SettingsTestCase):
         # Act
         with catch_warnings(record=True) as warnings:
             utilities.configure_settings(args)
+            assert warnings, 'Expected one or more warnings'
         # Assert
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.REORDER)
@@ -63,10 +63,7 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
         self.assertTrue(settings.ENABLE_HEADERS)
-        if sys.version_info[:2] == (3, 3):
-            pass  # warnings appear to be shown inconsistently in Python 3.3
-        else:
-            self.assertIn("--no-body-levels", str(warnings[-1].message))
+        self.assertIn("--no-body-levels", str(warnings[-1].message))
 
 
 class TestLiteralEval(unittest.TestCase):
@@ -185,7 +182,7 @@ class TestAsk(unittest.TestCase):
 
 
 class TestShow(unittest.TestCase):
-    """Unit tests for the `show` function."""  # pylint: disable=R0201
+    """Unit tests for the `show` function."""  # pylint: disable=no-self-use
 
     @patch('builtins.print')
     def test_show(self, mock_print):
@@ -203,7 +200,7 @@ class TestShow(unittest.TestCase):
 
 
 class TestPositiveInt(unittest.TestCase):
-    """ Unit tests for the `positive_int` function."""
+    """Unit tests for the `positive_int` function."""
 
     def test_positive_int(self):
         """Verify a positive integer can be parsed."""

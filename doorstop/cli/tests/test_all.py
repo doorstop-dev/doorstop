@@ -201,7 +201,7 @@ class TestAddServer(unittest.TestCase):
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(['add', 'TUT', '--server', '1.2.3.4']))
-        mock_add_item.assert_called_once_with(defaults=None, level=None)
+        mock_add_item.assert_called_once_with(defaults=None, level=None, name=None)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
@@ -415,6 +415,12 @@ class TestClear(unittest.TestCase):
     def test_clear_item(self, mock_clear):
         """Verify 'doorstop clear' can be called with an item."""
         self.assertIs(None, main(['clear', 'tut2']))
+        self.assertEqual(1, mock_clear.call_count)
+
+    @patch('doorstop.core.item.Item.clear')
+    def test_clear_item_parent(self, mock_clear):
+        """Verify 'doorstop clear' can be called with an item and parent."""
+        self.assertIs(None, main(['clear', 'tut2', 'req2']))
         self.assertEqual(1, mock_clear.call_count)
 
     def test_clear_item_unknown(self):

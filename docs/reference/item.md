@@ -4,9 +4,11 @@ Doorstop items are files formatted using YAML. When a new item is added using
 `doorstop add`, Doorstop will create a YAML file and populate it with all
 required attributes (key-value pairs). The UID of an item is defined by its
 file name without the extension. An UID consists of two parts, the prefix and a
-number. The parts are divided by an optional separator. The prefix is
-determined by the document to which the item belongs. The number is
-automatically assigned by Doorstop.
+number or name. The two parts are divided by an optional separator. The prefix
+and separator are determined by the document to which the item belongs. By
+default, the number is automatically assigned by Doorstop. Optionally, a user
+can specify a name for the UID during item creation. The name must not contain
+separator characters.
 
 Example item:
 ```yaml
@@ -133,7 +135,8 @@ values of extended attributes can be added to the fingerprint through a
 The value of the *reviewed* attribute indicates the fingerprint of the item
 when it was last reviewed. "null" if the item has not yet been reviewed.
 Doorstop will use this to detect unreviewed changes to an item by comparing the
-current item fingerprint to the last reviewed fingerprint.
+current item fingerprint to the last reviewed fingerprint.  The fingerprint
+hash algorithm is SHA256 stored in URL-safe Base64 encoding.
 
 You should not calculate this value manually, use `doorstop review`.
 
@@ -177,7 +180,53 @@ item of the reviewed attribute, not the parent item of the link).  The
 fingerprint of the link is does **not** contribute to the fingerprint of the
 item.
 
-## `ref`
+## `references` (new array behavior)
+
+An array of external references. An item may reference a number of external
+files. The external references are displayed in a published document.
+
+Doorstop will search in the project root for a file matching the specified
+reference. If multiple matching files exist, the first found will be used.
+
+The value of this attribute contributes to the [fingerprint](item.md#reviewed)
+of the item.
+
+### Example: Reference files
+
+```yaml
+references:
+- path: tests/test1.cpp
+  type: file
+- path: tests/test2.cpp
+  type: file
+```
+
+### Note: new behavior vs old behavior
+
+Note: Newer `references` attribute is a new array behavior compared to the 
+original `ref` attribute's string behavior. The old behavior supports referencing
+only one file via file name or referencing a file that contains a given
+keyword.
+
+The new behavior of `references` attribute allows referencing many files. The
+old behavior matching a specified keyword is enabled via optional `keyword`
+parameter:
+
+```yaml
+references:
+- path: tests/test1.cpp
+  type: file
+  keyword: REQ1
+- path: tests/test2.cpp
+  type: file
+  keyword: REQ2
+```
+
+Doorstop will search a specified file to find the specified reference.
+
+## `ref` (deprecated behavior, see 'references')
+
+Please check the "`references` (new array behavior)" section before reading further.
 
 External reference. An item may reference an external file or a line in an
 external file. An external reference is displayed in a published document.

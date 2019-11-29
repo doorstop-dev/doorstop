@@ -74,7 +74,9 @@ def main(args=None):  # pylint: disable=R0915
     }
 
     # Build main parser
-    parser = argparse.ArgumentParser(prog=CLI, description=DESCRIPTION, **shared)
+    parser = argparse.ArgumentParser(  # type: ignore
+        prog=CLI, description=DESCRIPTION, **shared
+    )
     parser.add_argument(
         '-F',
         '--no-reformat',
@@ -200,6 +202,16 @@ def _create(subs, shared):
         help="number of digits in item UIDs",
         default=document.Document.DEFAULT_DIGITS,
     )
+    sub.add_argument(
+        '-s',
+        '--separator',
+        metavar='SEP',
+        help=(
+            "separator between the prefix and the number or name in an "
+            "item UID; the only valid separators are '-', '_', and '.'"
+        ),
+        default=document.Document.DEFAULT_SEP,
+    )
 
 
 def _delete(subs, shared):
@@ -219,6 +231,18 @@ def _add(subs, shared):
     )
     sub.add_argument('prefix', help="document prefix for the new item")
     sub.add_argument('-l', '--level', help="desired item level (e.g. 1.2.3)")
+    sub.add_argument(
+        '-n',
+        '--name',
+        '--number',
+        metavar='NANU',
+        help=(
+            "use the specified name or number NANU instead of an automatically "
+            "generated number for the UID (together with the document prefix "
+            "and separator); the NANU must be a number or a string which does "
+            "not contain separator characters"
+        ),
+    )
     sub.add_argument(
         '-c',
         '--count',

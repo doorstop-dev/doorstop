@@ -3,6 +3,7 @@
 """Functions to build a tree and access documents and items."""
 
 import os
+from typing import List, Optional
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -11,10 +12,10 @@ from doorstop.core.document import Document
 from doorstop.core.tree import Tree
 
 log = common.logger(__name__)
-_tree = None  # implicit tree for convenience functions
+_tree: Optional[Tree] = None  # implicit tree for convenience functions
 
 
-def build(cwd=None, root=None, request_next_number=None):
+def build(cwd=None, root=None, request_next_number=None) -> Tree:
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
@@ -27,7 +28,7 @@ def build(cwd=None, root=None, request_next_number=None):
     :return: new :class:`~doorstop.core.tree.Tree`
 
     """
-    documents = []
+    documents: List[Document] = []
 
     # Find the root of the working copy
     cwd = cwd or os.getcwd()
@@ -35,11 +36,22 @@ def build(cwd=None, root=None, request_next_number=None):
 
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
-    _document_from_path(root, root, documents)
-    for dirpath, dirnames, _ in os.walk(root):
-        for dirname in dirnames:
-            path = os.path.join(dirpath, dirname)
-            _document_from_path(path, root, documents)
+    skip_file_name = '.doorstop.skip-all'
+    if not os.path.isfile(os.path.join(root, skip_file_name)):
+        _document_from_path(root, root, documents)
+    exclude_dirnames = {'.git'}
+    if not os.path.isfile(os.path.join(root, skip_file_name)):
+        for dirpath, dirnames, _ in os.walk(root, topdown=True):
+            whilelist_dirnames = []
+            for dirname in dirnames:
+                if dirname in exclude_dirnames:
+                    continue
+                path = os.path.join(dirpath, dirname)
+                if os.path.isfile(os.path.join(path, skip_file_name)):
+                    continue
+                whilelist_dirnames.append(dirname)
+                _document_from_path(path, root, documents)
+            dirnames[:] = whilelist_dirnames
 
     # Build the tree
     if not documents:
@@ -91,7 +103,7 @@ def find_item(uid):
 
 def _get_tree(request_next_number=None):
     """Get a shared tree for convenience functions."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     if _tree is None:
         _tree = build()
     _tree.request_next_number = request_next_number
@@ -100,11 +112,11 @@ def _get_tree(request_next_number=None):
 
 def _set_tree(value):
     """Set the shared tree to a specific value (for testing)."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     _tree = value
 
 
 def _clear_tree():
     """Force the shared tree to be rebuilt."""
-    global _tree  # pylint: disable=W0603
+    global _tree
     _tree = None

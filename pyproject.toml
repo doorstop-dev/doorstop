@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "1.6"
+version = "2.0"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -12,7 +12,7 @@ readme = "README.md"
 
 homepage = "https://pypi.org/project/Doorstop"
 documentation = "https://doorstop.readthedocs.io"
-repository = "https://github.com/jacebrowning/doorstop"
+repository = "https://github.com/doorstop-dev/doorstop"
 
 keywords = [
   "requirements-management",
@@ -30,9 +30,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
@@ -40,28 +40,28 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.5"
+python = "^3.6"
 
 PyYAML = "^5.1"
 Markdown = "^2"
-bottle = "0.12.13"
+bottle = "~0.12.13"
 requests = "^2"
-pyficache = "0.3.1"
+pyficache = "~0.3.1"
 mdx_outline = "^1.3.0"
-python-markdown-math = "0.6"
+python-markdown-math = "~0.6"
 plantuml-markdown = "^3.0"
 openpyxl = "^2.6"
 
 [tool.poetry.dev-dependencies]
 
 # Formatters
-black = { version = "19.3b0", python = "^3.6" }
-isort = "4.3.21"
+black = "=19.3b0"
+isort = "=4.3.21"
 
 # Linters
-mypy = "*"
+mypy = "^0.720"
 pydocstyle = "*"
-pylint = "^2.0"
+pylint = "~2.3.1"
 
 # Testing
 nose = "^1.3"
@@ -82,6 +82,7 @@ pyinstaller = "*"
 sniffer = "*"
 MacFSEvents = { version = "*", platform = "darwin" }
 pync = { version = "*", platform = "darwin" }
+rope = "^0.14.0"
 
 [tool.poetry.scripts]
 

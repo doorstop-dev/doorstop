@@ -4,6 +4,7 @@
 
 import os
 import time
+from typing import Set
 
 from doorstop import common, server
 from doorstop.cli import utilities
@@ -25,8 +26,8 @@ class CycleTracker:
 
     def __init__(self):
         """Initialize a cycle tracker."""
-        self.discovered = set()
-        self.finished = set()
+        self.discovered: Set[str] = set()
+        self.finished: Set[str] = set()
 
     def _dfs_visit(self, uid, tree):
         """Do a depth first search visit of the specified item.
@@ -121,7 +122,11 @@ def run_create(args, cwd, _, catch=True):
 
         # create a new document
         document = tree.create_document(
-            args.path, args.prefix, parent=args.parent, digits=args.digits
+            args.path,
+            args.prefix,
+            parent=args.parent,
+            digits=args.digits,
+            sep=args.separator,
         )
 
     if not success:
@@ -178,7 +183,9 @@ def run_add(args, cwd, _, catch=True):
 
         # add items to it
         for _ in range(args.count):
-            item = document.add_item(level=args.level, defaults=args.defaults)
+            item = document.add_item(
+                level=args.level, defaults=args.defaults, name=args.name
+            )
             utilities.show("added item: {} ({})".format(item.uid, item.relpath))
 
         # Edit item if requested

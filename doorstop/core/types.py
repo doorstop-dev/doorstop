@@ -5,6 +5,8 @@
 import hashlib
 import os
 import re
+from base64 import urlsafe_b64encode
+from typing import Union
 
 import yaml
 
@@ -17,7 +19,7 @@ log = common.logger(__name__)
 class Prefix(str):
     """Unique document prefixes."""
 
-    UNKNOWN_MESSGE = "no document with prefix: {}"
+    UNKNOWN_MESSAGE = "no document with prefix: {}"
 
     def __new__(cls, value=""):
         if isinstance(value, Prefix):
@@ -25,7 +27,7 @@ class Prefix(str):
         else:
             if str(value).lower() in settings.RESERVED_WORDS:
                 raise DoorstopError("cannot use reserved word: %s" % value)
-            obj = super().__new__(cls, Prefix.load_prefix(value))
+            obj = super().__new__(cls, Prefix.load_prefix(value))  # type: ignore
             return obj
 
     def __repr__(self):
@@ -46,11 +48,6 @@ class Prefix(str):
 
     def __lt__(self, other):
         return self.lower() < other.lower()
-
-    @property
-    def short(self):
-        """Get a shortened version of the prefix."""
-        return self.lower()
 
     @staticmethod
     def load_prefix(value):
@@ -91,9 +88,14 @@ class UID:
         :param *values: prefix, separator, number, digit count
         param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
+        Option 4:
+
+        :param *values: prefix, separator, name
+        param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
+
         """
         if values and isinstance(values[0], UID):
-            self.stamp = stamp or values[0].stamp
+            self.stamp: Stamp = stamp or values[0].stamp
             return
         self.stamp = stamp or Stamp()
         # Join values
@@ -106,25 +108,21 @@ class UID:
                 pair = value.rsplit(':', 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
-                pair = list(value.items())[0]
-                self.value = str(pair[0])
-                self.stamp = self.stamp or Stamp(pair[1])
+                first = list(value.items())[0]
+                self.value = str(first[0])
+                self.stamp = self.stamp or Stamp(first[1])
             else:
                 self.value = str(value) if values[0] else ''
         elif len(values) == 4:
-            self.value = UID.join_uid(*values)  # pylint: disable=no-value-for-parameter
+            # pylint: disable=no-value-for-parameter
+            self.value = UID.join_uid_4(*values)
+        elif len(values) == 3:
+            # pylint: disable=no-value-for-parameter
+            self.value = UID.join_uid_3(*values)
         else:
-            raise TypeError("__init__() takes 1 or 4 positional arguments")
+            raise TypeError("__init__() takes 1, 3, or 4 positional arguments")
         # Split values
-        try:
-            parts = UID.split_uid(self.value)
-            self._prefix = Prefix(parts[0])
-            self._number = parts[1]
-        except ValueError:
-            self._prefix = self._number = None
-            self._exc = DoorstopError("invalid UID: {}".format(self.value))
-        else:
-            self._exc = None
+        self._prefix, self._number, self._name, self._exc = UID.split_uid(self.value)
 
     def __repr__(self):
         if self.stamp:
@@ -136,7 +134,7 @@ class UID:
         return self.value
 
     def __hash__(self):
-        return hash((self._prefix, self._number))
+        return hash((self._prefix, self._number, self._name))
 
     def __eq__(self, other):
         if not other:
@@ -144,7 +142,14 @@ class UID:
         if not isinstance(other, UID):
             other = UID(other)
         try:
-            return all((self.prefix == other.prefix, self.number == other.number))
+            self.check()
+            other.check()
+            # pylint: disable=protected-access
+            return (
+                self._prefix == other._prefix
+                and self._number == other._number
+                and self._name == other._name
+            )
         except DoorstopError:
             return self.value.lower() == other.value.lower()
 
@@ -153,10 +158,16 @@ class UID:
 
     def __lt__(self, other):
         try:
-            if self.prefix == other.prefix:
-                return self.number < other.number
+            self.check()
+            other.check()
+            # pylint: disable=protected-access
+            if self._prefix == other._prefix:
+                if self._number == other._number:
+                    return self._name < other._name
+                else:
+                    return self._number < other._number
             else:
-                return self.prefix < other.prefix
+                return self._prefix < other._prefix
         except DoorstopError:
             return self.value < other.value
 
@@ -173,10 +184,10 @@ class UID:
         return self._number
 
     @property
-    def short(self):
-        """Get a shortened version of the UID."""
+    def name(self):
+        """Get the UID's name."""
         self.check()
-        return self.prefix.lower() + str(self.number)
+        return self._name
 
     @property
     def string(self):
@@ -192,41 +203,61 @@ class UID:
             raise self._exc  # pylint: disable=raising-bad-type
 
     @staticmethod
-    def split_uid(text):
-        """Split an item's UID string into a prefix and number.
+    def split_uid(value):
+        """Split an item's UID string into a prefix, number, name, and exception.
 
         >>> UID.split_uid('ABC00123')
-        ('ABC', 123)
+        (Prefix('ABC'), 123, '', None)
 
         >>> UID.split_uid('ABC.HLR_01-00123')
-        ('ABC.HLR_01', 123)
+        (Prefix('ABC.HLR_01'), 123, '', None)
 
         >>> UID.split_uid('REQ2-001')
-        ('REQ2', 1)
+        (Prefix('REQ2'), 1, '', None)
+
+        >>> UID.split_uid('REQ2-NAME')
+        (Prefix('REQ2'), -1, 'NAME', None)
+
+        >>> UID.split_uid('REQ2-NAME007')
+        (Prefix('REQ2'), -1, 'NAME007', None)
+
+        >>> UID.split_uid('REQ2-123NAME')
+        (Prefix('REQ2'), -1, '123NAME', None)
 
         """
-        match = re.match(r"([\w.-]*\D)(\d+)", text)
-        if not match:
-            raise ValueError("unable to parse UID: {}".format(text))
-        prefix = match.group(1).rstrip(settings.SEP_CHARS)
-        number = int(match.group(2))
-        return prefix, number
+        m = re.match("([\\w.-]+)[" + settings.SEP_CHARS + "](\\w+)", value)
+        if m:
+            try:
+                num = int(m.group(2))
+                return Prefix(m.group(1)), num, '', None
+            except ValueError:
+                return Prefix(m.group(1)), -1, m.group(2), None
+        m = re.match(r"([\w.-]*\D)(\d+)", value)
+        if m:
+            num = m.group(2)
+            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), '', None
+        return None, None, None, DoorstopError("invalid UID: {}".format(value))
 
     @staticmethod
-    def join_uid(prefix, sep, number, digits):
-        """Join the parts of an item's UID into a string.
+    def join_uid_4(prefix, sep, number, digits):
+        """Join the four parts of an item's UID into a string.
 
-        >>> UID.join_uid('ABC', '', 123, 5)
+        >>> UID.join_uid_4('ABC', '', 123, 5)
         'ABC00123'
 
-        >>> UID.join_uid('REQ.H', '-', 42, 4)
+        >>> UID.join_uid_4('REQ.H', '-', 42, 4)
         'REQ.H-0042'
 
-        >>> UID.join_uid('ABC', '-', 123, 0)
+        >>> UID.join_uid_4('ABC', '-', 123, 0)
         'ABC-123'
 
         """
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
+
+    @staticmethod
+    def join_uid_3(prefix, sep, name):
+        """Join the three parts of an item's UID into a string."""
+        return "{}{}{}".format(prefix, sep, name)
 
 
 class _Literal(str):
@@ -248,7 +279,7 @@ class Text(str):
 
     def __new__(cls, value=""):
         assert not isinstance(value, Text)
-        obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        obj = super(Text, cls).__new__(cls, Text.load_text(value))  # type: ignore
         return obj
 
     @property
@@ -299,7 +330,7 @@ class Level:
         """
         if isinstance(value, Level):
             self._parts = list(value)
-            self.heading = value.heading
+            self.heading: bool = value.heading
         else:
             parts = self.load_level(value)
             if parts and parts[-1] == 0:
@@ -475,7 +506,7 @@ class Level:
         return parts
 
     @staticmethod
-    def save_level(parts):
+    def save_level(parts) -> Union[int, float, str]:
         """Convert a level's part into non-quoted YAML value.
 
         >>> Level.save_level((1,))
@@ -493,9 +524,9 @@ class Level:
 
         # Convert formats to cleaner YAML formats
         if len(parts) == 1:
-            level = int(level)
+            return int(level)
         elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-            level = float(level)
+            return float(level)
 
         return level
 
@@ -557,16 +588,12 @@ class Stamp:
         return self.value
 
     @staticmethod
-    def digest(*values):
+    def digest(*values) -> str:
         """Hash the values for later comparison."""
-        md5 = hashlib.md5()
+        hsh = hashlib.sha256()
         for value in values:
-            md5.update(str(value).encode())
-        return md5.hexdigest()
-
-
-class Reference:
-    """External reference to a file or lines in a file."""
+            hsh.update(str(value).encode())
+        return urlsafe_b64encode(hsh.digest()).decode('utf-8')
 
 
 def to_bool(obj):
