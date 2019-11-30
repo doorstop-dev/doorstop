@@ -1,14 +1,7 @@
-# 2.1 (future)
+# 2.0 (2019-11-30)
 
-- **BREAKING:** The fingerprint calculation method of reviewed extended
-attributes changed.  Use `doorstop review all` followed by `doorstop clear all`
-to update an existing project. WARNING: This marks all items as reviewed and
-clears all suspect links.
-
-# 2.0 (2019-11-29)
-
+- **BREAKING:** Switched to SHA256 for tracking changes to files and reviews of extended attributes.  Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.
 - Dropped support for Python 3.5.
-- **BREAKING:** Switched to SHA256 for tracking changes to files.  Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.
 - Fixed a bug with items not getting saved after edits.
 - Added the ability to explicitly name a requirement.
 - Improved the error message when there are multiple root documents.
