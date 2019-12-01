@@ -799,7 +799,7 @@ class TestItem(unittest.TestCase):
         """Verify fingerprint with one extended reviewed attribute."""
         self.item._data['type'] = 'functional'
         self.item.document.extended_reviewed = ['type']
-        stamp = '0DXIA1m0z7JFM0DXP2AD0RvvtWjJCmkt7wJkL_3eIEE='
+        stamp = 'MmcvtzB20PHv0IBhxpNtpZCa0CfYwHnPr3Jk8W-TRxk='
         self.assertEqual(stamp, self.item.stamp())
         self.item.document.extended_reviewed = []
         stamp = 'OoHOpBnrt8us7ph8DVnz5KrQs6UBqj_8MEACA0gWpjY='
@@ -809,14 +809,31 @@ class TestItem(unittest.TestCase):
         """Verify fingerprint with complex extended reviewed attribute."""
         self.item.document.extended_reviewed = ['attr']
         self.item._data['attr'] = ['a', 'b', ['c', {'d': 'e', 'f': ['g']}]]
-        stamp = '8SgFOmxh98JO5QalGy6ZV33rfQUmSz66l97141rUfDk='
+        stamp = 'JcCRKBgLLTOatY8OpAMabblP7Mu24JZRn3WgoXwjmSk='
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_none_extended_reviewed(self):
+        """Verify fingerprint with None extended reviewed attribute."""
+        self.item.document.extended_reviewed = ['attr']
+        self.item._data['attr'] = None
+        stamp = 'e0qDli7ZJwhf161b_v7AdGNNl7xHx-bs28aFFk7aqT4='
+        self.assertEqual(stamp, self.item.stamp())
+
+    def test_stamp_with_value_one_extended_reviewed(self):
+        """Verify fingerprint with value one extended reviewed attribute."""
+        self.item.document.extended_reviewed = ['attr']
+        self.item._data['attr'] = 1
+        stamp = '0s4QQh2AZXSoZNYGcfybCGLHAgO4EWY9gxK_LVNiqOA='
+        self.assertEqual(stamp, self.item.stamp())
+        self.item._data['attr'] = '1'
+        stamp = 'GWlkpsRSzT_lgE4CNvE4wrUZZwM3iHKHOa6idcHUSUw='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_empty_string_extended_reviewed(self):
         """Verify fingerprint with empty string extended reviewed attribute."""
         self.item.document.extended_reviewed = ['attr']
         self.item._data['attr'] = ''
-        stamp = 'UJUqtonwnALvu9nQr2pP3f5fw_xLQf62oY2SQRoAxbI='
+        stamp = 'H70VgWPTH89Q9KfIJBfeilC7-wYAtWigxZ2iUcZ9j-8='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_list_extended_reviewed(self):
@@ -825,8 +842,11 @@ class TestItem(unittest.TestCase):
         self.item._data['attr'] = []
         stamp = 'qwUP7VgUbHWIdj-T2ZfGhROfJQwSHDhsC6WR9vUTk1U='
         self.assertEqual(stamp, self.item.stamp())
+        self.item._data['attr'] = [None]
+        stamp = 'GHDRiY4C3twnXDTCqoCAD_iymfe892ZzQuYjuccFBT0='
+        self.assertEqual(stamp, self.item.stamp())
         self.item._data['attr'] = ['']
-        stamp = 'JnRCBW63NQa6D_oQljqrPisAillBC3DrMx7_UdYO56A='
+        stamp = 'Rfwtl2j56CdQLtE4b5StEa0ECVTqlOpABLdhEa1avyo='
         self.assertEqual(stamp, self.item.stamp())
         self.item._data['attr'] = [[]]
         stamp = 'AXWIEp9CYI4UWzIw4NinvDrUFzQl_8rCL9B_PmGisYk='
@@ -847,7 +867,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['type', 'verification-method']
-        stamp = '9K2qfSINvLZWY5059szwe3wxDQUzdYz0nkMAx8khIPk='
+        stamp = 'TF_q0ofVwjaJI1RYu9jtDeSCm5gAQWIqsxpPxAW5D64='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_reversed_extended_reviewed(self):
@@ -855,7 +875,7 @@ class TestItem(unittest.TestCase):
         self.item._data['type'] = 'functional'
         self.item._data['verification-method'] = 'test'
         self.item.document.extended_reviewed = ['verification-method', 'type']
-        stamp = 'HwTCwp5cUlRQ9yKjuTnUU3YbA79ZKVBv0n1sxH5E35s='
+        stamp = 'dMWAazlLoeZSwlD87nEwQtAFq32WQuX_Bd_8kehaKJg='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_with_missing_extended_reviewed_reverse(self):
@@ -867,7 +887,7 @@ class TestItem(unittest.TestCase):
             'type',
             'verification-method',
         ]
-        stamp = '9K2qfSINvLZWY5059szwe3wxDQUzdYz0nkMAx8khIPk='
+        stamp = 'TF_q0ofVwjaJI1RYu9jtDeSCm5gAQWIqsxpPxAW5D64='
         self.assertEqual(stamp, self.item.stamp())
         self.item.document.extended_reviewed = [
             'missing',
@@ -875,14 +895,14 @@ class TestItem(unittest.TestCase):
             'verification-method',
             'missing-2',
         ]
-        stamp = '9K2qfSINvLZWY5059szwe3wxDQUzdYz0nkMAx8khIPk='
+        stamp = 'TF_q0ofVwjaJI1RYu9jtDeSCm5gAQWIqsxpPxAW5D64='
         self.assertEqual(stamp, self.item.stamp())
         self.item.document.extended_reviewed = [
             'type',
             'verification-method',
             'missing-2',
         ]
-        stamp = '9K2qfSINvLZWY5059szwe3wxDQUzdYz0nkMAx8khIPk='
+        stamp = 'TF_q0ofVwjaJI1RYu9jtDeSCm5gAQWIqsxpPxAW5D64='
         self.assertEqual(stamp, self.item.stamp())
 
     def test_stamp_links(self):
