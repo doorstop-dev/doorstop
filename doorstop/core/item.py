@@ -65,14 +65,16 @@ def _convert_to_str(value, result):
     :return: the updated result of the string serialization
     """
     if isinstance(value, list):
+        result += "\\L"
         for v in value:
             result = _convert_to_str(v, result)
         return result
     if isinstance(value, dict):
+        result += "\\D"
         for k in sorted(value.keys()):
             result = _convert_to_str(value[k], result)
         return result
-    return result + str(value)
+    return result + "\\V" + str(value).replace("\\", "\\\\")
 
 
 def requires_tree(func):
@@ -761,7 +763,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if links:
             values.extend(self.links)
         for key in self.document.extended_reviewed:
-            values.append(_convert_to_str(self._data.get(key, ""), ""))
+            if key in self._data:
+                values.append(_convert_to_str(self._data[key], ""))
         return Stamp(*values)
 
     @auto_save
