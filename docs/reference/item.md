@@ -390,4 +390,5 @@ reviewed attributes to the document configuration does not change the
 fingerprint of existing items of the document, if they do not have them,
 otherwise the fingerprint changes.  Removing a reviewed attribute from the
 document configuration changes the fingerprint of all items of the document
-with such an attribute.
+with such an attribute.  The type of the values, empty strings, lists, and
+dictionaries affect the fingerprint.

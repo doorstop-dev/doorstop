@@ -57,7 +57,8 @@ def _convert_to_str(value, result):
 
     This function is independent of the YAML format and may be used for data
     which should be independent of the actual item storage format.  It depends
-    only on the Python sorting function and string representation.
+    only on the Python sorting function, type information, and string
+    representation.
 
     :param value: the value to convert
     :param result: the current result of the string serialization
@@ -65,14 +66,16 @@ def _convert_to_str(value, result):
     :return: the updated result of the string serialization
     """
     if isinstance(value, list):
+        result += "\\L"
         for v in value:
             result = _convert_to_str(v, result)
         return result
     if isinstance(value, dict):
+        result += "\\D"
         for k in sorted(value.keys()):
             result = _convert_to_str(value[k], result)
         return result
-    return result + str(value)
+    return result + "\\T" + str(type(value)) + "\\V" + str(value).replace("\\", "\\\\")
 
 
 def requires_tree(func):
@@ -761,7 +764,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if links:
             values.extend(self.links)
         for key in self.document.extended_reviewed:
-            values.append(_convert_to_str(self._data.get(key, ""), ""))
+            if key in self._data:
+                values.append(_convert_to_str(self._data[key], ""))
         return Stamp(*values)
 
     @auto_save
