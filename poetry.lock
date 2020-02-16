@@ -567,7 +567,7 @@ python-versions = "*"
 version = "0.14.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Python 2 and 3 compatibility utilities"
 name = "six"
 optional = false
@@ -655,7 +655,7 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "5fd78e3ece5f5096106d0b628801882cc9e9c0dd0a52ffe368a4e97c060598b1"
+content-hash = "2ecebca6ce7db48f13ed02faf5313b6819171b463346be69aba2d55ad4b27f3c"
 python-versions = "^3.6"
 
 [metadata.files]

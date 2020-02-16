@@ -1,3 +1,7 @@
+# 2.1.1 (2020-02-16)
+
+- Fixed missing `six` dependency.
+
 # 2.1 (2020-02-16)
 
 - Updated dependencies.
