@@ -296,7 +296,7 @@ description = "Minimalistic wrapper for Python logging."
 name = "minilog"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "1.3"
+version = "1.4"
 
 [[package]]
 category = "dev"
@@ -655,7 +655,7 @@ python-versions = "*"
 version = "1.11.2"
 
 [metadata]
-content-hash = "defb1b7d4ee5717e1c499011e7086efb838977b7488571abbe12e4816aa31e78"
+content-hash = "5fd78e3ece5f5096106d0b628801882cc9e9c0dd0a52ffe368a4e97c060598b1"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -850,8 +850,8 @@ mdx-outline = [
     {file = "mdx_outline-1.3.0.tar.gz", hash = "sha256:eb678ec5800b053cc63d70ff7dc40228bbe7c2d3e6180a3c6b72bfb09081a4d0"},
 ]
 minilog = [
-    {file = "minilog-1.3-py3-none-any.whl", hash = "sha256:c9aa467f1ce5631fcb3c85554679e580ef13be570410d4bfc62e89d88cd41b4a"},
-    {file = "minilog-1.3.tar.gz", hash = "sha256:333fa2a26502dd40c4262a2efc8b09b801a79353fffa2f397d783e4bd1bbac2c"},
+    {file = "minilog-1.4-py3-none-any.whl", hash = "sha256:86ba3d75781bd53f0e0344e39fe0b7a608eb0a10f5f76ef84e8a28d54062549c"},
+    {file = "minilog-1.4.tar.gz", hash = "sha256:b1e965d9d8a74eb8da1f84795fab7659571d734baed1707d3e5b2b98856e1111"},
 ]
 mkdocs = [
     {file = "mkdocs-1.0.4-py2.py3-none-any.whl", hash = "sha256:8cc8b38325456b9e942c981a209eaeb1e9f3f77b493ad755bfef889b9c8d356a"},
