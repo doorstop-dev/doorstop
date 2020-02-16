@@ -1,3 +1,7 @@
+# 2.1 (2020-02-16)
+
+- Updated dependencies.
+
 # 2.0 (2019-11-30)
 
 - **BREAKING:** Switched to SHA256 for tracking changes to files and reviews of extended attributes.  Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.

@@ -13,7 +13,6 @@ cache:
 
 env:
   global:
-    - POETRY_PREVIEW=1
     - RANDOM_SEED=0
 
 before_install:

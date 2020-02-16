@@ -1,6 +1,8 @@
-[![Build Status](http://img.shields.io/travis/doorstop-dev/doorstop/master.svg)](https://travis-ci.org/doorstop-dev/doorstop)
-[![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/master.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
-[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=master)
+[![Unix Build Status](https://img.shields.io/travis/doorstop-dev/doorstop/develop.svg?label=unix)](https://travis-ci.org/doorstop-dev/doorstop)
+[![Windows Build Status](https://img.shields.io/appveyor/ci/jacebrowning/doorstop/develop.svg?label=windows)](https://ci.appveyor.com/project/jacebrowning/doorstop)
+<br>
+[![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/develop.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
+[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=develop)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
 <br>
 [![Gitter](https://badges.gitter.im/doorstop-dev/community.svg)](https://gitter.im/doorstop-dev/community)
