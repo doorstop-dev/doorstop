@@ -633,11 +633,11 @@ class TestItem(unittest.TestCase):
         self.assertEqual(2, len(ref))
 
         relpath_1, keyword_line_1 = ref[0]
-        self.assertEqual(relpath_1, 'files/REQ001.yml')
+        self.assertEqual(relpath_1, os.path.join('files', 'REQ001.yml'))
         self.assertEqual(keyword_line_1, None)
 
         relpath_2, keyword_line_2 = ref[1]
-        self.assertEqual(relpath_2, 'files/REQ002.yml')
+        self.assertEqual(relpath_2, os.path.join('files', 'REQ002.yml'))
         self.assertEqual(keyword_line_2, None)
 
     @patch('doorstop.settings.CACHE_PATHS', False)
@@ -657,7 +657,7 @@ class TestItem(unittest.TestCase):
         self.assertEqual(1, len(ref))
 
         ref_path, ref_keyword_line = ref[0]
-        self.assertEqual(ref_path, 'files/REQ001.yml')
+        self.assertEqual(ref_path, os.path.join('files', 'REQ001.yml'))
         self.assertEqual(ref_keyword_line, 12)
 
     @patch('doorstop.settings.CACHE_PATHS', False)

@@ -35,7 +35,7 @@ class TestReferenceFinder(unittest.TestCase):
         )
 
         # Assert
-        self.assertEqual(path, 'files/REQ001.yml')
+        self.assertEqual(path, os.path.join('files', 'REQ001.yml'))
         self.assertEqual(line, None)
 
     def test_find_file_reference_with_keyword(self):
@@ -53,7 +53,7 @@ class TestReferenceFinder(unittest.TestCase):
         )
 
         # Assert
-        self.assertEqual(path, 'files/REQ006.yml')
+        self.assertEqual(path, os.path.join('files', 'REQ006.yml'))
         self.assertEqual(line, 10)
 
     def test_find_file_reference_should_skip_item_path(self):
@@ -86,7 +86,7 @@ class TestReferenceFinder(unittest.TestCase):
         )
 
         # Assert
-        self.assertEqual(path, 'files/REQ001.yml')
+        self.assertEqual(path, os.path.join('files', 'REQ001.yml'))
         self.assertEqual(line, 12)
 
     def test_find_file_reference_invalid_keyword_given(self):
