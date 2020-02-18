@@ -1,28 +1,26 @@
 #!/usr/bin/env python
-# SPDX-License-Identifier: LGPL-3.0-only
 
 """REST server to display content and reserve item numbers."""
 
+import os
+from collections import defaultdict
+import webbrowser
 import argparse
 import logging
-import os
-import webbrowser
-from collections import defaultdict
-from typing import Dict
 
 import bottle
-from bottle import get, hook, post, request, response, template
+from bottle import get, post, request
 
-from doorstop import Tree, build, common, publisher, settings
+from doorstop import common, build, publisher
 from doorstop.common import HelpFormatter
-from doorstop.core import vcs
 from doorstop.server import utilities
+from doorstop import settings
 
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
-tree: Tree = None  # type: ignore, set in `run`, read in the route functions
-numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
+tree = None  # set in `run`, read in the route functions
+numbers = defaultdict(int)  # cache of next document numbers
 
 
 def main(args=None):
@@ -37,45 +35,19 @@ def main(args=None):
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Build main parser
-    parser = argparse.ArgumentParser(  # type: ignore
-        prog=SERVER, description=__doc__, **shared
-    )
-    cwd = os.getcwd()
-
-    parser.add_argument(
-        '-j', '--project', default=None, help="path to the root of the project"
-    )
-    parser.add_argument(
-        '-P',
-        '--port',
-        metavar='NUM',
-        type=int,
-        default=settings.SERVER_PORT,
-        help="use a custom port for the server",
-    )
-    parser.add_argument(
-        '-H', '--host', default='127.0.0.1', help="IP address to listen"
-    )
-    parser.add_argument(
-        '-w', '--wsgi', action='store_true', help="Run as a WSGI process"
-    )
-    parser.add_argument(
-        '-b',
-        '--baseurl',
-        default='',
-        help="Base URL this is served at (Usually only necessary for WSGI)",
-    )
+    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__,
+                                     **shared)
+    parser.add_argument('-j', '--project', metavar="PATH",
+                        help="path to the root of the project")
+    parser.add_argument('-P', '--port', metavar='NUM', type=int,
+                        help="use a custom port for the server")
 
     # Parse arguments
     args = parser.parse_args(args=args)
 
-    if args.project is None:
-        args.project = vcs.find_root(cwd)
-
     # Configure logging
-    logging.basicConfig(
-        format=settings.VERBOSE_LOGGING_FORMAT, level=settings.VERBOSE_LOGGING_LEVEL
-    )
+    logging.basicConfig(format=settings.VERBOSE_LOGGING_FORMAT,
+                        level=settings.VERBOSE_LOGGING_LEVEL)
 
     # Run the program
     run(args, os.getcwd(), parser.error)
@@ -89,49 +61,24 @@ def run(args, cwd, _):
     :param error: function to call for CLI errors
 
     """
-    global tree
+    global tree  # pylint: disable=W0603,C0103
     tree = build(cwd=cwd, root=args.project)
     tree.load()
-    host = args.host
+    host = 'localhost'
     port = args.port or settings.SERVER_PORT
-    bottle.TEMPLATE_PATH.insert(
-        0, os.path.join(os.path.dirname(__file__), '..', 'views')
-    )
-
-    # If you started without WSGI, the base will be '/'.
-    if args.baseurl == '' and not args.wsgi:
-        args.baseurl = '/'
-
-    # If you specified a base URL, make sure it ends with '/'.
-    if args.baseurl != '' and not args.baseurl.endswith('/'):
-        args.baseurl += '/'
-
-    bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
-    bottle.SimpleTemplate.defaults['navigation'] = True
-
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
-    if not args.wsgi:
-        bottle.run(app=app, host=host, port=port, debug=args.debug, reloader=args.debug)
-
-
-@hook('before_request')
-def strip_path():
-    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
-    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('.html')
-
-
-@hook('after_request')
-def enable_cors():
-    """Allow a webserver running on the same machine to access data."""
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    bottle.run(app=app, host=host, port=port,
+               debug=args.debug, reloader=args.debug)
 
 
 @get('/')
 def index():
     """Read the tree."""
-    yield template('index', tree_code=tree.draw(html_links=True))
+    yield '<pre><code>'
+    yield tree.draw()
+    yield '</pre></code>'
 
 
 @get('/documents')
@@ -142,18 +89,7 @@ def get_documents():
         data = {'prefixes': prefixes}
         return data
     else:
-        return template('document_list', prefixes=prefixes)
-
-
-@get('/documents/all')
-def get_all_documents():
-    """Read the tree's documents."""
-    if utilities.json_response(request):
-        data = {str(d.prefix): {str(i.uid): i.data for i in d} for d in tree}
-        return data
-    else:
-        prefixes = [str(document.prefix) for document in tree]
-        return template('document_list', prefixes=prefixes)
+        return '<br>'.join(prefixes)
 
 
 @get('/documents/<prefix>')
@@ -164,7 +100,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext='.html', linkify=True)
+        return publisher.publish_lines(document, ext='.html')
 
 
 @get('/documents/<prefix>/items')
@@ -176,7 +112,7 @@ def get_items(prefix):
         data = {'uids': uids}
         return data
     else:
-        return template('item_list', prefix=prefix, items=uids)
+        return '<br>'.join(uids)
 
 
 @get('/documents/<prefix>/items/<uid>')
@@ -221,15 +157,6 @@ def get_attr(prefix, uid, name):
             return str(value)
 
 
-@get('/assets/doorstop/<filename>')
-def get_assets(filename):
-    """Serve static files. Mainly used to serve CSS files and javascript."""
-    public_dir = os.path.join(
-        os.path.dirname(__file__), '..', 'core', 'files', 'assets', 'doorstop'
-    )
-    return bottle.static_file(filename, root=public_dir)
-
-
 @post('/documents/<prefix>/numbers')
 def post_numbers(prefix):
     """Create the next number in a document."""
@@ -243,5 +170,5 @@ def post_numbers(prefix):
         return str(number)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover (manual test)
     main()

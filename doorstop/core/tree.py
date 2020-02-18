@@ -1,37 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# SPDX-License-Identifier: LGPL-3.0-only
 
 """Representation of a hierarchy of documents."""
 
 import sys
 from itertools import chain
-from typing import Dict, List, Optional
 
-from doorstop import common, settings
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopWarning
-from doorstop.core import vcs
 from doorstop.core.base import BaseValidatable
+from doorstop.core.types import Prefix, UID
 from doorstop.core.document import Document
-from doorstop.core.item import Item
-from doorstop.core.types import UID, Prefix
+from doorstop.core import vcs
+from doorstop import settings
 
 UTF8 = 'utf-8'
 CP437 = 'cp437'
 ASCII = 'ascii'
 
-BOX = {
-    'end': {UTF8: '│   ', CP437: '┬   ', ASCII: '|   '},
-    'tee': {UTF8: '├── ', CP437: '├── ', ASCII: '+-- '},
-    'bend': {UTF8: '└── ', CP437: '└── ', ASCII: '+-- '},
-    'pipe': {UTF8: '│   ', CP437: '│   ', ASCII: '|   '},
-    'space': {UTF8: '    ', CP437: '    ', ASCII: '    '},
-}
+BOX = {'end': {UTF8: '│   ',
+               CP437: '┬   ',
+               ASCII: '|   '},
+       'tee': {UTF8: '├ ─ ',
+               CP437: '├── ',
+               ASCII: '+-- '},
+       'bend': {UTF8: '└ ─ ',
+                CP437: '└── ',
+                ASCII: '+-- '},
+       'pipe': {UTF8: '│   ',
+                CP437: '│   ',
+                ASCII: '|   '},
+       'space': {UTF8: '    ',
+                 CP437: '    ',
+                 ASCII: '    '}}
 
 log = common.logger(__name__)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
+
     """A bidirectional tree structure to store a hierarchy of documents.
 
     Although requirements link "upwards", bidirectionality simplifies
@@ -70,13 +77,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             for document in list(unplaced):
                 if document.parent is None:
                     log.info("root of the tree: {}".format(document))
-                    message = "multiple root documents:\n- {}: {}\n- {}: {}".format(
-                        tree.document.prefix,
-                        tree.document.path,
-                        document.prefix,
-                        document.path,
-                    )
-                    raise DoorstopError(message)
+                    raise DoorstopError("multiple root documents")
                 try:
                     tree._place(document)  # pylint: disable=W0212
                 except DoorstopError as error:
@@ -97,12 +98,12 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self.document = document
         self.root = root or document.root  # enables mock testing
         self.parent = parent
-        self.children: List[Tree] = []
+        self.children = []
         self._vcs = None  # working copy reference loaded in a property
         self.request_next_number = None  # server method injected by clients
         self._loaded = False
-        self._item_cache: Dict[str, Item] = {}
-        self._document_cache: Dict[str, Optional[Document]] = {}
+        self._item_cache = {}
+        self._document_cache = {}
 
     def __repr__(self):
         return "<Tree {}>".format(self._draw_line())
@@ -116,8 +117,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         else:
             return 0
 
-    def __bool__(self):
-        """Even empty trees should be considered truthy."""
+    def __bool__(self):  # override `__len__` behavior, pylint: disable=R0201
         return True
 
     def __getitem__(self, key):
@@ -129,6 +129,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         yield from chain(*(iter(c) for c in self.children))
 
     def _place(self, document):
+        # print('Self:{}'.format(self))
         """Attempt to place the document in the current tree.
 
         :param document: :class:`doorstop.core.document.Document` to add
@@ -141,12 +142,13 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         if not self.document:  # tree is empty
 
             if document.parent:
-                msg = "unknown parent for {}: {}".format(document, document.parent)
+                msg = "unknown parent for {}: {}".format(document,
+                                                         document.parent)
                 raise DoorstopError(msg)
             self.document = document
 
         elif document.parent:  # tree has documents, document has parent
-
+            
             if document.parent.lower() == self.document.prefix.lower():
 
                 # Current document is the parent
@@ -164,7 +166,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     else:
                         break
                 else:
-                    msg = "unknown parent for {}: {}".format(document, document.parent)
+                    msg = "unknown parent for {}: {}".format(document,
+                                                             document.parent)
                     raise DoorstopError(msg)
 
         else:  # tree has documents, but no parent specified for document
@@ -174,10 +177,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             prefixes = ', '.join(document.prefix for document in self)
             log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
-
-        for document2 in self:
-            children = self._get_prefix_of_children(document2)
-            document2.children = children
 
     # attributes #############################################################
 
@@ -196,9 +195,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     # actions ################################################################
 
     # decorators are applied to methods in the associated classes
-    def create_document(
-        self, path, value, sep=None, digits=None, parent=None
-    ):  # pylint: disable=R0913
+    def create_document(self, path, value, sep=None, digits=None, parent=None):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
         :param path: directory path for the new document
@@ -215,9 +212,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
-        document = Document.new(
-            self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
-        )
+        document = Document.new(self,
+                                path, self.root, prefix, sep=sep,
+                                digits=digits, parent=parent)
         try:
             self._place(document)
         except DoorstopError:
@@ -274,25 +271,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
 
-    def check_for_cycle(self, item, cid, path):
-        """Check if a cyclic dependency would be created.
-
-        :param item: an item on the dependency path
-        :param cid: the child item's UID
-        :param path: the path of UIDs from the child item to the item
-
-        :raises: :class:`~doorstop.common.DoorstopError` if the link
-            would create a cyclic dependency
-        """
-        for did in item.links:
-            path2 = path + [did]
-            if did in path:
-                s = " -> ".join(list(map(str, path2)))
-                msg = "link would create a cyclic dependency: {}".format(s)
-                raise DoorstopError(msg)
-            dep = self.find_item(did, _kind='dependency')
-            self.check_for_cycle(dep, cid, path2)
-
     # decorators are applied to methods in the associated classes
     def link_items(self, cid, pid):
         """Add a new link between two items by UIDs.
@@ -312,10 +290,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         child = self.find_item(cid, _kind='child')
         # Find parent item
         parent = self.find_item(pid, _kind='parent')
-        # Add link if it is not a self reference or cyclic dependency
-        if child is parent:
-            raise DoorstopError("link would be self reference")
-        self.check_for_cycle(parent, child.uid, [child.uid, parent.uid])
+        # Add link
         child.link(parent.uid)
         return child, parent
 
@@ -364,7 +339,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Return the item
         return item
 
-    def find_document(self, value) -> Document:
+    def find_document(self, value):
         """Get a document by its prefix.
 
         :param value: document or prefix
@@ -380,29 +355,24 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             document = self._document_cache[prefix]
             if document:
-                log.trace("found cached document: {}".format(document))  # type: ignore
+                log.trace("found cached document: {}".format(document))
                 return document
             else:
-                log.trace("found cached unknown: {}".format(prefix))  # type: ignore
+                log.trace("found cached unknown: {}".format(prefix))
         except KeyError:
             for document in self:
-                if not document:
-                    # TODO: mypy seems to think document can be None here, but that shouldn't be possible
-                    continue
                 if document.prefix == prefix:
-                    log.trace("found document: {}".format(document))  # type: ignore
+                    log.trace("found document: {}".format(document))
                     if settings.CACHE_DOCUMENTS:
                         self._document_cache[prefix] = document
-                        log.trace(  # type: ignore
-                            "cached document: {}".format(document)
-                        )
+                        log.trace("cached document: {}".format(document))
                     return document
             log.debug("could not find document: {}".format(prefix))
             if settings.CACHE_DOCUMENTS:
                 self._document_cache[prefix] = None
-                log.trace("cached unknown: {}".format(prefix))  # type: ignore
+                log.trace("cached unknown: {}".format(prefix))
 
-        raise DoorstopError(Prefix.UNKNOWN_MESSAGE.format(prefix))
+        raise DoorstopError(Prefix.UNKNOWN_MESSGE.format(prefix))
 
     def find_item(self, value, _kind=''):
         """Get an item by its UID.
@@ -421,13 +391,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         try:
             item = self._item_cache[uid]
             if item:
-                log.trace("found cached item: {}".format(item))  # type: ignore
-                if item.active:
-                    return item
-                else:
-                    log.trace("item is inactive: {}".format(item))  # type: ignore
+                log.trace("found cached item: {}".format(item))
+                return item
             else:
-                log.trace("found cached unknown: {}".format(uid))  # type: ignore
+                log.trace("found cached unknown: {}".format(uid))
         except KeyError:
             for document in self:
                 try:
@@ -435,26 +402,21 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
-                    log.trace("found item: {}".format(item))  # type: ignore
+                    log.trace("found item: {}".format(item))
                     if settings.CACHE_ITEMS:
                         self._item_cache[uid] = item
-                        log.trace("cached item: {}".format(item))  # type: ignore
-                    if item.active:
-                        return item
-                    else:
-                        log.trace("item is inactive: {}".format(item))  # type: ignore
-
+                        log.trace("cached item: {}".format(item))
+                    return item
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
                 self._item_cache[uid] = None
-                log.trace("cached unknown: {}".format(uid))  # type: ignore
+                log.trace("cached unknown: {}".format(uid))
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
 
-    def get_issues(self, skip=None, document_hook=None, item_hook=None):
+    def get_issues(self, document_hook=None, item_hook=None):
         """Yield all the tree's issues.
 
-        :param skip: list of document prefixes to skip
         :param document_hook: function to call for custom document validation
         :param item_hook: function to call for custom item validation
 
@@ -470,10 +432,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             yield DoorstopWarning("no documents")
         # Check each document
         for document in documents:
-            for issue in chain(
-                hook(document=document, tree=self),
-                document.get_issues(skip=skip, item_hook=item_hook),
-            ):
+            for issue in chain(hook(document=document, tree=self),
+                               document.get_issues(item_hook=item_hook)):
                 # Prepend the document's prefix to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(document.prefix, issue))
@@ -484,8 +444,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
 
         """
-
         def by_uid(row):
+            """Helper function to sort rows by UID."""
             row2 = []
             for item in row:
                 if item:
@@ -503,25 +463,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         rows = set()
         for index, document in enumerate(self.documents):
             for item in document:
-                if item.active:
-                    for row in self._iter_rows(item, mapping):
-                        rows.add(row)
+
+                for row in self._iter_rows(item, mapping):
+                    rows.add(row)
 
         # Sort rows
         return sorted(rows, key=by_uid)
 
-    def _get_prefix_of_children(self, document):
-        """Return the prefixes of the children of this document."""
-        for child in self.children:
-            if child.document == document:
-                children = [c.document.prefix for c in child.children]
-                return children
-        children = [c.document.prefix for c in self.children]
-        return children
-
-    def _iter_rows(
-        self, item, mapping, parent=True, child=True, row=None
-    ):  # pylint: disable=R0913
+    def _iter_rows(self, item, mapping, parent=True, child=True, row=None):  # pylint: disable=R0913
         """Generate all traceability row slices.
 
         :param item: base :class:`~doorstop.core.item.Item` for slicing
@@ -531,8 +480,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param row: currently generated row
 
         """
-
         class Row(list):
+
             """List type that tracks upper and lower boundaries."""
 
             def __init__(self, *args, parent=False, child=False, **kwargs):
@@ -556,13 +505,15 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if parent:
                 items = item.parent_items
                 for item2 in items:
-                    yield from self._iter_rows(item2, mapping, child=False, row=row)
+                    yield from self._iter_rows(item2, mapping,
+                                               child=False, row=row)
                 if not items:
                     row.parent = True
             if child:
                 items = item.child_items
                 for item2 in items:
-                    yield from self._iter_rows(item2, mapping, parent=False, row=row)
+                    yield from self._iter_rows(item2, mapping,
+                                               parent=False, row=row)
                 if not items:
                     row.child = True
 
@@ -588,40 +539,36 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Set meta attributes
         self._loaded = True
 
-    def draw(self, encoding=None, html_links=False):
+    def draw(self, encoding=None):
         """Get the tree structure as text.
 
         :param encoding: limit character set to:
 
             - `'utf-8'` - all characters
             - `'cp437'` - Code Page 437 characters
-            - (other) - ASCII characters
+            - (other) - ACSII characters
 
         """
         encoding = encoding or getattr(sys.stdout, 'encoding', None)
         encoding = encoding.lower() if encoding else None
-        return '\n'.join(self._draw_lines(encoding, html_links))
+        return '\n'.join(self._draw_lines(encoding))
 
     def _draw_line(self):
         """Get the tree structure in one line."""
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, 'prefix', '') or str(self.document)
         # Build children prefix strings
-        children = ", ".join(
-            c._draw_line() for c in self.children  # pylint: disable=protected-access
-        )
+        children = ", ".join(c._draw_line() for c in self.children)  # pylint: disable=W0212
         # Format the tree
         if children:
             return "{} <- [ {} ]".format(prefix, children)
         else:
             return "{}".format(prefix)
 
-    def _draw_lines(self, encoding, html_links=False):
+    def _draw_lines(self, encoding):
         """Generate lines of the tree structure."""
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, 'prefix', '') or str(self.document)
-        if html_links:
-            prefix = '<a href="documents/{0}">{0}</a>'.format(prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):
@@ -635,10 +582,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             else:
                 base = self._symbol('space', encoding)
                 indent = self._symbol('bend', encoding)
-            for index, line in enumerate(
-                # pylint: disable=protected-access
-                child._draw_lines(encoding, html_links)
-            ):
+            for index, line in enumerate(child._draw_lines(encoding)):  # pylint: disable=W0212
                 if index == 0:
                     yield indent + line
                 else:

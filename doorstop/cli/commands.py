@@ -1,71 +1,18 @@
-# SPDX-License-Identifier: LGPL-3.0-only
-
 """Command functions."""
 
 import os
 import time
-from typing import Set
 
-from doorstop import common, server
+from doorstop import common
 from doorstop.cli import utilities
-from doorstop.core import editor, exporter, importer, publisher
 from doorstop.core.builder import build
+from doorstop.core import editor, importer, exporter, publisher
+from doorstop import server
+# add import 
+from doorstop.core.my_programs import valMatrix, verMatrix, finder
+# end add imports
 
 log = common.logger(__name__)
-
-
-class CycleTracker:
-    """A cycle tracker to detect cyclic references between items.
-
-    The cycle tracker uses a standard algorithm to detect cycles in a directed
-    graph (not necessarily connected) using a depth first search with a bit of
-    graph colouring.  The time complexity is O(|V| + |E|).  The vertices are
-    the items.  The edges are the links between items.
-
-    """
-
-    def __init__(self):
-        """Initialize a cycle tracker."""
-        self.discovered: Set[str] = set()
-        self.finished: Set[str] = set()
-
-    def _dfs_visit(self, uid, tree):
-        """Do a depth first search visit of the specified item.
-
-        :param uid: the UID of the item to visit
-        :param tree: the document hierarchy tree
-
-        :return: generator of :class:`~doorstop.common.DoorstopWarning`
-
-        """
-        self.discovered.add(uid)
-        item = tree.find_item(uid)
-
-        for pid in item.links:
-            # Detect cycles via a back edge
-            if pid in self.discovered:
-                msg = "detected a cycle with a back edge from {} to {}".format(pid, uid)
-                yield common.DoorstopWarning(msg)
-
-            # Recurse, if this a fresh item
-            if pid not in self.discovered and pid not in self.finished:
-                yield from self._dfs_visit(pid, tree)
-
-        self.discovered.remove(uid)
-        self.finished.add(uid)
-
-    def __call__(self, item, document, tree):
-        """Get cycles which include the specified item.
-
-        :param item: the UID of the item to get the cycles for
-        :param document: unused
-        :param tree: the document hierarchy tree
-
-        :return: generator of :class:`~doorstop.common.DoorstopWarning`
-
-        """
-        if item not in self.discovered and item not in self.finished:
-            yield from self._dfs_visit(item, tree)
 
 
 def get(name):
@@ -94,8 +41,7 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
 
         # validate it
         utilities.show("validating items...", flush=True)
-        cycle_tracker = CycleTracker()
-        valid = tree.validate(skip=args.skip, item_hook=cycle_tracker)
+        valid = tree.validate()
 
     if not success:
         return False
@@ -121,20 +67,14 @@ def run_create(args, cwd, _, catch=True):
         tree = _get_tree(args, cwd)
 
         # create a new document
-        document = tree.create_document(
-            args.path,
-            args.prefix,
-            parent=args.parent,
-            digits=args.digits,
-            sep=args.separator,
-        )
+        document = tree.create_document(args.path, args.prefix,
+                                        parent=args.parent, digits=args.digits)
 
     if not success:
         return False
 
-    utilities.show(
-        "created document: {} ({})".format(document.prefix, document.relpath)
-    )
+    utilities.show("created document: {} ({})".format(document.prefix,
+                                                      document.relpath))
     return True
 
 
@@ -183,14 +123,9 @@ def run_add(args, cwd, _, catch=True):
 
         # add items to it
         for _ in range(args.count):
-            item = document.add_item(
-                level=args.level, defaults=args.defaults, name=args.name
-            )
-            utilities.show("added item: {} ({})".format(item.uid, item.relpath))
-
-        # Edit item if requested
-        if args.edit:
-            item.edit(tool=args.tool)
+            item = document.add_item(level=args.level)
+            utilities.show("added item: {} ({})".format(item.uid,
+                                                        item.relpath))
 
     if not success:
         return False
@@ -246,13 +181,13 @@ def run_edit(args, cwd, error, catch=True):
                 item = tree.find_item(args.label)
             except common.DoorstopError as exc:
                 if args.item:
-                    raise exc from None  # pylint: disable=raising-bad-type
+                    raise exc from None
         if not item:
             document = tree.find_document(args.label)
 
         # edit it
         if item:
-            item.edit(tool=args.tool, edit_all=args.all)
+            item.edit(tool=args.tool)
         else:
             _export_import(args, cwd, error, document, ext)
 
@@ -343,9 +278,10 @@ def run_link(args, cwd, _, catch=True):
     if not success:
         return False
 
-    msg = "linked items: {} ({}) -> {} ({})".format(
-        child.uid, child.relpath, parent.uid, parent.relpath
-    )
+    msg = "linked items: {} ({}) -> {} ({})".format(child.uid,
+                                                    child.relpath,
+                                                    parent.uid,
+                                                    parent.relpath)
     utilities.show(msg)
 
     return True
@@ -371,9 +307,10 @@ def run_unlink(args, cwd, _, catch=True):
     if not success:
         return False
 
-    msg = "unlinked items: {} ({}) -> {} ({})".format(
-        child.uid, child.relpath, parent.uid, parent.relpath
-    )
+    msg = "unlinked items: {} ({}) -> {} ({})".format(child.uid,
+                                                      child.relpath,
+                                                      parent.uid,
+                                                      parent.relpath)
     utilities.show(msg)
 
     return True
@@ -389,21 +326,11 @@ def run_clear(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = _get_tree(args, cwd)
 
-        if args.parents:
-            # Check that the parent item UIDs exist
-            for pid in args.parents:
-                tree.find_item(pid)
-
-            pids = " to " + ", ".join(args.parents)
-        else:
-            pids = ""
-
-        for item in _iter_items(args, tree, error):
-            msg = "clearing item {}'s suspect links{}...".format(item.uid, pids)
+        for item in _iter_items(args, cwd, error):
+            msg = "clearing item {}'s suspect links...".format(item.uid)
             utilities.show(msg)
-            item.clear(parents=args.parents)
+            item.clear()
 
     if not success:
         return False
@@ -421,9 +348,8 @@ def run_review(args, cwd, error, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-        tree = _get_tree(args, cwd)
 
-        for item in _iter_items(args, tree, error):
+        for item in _iter_items(args, cwd, error):
             utilities.show("marking item {} as reviewed...".format(item.uid))
             item.review()
 
@@ -462,32 +388,31 @@ def run_import(args, cwd, error, catch=True, _tree=None):
 
             # get the document
             request_next_number = _request_next_number(args)
-            tree = _tree or _get_tree(
-                args, cwd, request_next_number=request_next_number
-            )
+            tree = _tree or _get_tree(args, cwd,
+                                      request_next_number=request_next_number)
             document = tree.find_document(args.prefix)
 
             # import items into it
-            msg = "importing '{}' into document {}...".format(args.path, document)
+            msg = "importing '{}' into document {}...".format(args.path,
+                                                              document)
             utilities.show(msg, flush=True)
             importer.import_file(args.path, document, ext, mapping=mapping)
 
         elif args.document:
             prefix, path = args.document
-            document = importer.create_document(prefix, path, parent=args.parent)
+            document = importer.create_document(prefix, path,
+                                                parent=args.parent)
         elif args.item:
             prefix, uid = args.item
             request_next_number = _request_next_number(args)
-            item = importer.add_item(
-                prefix, uid, attrs=attrs, request_next_number=request_next_number
-            )
+            item = importer.add_item(prefix, uid, attrs=attrs,
+                                     request_next_number=request_next_number)
     if not success:
         return False
 
     if document:
-        utilities.show(
-            "imported document: {} ({})".format(document.prefix, document.relpath)
-        )
+        utilities.show("imported document: {} ({})".format(document.prefix,
+                                                           document.relpath))
     else:
         assert item
         utilities.show("imported item: {} ({})".format(item.uid, item.relpath))
@@ -527,7 +452,8 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
             utilities.show(msg, flush=True)
             path = exporter.export(tree, args.path, ext, auto=auto)
         else:
-            msg = "exporting document {} to '{}'...".format(document, args.path)
+            msg = "exporting document {} to '{}'...".format(document,
+                                                            args.path)
             utilities.show(msg, flush=True)
             path = exporter.export(document, args.path, ext, auto=auto)
         if path:
@@ -573,21 +499,17 @@ def run_publish(args, cwd, error, catch=True):
 
     # Write to output file(s)
     if args.path:
-        path = os.path.abspath(os.path.join(cwd, args.path))
         if whole_tree:
-            msg = "publishing tree to '{}'...".format(path)
+            msg = "publishing tree to '{}'...".format(args.path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(
-                tree, path, ext, template=args.template, **kwargs
-            )
+            path = publisher.publish(tree, args.path, ext, **kwargs)
         else:
-            msg = "publishing document {} to '{}'...".format(document, path)
+            msg = "publishing document {} to '{}'...".format(document,
+                                                             args.path)
             utilities.show(msg, flush=True)
-            published_path = publisher.publish(
-                document, path, ext, template=args.template, **kwargs
-            )
-        if published_path:
-            utilities.show("published: {}".format(published_path))
+            path = publisher.publish(document, args.path, ext, **kwargs)
+        if path:
+            utilities.show("published: {}".format(path))
 
     # Or, display to standard output
     else:
@@ -598,11 +520,145 @@ def run_publish(args, cwd, error, catch=True):
 
     return True
 
+                                                                           # add 28.11.2019 /11.12.2019 added findRef
+def run_valMatrix(args, cwd, error, catch=True):
+    """
+    Process arguments and run the `doorstop valMatrix` subcommand added by Peter Bauer.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+            
+    """
+    
+    # Get document or tree
+    with utilities.capture(catch=catch) as success:
+
+        
+        tree = _get_tree(args, cwd, load='all')
+        if not args.prefix == 'all':
+             document = tree.find_document(args.prefix)
+
+    if not success:
+        return False
+
+
+    if args.path:
+        if args.prefix == 'all':
+            msg = "publishing tree to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
+            valMatrix.publish_Matrix(tree, args.path)
+        else:
+            msg = "publishing document to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
+            valMatrix.publish_Matrix(document, args.path)
+
+    else:
+        
+        error('There must be a tree or documetn like object given to the command!')
+
+    return True
+
+
+
+
+def run_verMatrix(args, cwd, error, catch=True):
+    """
+    Process arguments and run the `doorstop verMatrix` subcommand added by Peter Bauer.
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+            
+    """
+  
+    # Get document or tree
+    with utilities.capture(catch=catch) as success:
+
+       
+        tree = _get_tree(args, cwd, load='all')
+        if not args.prefix == 'all':
+             document = tree.find_document(args.prefix)
+
+    if not success:
+        return False
+
+    if args.path:
+        if args.prefix == 'all':
+            msg = "publishing tree to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
+            verMatrix.publish_Matrix(tree, args.path)
+        else:
+            msg = "publishing document to '{}'...".format(args.path)
+            utilities.show(msg, flush=True)
+            verMatrix.publish_Matrix(document, args.path)
+
+    else:  
+        error('There must be a tree or documetn like object given to the command!')
+
+    return True
+
+
+
+
+def run_findRef(args, cwd, error):
+    """"Find references in code for given UID"""
+    if args.UID and args.directory:
+        finder.find(args, cwd)
+    else: 
+        error('UID and directory must be given to find references!')
+
+
+def run_ref(args, cwd, error):
+    """Add new reference to requirement"""
+    if args.UID:
+        tree =  _get_tree(args, cwd)
+        item = tree.find_item(args.UID)
+        
+        item.add_ref(args.reference) 
+          
+
+    else:
+        error:('UID must be given to add new reference!')
+
+    return True
+
+
+def run_clearRef(args, cwd, error, catch=True):
+    """ Clear referneces if checked
+
+    :param args: Namespace of CLI arguments
+    :param cwd: current working directory
+    :param error: function to call for CLI errors
+    :param catch: catch and log :class:`~doorstop.common.DoorstopError`
+
+    """
+    with utilities.capture(catch=catch) as success:
+
+        for item in _iter_items(args, cwd, error):
+            if args.referenceID == 'all':
+                msg = "clearing item {}'s suspect references...".format(item.uid)
+            else:
+                msg = "clearing item {}'s suspect references with ID: {}".format(item.uid, args.referenceID )
+            item.clearRef(args.referenceID)  
+            utilities.show(msg)     
+
+    if not success:
+        return False
+
+    return True
+
+
+                                                                                 #end add
+
+
 
 def _request_next_number(args):
     """Get the server's "next number" method if a server exists."""
     if args.force:
-        log.warning("creating items without the server...")
+        log.warn("creating items without the server...")
         return None
     else:
         server.check()
@@ -621,7 +677,8 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
 
     """
     utilities.show("building tree...", flush=True)
-    tree = build(cwd=cwd, root=args.project, request_next_number=request_next_number)
+    tree = build(cwd=cwd, root=args.project,
+                 request_next_number=request_next_number)
 
     if load:
         utilities.show("loading documents...", flush=True)
@@ -630,11 +687,11 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
     return tree
 
 
-def _iter_items(args, tree, error):
-    """Iterate through items.
+def _iter_items(args, cwd, error):
+    """Build a tree and iterate through items.
 
     :param args: Namespace of CLI arguments
-    :param tree: the document hierarchy tree
+    :param cwd: current working directory
     :param error: function to call for CLI errors
 
     Items are filtered to:
@@ -659,6 +716,7 @@ def _iter_items(args, tree, error):
     # Build tree
     item = None
     document = None
+    tree = tree = _get_tree(args, cwd)
 
     # Determine if tree, document, or item was requested
     if args.label != 'all':
@@ -667,7 +725,7 @@ def _iter_items(args, tree, error):
                 document = tree.find_document(args.label)
             except common.DoorstopError as exc:
                 if args.document:
-                    raise exc from None  # pylint: disable=raising-bad-type
+                    raise exc from None
         if not document:
             item = tree.find_item(args.label)
 
@@ -697,7 +755,8 @@ def _export_import(args, cwd, error, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, error, catch=False, auto=True, _tree=document.tree)
+    get('export')(args, cwd, error, catch=False, auto=True,
+                  _tree=document.tree)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)

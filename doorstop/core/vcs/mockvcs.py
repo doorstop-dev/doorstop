@@ -1,7 +1,5 @@
-# SPDX-License-Identifier: LGPL-3.0-only
-
 """Plug-in module to simulate the storage of requirements in a repository."""
-import os
+
 
 from doorstop import common
 from doorstop.core.vcs.base import BaseWorkingCopy
@@ -10,6 +8,7 @@ log = common.logger(__name__)
 
 
 class WorkingCopy(BaseWorkingCopy):
+
     """Simulated working copy."""
 
     DIRECTORY = '.mockvcs'
@@ -28,8 +27,7 @@ class WorkingCopy(BaseWorkingCopy):
         log.debug("$ simulated add on: {}...".format(path))
 
     def delete(self, path):
-        os.remove(path)
-        log.debug("$ Deleted {}...".format(path))
+        log.debug("$ simulated delete on: {}...".format(path))
 
     def commit(self, message=None):
         log.debug("$ simulated commit")

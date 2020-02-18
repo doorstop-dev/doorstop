@@ -1,21 +1,19 @@
-# SPDX-License-Identifier: LGPL-3.0-only
-
 """Functions to import exiting documents and items."""
 
-import csv
 import os
 import re
-import warnings
-from typing import Any
+import csv
 
 import openpyxl
 
-from doorstop import common, settings
+from doorstop import common
 from doorstop.common import DoorstopError
-from doorstop.core.builder import _get_tree
+from doorstop.core.types import UID
 from doorstop.core.document import Document
 from doorstop.core.item import Item
-from doorstop.core.types import UID
+from doorstop.core.builder import _get_tree
+from doorstop import settings
+
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
@@ -63,10 +61,12 @@ def create_document(prefix, path, parent=None, tree=None):
         document = tree.create_document(path, prefix, parent=parent)
     except DoorstopError as exc:
         if not parent:
-            raise exc from None  # pylint: disable=raising-bad-type
+            raise exc from None
 
         # Create the document despite an unavailable parent
-        document = Document.new(tree, path, tree.root, prefix, parent=parent)
+        document = Document.new(tree,
+                                path, tree.root, prefix,
+                                parent=parent)
         log.warning(exc)
         _documents.append(document)
 
@@ -99,7 +99,9 @@ def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
-    item = Item.new(tree, document, document.path, document.root, uid, auto=False)
+    item = Item.new(tree, document,
+                    document.path, document.root, uid,
+                    auto=False)
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
@@ -148,7 +150,6 @@ def _file_csv(path, document, delimiter=',', mapping=None):
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []
-            value: Any
             for value in _row:
                 # convert string booleans
                 if isinstance(value, str):
@@ -191,13 +192,17 @@ def _file_xlsx(path, document, mapping=None):
 
     # Parse the file
     log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path, data_only=True)
+    workbook = openpyxl.load_workbook(path)
     worksheet = workbook.active
 
-    index = 0
+    # Locate the bottom right cell in the workbook that contains cell info
+    _highest_column = worksheet.get_highest_column()
+    _highest_letter = openpyxl.cell.get_column_letter(_highest_column)  # pylint: disable=E1101
+    _highest_row = worksheet.get_highest_row()
+    last_cell = _highest_letter + str(_highest_row)
 
     # Extract header and data rows
-    for index, row in enumerate(worksheet.iter_rows()):
+    for index, row in enumerate(worksheet.range('A1:%s' % last_cell)):
         row2 = []
         for cell in row:
             if index == 0:
@@ -206,11 +211,6 @@ def _file_xlsx(path, document, mapping=None):
                 row2.append(cell.value)
         if index:
             data.append(row2)
-
-    # Warn about workbooks that may be sized incorrectly
-    if index >= 2 ** 20 - 1:
-        msg = "workbook contains the maximum number of rows"
-        warnings.warn(msg, Warning)
 
     # Import items from the rows
     _itemize(header, data, document, mapping=mapping)
@@ -254,25 +254,6 @@ def _itemize(header, data, document, mapping=None):
             elif key == 'links':
                 # split links into a list
                 attrs[key] = _split_list(value)
-
-            elif key == 'references' and (value is not None):
-                ref_items = value.split('\n')
-                if ref_items[0] != '':
-                    ref = []
-                    for ref_item in ref_items:
-                        ref_item_components = ref_item.split(',')
-
-                        ref_type = ref_item_components[0].split(':')[1]
-                        ref_path = ref_item_components[1].split(':')[1]
-
-                        ref_dict = {'type': ref_type, 'path': ref_path}
-                        if len(ref_item_components) == 3:
-                            ref_keyword = ref_item_components[2].split(':')[1]
-                            ref_dict['keyword'] = ref_keyword
-
-                        ref.append(ref_dict)
-
-                    attrs[key] = ref
             elif key == 'active':
                 # require explicit disabling
                 attrs['active'] = value is not False
@@ -281,9 +262,8 @@ def _itemize(header, data, document, mapping=None):
 
         # Get the next UID if the row is a new item
         if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
-            uid = UID(
-                document.prefix, document.sep, document.next_number, document.digits
-            )
+            uid = UID(document.prefix, document.sep,
+                      document.next_number, document.digits)
 
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
@@ -299,7 +279,8 @@ def _itemize(header, data, document, mapping=None):
 
             # Import the item
             try:
-                item = add_item(document.prefix, uid, attrs=attrs, document=document)
+                item = add_item(document.prefix, uid,
+                                attrs=attrs, document=document)
             except DoorstopError as exc:
                 log.warning(exc)
 
@@ -313,12 +294,10 @@ def _split_list(value):
 
 
 # Mapping from file extension to file reader
-FORMAT_FILE = {
-    '.yml': _file_yml,
-    '.csv': _file_csv,
-    '.tsv': _file_tsv,
-    '.xlsx': _file_xlsx,
-}
+FORMAT_FILE = {'.yml': _file_yml,
+               '.csv': _file_csv,
+               '.tsv': _file_tsv,
+               '.xlsx': _file_xlsx}
 
 
 def check(ext):

@@ -1,25 +1,24 @@
-# SPDX-License-Identifier: LGPL-3.0-only
-
 """Common classes and functions for the `doorstop.core` package."""
 
-import hashlib
 import os
 import re
-from base64 import urlsafe_b64encode
-from typing import Union
+import textwrap
+import hashlib
 
 import yaml
 
-from doorstop import common, settings
+from doorstop import common
 from doorstop.common import DoorstopError
+from doorstop import settings
 
 log = common.logger(__name__)
 
 
 class Prefix(str):
+
     """Unique document prefixes."""
 
-    UNKNOWN_MESSAGE = "no document with prefix: {}"
+    UNKNOWN_MESSGE = "no document with prefix: {}"
 
     def __new__(cls, value=""):
         if isinstance(value, Prefix):
@@ -27,13 +26,13 @@ class Prefix(str):
         else:
             if str(value).lower() in settings.RESERVED_WORDS:
                 raise DoorstopError("cannot use reserved word: %s" % value)
-            obj = super().__new__(cls, Prefix.load_prefix(value))  # type: ignore
+            obj = super().__new__(cls, Prefix.load_prefix(value))
             return obj
 
     def __repr__(self):
         return "Prefix('{}')".format(self)
 
-    def __hash__(self):  # pylint: disable=useless-super-delegation
+    def __hash__(self):
         return super().__hash__()
 
     def __eq__(self, other):
@@ -49,6 +48,11 @@ class Prefix(str):
     def __lt__(self, other):
         return self.lower() < other.lower()
 
+    @property
+    def short(self):
+        """Get a shortened version of the prefix."""
+        return self.lower()
+
     @staticmethod
     def load_prefix(value):
         """Convert a value to a prefix.
@@ -58,8 +62,78 @@ class Prefix(str):
         """
         return str(value).split(' ')[0] if value else ''
 
+# add 09.12.2019
 
-class UID:
+class REF():
+    """Unique Ref ID """
+
+    def __init__(self, value, stamp=None):
+
+        """ Initialize the REF using a dictionary
+        1.Option:
+        :param value : ID + optional stamp
+        :param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
+        2.Option:
+        :param value : String with the ID
+        :stamp : will be initialized wit 'null'
+        """
+        
+        
+        if value and isinstance(value, REF):
+            self.stamp = stamp or value.stamp
+            return
+        self.stamp = stamp or Stamp()
+        
+        if len(value) == 0 :
+            self.value = ''
+        if isinstance(value, str):
+            # hier noch im test ob das funktioniert 
+            self.value = value
+        elif len(value) == 1:
+            if isinstance(value, dict):
+                pair = list(value.items())[0]
+                self.value = str(pair[0])
+                self.stamp = self.stamp or Stamp(pair[1])
+            else :
+                
+                raise TypeError('__init__() only takes dictionarys and strings as input format')
+        
+        else:
+            raise TypeError("__init__() takes 1 positional argument")
+
+        
+    
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        if self.stamp:
+            return "REF('{}', stamp='{}')".format(self.value, self.stamp)
+        else:
+            return "REF('{}')".format(self.value)
+
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.value == other.value
+        else:
+            return NotImplemented
+
+    # hash te value of the dict to create a set 
+    def __hash__(self):
+        return hash(self.value)
+
+
+    # make ref class sortable
+    def __lt__(self, other):
+        if isinstance(self, other.__class__):
+            return self.value < other.value
+
+#end add
+
+
+class UID(object):
+
     """Unique item ID built from document prefix and number."""
 
     UNKNOWN_MESSAGE = "no{k} item with UID: {u}"  # k='parent'|'child', u=UID
@@ -88,18 +162,15 @@ class UID:
         :param *values: prefix, separator, number, digit count
         param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
 
-        Option 4:
-
-        :param *values: prefix, separator, name
-        param stamp: stamp of :class:`~doorstop.core.item.Item` (if known)
-
         """
+
         if values and isinstance(values[0], UID):
-            self.stamp: Stamp = stamp or values[0].stamp
+            # print(f'Values from 0: {values[0]}')
+            self.stamp = stamp or values[0].stamp
             return
         self.stamp = stamp or Stamp()
         # Join values
-        if len(values) == 0:  # pylint: disable=len-as-condition
+        if len(values) == 0:
             self.value = ''
         elif len(values) == 1:
             value = values[0]
@@ -108,21 +179,25 @@ class UID:
                 pair = value.rsplit(':', 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
-                first = list(value.items())[0]
-                self.value = str(first[0])
-                self.stamp = self.stamp or Stamp(first[1])
+                pair = list(value.items())[0]
+                self.value = str(pair[0])
+                self.stamp = self.stamp or Stamp(pair[1])
             else:
                 self.value = str(value) if values[0] else ''
         elif len(values) == 4:
-            # pylint: disable=no-value-for-parameter
-            self.value = UID.join_uid_4(*values)
-        elif len(values) == 3:
-            # pylint: disable=no-value-for-parameter
-            self.value = UID.join_uid_3(*values)
+            self.value = UID.join_uid(*values)
         else:
-            raise TypeError("__init__() takes 1, 3, or 4 positional arguments")
+            raise TypeError("__init__() takes 1 or 4 positional arguments")
         # Split values
-        self._prefix, self._number, self._name, self._exc = UID.split_uid(self.value)
+        try:
+            parts = UID.split_uid(self.value)
+            self._prefix = Prefix(parts[0])
+            self._number = parts[1]
+        except ValueError:
+            self._prefix = self._number = None
+            self._exc = DoorstopError("invalid UID: {}".format(self.value))
+        else:
+            self._exc = None
 
     def __repr__(self):
         if self.stamp:
@@ -134,7 +209,7 @@ class UID:
         return self.value
 
     def __hash__(self):
-        return hash((self._prefix, self._number, self._name))
+        return hash((self._prefix, self._number))
 
     def __eq__(self, other):
         if not other:
@@ -142,14 +217,8 @@ class UID:
         if not isinstance(other, UID):
             other = UID(other)
         try:
-            self.check()
-            other.check()
-            # pylint: disable=protected-access
-            return (
-                self._prefix == other._prefix
-                and self._number == other._number
-                and self._name == other._name
-            )
+            return all((self.prefix == other.prefix,
+                        self.number == other.number))
         except DoorstopError:
             return self.value.lower() == other.value.lower()
 
@@ -158,16 +227,10 @@ class UID:
 
     def __lt__(self, other):
         try:
-            self.check()
-            other.check()
-            # pylint: disable=protected-access
-            if self._prefix == other._prefix:
-                if self._number == other._number:
-                    return self._name < other._name
-                else:
-                    return self._number < other._number
+            if self.prefix == other.prefix:
+                return self.number < other.number
             else:
-                return self._prefix < other._prefix
+                return self.prefix < other.prefix
         except DoorstopError:
             return self.value < other.value
 
@@ -184,10 +247,10 @@ class UID:
         return self._number
 
     @property
-    def name(self):
-        """Get the UID's name."""
+    def short(self):
+        """Get a shortened version of the UID."""
         self.check()
-        return self._name
+        return self.prefix.lower() + str(self.number)
 
     @property
     def string(self):
@@ -200,86 +263,68 @@ class UID:
     def check(self):
         """Verify an UID is valid."""
         if self._exc:
-            raise self._exc  # pylint: disable=raising-bad-type
+            raise self._exc
 
     @staticmethod
-    def split_uid(value):
-        """Split an item's UID string into a prefix, number, name, and exception.
+    def split_uid(text):
+        """Split an item's UID string into a prefix and number.
 
         >>> UID.split_uid('ABC00123')
-        (Prefix('ABC'), 123, '', None)
+        ('ABC', 123)
 
         >>> UID.split_uid('ABC.HLR_01-00123')
-        (Prefix('ABC.HLR_01'), 123, '', None)
+        ('ABC.HLR_01', 123)
 
         >>> UID.split_uid('REQ2-001')
-        (Prefix('REQ2'), 1, '', None)
-
-        >>> UID.split_uid('REQ2-NAME')
-        (Prefix('REQ2'), -1, 'NAME', None)
-
-        >>> UID.split_uid('REQ2-NAME007')
-        (Prefix('REQ2'), -1, 'NAME007', None)
-
-        >>> UID.split_uid('REQ2-123NAME')
-        (Prefix('REQ2'), -1, '123NAME', None)
+        ('REQ2', 1)
 
         """
-        m = re.match("([\\w.-]+)[" + settings.SEP_CHARS + "](\\w+)", value)
-        if m:
-            try:
-                num = int(m.group(2))
-                return Prefix(m.group(1)), num, '', None
-            except ValueError:
-                return Prefix(m.group(1)), -1, m.group(2), None
-        m = re.match(r"([\w.-]*\D)(\d+)", value)
-        if m:
-            num = m.group(2)
-            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), '', None
-        return None, None, None, DoorstopError("invalid UID: {}".format(value))
+        match = re.match(r"([\w.-]*\D)(\d+)", text)
+        if not match:
+            raise ValueError("unable to parse UID: {}".format(text))
+        prefix = match.group(1).rstrip(settings.SEP_CHARS)
+        number = int(match.group(2))
+        return prefix, number
 
     @staticmethod
-    def join_uid_4(prefix, sep, number, digits):
-        """Join the four parts of an item's UID into a string.
+    def join_uid(prefix, sep, number, digits):
+        """Join the parts of an item's UID into a string.
 
-        >>> UID.join_uid_4('ABC', '', 123, 5)
+        >>> UID.join_uid('ABC', '', 123, 5)
         'ABC00123'
 
-        >>> UID.join_uid_4('REQ.H', '-', 42, 4)
+        >>> UID.join_uid('REQ.H', '-', 42, 4)
         'REQ.H-0042'
 
-        >>> UID.join_uid_4('ABC', '-', 123, 0)
+        >>> UID.join_uid('ABC', '-', 123, 0)
         'ABC-123'
 
         """
         return "{}{}{}".format(prefix, sep, str(number).zfill(digits))
 
-    @staticmethod
-    def join_uid_3(prefix, sep, name):
-        """Join the three parts of an item's UID into a string."""
-        return "{}{}{}".format(prefix, sep, name)
-
 
 class _Literal(str):
+
     """Custom type for text which should be dumped in the literal style."""
 
     @staticmethod
     def representer(dumper, data):
         """Return a custom dumper that formats str in the literal style."""
-        return dumper.represent_scalar(
-            'tag:yaml.org,2002:str', data, style='|' if data else ''
-        )
-
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data,
+                                       style='|' if data else '')
 
 yaml.add_representer(_Literal, _Literal.representer)
 
 
 class Text(str):
+
     """Markdown text paragraph."""
 
     def __new__(cls, value=""):
         assert not isinstance(value, Text)
-        obj = super(Text, cls).__new__(cls, Text.load_text(value))  # type: ignore
+        #add 09.01.2020 we want to keep the formatting from our text for ILS needs 
+        # obj = super(Text, cls).__new__(cls, Text.load_text(value))
+        obj = super(Text, cls).__new__(cls,value)
         return obj
 
     @property
@@ -292,29 +337,120 @@ class Text(str):
         r"""Convert dumped text to the original string.
 
         >>> Text.load_text("abc\ndef")
-        'abc\ndef'
+        'abc def'
 
         >>> Text.load_text("list:\n\n- a\n- b\n")
         'list:\n\n- a\n- b'
 
         """
-        if not value:
-            return ""
-        text_value = re.sub('^\n+', '', value)
-        text_value = re.sub('\n+$', '', text_value)
-        text_value = '\n'.join([s.rstrip() for s in text_value.split('\n')])
-        return text_value
+        return Text.join(value if value else "")
 
     @staticmethod
     def save_text(text, end='\n'):
         """Break a string at sentences and dump as wrapped literal YAML."""
-        if text:
-            return _Literal(text + end)
+        # add 10.01.2019 No need to split text at every sentences espspecially not if it is not a requirment at all... 
+        # split = Text.sbd(str(text), end=end)
+        # wrapped = Text.wrap(split)
+        wrapped = Text.wrap(text)
+        return _Literal(wrapped)
+
+    # Based on: http://en.wikipedia.org/wiki/Sentence_boundary_disambiguation
+    RE_SENTENCE_BOUNDARIES = re.compile(r"""
+
+    (            # one of the following:
+
+      (?<=[a-z)][.?!])      # lowercase letter + punctuation
+      |
+      (?<=[a-z0-9][.?!]\")  # lowercase letter/number + punctuation + quote
+
+    )
+
+    (\s)          # any whitespace
+
+    (?=\"?[A-Z])  # optional quote + an upppercase letter
+
+    """, re.VERBOSE)
+
+    @staticmethod
+    def sbd(text, end='\n'):
+        r"""Replace sentence boundaries with newlines and append a newline.
+
+        :param text: string to line break at sentences
+        :param end: appended to the end of the update text
+
+        >>> Text.sbd("Hello, world!", end='')
+        'Hello, world!'
+
+        >>> Text.sbd("Hello, world! How are you? I'm fine. Good.")
+        "Hello, world!\nHow are you?\nI'm fine.\nGood.\n"
+
+        """
+        stripped = text.strip()
+        if stripped:
+            return Text.RE_SENTENCE_BOUNDARIES.sub('\n', stripped) + end
         else:
             return ''
 
+    @staticmethod
+    def wrap(text, width=settings.MAX_LINE_LENGTH):
+        r"""Wrap lines of text to the maximum line length.
 
-class Level:
+        >>> Text.wrap("Hello, world!", 9)
+        'Hello,\nworld!'
+
+        >>> Text.wrap("How are you?\nI'm fine.\n", 14)
+        "How are you?\nI'm fine.\n"
+
+        """
+        end = '\n' if '\n' in text else ''
+        lines = []
+        for line in text.splitlines():
+            # wrap longs lines of text compensating for the 2-space indent
+            lines.extend(textwrap.wrap(line, width=width - 2,
+                                       replace_whitespace=True))
+            if not line.strip():
+                lines.append('')
+        return '\n'.join(lines) + end
+
+    RE_MARKDOWN_SPACES = re.compile(r"""
+
+    ([^\n ])  # any character but a newline or space
+
+    (\ ?\n)     # optional space + single newline
+
+    (?!      # none of the following:
+
+      (?:\s)       # whitespace
+      |
+      (?:[-+*]\s)  # unordered list separator + whitespace
+      |
+      (?:\d+\.\s)  # number + period + whitespace
+
+    )
+
+    ([^\n])  # any character but a newline
+
+    """, re.VERBOSE | re.IGNORECASE)
+
+    @staticmethod
+    def join(text):
+        r"""Convert single newlines (ignored by Markdown) to spaces.
+
+        >>> Text.join("abc\n123")
+        'abc 123'
+
+        >>> Text.join("abc\n\n123")
+        'abc\n\n123'
+
+        >>> Text.join("abc \n123")
+        'abc 123'
+
+        """
+        return Text.RE_MARKDOWN_SPACES.sub(r'\1 \3', text).strip()
+
+
+class Level(object):
+
     """Variable-length numerical outline level values.
 
     Level values cannot contain zeros. Zeros are reserved for
@@ -330,7 +466,7 @@ class Level:
         """
         if isinstance(value, Level):
             self._parts = list(value)
-            self.heading: bool = value.heading
+            self.heading = value.heading
         else:
             parts = self.load_level(value)
             if parts and parts[-1] == 0:
@@ -506,7 +642,7 @@ class Level:
         return parts
 
     @staticmethod
-    def save_level(parts) -> Union[int, float, str]:
+    def save_level(parts):
         """Convert a level's part into non-quoted YAML value.
 
         >>> Level.save_level((1,))
@@ -524,9 +660,9 @@ class Level:
 
         # Convert formats to cleaner YAML formats
         if len(parts) == 1:
-            return int(level)
+            level = int(level)
         elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
-            return float(level)
+            level = float(level)
 
         return level
 
@@ -535,7 +671,8 @@ class Level:
         return Level(self.value)
 
 
-class Stamp:
+class Stamp(object):
+
     """Hashed content for change tracking.
 
     :param values: one of the following:
@@ -563,6 +700,7 @@ class Stamp:
                 self.value = value
                 return
         self.value = self.digest(*values)
+        
 
     def __repr__(self):
         return "Stamp({})".format(repr(self.value))
@@ -588,12 +726,19 @@ class Stamp:
         return self.value
 
     @staticmethod
-    def digest(*values) -> str:
+    def digest(*values):
         """Hash the values for later comparison."""
-        hsh = hashlib.sha256()
+        md5 = hashlib.md5()
         for value in values:
-            hsh.update(str(value).encode())
-        return urlsafe_b64encode(hsh.digest()).decode('utf-8')
+            # print(f'value :{value}')
+            md5.update(str(value).encode())
+        # print(md5.hexdigest())
+        return md5.hexdigest()
+
+
+class Reference(object):
+
+    """External reference to a file or lines in a file."""
 
 
 def to_bool(obj):
@@ -652,7 +797,7 @@ def iter_items(obj):
     if is_document(obj):
         # a document
         log.debug("iterating over document...")
-        return (i for i in obj.items)
+        return (i for i in obj.items if i.active)
     try:
         # an iterable (of items)
         log.debug("iterating over document-like object...")

@@ -1,0 +1,33 @@
+        *{
+            margin-top: 1%;
+            margin-left: 2%;
+            margin-right: 2%;
+        }
+
+        .background-color{
+            background-color:#f7f7f7 ;
+        }
+
+        table {
+            border:ridge 2px  black;
+            background-color:rgb(235, 235, 235);
+            border-collapse: collapse;
+            box-shadow: 4px 4px 4px lightgrey;
+        }
+
+        table td {
+            border:inset 1px  black;
+        }
+        
+        table th{
+            border:inset 2px black;
+        }
+
+        .Center-align{
+            text-align: center;
+        }
+        .float-right{
+            margin:0;
+            text-align: right;
+            font-size: larger;
+                    }
