@@ -176,10 +176,14 @@ $(DIST_FILES): $(MODULES) pyproject.toml
 exe: install $(EXE_FILES)
 $(EXE_FILES): $(MODULES) $(PROJECT).spec
 	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
-	poetry run pyinstaller $(PROJECT).spec --noconfirm --clean
+	poetry run pyinstaller doorstop.spec        --noconfirm --clean
+	poetry run pyinstaller doorstop-gui.spec    --noconfirm --clean
+	poetry run pyinstaller doorstop-server.spec --noconfirm --clean
 
 $(PROJECT).spec:
-	poetry run pyi-makespec $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
+	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop
+	poetry run pyi-makespec doorstop/gui/main.py    --onefile --windowed --name=doorstop-gui
+	poetry run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
 
 # RELEASE #####################################################################
 
