@@ -22,6 +22,7 @@ install:
   # Install system dependencies
   - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
   - set PATH=%USERPROFILE%\.poetry\bin;%PATH%
+  - echo "Python UTF8 = %PYTHONUTF8%"
   - make doctor
   # Install project dependencies
   - make install
