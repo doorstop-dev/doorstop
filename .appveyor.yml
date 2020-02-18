@@ -2,6 +2,7 @@ environment:
   global:
     RANDOM_SEED: 0
     PYTHONUTF8: 1
+    VIRTUALENV_PYTHONUTF8: 1
   matrix:
     - PYTHON_MAJOR: 3
       PYTHON_MINOR: 6
