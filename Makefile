@@ -79,7 +79,7 @@ endif
 
 RANDOM_SEED ?= $(shell date +%s)
 
-NOSE_OPTIONS := --with-doctest
+NOSE_OPTIONS := --with-doctest --traverse-namespace
 ifndef DISABLE_COVERAGE
 NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
 endif
