@@ -31,7 +31,8 @@ $ make install
 
 ## Manual
 
-Run the tests:
+Run the tests:  
+On Windows, ensure that the environment variable PYTHONUTF8=1 is set.
 
 ```sh
 $ make test
