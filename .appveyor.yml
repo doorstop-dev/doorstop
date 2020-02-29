@@ -1,6 +1,8 @@
 environment:
   global:
     RANDOM_SEED: 0
+    PYTHONUTF8: 1
+    VIRTUALENV_PYTHONUTF8: 1
   matrix:
     - PYTHON_MAJOR: 3
       PYTHON_MINOR: 6
@@ -21,6 +23,7 @@ install:
   # Install system dependencies
   - curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
   - set PATH=%USERPROFILE%\.poetry\bin;%PATH%
+  - echo "Python UTF8 = %PYTHONUTF8%"
   - make doctor
   # Install project dependencies
   - make install

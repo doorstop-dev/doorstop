@@ -2,6 +2,7 @@
 
 """Unit tests for the doorstop.vcs.base module."""
 
+import os
 import unittest
 from unittest.mock import patch
 
@@ -51,5 +52,5 @@ class TestSampleWorkingCopy(unittest.TestCase):
         """Verify that paths are cached correctly."""
         wc = SampleWorkingCopy(ROOT)
         paths = [relpath for path, _, relpath in wc.paths]
-        self.assertEqual([], [x for x in paths if x.startswith('.git/')])
-        self.assertNotEqual([], [x for x in paths if x.startswith('doorstop/')])
+        self.assertEqual([], [x for x in paths if x.startswith('.git{}'.format(os.sep))])
+        self.assertNotEqual([], [x for x in paths if x.startswith('doorstop{}'.format(os.sep))])
