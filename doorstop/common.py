@@ -111,7 +111,7 @@ def read_text(path):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             return f.read()
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
@@ -172,7 +172,7 @@ def write_text(text, path):
     """
     if text:
         log.trace("writing text to '{}'...".format(path))  # type: ignore
-    with open(path, 'w') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         f.write(text)
     return path
 
