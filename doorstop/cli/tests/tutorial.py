@@ -238,12 +238,15 @@ class TestSection1(TestBase):
 
         cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
         self.assertIn(
-            b'''1.0     REQ001
-
-        Some text
-        with more than
-        one line.
-''',
+            b'1.0     REQ001'
+            + str.encode(os.linesep)
+            + str.encode(os.linesep)
+            + b'        Some text'
+            + str.encode(os.linesep)
+            + b'        with more than'
+            + str.encode(os.linesep)
+            + b'        one line.'
+            + str.encode(os.linesep),
             cp.stdout,
         )
 
@@ -266,14 +269,16 @@ class TestSection1(TestBase):
 
         cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
         self.assertIn(
-            b'''1.0     REQ-ABC
-
-1.1     REQ-009
-
-1.2     REQ-XYZ
-
-1.3     REQ-099
-''',
+            b'1.0     REQ-ABC'
+            + str.encode(os.linesep)
+            + str.encode(os.linesep)
+            + b'1.1     REQ-009'
+            + str.encode(os.linesep)
+            + str.encode(os.linesep)
+            + b'1.2     REQ-XYZ'
+            + str.encode(os.linesep)
+            + str.encode(os.linesep)
+            + b'1.3     REQ-099',
             cp.stdout,
         )
 

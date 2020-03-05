@@ -2,6 +2,7 @@
 
 """Unit tests for the doorstop.vcs.base module."""
 
+import os
 import unittest
 from unittest.mock import patch
 
@@ -52,4 +53,6 @@ class TestSampleWorkingCopy(unittest.TestCase):
         wc = SampleWorkingCopy(ROOT)
         paths = [relpath for path, _, relpath in wc.paths]
         self.assertEqual([], [x for x in paths if x.startswith('.git/')])
-        self.assertNotEqual([], [x for x in paths if x.startswith('doorstop/')])
+        self.assertNotEqual(
+            [], [x for x in paths if x.startswith(os.path.join('doorstop', ''))]
+        )
