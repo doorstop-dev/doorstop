@@ -30,7 +30,6 @@ EXTENSIONS = (
         alt='UML Diagram',
     ),
 )
-CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
 INDEX = 'index.html'
 
@@ -215,14 +214,6 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     yield ''
     yield '</body>'
     yield '</html>'
-
-
-def _lines_css():
-    """Yield lines of CSS to embedded in HTML."""
-    yield ''
-    for line in common.read_lines(CSS):
-        yield line.rstrip()
-    yield ''
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
