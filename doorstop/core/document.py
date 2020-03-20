@@ -147,6 +147,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Load the YAML file and process input tags."""
         # Read text from file
         text = self._read(yamlfile)
+
         # Parse YAML data from text
         class IncludeLoader(yaml.SafeLoader):
             def include(self, node):
@@ -292,6 +293,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         common.copy_dir_contents(self.assets, dest)
 
     # properties #############################################################
+
+    @property
+    def doc_path(self):
+        """Get the path to the document."""
+        return self.path
 
     @property
     def config(self):

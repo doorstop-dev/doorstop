@@ -215,6 +215,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
+
+        # Check if a document with the same name already exists in the tree.
+        for d in self.documents:
+            if d.prefix == value:
+                raise DoorstopError(
+                    "The document name is already in use ({}).".format(d.doc_path)
+                )
+
         document = Document.new(
             self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
         )
