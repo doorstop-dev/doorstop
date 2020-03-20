@@ -99,6 +99,10 @@ class TestCreate(TempTestCase):
         """Verify 'doorstop create' returns an error with a reserved prefix."""
         self.assertRaises(SystemExit, main, ['create', 'ALL', self.temp, '-p', 'REQ'])
 
+    def test_create_error_duplicate_name(self):
+        """Verify 'doorstop create' returns an error with an already existing document name."""
+        self.assertRaises(SystemExit, main, ['create', 'TUT', self.temp, '-p', 'REQ'])
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 class TestDelete(MockTestCase):
