@@ -181,7 +181,15 @@ $(EXE_FILES): $(MODULES) $(PROJECT).spec
 	poetry run pyinstaller doorstop-server.spec --noconfirm --clean
 
 $(PROJECT).spec:
-	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop
+	@# The modules mdx_outline and mdx_math are not used in doorstop through import statements,
+	@# instead they are imported as markdown extensions. So these are explicitly referenced
+	@# here as "hidden-imports" so that pyinstaller will pick them up.
+	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop --hidden-import=mdx_outline --hidden-import=mdx_math
+	@# To include additional data files in the doorstop executable built by pyinstaller
+	@# they can be added to pyi-makespec using "--add-data", but that seems to become
+	@# platform dependent according to the pyi-makespec documentation, so a sed command
+	@# is used here to directly insert the data file names into the spec file.
+	sed 's/datas=\[/datas=\[("doorstop\/views", "doorstop\/views"), ("doorstop\/core\/files", "doorstop\/core\/files")/' --in-place doorstop.spec
 	poetry run pyi-makespec doorstop/gui/main.py    --onefile --windowed --name=doorstop-gui
 	poetry run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
 
