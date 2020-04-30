@@ -212,7 +212,7 @@ clean-all: clean
 
 .PHONY: .clean-install
 .clean-install:
-	find $(PACKAGES) -name '__pycache__' -delete
+	find $(PACKAGES) -name '__pycache__' | xargs rm -rf
 	rm -rf *.egg-info
 
 .PHONY: .clean-test
