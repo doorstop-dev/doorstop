@@ -255,11 +255,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for dirpath, dirnames, filenames in os.walk(self.path):
             for dirname in list(dirnames):
                 path = os.path.join(dirpath, dirname, Document.CONFIG)
-                if os.path.exists(path):
-                    path = os.path.dirname(path)
+                if not os.path.exists(path):
+                    # walk() will only recurse into the subdirectories whose names remain in dirnames
                     dirnames.remove(dirname)
                     log.trace(  # type: ignore
-                        "skipped embedded document: {}".format(path)
+                        "skipped embedded directory: {}".format(dirname)
                     )
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
