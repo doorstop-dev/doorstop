@@ -366,6 +366,14 @@ def _lines_text(obj, indent=8, width=79, **_):
                     slinks = "Child links: " + ', '.join(str(l) for l in links)
                     yield from _chunks(slinks, width, indent)
 
+            if item.document and item.document.publish:
+                yield ""
+                for attr in item.document.publish:
+                    if not item.attribute(attr):
+                        continue
+                    attr_line = "{}: {}".format(attr, item.attribute(attr))
+                    yield from _chunks(attr_line, width, indent)
+
         yield ""  # break between items
 
 
@@ -459,6 +467,20 @@ def _lines_markdown(obj, **kwargs):
                     links = _format_md_links(items2, linkify)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
+
+            # Add custom publish attributes
+            if item.document and item.document.publish:
+                header_printed = False
+                for attr in item.document.publish:
+                    if not item.attribute(attr):
+                        continue
+                    if not header_printed:
+                        header_printed = True
+                        yield ""
+                        yield "| Attribute | Value |"
+                        yield "| --------- | ----- |"
+                    yield "| {} | {} |".format(attr, item.attribute(attr))
+                yield ""
 
         yield ""  # break between items
 
