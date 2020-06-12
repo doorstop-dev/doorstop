@@ -160,11 +160,12 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
     return path
 
 
-def write_text(text, path):
+def write_text(text, path, end='\n'):
     """Write text to a file.
 
     :param text: string
     :param path: file to write text
+    :param end: string to end lines
     :param encoding: output file encoding
 
     :return: path of new file
@@ -172,7 +173,7 @@ def write_text(text, path):
     """
     if text:
         log.trace("writing text to '{}'...".format(path))  # type: ignore
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8', newline=end) as f:
         f.write(text)
     return path
 
