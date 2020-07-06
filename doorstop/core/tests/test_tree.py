@@ -169,7 +169,6 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_from_list_missing_parent(self):
         """Verify an error occurs when a node has a missing parent."""
-
         a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
@@ -183,7 +182,6 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_place_no_parent(self):
         """Verify an error occurs when a node is missing a parent."""
-
         a = MockDocumentSkip(EMPTY)
         a.prefix = 'A'  # type: ignore
         b = MockDocumentSkip(EMPTY)
