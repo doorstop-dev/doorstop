@@ -1,3 +1,7 @@
+# 2.1.2 (2020-07-06)
+
+- Fixed tree builder to skip virtual environments.
+
 # 2.1.1 (2020-02-16)
 
 - Fixed missing `six` dependency.
