@@ -1,0 +1,4 @@
+settings:
+  digits: 2
+  prefix: REQ
+  sep: ''
