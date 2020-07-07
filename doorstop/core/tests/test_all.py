@@ -612,8 +612,8 @@ class TestPublisher(unittest.TestCase):
         common.write_text(text, path)
 
     @unittest.skipIf(
-        sys.version_info >= (3, 8),
-        reason="output format differs with newer versions of Python",
+        sys.version_info < (3, 8),
+        reason="Output format differs between versions of Python",
     )
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
@@ -628,8 +628,8 @@ class TestPublisher(unittest.TestCase):
         common.write_text(text, path)
 
     @unittest.skipIf(
-        sys.version_info >= (3, 8),
-        reason="output format differs with newer versions of Python",
+        sys.version_info < (3, 8),
+        reason="Output format differs between versions of Python",
     )
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)
     def test_lines_html_document_without_child_links(self):
