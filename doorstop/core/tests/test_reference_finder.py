@@ -56,6 +56,26 @@ class TestReferenceFinder(unittest.TestCase):
         self.assertEqual(path, os.path.join('files', 'REQ006.yml'))
         self.assertEqual(line, 10)
 
+    def test_find_file_reference_with_utf8_keyword(self):
+        reference_path = "test_fixtures/001-item-references-utf8-keyword/REQ-UTF8.yml"
+        root = TESTS_ROOT
+        tree = Mock()
+        tree.vcs = WorkingCopy(TESTS_ROOT)
+        item_path = "NOT-RELEVANT-FOR-THE-TEST"
+
+        reference_finder = ReferenceFinder()
+        path, line = reference_finder.find_file_reference(
+            reference_path, root, tree, item_path, 'français'
+        )
+
+        self.assertEqual(
+            path,
+            os.path.join(
+                'test_fixtures', '001-item-references-utf8-keyword', 'REQ-UTF8.yml'
+            ),
+        )
+        self.assertEqual(line, 10)
+
     def test_find_file_reference_should_skip_item_path(self):
         root = TESTS_ROOT
         tree = Mock()

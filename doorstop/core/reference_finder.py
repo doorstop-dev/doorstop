@@ -2,10 +2,9 @@
 
 """Finding external references."""
 
+import linecache
 import os
 import re
-
-import pyficache
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -46,8 +45,9 @@ class ReferenceFinder:
             if os.path.splitext(filename)[-1] in settings.SKIP_EXTS:
                 continue
             # Search for the reference in the file
-            lines = pyficache.getlines(path)
-            if lines is None:
+            try:
+                lines = linecache.getlines(path)
+            except SyntaxError:
                 log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
             for lineno, line in enumerate(lines, start=1):
@@ -81,11 +81,10 @@ class ReferenceFinder:
                     return relpath, None
 
                 # Search for the reference in the file
-                lines = pyficache.getlines(path)
-                if lines is None:
-                    log.trace(  # type: ignore
-                        "unable to read lines from: {}".format(path)
-                    )  # type: ignore
+                try:
+                    lines = linecache.getlines(path)
+                except SyntaxError:
+                    log.trace("unable to read lines from: {}".format(path))  # type: ignore
                     continue
 
                 log.debug("searching for ref '{}'...".format(keyword))

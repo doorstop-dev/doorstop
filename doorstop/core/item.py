@@ -3,10 +3,9 @@
 """Representation of an item in a document."""
 
 import functools
+import linecache
 import os
 from typing import Any, List
-
-import pyficache
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -633,7 +632,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             return None, None
         # Update the cache
         if not settings.CACHE_PATHS:
-            pyficache.clear_file_cache()
+            linecache.clearcache()
         # Search for the external reference
         return self.reference_finder.find_ref(self.ref, self.tree, self.path)
 
@@ -657,7 +656,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             log.debug("no external reference to search for")
             return []
         if not settings.CACHE_PATHS:
-            pyficache.clear_file_cache()
+            linecache.clearcache()
 
         references = []
         for ref_item in self.references:
