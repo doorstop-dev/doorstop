@@ -1,0 +1,15 @@
+active: true
+derived: false
+header: ''
+level: 1.5
+links:
+- REQ001: 35ed54323e3054c33ae5545fffdbbbf5
+normative: true
+ref: ''
+references:
+- keyword: français
+  path: NOT-RELEVANT-FOR-THIS-TEST.txt
+  type: file
+reviewed: c442316131ca0225595ae257f3b4583d
+text: |
+  Hello, world!
