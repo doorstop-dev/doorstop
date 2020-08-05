@@ -8,7 +8,7 @@ normative: true
 ref: ''
 references:
 - keyword: français
-  path: files/text.txt
+  path: NOT-RELEVANT-FOR-THIS-TEST.txt
   type: file
 reviewed: c442316131ca0225595ae257f3b4583d
 text: |
