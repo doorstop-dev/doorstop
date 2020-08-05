@@ -1,3 +1,7 @@
+# 2.2 (beta)
+
+- Added support for UTF-8 symbols in references. ([@stanislaw ](https://github.com/doorstop-dev/doorstop/pull/485))
+
 # 2.1.2 (2020-07-06)
 
 - Fixed tree builder to skip virtual environments.
@@ -28,7 +32,7 @@
 
 # 1.5 (2018-09-19)
 
-- Added preliminary support for item headers ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285)
+- Added preliminary support for item headers. ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285))
 - Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/doorstop-dev/doorstop/pull/290))
     + Converted document outline to a tree view.
     + Made documents navigable via clicking links.
