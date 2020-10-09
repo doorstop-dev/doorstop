@@ -2,7 +2,6 @@
 
 """Functions to export documents and items."""
 
-import csv
 import datetime
 import os
 from collections import defaultdict
@@ -216,11 +215,13 @@ def _file_csv(obj, path, delimiter=',', auto=False):
     :return: path of created file
 
     """
-    with open(path, 'w', newline='', encoding='utf-8') as stream:
-        writer = csv.writer(stream, delimiter=delimiter)
-        for row in _tabulate(obj, auto=auto):
-            writer.writerow(row)
-    return path
+    return common.write_csv(
+        _tabulate(obj, auto=auto),
+        path,
+        delimiter=delimiter,
+        newline='',
+        encoding='utf-8',
+    )
 
 
 def _file_tsv(obj, path, auto=False):

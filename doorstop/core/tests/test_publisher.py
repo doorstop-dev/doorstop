@@ -132,7 +132,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
-        expected_calls = [call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb')]
+        expected_calls = [
+            call(os.path.join('mock', 'directory', 'MOCK.html'), 'wb'),
+            call(
+                os.path.join('mock', 'directory', 'traceability.csv'),
+                'w',
+                encoding='utf-8',
+                newline='',
+            ),
+        ]
         # Act
         dirpath2 = publisher.publish(self.mock_tree, dirpath)
         # Assert
@@ -203,6 +211,35 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         publisher._index(FILES, index="index2.html", tree=mock_tree)
         # Assert
         self.assertTrue(os.path.isfile(path))
+
+    def test_matrix_tree(self):
+        """Verify a traceability matrix can be created with a tree."""
+        path = os.path.join(FILES, 'testmatrix.csv')
+        mock_tree = MagicMock()
+        mock_tree.documents = []
+        for prefix in ('SYS', 'HLR', 'LLR', 'HLT', 'LLT'):
+            mock_document = MagicMock()
+            mock_document.prefix = prefix
+            mock_tree.documents.append(mock_document)
+        mock_tree.draw = lambda: "(mock tree structure)"
+        mock_item = Mock()
+        mock_item.uid = 'KNOWN-001'
+        mock_item.document = Mock()
+        mock_item.document.prefix = 'KNOWN'
+        mock_item.header = None
+        mock_item_unknown = Mock(spec=['uid'])
+        mock_item_unknown.uid = 'UNKNOWN-002'
+        mock_trace = [
+            (None, mock_item, None, None, None),
+            (None, None, None, mock_item_unknown, None),
+            (None, None, None, None, None),
+        ]
+        mock_tree.get_traceability = lambda: mock_trace
+        # Act
+        publisher._matrix(FILES, tree=mock_tree, filename="testmatrix.csv")
+        # Assert
+        self.assertTrue(os.path.isfile(path))
+        # TODO assert contents
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""

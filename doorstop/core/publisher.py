@@ -33,12 +33,21 @@ EXTENSIONS = (
 CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
 HTMLTEMPLATE = 'sidebar'
 INDEX = 'index.html'
+MATRIX = 'traceability.csv'
 
 log = common.logger(__name__)
 
 
 def publish(
-    obj, path, ext=None, linkify=None, index=None, template=None, toc=True, **kwargs
+    obj,
+    path,
+    ext=None,
+    linkify=None,
+    index=None,
+    matrix=None,
+    template=None,
+    toc=True,
+    **kwargs,
 ):
     """Publish an object to a given format.
 
@@ -52,6 +61,7 @@ def publish(
     :param ext: file extension to override output extension
     :param linkify: turn links into hyperlinks (for Markdown or HTML)
     :param index: create an index.html (for HTML)
+    :param matrix: create a traceability matrix, traceability.csv
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
@@ -65,6 +75,8 @@ def publish(
         linkify = is_tree(obj) and ext in ['.html', '.md']
     if index is None:
         index = is_tree(obj) and ext == '.html'
+    if matrix is None:
+        matrix = is_tree(obj)
 
     if is_tree(obj):
         assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
@@ -104,6 +116,10 @@ def publish(
     # Create index
     if index and count:
         _index(path, tree=obj if is_tree(obj) else None)
+
+    # Create traceability matrix
+    if index and matrix and count:
+        _matrix(path, tree=obj if is_tree(obj) else None)
 
     # Return the published path
     if count:
@@ -224,6 +240,49 @@ def _lines_css():
     for line in common.read_lines(CSS):
         yield line.rstrip()
     yield ''
+
+
+def _matrix(directory, tree, filename=MATRIX, ext=None):
+    """Create a traceability matrix for all the items.
+
+    :param directory: directory for matrix
+    :param tree: tree to access the traceability data
+    :param filename: filename for matrix
+    :param ext: file extensionto use for the matrix
+
+    """
+    # Get path and format extension
+    path = os.path.join(directory, filename)
+    ext = ext or os.path.splitext(path)[-1] or '.csv'
+
+    # Create the matrix
+    if tree:
+        log.info("creating an {}...".format(filename))
+        content = _matrix_content(tree)
+        common.write_csv(content, path)
+    else:
+        log.warning("no data for {}".format(filename))
+
+
+def _extract_prefix(document):
+    if document:
+        return document.prefix
+    else:
+        return None
+
+
+def _extract_uid(item):
+    if item:
+        return item.uid
+    else:
+        return None
+
+
+def _matrix_content(tree):
+    """Yield rows of content for the traceability matrix."""
+    yield tuple(map(_extract_prefix, tree.documents))
+    for row in tree.get_traceability():
+        yield tuple(map(_extract_uid, row))
 
 
 def publish_lines(obj, ext='.txt', **kwargs):
