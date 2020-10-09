@@ -3,6 +3,7 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
+import csv
 import glob
 import logging
 import os
@@ -174,6 +175,26 @@ def write_text(text, path):
         log.trace("writing text to '{}'...".format(path))  # type: ignore
     with open(path, 'w', encoding='utf-8') as f:
         f.write(text)
+    return path
+
+
+def write_csv(table, path, delimiter=',', newline='', encoding='utf-8'):
+    """Write table to a file.
+
+    :param table: iterator of rows
+    :param path: file to write lines
+    :param delimiter: string to end cells
+    :param newline: string to end lines
+    :param encoding: output file encoding
+
+    :return: path of new file
+
+    """
+    log.trace("writing table to '{}'...".format(path))  # type: ignore
+    with open(path, 'w', newline=newline, encoding=encoding) as stream:
+        writer = csv.writer(stream, delimiter=delimiter)
+        for row in table:
+            writer.writerow(row)
     return path
 
 
