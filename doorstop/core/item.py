@@ -664,7 +664,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             keyword = ref_item["keyword"] if "keyword" in ref_item else None
 
             reference = self.reference_finder.find_file_reference(
-                path, self.root, self.tree, path, keyword
+                path, self.root, self.tree, self.path, keyword
             )
             references.append(reference)
         return references
