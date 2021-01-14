@@ -19,8 +19,6 @@ from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 EXTENSIONS = (
     'markdown.extensions.extra',
     'markdown.extensions.sane_lists',
-    'mdx_outline',
-    'mdx_math',
     PlantUMLMarkdownExtension(
         server='http://www.plantuml.com/plantuml',
         cachedir=tempfile.gettempdir(),
