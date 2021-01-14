@@ -1,1 +1,1 @@
-mkdocs==1.0.4
+mkdocs @ file:///Users/Browning/Library/Caches/pypoetry/artifacts/67/4a/9c/385c93477df7f9540d897adb3106e28698ab096babe2af038e34a2000d/mkdocs-1.0.4-py2.py3-none-any.whl

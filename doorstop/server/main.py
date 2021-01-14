@@ -21,7 +21,7 @@ from doorstop.server import utilities
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
-tree: Tree = None  # type: ignore, set in `run`, read in the route functions
+tree: Tree = None  # type: ignore
 numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
 
 
@@ -32,14 +32,16 @@ def main(args=None):
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
     debug.add_argument('-V', '--version', action='version', version=VERSION)
-    debug.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
-    debug.add_argument('--launch', action='store_true', help=argparse.SUPPRESS)
+    debug.add_argument(
+        '--debug', action='store_true', help="run the server in debug mode"
+    )
+    debug.add_argument(
+        '--launch', action='store_true', help="open the server UI in a browser"
+    )
     shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
 
     # Build main parser
-    parser = argparse.ArgumentParser(  # type: ignore
-        prog=SERVER, description=__doc__, **shared
-    )
+    parser = argparse.ArgumentParser(prog=SERVER, description=__doc__, **shared)  # type: ignore
     cwd = os.getcwd()
 
     parser.add_argument(

@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "2.2b1"
+version = "2.2b2"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -46,7 +46,6 @@ PyYAML = "^5.1"
 Markdown = "^2.0"
 bottle = "~0.12.13"
 requests = "^2.0"
-mdx_outline = "^1.3.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "~3.4.0"
 six = "*" # missing 'plantuml-markdown' dependency: https://github.com/dougn/python-plantuml/issues/11

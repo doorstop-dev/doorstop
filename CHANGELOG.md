@@ -2,6 +2,10 @@
 
 - Added support for UTF-8 symbols in references. ([@stanislaw ](https://github.com/doorstop-dev/doorstop/pull/485))
 
+# 2.1.3 (2021-01-14)
+
+- Removed `mdx_outline` Markdown extension, which is incompatible with Python 3.9.
+
 # 2.1.2 (2020-07-06)
 
 - Fixed tree builder to skip virtual environments.
