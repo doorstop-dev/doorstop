@@ -62,8 +62,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._attribute_defaults = None
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
-        self._data['digits'] = Document.DEFAULT_DIGITS
-        self._data['parent'] = None  # the root document does not have a parent
+        self._data['digits'] = Document.DEFAULT_DIGITS  # type: ignore
+        self._data['parent'] = None  # type: ignore
         self._extended_reviewed: List[str] = []
         self._items: List[Item] = []
         self._itered = False
@@ -184,7 +184,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 elif key == 'parent':
                     self._data[key] = value.strip()
                 elif key == 'digits':
-                    self._data[key] = int(value)
+                    self._data[key] = int(value)  # type: ignore
                 else:
                     msg = "unexpected document setting '{}' in: {}".format(
                         key, self.config
@@ -296,11 +296,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @property
     def config(self):
         """Get the path to the document's file."""
+        assert self.path
         return os.path.join(self.path, Document.CONFIG)
 
     @property
     def assets(self):
         """Get the path to the document's assets if they exist else `None`."""
+        assert self.path
         path = os.path.join(self.path, Document.ASSETS)
         return path if os.path.isdir(path) else None
 
@@ -401,11 +403,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @property
     def skip(self):
         """Indicate the document should be skipped."""
+        assert self.path
         return os.path.isfile(os.path.join(self.path, Document.SKIP))
 
     @property
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
+        assert self.path
         path = os.path.join(self.path, Document.INDEX)
         return path if os.path.isfile(path) else None
 
@@ -413,6 +417,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self, value):
         """Create or update the document's index."""
         if value:
+            assert self.path
             path = os.path.join(self.path, Document.INDEX)
             log.info("creating {} index...".format(self))
             common.write_lines(self._lines_index(self.items), path)

@@ -6,7 +6,7 @@
 
 import sys
 from itertools import chain
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -101,7 +101,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._vcs = None  # working copy reference loaded in a property
         self.request_next_number = None  # server method injected by clients
         self._loaded = False
-        self._item_cache: Dict[str, Item] = {}
+        self._item_cache: Dict[Union[str, UID], Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
 
     def __repr__(self):
@@ -454,7 +454,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
-                self._item_cache[uid] = None
+                self._item_cache[uid] = None  # type: ignore
                 log.trace("cached unknown: {}".format(uid))  # type: ignore
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))

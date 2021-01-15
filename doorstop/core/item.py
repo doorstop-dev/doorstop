@@ -137,15 +137,15 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self.reference_finder = ReferenceFinder()
         self.yaml_validator = YamlValidator()
         # Set default values
-        self._data['level'] = Item.DEFAULT_LEVEL
-        self._data['active'] = Item.DEFAULT_ACTIVE
-        self._data['normative'] = Item.DEFAULT_NORMATIVE
-        self._data['derived'] = Item.DEFAULT_DERIVED
-        self._data['reviewed'] = Item.DEFAULT_REVIEWED
+        self._data['level'] = Item.DEFAULT_LEVEL  # type: ignore
+        self._data['active'] = Item.DEFAULT_ACTIVE  # type: ignore
+        self._data['normative'] = Item.DEFAULT_NORMATIVE  # type: ignore
+        self._data['derived'] = Item.DEFAULT_DERIVED  # type: ignore
+        self._data['reviewed'] = Item.DEFAULT_REVIEWED  # type: ignore
         self._data['text'] = Item.DEFAULT_TEXT
         self._data['ref'] = Item.DEFAULT_REF
-        self._data['references'] = None
-        self._data['links'] = set()
+        self._data['references'] = None  # type: ignore
+        self._data['links'] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
             self._data['header'] = Item.DEFAULT_HEADER
 
@@ -274,13 +274,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         data = {}
         for key, value in self._data.items():
             if key == 'level':
-                value = value.yaml
+                value = value.yaml  # type: ignore
             elif key == 'text':
-                value = value.yaml
+                value = value.yaml  # type: ignore
             elif key == 'header':
                 # Handle for case if the header is undefined in YAML
                 if hasattr(value, 'yaml'):
-                    value = value.yaml
+                    value = value.yaml  # type: ignore
                 else:
                     value = ''
             elif key == 'ref':
@@ -290,18 +290,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     continue
                 stripped_value = []
                 for el in value:
-                    ref_dict = {"path": el["path"].strip(), "type": "file"}
+                    ref_dict = {"path": el["path"].strip(), "type": "file"}  # type: ignore
 
                     if 'keyword' in el:
-                        ref_dict['keyword'] = el['keyword']
+                        ref_dict['keyword'] = el['keyword']  # type: ignore
 
                     stripped_value.append(ref_dict)
 
-                value = stripped_value
+                value = stripped_value  # type: ignore
             elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
+                value = [{str(i): i.stamp.yaml} for i in sorted(value)]  # type: ignore
             elif key == 'reviewed':
-                value = value.yaml
+                value = value.yaml  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
@@ -316,6 +316,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @property
     def uid(self):
         """Get the item's UID."""
+        assert self.path
         filename = os.path.basename(self.path)
         return UID(os.path.splitext(filename)[0])
 
@@ -329,7 +330,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_save
     def level(self, value):
         """Set the item's level."""
-        self._data['level'] = Level(value)
+        self._data['level'] = Level(value)  # type: ignore
 
     @property
     def depth(self):
@@ -413,10 +414,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         heading = to_bool(value)
         if heading and not self.heading:
             self.level.heading = True
-            self.normative = False
+            self.normative = False  # type: ignore
         elif not heading and self.heading:
             self.level.heading = False
-            self.normative = True
+            self.normative = True  # type: ignore
 
     @property  # type: ignore
     @auto_load
@@ -440,7 +441,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_save
     def reviewed(self, value):
         """Set the item's review status."""
-        self._data['reviewed'] = Stamp(value)
+        self._data['reviewed'] = Stamp(value)  # type: ignore
 
     @property  # type: ignore
     @auto_load
@@ -510,24 +511,24 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_save
     def links(self, value):
         """Set the list of item UIDs this item links to."""
-        self._data['links'] = set(UID(v) for v in value)
+        self._data['links'] = set(UID(v) for v in value)  # type: ignore
 
     @property
     def parent_links(self):
         """Get a list of the item UIDs this item links to."""
-        return self.links  # alias
+        return self.links
 
     @parent_links.setter
     def parent_links(self, value):
         """Set the list of item UIDs this item links to."""
-        self.links = value  # alias
+        self.links = value  # type: ignore
 
     @requires_tree
     def _get_parent_uid_and_item(self):
         """Yield UID and item of all links of this item."""
         for uid in self.links:
             try:
-                item = self.tree.find_item(uid)
+                item = self.tree.find_item(uid)  # type: ignore
             except DoorstopError:
                 item = UnknownItem(uid)
                 log.warning(item.exception)
@@ -549,7 +550,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
         """
         try:
-            return [self.tree.find_document(self.document.prefix)]
+            return [self.tree.find_document(self.document.prefix)]  # type: ignore
         except DoorstopError:
             log.warning(Prefix.UNKNOWN_MESSAGE.format(self.document.prefix))
             return []
@@ -584,7 +585,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 title=str(self.uid), original_content=str(self.text), tool=tool
             )
             # Save the text in the actual item file
-            self.text = edited_text
+            self.text = edited_text  # type: ignore
 
     @auto_save
     def link(self, value):
@@ -595,7 +596,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """
         uid = UID(value)
         log.info("linking to '{}'...".format(uid))
-        self._data['links'].add(uid)
+        self._data['links'].add(uid)  # type: ignore
 
     @auto_save
     def unlink(self, value):
@@ -606,7 +607,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """
         uid = UID(value)
         try:
-            self._data['links'].remove(uid)
+            self._data['links'].remove(uid)  # type: ignore
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
@@ -801,7 +802,7 @@ class UnknownItem:
         self.exception = DoorstopError(msg)
 
     def __str__(self):
-        return Item.__str__(self)
+        return Item.__str__(self)  # type: ignore
 
     def __getattr__(self, name):
         if name in self._spec:
