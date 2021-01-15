@@ -1,3 +1,7 @@
+# 2.1.4 (2021-01-15)
+
+- Updated `markdown` to fix `AttributeError` in `doorstop-server`.
+
 # 2.1.3 (2021-01-14)
 
 - Removed `mdx_outline` Markdown extension, which is incompatible with Python 3.9.
