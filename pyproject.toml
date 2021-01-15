@@ -33,6 +33,7 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
@@ -57,7 +58,7 @@ black = "=19.10b0"
 isort = "=4.3.21"
 
 # Linters
-mypy = "^0.720"
+mypy = "^0.790"
 pydocstyle = "*"
 pylint = "~2.3.1"
 

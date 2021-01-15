@@ -306,6 +306,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
     @property
     def relpath(self):
         """Get the item's relative path string."""
+        assert self.path
         relpath = os.path.relpath(self.path, self.root)
         return "@{}{}".format(os.sep, relpath)
 

@@ -560,9 +560,9 @@ class Stamp:
                 self.value = None
                 return
             if isinstance(value, str):
-                self.value = value
+                self.value = value  # type: ignore
                 return
-        self.value = self.digest(*values)
+        self.value = self.digest(*values)  # type: ignore
 
     def __repr__(self):
         return "Stamp({})".format(repr(self.value))

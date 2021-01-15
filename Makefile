@@ -89,7 +89,9 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install
 	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
+ifndef DISABLE_COVERAGE
 	poetry run coveragespace update unit
+endif
 
 .PHONY: test-int
 test-int: test-all
@@ -97,7 +99,9 @@ test-int: test-all
 .PHONY: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
+ifndef DISABLE_COVERAGE
 	poetry run coveragespace update overall
+endif
 
 .PHONY: read-coverage
 read-coverage:
