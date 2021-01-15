@@ -121,9 +121,9 @@ $(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
 	@ cd docs/about && ln -sf ../../LICENSE.md license.md
 	poetry run mkdocs build --clean --strict
 
-# Workaround: https://github.com/rtfd/readthedocs.org/issues/5090
 docs/requirements.txt: poetry.lock
-	@ poetry run pip freeze -qqq | grep mkdocs > $@
+	@ poetry run pip list --format=freeze | grep mkdocs > $@
+	@ poetry run pip list --format=freeze | grep Pygments >> $@
 
 .PHONY: uml
 uml: install docs/*.png
