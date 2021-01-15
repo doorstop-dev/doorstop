@@ -1,7 +1,6 @@
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
-REPOSITORY := doorstop-dev/doorstop
 
 # Project paths
 PACKAGES := $(PACKAGE)
@@ -90,7 +89,7 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install
 	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
-	poetry run coveragespace $(REPOSITORY) unit
+	poetry run coveragespace update unit
 
 .PHONY: test-int
 test-int: test-all
@@ -98,7 +97,7 @@ test-int: test-all
 .PHONY: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
-	poetry run coveragespace $(REPOSITORY) overall
+	poetry run coveragespace update overall
 
 .PHONY: read-coverage
 read-coverage:

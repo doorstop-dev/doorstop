@@ -69,7 +69,7 @@ nose-show-skipped = "*"
 expecter = "*"
 
 # Reports
-coveragespace = "*"
+coveragespace = "^4.0"
 
 # Documentation
 mkdocs = "^1.0"
