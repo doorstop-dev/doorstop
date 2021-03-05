@@ -22,8 +22,8 @@ from doorstop.cli.tests import (
 from doorstop.core.builder import _clear_tree
 from doorstop.core.document import Document
 
-REQ_COUNT = 17
-ALL_COUNT = 49
+REQ_COUNT = 18
+ALL_COUNT = 50
 
 
 class TempTestCase(unittest.TestCase):
