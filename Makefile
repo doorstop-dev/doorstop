@@ -1,7 +1,6 @@
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
-REPOSITORY := doorstop-dev/doorstop
 
 # Project paths
 PACKAGES := $(PACKAGE)
@@ -51,7 +50,7 @@ $(DEPENDENCIES): poetry.lock
 
 ifndef CI
 poetry.lock: pyproject.toml
-	poetry lock
+	poetry lock --no-update
 	@ touch $@
 endif
 
@@ -90,7 +89,9 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install
 	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
-	poetry run coveragespace $(REPOSITORY) unit
+ifndef DISABLE_COVERAGE
+	poetry run coveragespace update unit
+endif
 
 .PHONY: test-int
 test-int: test-all
@@ -98,7 +99,9 @@ test-int: test-all
 .PHONY: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
-	poetry run coveragespace $(REPOSITORY) overall
+ifndef DISABLE_COVERAGE
+	poetry run coveragespace update overall
+endif
 
 .PHONY: read-coverage
 read-coverage:
@@ -121,9 +124,9 @@ $(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
 	@ cd docs/about && ln -sf ../../LICENSE.md license.md
 	poetry run mkdocs build --clean --strict
 
-# Workaround: https://github.com/rtfd/readthedocs.org/issues/5090
 docs/requirements.txt: poetry.lock
-	@ poetry run pip freeze -qqq | grep mkdocs > $@
+	@ poetry run pip list --format=freeze | grep mkdocs > $@
+	@ poetry run pip list --format=freeze | grep Pygments >> $@
 
 .PHONY: uml
 uml: install docs/*.png

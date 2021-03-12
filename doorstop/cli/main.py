@@ -74,8 +74,8 @@ def main(args=None):  # pylint: disable=R0915
     }
 
     # Build main parser
-    parser = argparse.ArgumentParser(  # type: ignore
-        prog=CLI, description=DESCRIPTION, **shared
+    parser = argparse.ArgumentParser(
+        prog=CLI, description=DESCRIPTION, **shared  # type: ignore
     )
     parser.add_argument(
         '-F',

@@ -47,7 +47,7 @@ class ReferenceFinder:
             # Search for the reference in the file
             try:
                 lines = linecache.getlines(path)
-            except SyntaxError:
+            except (SyntaxError, UnicodeDecodeError):
                 log.trace("unable to read lines from: {}".format(path))  # type: ignore
                 continue
             for lineno, line in enumerate(lines, start=1):
