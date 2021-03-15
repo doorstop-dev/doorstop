@@ -4,6 +4,7 @@
 
 import datetime
 import os
+import pathlib
 from collections import defaultdict
 from typing import Any, Dict
 
@@ -13,6 +14,8 @@ import yaml
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
+from doorstop.core.tree import Tree
+import portableqda,html
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
@@ -20,6 +23,16 @@ XLSX_MAX_WIDTH = 65.0  # maximum width for a column
 XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 
 log = common.logger(__name__)
+
+portableqda.log=log
+
+try:
+    CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
+except Exception:
+    CATEGORY_SEP = "::"
+
+codebook = None #coodebook to work on when exporting to QDC... TODO: is a global really needed??
+
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -42,20 +55,39 @@ def export(obj, path, ext=None, **kwargs):
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.csv'
     check(ext)
+    if kwargs["whole_tree"]:
+        # Export the whole tree to one document
+        kwargs["total_documents"] = len(obj.documents)
+        log.info("exporting whole tree to {}...".format(path))
+        count = 0
+        pathNonlocal=(path+".")[:-1] #nonlocal-ish references the onefile object until closed
+        if id(pathNonlocal) == id(path):
+            raise ValueError("pathNonlocal should be a copy of path. Please report this to the develpers,"
+                             "with as much information on the interpreter as you can")
+        for obj2, path2 in iter_documents(obj, path, ext):
+            count += 1
+            kwargs["count"]=count
+            # Export content to the specified path
+            # common.create_dirname(path2)
+            pathNonlocal = export_file(obj2, pathNonlocal, ext, **kwargs)
 
-    # Export documents
-    count = 0
-    for obj2, path2 in iter_documents(obj, path, ext):
-        count += 1
+    else:
+        # Export individual documents
+        kwargs["total_documents"] = 1
+        kwargs["count"] = 1
+        check(ext)
+        count = 0
+        for obj2, path2 in iter_documents(obj, path, ext):
+            count += 1
 
-        # Export content to the specified path
-        common.create_dirname(path2)
-        log.info("exporting to {}...".format(path2))
-        if ext in FORMAT_LINES:
-            lines = export_lines(obj2, ext, **kwargs)
-            common.write_lines(lines, path2)
-        else:
-            export_file(obj2, path2, ext, **kwargs)
+            # Export content to the specified path
+            common.create_dirname(path2)
+            log.info("exporting to {}...".format(path2))
+            if ext in FORMAT_LINES:
+                lines = export_lines(obj2, ext, **kwargs)
+                common.write_lines(lines, path2)
+            else:
+                export_file(obj2, path2, ext, **kwargs)
 
     # Return the exported path
     if count:
@@ -85,6 +117,8 @@ def export_lines(obj, ext='.yml', **kwargs):
 
 def export_file(obj, path, ext=None, **kwargs):
     """Create a file object for an export in the specified format.
+    if "all" argument entered, check() will try to produce function that creates one file, otherwise each doc
+    will have its own file.
 
     :param obj: Item, list of Items, or Document to export
     :param path: output file location with desired extension
@@ -96,10 +130,20 @@ def export_file(obj, path, ext=None, **kwargs):
 
     """
     ext = ext or os.path.splitext(path)[-1]
-    func = check(ext, get_file_func=True)
+    func = check(ext, get_file_func=True, **kwargs)
     log.debug("converting %s to file format %s...", obj, ext)
     try:
+        #TODO: check line in mainstream
+        if 'whole_tree' in kwargs.keys() and not kwargs["whole_tree"]:
+            del kwargs["whole_tree"]
+            if 'total_documents' in kwargs.keys():
+                del kwargs["total_documents"]
+            if 'count' in kwargs.keys():
+                del kwargs["count"]
+        elif 'whole_tree' in kwargs.keys() and kwargs["whole_tree"]:
+            pass
         return func(obj, path, **kwargs)
+
     except IOError:
         msg = "unable to write to: {}".format(path)
         raise common.DoorstopFileError(msg) from None
@@ -311,6 +355,264 @@ def _get_xlsx(obj, auto):
 
     return workbook
 
+def _file_qdc(obj, path, auto=False, **kwargs):
+    """Create a QDC codebook (REFI-QDA as per http://qdasoftware.org/) file at the given path.
+
+    :param obj: Item, list of Items, or Document to export
+    :param path: location to export QDPX file
+    :param auto: include placeholders for new items on import
+
+    :return: path of created file
+
+    """
+    #workbook = _get_qdpx(obj, auto)
+    #workbook.save(path)
+    #from xml.sax.saxutils import XMLGenerator
+    with open(path,mode="w") as fh:
+        qdcOutput = portableqda.codebook(output=fh)
+        for item in obj.items:
+            guid="id{}".format(item.uid) #TODO: retreive guid if exists
+            error,errorDesc,code=qdcOutput.codeOp(name="{}:{}".format(obj.DEFAULT_PREFIX,item.uid),
+                                    guid=guid,
+                                    op="create")
+            code.description=item.text
+
+        # http://schema.qdasoftware.org/versions/Codebook/v1.0/Codebook.xsd
+        # output = XMLGenerator(fh, encoding='utf-8',
+        #                       short_empty_elements=True)
+        qdcOutput.writeQdc()
+
+    return path
+
+def _onefile_qdc(obj, path, auto=False, **kwargs):
+    """Create one QDC codebook for the whole tree (REFI-QDA as per http://qdasoftware.org/) file at the given path.
+
+    :param obj: Item, list of Items, or Document to export
+    :param path: location to export QDC file
+    :param auto: include placeholders for new items on import
+
+    :return: path of created file
+
+    """
+    #workbook = _get_qdpx(obj, auto)
+    #workbook.save(path)
+    #from xml.sax.saxutils import XMLGenerator
+    global codebook
+    if kwargs["count"]==1:
+        result = path  # path to output file on the first iteration, the whole object aftewards
+        #first doc in, create onefilOutput object #"guid" in item.extended #item.relpath
+        if not str(path).lower().endswith(".qdc"):
+            path+=".qdc"
+        #fh = open(path,mode="w")
+        codebook = portableqda.codebookCls(output=path)
+        description="project {}\n\nDocuments: \n{}".format(obj,obj.tree.draw())
+    else:
+        description = "document {}{}{}\n\n other documents: \n {}".format(obj.tree.document.prefix,CATEGORY_SEP,obj,obj.tree.draw())#)obj.tree)
+        result = codebook
+    # create the codebook SetCls representing the current doc
+    GroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts)  # @/A/B/C -> A::B::C, platform-indept
+    error,errorDesc,setQda=codebook.createElement(elementCls=portableqda.setCls, #codebook elements are codeCls or setClas
+                                                name=GroupName,
+                                                description=description.replace("<-",CATEGORY_SEP))
+                                                #description=html.escape(description))
+    if error:
+        log.warning("codebook.createElement({}): return error: {}".format(GroupName,errorDesc))
+    else:
+        log.debug("codebook: created Set {} for doc {}".format(GroupName,obj))
+    for item in obj.items:
+        if "guid" in item.extended:
+            guid=item.data["guid"]
+        else:
+            guid=None #item.guid
+        if "color" in item.extended:
+            color=item.data["color"]
+        else:
+            color=None #item.color
+        if len(item.header) >0:
+            item_header=" - "+item.header
+        else:
+            item_header = ""
+        codeName = "{}{}{}{}".format(str(obj.tree.document.prefix),CATEGORY_SEP, item.uid, item_header)
+        itemGroupList=[]
+        itemGroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts) #@/A/B/C -> A::B::C, platform-indept
+        itemGroupList.append(itemGroupName)
+        for itemGroupName in itemGroupList:
+            log.debug("adding item {}, to group {}".format(codeName, itemGroupName))
+        # error,errorDesc,itemGroup = result.codeSetOp(name=itemGroupName,do=portableqda.op.RETRIEVE,
+        #                                              codeSetElm=portableqda.elm.SET)
+
+        error,errorDesc,code=codebook.createElement(elementCls=portableqda.codeCls, name=codeName, guid=guid,
+                                                    description=item.text, sets=itemGroupList)
+        if error:
+            log.warning("codebook.createElement({}): return error: {}".format(codeName,errorDesc))
+
+        if guid != code.attrib["guid"]:
+            log.warning("item {}: GUID changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
+                  format(item.uid, guid, code.attrib["guid"]))
+            item.set_attributes({"guid":code.attrib["guid"]})
+
+        if color != code.attrib["color"]:
+            log.warning("item {}: color changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
+                  format(item.uid, color, code.attrib["color"]))
+            item.set_attributes({"color":code.attrib["color"]})
+
+    if kwargs["count"]==kwargs["total_documents"]:
+        codebook.writeQdcFile()
+
+    return result
+
+def _get_qdc(obj, auto):
+    """Create an QDC codebook file (REFI-QDA as per http://qdasoftware.org/)
+
+    :param obj: Item, list of Items, or Document to export
+    :param auto: include placeholders for new items on import
+
+    :return: new workbook
+
+    """
+    col_widths: Dict[Any, float] = defaultdict(float)
+    col = 'A'
+
+    # Create a new workbook
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Populate cells
+    for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
+        for col_idx, value in enumerate(data, start=1):
+            cell = worksheet.cell(column=col_idx, row=row)
+
+            # wrap text in every cell
+            alignment = openpyxl.styles.Alignment(
+                vertical='top', horizontal='left', wrap_text=True
+            )
+            cell.alignment = alignment
+            # and bold header rows
+            if row == 1:
+                cell.font = openpyxl.styles.Font(bold=True)
+
+            # convert incompatible Excel types:
+            # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
+            if isinstance(value, (int, float, datetime.datetime)):
+                cell.value = value
+            else:
+                cell.value = str(value)
+
+            # track cell width
+            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
+
+    # Add filter up to the last column
+    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
+    worksheet.auto_filter.ref = "A1:%s1" % col_letter
+
+    # Set column width based on column contents
+    for col in col_widths:
+        if col_widths[col] > XLSX_MAX_WIDTH:
+            width = XLSX_MAX_WIDTH
+        else:
+            width = col_widths[col] + XLSX_FILTER_PADDING
+        col_letter = openpyxl.utils.get_column_letter(col)
+        worksheet.column_dimensions[col_letter].width = width
+
+    # Freeze top row
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
+
+    return workbook
+
+def _file_qdpx(obj, path, auto=False):
+    """Create a QDPX project file (REFI-QDA as per http://qdasoftware.org/) file at the given path.
+
+    :param obj: Item, list of Items, or Document to export
+    :param path: location to export QDPX file
+    :param auto: include placeholders for new items on import
+
+    :return: path of created file
+
+    """
+    #workbook = _get_qdpx(obj, auto)
+    #workbook.save(path)
+    from xml.sax.saxutils import XMLGenerator
+    import sys
+    class Tag: pass
+    tags = list()
+    for item in obj.items:
+        tag = Tag()
+        tag.id="id{}".format(item.uid)
+        #tag.path="path{}".format(idx)
+        tag.path="{}:{}".format(obj.DEFAULT_PREFIX,item.uid)
+        tag.description=item.text
+        tags.append(tag)
+
+
+    # http://schema.qdasoftware.org/versions/Codebook/v1.0/Codebook.xsd
+    with open(path,mode="w") as fh:
+        output = XMLGenerator(fh, encoding='utf-8',
+                              short_empty_elements=True)
+        output.startDocument()
+        output.startPrefixMapping(None, 'urn:QDA-XML:codebook:1.0')
+        portableqda.write_codebook(tags, output)
+        output.endPrefixMapping(None)
+        output.endDocument()
+
+    return path
+
+def _get_qdpx(obj, auto):
+    """Create an QDPX file (REFI-QDA as per http://qdasoftware.org/)
+
+    :param obj: Item, list of Items, or Document to export
+    :param auto: include placeholders for new items on import
+
+    :return: new workbook
+
+    """
+    col_widths: Dict[Any, float] = defaultdict(float)
+    col = 'A'
+
+    # Create a new workbook
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Populate cells
+    for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
+        for col_idx, value in enumerate(data, start=1):
+            cell = worksheet.cell(column=col_idx, row=row)
+
+            # wrap text in every cell
+            alignment = openpyxl.styles.Alignment(
+                vertical='top', horizontal='left', wrap_text=True
+            )
+            cell.alignment = alignment
+            # and bold header rows
+            if row == 1:
+                cell.font = openpyxl.styles.Font(bold=True)
+
+            # convert incompatible Excel types:
+            # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
+            if isinstance(value, (int, float, datetime.datetime)):
+                cell.value = value
+            else:
+                cell.value = str(value)
+
+            # track cell width
+            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
+
+    # Add filter up to the last column
+    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
+    worksheet.auto_filter.ref = "A1:%s1" % col_letter
+
+    # Set column width based on column contents
+    for col in col_widths:
+        if col_widths[col] > XLSX_MAX_WIDTH:
+            width = XLSX_MAX_WIDTH
+        else:
+            width = col_widths[col] + XLSX_FILTER_PADDING
+        col_letter = openpyxl.utils.get_column_letter(col)
+        worksheet.column_dimensions[col_letter].width = width
+
+    # Freeze top row
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
+
+    return workbook
 
 def _width(text):
     """Get the maximum length in a multiline string."""
@@ -323,12 +625,14 @@ def _width(text):
 # Mapping from file extension to lines generator
 FORMAT_LINES = {'.yml': _lines_yaml}
 # Mapping from file extension to file generator
-FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx}
+FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx,  '.qdc': _file_qdc ,  '.qdpx': _file_qdpx }
+# Mapping from file extension to one file generator
+FORMAT_ONEFILE = {'.qdc': _onefile_qdc ,  '.qdpx': _onefile_qdc} #TODO: px }
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))  # type: ignore
 
 
-def check(ext, get_lines_gen=False, get_file_func=False):
+def check(ext, get_lines_gen=False, get_file_func=False, **kwargs):
     """Confirm an extension is supported for export.
 
     :param get_lines_func: return a lines generator if available
@@ -355,14 +659,25 @@ def check(ext, get_lines_gen=False, get_file_func=False):
             return gen
 
     if get_file_func:
-        try:
-            func = FORMAT_FILE[ext]
-        except KeyError:
-            exc = DoorstopError(fmt.format("file export", file_exts))
-            raise exc from None
+        #if "whole_tree" in kwargs.keys(): #TODO: check this line in upstream
+        if "whole_tree" in kwargs.keys() and kwargs["whole_tree"]:
+            try:
+                func = FORMAT_ONEFILE[ext]
+            except KeyError:
+                exc = DoorstopError(fmt.format("one file export", file_exts))
+                raise exc from None
+            else:
+                log.debug("found one file creator for: {}".format(ext))
+                return func
         else:
-            log.debug("found file creator for: {}".format(ext))
-            return func
+            try:
+                func = FORMAT_FILE[ext]
+            except KeyError:
+                exc = DoorstopError(fmt.format("file export", file_exts))
+                raise exc from None
+            else:
+                log.debug("found file creator for: {}".format(ext))
+                return func
 
     if ext not in FORMAT:
         exc = DoorstopError(fmt.format("export", exts))

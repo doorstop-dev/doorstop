@@ -525,11 +525,11 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
         if whole_tree:
             msg = "exporting tree to '{}'...".format(args.path)
             utilities.show(msg, flush=True)
-            path = exporter.export(tree, args.path, ext, auto=auto)
+            path = exporter.export(tree, args.path, ext, auto=auto, whole_tree=whole_tree)
         else:
             msg = "exporting document {} to '{}'...".format(document, args.path)
             utilities.show(msg, flush=True)
-            path = exporter.export(document, args.path, ext, auto=auto)
+            path = exporter.export(document, args.path, ext, auto=auto, whole_tree=whole_tree)
         if path:
             utilities.show("exported: {}".format(path))
 

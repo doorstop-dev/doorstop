@@ -74,8 +74,8 @@ def main(args=None):  # pylint: disable=R0915
     }
 
     # Build main parser
-    parser = argparse.ArgumentParser(
-        prog=CLI, description=DESCRIPTION, **shared  # type: ignore
+    parser = argparse.ArgumentParser(  # type: ignore
+        prog=CLI, description=DESCRIPTION, **shared
     )
     parser.add_argument(
         '-F',
@@ -455,6 +455,8 @@ def _import(subs, shared):
         metavar='ARG',
         help="import an existing item by: PREFIX UID",
     )
+    group.add_argument('-b', '--qdc', action='store_true', help="import a QDC codeBook as the whole tree (REFI-QDA as per http://qdasoftware.org)")
+    group.add_argument('-B', '--qdpx', action='store_true', help="import a QDPX project (REFI-QDA as per http://qdasoftware.org)")
     sub.add_argument(
         '-p',
         '--parent',
@@ -486,6 +488,8 @@ def _export(subs, shared):
     group.add_argument(
         '-c', '--csv', action='store_true', help="output CSV (default for 'all')"
     )
+    group.add_argument('-b', '--qdc', action='store_true', help="output QDC codeBook (REFI-QDA as per http://qdasoftware.org")
+    group.add_argument('-B', '--qdpx', action='store_true', help="output QDPX project (REFI-QDA as per http://qdasoftware.org")
     group.add_argument('-t', '--tsv', action='store_true', help="output TSV")
     group.add_argument('-x', '--xlsx', action='store_true', help="output XLSX")
     sub.add_argument('-w', '--width', type=int, help="limit line width on text output")

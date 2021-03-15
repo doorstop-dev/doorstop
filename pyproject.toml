@@ -50,6 +50,8 @@ requests = "^2.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
 openpyxl = "^2.6"
+lxml = "^4.6.2"
+portableqda = "^0.1.2"
 
 [tool.poetry.dev-dependencies]
 

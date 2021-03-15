@@ -17,6 +17,9 @@ from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.types import UID
 
+import portableqda,pathlib
+
+
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
 _documents = []  # cache of unplaced documents
@@ -129,6 +132,100 @@ def _file_yml(path, document, **_):
         else:
             item.delete()
         add_item(document.prefix, uid, attrs=attrs, document=document)
+
+def _onefile_qpdx(path):
+    raise NotImplementedError("importing QDPX project not yet supported")
+
+
+def _onefile_qdc(path, rootDoc, **_):
+    """Import items from a QDC file to a tree, to create a new Tree follow these steps:
+
+    ```bash
+    #assuming that PRJ is the root Document
+    cd baseDirectory
+    git init
+    doorstop create PRJ PRJ #
+    doorstop  import -b codebook.qdc PRJ
+    ```
+
+
+    :param path: input file location
+    :param document: document to import items
+
+    """
+    import portableqda
+    portableqda.log = log
+
+    try:
+        CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
+    except Exception:
+        CATEGORY_SEP = "::"
+    # Parse the file
+    log.info("reading items in {}...".format(path))
+    codebook = portableqda.codebookCls(output=path.replace(".qdc","-diff.qdc"))
+    #
+    # read QDC file and find Codes and Sets tag
+    #
+    codebook.readQdcFile(input=path)
+    #codebook_xml=portableqda.etree.tostring(codebook.tree,pretty_print=True).decode(encoding="utf8")
+    sets=None
+    codes = None
+    root = codebook.tree.getroot()
+    if root is not None:
+        for elm in list(root):
+            #print(elm.attrib["name"])
+            tag=elm.tag.split("}")[-1] #crop namespace
+            if tag == portableqda.setCls.TAG+"s":
+                sets=elm
+            if tag == portableqda.codeCls.TAG + "s":
+                codes = elm
+
+    if sets is None or codes is None:
+        raise ValueError("malformed QDC file: {} is missing 'Codes' tag or 'Sets' tag as second level elements")
+
+    #
+    # iterate sets, create one Document for each element (split the name using portableqda.CATEGRORY_SEP)
+    #
+    for elm in list(sets):
+        #print(elm.attrib)
+        name=elm.attrib["name"]
+        path=name.split(portableqda.CATEGORY_SEP)
+        parent = None
+        for level,doc in enumerate(path):
+            if level == 0:
+                if str(rootDoc.prefix) == doc:
+                        parent = rootDoc
+                        #print(parent)
+                else:
+                    raise DoorstopError(f"all sets in codebook must have names that are absolute paths to docs, starting with {rootDoc} (like {rootDoc}{CATEGORY_SEP}ancestor{CATEGORY_SEP}child, docs 'ancestor' and 'child' will be created )")
+            else:
+                try:
+                    parent = rootDoc.tree.find_document(doc)
+                except common.DoorstopError as e:
+                    #raise ("root doc {} not found".format(rootDoc))
+                    # doc didn't existe, creating one
+                    newDoc=rootDoc.tree.create_document(
+                        str(pathlib.Path(parent.path)/doc) ,
+                        doc,
+                        parent=parent.prefix)#,
+                        #digits=args.digits,
+                        #sep=args.separator)
+                    newDoc.extended_reviewed.append("guid")
+                    newDoc._attribute_defaults = {"guid": None}
+                    newDoc.save()
+                    log.info(f"bashScript: doorstop create {doc} --parent {parent.prefix} #add items with doorstop add -d defaults.yml {doc} for GUID attribute")
+                    parent=newDoc
+                except Exception:
+                    raise
+    #
+    # iterate memberCodes in sets, create corresponding Items
+    #
+    # not yet implemented
+
+
+
+    data=None
+
 
 
 def _file_csv(path, document, delimiter=',', mapping=None):
@@ -318,6 +415,8 @@ FORMAT_FILE = {
     '.csv': _file_csv,
     '.tsv': _file_tsv,
     '.xlsx': _file_xlsx,
+    '.qdc': _onefile_qdc,
+    '.qpdx': _onefile_qpdx,
 }
 
 
