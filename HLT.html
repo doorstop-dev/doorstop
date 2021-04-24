@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head><title>Doorstop</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet" href="assets/doorstop/bootstrap.min.css" />
+  <link rel="stylesheet" href="assets/doorstop/general.css" />
+  <link type="text/css" rel="stylesheet" href="assets/doorstop/sidebar.css" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" ></script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+  });
+  </script>
+</head>
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-2 hidden-sm hidden-xs">
+          <nav id="TOC" class="nav nav-stacked fixed sidebar">
+              <h3>Table of Contents</h3>
+<ul>
+<li><a href="#HLT005">1.0 Automated Tests</a><ul>
+<li><a href="#HLT001">1.1 HLT001</a></li>
+<li><a href="#HLT002">1.2 HLT002</a></li>
+<li><a href="#HLT003">1.3 HLT003</a></li>
+<li><a href="#HLT004">1.4 HLT004</a></li>
+</ul>
+</li>
+</ul>
+          </nav>
+      </div>
+      <div class="col-lg-8" id="main">
+        <h1 id="HLT005">1.0 Automated Tests</h1>
+<h2 id="HLT001">1.1 HLT001</h2>
+<p>Tutorial Section 1.0:</p>
+<blockquote>
+<p><code>doorstop/cli/tests/tutorial.py</code> (line 54)</p>
+</blockquote>
+<p><em>Parent links:</em> <a href="TUT.html#TUT001">TUT001</a>, <a href="TUT.html#TUT002">TUT002</a>, <a href="TUT.html#TUT004">TUT004</a>, <a href="TUT.html#TUT008">TUT008</a>, <a href="TUT.html#TUT017">TUT017</a>, <a href="TUT.html#TUT019">TUT019</a></p>
+<h2 id="HLT002">1.2 HLT002</h2>
+<p>Tutorial Section 2.0:</p>
+<blockquote>
+<p><code>doorstop/cli/tests/tutorial.py</code> (line 93)</p>
+</blockquote>
+<p><em>Parent links:</em> <a href="TUT.html#TUT009">TUT009</a>, <a href="TUT.html#TUT010">TUT010</a></p>
+<h2 id="HLT003">1.3 HLT003</h2>
+<p>Tutorial Section 3.0:</p>
+<blockquote>
+<p><code>doorstop/cli/tests/tutorial.py</code> (line 116)</p>
+</blockquote>
+<p><em>Parent links:</em> <a href="TUT.html#TUT012">TUT012</a>, <a href="TUT.html#TUT013">TUT013</a>, <a href="TUT.html#TUT016">TUT016</a></p>
+<h2 id="HLT004">1.4 HLT004</h2>
+<p>Tutorial Section 4.0:</p>
+<blockquote>
+<p><code>doorstop/cli/tests/tutorial.py</code> (line 139)</p>
+</blockquote>
+<p><em>Parent links:</em> <a href="TUT.html#TUT015">TUT015</a></p>
+      </div>
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="assets/doorstop/jquery.min.js"></script>
+<script src="assets/doorstop/bootstrap.min.js"></script>
+<script>
+    $(function() {
+        $("table").addClass("table");
+        $("nav ul").addClass("nav nav-stacked");
+        $("nav").affix();
+        $('body').scrollspy({
+          target: '.sidebar'
+        });
+        $("#main a").attr("target", "parent");
+
+  $(window).on('hashchange', function() {
+    $(window).scrollTop($(location.hash.toLowerCase()).offset().top);});
+  });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,67 @@
+1.0     Automated Tests
+
+1.1     LLT001
+
+        Test adding items:
+
+        Reference: doorstop/core/tests/test_tree.py (line 299)
+
+        Parent links: REQ003
+
+1.2     LLT002
+
+        Test publishing Markdown:
+
+        Reference: doorstop/core/tests/test_all.py (line 590)
+
+        Parent links: REQ004
+
+1.3     LLT003
+
+        Test publishing text:
+
+        Reference: doorstop/core/tests/test_all.py (line 565)
+
+        Parent links: REQ007
+
+1.4     LLT004
+
+        Test getting items from a document:
+
+        Reference: doorstop/core/tests/test_document.py (line 283)
+
+        Parent links: REQ008
+
+1.5     LLT005
+
+        Test referencing an external file by name:
+
+        Reference: doorstop/core/tests/test_item.py (line 583)
+
+        Parent links: REQ001
+
+2.0     Inspection Tests
+
+2.1     LLT007
+
+        These checks ensure the version control system (VCS) meets the needs of
+        requirements management:
+
+        - Verify the VCS includes a 'tag' feature.
+        - Verify the VCS stores files in a permanent and secure manner.
+        - Verify the VCS handles change management of files.
+        - Verify the VCS associates changes to existing developer acccounts.
+        - Verify the VCS can manage changes to thousands of files.
+
+        Parent links: REQ009, REQ011, REQ012, REQ013, REQ014, REQ015
+
+2.2     LLT008
+
+        These checks ensure the Python package is distributed properly:
+
+        - Verify the installation can be performed on a new computer in fewer
+        than 10
+        seconds.
+
+        Parent links: REQ015
+
