@@ -3,3 +3,6 @@ settings:
   parent: REQ
   prefix: TUT
   sep: ''
+attributes:
+  publish:
+    - CUSTOM-ATTRIB

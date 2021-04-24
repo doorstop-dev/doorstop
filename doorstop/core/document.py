@@ -60,6 +60,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self.auto = kwargs.get('auto', Document.auto)
         # Set default values
         self._attribute_defaults = None
+        self._attribute_publish = None
         self._data['prefix'] = Document.DEFAULT_PREFIX
         self._data['sep'] = Document.DEFAULT_SEP
         self._data['digits'] = Document.DEFAULT_DIGITS  # type: ignore
@@ -200,6 +201,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 self._attribute_defaults = value
             elif key == 'reviewed':
                 self._extended_reviewed = sorted(set(v for v in value))
+            elif key == 'publish':
+                self._attribute_publish = value
             else:
                 msg = "unexpected attributes configuration '{}' in: {}".format(
                     key, self.config
@@ -311,6 +314,12 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def prefix(self):
         """Get the document's prefix."""
         return self._data['prefix']
+
+    @property  # type: ignore
+    @auto_load
+    def publish(self):
+        """Get the document's prefix."""
+        return self._attribute_publish
 
     @prefix.setter  # type: ignore
     @auto_save
