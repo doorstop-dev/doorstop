@@ -55,7 +55,7 @@ def export(obj, path, ext=None, **kwargs):
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or '.csv'
     check(ext)
-    if kwargs["whole_tree"]:
+    if "whole_tree" in kwargs.keys() and kwargs["whole_tree"]:
         # Export the whole tree to one document
         kwargs["total_documents"] = len(obj.documents)
         log.info("exporting whole tree to {}...".format(path))
@@ -398,6 +398,7 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
     #workbook.save(path)
     #from xml.sax.saxutils import XMLGenerator
     global codebook
+    project_name = str(obj.tree.document.prefix)
     if kwargs["count"]==1:
         result = path  # path to output file on the first iteration, the whole object aftewards
         #first doc in, create onefilOutput object #"guid" in item.extended #item.relpath
@@ -405,12 +406,17 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
             path+=".qdc"
         #fh = open(path,mode="w")
         codebook = portableqda.codebookCls(output=path)
-        description="project {}\n\nDocuments: \n{}".format(obj,obj.tree.draw())
+        description="project {}\n\nDocuments: \n{}".format(project_name,obj.tree.draw())
     else:
         description = "document {}{}{}\n\n other documents: \n {}".format(obj.tree.document.prefix,CATEGORY_SEP,obj,obj.tree.draw())#)obj.tree)
         result = codebook
     # create the codebook SetCls representing the current doc
-    GroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts)  # @/A/B/C -> A::B::C, platform-indept
+    if True:
+        GroupName = project_name + CATEGORY_SEP
+    else:
+        GroupName = ""
+    GroupName += CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts)# @/A/B/C -> A::B::C, platform-indept
+
     error,errorDesc,setQda=codebook.createElement(elementCls=portableqda.setCls, #codebook elements are codeCls or setClas
                                                 name=GroupName,
                                                 description=description.replace("<-",CATEGORY_SEP))
@@ -432,10 +438,10 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
             item_header=" - "+item.header
         else:
             item_header = ""
-        codeName = "{}{}{}{}".format(str(obj.tree.document.prefix),CATEGORY_SEP, item.uid, item_header)
-        itemGroupList=[]
-        itemGroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts) #@/A/B/C -> A::B::C, platform-indept
-        itemGroupList.append(itemGroupName)
+        codeName = "{}{}{}{}".format(project_name,CATEGORY_SEP, item.uid, item_header)
+        itemGroupList=[GroupName,]
+        #itemGroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts) #@/A/B/C -> A::B::C, platform-indept
+        #itemGroupList.append(itemGroupName)
         for itemGroupName in itemGroupList:
             log.debug("adding item {}, to group {}".format(codeName, itemGroupName))
         # error,errorDesc,itemGroup = result.codeSetOp(name=itemGroupName,do=portableqda.op.RETRIEVE,
