@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 9830A01E-11DD-5AC8-AB4A-A749955A9F04
 header: |
   Interactive viewing
 level: 3.2

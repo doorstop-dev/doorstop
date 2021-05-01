@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: BB70C2D5-7EDD-56C1-971D-781089FC78A5
 header: |
   Viewing documents
 level: 3.1

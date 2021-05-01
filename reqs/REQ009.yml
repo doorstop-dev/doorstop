@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: EA5AD03D-0C94-562E-B8B8-47B1E7876CFB
 header: |
   Baseline versions
 level: 3.3

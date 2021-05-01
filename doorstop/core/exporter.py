@@ -133,15 +133,20 @@ def export_file(obj, path, ext=None, **kwargs):
     func = check(ext, get_file_func=True, **kwargs)
     log.debug("converting %s to file format %s...", obj, ext)
     try:
-        #TODO: check line in mainstream
-        if 'whole_tree' in kwargs.keys() and not kwargs["whole_tree"]:
-            del kwargs["whole_tree"]
+        #support for whole-project exporters (QDC, and some day QDPX and ReqIF)
+        if 'whole_tree' in kwargs.keys():
+            if not kwargs["whole_tree"]:
+                del kwargs["whole_tree"]
+                if 'total_documents' in kwargs.keys():
+                    del kwargs["total_documents"]
+                if 'count' in kwargs.keys():
+                    del kwargs["count"]
+        else:
             if 'total_documents' in kwargs.keys():
                 del kwargs["total_documents"]
             if 'count' in kwargs.keys():
                 del kwargs["count"]
-        elif 'whole_tree' in kwargs.keys() and kwargs["whole_tree"]:
-            pass
+
         return func(obj, path, **kwargs)
 
     except IOError:

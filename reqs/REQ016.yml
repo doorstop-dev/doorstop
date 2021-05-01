@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 88F86D99-8483-5FB6-A0D8-5C6D831D6DE2
 header: |
   Importing content
 level: 2.4

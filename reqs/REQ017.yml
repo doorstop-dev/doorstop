@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 4BA6A10F-6960-5F59-99B0-5A90358C4A3E
 header: |
   Exporting content
 level: 2.5

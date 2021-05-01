@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 0956D759-F9A3-54C3-9023-335A9C74D32B
 header: |
   Formatting
 level: 2.2

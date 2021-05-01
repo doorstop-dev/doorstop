@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: ED488A2C-FD2A-5776-B560-FCCF7DD95378
 header: |
   Identifiers
 level: 2.1

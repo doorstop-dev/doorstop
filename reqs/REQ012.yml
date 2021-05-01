@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 1474982E-9F0D-5788-9F32-D40B58FE5244
 header: |
   Change management
 level: 4.2

@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 0254DAC1-9E65-5B2B-B199-C860CB7C8BA5
 header: |
   Storing requirements
 level: 4.1

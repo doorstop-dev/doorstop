@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 2243D936-3D9B-5DFE-8590-4E46C5857257
 header: |
   Scalability
 level: 4.4

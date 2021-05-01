@@ -1,5 +1,7 @@
 active: true
+color: '#000000'
 derived: false
+guid: 207EDD74-C71C-53CC-88BE-9530A0E11E5E
 header: |
   Installation
 level: 4.5
