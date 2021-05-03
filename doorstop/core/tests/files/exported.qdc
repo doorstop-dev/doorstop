@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<CodeBook xmlns="urn:QDA-XML:codebook:1.0" xmlns:qda="urn:QDA-XML:codebook:1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:QDA-XML:codebook:1.0 http://schema.qdasoftware.org/versions/Codebook/v1.0/Codebook.xsd">
+  <Codes>
+    <Code name="SYS::SYS001" guid="9DAEBD5F-DFAC-50FF-969D-A0F49DC23C00" color="#000000" isCodable="true">
+      <Description>Hello, world!</Description>
+    </Code>
+    <Code name="SYS::SYS002" guid="1C30E81B-8A89-58BC-A7F6-FDC9AAA53EB4" color="#000000" isCodable="true">
+      <Description>Hello, world!</Description>
+    </Code>
+    <Code name="SYS::REQ001" guid="E7D53269-37C1-58C6-95EA-EC7CEE0449E2" color="#000000" isCodable="true">
+      <Description>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+deserunt mollit anim id est laborum.</Description>
+    </Code>
+    <Code name="SYS::REQ003" guid="8E349206-6E55-5FDF-9588-73B12AF8329D" color="#000000" isCodable="true">
+      <Description>Unicode: -40° ±1%</Description>
+    </Code>
+    <Code name="SYS::REQ006" guid="4CFE85A3-8A13-507C-9CC2-60F14ACE6051" color="#000000" isCodable="true">
+      <Description>Hello, world!</Description>
+    </Code>
+    <Code name="SYS::REQ004" guid="76E4D495-50D3-52D3-94C4-7AF1EF758718" color="#000000" isCodable="true">
+      <Description>Hello, world!</Description>
+    </Code>
+    <Code name="SYS::REQ002 - Plantuml" guid="105BE2FF-5752-5155-A7CF-B616E7FF4835" color="#000000" isCodable="true">
+      <Description>Hello, world!
+
+```plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
+@startuml
+Author --&gt; (Create Document)
+Author --&gt; (Create Item)
+Author --&gt; (Link Item to Document)
+Author --&gt; (Link Item to other Item)
+Author --&gt; (Edit Item)
+Author --&gt; (Review Item)
+Author -&gt; (Delete Item)
+Author -&gt; (Delete Document)
+(Export) &lt;- (Author)
+(Import) &lt;- (Author)
+Reviewer --&gt; (Review Item)
+System --&gt; (Suspect Changes)
+System --&gt; (Integrity)
+@enduml
+```</Description>
+    </Code>
+    <Code name="SYS::REQ2-001" guid="96FD45DC-C403-501C-BFC6-A6C6B68243B0" color="#000000" isCodable="true">
+      <Description>Hello, world!
+
+Test Math Expressions in Latex Style:
+
+Inline Style 1: $a \ne 0$
+Inline Style 2: \(ax^2 + bx + c = 0\)
+Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$</Description>
+    </Code>
+  </Codes>
+  <Sets>
+    <Set name="SYS::files::parent" guid="E066A6B0-7ADF-5141-899A-8FFE74BC124F" description="project SYS&#10;&#10;Documents: &#10;SYS&#10;│   &#10;└── REQ">
+      <Description>project SYS
+
+Documents: 
+SYS
+│   
+└── REQ</Description>
+      <MemberCode guid="9DAEBD5F-DFAC-50FF-969D-A0F49DC23C00"/>
+      <MemberCode guid="1C30E81B-8A89-58BC-A7F6-FDC9AAA53EB4"/>
+    </Set>
+    <Set name="SYS::files" guid="9EFF7C41-2DDE-5A1B-BBF7-A6F8AF402E51" description="document SYS::REQ&#10;&#10; other documents: &#10; SYS&#10;│   &#10;└── REQ">
+      <Description>document SYS::REQ
+
+ other documents: 
+ SYS
+│   
+└── REQ</Description>
+      <MemberCode guid="E7D53269-37C1-58C6-95EA-EC7CEE0449E2"/>
+      <MemberCode guid="8E349206-6E55-5FDF-9588-73B12AF8329D"/>
+      <MemberCode guid="4CFE85A3-8A13-507C-9CC2-60F14ACE6051"/>
+      <MemberCode guid="76E4D495-50D3-52D3-94C4-7AF1EF758718"/>
+      <MemberCode guid="105BE2FF-5752-5155-A7CF-B616E7FF4835"/>
+      <MemberCode guid="96FD45DC-C403-501C-BFC6-A6C6B68243B0"/>
+    </Set>
+  </Sets>
+</CodeBook>

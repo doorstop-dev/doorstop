@@ -56,7 +56,7 @@ def export(obj, path, ext=None, **kwargs):
     ext = ext or os.path.splitext(path)[-1] or '.csv'
     check(ext)
     if "whole_tree" in kwargs.keys() and kwargs["whole_tree"]:
-        # Export the whole tree to one document
+        # Export the whole tree to one file
         kwargs["total_documents"] = len(obj.documents)
         log.info("exporting whole tree to {}...".format(path))
         count = 0
@@ -360,35 +360,6 @@ def _get_xlsx(obj, auto):
 
     return workbook
 
-def _file_qdc(obj, path, auto=False, **kwargs):
-    """Create a QDC codebook (REFI-QDA as per http://qdasoftware.org/) file at the given path.
-
-    :param obj: Item, list of Items, or Document to export
-    :param path: location to export QDPX file
-    :param auto: include placeholders for new items on import
-
-    :return: path of created file
-
-    """
-    #workbook = _get_qdpx(obj, auto)
-    #workbook.save(path)
-    #from xml.sax.saxutils import XMLGenerator
-    with open(path,mode="w") as fh:
-        qdcOutput = portableqda.codebook(output=fh)
-        for item in obj.items:
-            guid="id{}".format(item.uid) #TODO: retreive guid if exists
-            error,errorDesc,code=qdcOutput.codeOp(name="{}:{}".format(obj.DEFAULT_PREFIX,item.uid),
-                                    guid=guid,
-                                    op="create")
-            code.description=item.text
-
-        # http://schema.qdasoftware.org/versions/Codebook/v1.0/Codebook.xsd
-        # output = XMLGenerator(fh, encoding='utf-8',
-        #                       short_empty_elements=True)
-        qdcOutput.writeQdc()
-
-    return path
-
 def _onefile_qdc(obj, path, auto=False, **kwargs):
     """Create one QDC codebook for the whole tree (REFI-QDA as per http://qdasoftware.org/) file at the given path.
 
@@ -472,64 +443,6 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
 
     return result
 
-def _get_qdc(obj, auto):
-    """Create an QDC codebook file (REFI-QDA as per http://qdasoftware.org/)
-
-    :param obj: Item, list of Items, or Document to export
-    :param auto: include placeholders for new items on import
-
-    :return: new workbook
-
-    """
-    col_widths: Dict[Any, float] = defaultdict(float)
-    col = 'A'
-
-    # Create a new workbook
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.active
-
-    # Populate cells
-    for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
-        for col_idx, value in enumerate(data, start=1):
-            cell = worksheet.cell(column=col_idx, row=row)
-
-            # wrap text in every cell
-            alignment = openpyxl.styles.Alignment(
-                vertical='top', horizontal='left', wrap_text=True
-            )
-            cell.alignment = alignment
-            # and bold header rows
-            if row == 1:
-                cell.font = openpyxl.styles.Font(bold=True)
-
-            # convert incompatible Excel types:
-            # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
-            if isinstance(value, (int, float, datetime.datetime)):
-                cell.value = value
-            else:
-                cell.value = str(value)
-
-            # track cell width
-            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
-
-    # Add filter up to the last column
-    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
-    worksheet.auto_filter.ref = "A1:%s1" % col_letter
-
-    # Set column width based on column contents
-    for col in col_widths:
-        if col_widths[col] > XLSX_MAX_WIDTH:
-            width = XLSX_MAX_WIDTH
-        else:
-            width = col_widths[col] + XLSX_FILTER_PADDING
-        col_letter = openpyxl.utils.get_column_letter(col)
-        worksheet.column_dimensions[col_letter].width = width
-
-    # Freeze top row
-    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
-
-    return workbook
-
 def _file_qdpx(obj, path, auto=False):
     """Create a QDPX project file (REFI-QDA as per http://qdasoftware.org/) file at the given path.
 
@@ -542,6 +455,7 @@ def _file_qdpx(obj, path, auto=False):
     """
     #workbook = _get_qdpx(obj, auto)
     #workbook.save(path)
+    raise NotImplementedError("ERR: no QPDX support yet. Instead, QDC import/export is readily available.")
     from xml.sax.saxutils import XMLGenerator
     import sys
     class Tag: pass
@@ -567,64 +481,6 @@ def _file_qdpx(obj, path, auto=False):
 
     return path
 
-def _get_qdpx(obj, auto):
-    """Create an QDPX file (REFI-QDA as per http://qdasoftware.org/)
-
-    :param obj: Item, list of Items, or Document to export
-    :param auto: include placeholders for new items on import
-
-    :return: new workbook
-
-    """
-    col_widths: Dict[Any, float] = defaultdict(float)
-    col = 'A'
-
-    # Create a new workbook
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.active
-
-    # Populate cells
-    for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
-        for col_idx, value in enumerate(data, start=1):
-            cell = worksheet.cell(column=col_idx, row=row)
-
-            # wrap text in every cell
-            alignment = openpyxl.styles.Alignment(
-                vertical='top', horizontal='left', wrap_text=True
-            )
-            cell.alignment = alignment
-            # and bold header rows
-            if row == 1:
-                cell.font = openpyxl.styles.Font(bold=True)
-
-            # convert incompatible Excel types:
-            # http://pythonhosted.org/openpyxl/api.html#openpyxl.cell.Cell.value
-            if isinstance(value, (int, float, datetime.datetime)):
-                cell.value = value
-            else:
-                cell.value = str(value)
-
-            # track cell width
-            col_widths[col_idx] = max(col_widths[col_idx], _width(str(value)))
-
-    # Add filter up to the last column
-    col_letter = openpyxl.utils.get_column_letter(len(col_widths))
-    worksheet.auto_filter.ref = "A1:%s1" % col_letter
-
-    # Set column width based on column contents
-    for col in col_widths:
-        if col_widths[col] > XLSX_MAX_WIDTH:
-            width = XLSX_MAX_WIDTH
-        else:
-            width = col_widths[col] + XLSX_FILTER_PADDING
-        col_letter = openpyxl.utils.get_column_letter(col)
-        worksheet.column_dimensions[col_letter].width = width
-
-    # Freeze top row
-    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
-
-    return workbook
-
 def _width(text):
     """Get the maximum length in a multiline string."""
     if text:
@@ -635,10 +491,10 @@ def _width(text):
 
 # Mapping from file extension to lines generator
 FORMAT_LINES = {'.yml': _lines_yaml}
-# Mapping from file extension to file generator
-FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx,  '.qdc': _file_qdc ,  '.qdpx': _file_qdpx }
 # Mapping from file extension to one file generator
-FORMAT_ONEFILE = {'.qdc': _onefile_qdc ,  '.qdpx': _onefile_qdc} #TODO: px }
+FORMAT_ONEFILE = {'.qdc': _onefile_qdc ,  '.qdpx': _onefile_qdc} #TODO: QDPX not yet supported, NotImprementedError will pop up
+# Mapping from file extension to file generator
+FORMAT_FILE = {'.csv': _file_csv, '.tsv': _file_tsv, '.xlsx': _file_xlsx,  **FORMAT_ONEFILE }
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))  # type: ignore
 

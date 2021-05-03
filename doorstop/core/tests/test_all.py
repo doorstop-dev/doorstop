@@ -22,6 +22,7 @@ from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
 from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
 from doorstop.core.vcs import mockvcs
+from doorstop.core.types import iter_documents, iter_items
 
 # Whenever the export format is changed:
 #  1. set CHECK_EXPORTED_CONTENT to False
@@ -459,9 +460,17 @@ class TestExporter(unittest.TestCase):
     def setUp(self):
         self.document = core.Document(FILES, root=ROOT)
         self.temp = tempfile.mkdtemp()
+        #for whole-tree tests
+        self.testTree=TestTree()
+        self.testTree.setUp()
+        for doc in self.testTree.tree.documents:
+            if doc.tree is None:# why would a doc object have its tree attr set to None ?? calling _place() had had no effect
+                logging.debug("something wrong here that is not right, ask for some help")
+                doc.tree = self.testTree.tree
+
 
     def tearDown(self):
-        shutil.rmtree(self.temp)
+         shutil.rmtree(self.temp)
 
     def test_export_yml(self):
         """Verify a document can be exported as a YAML file."""
@@ -521,6 +530,32 @@ class TestExporter(unittest.TestCase):
             self.assertEqual(expected, actual)
         else:  # binary file always changes, only copy when not checking
             move_file(temp, path)
+
+
+    def test_export_qdc(self):
+        """Verify that projects can be exported as a QDC file (for cloning or QDA software consumption)."""
+        path = os.path.join(FILES, 'exported.qdc')
+        temp = os.path.join(self.temp, 'exported.qdc')
+        expected = read_xml(path)
+        # Act
+        path2 = core.exporter.export(self.testTree.tree, temp, whole_tree=True)#(self.document, temp))
+        # Assert
+        self.assertIs(temp, path2)
+        if CHECK_EXPORTED_CONTENT:
+            actual = read_xml(temp)
+            self.assertEqual(expected, actual)
+        move_file(temp, path)
+        # Cleanup
+        for doc, pathDoc in iter_documents(self.testTree.tree, path, "qdc"):
+            for item in iter_items(doc):
+                # QDC export adds color and GUID ext attribute to itmes. Othe test cases don't like thaat
+                del item._data["color"] #best way to do it? don't want to pierce abstraction but...
+                del item._data["guid"]
+                #item.review()
+                item.save()
+        print("done")
+
+
 
 
 class TestPublisher(unittest.TestCase):
@@ -702,6 +737,37 @@ def read_csv(path, delimiter=','):
     except FileNotFoundError:
         logging.warning("file not found: {}".format(path))
     return rows
+
+def read_xml(path):
+    """Return a list of lines from an XML file (file must be multline, UTF-8). guid attributes are masqueraded for later comparisons.
+    TODO: proper XML tree representation, or maybe this line-by-line parser might help catch problemas hidden by a proper parser?"""
+    from portableqda.refi_qda import guidRe
+    guidTable=dict()
+    def guidMask(guid):
+        #result=guid
+        nonlocal guidTable
+        if guid not in guidTable.keys():
+            guidTable[guid]="fake-guid-number-{}".format(len(guidTable))
+        return guidTable[guid]#result
+
+    lines = []
+    newline="\n"
+    try:
+        with open(path, mode='r', newline=newline , encoding='utf-8') as stream:
+            line = stream.readline()
+            while line != "":
+                lineGuid=line.lower().split('guid') # look for GUID and masq them
+                if len(lineGuid) > 1:
+                    #got a GUID to masq
+                    quoteChar=lineGuid[1][1]
+                    guidBefore=lineGuid[1].split(quoteChar)[1]
+                    line=lineGuid[0]+"guid"+lineGuid[1].replace(guidBefore,guidMask(guidBefore))
+                    logging.debug("read_xml: masqueraded guid: {} -> {}".format(guidBefore,guidTable[guidBefore]))
+                lines.append(line)
+                line = stream.readline()
+    except FileNotFoundError:
+        logging.warning("file not found: {}".format(path))
+    return lines
 
 
 def read_xlsx(path):
