@@ -302,7 +302,7 @@ class TestItemValidator(unittest.TestCase):
 
     @patch('doorstop.settings.CHECK_CHILD_LINKS_STRICT', True)
     def test_validate_strict_child_links(self):
-        """Verify an item is linked to from a child document"""
+        """Verify root items are linked to from all child documents"""
         # Make sure the formatting of mocked documents just outputs the
         # prefix of the document
         MockSimpleDocument.__format__ = lambda value, spec: value.prefix
