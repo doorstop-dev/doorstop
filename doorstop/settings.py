@@ -3,6 +3,7 @@
 """Settings for the Doorstop package."""
 
 import logging
+import os
 
 # Logging settings
 DEFAULT_LOGGING_FORMAT = "%(message)s"
@@ -24,7 +25,9 @@ PLACEHOLDER = "..."  # placeholder for new item UIDs on export/import
 PLACEHOLDER_COUNT = 1  # number of placeholders to include on export
 
 # Formatting settings
-MAX_LINE_LENGTH = 79  # line length to trigger multiline on extended attributes
+MAX_LINE_LENGTH = int(
+    os.environ.get("MAX_LINE_LENGTH", 79)
+)  # line length to trigger multiline on extended attributes
 
 # Validation settings
 REFORMAT = True  # reformat item files during validation
