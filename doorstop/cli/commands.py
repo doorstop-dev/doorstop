@@ -482,6 +482,14 @@ def run_import(args, cwd, error, catch=True, _tree=None):
                 prefix, uid, attrs=attrs, request_next_number=request_next_number
             )
     if not success:
+        if args.qdc or args.qdpx:
+            print("""QDC/QDPX import works on an existing Doostop Tree. Please change current directory or create one with the following steps:
+# git init
+# doorstop create ROOT_DOC some_directory
+# doorstop import -b file.qdc ROOT_DOC
+
+Further help in http://doorstop.readthedocs.io/ , "importing and exporting" section.
+""")
         return False
 
     if document:

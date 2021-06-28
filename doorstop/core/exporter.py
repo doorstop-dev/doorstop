@@ -7,15 +7,18 @@ import os
 import pathlib
 from collections import defaultdict
 from typing import Any, Dict
+import yaml
+import html
 
 import openpyxl
-import yaml
 
+import doorstop.core.item
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import iter_documents, iter_items
 from doorstop.core.tree import Tree
-import portableqda,html
+
+import portableqda #-b modifier (import/export)
 
 LIST_SEP = '\n'  # string separating list values when joined in a string
 
@@ -25,14 +28,6 @@ XLSX_FILTER_PADDING = 3.5  # column padding to account for filter button
 log = common.logger(__name__)
 
 portableqda.log=log
-
-try:
-    CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
-except Exception:
-    CATEGORY_SEP = "::"
-
-codebook = None #coodebook to work on when exporting to QDC... TODO: is a global really needed??
-
 
 
 def export(obj, path, ext=None, **kwargs):
@@ -360,11 +355,66 @@ def _get_xlsx(obj, auto):
 
     return workbook
 
+
+class qdatools:
+    """
+    abstract class, gathers assorted tools for REFI-QDA support.
+    Do not instantiate, use the class as a Singleton (or maybe a Noneton??) :)
+
+    """
+    rootDoc = None
+    document = None
+    CATEGORY_SEP = None
+    HEADER_SEP = " - " #keep synced with importer.qdatlools, please
+    codebook = None
+    #
+    # importer.qdatools is the master reference for settings an low-level operations (data represantation, separators, etc)
+    #
+    from doorstop.core.importer import attr_portableqda_to_doorstop, attr_portableqda_to_doorstop_unsupported
+    attr_portableqda_to_doorstop = attr_portableqda_to_doorstop() #ugly...
+    attr_portableqda_to_doorstop_unsupported = attr_portableqda_to_doorstop_unsupported() #so far 'level', 'active', 'normative', 'derived', 'reviewed', 'text', 'ref', 'links',
+
+    def __init__(self):
+        msg=self.__class__.__doc__.split('\n')[1]
+        raise NotImplementedError(f"qdatools is meant to be an {msg}")
+
+    @classmethod
+    def ds2qda_set_name_from_branch(cls,doc):
+        """
+        render a QDA Set name that represents a doorstop.Document
+
+        counterpart at `importer.qdatools` is `qda2ds_set_locate_in_path()`
+        return: str: set name
+        """
+        #result = qdatools.CATEGORY_SEP.join(pathlib.Path(doc.relpath[2:]).parts)# @/A/B/C -> A::B::C, platform-indept
+        result = str(doc.prefix)
+        while doc.parent is not None:
+            doc = doc.tree.find_document(doc.parent)
+            result = str(doc.prefix)+cls.CATEGORY_SEP+result
+        return result
+
+    @classmethod
+    def ds2qda_code_name(cls, item: doorstop.core.item.Item):
+        """
+        render a name from different item.data values
+
+        counterpart at `importer.qdatools` are:
+            + qda2ds_code_remove_preffix()
+            + qda2ds_code_get_header()
+
+        result:
+        """
+        result = f"{str(cls.rootDoc.tree.document.prefix)}{cls.CATEGORY_SEP}{item.uid}"
+        if len(item.header) >0:
+            result += f"{cls.HEADER_SEP}{item.header}" # project_name::
+        return result
+
+
 def _onefile_qdc(obj, path, auto=False, **kwargs):
-    """Create one QDC codebook for the whole tree (REFI-QDA as per http://qdasoftware.org/) file at the given path.
+    """Create one QDC codebook for the whole tree (REFI-QDA as per http://qdasoftware.org/)
 
     :param obj: Item, list of Items, or Document to export
-    :param path: location to export QDC file
+    :param path: location where the QDC file should be created
     :param auto: include placeholders for new items on import
 
     :return: path of created file
@@ -373,7 +423,12 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
     #workbook = _get_qdpx(obj, auto)
     #workbook.save(path)
     #from xml.sax.saxutils import XMLGenerator
-    global codebook
+    qdatools.rootDoc = obj
+    try:
+        qdatools.CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
+    except Exception:
+        qdatools.CATEGORY_SEP = "::"
+    r=portableqda.resultCls
     project_name = str(obj.tree.document.prefix)
     if kwargs["count"]==1:
         result = path  # path to output file on the first iteration, the whole object aftewards
@@ -381,21 +436,17 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
         if not str(path).lower().endswith(".qdc"):
             path+=".qdc"
         #fh = open(path,mode="w")
-        codebook = portableqda.codebookCls(output=path)
+        qdatools.codebook = portableqda.codebookCls(output=path)
         description="project {}\n\nDocuments: \n{}".format(project_name,obj.tree.draw())
     else:
-        description = "document {}{}{}\n\n other documents: \n {}".format(obj.tree.document.prefix,CATEGORY_SEP,obj,obj.tree.draw())#)obj.tree)
-        result = codebook
+        description = "document {}{}{}\n\n other documents: \n {}".format(obj.tree.document.prefix,qdatools.CATEGORY_SEP,obj,obj.tree.draw())#)obj.tree)
+        result = qdatools.codebook
     # create the codebook SetCls representing the current doc
-    if True:
-        GroupName = project_name + CATEGORY_SEP
-    else:
-        GroupName = ""
-    GroupName += CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts)# @/A/B/C -> A::B::C, platform-indept
+    GroupName = qdatools.ds2qda_set_name_from_branch(obj)
 
-    error,errorDesc,setQda=codebook.createElement(elementCls=portableqda.setCls, #codebook elements are codeCls or setClas
+    error,errorDesc,setQda=qdatools.codebook.createElement(elementCls=portableqda.setCls, #codebook elements are codeCls or setClas
                                                 name=GroupName,
-                                                description=description.replace("<-",CATEGORY_SEP))
+                                                description=description.replace("<-",qdatools.CATEGORY_SEP))
                                                 #description=html.escape(description))
     if error:
         log.warning("codebook.createElement({}): return error: {}".format(GroupName,errorDesc))
@@ -414,7 +465,8 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
             item_header=" - "+item.header
         else:
             item_header = ""
-        codeName = "{}{}{}{}".format(project_name,CATEGORY_SEP, item.uid, item_header)
+        #codeName = "{}{}{}{}".format(project_name,qdatools.CATEGORY_SEP, item.uid, item_header)
+        codeName = qdatools.ds2qda_code_name(item)
         itemGroupList=[GroupName,]
         #itemGroupName = CATEGORY_SEP.join(pathlib.Path(obj.relpath[2:]).parts) #@/A/B/C -> A::B::C, platform-indept
         #itemGroupList.append(itemGroupName)
@@ -423,23 +475,25 @@ def _onefile_qdc(obj, path, auto=False, **kwargs):
         # error,errorDesc,itemGroup = result.codeSetOp(name=itemGroupName,do=portableqda.op.RETRIEVE,
         #                                              codeSetElm=portableqda.elm.SET)
 
-        error,errorDesc,code=codebook.createElement(elementCls=portableqda.codeCls, name=codeName, guid=guid,
-                                                    description=item.text, sets=itemGroupList)
-        if error:
-            log.warning("codebook.createElement({}): return error: {}".format(codeName,errorDesc))
+        newCode=r(*qdatools.codebook.createElement(elementCls=portableqda.codeCls, name=codeName,
+                                                    #skip guid=guid read createElement help
+                                                    color=color, description=str(item.text), sets=itemGroupList))
+        if newCode.error:
+            log.warning("codebook.createElement(name={},sets={}): return error: '{}'".format(codeName,itemGroupName,
+                                                                                             newCode.errorDesc))
+        else:
+            if guid != newCode.result.guid:
+                log.warning("item {}: GUID changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
+                      format(item.uid, guid, newCode.result.guid))
+                item.set_attributes({"guid":newCode.result.guid})
 
-        if guid != code.attrib["guid"]:
-            log.warning("item {}: GUID changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
-                  format(item.uid, guid, code.attrib["guid"]))
-            item.set_attributes({"guid":code.attrib["guid"]})
-
-        if color != code.attrib["color"]:
-            log.warning("item {}: color changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
-                  format(item.uid, color, code.attrib["color"]))
-            item.set_attributes({"color":code.attrib["color"]})
+            if color != newCode.result.color:
+                log.debug("item {}: color changed from '{}' to '{}', saving item. check that Reviewed attribute is updated".
+                      format(item.uid, color, newCode.result.color))
+                item.set_attributes({"color":newCode.result.color})
 
     if kwargs["count"]==kwargs["total_documents"]:
-        codebook.writeQdcFile()
+        qdatools.codebook.writeQdcFile()
 
     return result
 

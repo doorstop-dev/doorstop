@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Functions to import exiting documents and items."""
-
+import collections
 import csv
 import os
 import re
 import warnings
 from typing import Any
+import pathlib
 
 import openpyxl
 
+import doorstop.core.importer
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.builder import _get_tree
@@ -17,7 +19,7 @@ from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.types import UID
 
-import portableqda,pathlib
+import portableqda #-b modifier (import/export)
 
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
@@ -133,11 +135,116 @@ def _file_yml(path, document, **_):
             item.delete()
         add_item(document.prefix, uid, attrs=attrs, document=document)
 
-def _onefile_qpdx(path):
+
+class qdatools:
+    """
+    abstract class, gathers assorted tools for REFI-QDA support.
+    Do not instantiate, use the class as a Singleton (or maybe a Noneton??) :)
+
+    see attr_portableqda_to_doorstop for supported attributes
+    see attr_portableqda_to_doorstop_unsupported for unsupported attributes
+
+    """
+    rootDoc = None
+    document = None
+    CATEGORY_SEP = None
+    HEADER_SEP = " - "  # keep synced with exporter.qdatlools, please
+
+    attr_portableqda_to_doorstop = {"name": "header", "name": "prefix", "guid": "guid", "color": "color",
+                                    "description": "text"}  # attr mapping, QDA -> doorstop  (used by exporter.py too)
+
+
+    def __init__(self):
+        msg=self.__class__.__doc__.split('\n')[1]
+        raise NotImplementedError(f"qdatools is meant to be an {msg}")
+
+    @classmethod
+    def attr_portableqda_to_doorstop_unsupported(cls):
+        return {'level', 'active', 'normative', 'derived', 'reviewed', 'text', 'ref', 'references', 'links', 'color', 'guid'} \
+               - set(cls.attr_portableqda_to_doorstop.keys()) - set(cls.attr_portableqda_to_doorstop.values()) #Python's, not QDA's
+
+    @classmethod
+    def qda2ds_code_remove_preffix(cls, codeName: str):
+        """
+        codes in QDA are supossed to be named with the pattern 'PREFFIX::codeName - header', like:
+        + PRJ::CODE001
+        + ROOTDOC::ITEM001 - header to this item
+
+        counterparts in exporter.qdatools are:
+        + ds2qda_code_name()
+
+        codeName: str: portableqda.codeCls.codeName)
+        return:
+        """
+        result = codeName.split(cls.CATEGORY_SEP)
+        if len(result) == 1 or result[0] != str(cls.rootDoc.prefix):
+            log.warning(
+                f"non-compliant portableQDA.code.codeName '{codeName}' (should start with {str(cls.rootDoc.prefix)}{cls.CATEGORY_SEP}")
+        elif len(result) > 2:
+            log.warning(
+                f"non-compliant portableQDA.code.codeName '{codeName}' (should be something like  {str(cls.rootDoc.prefix)}{cls.CATEGORY_SEP}{cls.document.prefix}")
+        else:
+            result = result[1]
+        return result#cls.CATEGORY_SEP.join(result)
+
+    @classmethod
+    def qda2ds_code_get_header(cls, codeName: str):
+        """
+        codes in QDA are supossed to be named with the pattern 'PREFFIX::codeName - header', like:
+        + PRJ::CODE001
+        + ROOTDOC::ITEM001 - header to this item
+
+        counterparts in exporter.qdatools are:
+        + ds2qda_code_name()
+
+        codeName: str: portableqda.codeCls.codeName
+        return:
+        """
+        result = codeName.split(cls.HEADER_SEP)
+        if len(result) == 1:
+            result.append("")
+        elif len(result) > 2:
+            result[1]=" - ".join(result[1:])
+            log.warning(
+                f"non-compliant portableQDA.code.codeName '{codeName}' (should be something like  {str(cls.rootDoc.prefix)}{cls.CATEGORY_SEP}{cls.document.prefix}{cls.HEADER_SEP}some-header-that-doesn't-contain-header-separator")
+        return result
+
+    @classmethod
+    def qda2ds_set_locate_in_path(cls, setName: str):
+        """
+
+
+        exporter.qdatools counterpart is ds2qda_set_name_from_branch()
+        """
+        result = setName.split(cls.CATEGORY_SEP)
+        if len(result) > 1 and result[0] != str(cls.rootDoc.prefix):
+            log.warning(
+                f"non-compliant portableQDA.set.name '{setName}' (should start with {str(cls.rootDoc.prefix)}{cls.CATEGORY_SEP}")
+        result = result[-1]
+        return result
+
+def attr_portableqda_to_doorstop():
+    """
+     to be imported in exporter.py
+
+    """
+    return qdatools.attr_portableqda_to_doorstop #imported in exporter.py
+
+def attr_portableqda_to_doorstop_unsupported():
+    """
+     to be imported in exporter.py
+
+    """
+    return qdatools.attr_portableqda_to_doorstop_unsupported() #imported in exporter.py
+
+
+
+
+def _onefile_qpdx( *args, **kwargs): #path,
     raise NotImplementedError("importing QDPX project not yet supported")
 
 
-def _onefile_qdc(path, rootDoc, **_):
+def _onefile_qdc(path, rootDoc:doorstop.core.Tree, **_):
     """Import items from a QDC file to a tree, to create a new Tree follow these steps:
 
     ```bash
@@ -147,19 +254,23 @@ def _onefile_qdc(path, rootDoc, **_):
     doorstop create PRJ PRJ #
     doorstop  import -b codebook.qdc PRJ
     ```
+    Plus, you get the CLI commands to recreate the Tree on the QDC file (send log lines starting with
+    "bashScript:" to a script file)
 
 
     :param path: input file location
     :param document: document to import items
 
     """
-    import portableqda
     portableqda.log = log
-
+    memberCodes=dict()
+    qdatools.rootDoc=rootDoc
+    rootDoc_warning = False
     try:
-        CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
+        qdatools.CATEGORY_SEP = str(portableqda.CATEGORY_SEP)
     except Exception:
-        CATEGORY_SEP = "::"
+        qdatools.CATEGORY_SEP = "::"
+        log.warning(f"using default Category separator {qdatools.CATEGORY_SEP}")
     # Parse the file
     log.info("reading items in {}...".format(path))
     codebook = portableqda.codebookCls(output=path.replace(".qdc","-diff.qdc"))
@@ -167,65 +278,95 @@ def _onefile_qdc(path, rootDoc, **_):
     # read QDC file and find Codes and Sets tag
     #
     codebook.readQdcFile(input=path)
-    #codebook_xml=portableqda.etree.tostring(codebook.tree,pretty_print=True).decode(encoding="utf8")
-    sets=None
-    codes = None
-    root = codebook.tree.getroot()
-    if root is not None:
-        for elm in list(root):
-            #print(elm.attrib["name"])
-            tag=elm.tag.split("}")[-1] #crop namespace
-            if tag == portableqda.setCls.TAG+"s":
-                sets=elm
-            if tag == portableqda.codeCls.TAG + "s":
-                codes = elm
-
-    if sets is None or codes is None:
-        raise ValueError("malformed QDC file: {} is missing 'Codes' tag or 'Sets' tag as second level elements")
-
     #
-    # iterate sets, create one Document for each element (split the name using portableqda.CATEGRORY_SEP)
+    # iterate sets, create one Document for each element (convert the name into a path, using portableqda.CATEGRORY_SEP)
     #
-    for elm in list(sets):
+    memberCodes=collections.defaultdict(list)
+    document=None
+
+    for elm in codebook.sets.values():
         #print(elm.attrib)
-        name=elm.attrib["name"]
-        path=name.split(portableqda.CATEGORY_SEP)
+        name=elm.name
+        path=name.split(qdatools.CATEGORY_SEP)
         parent = None
+        # save memberCodes for later TODO: sohuld this be a feature of portableQDA?
+        for code_guid in elm.memberCodes:
+            memberCodes[code_guid].append(elm.name)
+        #create documents, possibly a whole branch of them
         for level,doc in enumerate(path):
             if level == 0:
                 if str(rootDoc.prefix) == doc:
-                        parent = rootDoc
-                        #print(parent)
+                    parent = rootDoc
+                    #print(parent)
                 else:
-                    raise DoorstopError(f"all sets in codebook must have names that are absolute paths to docs, starting with {rootDoc} (like {rootDoc}{CATEGORY_SEP}ancestor{CATEGORY_SEP}child, docs 'ancestor' and 'child' will be created )")
+                    #TODO: think of a more robust way to construct the Tree
+                    if not rootDoc_warning:
+                        log.warning(f"all sets in codebook should have names that are absolute paths to docs, starting with {rootDoc} (like '{rootDoc}{qdatools.CATEGORY_SEP}ancestor{qdatools.CATEGORY_SEP}child', docs 'ancestor' and 'child' will be created ). Lots of complaints about this might follow.")
+                        #raise DoorstopError(f"all sets in codebook must have names that are absolute paths to docs, starting with {rootDoc} (like {rootDoc}{qdatools.CATEGORY_SEP}ancestor{qdatools.CATEGORY_SEP}child, docs 'ancestor' and 'child' will be created )")
+                        rootDoc_warning = True
+                    parent = rootDoc
             else:
                 try:
                     parent = rootDoc.tree.find_document(doc)
                 except common.DoorstopError as e:
                     #raise ("root doc {} not found".format(rootDoc))
-                    # doc didn't existe, creating one
+                    # doc didn't exist, creating one
                     newDoc=rootDoc.tree.create_document(
                         str(pathlib.Path(parent.path)/doc) ,
                         doc,
                         parent=parent.prefix)#,
                         #digits=args.digits,
                         #sep=args.separator)
-                    newDoc.extended_reviewed.append("guid")
+                    newDoc.extended_reviewed.append("guid") # prepare extended attr "guid", needed for round-trip exchange
                     newDoc._attribute_defaults = {"guid": None}
                     newDoc.save()
                     log.info(f"bashScript: doorstop create {doc} --parent {parent.prefix} #add items with doorstop add -d defaults.yml {doc} for GUID attribute")
                     parent=newDoc
                 except Exception:
                     raise
+
     #
-    # iterate memberCodes in sets, create corresponding Items
+    # iterate codes and create Items
+    #       if it is memberCode of some sets, create corresponding Item in a Document
+    #       if a code is not  memberCode of any sets,  create corresponding Item in root Document
     #
-    # not yet implemented
 
+    for elm in codebook.codes.values():
+        documentList=list()
+        for miSet in memberCodes[elm.name]:
+            try:
+                miSet=qdatools.qda2ds_set_locate_in_path(miSet)
+                newDoc=rootDoc.tree.find_document(miSet)
+                documentList.append(newDoc)
+                #documentList.append(rootDoc.find_document(codebook.sets[miSet]))
+            except doorstop.DoorstopError:
+                log.warning(f"Document not found in Tree , for portableQDA.set {codebook.sets[miSet]}")
+        # Import the item
+        if len(documentList) == 0:
+            log.warning(f"qda.code '{elm}' member to no (valid) qda.set, adding to root document.")
+            documentList.append(rootDoc)
+        attrs={ qdatools.attr_portableqda_to_doorstop[k]:getattr(elm, k) for k in qdatools.attr_portableqda_to_doorstop.keys() }
+        #attrs_lost={ k:v for k in elm.etreeElement.attrib.keys() if k not in }
 
-
-    data=None
-
+        for document in documentList:
+            qdatools.document = document #context for coming operations using qdatools abstract classs
+            attrs["prefix"],attrs["header"]=qdatools.qda2ds_code_get_header(attrs["prefix"])
+            attrs["prefix"] = qdatools.qda2ds_code_remove_preffix(attrs["prefix"])
+            try:
+                uid = UID(document.prefix, document.sep, document.next_number, document.digits)
+                item = add_item(document.prefix, uid, attrs=attrs, document=document)
+            except DoorstopError as exc:
+                log.warning(exc)
+                pass
+    try:
+        rootDoc.save()
+        for i,issue in enumerate(rootDoc.issues):
+            log.warning(issue)
+        print(f"QDC file imported, {i} warnings, resulting documents tree: {rootDoc.tree}")
+    except DoorstopError as e:
+        log.warning(e)
+    except Exception:
+        raise
 
 
 def _file_csv(path, document, delimiter=',', mapping=None):
