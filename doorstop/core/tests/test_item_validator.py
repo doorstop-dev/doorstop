@@ -43,7 +43,7 @@ class TestItemValidator(unittest.TestCase):
         self.item_validator = MockItemValidator()
 
     def test_validate_invalid_ref(self):
-        """Verify an invalid reference fails validity."""
+        """Verify an invalid ref fails validity."""
         with patch(
             'doorstop.core.item.Item.find_ref',
             Mock(side_effect=DoorstopError("test invalid ref")),
@@ -51,6 +51,19 @@ class TestItemValidator(unittest.TestCase):
             with ListLogHandler(core.validators.item_validator.log) as handler:
                 self.assertFalse(self.item_validator.validate(self.item))
                 self.assertIn("test invalid ref", handler.records)
+
+    def test_validate_invalid_references(self):
+        """Verify an invalid reference fails validity."""
+        self.item.document = MockSimpleDocument()
+        self.item._data["references"] = [{"path": "invalid", "type": "file"}]
+        self.item_validator = MockItemValidator()
+        with patch(
+            'doorstop.core.item.Item.find_references',
+            Mock(side_effect=DoorstopError("test invalid reference")),
+        ):
+            with ListLogHandler(core.validators.item_validator.log) as handler:
+                self.assertFalse(self.item_validator.validate(self.item))
+                self.assertIn("test invalid reference", handler.records)
 
     def test_validate_inactive(self):
         """Verify an inactive item is not checked."""
