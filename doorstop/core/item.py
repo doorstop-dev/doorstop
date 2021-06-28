@@ -493,6 +493,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """Get the item's external file references."""
         return self._data['references']
 
+    def attribute(self, attrib):
+        """Get the item's custom attribute."""
+        return self._data.get(attrib)
+
     @references.setter  # type: ignore
     @auto_save
     def references(self, value):

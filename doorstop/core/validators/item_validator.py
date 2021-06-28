@@ -74,10 +74,11 @@ class ItemValidator:
         if not item.text:
             yield DoorstopWarning("no text")
 
-        # Check external references
+        # Check external refs and references
         if settings.CHECK_REF:
             try:
                 item.find_ref()
+                item.find_references()
             except DoorstopError as exc:
                 yield exc
 

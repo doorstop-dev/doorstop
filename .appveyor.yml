@@ -30,4 +30,3 @@ build: off
 test_script:
   - make check
   - make test
-  - make demo
