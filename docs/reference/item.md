@@ -330,8 +330,8 @@ text: |
 
 # Extended Attributes
 
-In addition to the standard attributes, Doorstop will allow any number of
-custom attributes (key-value pairs) in the YAML file. The extended attributes
+In addition to the standard attributes, Doorstop will allow any number of custom
+extended attributes (key-value pairs) in the YAML file. The extended attributes
 will not be part of a published document, but they can be queried by a 3rd party
 application through the REST interface or the Python API.
 
@@ -399,3 +399,21 @@ otherwise the fingerprint changes.  Removing a reviewed attribute from the
 document configuration changes the fingerprint of all items of the document
 with such an attribute.  The type of the values, empty strings, lists, and
 dictionaries affect the fingerprint.
+
+## Publishing extended attributes
+
+Introduced in v2.2, Doorstop can include extended attributes in published output.
+
+Edit the document configuration file `.doorstop.yml` by hand to include the desired attributes.
+
+For example, to include the `invented-by` extended attribute key and value in the published output:
+
+```yaml
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  publish:
+    - invented-by
+```
