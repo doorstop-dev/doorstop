@@ -26,7 +26,7 @@ text: |
   sections of text.
 ```
 
-# Standard Attributes
+# Standard Item Attributes
 
 ## `active`
 
@@ -328,7 +328,7 @@ text: |
   $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 ```
 
-# Extended Attributes
+# Extended Item Attributes
 
 In addition to the standard attributes, Doorstop will allow any number of custom
 extended attributes (key-value pairs) in the YAML file. The extended attributes
