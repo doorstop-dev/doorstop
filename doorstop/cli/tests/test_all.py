@@ -311,6 +311,7 @@ class TestReorder(unittest.TestCase):
             self.addCleanup(os.remove, path)
         self.assertIs(None, main(['reorder', self.prefix, "--auto"]))
 
+
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch('doorstop.settings.SERVER_HOST', None)
 @patch('doorstop.settings.ADDREMOVE_FILES', False)
