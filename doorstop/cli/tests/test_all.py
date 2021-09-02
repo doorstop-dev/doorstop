@@ -305,7 +305,7 @@ class TestReorder(unittest.TestCase):
         with open(path, "w") as f:
             f.write(
                 """active: true\nderived: false\nheader: ''\nlevel: 2.4\nlinks: []\n"""
-                """normative: true\nref: ''\nreviewed: null\ntext: |\nEquation """
+                """normative: true\nref: ''\nreviewed: null\ntext: |\n  Equation """
                 """$Eqn = \\frac{a}{b} * \\sigma$"""
             )
             self.addCleanup(os.remove, path)
