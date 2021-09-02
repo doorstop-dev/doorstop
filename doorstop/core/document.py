@@ -565,7 +565,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         for item in items:
             space = "    " * item.depth
             lines = item.text.strip().splitlines()
-            comment = lines[0] if lines else ""
+            comment = lines[0].replace("\\", "\\\\") if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[: settings.MAX_LINE_LENGTH - 3] + '...'

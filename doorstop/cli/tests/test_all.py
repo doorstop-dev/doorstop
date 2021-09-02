@@ -297,6 +297,20 @@ class TestReorder(unittest.TestCase):
         """Verify 'doorstop reorder' returns an error on an unknown prefix."""
         self.assertRaises(SystemExit, main, ['reorder', 'FAKE'])
 
+    def test_reorder_with_backslashes_in_text(self):
+        """Verify 'doorstop reorder' can handle text with backslashes."""
+        number = get_next_number()
+        filename = "TUT{}.yml".format(str(number).zfill(3))
+        path = os.path.join(TUTORIAL, filename)
+        with open(path, "w") as f:
+            f.write(
+                """active: true\nderived: false\nheader: ''\nlevel: 2.4\nlinks: []\n"""
+                """normative: true\nref: ''\nreviewed: null\ntext: |\n  Equation """
+                """$Eqn = \\frac{a}{b} * \\sigma$"""
+            )
+            self.addCleanup(os.remove, path)
+        self.assertIs(None, main(['reorder', self.prefix, "--auto"]))
+
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch('doorstop.settings.SERVER_HOST', None)
