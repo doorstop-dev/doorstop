@@ -2,6 +2,7 @@
 
 - Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
 - Added custom attributes to published documents. ([@chrta](https://github.com/doorstop-dev/doorstop/pull/476))
+- Fixed handling of special characters when reordering items. ([@asimon-1](https://github.com/doorstop-dev/doorstop/pull/521))
 
 # 2.1.4 (2021-01-15)
 
