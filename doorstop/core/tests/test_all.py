@@ -612,7 +612,7 @@ class TestPublisher(unittest.TestCase):
         common.write_text(text, path)
 
     @unittest.skipIf(
-        sys.version_info < (3, 8),
+        sys.version_info < (3, 9),
         reason="Output format differs with older versions of Python",
     )
     def test_lines_html_document_linkify(self):
@@ -628,7 +628,7 @@ class TestPublisher(unittest.TestCase):
         common.write_text(text, path)
 
     @unittest.skipIf(
-        sys.version_info < (3, 8),
+        sys.version_info < (3, 9),
         reason="Output format differs with older versions of Python",
     )
     @patch('doorstop.settings.PUBLISH_CHILD_LINKS', False)

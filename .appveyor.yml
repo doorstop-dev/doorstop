@@ -1,3 +1,5 @@
+image: Visual Studio 2019
+
 environment:
   global:
     RANDOM_SEED: 0
@@ -8,6 +10,8 @@ environment:
       PYTHON_MINOR: 7
     - PYTHON_MAJOR: 3
       PYTHON_MINOR: 8
+    - PYTHON_MAJOR: 3
+      PYTHON_MINOR: 9
 
 cache:
   - .venv -> poetry.lock
