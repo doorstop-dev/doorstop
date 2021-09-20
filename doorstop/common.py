@@ -8,6 +8,7 @@ import glob
 import logging
 import os
 import shutil
+import codecs
 
 import yaml
 
@@ -112,7 +113,7 @@ def read_text(path):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with open(path, 'r', encoding='utf-8') as f:
+        with codecs.open(path, 'r', encoding='utf-8') as f:
             return f.read()
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
