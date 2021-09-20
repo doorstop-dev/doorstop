@@ -3,12 +3,12 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
+import codecs
 import csv
 import glob
 import logging
 import os
 import shutil
-import codecs
 
 import yaml
 
