@@ -27,15 +27,15 @@ class BaseWorkingCopy(metaclass=ABCMeta):
     @staticmethod
     def relpath(path):
         """Get a relative path to the working copy root for commands."""
-        return os.path.relpath(path).replace('\\', '/')
+        return os.path.relpath(path).replace("\\", "/")
 
     @staticmethod
     def call(*args, return_stdout=False):  # pragma: no cover (abstract method)
         """Call a command with string arguments."""
-        log.debug("$ %s", ' '.join(args))
+        log.debug("$ %s", " ".join(args))
         try:
             if return_stdout:
-                return subprocess.check_output(args).decode('utf-8')
+                return subprocess.check_output(args).decode("utf-8")
             else:
                 return subprocess.call(args)
         except FileNotFoundError:
@@ -77,8 +77,8 @@ class BaseWorkingCopy(metaclass=ABCMeta):
                 if os.path.isfile(path):
                     for line in common.read_lines(path):
                         pattern = line.strip(" @\\/*\n")
-                        if pattern and not pattern.startswith('#'):
-                            self._ignores_cache.append('*' + pattern + '*')
+                        if pattern and not pattern.startswith("#"):
+                            self._ignores_cache.append("*" + pattern + "*")
         yield from self._ignores_cache
 
     @property
@@ -95,7 +95,7 @@ class BaseWorkingCopy(metaclass=ABCMeta):
                     if self.ignored(relpath):
                         continue
                     # Skip hidden paths
-                    if os.path.sep + '.' in os.path.sep + relpath:
+                    if os.path.sep + "." in os.path.sep + relpath:
                         continue
                     self._path_cache.append((path, filename, relpath))
         yield from self._path_cache

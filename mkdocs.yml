@@ -11,7 +11,10 @@ extra_javascript: []
 
 nav:
 - Home: index.md
-- Setup: setup.md
+- Getting Started:
+  - Installation: getting-started/installation.md
+  - Setup: getting-started/setup.md
+  - Quickstart: getting-started/quickstart.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
   - Reordering Documents: cli/reordering.md

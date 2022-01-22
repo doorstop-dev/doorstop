@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-3.0-only
 # type: ignore
+# pylint: disable=import-outside-toplevel
 
 """Graphical interface for Doorstop."""
 
@@ -33,16 +34,16 @@ def main(args=None):
 
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
-    debug.add_argument('-V', '--version', action='version', version=VERSION)
+    debug.add_argument("-V", "--version", action="version", version=VERSION)
     debug.add_argument(
-        '-v', '--verbose', action='count', default=0, help="enable verbose logging"
+        "-v", "--verbose", action="count", default=0, help="enable verbose logging"
     )
-    shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
+    shared = {"formatter_class": HelpFormatter, "parents": [debug]}
     parser = argparse.ArgumentParser(prog=GUI, description=__doc__, **shared)
 
     # Build main parser
     parser.add_argument(
-        '-j', '--project', metavar="PATH", help="path to the root of the project"
+        "-j", "--project", metavar="PATH", help="path to the root of the project"
     )
 
     # Parse arguments
@@ -115,8 +116,8 @@ def run(args, cwd, error):
 
             root.tk.call(
                 # pylint: disable=protected-access
-                'wm',
-                'iconphoto',
+                "wm",
+                "iconphoto",
                 root._w,
                 tk.PhotoImage(data=resources.b64_doorstopicon_png),
             )
@@ -125,13 +126,14 @@ def run(args, cwd, error):
             pass  # TODO
         elif _platform in ("win32", "win64"):
             # Windows
-            from doorstop.gui import resources
             import base64
             import tempfile
 
+            from doorstop.gui import resources
+
             try:
                 with tempfile.TemporaryFile(
-                    mode='w+b', suffix=".ico", delete=False
+                    mode="w+b", suffix=".ico", delete=False
                 ) as theTempIconFile:
                     theTempIconFile.write(
                         base64.b64decode(resources.b64_doorstopicon_ico)
@@ -159,8 +161,8 @@ def _log(func):
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         sargs = "{}, {}".format(
-            ', '.join(repr(a) for a in args),
-            ', '.join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
+            ", ".join(repr(a) for a in args),
+            ", ".join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
         )
         msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
         if not isinstance(self, ttk.Frame) or not self.ignore:
@@ -170,5 +172,5 @@ def _log(func):
     return wrapped
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

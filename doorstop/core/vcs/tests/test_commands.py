@@ -12,15 +12,15 @@ from doorstop.core.vcs import load
 class BaseTestCase:
     """Base TestCase for tests that need a working copy."""
 
-    DIRECTORY = ''
+    DIRECTORY = ""
 
     path = "path/to/mock/file.txt"
     dirpath = "path/to/mock/directory/"
     message = "A commit message"
 
     def setUp(self):
-        with patch('os.listdir', Mock(return_value=[self.DIRECTORY])):
-            self.wc = load('.')
+        with patch("os.listdir", Mock(return_value=[self.DIRECTORY])):
+            self.wc = load(".")
 
     def lock(self):
         """Lock a file in the working copy."""
@@ -48,11 +48,11 @@ class BaseTestCase:
         self.assertRaises(DoorstopError, self.add)
 
 
-@patch('subprocess.call')
+@patch("subprocess.call")
 class TestGit(BaseTestCase, unittest.TestCase):
     """Tests for the Git plugin."""
 
-    DIRECTORY = '.git'
+    DIRECTORY = ".git"
 
     def test_lock(self, mock_call):
         """Verify Git can (fake) lock files."""
@@ -88,11 +88,11 @@ class TestGit(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')
+@patch("subprocess.call")
 class TestSubversion(BaseTestCase, unittest.TestCase):
     """Tests for the Subversion plugin."""
 
-    DIRECTORY = '.svn'
+    DIRECTORY = ".svn"
 
     def test_lock(self, mock_call):
         """Verify Subversion can lock files."""
@@ -124,11 +124,11 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')
+@patch("subprocess.call")
 class TestVeracity(BaseTestCase, unittest.TestCase):
     """Tests for the Veracity plugin."""
 
-    DIRECTORY = '.sgdrawer'
+    DIRECTORY = ".sgdrawer"
 
     def test_lock(self, mock_call):
         """Verify Veracity can lock files."""
@@ -163,11 +163,11 @@ class TestVeracity(BaseTestCase, unittest.TestCase):
         mock_call.assert_has_calls(calls)
 
 
-@patch('subprocess.call')
+@patch("subprocess.call")
 class TestMercurial(BaseTestCase, unittest.TestCase):
     """Tests for the Mercurial plugin."""
 
-    DIRECTORY = '.hg'
+    DIRECTORY = ".hg"
 
     def test_lock(self, mock_call):
         """Verify Mercurial can (fake) lock files."""

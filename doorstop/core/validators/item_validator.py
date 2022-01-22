@@ -74,10 +74,11 @@ class ItemValidator:
         if not item.text:
             yield DoorstopWarning("no text")
 
-        # Check external references
+        # Check external refs and references
         if settings.CHECK_REF:
             try:
                 item.find_ref()
+                item.find_references()
             except DoorstopError as exc:
                 yield exc
 
@@ -211,10 +212,10 @@ class ItemValidator:
                     msg = "no links from child document: {}".format(child_document)
                     yield DoorstopWarning(msg)
             elif settings.CHECK_CHILD_LINKS_STRICT:
-                prefix = [item.prefix for item in items]
+                prefix = [item.document.prefix for item in items]
                 for child in document.children:
                     if child in skip:
                         continue
                     if child not in prefix:
-                        msg = 'no links from document: {}'.format(child)
+                        msg = "no links from document: {}".format(child)
                         yield DoorstopWarning(msg)

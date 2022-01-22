@@ -1,3 +1,9 @@
+# 2.2 (2022-01-22)
+
+- Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
+- Added custom attributes to published documents. ([@chrta](https://github.com/doorstop-dev/doorstop/pull/476))
+- Fixed handling of special characters when reordering items. ([@asimon-1](https://github.com/doorstop-dev/doorstop/pull/521))
+
 # 2.1.4 (2021-01-15)
 
 - Updated `markdown` to fix `AttributeError` in `doorstop-server`.
@@ -36,7 +42,7 @@
 
 # 1.5 (2018-09-19)
 
-- Added preliminary support for item headers ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285)
+- Added preliminary support for item headers. ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285))
 - Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/doorstop-dev/doorstop/pull/290))
     + Converted document outline to a tree view.
     + Made documents navigable via clicking links.

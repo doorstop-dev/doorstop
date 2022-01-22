@@ -53,16 +53,16 @@ def edit_tmp_content(title=None, original_content=None, tool=None):
 
     """
     # Create a temporary file to edit the text
-    tmp_fd, tmp_path = tempfile.mkstemp(prefix='{}_'.format(title), text=True)
+    tmp_fd, tmp_path = tempfile.mkstemp(prefix="{}_".format(title), text=True)
     os.close(tmp_fd)  # release the file descriptor because it is not needed
-    with open(tmp_path, 'w') as tmp_f:
+    with open(tmp_path, "w") as tmp_f:
         tmp_f.write(original_content)
 
     # Open the editor to edit the temporary file with the original text
     edit(tmp_path, tool=tool)
 
     # Read the edited text and remove the tmp file
-    with open(tmp_path, 'r') as tmp_f:
+    with open(tmp_path, "r") as tmp_f:
         edited_content = tmp_f.read()
     os.remove(tmp_path)
 
@@ -84,16 +84,16 @@ def launch(path, tool=None):
     # Determine how to launch the editor
     if tool:
         args = [tool, path]
-    elif sys.platform.startswith('darwin'):
-        args = ['open', path]
-    elif os.name == 'nt':
-        cygstart = find_executable('cygstart')
+    elif sys.platform.startswith("darwin"):
+        args = ["open", path]
+    elif os.name == "nt":
+        cygstart = find_executable("cygstart")
         if cygstart:
             args = [cygstart, path]
         else:
-            args = ['start', path]
-    elif os.name == 'posix':
-        args = ['xdg-open', path]
+            args = ["start", path]
+    elif os.name == "posix":
+        args = ["xdg-open", path]
 
     # Launch the editor
     try:
@@ -117,6 +117,6 @@ def launch(path, tool=None):
 
 def _call(args):
     """Call a program with arguments and return the process."""
-    log.debug("$ {}".format(' '.join(args)))
+    log.debug("$ {}".format(" ".join(args)))
     process = subprocess.Popen(args)
     return process

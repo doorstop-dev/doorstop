@@ -6,6 +6,7 @@ A document can be created inside a directory that is under version control:
 $ doorstop create REQ ./reqs
 created document: REQ (@/reqs)
 ```
+
 Note: Only one root parent requirements document is allowed per version controlled directory.
 
 Items can be added to the document and edited:
@@ -58,6 +59,7 @@ building tree...
 ```
 
 defaults.yml
+
 ```yaml
 text: 'My default text.'
 ```
@@ -167,6 +169,7 @@ to the directory of the file with the include tag.  Absolute paths are not
 supported.  Please have a look at this example:
 
 .doorstop.yml
+
 ```yaml
 settings:
   digits: 3
@@ -178,6 +181,7 @@ attributes:
 ```
 
 path/to/file.yml
+
 ```yaml
 |
   Some template text, which may

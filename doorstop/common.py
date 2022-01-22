@@ -3,6 +3,7 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
+import csv
 import glob
 import logging
 import os
@@ -53,7 +54,7 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
     """Command-line help text formatter with wider help text."""
 
     def __init__(self, *args, **kwargs):
-        kwargs['max_help_position'] = 40
+        kwargs["max_help_position"] = 40
         super().__init__(*args, **kwargs)
 
 
@@ -85,7 +86,7 @@ def create_dirname(path):
         os.makedirs(dirpath)
 
 
-def read_lines(path, encoding='utf-8'):
+def read_lines(path, encoding="utf-8"):
     """Read lines of text from a file.
 
     :param path: file to write lines
@@ -95,7 +96,7 @@ def read_lines(path, encoding='utf-8'):
 
     """
     log.trace("reading lines from '{}'...".format(path))  # type: ignore
-    with open(path, 'r', encoding=encoding) as stream:
+    with open(path, "r", encoding=encoding) as stream:
         for line in stream:
             yield line
 
@@ -111,7 +112,7 @@ def read_text(path):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with open(path, 'r') as f:
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
@@ -141,7 +142,7 @@ def load_yaml(text, path, loader=yaml.SafeLoader):
     return data
 
 
-def write_lines(lines, path, end='\n', encoding='utf-8'):
+def write_lines(lines, path, end="\n", encoding="utf-8"):
     """Write lines of text to a file.
 
     :param lines: iterator of strings
@@ -153,18 +154,19 @@ def write_lines(lines, path, end='\n', encoding='utf-8'):
 
     """
     log.trace("writing lines to '{}'...".format(path))  # type: ignore
-    with open(path, 'wb') as stream:
+    with open(path, "wb") as stream:
         for line in lines:
             data = (line + end).encode(encoding)
             stream.write(data)
     return path
 
 
-def write_text(text, path):
+def write_text(text, path, end="\n"):
     """Write text to a file.
 
     :param text: string
     :param path: file to write text
+    :param end: string to end lines
     :param encoding: output file encoding
 
     :return: path of new file
@@ -172,8 +174,28 @@ def write_text(text, path):
     """
     if text:
         log.trace("writing text to '{}'...".format(path))  # type: ignore
-    with open(path, 'w') as f:
+    with open(path, "w", encoding="utf-8", newline=end) as f:
         f.write(text)
+    return path
+
+
+def write_csv(table, path, delimiter=",", newline="", encoding="utf-8"):
+    """Write table to a file.
+
+    :param table: iterator of rows
+    :param path: file to write lines
+    :param delimiter: string to end cells
+    :param newline: string to end lines
+    :param encoding: output file encoding
+
+    :return: path of new file
+
+    """
+    log.trace("writing table to '{}'...".format(path))  # type: ignore
+    with open(path, "w", newline=newline, encoding=encoding) as stream:
+        writer = csv.writer(stream, delimiter=delimiter)
+        for row in table:
+            writer.writerow(row)
     return path
 
 
@@ -181,12 +203,12 @@ def touch(path):
     """Ensure a file exists."""
     if not os.path.exists(path):
         log.trace("creating empty '{}'...".format(path))  # type: ignore
-        write_text('', path)
+        write_text("", path)
 
 
 def copy_dir_contents(src, dst):
     """Copy the contents of a directory."""
-    for fpath in glob.glob('{}/*'.format(src)):
+    for fpath in glob.glob("{}/*".format(src)):
         dest_path = os.path.join(dst, os.path.split(fpath)[-1])
         if os.path.exists(dest_path):
             if os.path.basename(fpath) == "doorstop":
@@ -222,7 +244,7 @@ def delete(path):
 
 def delete_contents(dirname):
     """Delete the contents of a directory."""
-    for file in glob.glob('{}/*'.format(dirname)):
+    for file in glob.glob("{}/*".format(dirname)):
         if os.path.isdir(file):
             shutil.rmtree(os.path.join(dirname, file))
         else:

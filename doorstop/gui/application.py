@@ -17,8 +17,7 @@ from doorstop.gui import utilTkinter, widget
 
 try:
     import tkinter as tk
-    from tkinter import ttk
-    from tkinter import filedialog
+    from tkinter import filedialog, ttk
 except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -34,8 +33,8 @@ def _log(func):
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
         sargs = "{}, {}".format(
-            ', '.join(repr(a) for a in args),
-            ', '.join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
+            ", ".join(repr(a) for a in args),
+            ", ".join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
         )
         msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
         if not isinstance(self, ttk.Frame) or not self.ignore:
@@ -58,32 +57,36 @@ class Application(ttk.Frame):
         self.item = None
 
         # Create string variables
-        self.stringvar_project = tk.StringVar(value=project or '')
-        self.stringvar_project.trace('w', self.display_tree)
+        self.stringvar_project = tk.StringVar(value=project or "")
+        self.stringvar_project.trace("w", self.display_tree)
         self.stringvar_document = tk.StringVar()
-        self.stringvar_document.trace('w', self.display_document)
+        self.stringvar_document.trace("w", self.display_document)
 
         # The stringvar_item holds the uid of the main selected item (or empty string if nothing is selected).
         self.stringvar_item = tk.StringVar()
-        self.stringvar_item.trace('w', self.display_item)
+        self.stringvar_item.trace("w", self.display_item)
+
+        # The item header
+        self.stringvar_header = tk.StringVar()
+        self.stringvar_header.trace("w", self.update_item)
 
         self.stringvar_text = tk.StringVar()
-        self.stringvar_text.trace('w', self.update_item)
+        self.stringvar_text.trace("w", self.update_item)
         self.intvar_active = tk.IntVar()
-        self.intvar_active.trace('w', self.update_item)
+        self.intvar_active.trace("w", self.update_item)
         self.intvar_derived = tk.IntVar()
-        self.intvar_derived.trace('w', self.update_item)
+        self.intvar_derived.trace("w", self.update_item)
         self.intvar_normative = tk.IntVar()
-        self.intvar_normative.trace('w', self.update_item)
+        self.intvar_normative.trace("w", self.update_item)
         self.intvar_heading = tk.IntVar()
-        self.intvar_heading.trace('w', self.update_item)
+        self.intvar_heading.trace("w", self.update_item)
         self.stringvar_link = tk.StringVar()  # no trace event
         self.stringvar_ref = tk.StringVar()
-        self.stringvar_ref.trace('w', self.update_item)
+        self.stringvar_ref.trace("w", self.update_item)
         self.stringvar_extendedkey = tk.StringVar()
-        self.stringvar_extendedkey.trace('w', self.display_extended)
+        self.stringvar_extendedkey.trace("w", self.display_extended)
         self.stringvar_extendedvalue = tk.StringVar()
-        self.stringvar_extendedvalue.trace('w', self.update_item)
+        self.stringvar_extendedvalue.trace("w", self.update_item)
 
         # Create widget variables
         self.combobox_documents = None
@@ -113,9 +116,9 @@ class Application(ttk.Frame):
         height_ext = 5
 
         # Shared keyword arguments
-        kw_f = {'padding': 5}  # constructor arguments for frames
-        kw_gp = {'padx': 2, 'pady': 2}  # grid arguments for padded widgets
-        kw_gs = {'sticky': tk.NSEW}  # grid arguments for sticky widgets
+        kw_f = {"padding": 5}  # constructor arguments for frames
+        kw_gp = {"padx": 2, "pady": 2}  # grid arguments for padded widgets
+        kw_gs = {"sticky": tk.NSEW}  # grid arguments for sticky widgets
         kw_gsp = dict(
             chain(kw_gs.items(), kw_gp.items())
         )  # grid arguments for sticky padded widgets
@@ -259,9 +262,9 @@ class Application(ttk.Frame):
             # Configure grid
             frame = ttk.Frame(root, **kw_f)
             frame.rowconfigure(0, weight=0)
-            frame.rowconfigure(1, weight=4)
+            frame.rowconfigure(1, weight=0)
             frame.rowconfigure(2, weight=0)
-            frame.rowconfigure(3, weight=1)
+            frame.rowconfigure(3, weight=4)
             frame.rowconfigure(4, weight=1)
             frame.rowconfigure(5, weight=1)
             frame.rowconfigure(6, weight=1)
@@ -269,8 +272,10 @@ class Application(ttk.Frame):
             frame.rowconfigure(8, weight=0)
             frame.rowconfigure(9, weight=0)
             frame.rowconfigure(10, weight=0)
-            frame.rowconfigure(11, weight=4)
-            frame.columnconfigure(0, weight=1, pad=kw_f['padding'] * 2)
+            frame.rowconfigure(11, weight=0)
+            frame.rowconfigure(12, weight=0)
+            frame.rowconfigure(13, weight=4)
+            frame.columnconfigure(0, weight=1, pad=kw_f["padding"] * 2)
             frame.columnconfigure(1, weight=1)
 
             @_log
@@ -283,7 +288,7 @@ class Application(ttk.Frame):
                 """Handle updated text text."""
                 self.ignore = False
                 thewidget = event.widget
-                value = thewidget.get('1.0', tk.END)
+                value = thewidget.get("1.0", tk.END)
                 self.stringvar_text.set(value)
 
             @_log
@@ -291,48 +296,55 @@ class Application(ttk.Frame):
                 """Handle updated extended attributes."""
                 self.ignore = False
                 thewidget = event.widget
-                value = thewidget.get('1.0', tk.END)
+                value = thewidget.get("1.0", tk.END)
                 self.stringvar_extendedvalue.set(value)
+
+            # Item header
+            widget.Label(frame, text="Header:").grid(
+                row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
+            )
+            self.text_header = widget.Entry(frame, textvariable=self.stringvar_header)
+            self.text_header.grid(row=1, column=0, columnspan=3, **kw_gsp)
 
             # Selected Item
             widget.Label(frame, text="Selected Item:").grid(
-                row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
+                row=2, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.text_item = widget.Text(
                 frame, width=width_text, height=height_text, wrap=tk.WORD
             )
-            self.text_item.bind('<FocusIn>', text_focusin)
-            self.text_item.bind('<FocusOut>', text_item_focusout)
-            self.text_item.grid(row=1, column=0, columnspan=3, **kw_gsp)
+            self.text_item.bind("<FocusIn>", text_focusin)
+            self.text_item.bind("<FocusOut>", text_item_focusout)
+            self.text_item.grid(row=3, column=0, columnspan=3, **kw_gsp)
 
             # Column: Properties
             self.create_properties_widget(frame).grid(
-                row=2, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=4, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # Column: Links
             self.create_links_widget(frame).grid(
-                row=4, rowspan=3, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=6, rowspan=3, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             # External Reference
             self.create_reference_widget(frame).grid(
-                row=7, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
+                row=9, rowspan=2, column=0, columnspan=2, sticky=tk.NSEW, **kw_gp
             )
 
             widget.Label(frame, text="Extended Attributes:").grid(
-                row=9, column=0, columnspan=3, sticky=tk.W, **kw_gp
+                row=11, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.combobox_extended = widget.Combobox(
                 frame, textvariable=self.stringvar_extendedkey
             )
-            self.combobox_extended.grid(row=10, column=0, columnspan=3, **kw_gsp)
+            self.combobox_extended.grid(row=12, column=0, columnspan=3, **kw_gsp)
             self.text_extendedvalue = widget.Text(
                 frame, width=width_text, height=height_ext, wrap=tk.WORD
             )
-            self.text_extendedvalue.bind('<FocusIn>', text_focusin)
-            self.text_extendedvalue.bind('<FocusOut>', text_extendedvalue_focusout)
-            self.text_extendedvalue.grid(row=11, column=0, columnspan=3, **kw_gsp)
+            self.text_extendedvalue.bind("<FocusIn>", text_focusin)
+            self.text_extendedvalue.bind("<FocusOut>", text_extendedvalue_focusout)
+            self.text_extendedvalue.grid(row=13, column=0, columnspan=3, **kw_gsp)
 
             return frame
 
@@ -410,7 +422,7 @@ class Application(ttk.Frame):
             "{} ({})".format(document.prefix, document.relpath)
             for document in self.tree
         ]
-        self.combobox_documents['values'] = values
+        self.combobox_documents["values"] = values
 
         # Select the first document
         if len(self.tree):  # pylint: disable=len-as-condition
@@ -437,7 +449,7 @@ class Application(ttk.Frame):
 
         # Clear the widgets
         self.treeview_outline.delete(*self.treeview_outline.get_children())
-        widget.noUserInput_delete(self.text_items, '1.0', tk.END)
+        widget.noUserInput_delete(self.text_items, "1.0", tk.END)
         self.text_items_hyperlink.reset()
 
         # Display the items in the document
@@ -465,7 +477,7 @@ class Application(ttk.Frame):
 
             # Add the item to the document text
             widget.noUserInput_insert(
-                self.text_items, tk.END, "{t}".format(t=item.text or item.ref or '???')
+                self.text_items, tk.END, "{t}".format(t=item.text or item.ref or "???")
             )
             widget.noUserInput_insert(self.text_items, tk.END, " [")
             widget.noUserInput_insert(
@@ -523,10 +535,11 @@ class Application(ttk.Frame):
 
             # Display the item's text
             self.text_item.replace(
-                '1.0', tk.END, "" if self.item is None else self.item.text
+                "1.0", tk.END, "" if self.item is None else self.item.text
             )
 
             # Display the item's properties
+            self.stringvar_header.set("" if self.item is None else self.item.header)
             self.stringvar_text.set("" if self.item is None else self.item.text)
             self.intvar_active.set(False if self.item is None else self.item.active)
             self.intvar_derived.set(False if self.item is None else self.item.derived)
@@ -540,19 +553,19 @@ class Application(ttk.Frame):
             if self.item is not None:
                 for uid in self.item.links:
                     self.listbox_links.insert(tk.END, uid)
-            self.stringvar_link.set('')
+            self.stringvar_link.set("")
 
             # Display the item's external reference
             self.stringvar_ref.set("" if self.item is None else self.item.ref)
 
             # Display the item's extended attributes
             values = None if self.item is None else self.item.extended
-            self.combobox_extended['values'] = values or ['']
+            self.combobox_extended["values"] = values or [""]
             if self.item is not None:
                 self.combobox_extended.current(0)
 
             # Display the items this item links to
-            widget.noUserInput_delete(self.text_parents, '1.0', tk.END)
+            widget.noUserInput_delete(self.text_parents, "1.0", tk.END)
             self.text_parents_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.links:
@@ -561,7 +574,7 @@ class Application(ttk.Frame):
                     except DoorstopError:
                         text = "???"
                     else:
-                        text = item.text or item.ref or '???'
+                        text = item.text or item.ref or "???"
                         uid = item.uid
 
                     widget.noUserInput_insert(
@@ -582,12 +595,12 @@ class Application(ttk.Frame):
                     widget.noUserInput_insert(self.text_parents, tk.END, "]\n\n")
 
             # Display the items this item has links from
-            widget.noUserInput_delete(self.text_children, '1.0', 'end')
+            widget.noUserInput_delete(self.text_children, "1.0", "end")
             self.text_children_hyperlink.reset()
             if self.item is not None:
                 for uid in self.item.find_child_links():
                     item = self.tree.find_item(uid)
-                    text = item.text or item.ref or '???'
+                    text = item.text or item.ref or "???"
                     uid = item.uid
 
                     widget.noUserInput_insert(
@@ -617,7 +630,7 @@ class Application(ttk.Frame):
 
             name = self.stringvar_extendedkey.get()
             log.debug("displaying extended attribute '{}'...".format(name))
-            self.text_extendedvalue.replace('1.0', tk.END, self.item.get(name, ""))
+            self.text_extendedvalue.replace("1.0", tk.END, self.item.get(name, ""))
         finally:
             self.ignore = False
 
@@ -633,6 +646,7 @@ class Application(ttk.Frame):
         # Update the current item
         log.info("updating {}...".format(self.item))
         self.item.auto = False
+        self.item.header = self.stringvar_header.get()
         self.item.text = self.stringvar_text.get()
         self.item.active = self.intvar_active.get()
         self.item.derived = self.intvar_derived.get()
@@ -722,7 +736,7 @@ class Application(ttk.Frame):
         uid = self.stringvar_link.get()
         if uid:
             self.listbox_links.insert(tk.END, uid)
-            self.stringvar_link.set('')
+            self.stringvar_link.set("")
 
             # Update the current item
             self.update_item()

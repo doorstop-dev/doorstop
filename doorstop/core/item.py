@@ -3,10 +3,9 @@
 """Representation of an item in a document."""
 
 import functools
+import linecache
 import os
 from typing import Any, List
-
-import pyficache
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -39,7 +38,7 @@ def _convert_to_yaml(indent, prefix, value):
     """
     if isinstance(value, str):
         length = indent + prefix + len(value)
-        if length > settings.MAX_LINE_LENGTH or '\n' in value:
+        if length > settings.MAX_LINE_LENGTH or "\n" in value:
             value = Text.save_text(value.strip())
         else:
             value = str(value)  # line is short enough as a string
@@ -95,9 +94,9 @@ def requires_tree(func):
 class Item(BaseFileObject):  # pylint: disable=R0902
     """Represents an item file with linkable text."""
 
-    EXTENSIONS = '.yml', '.yaml'
+    EXTENSIONS = ".yml", ".yaml"
 
-    DEFAULT_LEVEL = Level('1.0')
+    DEFAULT_LEVEL = Level("1.0")
     DEFAULT_ACTIVE = True
     DEFAULT_NORMATIVE = True
     DEFAULT_DERIVED = False
@@ -133,22 +132,22 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self.path = path
         self.root: str = root
         self.document = document
-        self.tree = kwargs.get('tree')
-        self.auto = kwargs.get('auto', Item.auto)
+        self.tree = kwargs.get("tree")
+        self.auto = kwargs.get("auto", Item.auto)
         self.reference_finder = ReferenceFinder()
         self.yaml_validator = YamlValidator()
         # Set default values
-        self._data['level'] = Item.DEFAULT_LEVEL
-        self._data['active'] = Item.DEFAULT_ACTIVE
-        self._data['normative'] = Item.DEFAULT_NORMATIVE
-        self._data['derived'] = Item.DEFAULT_DERIVED
-        self._data['reviewed'] = Item.DEFAULT_REVIEWED
-        self._data['text'] = Item.DEFAULT_TEXT
-        self._data['ref'] = Item.DEFAULT_REF
-        self._data['references'] = None
-        self._data['links'] = set()
+        self._data["level"] = Item.DEFAULT_LEVEL  # type: ignore
+        self._data["active"] = Item.DEFAULT_ACTIVE  # type: ignore
+        self._data["normative"] = Item.DEFAULT_NORMATIVE  # type: ignore
+        self._data["derived"] = Item.DEFAULT_DERIVED  # type: ignore
+        self._data["reviewed"] = Item.DEFAULT_REVIEWED  # type: ignore
+        self._data["text"] = Item.DEFAULT_TEXT
+        self._data["ref"] = Item.DEFAULT_REF
+        self._data["references"] = None  # type: ignore
+        self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
-            self._data['header'] = Item.DEFAULT_HEADER
+            self._data["header"] = Item.DEFAULT_HEADER
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -193,7 +192,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         path2 = os.path.join(path, filename)
         # Create the initial item file
         log.debug("creating item file at {}...".format(path2))
-        Item._create(path2, name='item')
+        Item._create(path2, name="item")
         # Initialize the item
         item = Item(document, path2, root=root, tree=tree, auto=False)
         item.level = level if level is not None else item.level  # type: ignore
@@ -206,37 +205,37 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """Set the item's attributes."""
         self.yaml_validator.validate_item_yaml(attributes)
         for key, value in attributes.items():
-            if key == 'level':
+            if key == "level":
                 value = Level(value)
-            elif key == 'active':
+            elif key == "active":
                 value = to_bool(value)
-            elif key == 'normative':
+            elif key == "normative":
                 value = to_bool(value)
-            elif key == 'derived':
+            elif key == "derived":
                 value = to_bool(value)
-            elif key == 'reviewed':
+            elif key == "reviewed":
                 value = Stamp(value)
-            elif key == 'text':
+            elif key == "text":
                 value = Text(value)
-            elif key == 'ref':
+            elif key == "ref":
                 value = value.strip()
-            elif key == 'references':
+            elif key == "references":
                 stripped_value = []
                 for ref_dict in value:
-                    ref_type = ref_dict['type']
-                    ref_path = ref_dict['path']
+                    ref_type = ref_dict["type"]
+                    ref_path = ref_dict["path"]
 
                     stripped_ref_dict = {"type": ref_type, "path": ref_path.strip()}
-                    if 'keyword' in ref_dict:
-                        ref_keyword = ref_dict['keyword']
-                        stripped_ref_dict['keyword'] = ref_keyword
+                    if "keyword" in ref_dict:
+                        ref_keyword = ref_dict["keyword"]
+                        stripped_ref_dict["keyword"] = ref_keyword
 
                     stripped_value.append(stripped_ref_dict)
 
                 value = stripped_value
-            elif key == 'links':
+            elif key == "links":
                 value = set(UID(part) for part in value)
-            elif key == 'header':
+            elif key == "header":
                 value = Text(value)
             self._data[key] = value
 
@@ -274,35 +273,35 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """Get all the item's data formatted for YAML dumping."""
         data = {}
         for key, value in self._data.items():
-            if key == 'level':
-                value = value.yaml
-            elif key == 'text':
-                value = value.yaml
-            elif key == 'header':
+            if key == "level":
+                value = value.yaml  # type: ignore
+            elif key == "text":
+                value = value.yaml  # type: ignore
+            elif key == "header":
                 # Handle for case if the header is undefined in YAML
-                if hasattr(value, 'yaml'):
-                    value = value.yaml
+                if hasattr(value, "yaml"):
+                    value = value.yaml  # type: ignore
                 else:
-                    value = ''
-            elif key == 'ref':
+                    value = ""
+            elif key == "ref":
                 value = value.strip()
-            elif key == 'references':
+            elif key == "references":
                 if value is None:
                     continue
                 stripped_value = []
                 for el in value:
-                    ref_dict = {"path": el["path"].strip(), "type": "file"}
+                    ref_dict = {"path": el["path"].strip(), "type": "file"}  # type: ignore
 
-                    if 'keyword' in el:
-                        ref_dict['keyword'] = el['keyword']
+                    if "keyword" in el:
+                        ref_dict["keyword"] = el["keyword"]  # type: ignore
 
                     stripped_value.append(ref_dict)
 
-                value = stripped_value
-            elif key == 'links':
-                value = [{str(i): i.stamp.yaml} for i in sorted(value)]
-            elif key == 'reviewed':
-                value = value.yaml
+                value = stripped_value  # type: ignore
+            elif key == "links":
+                value = [{str(i): i.stamp.yaml} for i in sorted(value)]  # type: ignore
+            elif key == "reviewed":
+                value = value.yaml  # type: ignore
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
@@ -317,6 +316,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @property
     def uid(self):
         """Get the item's UID."""
+        assert self.path
         filename = os.path.basename(self.path)
         return UID(os.path.splitext(filename)[0])
 
@@ -324,13 +324,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def level(self):
         """Get the item's level."""
-        return self._data['level']
+        return self._data["level"]
 
     @level.setter  # type: ignore
     @auto_save
     def level(self, value):
         """Set the item's level."""
-        self._data['level'] = Level(value)
+        self._data["level"] = Level(value)  # type: ignore
 
     @property
     def depth(self):
@@ -351,13 +351,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         - etc.
 
         """
-        return self._data['active']
+        return self._data["active"]
 
     @active.setter  # type: ignore
     @auto_save
     def active(self, value):
         """Set the item's active status."""
-        self._data['active'] = to_bool(value)
+        self._data["active"] = to_bool(value)
 
     @property  # type: ignore
     @auto_load
@@ -369,13 +369,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         documents.
 
         """
-        return self._data['derived']
+        return self._data["derived"]
 
     @derived.setter  # type: ignore
     @auto_save
     def derived(self, value):
         """Set the item's derived status."""
-        self._data['derived'] = to_bool(value)
+        self._data["derived"] = to_bool(value)
 
     @property  # type: ignore
     @auto_load
@@ -390,13 +390,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         - etc.
 
         """
-        return self._data['normative']
+        return self._data["normative"]
 
     @normative.setter  # type: ignore
     @auto_save
     def normative(self, value):
         """Set the item's normative status."""
-        self._data['normative'] = to_bool(value)
+        self._data["normative"] = to_bool(value)
 
     @property
     def heading(self):
@@ -414,10 +414,10 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         heading = to_bool(value)
         if heading and not self.heading:
             self.level.heading = True
-            self.normative = False
+            self.normative = False  # type: ignore
         elif not heading and self.heading:
             self.level.heading = False
-            self.normative = True
+            self.normative = True  # type: ignore
 
     @property  # type: ignore
     @auto_load
@@ -433,34 +433,34 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def reviewed(self):
         """Indicate if the item has been reviewed."""
         stamp = self.stamp(links=True)
-        if self._data['reviewed'] == Stamp(True):
-            self._data['reviewed'] = stamp
-        return self._data['reviewed'] == stamp
+        if self._data["reviewed"] == Stamp(True):
+            self._data["reviewed"] = stamp
+        return self._data["reviewed"] == stamp
 
     @reviewed.setter  # type: ignore
     @auto_save
     def reviewed(self, value):
         """Set the item's review status."""
-        self._data['reviewed'] = Stamp(value)
+        self._data["reviewed"] = Stamp(value)  # type: ignore
 
     @property  # type: ignore
     @auto_load
     def text(self):
         """Get the item's text."""
-        return self._data['text']
+        return self._data["text"]
 
     @text.setter  # type: ignore
     @auto_save
     def text(self, value):
         """Set the item's text."""
-        self._data['text'] = Text(value)
+        self._data["text"] = Text(value)
 
     @property  # type: ignore
     @auto_load
     def header(self):
         """Get the item's header."""
         if settings.ENABLE_HEADERS:
-            return self._data['header']
+            return self._data["header"]
         return None
 
     @header.setter  # type: ignore
@@ -468,7 +468,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def header(self, value):
         """Set the item's header."""
         if settings.ENABLE_HEADERS:
-            self._data['header'] = Text(value)
+            self._data["header"] = Text(value)
 
     @property  # type: ignore
     @auto_load
@@ -479,19 +479,23 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         the filename of any type of file.
 
         """
-        return self._data['ref']
+        return self._data["ref"]
 
     @ref.setter  # type: ignore
     @auto_save
     def ref(self, value):
         """Set the item's external file reference."""
-        self._data['ref'] = str(value) if value else ""
+        self._data["ref"] = str(value) if value else ""
 
     @property  # type: ignore
     @auto_load
     def references(self):
         """Get the item's external file references."""
-        return self._data['references']
+        return self._data["references"]
+
+    def attribute(self, attrib):
+        """Get the item's custom attribute."""
+        return self._data.get(attrib)
 
     @references.setter  # type: ignore
     @auto_save
@@ -499,36 +503,36 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """Set the item's external file references."""
         if value is not None:
             assert isinstance(value, list)
-        self._data['references'] = value
+        self._data["references"] = value
 
     @property  # type: ignore
     @auto_load
     def links(self):
         """Get a list of the item UIDs this item links to."""
-        return sorted(self._data['links'])
+        return sorted(self._data["links"])
 
     @links.setter  # type: ignore
     @auto_save
     def links(self, value):
         """Set the list of item UIDs this item links to."""
-        self._data['links'] = set(UID(v) for v in value)
+        self._data["links"] = set(UID(v) for v in value)  # type: ignore
 
     @property
     def parent_links(self):
         """Get a list of the item UIDs this item links to."""
-        return self.links  # alias
+        return self.links
 
     @parent_links.setter
     def parent_links(self, value):
         """Set the list of item UIDs this item links to."""
-        self.links = value  # alias
+        self.links = value  # type: ignore
 
     @requires_tree
     def _get_parent_uid_and_item(self):
         """Yield UID and item of all links of this item."""
         for uid in self.links:
             try:
-                item = self.tree.find_item(uid)
+                item = self.tree.find_item(uid)  # type: ignore
             except DoorstopError:
                 item = UnknownItem(uid)
                 log.warning(item.exception)
@@ -550,7 +554,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
         """
         try:
-            return [self.tree.find_document(self.document.prefix)]
+            return [self.tree.find_document(self.document.prefix)]  # type: ignore
         except DoorstopError:
             log.warning(Prefix.UNKNOWN_MESSAGE.format(self.document.prefix))
             return []
@@ -585,7 +589,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                 title=str(self.uid), original_content=str(self.text), tool=tool
             )
             # Save the text in the actual item file
-            self.text = edited_text
+            self.text = edited_text  # type: ignore
 
     @auto_save
     def link(self, value):
@@ -596,7 +600,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """
         uid = UID(value)
         log.info("linking to '{}'...".format(uid))
-        self._data['links'].add(uid)
+        self._data["links"].add(uid)  # type: ignore
 
     @auto_save
     def unlink(self, value):
@@ -607,12 +611,12 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         """
         uid = UID(value)
         try:
-            self._data['links'].remove(uid)
+            self._data["links"].remove(uid)  # type: ignore
         except KeyError:
             log.warning("link to {0} does not exist".format(uid))
 
     def is_reviewed(self):
-        return self._data['reviewed']
+        return self._data["reviewed"]
 
     @requires_tree
     def find_ref(self):
@@ -633,7 +637,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             return None, None
         # Update the cache
         if not settings.CACHE_PATHS:
-            pyficache.clear_file_cache()
+            linecache.clearcache()
         # Search for the external reference
         return self.reference_finder.find_ref(self.ref, self.tree, self.path)
 
@@ -657,7 +661,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             log.debug("no external reference to search for")
             return []
         if not settings.CACHE_PATHS:
-            pyficache.clear_file_cache()
+            linecache.clearcache()
 
         references = []
         for ref_item in self.references:
@@ -665,7 +669,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             keyword = ref_item["keyword"] if "keyword" in ref_item else None
 
             reference = self.reference_finder.find_file_reference(
-                path, self.root, self.tree, path, keyword
+                path, self.root, self.tree, self.path, keyword
             )
             references.append(reference)
         return references
@@ -744,12 +748,12 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         # Display found links
         if child_items:
             if find_all:
-                joined = ', '.join(str(i) for i in child_items)
+                joined = ", ".join(str(i) for i in child_items)
                 msg = "child items: {}".format(joined)
             else:
                 msg = "first child item: {}".format(child_items[0])
             log.debug(msg)
-            joined = ', '.join(str(d) for d in child_documents)
+            joined = ", ".join(str(d) for d in child_documents)
             log.debug("child documents: {}".format(joined))
         return sorted(child_items), child_documents
 
@@ -780,7 +784,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def review(self):
         """Mark the item as reviewed."""
         log.info("marking item as reviewed...")
-        self._data['reviewed'] = self.stamp(links=True)
+        self._data["reviewed"] = self.stamp(links=True)
 
     @delete_item
     def delete(self, path=None):
@@ -790,7 +794,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 class UnknownItem:
     """Represents an unknown item, which doesn't have a path."""
 
-    UNKNOWN_PATH = '???'  # string to represent an unknown path
+    UNKNOWN_PATH = "???"  # string to represent an unknown path
 
     normative = False  # do not include unknown items in traceability
     level = Item.DEFAULT_LEVEL
@@ -798,11 +802,11 @@ class UnknownItem:
     def __init__(self, value, spec=Item):
         self._uid = UID(value)
         self._spec = dir(spec)  # list of attribute names for warnings
-        msg = UID.UNKNOWN_MESSAGE.format(k='', u=self.uid)
+        msg = UID.UNKNOWN_MESSAGE.format(k="", u=self.uid)
         self.exception = DoorstopError(msg)
 
     def __str__(self):
-        return Item.__str__(self)
+        return Item.__str__(self)  # type: ignore
 
     def __getattr__(self, name):
         if name in self._spec:

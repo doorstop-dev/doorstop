@@ -10,7 +10,7 @@ LEVELED_LOGGING_FORMAT = "%(levelname)s: %(message)s"
 VERBOSE_LOGGING_FORMAT = "[%(levelname)-8s] %(message)s"
 VERBOSE2_LOGGING_FORMAT = "[%(levelname)-8s] (%(name)s @%(lineno)4d) %(message)s"
 QUIET_LOGGING_LEVEL = logging.WARNING
-TIMED_LOGGING_FORMAT = "%(asctime)s" + ' ' + VERBOSE_LOGGING_FORMAT
+TIMED_LOGGING_FORMAT = "%(asctime)s" + " " + VERBOSE_LOGGING_FORMAT
 DEFAULT_LOGGING_LEVEL = logging.WARNING
 VERBOSE_LOGGING_LEVEL = logging.INFO
 VERBOSE2_LOGGING_LEVEL = logging.DEBUG
@@ -18,8 +18,8 @@ VERBOSE3_LOGGING_LEVEL = logging.DEBUG - 1
 
 # Value constants
 SEP_CHARS = "-_."  # valid prefix/number separators
-SKIP_EXTS = ['.yml', '.csv', '.tsv']  # extensions skipped in reference search
-RESERVED_WORDS = ['all']  # keywords that cannot be used for prefixes
+SKIP_EXTS = [".yml", ".csv", ".tsv"]  # extensions skipped in reference search
+RESERVED_WORDS = ["all"]  # keywords that cannot be used for prefixes
 PLACEHOLDER = "..."  # placeholder for new item UIDs on export/import
 PLACEHOLDER_COUNT = 1  # number of placeholders to include on export
 

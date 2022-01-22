@@ -1,0 +1,23 @@
+CUSTOM-ATTRIB: true
+active: true
+derived: false
+header: ''
+level: 2.3
+links:
+- REQ007: N4qTPlDi0z6kClsYAWlTsYPYWPylyr5KscMlxyYlzbA=
+normative: true
+ref: ''
+reviewed: eXhaivJwaU26FVviGRdvG0i0a_YV5y6BKSxf4t55umY=
+text: |
+  **Include custom attributes in published output**
+
+  Include the custom attribute that should be published in `.doorstop.yml`,
+  e.g.
+
+      settings:
+        digits: 3
+        prefix: TUT
+        sep: ''
+      attributes:
+        publish:
+          - CUSTOM-ATTRIB

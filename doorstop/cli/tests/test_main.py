@@ -12,18 +12,18 @@ from doorstop.cli.tests import SettingsTestCase
 class TestMain(SettingsTestCase):
     """Unit tests for the `main` function."""  # pylint: disable=R0201
 
-    @patch('doorstop.cli.commands.get')
+    @patch("doorstop.cli.commands.get")
     def test_run(self, mock_get):
         """Verify the main CLI function can be called."""
         main.main(args=[])
         mock_get.assert_called_once_with(None)
 
-    @patch('doorstop.cli.commands.run', Mock(side_effect=KeyboardInterrupt))
+    @patch("doorstop.cli.commands.run", Mock(side_effect=KeyboardInterrupt))
     def test_interrupt(self):
         """Verify the CLI can be interrupted."""
         self.assertRaises(SystemExit, main.main, [])
 
-    @patch('doorstop.cli.commands.run', Mock())
+    @patch("doorstop.cli.commands.run", Mock())
     def test_empty(self):
         """Verify 'doorstop' can be run in a working copy with no docs."""
         self.assertIs(None, main.main([]))
@@ -40,23 +40,23 @@ class TestMain(SettingsTestCase):
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
 
-    @patch('doorstop.cli.commands.run', Mock())
+    @patch("doorstop.cli.commands.run", Mock())
     def test_options(self):
         """Verify 'doorstop' can be run with options."""
         self.assertIs(
             None,
             main.main(
                 [
-                    '--no-reformat',
-                    '--no-ref-check',
-                    '--no-child-check',
-                    '--reorder',
-                    '--no-level-check',
-                    '--no-suspect-check',
-                    '--no-review-check',
-                    '--no-cache',
-                    '--warn-all',
-                    '--error-all',
+                    "--no-reformat",
+                    "--no-ref-check",
+                    "--no-child-check",
+                    "--reorder",
+                    "--no-level-check",
+                    "--no-suspect-check",
+                    "--no-review-check",
+                    "--no-cache",
+                    "--warn-all",
+                    "--error-all",
                 ]
             ),
         )

@@ -1,7 +1,6 @@
 # Project settings
 PROJECT := Doorstop
 PACKAGE := doorstop
-REPOSITORY := doorstop-dev/doorstop
 
 # Project paths
 PACKAGES := $(PACKAGE)
@@ -62,7 +61,7 @@ endif
 
 .PHONY: format
 format: install
-	poetry run isort $(PACKAGES) --recursive --apply
+	poetry run isort $(PACKAGES)
 	poetry run black $(PACKAGES)
 	@ echo
 
@@ -79,7 +78,7 @@ endif
 
 RANDOM_SEED ?= $(shell date +%s)
 
-NOSE_OPTIONS := --with-doctest
+NOSE_OPTIONS := --with-doctest --traverse-namespace
 ifndef DISABLE_COVERAGE
 NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
 endif
@@ -90,7 +89,9 @@ test: test-all ## Run unit and integration tests
 .PHONY: test-unit
 test-unit: install
 	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
-	poetry run coveragespace $(REPOSITORY) unit
+ifndef DISABLE_COVERAGE
+	poetry run coveragespace update unit
+endif
 
 .PHONY: test-int
 test-int: test-all
@@ -98,7 +99,9 @@ test-int: test-all
 .PHONY: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
-	poetry run coveragespace $(REPOSITORY) overall
+ifndef DISABLE_COVERAGE
+	poetry run coveragespace update overall
+endif
 
 .PHONY: read-coverage
 read-coverage:
@@ -176,10 +179,22 @@ $(DIST_FILES): $(MODULES) pyproject.toml
 exe: install $(EXE_FILES)
 $(EXE_FILES): $(MODULES) $(PROJECT).spec
 	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
-	poetry run pyinstaller $(PROJECT).spec --noconfirm --clean
+	poetry run pyinstaller doorstop.spec        --noconfirm --clean
+	poetry run pyinstaller doorstop-gui.spec    --noconfirm --clean
+	poetry run pyinstaller doorstop-server.spec --noconfirm --clean
 
 $(PROJECT).spec:
-	poetry run pyi-makespec $(PACKAGE)/__main__.py --onefile --windowed --name=$(PROJECT)
+	@# The modules mdx_outline and mdx_math are not used in doorstop through import statements,
+	@# instead they are imported as markdown extensions. So these are explicitly referenced
+	@# here as "hidden-imports" so that pyinstaller will pick them up.
+	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop --hidden-import=mdx_outline --hidden-import=mdx_math
+	@# To include additional data files in the doorstop executable built by pyinstaller
+	@# they can be added to pyi-makespec using "--add-data", but that seems to become
+	@# platform dependent according to the pyi-makespec documentation, so a sed command
+	@# is used here to directly insert the data file names into the spec file.
+	sed 's/datas=\[/datas=\[("doorstop\/views", "doorstop\/views"), ("doorstop\/core\/files", "doorstop\/core\/files")/' --in-place doorstop.spec
+	poetry run pyi-makespec doorstop/gui/main.py    --onefile --windowed --name=doorstop-gui
+	poetry run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
 
 # RELEASE #####################################################################
 
@@ -200,7 +215,7 @@ clean-all: clean
 
 .PHONY: .clean-install
 .clean-install:
-	find $(PACKAGES) -name '__pycache__' -delete
+	find $(PACKAGES) -name '__pycache__' | xargs rm -rf
 	rm -rf *.egg-info
 
 .PHONY: .clean-test

@@ -31,13 +31,13 @@ log = common.logger(__name__)
 class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     """Represents a document directory containing an outline of items."""
 
-    CONFIG = '.doorstop.yml'
-    SKIP = '.doorstop.skip'  # indicates this document should be skipped
-    ASSETS = 'assets'
-    INDEX = 'index.yml'
+    CONFIG = ".doorstop.yml"
+    SKIP = ".doorstop.skip"  # indicates this document should be skipped
+    ASSETS = "assets"
+    INDEX = "index.yml"
 
-    DEFAULT_PREFIX = Prefix('REQ')
-    DEFAULT_SEP = ''
+    DEFAULT_PREFIX = Prefix("REQ")
+    DEFAULT_SEP = ""
     DEFAULT_DIGITS = 3
 
     def __init__(self, path, root=os.getcwd(), **kwargs):
@@ -56,14 +56,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Initialize the document
         self.path = path
         self.root = root
-        self.tree = kwargs.get('tree')
-        self.auto = kwargs.get('auto', Document.auto)
+        self.tree = kwargs.get("tree")
+        self.auto = kwargs.get("auto", Document.auto)
         # Set default values
         self._attribute_defaults = None
-        self._data['prefix'] = Document.DEFAULT_PREFIX
-        self._data['sep'] = Document.DEFAULT_SEP
-        self._data['digits'] = Document.DEFAULT_DIGITS
-        self._data['parent'] = None  # the root document does not have a parent
+        self._attribute_publish = None
+        self._data["prefix"] = Document.DEFAULT_PREFIX
+        self._data["sep"] = Document.DEFAULT_SEP
+        self._data["digits"] = Document.DEFAULT_DIGITS  # type: ignore
+        self._data["parent"] = None  # type: ignore
         self._extended_reviewed: List[str] = []
         self._items: List[Item] = []
         self._itered = False
@@ -123,7 +124,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             raise DoorstopError("document already exists: {}".format(path))
 
         # Create the document directory
-        Document._create(config, name='document')
+        Document._create(config, name="document")
 
         # Initialize the document
         document = Document(path, root=root, tree=tree, auto=False)
@@ -155,7 +156,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 filename = os.path.join(dirname, self.construct_scalar(node))
                 IncludeLoader.filenames.insert(0, filename)  # type: ignore
                 try:
-                    with open(filename, 'r') as f:
+                    with open(filename, "r") as f:
                         data = yaml.load(f, IncludeLoader)
                 except Exception as ex:
                     msg = "include in '{}' failed: {}".format(container, ex)
@@ -163,7 +164,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 IncludeLoader.filenames.pop()  # type: ignore
                 return data
 
-        IncludeLoader.add_constructor('!include', IncludeLoader.include)
+        IncludeLoader.add_constructor("!include", IncludeLoader.include)
         IncludeLoader.filenames = [yamlfile]  # type: ignore
         return self._load(text, yamlfile, loader=IncludeLoader)
 
@@ -174,17 +175,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         log.debug("loading {}...".format(repr(self)))
         data = self._load_with_include(self.config)
         # Store parsed data
-        sets = data.get('settings', {})
+        sets = data.get("settings", {})
         for key, value in sets.items():
             try:
-                if key == 'prefix':
+                if key == "prefix":
                     self._data[key] = Prefix(value)
-                elif key == 'sep':
+                elif key == "sep":
                     self._data[key] = value.strip()
-                elif key == 'parent':
+                elif key == "parent":
                     self._data[key] = value.strip()
-                elif key == 'digits':
-                    self._data[key] = int(value)
+                elif key == "digits":
+                    self._data[key] = int(value)  # type: ignore
                 else:
                     msg = "unexpected document setting '{}' in: {}".format(
                         key, self.config
@@ -194,12 +195,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
                 raise DoorstopError(msg)
         # Store parsed attributes
-        attributes = data.get('attributes', {})
+        attributes = data.get("attributes", {})
         for key, value in attributes.items():
-            if key == 'defaults':
+            if key == "defaults":
                 self._attribute_defaults = value
-            elif key == 'reviewed':
+            elif key == "reviewed":
                 self._extended_reviewed = sorted(set(v for v in value))
+            elif key == "publish":
+                self._attribute_publish = value
             else:
                 msg = "unexpected attributes configuration '{}' in: {}".format(
                     key, self.config
@@ -218,22 +221,22 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         data = {}
         sets = {}
         for key, value in self._data.items():
-            if key == 'prefix':
+            if key == "prefix":
                 sets[key] = str(value)
-            elif key == 'parent':
+            elif key == "parent":
                 if value:
                     sets[key] = value
             else:
                 sets[key] = value
-        data['settings'] = sets
+        data["settings"] = sets
         # Save the attributes
         attributes = {}
         if self._attribute_defaults:
-            attributes['defaults'] = self._attribute_defaults
+            attributes["defaults"] = self._attribute_defaults
         if self._extended_reviewed:
-            attributes['reviewed'] = self._extended_reviewed
+            attributes["reviewed"] = self._extended_reviewed
         if attributes:
-            data['attributes'] = attributes
+            data["attributes"] = attributes
         # Dump the data to YAML
         text = self._dump(data)
         # Save the YAML to file
@@ -296,11 +299,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @property
     def config(self):
         """Get the path to the document's file."""
+        assert self.path
         return os.path.join(self.path, Document.CONFIG)
 
     @property
     def assets(self):
         """Get the path to the document's assets if they exist else `None`."""
+        assert self.path
         path = os.path.join(self.path, Document.ASSETS)
         return path if os.path.isdir(path) else None
 
@@ -308,14 +313,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def prefix(self):
         """Get the document's prefix."""
-        return self._data['prefix']
+        return self._data["prefix"]
+
+    @property  # type: ignore
+    @auto_load
+    def publish(self):
+        """Get the document's prefix."""
+        return self._attribute_publish
 
     @prefix.setter  # type: ignore
     @auto_save
     @auto_load
     def prefix(self, value):
         """Set the document's prefix."""
-        self._data['prefix'] = Prefix(value)
+        self._data["prefix"] = Prefix(value)
         # TODO: should the new prefix be applied to all items?
 
     @property  # type: ignore
@@ -328,7 +339,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @auto_load
     def sep(self):
         """Get the prefix-number separator to use for new item UIDs."""
-        return self._data['sep']
+        return self._data["sep"]
 
     @sep.setter  # type: ignore
     @auto_save
@@ -337,35 +348,35 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Set the prefix-number separator to use for new item UIDs."""
         # TODO: raise a specific exception for invalid separator characters?
         assert not value or value in settings.SEP_CHARS
-        self._data['sep'] = value.strip()
+        self._data["sep"] = value.strip()
         # TODO: should the new separator be applied to all items?
 
     @property  # type: ignore
     @auto_load
     def digits(self):
         """Get the number of digits to use for new item UIDs."""
-        return self._data['digits']
+        return self._data["digits"]
 
     @digits.setter  # type: ignore
     @auto_save
     @auto_load
     def digits(self, value):
         """Set the number of digits to use for new item UIDs."""
-        self._data['digits'] = value
+        self._data["digits"] = value
         # TODO: should the new digits be applied to all items?
 
     @property  # type: ignore
     @auto_load
     def parent(self):
         """Get the document's parent document prefix."""
-        return self._data['parent']
+        return self._data["parent"]
 
     @parent.setter  # type: ignore
     @auto_save
     @auto_load
     def parent(self, value):
         """Set the document's parent document prefix."""
-        self._data['parent'] = str(value) if value else ""
+        self._data["parent"] = str(value) if value else ""
 
     @property
     def items(self):
@@ -401,11 +412,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @property
     def skip(self):
         """Indicate the document should be skipped."""
+        assert self.path
         return os.path.isfile(os.path.join(self.path, Document.SKIP))
 
     @property
     def index(self):
         """Get the path to the document's index if it exists else `None`."""
+        assert self.path
         path = os.path.join(self.path, Document.INDEX)
         return path if os.path.isfile(path) else None
 
@@ -413,6 +426,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def index(self, value):
         """Create or update the document's index."""
         if value:
+            assert self.path
             path = os.path.join(self.path, Document.INDEX)
             log.info("creating {} index...".format(self))
             common.write_lines(self._lines_index(self.items), path)
@@ -538,57 +552,57 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     def _lines_index(items):
         """Generate (pseudo) YAML lines for the document index."""
-        yield '#' * settings.MAX_LINE_LENGTH
-        yield '# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING'
-        yield '# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL'
-        yield '# A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new: '
-        yield '# THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS'
-        yield '# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION'
-        yield '#' * settings.MAX_LINE_LENGTH
-        yield ''
+        yield "#" * settings.MAX_LINE_LENGTH
+        yield "# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING"
+        yield "# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL"
+        yield "# A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new: "
+        yield "# THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS"
+        yield "# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION"
+        yield "#" * settings.MAX_LINE_LENGTH
+        yield ""
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
         for item in items:
             space = "    " * item.depth
             lines = item.text.strip().splitlines()
-            comment = lines[0] if lines else ""
+            comment = lines[0].replace("\\", "\\\\") if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
             if len(line) > settings.MAX_LINE_LENGTH:
-                line = line[: settings.MAX_LINE_LENGTH - 3] + '...'
+                line = line[: settings.MAX_LINE_LENGTH - 3] + "..."
             yield line
 
     @staticmethod
     def _read_index(path):
         """Load the index, converting comments to text entries for each item."""
-        with open(path, 'r', encoding='utf-8') as stream:
+        with open(path, "r", encoding="utf-8") as stream:
             text = stream.read()
         yaml_text = []
-        for line in text.split('\n'):
-            m = re.search(r'(\s+)(- [\w\d-]+\s*): # (.+)$', line)
+        for line in text.split("\n"):
+            m = re.search(r"(\s+)(- [\w\d-]+\s*): # (.+)$", line)
             if m:
                 prefix = m.group(1)
                 uid = m.group(2)
                 item_text = m.group(3).replace('"', '\\"')
-                yaml_text.append('{p}{u}:'.format(p=prefix, u=uid))
+                yaml_text.append("{p}{u}:".format(p=prefix, u=uid))
                 yaml_text.append('    {p}- text: "{t}"'.format(p=prefix, t=item_text))
             else:
                 yaml_text.append(line)
-        return common.load_yaml('\n'.join(yaml_text), path)
+        return common.load_yaml("\n".join(yaml_text), path)
 
     @staticmethod
     def _reorder_from_index(document, path):
         """Reorder a document's item from the index."""
         data = document._read_index(path)  # pylint: disable=protected-access
         # Read updated values
-        initial = data.get('initial', 1.0)
-        outline = data.get('outline', [])
+        initial = data.get("initial", 1.0)
+        outline = data.get("outline", [])
         # Update levels
         level = Level(initial)
         ids_after_reorder: List[str] = []
         Document._reorder_section(outline, level, document, ids_after_reorder)
         for item in document.items:
             if item.uid not in ids_after_reorder:
-                log.info('Deleting %s', item.uid)
+                log.info("Deleting %s", item.uid)
                 item.delete()
 
     @staticmethod
@@ -604,18 +618,18 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
             # Get the item and subsection
             uid = list(section.keys())[0]
-            if uid == 'text':
+            if uid == "text":
                 return
             subsection = section[uid]
 
             # An item is a header if it has a subsection
             level.heading = False
-            item_text = ''
+            item_text = ""
             if isinstance(subsection, str):
                 item_text = subsection
             elif isinstance(subsection, list):
-                if 'text' in subsection[0]:
-                    item_text = subsection[0]['text']
+                if "text" in subsection[0]:
+                    item_text = subsection[0]["text"]
                     if len(subsection) > 1:
                         level.heading = True
 
@@ -721,7 +735,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for item in items_at_level:
                 yield level, item
 
-    def find_item(self, value, _kind=''):
+    def find_item(self, value, _kind=""):
         """Return an item by its UID.
 
         :param value: item or UID

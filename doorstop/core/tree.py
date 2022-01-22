@@ -6,7 +6,7 @@
 
 import sys
 from itertools import chain
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError, DoorstopWarning
@@ -16,16 +16,16 @@ from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.types import UID, Prefix
 
-UTF8 = 'utf-8'
-CP437 = 'cp437'
-ASCII = 'ascii'
+UTF8 = "utf-8"
+CP437 = "cp437"
+ASCII = "ascii"
 
 BOX = {
-    'end': {UTF8: '│   ', CP437: '┬   ', ASCII: '|   '},
-    'tee': {UTF8: '├── ', CP437: '├── ', ASCII: '+-- '},
-    'bend': {UTF8: '└── ', CP437: '└── ', ASCII: '+-- '},
-    'pipe': {UTF8: '│   ', CP437: '│   ', ASCII: '|   '},
-    'space': {UTF8: '    ', CP437: '    ', ASCII: '    '},
+    "end": {UTF8: "│   ", CP437: "┬   ", ASCII: "|   "},
+    "tee": {UTF8: "├── ", CP437: "├── ", ASCII: "+-- "},
+    "bend": {UTF8: "└── ", CP437: "└── ", ASCII: "+-- "},
+    "pipe": {UTF8: "│   ", CP437: "│   ", ASCII: "|   "},
+    "space": {UTF8: "    ", CP437: "    ", ASCII: "    "},
 }
 
 log = common.logger(__name__)
@@ -101,7 +101,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._vcs = None  # working copy reference loaded in a property
         self.request_next_number = None  # server method injected by clients
         self._loaded = False
-        self._item_cache: Dict[str, Item] = {}
+        self._item_cache: Dict[Union[str, UID], Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
 
     def __repr__(self):
@@ -171,7 +171,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
             msg = "no parent specified for {}".format(document)
             log.info(msg)
-            prefixes = ', '.join(document.prefix for document in self)
+            prefixes = ", ".join(document.prefix for document in self)
             log.info("parent options: {}".format(prefixes))
             raise DoorstopError(msg)
 
@@ -215,6 +215,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         prefix = Prefix(value)
+
+        # Check if a document with the same name already exists in the tree.
+        for d in self.documents:
+            if d.prefix == value:
+                raise DoorstopError(
+                    "The document name is already in use ({}).".format(d.path)
+                )
+
         document = Document.new(
             self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
         )
@@ -272,7 +280,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 item = document.remove_item(uid, reorder=reorder)
                 return item
 
-        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k='', u=uid))
+        raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k="", u=uid))
 
     def check_for_cycle(self, item, cid, path):
         """Check if a cyclic dependency would be created.
@@ -290,7 +298,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 s = " -> ".join(list(map(str, path2)))
                 msg = "link would create a cyclic dependency: {}".format(s)
                 raise DoorstopError(msg)
-            dep = self.find_item(did, _kind='dependency')
+            dep = self.find_item(did, _kind="dependency")
             self.check_for_cycle(dep, cid, path2)
 
     # decorators are applied to methods in the associated classes
@@ -309,9 +317,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.info("linking {} to {}...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, _kind='child')
+        child = self.find_item(cid, _kind="child")
         # Find parent item
-        parent = self.find_item(pid, _kind='parent')
+        parent = self.find_item(pid, _kind="parent")
         # Add link if it is not a self reference or cyclic dependency
         if child is parent:
             raise DoorstopError("link would be self reference")
@@ -335,9 +343,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.info("unlinking '{}' from '{}'...".format(cid, pid))
         # Find child item
-        child = self.find_item(cid, _kind='child')
+        child = self.find_item(cid, _kind="child")
         # Find parent item
-        parent = self.find_item(pid, _kind='parent')
+        parent = self.find_item(pid, _kind="parent")
         # Remove link
         child.unlink(parent.uid)
         return child, parent
@@ -404,7 +412,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         raise DoorstopError(Prefix.UNKNOWN_MESSAGE.format(prefix))
 
-    def find_item(self, value, _kind=''):
+    def find_item(self, value, _kind=""):
         """Get an item by its UID.
 
         :param value: item or UID
@@ -416,7 +424,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         uid = UID(value)
-        _kind = (' ' + _kind) if _kind else _kind  # for logging messages
+        _kind = (" " + _kind) if _kind else _kind  # for logging messages
         log.debug("looking for{} item '{}'...".format(_kind, uid))
         try:
             item = self._item_cache[uid]
@@ -446,7 +454,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
             log.debug("could not find item: {}".format(uid))
             if settings.CACHE_ITEMS:
-                self._item_cache[uid] = None
+                self._item_cache[uid] = None  # type: ignore
                 log.trace("cached unknown: {}".format(uid))  # type: ignore
 
         raise DoorstopError(UID.UNKNOWN_MESSAGE.format(k=_kind, u=uid))
@@ -489,9 +497,9 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             row2 = []
             for item in row:
                 if item:
-                    row2.append('0' + str(item.uid))
+                    row2.append("0" + str(item.uid))
                 else:
-                    row2.append('1')  # force `None` to sort after items
+                    row2.append("1")  # force `None` to sort after items
             return row2
 
         # Create mapping of document prefix to slice index
@@ -598,14 +606,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             - (other) - ASCII characters
 
         """
-        encoding = encoding or getattr(sys.stdout, 'encoding', None)
+        encoding = encoding or getattr(sys.stdout, "encoding", None)
         encoding = encoding.lower() if encoding else None
-        return '\n'.join(self._draw_lines(encoding, html_links))
+        return "\n".join(self._draw_lines(encoding, html_links))
 
     def _draw_line(self):
         """Get the tree structure in one line."""
         # Build parent prefix string (`getattr` to enable mock testing)
-        prefix = getattr(self.document, 'prefix', '') or str(self.document)
+        prefix = getattr(self.document, "prefix", "") or str(self.document)
         # Build children prefix strings
         children = ", ".join(
             c._draw_line() for c in self.children  # pylint: disable=protected-access
@@ -619,22 +627,22 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def _draw_lines(self, encoding, html_links=False):
         """Generate lines of the tree structure."""
         # Build parent prefix string (`getattr` to enable mock testing)
-        prefix = getattr(self.document, 'prefix', '') or str(self.document)
+        prefix = getattr(self.document, "prefix", "") or str(self.document)
         if html_links:
             prefix = '<a href="documents/{0}">{0}</a>'.format(prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):
             if count == 1:
-                yield self._symbol('end', encoding)
+                yield self._symbol("end", encoding)
             else:
-                yield self._symbol('pipe', encoding)
+                yield self._symbol("pipe", encoding)
             if count < len(self.children):
-                base = self._symbol('pipe', encoding)
-                indent = self._symbol('tee', encoding)
+                base = self._symbol("pipe", encoding)
+                indent = self._symbol("tee", encoding)
             else:
-                base = self._symbol('space', encoding)
-                indent = self._symbol('bend', encoding)
+                base = self._symbol("space", encoding)
+                indent = self._symbol("bend", encoding)
             for index, line in enumerate(
                 # pylint: disable=protected-access
                 child._draw_lines(encoding, html_links)

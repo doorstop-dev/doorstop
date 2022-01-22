@@ -1,4 +1,4 @@
-[![Unix Build Status](https://img.shields.io/travis/doorstop-dev/doorstop/develop.svg?label=unix)](https://travis-ci.org/doorstop-dev/doorstop)
+[![Unix Build Status](https://img.shields.io/travis/com/doorstop-dev/doorstop/develop.svg?label=unix)](https://travis-ci.com/doorstop-dev/doorstop)
 [![Windows Build Status](https://img.shields.io/appveyor/ci/jacebrowning/doorstop/develop.svg?label=windows)](https://ci.appveyor.com/project/jacebrowning/doorstop)
 <br>
 [![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/develop.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
