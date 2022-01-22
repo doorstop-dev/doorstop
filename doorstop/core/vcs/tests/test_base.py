@@ -39,7 +39,7 @@ class TestSampleWorkingCopy(unittest.TestCase):
     def setUp(self):
         self.wc = SampleWorkingCopy(None)
 
-    @patch('os.environ', {})
+    @patch("os.environ", {})
     def test_ignored(self):
         """Verify ignored paths are detected."""
         self.assertTrue(self.wc.ignored("ignored.txt"))
@@ -47,12 +47,12 @@ class TestSampleWorkingCopy(unittest.TestCase):
         self.assertTrue(self.wc.ignored("path/to/published.html"))
         self.assertTrue(self.wc.ignored("build/path/to/anything"))
 
-    @patch('os.environ', {})
+    @patch("os.environ", {})
     def test_paths(self):
         """Verify that paths are cached correctly."""
         wc = SampleWorkingCopy(ROOT)
         paths = [relpath for path, _, relpath in wc.paths]
-        self.assertEqual([], [x for x in paths if x.startswith('.git/')])
+        self.assertEqual([], [x for x in paths if x.startswith(".git/")])
         self.assertNotEqual(
-            [], [x for x in paths if x.startswith(os.path.join('doorstop', ''))]
+            [], [x for x in paths if x.startswith(os.path.join("doorstop", ""))]
         )

@@ -17,7 +17,7 @@ class TestReferenceFinder(unittest.TestCase):
     """Unit tests for the ReferenceFinder class."""
 
     def setUp(self):
-        path = os.path.join('path', 'to', 'RQ001.yml')
+        path = os.path.join("path", "to", "RQ001.yml")
         self.item = MockItem(MockSimpleDocument(), path)
 
     def test_find_file_reference_no_keyword(self):
@@ -25,7 +25,7 @@ class TestReferenceFinder(unittest.TestCase):
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         # Act
         reference_finder = ReferenceFinder()
@@ -35,7 +35,7 @@ class TestReferenceFinder(unittest.TestCase):
         )
 
         # Assert
-        self.assertEqual(path, os.path.join('files', 'REQ001.yml'))
+        self.assertEqual(path, os.path.join("files", "REQ001.yml"))
         self.assertEqual(line, None)
 
     def test_find_file_reference_with_keyword(self):
@@ -43,17 +43,17 @@ class TestReferenceFinder(unittest.TestCase):
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         # Act
         reference_finder = ReferenceFinder()
 
         path, line = reference_finder.find_file_reference(
-            reference_path, root, tree, item_path, 'REF123'
+            reference_path, root, tree, item_path, "REF123"
         )
 
         # Assert
-        self.assertEqual(path, os.path.join('files', 'REQ006.yml'))
+        self.assertEqual(path, os.path.join("files", "REQ006.yml"))
         self.assertEqual(line, 10)
 
     def test_find_file_reference_with_utf8_keyword(self):
@@ -65,13 +65,13 @@ class TestReferenceFinder(unittest.TestCase):
 
         reference_finder = ReferenceFinder()
         path, line = reference_finder.find_file_reference(
-            reference_path, root, tree, item_path, 'français'
+            reference_path, root, tree, item_path, "français"
         )
 
         self.assertEqual(
             path,
             os.path.join(
-                'test_fixtures', '001-item-references-utf8-keyword', 'REQ-UTF8.yml'
+                "test_fixtures", "001-item-references-utf8-keyword", "REQ-UTF8.yml"
             ),
         )
         self.assertEqual(line, 10)
@@ -80,7 +80,7 @@ class TestReferenceFinder(unittest.TestCase):
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         # Act
         reference_finder = ReferenceFinder()
@@ -88,7 +88,7 @@ class TestReferenceFinder(unittest.TestCase):
         with self.assertRaises(DoorstopError) as context:
             reference_finder.find_file_reference(item_path, root, tree, item_path)
 
-        self.assertTrue('external reference not found' in str(context.exception))
+        self.assertTrue("external reference not found" in str(context.exception))
 
     def test_find_file_reference_valid_keyword_given(self):
         keyword = "Lorem ipsum dolor sit amet"
@@ -96,7 +96,7 @@ class TestReferenceFinder(unittest.TestCase):
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         # Act
         reference_finder = ReferenceFinder()
@@ -106,7 +106,7 @@ class TestReferenceFinder(unittest.TestCase):
         )
 
         # Assert
-        self.assertEqual(path, os.path.join('files', 'REQ001.yml'))
+        self.assertEqual(path, os.path.join("files", "REQ001.yml"))
         self.assertEqual(line, 12)
 
     def test_find_file_reference_invalid_keyword_given(self):
@@ -115,7 +115,7 @@ class TestReferenceFinder(unittest.TestCase):
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         reference_finder = ReferenceFinder()
 
@@ -124,18 +124,18 @@ class TestReferenceFinder(unittest.TestCase):
                 reference_path, root, tree, item_path, keyword
             )
 
-        self.assertTrue('external reference not found' in str(context.exception))
+        self.assertTrue("external reference not found" in str(context.exception))
 
     def test_find_file_reference_does_not_exist(self):
         reference_path = "reference-that-does-not-exist.yml"
         root = TESTS_ROOT
         tree = Mock()
         tree.vcs = WorkingCopy(TESTS_ROOT)
-        item_path = os.path.join('path', 'to', 'RQ001.yml')
+        item_path = os.path.join("path", "to", "RQ001.yml")
 
         reference_finder = ReferenceFinder()
 
         with self.assertRaises(DoorstopError) as context:
             reference_finder.find_file_reference(reference_path, root, tree, item_path)
 
-        self.assertTrue('external reference not found' in str(context.exception))
+        self.assertTrue("external reference not found" in str(context.exception))

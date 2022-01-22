@@ -11,23 +11,23 @@ log = common.logger(__name__)
 class WorkingCopy(BaseWorkingCopy):
     """Git working copy."""
 
-    DIRECTORY = '.git'
-    IGNORES = ('.gitignore',)
+    DIRECTORY = ".git"
+    IGNORES = (".gitignore",)
 
     def lock(self, path):
         log.debug("`git` does not support locking: %s", path)
-        self.call('git', 'pull')
+        self.call("git", "pull")
 
     def edit(self, path):
-        self.call('git', 'add', self.relpath(path))
+        self.call("git", "add", self.relpath(path))
 
     def add(self, path):
-        self.call('git', 'add', self.relpath(path))
+        self.call("git", "add", self.relpath(path))
 
     def delete(self, path):
-        self.call('git', 'rm', self.relpath(path), '--force', '--quiet')
+        self.call("git", "rm", self.relpath(path), "--force", "--quiet")
 
     def commit(self, message=None):
         message = message or input("Commit message: ")
-        self.call('git', 'commit', '--all', '--message', message)
-        self.call('git', 'push')
+        self.call("git", "commit", "--all", "--message", message)
+        self.call("git", "push")

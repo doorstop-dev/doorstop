@@ -12,7 +12,7 @@ log = common.logger(__name__)
 class WorkingCopy(BaseWorkingCopy):
     """Simulated working copy."""
 
-    DIRECTORY = '.mockvcs'
+    DIRECTORY = ".mockvcs"
 
     def __init__(self, path):
         super().__init__(path)

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=import-outside-toplevel
 
 """REST server to display content and reserve item numbers."""
 
@@ -31,40 +32,40 @@ def main(args=None):
 
     # Shared options
     debug = argparse.ArgumentParser(add_help=False)
-    debug.add_argument('-V', '--version', action='version', version=VERSION)
+    debug.add_argument("-V", "--version", action="version", version=VERSION)
     debug.add_argument(
-        '--debug', action='store_true', help="run the server in debug mode"
+        "--debug", action="store_true", help="run the server in debug mode"
     )
     debug.add_argument(
-        '--launch', action='store_true', help="open the server UI in a browser"
+        "--launch", action="store_true", help="open the server UI in a browser"
     )
-    shared = {'formatter_class': HelpFormatter, 'parents': [debug]}
+    shared = {"formatter_class": HelpFormatter, "parents": [debug]}
 
     # Build main parser
     parser = argparse.ArgumentParser(prog=SERVER, description=__doc__, **shared)  # type: ignore
     cwd = os.getcwd()
 
     parser.add_argument(
-        '-j', '--project', default=None, help="path to the root of the project"
+        "-j", "--project", default=None, help="path to the root of the project"
     )
     parser.add_argument(
-        '-P',
-        '--port',
-        metavar='NUM',
+        "-P",
+        "--port",
+        metavar="NUM",
         type=int,
         default=settings.SERVER_PORT,
         help="use a custom port for the server",
     )
     parser.add_argument(
-        '-H', '--host', default='127.0.0.1', help="IP address to listen"
+        "-H", "--host", default="127.0.0.1", help="IP address to listen"
     )
     parser.add_argument(
-        '-w', '--wsgi', action='store_true', help="Run as a WSGI process"
+        "-w", "--wsgi", action="store_true", help="Run as a WSGI process"
     )
     parser.add_argument(
-        '-b',
-        '--baseurl',
-        default='',
+        "-b",
+        "--baseurl",
+        default="",
         help="Base URL this is served at (Usually only necessary for WSGI)",
     )
 
@@ -97,19 +98,19 @@ def run(args, cwd, _):
     host = args.host
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(
-        0, os.path.join(os.path.dirname(__file__), '..', 'views')
+        0, os.path.join(os.path.dirname(__file__), "..", "views")
     )
 
     # If you started without WSGI, the base will be '/'.
-    if args.baseurl == '' and not args.wsgi:
-        args.baseurl = '/'
+    if args.baseurl == "" and not args.wsgi:
+        args.baseurl = "/"
 
     # If you specified a base URL, make sure it ends with '/'.
-    if args.baseurl != '' and not args.baseurl.endswith('/'):
-        args.baseurl += '/'
+    if args.baseurl != "" and not args.baseurl.endswith("/"):
+        args.baseurl += "/"
 
-    bottle.SimpleTemplate.defaults['baseurl'] = args.baseurl
-    bottle.SimpleTemplate.defaults['navigation'] = True
+    bottle.SimpleTemplate.defaults["baseurl"] = args.baseurl
+    bottle.SimpleTemplate.defaults["navigation"] = True
 
     if args.launch:
         url = utilities.build_url(host=host, port=port)
@@ -118,36 +119,36 @@ def run(args, cwd, _):
         bottle.run(app=app, host=host, port=port, debug=args.debug, reloader=args.debug)
 
 
-@hook('before_request')
+@hook("before_request")
 def strip_path():
-    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
-    request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('.html')
+    request.environ["PATH_INFO"] = request.environ["PATH_INFO"].rstrip("/")
+    request.environ["PATH_INFO"] = request.environ["PATH_INFO"].rstrip(".html")
 
 
-@hook('after_request')
+@hook("after_request")
 def enable_cors():
     """Allow a webserver running on the same machine to access data."""
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers["Access-Control-Allow-Origin"] = "*"
 
 
-@get('/')
+@get("/")
 def index():
     """Read the tree."""
-    yield template('index', tree_code=tree.draw(html_links=True))
+    yield template("index", tree_code=tree.draw(html_links=True))
 
 
-@get('/documents')
+@get("/documents")
 def get_documents():
     """Read the tree's documents."""
     prefixes = [str(document.prefix) for document in tree]
     if utilities.json_response(request):
-        data = {'prefixes': prefixes}
+        data = {"prefixes": prefixes}
         return data
     else:
-        return template('document_list', prefixes=prefixes)
+        return template("document_list", prefixes=prefixes)
 
 
-@get('/documents/all')
+@get("/documents/all")
 def get_all_documents():
     """Read the tree's documents."""
     if utilities.json_response(request):
@@ -155,10 +156,10 @@ def get_all_documents():
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]
-        return template('document_list', prefixes=prefixes)
+        return template("document_list", prefixes=prefixes)
 
 
-@get('/documents/<prefix>')
+@get("/documents/<prefix>")
 def get_document(prefix):
     """Read a tree's document."""
     document = tree.find_document(prefix)
@@ -166,84 +167,84 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext='.html', linkify=True)
+        return publisher.publish_lines(document, ext=".html", linkify=True)
 
 
-@get('/documents/<prefix>/items')
+@get("/documents/<prefix>/items")
 def get_items(prefix):
     """Read a document's items."""
     document = tree.find_document(prefix)
     uids = [str(item.uid) for item in document]
     if utilities.json_response(request):
-        data = {'uids': uids}
+        data = {"uids": uids}
         return data
     else:
-        return template('item_list', prefix=prefix, items=uids)
+        return template("item_list", prefix=prefix, items=uids)
 
 
-@get('/documents/<prefix>/items/<uid>')
+@get("/documents/<prefix>/items/<uid>")
 def get_item(prefix, uid):
     """Read a document's item."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
     if utilities.json_response(request):
-        return {'data': item.data}
+        return {"data": item.data}
     else:
-        return publisher.publish_lines(item, ext='.html')
+        return publisher.publish_lines(item, ext=".html")
 
 
-@get('/documents/<prefix>/items/<uid>/attrs')
+@get("/documents/<prefix>/items/<uid>/attrs")
 def get_attrs(prefix, uid):
     """Read an item's attributes."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
     attrs = sorted(item.data.keys())
     if utilities.json_response(request):
-        data = {'attrs': attrs}
+        data = {"attrs": attrs}
         return data
     else:
-        return '<br>'.join(attrs)
+        return "<br>".join(attrs)
 
 
-@get('/documents/<prefix>/items/<uid>/attrs/<name>')
+@get("/documents/<prefix>/items/<uid>/attrs/<name>")
 def get_attr(prefix, uid, name):
     """Read an item's attribute value."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
     value = item.data.get(name, None)
     if utilities.json_response(request):
-        data = {'value': value}
+        data = {"value": value}
         return data
     else:
         if isinstance(value, str):
             return value
         try:
-            return '<br>'.join(str(e) for e in value)
+            return "<br>".join(str(e) for e in value)
         except TypeError:
             return str(value)
 
 
-@get('/assets/doorstop/<filename>')
+@get("/assets/doorstop/<filename>")
 def get_assets(filename):
     """Serve static files. Mainly used to serve CSS files and javascript."""
     public_dir = os.path.join(
-        os.path.dirname(__file__), '..', 'core', 'files', 'assets', 'doorstop'
+        os.path.dirname(__file__), "..", "core", "files", "assets", "doorstop"
     )
     return bottle.static_file(filename, root=public_dir)
 
 
-@post('/documents/<prefix>/numbers')
+@post("/documents/<prefix>/numbers")
 def post_numbers(prefix):
     """Create the next number in a document."""
     document = tree.find_document(prefix)
     number = max(document.next_number, numbers[prefix])
     numbers[prefix] = number + 1
     if utilities.json_response(request):
-        data = {'next': number}
+        data = {"next": number}
         return data
     else:
         return str(number)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

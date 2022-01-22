@@ -36,10 +36,10 @@ def build(cwd=None, root=None, request_next_number=None) -> Tree:
 
     # Find all documents in the working copy
     log.info("looking for documents in {}...".format(root))
-    skip_file_name = '.doorstop.skip-all'
+    skip_file_name = ".doorstop.skip-all"
     if not os.path.isfile(os.path.join(root, skip_file_name)):
         _document_from_path(root, root, documents)
-    exclude_dirnames = {'.git', '.venv', 'venv'}
+    exclude_dirnames = {".git", ".venv", "venv"}
     if not os.path.isfile(os.path.join(root, skip_file_name)):
         for dirpath, dirnames, _ in os.walk(root, topdown=True):
             whilelist_dirnames = []
