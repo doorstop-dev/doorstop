@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "2.2.post1"
+version = "3.0a1"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -30,7 +30,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -41,7 +40,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.6.2"
+python = "^3.7"
 
 PyYAML = "^5.1"
 Markdown = "^3.3.3"
@@ -49,7 +48,7 @@ bottle = "~0.12.13"
 requests = "^2.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
-six = "*" # missing 'plantuml-markdown' dependency: https://github.com/dougn/python-plantuml/issues/11
+six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
 openpyxl = "^2.6"
 
 [tool.poetry.dev-dependencies]
@@ -64,17 +63,15 @@ pydocstyle = "*"
 pylint = "~2.12"
 
 # Testing
-nose = "^1.3"
-nose-cov = "*"
-nose-capturestderr = "*"
-nose-show-skipped = "*"
-expecter = "*"
+pytest = "^6.2.5"
+pytest-cov = "*"
+pytest-expecter = "*"
 
 # Reports
 coveragespace = "^4.0"
 
 # Documentation
-mkdocs = "^1.0"
+mkdocs = "^1.2.3"
 pygments = "*"
 
 # Tooling

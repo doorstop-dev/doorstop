@@ -1,6 +1,6 @@
 <h1> Installation </h1>
 
-Doorstop requires [Python](https://www.python.org/) v3.5+ and [Git](https://git-scm.com/) or other version control system.
+Doorstop requires [Python](https://www.python.org/) and [Git](https://git-scm.com/) or another version control system.
 
 Once Python is installed on your platform, install Doorstop using pip.
 
@@ -8,7 +8,7 @@ Once Python is installed on your platform, install Doorstop using pip.
 pip install doorstop
 ```
 
-or add it to your [Poetry](https://poetry.eustace.io/) project:
+or add it to your [Poetry](https://python-poetry.org/) project:
 
 ```sh
 $ poetry add doorstop

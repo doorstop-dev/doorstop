@@ -78,9 +78,9 @@ endif
 
 RANDOM_SEED ?= $(shell date +%s)
 
-NOSE_OPTIONS := --with-doctest --traverse-namespace
+PYTEST_OPTIONS := --doctest-modules
 ifndef DISABLE_COVERAGE
-NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+PYTEST_OPTIONS += --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
 endif
 
 .PHONY: test
@@ -88,7 +88,7 @@ test: test-all ## Run unit and integration tests
 
 .PHONY: test-unit
 test-unit: install
-	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
+	poetry run pytest $(PACKAGE) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	poetry run coveragespace update unit
 endif
@@ -98,7 +98,7 @@ test-int: test-all
 
 .PHONY: test-all
 test-all: install
-	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
+	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	poetry run coveragespace update overall
 endif
