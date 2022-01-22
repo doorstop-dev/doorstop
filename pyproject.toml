@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "2.2"
+version = "2.2.post1"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -49,6 +49,7 @@ bottle = "~0.12.13"
 requests = "^2.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
+six = "*" # missing 'plantuml-markdown' dependency: https://github.com/dougn/python-plantuml/issues/11
 openpyxl = "^2.6"
 
 [tool.poetry.dev-dependencies]

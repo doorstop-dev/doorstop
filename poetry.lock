@@ -661,7 +661,7 @@ python-versions = "*"
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -780,7 +780,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6.2"
-content-hash = "2b54a14f15c847f25e2732805076b79b3f8d60f941303ff466c686b9f2dc585e"
+content-hash = "6a22c8a9f14625e4cf02d592c1c5c4b4f2612cfdcc22eb329b67bfb9a159e48c"
 
 [metadata.files]
 altgraph = [
