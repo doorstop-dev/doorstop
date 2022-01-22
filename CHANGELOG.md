@@ -1,4 +1,4 @@
-# 2.2 (beta)
+# 2.2 (2022-01-22)
 
 - Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
 - Added custom attributes to published documents. ([@chrta](https://github.com/doorstop-dev/doorstop/pull/476))
