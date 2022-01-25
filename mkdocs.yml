@@ -9,6 +9,9 @@ theme: readthedocs
 extra_css: []
 extra_javascript: []
 
+markdown_extensions:
+  - admonition
+
 nav:
 - Home: index.md
 - Getting Started:
