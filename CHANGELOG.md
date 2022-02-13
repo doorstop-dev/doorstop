@@ -1,6 +1,7 @@
 # 3.0 (alpha)
 
 - Dropped support for Python 3.6.
+- Fixed overriding default attributes with `doorstop add`. ([@tangoalx](https://github.com/doorstop-dev/doorstop/pull/544))
 
 # 2.2 (2022-01-22)
 
