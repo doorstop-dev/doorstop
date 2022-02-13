@@ -31,7 +31,7 @@ Additional references:
 
 ## Requirements
 
-* Python 3.5+
+* Python 3.7+
 * A version control system for requirements storage
 
 ## Installation
