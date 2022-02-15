@@ -578,12 +578,12 @@ def _lines_latex(obj, **kwargs):
                         continue
                     if not header_printed:
                         header_printed = True
-                        yield "\\begin{{longtable}}{{|l|l|}}"
+                        yield "\\begin{longtable}{|l|l|}"
                         yield "Attribute & Value\\\\"
                         yield "\\hline"
                     yield "{} & {}".format(attr, item.attribute(attr))
                 if header_printed:
-                    yield "\\end{{longtable}}"
+                    yield "\\end{longtable}"
                 else:
                     yield ""
 
@@ -796,7 +796,10 @@ def _format_latex_label_links(label, links, linkify):
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
     block = []
-    for line in text:
+    tableFound = False
+    headerDone = False
+    for i in range(len(text)):
+        line = text[i]
         #############################
         ## Fix BOLD and ITALICS.
         #############################
@@ -830,6 +833,56 @@ def _format_latex_text(text):
         line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
         # Replace #.
         line = re.sub("# (.*)", "\\\\section{\\1}", line)
+        #############################
+        ## Fix tables.
+        #############################
+        # Check if line is part of table.
+        table_match = re.findall("\|", line)
+        if table_match:
+            if not tableFound:
+                # Check next line for minimum 3 dashes and the same count of |.
+                if i < len(text):
+                    nextLine = text[i + 1]
+                    table_match_next = re.findall("\|", nextLine)
+                    if table_match_next:
+                        if len(table_match) == len(table_match_next):
+                            table_match_dashes = re.findall("-{3,}", nextLine)
+                            if table_match_dashes:
+                                tableFound = True
+                                if len(table_match) > len(table_match_dashes):
+                                    endPipes = True
+                                else:
+                                    endPipes = False
+                                nextLine = re.sub(":-+:", "c", nextLine)
+                                nextLine = re.sub("-+:", "r", nextLine)
+                                nextLine = re.sub("-+", "l", nextLine)
+                                tableHeader = "\\begin{longtable}{" + nextLine + "}"
+                                block.append(tableHeader)
+                                # Fix the header.
+                                line = re.sub("\|", "&", line)
+                                if endPipes:
+                                    line = re.sub("^\s*&", "", line)
+                                    line = re.sub("&\s*$", "\\\\\\\\", line)
+                                else:
+                                    line = line + "\\\\"
+            else:
+                if not headerDone:
+                    line = "\\hline"
+                    headerDone = True
+                else:
+                    # Fix the line.
+                    line = re.sub("\|", "&", line)
+                    if endPipes:
+                        line = re.sub("^\s*&", "", line)
+                        line = re.sub("&\s*$", "\\\\\\\\", line)
+                    else:
+                        line = line + "\\\\"
+        else:
+            if tableFound:
+                block.append("\\end{longtable}")
+            tableFound = False
+            headerDone = False
+        # All done. Add the line.
         block.append(line)
     return block
 
