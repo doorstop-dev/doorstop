@@ -793,10 +793,14 @@ def _format_latex_label_links(label, links, linkify):
 def _format_latex_text(text):
     block = []
     for line in text:
-        # Replace ** at beginning of line.
-        line = re.sub("^\*\*", "\\\\textbf{\\\\textit{", line)
-        # Replace ** at end of line.
-        line = re.sub("\*\*$", "}}", line)
+        # Replace **.
+        line = re.sub("\*\*(.*)\*\*", "\\\\textbf{\\1}", line)
+        # Replace __.
+        line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
+        # Replace *.
+        line = re.sub("\*(.*)\*", "\\\\textit{\\1}", line)
+        # Replace _.
+        line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
         block.append(line)
     return block
 
