@@ -540,12 +540,12 @@ def _lines_latex(obj, **kwargs):
             # Reference
             if item.ref:
                 yield ""  # break before reference
-                yield _format_md_ref(item)
+                yield _format_latex_ref(item)
 
             # Reference
             if item.references:
                 yield ""  # break before reference
-                yield _format_md_references(item)
+                yield _format_latex_references(item)
 
             # Parent links
             if item.links:
@@ -653,6 +653,19 @@ def _format_md_ref(item):
         return "> '{r}'".format(r=item.ref)
 
 
+def _format_latex_ref(item):
+    """Format an external reference in LaTeX."""
+    if settings.CHECK_REF:
+        path, line = item.find_ref()
+        path = path.replace("\\", "/")  # always use unix-style paths
+        if line:
+            return "$>$ \\verb|{p}| (line {line})".format(p=path, line=line)
+        else:
+            return "$>$ \\verb|{p}|".format(p=path)
+    else:
+        return "$>$ '\\verb|{r}|'".format(r=item.ref)
+
+
 def _format_md_references(item):
     """Format an external reference in Markdown."""
     if settings.CHECK_REF:
@@ -675,6 +688,31 @@ def _format_md_references(item):
             path = ref_item["path"]
             path = path.replace("\\", "/")  # always use unix-style paths
             text_refs.append("> '{r}'".format(r=path))
+        return "\n".join(ref for ref in text_refs)
+
+
+def _format_latex_references(item):
+    """Format an external reference in LaTeX."""
+    if settings.CHECK_REF:
+        references = item.find_references()
+        text_refs = []
+        for ref_item in references:
+            path, line = ref_item
+            path = path.replace("\\", "/")  # always use unix-style paths
+
+            if line:
+                text_refs.append("$>$ \\verb|{p}| (line {line})".format(p=path, line=line))
+            else:
+                text_refs.append("$>$ \\verb|{p}|".format(p=path))
+
+        return "\n".join(ref for ref in text_refs)
+    else:
+        references = item.references
+        text_refs = []
+        for ref_item in references:
+            path = ref_item["path"]
+            path = path.replace("\\", "/")  # always use unix-style paths
+            text_refs.append("$>$ '\\verb|{r}|'".format(r=path))
         return "\n".join(ref for ref in text_refs)
 
 
