@@ -791,8 +791,12 @@ def _format_latex_label_links(label, links, linkify):
         return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
 
 def _format_latex_text(text):
+    """Fix all general text formatting to use LaTeX-macros."""
     block = []
     for line in text:
+        #############################
+        ## Fix BOLD and ITALICS.
+        #############################
         # Replace **.
         line = re.sub("\*\*(.*)\*\*", "\\\\textbf{\\1}", line)
         # Replace __.
@@ -801,6 +805,11 @@ def _format_latex_text(text):
         line = re.sub("\*(.*)\*", "\\\\textit{\\1}", line)
         # Replace _.
         line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
+        #############################
+        ## Fix $
+        #############################
+        # Replace _.
+        line = re.sub("\$", "\\\\$", line)
         block.append(line)
     return block
 
