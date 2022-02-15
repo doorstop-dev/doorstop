@@ -486,10 +486,10 @@ def _lines_markdown(obj, **kwargs):
 
 
 def _lines_latex(obj, **kwargs):
-    """Yield lines for a Markdown report.
+    """Yield lines for a LaTeX report.
 
     :param obj: Item, list of Items, or Document to publish
-    :param linkify: turn links into hyperlinks (for conversion to HTML)
+    :param linkify: turn links into hyperlinks
 
     :return: iterator of lines of text
 
