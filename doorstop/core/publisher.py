@@ -660,11 +660,11 @@ def _format_latex_ref(item):
         path, line = item.find_ref()
         path = path.replace("\\", "/")  # always use unix-style paths
         if line:
-            return "$>$ \\verb|{p}| (line {line})".format(p=path, line=line)
+            return "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(p=path, line=line)
         else:
-            return "$>$ \\verb|{p}|".format(p=path)
+            return "\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path)
     else:
-        return "$>$ '\\verb|{r}|'".format(r=item.ref)
+        return "\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=item.ref)
 
 
 def _format_md_references(item):
@@ -702,9 +702,9 @@ def _format_latex_references(item):
             path = path.replace("\\", "/")  # always use unix-style paths
 
             if line:
-                text_refs.append("$>$ \\verb|{p}| (line {line})".format(p=path, line=line))
+                text_refs.append("\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(p=path, line=line))
             else:
-                text_refs.append("$>$ \\verb|{p}|".format(p=path))
+                text_refs.append("\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path))
 
         return "\n".join(ref for ref in text_refs)
     else:
@@ -713,7 +713,7 @@ def _format_latex_references(item):
         for ref_item in references:
             path = ref_item["path"]
             path = path.replace("\\", "/")  # always use unix-style paths
-            text_refs.append("$>$ '\\verb|{r}|'".format(r=path))
+            text_refs.append("\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=path))
         return "\n".join(ref for ref in text_refs)
 
 
