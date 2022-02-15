@@ -555,8 +555,8 @@ def _lines_latex(obj, **kwargs):
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                links = _format_md_links(items2, linkify)
-                label_links = _format_md_label_links(label, links, linkify)
+                links = _format_latex_links(items2, linkify)
+                label_links = _format_latex_label_links(label, links, linkify)
                 yield label_links
 
             # Child links
@@ -565,8 +565,8 @@ def _lines_latex(obj, **kwargs):
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"
-                    links = _format_md_links(items2, linkify)
-                    label_links = _format_md_label_links(label, links, linkify)
+                    links = _format_latex_links(items2, linkify)
+                    label_links = _format_latex_label_links(label, links, linkify)
                     yield label_links
 
             # Add custom publish attributes
@@ -725,6 +725,15 @@ def _format_md_links(items, linkify):
     return ", ".join(links)
 
 
+def _format_latex_links(items, linkify):
+    """Format a list of linked items in LaTeX."""
+    links = []
+    for item in items:
+        link = _format_latex_item_link(item, linkify=linkify)
+        links.append(link)
+    return ", ".join(links)
+
+
 def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
@@ -733,6 +742,18 @@ def _format_md_item_link(item, linkify=True):
                 u=item.uid, h=item.header, p=item.document.prefix
             )
         return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
+    else:
+        return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
+
+
+def _format_latex_item_link(item, linkify=True):
+    """Format an item link in LaTeX."""
+    if linkify and is_item(item):
+        if item.header:
+            return "\\href{{{u} {h}}}{{{p}.html#{u}}}".format(
+                u=item.uid, h=item.header, p=item.document.prefix
+            )
+        return "\\href{{{u}}}{{{p}.html#{u}}}".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
@@ -759,6 +780,14 @@ def _format_md_label_links(label, links, linkify):
         return "*{lb}* {ls}".format(lb=label, ls=links)
     else:
         return "*{lb} {ls}*".format(lb=label, ls=links)
+
+
+def _format_latex_label_links(label, links, linkify):
+    """Join a string of label and links with formatting."""
+    if linkify:
+        return "\\textbf{{{lb}}} {ls}".format(lb=label, ls=links)
+    else:
+        return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
 
 
 def _table_of_contents_md(obj, linkify=None):
