@@ -577,11 +577,11 @@ def _lines_latex(obj, **kwargs):
                         continue
                     if not header_printed:
                         header_printed = True
-                        yield ""
-                        yield "| Attribute | Value |"
-                        yield "| --------- | ----- |"
-                    yield "| {} | {} |".format(attr, item.attribute(attr))
-                yield ""
+                        yield "\\begin{{longtable}}{{|l|l|}}"
+                        yield "Attribute & Value\\\\"
+                        yield "\\hline"
+                    yield "{} & {}".format(attr, item.attribute(attr))
+                yield "\\end{{longtable}}"
 
         yield ""  # break between items
 
