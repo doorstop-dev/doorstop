@@ -803,7 +803,7 @@ def _lines_html(
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {".txt": _lines_text, ".md": _lines_markdown, ".html": _lines_html}
+FORMAT_LINES = {".txt": _lines_text, ".md": _lines_markdown, ".html": _lines_html, ".tex": _lines_latex}
 
 
 def check(ext):
