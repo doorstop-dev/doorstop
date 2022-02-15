@@ -498,6 +498,11 @@ def _format_md_attr_list(item, linkify):
     return " {{#{u} }}".format(u=item.uid) if linkify else ""
 
 
+def _format_latex_attr_list(item, linkify):
+    """Create a LaTeX attribute list for a heading."""
+    return "{l}{u}{le}".format(l="\label{", u=item.uid, le="}") if linkify else ""
+
+
 def _format_text_ref(item):
     """Format an external reference in text."""
     if settings.CHECK_REF:
