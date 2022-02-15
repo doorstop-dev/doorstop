@@ -485,6 +485,107 @@ def _lines_markdown(obj, **kwargs):
         yield ""  # break between items
 
 
+def _lines_latex(obj, **kwargs):
+    """Yield lines for a Markdown report.
+
+    :param obj: Item, list of Items, or Document to publish
+    :param linkify: turn links into hyperlinks (for conversion to HTML)
+
+    :return: iterator of lines of text
+
+    """
+    linkify = kwargs.get("linkify", False)
+    for item in iter_items(obj):
+
+        heading = "#" * item.depth
+        level = _format_level(item.level)
+
+        if item.heading:
+            text_lines = item.text.splitlines()
+            # Level and Text
+            if settings.PUBLISH_HEADING_LEVELS:
+                standard = "{h} {lev} {t}".format(
+                    h=heading, lev=level, t=text_lines[0] if text_lines else ""
+                )
+            else:
+                standard = "{h} {t}".format(
+                    h=heading, t=text_lines[0] if text_lines else ""
+                )
+            attr_list = _format_md_attr_list(item, True)
+            yield standard + attr_list
+            yield from text_lines[1:]
+        else:
+
+            uid = item.uid
+            if settings.ENABLE_HEADERS:
+                if item.header:
+                    uid = "{h} <small>{u}</small>".format(h=item.header, u=item.uid)
+                else:
+                    uid = "{u}".format(u=item.uid)
+
+            # Level and UID
+            if settings.PUBLISH_BODY_LEVELS:
+                standard = "{h} {lev} {u}".format(h=heading, lev=level, u=uid)
+            else:
+                standard = "{h} {u}".format(h=heading, u=uid)
+
+            attr_list = _format_md_attr_list(item, True)
+            yield standard + attr_list
+
+            # Text
+            if item.text:
+                yield ""  # break before text
+                yield from item.text.splitlines()
+
+            # Reference
+            if item.ref:
+                yield ""  # break before reference
+                yield _format_md_ref(item)
+
+            # Reference
+            if item.references:
+                yield ""  # break before reference
+                yield _format_md_references(item)
+
+            # Parent links
+            if item.links:
+                yield ""  # break before links
+                items2 = item.parent_items
+                if settings.PUBLISH_CHILD_LINKS:
+                    label = "Parent links:"
+                else:
+                    label = "Links:"
+                links = _format_md_links(items2, linkify)
+                label_links = _format_md_label_links(label, links, linkify)
+                yield label_links
+
+            # Child links
+            if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
+                if items2:
+                    yield ""  # break before links
+                    label = "Child links:"
+                    links = _format_md_links(items2, linkify)
+                    label_links = _format_md_label_links(label, links, linkify)
+                    yield label_links
+
+            # Add custom publish attributes
+            if item.document and item.document.publish:
+                header_printed = False
+                for attr in item.document.publish:
+                    if not item.attribute(attr):
+                        continue
+                    if not header_printed:
+                        header_printed = True
+                        yield ""
+                        yield "| Attribute | Value |"
+                        yield "| --------- | ----- |"
+                    yield "| {} | {} |".format(attr, item.attribute(attr))
+                yield ""
+
+        yield ""  # break between items
+
+
 def _format_level(level):
     """Convert a level to a string and keep zeros if not a top level."""
     text = str(level)
