@@ -582,7 +582,10 @@ def _lines_latex(obj, **kwargs):
                         yield "Attribute & Value\\\\"
                         yield "\\hline"
                     yield "{} & {}".format(attr, item.attribute(attr))
-                yield "\\end{{longtable}}"
+                if header_printed:
+                    yield "\\end{{longtable}}"
+                else:
+                    yield ""
 
         yield ""  # break between items
 
