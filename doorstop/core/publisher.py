@@ -3,6 +3,7 @@
 """Functions to publish documents and items."""
 
 import os
+import re
 import tempfile
 import textwrap
 
@@ -535,7 +536,7 @@ def _lines_latex(obj, **kwargs):
             # Text
             if item.text:
                 yield ""  # break before text
-                yield from item.text.splitlines()
+                yield from _format_latex_text(item.text.splitlines())
 
             # Reference
             if item.ref:
@@ -788,6 +789,16 @@ def _format_latex_label_links(label, links, linkify):
         return "\\textbf{{{lb}}} {ls}".format(lb=label, ls=links)
     else:
         return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
+
+def _format_latex_text(text):
+    block = []
+    for line in text:
+        # Replace ** at beginning of line.
+        line = re.sub("^\*\*", "\\\\textbf{\\\\textit{", line)
+        # Replace ** at end of line.
+        line = re.sub("\*\*$", "}}", line)
+        block.append(line)
+    return block
 
 
 def _table_of_contents_md(obj, linkify=None):
