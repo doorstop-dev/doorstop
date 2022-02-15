@@ -809,10 +809,12 @@ def _format_latex_text(text):
         # Replace _.
         line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
         #############################
-        ## Fix $
+        ## Fix $ and ~~
         #############################
         # Replace _.
         line = re.sub("\$", "\\\\$", line)
+        # Replace ~~.
+        line = re.sub("~~(.*)~~", "\\\\sout{\\1}", line)
         #############################
         ## Fix manual heading levels
         #############################
