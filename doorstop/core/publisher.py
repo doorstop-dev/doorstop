@@ -525,9 +525,9 @@ def _lines_latex(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h} {lev} {u}".format(h=heading, lev=level, u=uid)
+                standard = "{h}{lev} {u}{he}".format(h=heading, lev=level, u=uid, he="}")
             else:
-                standard = "{h} {u}".format(h=heading, u=uid)
+                standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
