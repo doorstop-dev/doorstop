@@ -798,6 +798,7 @@ def _format_latex_text(text):
     block = []
     tableFound = False
     headerDone = False
+    codeFound = False
     for i in range(len(text)):
         line = text[i]
         #############################
@@ -833,6 +834,20 @@ def _format_latex_text(text):
         line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
         # Replace #.
         line = re.sub("# (.*)", "\\\\section{\\1}", line)
+        #############################
+        ## Fix code blocks.
+        #############################
+        code_match = re.findall("```", line)
+        if code_match:
+            if codeFound:
+                block.append("\\end{lstlisting}")
+                codeFound = False
+            else:
+                block.append("\\begin{lstlisting}")
+                codeFound = True
+            # Replace ```.
+            line = re.sub("```", "", line)
+
         #############################
         ## Fix tables.
         #############################
