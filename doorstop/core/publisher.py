@@ -511,7 +511,7 @@ def _lines_latex(obj, **kwargs):
                 standard = "{h}{t}{he}".format(
                     h=heading, t=text_lines[0] if text_lines else "", he="}"
                 )
-            attr_list = _format_md_attr_list(item, True)
+            attr_list = _format_latex_attr_list(item, True)
             yield standard + attr_list
             yield from text_lines[1:]
         else:
@@ -529,7 +529,7 @@ def _lines_latex(obj, **kwargs):
             else:
                 standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
-            attr_list = _format_md_attr_list(item, True)
+            attr_list = _format_latex_attr_list(item, True)
             yield standard + attr_list
 
             # Text
