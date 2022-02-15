@@ -793,47 +793,71 @@ def _format_latex_label_links(label, links, linkify):
     else:
         return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
 
+
+def _latex_convert(line):
+    """Single string conversion for LaTeX."""
+    # Replace $.
+    line = re.sub("\$", "\\\\$", line)
+    #############################
+    ## Fix BOLD and ITALICS and Strikethrough.
+    #############################
+    # Replace **.
+    line = re.sub("\*\*(.*)\*\*", "\\\\textbf{\\1}", line)
+    # Replace __.
+    line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
+    # Replace *.
+    line = re.sub("\*(.*)\*", "\\\\textit{\\1}", line)
+    # Replace _.
+    line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
+    # Replace ~~.
+    line = re.sub("~~(.*)~~", "\\\\sout{\\1}", line)
+    #############################
+    ## Fix manual heading levels
+    #############################
+    # Replace ######.
+    line = re.sub("###### (.*)", "\\\\subparagraph{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
+    # Replace #####.
+    line = re.sub("##### (.*)", "\\\\subparagraph{\\1}", line)
+    # Replace ####.
+    line = re.sub("#### (.*)", "\\\\paragraph{\\1}", line)
+    # Replace ###.
+    line = re.sub("### (.*)", "\\\\subsubsection{\\1}", line)
+    # Replace ##.
+    line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
+    # Replace #.
+    line = re.sub("# (.*)", "\\\\section{\\1}", line)
+    return line
+
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
     block = []
     tableFound = False
     headerDone = False
     codeFound = False
+    mathFound = False
     for i in range(len(text)):
         line = text[i]
         #############################
-        ## Fix BOLD and ITALICS.
+        ## Fix $ and MATH.
         #############################
-        # Replace **.
-        line = re.sub("\*\*(.*)\*\*", "\\\\textbf{\\1}", line)
-        # Replace __.
-        line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
-        # Replace *.
-        line = re.sub("\*(.*)\*", "\\\\textit{\\1}", line)
-        # Replace _.
-        line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
-        #############################
-        ## Fix $ and ~~
-        #############################
-        # Replace _.
-        line = re.sub("\$", "\\\\$", line)
-        # Replace ~~.
-        line = re.sub("~~(.*)~~", "\\\\sout{\\1}", line)
-        #############################
-        ## Fix manual heading levels
-        #############################
-        # Replace ######.
-        line = re.sub("###### (.*)", "\\\\subparagraph{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
-        # Replace #####.
-        line = re.sub("##### (.*)", "\\\\subparagraph{\\1}", line)
-        # Replace ####.
-        line = re.sub("#### (.*)", "\\\\paragraph{\\1}", line)
-        # Replace ###.
-        line = re.sub("### (.*)", "\\\\subsubsection{\\1}", line)
-        # Replace ##.
-        line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
-        # Replace #.
-        line = re.sub("# (.*)", "\\\\section{\\1}", line)
+        math_match = re.split("\$\$", line)
+        if len(math_match) > 1:
+            if mathFound and len(math_match) == 2:
+                mathFound = False
+                line = math_match[0] + "$" + _latex_convert(math_match[1])
+            elif len(math_match) == 2:
+                mathFound = True
+                line = _latex_convert(math_match[0]) + "$" + math_match[1]
+            elif len(math_match) == 3:
+                line = _latex_convert(math_match[0]) + "$" + math_match[1] + "$" + _latex_convert(math_match[2])
+            else:
+                line = "ERROR: Cannot handle multiple math environments on one row."
+        else:
+            line = _latex_convert(line)
+        # Skip all other changes if in MATH!
+        if mathFound:
+            block.append(line)
+            continue
         #############################
         ## Fix code blocks.
         #############################
@@ -847,6 +871,8 @@ def _format_latex_text(text):
                 codeFound = True
             # Replace ```.
             line = re.sub("```", "", line)
+        # Replace ` for inline code.
+        line = re.sub("`(.*)`", "\\\\lstinline`\\1`", line)
         #############################
         ## Fix tables.
         #############################
