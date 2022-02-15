@@ -497,19 +497,19 @@ def _lines_latex(obj, **kwargs):
     linkify = kwargs.get("linkify", False)
     for item in iter_items(obj):
 
-        heading = "#" * item.depth
+        heading = "\\" + "sub" * (item.depth - 1) + "section{"
         level = _format_level(item.level)
 
         if item.heading:
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level, t=text_lines[0] if text_lines else ""
+                standard = "{h}{lev} {t}{he}".format(
+                    h=heading, lev=level, t=text_lines[0] if text_lines else "", he="}"
                 )
             else:
-                standard = "{h} {t}".format(
-                    h=heading, t=text_lines[0] if text_lines else ""
+                standard = "{h}{t}{he}".format(
+                    h=heading, t=text_lines[0] if text_lines else "", he="}"
                 )
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
