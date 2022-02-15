@@ -813,6 +813,21 @@ def _format_latex_text(text):
         #############################
         # Replace _.
         line = re.sub("\$", "\\\\$", line)
+        #############################
+        ## Fix manual heading levels
+        #############################
+        # Replace ######.
+        line = re.sub("###### (.*)", "\\\\subparagraph{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
+        # Replace #####.
+        line = re.sub("##### (.*)", "\\\\subparagraph{\\1}", line)
+        # Replace ####.
+        line = re.sub("#### (.*)", "\\\\paragraph{\\1}", line)
+        # Replace ###.
+        line = re.sub("### (.*)", "\\\\subsubsection{\\1}", line)
+        # Replace ##.
+        line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
+        # Replace #.
+        line = re.sub("# (.*)", "\\\\section{\\1}", line)
         block.append(line)
     return block
 
