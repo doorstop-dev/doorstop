@@ -847,7 +847,6 @@ def _format_latex_text(text):
                 codeFound = True
             # Replace ```.
             line = re.sub("```", "", line)
-
         #############################
         ## Fix tables.
         #############################
@@ -897,6 +896,18 @@ def _format_latex_text(text):
                 block.append("\\end{longtable}")
             tableFound = False
             headerDone = False
+        #############################
+        ## Fix plantuml.
+        #############################
+        if re.findall("^plantuml\s", line):
+            plantUMLName = re.search("title=\"(.*)\"", line).groups(0)[0]
+            plantUMLFile = re.sub("\s", "-", plantUMLName)
+            line = "\\begin{plantuml}{" + plantUMLFile + "}"
+        if re.findall("@enduml", line):
+            block.append(line)
+            block.append("\\end{plantuml}")
+            line = "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+
         # All done. Add the line.
         block.append(line)
     return block
