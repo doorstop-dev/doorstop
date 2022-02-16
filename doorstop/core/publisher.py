@@ -983,11 +983,6 @@ def _format_latex_text(text):
                         block.append(line)
                         line = "\\end{enumerate}"
                         enumerationFound = False
-                else:
-                    # End of file. So finish it.
-                    block.append(line)
-                    line = "\\end{enumerate}"
-                    itemizeFound = False
             else:
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
@@ -996,11 +991,6 @@ def _format_latex_text(text):
                         block.append(line)
                         line = "\\end{enumerate}"
                         enumerationFound = False
-                else:
-                    # End of file. So finish it.
-                    block.append(line)
-                    line = "\\end{enumerate}"
-                    itemizeFound = False
         #############################
         ## Fix itemize.
         #############################
@@ -1020,11 +1010,6 @@ def _format_latex_text(text):
                         block.append(line)
                         line = "\\end{itemize}"
                         itemizeFound = False
-                else:
-                    # End of file. So finish it.
-                    block.append(line)
-                    line = "\\end{itemize}"
-                    itemizeFound = False
             else:
                 # Look ahead - need empty line to end itemize!
                 if i < len(text) - 1:
@@ -1033,11 +1018,6 @@ def _format_latex_text(text):
                         block.append(line)
                         line = "\\end{itemize}"
                         itemizeFound = False
-                else:
-                    # End of file. So finish it.
-                    block.append(line)
-                    line = "\\end{itemize}"
-                    itemizeFound = False
 
         #############################
         ## Fix tables.
@@ -1110,8 +1090,25 @@ def _format_latex_text(text):
             if nextLine == "" and not re.search("\\\\", line) and not noParagraph:
                 line = line + "\\\\"
 
-        # All done. Add the line.
+        #############################
+        ## All done. Add the line.
+        #############################
         block.append(line)
+
+        # Check for end of file and end all environments.
+        if i == len(text) - 1:
+            if codeFound:
+                block.append("\\end{lstlisting}")
+            if enumerationFound:
+                block.append("\\end{enumerate}")
+            if itemizeFound:
+                block.append("\\end{itemize}")
+            if plantUMLFound:
+                block.append("\\end{plantuml}")
+                line = "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+            if tableFound:
+                block.append("\\end{longtable}")
+
     return block
 
 
