@@ -133,7 +133,9 @@ def publish(
             # Create the wrapper file.
             head, tail = os.path.split(path2)
             if tail != str(obj2) + ".tex":
-                log.warning("LaTeX export does not support custom file names. Change in .doorstop.yml instead.")
+                log.warning(
+                    "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
+                )
             tail = document_name + ".tex"
             path2 = os.path.join(head, str(obj2) + ".tex")
             path3 = os.path.join(head, tail)
@@ -155,7 +157,9 @@ def publish(
             wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
             wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
             wrapper.append("")
-            wrapper.append("% Add all documents as external references to allow cross-references.")
+            wrapper.append(
+                "% Add all documents as external references to allow cross-references."
+            )
             for external, ignore_path in iter_documents(obj, path, ext):
                 # Check for defined document attributes.
                 external_doc_name = "doc-" + str(external)
@@ -164,8 +168,12 @@ def publish(
                         external_doc_name = external._attribute_defaults["doc"]["name"]
                 # Don't add self.
                 if external_doc_name != document_name:
-                    wrapper.append("\\zexternaldocument{{{n}}}".format(n=external_doc_name))
-                    wrapper.append("\\externaldocument{{{n}}}".format(n=external_doc_name))
+                    wrapper.append(
+                        "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
+                    )
+                    wrapper.append(
+                        "\\externaldocument{{{n}}}".format(n=external_doc_name)
+                    )
             wrapper.append("")
             wrapper.append("\\begin{document}")
             wrapper.append("\\makecoverpage")
@@ -187,7 +195,7 @@ def publish(
     if ext == ".tex":
         head, tail = os.path.split(path2)
         tail = "compile.sh"
-        path4= os.path.join(head, tail)
+        path4 = os.path.join(head, tail)
         common.write_lines(compile, path4)
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
@@ -686,7 +694,11 @@ def _format_md_attr_list(item, linkify):
 
 def _format_latex_attr_list(item, linkify):
     """Create a LaTeX attribute list for a heading."""
-    return "{l}{u}{le}{zl}{u}{le}".format(l="\label{", zl="\zlabel{", u=item.uid, le="}") if linkify else ""
+    return (
+        "{l}{u}{le}{zl}{u}{le}".format(l="\label{", zl="\zlabel{", u=item.uid, le="}")
+        if linkify
+        else ""
+    )
 
 
 def _format_text_ref(item):
@@ -744,7 +756,9 @@ def _format_latex_ref(item):
         path, line = item.find_ref()
         path = path.replace("\\", "/")  # always use unix-style paths
         if line:
-            return "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(p=path, line=line)
+            return "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(
+                p=path, line=line
+            )
         else:
             return "\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path)
     else:
@@ -786,9 +800,15 @@ def _format_latex_references(item):
             path = path.replace("\\", "/")  # always use unix-style paths
 
             if line:
-                text_refs.append("\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(p=path, line=line))
+                text_refs.append(
+                    "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(
+                        p=path, line=line
+                    )
+                )
             else:
-                text_refs.append("\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path))
+                text_refs.append(
+                    "\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path)
+                )
 
         return "\n".join(ref for ref in text_refs)
     else:
@@ -797,7 +817,9 @@ def _format_latex_references(item):
         for ref_item in references:
             path = ref_item["path"]
             path = path.replace("\\", "/")  # always use unix-style paths
-            text_refs.append("\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=path))
+            text_refs.append(
+                "\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=path)
+            )
         return "\n".join(ref for ref in text_refs)
 
 
@@ -900,7 +922,11 @@ def _latex_convert(line):
     else:
         star = "*"
     # Replace ######.
-    line = re.sub("###### (.*)", "\\\\subparagraph" + star + "{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
+    line = re.sub(
+        "###### (.*)",
+        "\\\\subparagraph" + star + "{\\1 \\\\textbf{NOTE: This level is too deep.}}",
+        line,
+    )
     # Replace #####.
     line = re.sub("##### (.*)", "\\\\subparagraph" + star + "{\\1}", line)
     # Replace ####.
@@ -912,6 +938,7 @@ def _latex_convert(line):
     # Replace #.
     line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
     return line
+
 
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
@@ -938,7 +965,13 @@ def _format_latex_text(text):
                 mathFound = True
                 line = _latex_convert(math_match[0]) + "$" + math_match[1]
             elif len(math_match) == 3:
-                line = _latex_convert(math_match[0]) + "$" + math_match[1] + "$" + _latex_convert(math_match[2])
+                line = (
+                    _latex_convert(math_match[0])
+                    + "$"
+                    + math_match[1]
+                    + "$"
+                    + _latex_convert(math_match[2])
+                )
             else:
                 line = "ERROR: Cannot handle multiple math environments on one row."
         else:
@@ -1074,14 +1107,16 @@ def _format_latex_text(text):
         if plantUMLFound:
             noParagraph = True
         if re.findall("^plantuml\s", line):
-            plantUMLName = re.search("title=\"(.*)\"", line).groups(0)[0]
+            plantUMLName = re.search('title="(.*)"', line).groups(0)[0]
             plantUMLFile = re.sub("\s", "-", plantUMLName)
             line = "\\begin{plantuml}{" + plantUMLFile + "}"
             plantUMLFound = True
         if re.findall("@enduml", line):
             block.append(line)
             block.append("\\end{plantuml}")
-            line = "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+            line = (
+                "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+            )
             plantUMLFound = False
 
         # Look ahead for empty line and add paragraph.
@@ -1105,7 +1140,13 @@ def _format_latex_text(text):
                 block.append("\\end{itemize}")
             if plantUMLFound:
                 block.append("\\end{plantuml}")
-                line = "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+                line = (
+                    "\\process{"
+                    + plantUMLFile
+                    + "}{0.8\\textwidth}{"
+                    + plantUMLName
+                    + "}"
+                )
             if tableFound:
                 block.append("\\end{longtable}")
 
@@ -1192,7 +1233,12 @@ def _lines_html(
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {".txt": _lines_text, ".md": _lines_markdown, ".html": _lines_html, ".tex": _lines_latex}
+FORMAT_LINES = {
+    ".txt": _lines_text,
+    ".md": _lines_markdown,
+    ".html": _lines_html,
+    ".tex": _lines_latex,
+}
 
 
 def check(ext):
