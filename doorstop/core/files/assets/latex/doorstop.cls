@@ -195,7 +195,7 @@
 \end{tabular}}}}
 \fancyhead[LE,LO]{\hspace*{0.2cm}\includegraphics[logotrim, width=4.5cm]{\logo}}
 \fancyfoot[RO]{%
-	\thepage(\pageref{LastPage})
+	\thepage(\pageref*{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=-90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.east)
 		 {\claimer
@@ -203,7 +203,7 @@
 	\end{tikzpicture}
 	}
 \fancyfoot[LE]{%
-	\thepage(\pageref{LastPage})
+	\thepage(\pageref*{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.west)
 		 {\claimer
@@ -216,7 +216,7 @@
 \renewcommand{\headrulewidth}{0pt} % remove lines as well
 \renewcommand{\footrulewidth}{0pt}
 \fancyfoot[RO]{%
-	\thepage(\pageref{LastPage})
+	\thepage(\pageref*{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=-90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.east)
 		 {\claimer
@@ -224,7 +224,7 @@
 	\end{tikzpicture}
 	}
 \fancyfoot[LE]{%
-	\thepage(\pageref{LastPage})
+	\thepage(\pageref*{LastPage})
 	\begin{tikzpicture}[overlay,remember picture]
 		\node [rotate=90, font=\tiny, yshift=-0.6cm, text width=9cm] at (current page.west)
 		 {\claimer
