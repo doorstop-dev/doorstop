@@ -13,6 +13,7 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
+from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core import Document
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
@@ -102,8 +103,73 @@ def publish(
 
     # Publish documents
     count = 0
+    compile = []
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
+        # Publish wrapper files for LaTeX.
+        if ext == ".tex":
+            # Check for defined document attributes.
+            document_name = "doc-" + str(obj2)
+            document_title = "Test document for development of \\textit{Doorstop}"
+            document_ref = ""
+            document_by = ""
+            document_major = ""
+            document_minor = ""
+            if obj2._attribute_defaults:
+                if obj2._attribute_defaults["doc"]["name"]:
+                    document_name = obj2._attribute_defaults["doc"]["name"]
+                if obj2._attribute_defaults["doc"]["title"]:
+                    document_title = obj2._attribute_defaults["doc"]["title"]
+                if obj2._attribute_defaults["doc"]["ref"]:
+                    document_ref = obj2._attribute_defaults["doc"]["ref"]
+                if obj2._attribute_defaults["doc"]["by"]:
+                    document_by = obj2._attribute_defaults["doc"]["by"]
+                if obj2._attribute_defaults["doc"]["major"]:
+                    document_major = obj2._attribute_defaults["doc"]["major"]
+                if obj2._attribute_defaults["doc"]["minor"]:
+                    document_minor = obj2._attribute_defaults["doc"]["minor"]
+            # Add to compile.sh
+            compile.append("pdflatex -shell-escape {n}.tex".format(n=document_name))
+
+            # Create the wrapper file.
+            path3 = re.sub("{n}.tex".format(n=str(obj2)), "{n}.tex".format(n=document_name), path2)
+            wrapper = []
+            wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
+            wrapper.append("\\usepackage[utf8]{inputenc}")
+            wrapper.append("")
+            wrapper.append("%% Change these to change logotype and/or copyright.")
+            wrapper.append("% \\def\\owner{Whatever Inc.}")
+            wrapper.append("% \\def\\logo{assets/logo-black-white.png}")
+            wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
+            wrapper.append("")
+            wrapper.append("% Define the header.")
+            wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2._data["prefix"]))
+            wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
+            wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
+            wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
+            wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
+            wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
+            wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
+            wrapper.append("")
+            wrapper.append("% Add all documents as external references to allow cross-references.")
+            for external, ignore_path in iter_documents(obj, path, ext):
+                # Check for defined document attributes.
+                external_doc_name = "doc-" + str(external)
+                if external._attribute_defaults:
+                    if external._attribute_defaults["doc"]["name"]:
+                        external_doc_name = external._attribute_defaults["doc"]["name"]
+                # Don't add self.
+                if external_doc_name != document_name:
+                    wrapper.append("\\zexternaldocument{{{n}}}".format(n=external_doc_name))
+                    wrapper.append("\\externaldocument{{{n}}}".format(n=external_doc_name))
+            wrapper.append("")
+            wrapper.append("\\begin{document}")
+            wrapper.append("\\makecoverpage")
+            wrapper.append("\\maketoc")
+            wrapper.append("% Load the output file.")
+            wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
+            wrapper.append("\\end{document}")
+            common.write_lines(wrapper, path3)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
@@ -113,6 +179,12 @@ def publish(
         common.write_lines(lines, path2)
         if obj2.copy_assets(assets_dir):
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
+
+    if ext == ".tex":
+        path4 = re.sub("{n}.tex".format(n=str(obj2)), "compile.sh", path2)
+        common.write_lines(compile, path4)
+        msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
+        utilities.show(msg, flush=True)
 
     # Create index
     if index and count:
