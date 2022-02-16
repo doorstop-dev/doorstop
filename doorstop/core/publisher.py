@@ -921,6 +921,7 @@ def _format_latex_text(text):
     codeFound = False
     mathFound = False
     plantUMLFound = False
+    enumerationFound = False
     for i in range(len(text)):
         noParagraph = False
         line = text[i]
@@ -962,6 +963,26 @@ def _format_latex_text(text):
             line = re.sub("```", "", line)
         # Replace ` for inline code.
         line = re.sub("`(.*)`", "\\\\lstinline`\\1`", line)
+        #############################
+        ## Fix enumeration.
+        #############################
+        enumeration_match = re.findall("^[0-9]+\.\s(.*)", line)
+        if enumeration_match and not enumerationFound:
+            block.append("\\begin{enumerate}")
+            enumerationFound = True
+        if enumerationFound:
+            noParagraph = True
+            if enumeration_match:
+                # Replace the number.
+                line = re.sub("^[0-9]+\.\s", "\\\\item ", line)
+            else:
+                # Look ahead - need empty line to end enumeration!
+                if i < len(text) - 1:
+                    nextLine = text[i + 1]
+                    if nextLine == "":
+                        block.append(line)
+                        line = "\\end{enumerate}"
+                        enumerationFound = False
         #############################
         ## Fix tables.
         #############################
