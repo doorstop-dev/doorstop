@@ -44,7 +44,7 @@ def _lines_latex(obj, **kwargs):
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
-                    uid = "{h}{{\small{{}}{u}}}".format(h=item.header, u=item.uid)
+                    uid = "{h}{{\\small{{}}{u}}}".format(h=item.header, u=item.uid)
                 else:
                     uid = "{u}".format(u=item.uid)
 
@@ -117,7 +117,7 @@ def _lines_latex(obj, **kwargs):
 def _format_latex_attr_list(item, linkify):
     """Create a LaTeX attribute list for a heading."""
     return (
-        "{l}{u}{le}{zl}{u}{le}".format(l="\label{", zl="\zlabel{", u=item.uid, le="}")
+        "{l}{u}{le}{zl}{u}{le}".format(l="\\label{", zl="\\zlabel{", u=item.uid, le="}")
         if linkify
         else ""
     )
@@ -201,16 +201,16 @@ def _format_latex_label_links(label, links, linkify):
 def _latex_convert(line):
     """Single string conversion for LaTeX."""
     # Replace $.
-    line = re.sub("\$", "\\\\$", line)
+    line = re.sub("\\$", "\\\\$", line)
     #############################
     ## Fix BOLD and ITALICS and Strikethrough.
     #############################
     # Replace **.
-    line = re.sub("\*\*(.*)\*\*", "\\\\textbf{\\1}", line)
+    line = re.sub("\\*\\*(.*)\\*\\*", "\\\\textbf{\\1}", line)
     # Replace __.
     line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
     # Replace *.
-    line = re.sub("\*(.*)\*", "\\\\textit{\\1}", line)
+    line = re.sub("\\*(.*)\\*", "\\\\textit{\\1}", line)
     # Replace _.
     line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
     # Replace ~~.
@@ -251,13 +251,12 @@ def _format_latex_text(text):
     plantUMLFound = False
     enumerationFound = False
     itemizeFound = False
-    for i in range(len(text)):
+    for i, line in enumerate(text):
         noParagraph = False
-        line = text[i]
         #############################
         ## Fix $ and MATH.
         #############################
-        math_match = re.split("\$\$", line)
+        math_match = re.split("\\$\\$", line)
         if len(math_match) > 1:
             if mathFound and len(math_match) == 2:
                 mathFound = False
@@ -301,7 +300,7 @@ def _format_latex_text(text):
         #############################
         ## Fix enumeration.
         #############################
-        enumeration_match = re.findall("^[0-9]+\.\s(.*)", line)
+        enumeration_match = re.findall("^[0-9]+\\.\\s(.*)", line)
         if enumeration_match and not enumerationFound:
             block.append("\\begin{enumerate}")
             enumerationFound = True
@@ -309,7 +308,7 @@ def _format_latex_text(text):
             noParagraph = True
             if enumeration_match:
                 # Replace the number.
-                line = re.sub("^[0-9]+\.\s", "\\\\item ", line)
+                line = re.sub("^[0-9]+\\.\\s", "\\\\item ", line)
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
                     nextLine = text[i + 1]
@@ -328,7 +327,7 @@ def _format_latex_text(text):
         #############################
         ## Fix itemize.
         #############################
-        itemize_match = re.findall("^[\*+-]\s(.*)", line)
+        itemize_match = re.findall("^[\\*+-]\\s(.*)", line)
         if itemize_match and not itemizeFound:
             block.append("\\begin{itemize}")
             itemizeFound = True
@@ -336,7 +335,7 @@ def _format_latex_text(text):
             noParagraph = True
             if itemize_match:
                 # Replace the number.
-                line = re.sub("^[\*+-]\s", "\\\\item ", line)
+                line = re.sub("^[\\*+-]\\s", "\\\\item ", line)
                 # Look ahead - need empty line to end itemize!
                 if i < len(text) - 1:
                     nextLine = text[i + 1]
@@ -357,32 +356,31 @@ def _format_latex_text(text):
         ## Fix tables.
         #############################
         # Check if line is part of table.
-        table_match = re.findall("\|", line)
+        table_match = re.findall("\\|", line)
         if table_match:
             if not tableFound:
                 # Check next line for minimum 3 dashes and the same count of |.
                 if i < len(text) - 1:
                     nextLine = text[i + 1]
-                    table_match_next = re.findall("\|", nextLine)
+                    table_match_next = re.findall("\\|", nextLine)
                     if table_match_next:
                         if len(table_match) == len(table_match_next):
                             table_match_dashes = re.findall("-{3,}", nextLine)
                             if table_match_dashes:
                                 tableFound = True
-                                if len(table_match) > len(table_match_dashes):
-                                    endPipes = True
-                                else:
-                                    endPipes = False
+                                endPipes = bool(
+                                    len(table_match) > len(table_match_dashes)
+                                )
                                 nextLine = re.sub(":-+:", "c", nextLine)
                                 nextLine = re.sub("-+:", "r", nextLine)
                                 nextLine = re.sub("-+", "l", nextLine)
                                 tableHeader = "\\begin{longtable}{" + nextLine + "}"
                                 block.append(tableHeader)
                                 # Fix the header.
-                                line = re.sub("\|", "&", line)
+                                line = re.sub("\\|", "&", line)
                                 if endPipes:
-                                    line = re.sub("^\s*&", "", line)
-                                    line = re.sub("&\s*$", "\\\\\\\\", line)
+                                    line = re.sub("^\\s*&", "", line)
+                                    line = re.sub("&\\s*$", "\\\\\\\\", line)
                                 else:
                                     line = line + "\\\\"
             else:
@@ -391,10 +389,10 @@ def _format_latex_text(text):
                     headerDone = True
                 else:
                     # Fix the line.
-                    line = re.sub("\|", "&", line)
+                    line = re.sub("\\|", "&", line)
                     if endPipes:
-                        line = re.sub("^\s*&", "", line)
-                        line = re.sub("&\s*$", "\\\\\\\\", line)
+                        line = re.sub("^\\s*&", "", line)
+                        line = re.sub("&\\s*$", "\\\\\\\\", line)
                     else:
                         line = line + "\\\\"
         else:
@@ -407,11 +405,11 @@ def _format_latex_text(text):
         #############################
         if plantUMLFound:
             noParagraph = True
-        if re.findall("^plantuml\s", line):
+        if re.findall("^plantuml\\s", line):
             plantUML_title = re.search('title="(.*)"', line)
             if plantUML_title:
                 plantUMLName = plantUML_title.groups(0)[0]
-            plantUMLFile = re.sub("\s", "-", plantUMLName)
+            plantUMLFile = re.sub("\\s", "-", plantUMLName)
             line = "\\begin{plantuml}{" + plantUMLFile + "}"
             plantUMLFound = True
         if re.findall("@enduml", line):

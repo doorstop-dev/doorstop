@@ -3,7 +3,6 @@
 """Functions to publish documents and items."""
 
 import os
-import re
 import tempfile
 import textwrap
 
@@ -104,8 +103,13 @@ def publish(
 
     # Publish documents
     count = 0
-    compile = []
+    compile_files = []
+    compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
+        head, tail = os.path.split(path2)
+        tail = "compile.sh"
+        compile_path = os.path.join(head, tail)
+
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
@@ -116,21 +120,24 @@ def publish(
             document_by = ""
             document_major = ""
             document_minor = ""
-            if obj2._attribute_defaults:
-                if obj2._attribute_defaults["doc"]["name"]:
-                    document_name = obj2._attribute_defaults["doc"]["name"]
-                if obj2._attribute_defaults["doc"]["title"]:
-                    document_title = obj2._attribute_defaults["doc"]["title"]
-                if obj2._attribute_defaults["doc"]["ref"]:
-                    document_ref = obj2._attribute_defaults["doc"]["ref"]
-                if obj2._attribute_defaults["doc"]["by"]:
-                    document_by = obj2._attribute_defaults["doc"]["by"]
-                if obj2._attribute_defaults["doc"]["major"]:
-                    document_major = obj2._attribute_defaults["doc"]["major"]
-                if obj2._attribute_defaults["doc"]["minor"]:
-                    document_minor = obj2._attribute_defaults["doc"]["minor"]
+            attribute_defaults = obj2.__getattribute__("_attribute_defaults")
+            if attribute_defaults:
+                if attribute_defaults["doc"]["name"]:
+                    document_name = attribute_defaults["doc"]["name"]
+                if attribute_defaults["doc"]["title"]:
+                    document_title = attribute_defaults["doc"]["title"]
+                if attribute_defaults["doc"]["ref"]:
+                    document_ref = attribute_defaults["doc"]["ref"]
+                if attribute_defaults["doc"]["by"]:
+                    document_by = attribute_defaults["doc"]["by"]
+                if attribute_defaults["doc"]["major"]:
+                    document_major = attribute_defaults["doc"]["major"]
+                if attribute_defaults["doc"]["minor"]:
+                    document_minor = attribute_defaults["doc"]["minor"]
             # Add to compile.sh
-            compile.append("pdflatex -shell-escape {n}.tex".format(n=document_name))
+            compile_files.append(
+                "pdflatex -shell-escape {n}.tex".format(n=document_name)
+            )
             # Create the wrapper file.
             head, tail = os.path.split(path2)
             if tail != str(obj2) + ".tex":
@@ -150,7 +157,7 @@ def publish(
             wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
             wrapper.append("")
             wrapper.append("% Define the header.")
-            wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2._data["prefix"]))
+            wrapper.append("\\def\\doccategory{{{t}}}".format(t=str(obj2)))
             wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
             wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
             wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
@@ -161,12 +168,15 @@ def publish(
             wrapper.append(
                 "% Add all documents as external references to allow cross-references."
             )
-            for external, ignore_path in iter_documents(obj, path, ext):
+            for external, _ in iter_documents(obj, path, ext):
                 # Check for defined document attributes.
                 external_doc_name = "doc-" + str(external)
-                if external._attribute_defaults:
-                    if external._attribute_defaults["doc"]["name"]:
-                        external_doc_name = external._attribute_defaults["doc"]["name"]
+                external_attribute_defaults = external.__getattribute__(
+                    "_attribute_defaults"
+                )
+                if external_attribute_defaults:
+                    if external_attribute_defaults["doc"]["name"]:
+                        external_doc_name = external_attribute_defaults["doc"]["name"]
                 # Don't add self.
                 if external_doc_name != document_name:
                     wrapper.append(
@@ -194,10 +204,7 @@ def publish(
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
     if ext == ".tex":
-        head, tail = os.path.split(path2)
-        tail = "compile.sh"
-        path4 = os.path.join(head, tail)
-        common.write_lines(compile, path4)
+        common.write_lines(compile_files, compile_path)
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
