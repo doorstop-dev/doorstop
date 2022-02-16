@@ -857,10 +857,8 @@ def _format_latex_item_link(item, linkify=True):
     """Format an item link in LaTeX."""
     if linkify and is_item(item):
         if item.header:
-            return "\\hyperref[{u}]{{{u}}}".format(
-                u=item.uid, h=item.header, p=item.document.prefix
-            )
-        return "\\hyperref[{u}]{{{u}}}".format(u=item.uid, p=item.document.prefix)
+            return "\\hyperref[{u}]{{{u}}}".format(u=item.uid)
+        return "\\hyperref[{u}]{{{u}}}".format(u=item.uid)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
