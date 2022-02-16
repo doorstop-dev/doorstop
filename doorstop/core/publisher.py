@@ -922,6 +922,7 @@ def _format_latex_text(text):
     mathFound = False
     plantUMLFound = False
     enumerationFound = False
+    itemizeFound = False
     for i in range(len(text)):
         noParagraph = False
         line = text[i]
@@ -975,6 +976,18 @@ def _format_latex_text(text):
             if enumeration_match:
                 # Replace the number.
                 line = re.sub("^[0-9]+\.\s", "\\\\item ", line)
+                # Look ahead - need empty line to end enumeration!
+                if i < len(text) - 1:
+                    nextLine = text[i + 1]
+                    if nextLine == "":
+                        block.append(line)
+                        line = "\\end{enumerate}"
+                        enumerationFound = False
+                else:
+                    # End of file. So finish it.
+                    block.append(line)
+                    line = "\\end{enumerate}"
+                    itemizeFound = False
             else:
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
@@ -983,6 +996,49 @@ def _format_latex_text(text):
                         block.append(line)
                         line = "\\end{enumerate}"
                         enumerationFound = False
+                else:
+                    # End of file. So finish it.
+                    block.append(line)
+                    line = "\\end{enumerate}"
+                    itemizeFound = False
+        #############################
+        ## Fix itemize.
+        #############################
+        itemize_match = re.findall("^[\*+-]\s(.*)", line)
+        if itemize_match and not itemizeFound:
+            block.append("\\begin{itemize}")
+            itemizeFound = True
+        if itemizeFound:
+            noParagraph = True
+            if itemize_match:
+                # Replace the number.
+                line = re.sub("^[\*+-]\s", "\\\\item ", line)
+                # Look ahead - need empty line to end itemize!
+                if i < len(text) - 1:
+                    nextLine = text[i + 1]
+                    if nextLine == "":
+                        block.append(line)
+                        line = "\\end{itemize}"
+                        itemizeFound = False
+                else:
+                    # End of file. So finish it.
+                    block.append(line)
+                    line = "\\end{itemize}"
+                    itemizeFound = False
+            else:
+                # Look ahead - need empty line to end itemize!
+                if i < len(text) - 1:
+                    nextLine = text[i + 1]
+                    if nextLine == "":
+                        block.append(line)
+                        line = "\\end{itemize}"
+                        itemizeFound = False
+                else:
+                    # End of file. So finish it.
+                    block.append(line)
+                    line = "\\end{itemize}"
+                    itemizeFound = False
+
         #############################
         ## Fix tables.
         #############################
