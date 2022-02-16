@@ -1105,7 +1105,9 @@ def _format_latex_text(text):
         if plantUMLFound:
             noParagraph = True
         if re.findall("^plantuml\s", line):
-            plantUMLName = re.search('title="(.*)"', line).groups(0)[0]
+            plantUML_title = re.search('title="(.*)"', line)
+            if plantUML_title:
+                plantUMLName = plantUML_title.groups(0)[0]
             plantUMLFile = re.sub("\s", "-", plantUMLName)
             line = "\\begin{plantuml}{" + plantUMLFile + "}"
             plantUMLFound = True
