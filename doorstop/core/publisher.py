@@ -498,15 +498,16 @@ def _lines_latex(obj, **kwargs):
     linkify = kwargs.get("linkify", False)
     for item in iter_items(obj):
 
-        heading = "\\" + "sub" * (item.depth - 1) + "section{"
+        heading = "\\" + "sub" * (item.depth - 1) + "section*{"
+        headingLev = "\\" + "sub" * (item.depth - 1) + "section{"
         level = _format_level(item.level)
 
         if item.heading:
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                standard = "{h}{lev} {t}{he}".format(
-                    h=heading, lev=level, t=text_lines[0] if text_lines else "", he="}"
+                standard = "{h}{t}{he}".format(
+                    h=headingLev, t=text_lines[0] if text_lines else "", he="}"
                 )
             else:
                 standard = "{h}{t}{he}".format(
@@ -526,7 +527,7 @@ def _lines_latex(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h}{lev} {u}{he}".format(h=heading, lev=level, u=uid, he="}")
+                standard = "{h}{u}{he}".format(h=headingLev, u=uid, he="}")
             else:
                 standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
@@ -814,18 +815,22 @@ def _latex_convert(line):
     #############################
     ## Fix manual heading levels
     #############################
+    if settings.PUBLISH_BODY_LEVELS:
+        star = ""
+    else:
+        star = "*"
     # Replace ######.
-    line = re.sub("###### (.*)", "\\\\subparagraph{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
+    line = re.sub("###### (.*)", "\\\\subparagraph" + star + "{\\1 \\\\textbf{NOTE: This level is too deep.}}", line)
     # Replace #####.
-    line = re.sub("##### (.*)", "\\\\subparagraph{\\1}", line)
+    line = re.sub("##### (.*)", "\\\\subparagraph" + star + "{\\1}", line)
     # Replace ####.
-    line = re.sub("#### (.*)", "\\\\paragraph{\\1}", line)
+    line = re.sub("#### (.*)", "\\\\paragraph" + star + "{\\1}", line)
     # Replace ###.
-    line = re.sub("### (.*)", "\\\\subsubsection{\\1}", line)
+    line = re.sub("### (.*)", "\\\\subsubsection" + star + "{\\1}", line)
     # Replace ##.
-    line = re.sub("## (.*)", "\\\\subsection{\\1}", line)
+    line = re.sub("## (.*)", "\\\\subsection" + star + "{\\1}", line)
     # Replace #.
-    line = re.sub("# (.*)", "\\\\section{\\1}", line)
+    line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
     return line
 
 def _format_latex_text(text):
