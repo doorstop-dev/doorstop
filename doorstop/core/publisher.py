@@ -920,7 +920,9 @@ def _format_latex_text(text):
     headerDone = False
     codeFound = False
     mathFound = False
+    plantUMLFound = False
     for i in range(len(text)):
+        noParagraph = False
         line = text[i]
         #############################
         ## Fix $ and MATH.
@@ -947,6 +949,8 @@ def _format_latex_text(text):
         ## Fix code blocks.
         #############################
         code_match = re.findall("```", line)
+        if codeFound:
+            noParagraph = True
         if code_match:
             if codeFound:
                 block.append("\\end{lstlisting}")
@@ -966,7 +970,7 @@ def _format_latex_text(text):
         if table_match:
             if not tableFound:
                 # Check next line for minimum 3 dashes and the same count of |.
-                if i < len(text):
+                if i < len(text) - 1:
                     nextLine = text[i + 1]
                     table_match_next = re.findall("\|", nextLine)
                     if table_match_next:
@@ -1010,14 +1014,24 @@ def _format_latex_text(text):
         #############################
         ## Fix plantuml.
         #############################
+        if plantUMLFound:
+            noParagraph = True
         if re.findall("^plantuml\s", line):
             plantUMLName = re.search("title=\"(.*)\"", line).groups(0)[0]
             plantUMLFile = re.sub("\s", "-", plantUMLName)
             line = "\\begin{plantuml}{" + plantUMLFile + "}"
+            plantUMLFound = True
         if re.findall("@enduml", line):
             block.append(line)
             block.append("\\end{plantuml}")
             line = "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+            plantUMLFound = False
+
+        # Look ahead for empty line and add paragraph.
+        if i < len(text) - 1:
+            nextLine = text[i + 1]
+            if nextLine == "" and not re.search("\\\\", line) and not noParagraph:
+                line = line + "\\\\"
 
         # All done. Add the line.
         block.append(line)
