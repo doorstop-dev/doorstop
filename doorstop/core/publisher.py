@@ -95,6 +95,8 @@ def publish(
         template = HTMLTEMPLATE
     template_assets = os.path.join(os.path.dirname(__file__), "files", "assets")
     if os.path.isdir(template_assets):
+        if ext == ".tex":
+            template_assets = template_assets + "/latex"
         log.info("Copying %s to %s", template_assets, assets_dir)
         common.copy_dir_contents(template_assets, assets_dir)
 
