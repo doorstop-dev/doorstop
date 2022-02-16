@@ -130,9 +130,13 @@ def publish(
                     document_minor = obj2._attribute_defaults["doc"]["minor"]
             # Add to compile.sh
             compile.append("pdflatex -shell-escape {n}.tex".format(n=document_name))
-
             # Create the wrapper file.
-            path3 = re.sub("{n}.tex".format(n=str(obj2)), "{n}.tex".format(n=document_name), path2)
+            head, tail = os.path.split(path2)
+            if tail != document_name + ".tex":
+                log.warning("LaTeX export does not support custom file names. Change in .doorstop.yml instead.")
+            tail = document_name + ".tex"
+            path2 = os.path.join(head, str(obj2) + ".tex")
+            path3 = os.path.join(head, tail)
             wrapper = []
             wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
             wrapper.append("\\usepackage[utf8]{inputenc}")
@@ -181,7 +185,9 @@ def publish(
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
     if ext == ".tex":
-        path4 = re.sub("{n}.tex".format(n=str(obj2)), "compile.sh", path2)
+        head, tail = os.path.split(path2)
+        tail = "compile.sh"
+        path4= os.path.join(head, tail)
         common.write_lines(compile, path4)
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
