@@ -132,7 +132,7 @@ def publish(
             compile.append("pdflatex -shell-escape {n}.tex".format(n=document_name))
             # Create the wrapper file.
             head, tail = os.path.split(path2)
-            if tail != document_name + ".tex":
+            if tail != str(obj2) + ".tex":
                 log.warning("LaTeX export does not support custom file names. Change in .doorstop.yml instead.")
             tail = document_name + ".tex"
             path2 = os.path.join(head, str(obj2) + ".tex")
