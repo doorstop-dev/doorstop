@@ -71,7 +71,7 @@ def publish(
     ext = ext or os.path.splitext(path)[-1] or ".html"
     check(ext)
     if linkify is None:
-        linkify = is_tree(obj) and ext in [".html", ".md"]
+        linkify = is_tree(obj) and ext in [".html", ".md", ".tex"]
     if index is None:
         index = is_tree(obj) and ext == ".html"
     if matrix is None:
@@ -606,7 +606,7 @@ def _format_md_attr_list(item, linkify):
 
 def _format_latex_attr_list(item, linkify):
     """Create a LaTeX attribute list for a heading."""
-    return "{l}{u}{le}".format(l="\label{", u=item.uid, le="}") if linkify else ""
+    return "{l}{u}{le}{zl}{u}{le}".format(l="\label{", zl="\zlabel{", u=item.uid, le="}") if linkify else ""
 
 
 def _format_text_ref(item):
@@ -755,10 +755,10 @@ def _format_latex_item_link(item, linkify=True):
     """Format an item link in LaTeX."""
     if linkify and is_item(item):
         if item.header:
-            return "\\href{{{u} {h}}}{{{p}.html#{u}}}".format(
+            return "\\hyperref[{u}]{{{u}}}".format(
                 u=item.uid, h=item.header, p=item.document.prefix
             )
-        return "\\href{{{u}}}{{{p}.html#{u}}}".format(u=item.uid, p=item.document.prefix)
+        return "\\hyperref[{u}]{{{u}}}".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
