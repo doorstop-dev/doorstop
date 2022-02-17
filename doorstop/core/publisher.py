@@ -120,20 +120,23 @@ def publish(
             document_by = ""
             document_major = ""
             document_minor = ""
-            attribute_defaults = obj2.__getattribute__("_attribute_defaults")
-            if attribute_defaults:
-                if attribute_defaults["doc"]["name"]:
-                    document_name = attribute_defaults["doc"]["name"]
-                if attribute_defaults["doc"]["title"]:
-                    document_title = attribute_defaults["doc"]["title"]
-                if attribute_defaults["doc"]["ref"]:
-                    document_ref = attribute_defaults["doc"]["ref"]
-                if attribute_defaults["doc"]["by"]:
-                    document_by = attribute_defaults["doc"]["by"]
-                if attribute_defaults["doc"]["major"]:
-                    document_major = attribute_defaults["doc"]["major"]
-                if attribute_defaults["doc"]["minor"]:
-                    document_minor = attribute_defaults["doc"]["minor"]
+            try:
+                attribute_defaults = obj2.__getattribute__("_attribute_defaults")
+                if attribute_defaults:
+                    if attribute_defaults["doc"]["name"]:
+                        document_name = attribute_defaults["doc"]["name"]
+                    if attribute_defaults["doc"]["title"]:
+                        document_title = attribute_defaults["doc"]["title"]
+                    if attribute_defaults["doc"]["ref"]:
+                        document_ref = attribute_defaults["doc"]["ref"]
+                    if attribute_defaults["doc"]["by"]:
+                        document_by = attribute_defaults["doc"]["by"]
+                    if attribute_defaults["doc"]["major"]:
+                        document_major = attribute_defaults["doc"]["major"]
+                    if attribute_defaults["doc"]["minor"]:
+                        document_minor = attribute_defaults["doc"]["minor"]
+            except AttributeError:
+                pass
             # Add to compile.sh
             compile_files.append(
                 "pdflatex -shell-escape {n}.tex".format(n=document_name)
@@ -171,12 +174,17 @@ def publish(
             for external, _ in iter_documents(obj, path, ext):
                 # Check for defined document attributes.
                 external_doc_name = "doc-" + str(external)
-                external_attribute_defaults = external.__getattribute__(
-                    "_attribute_defaults"
-                )
-                if external_attribute_defaults:
-                    if external_attribute_defaults["doc"]["name"]:
-                        external_doc_name = external_attribute_defaults["doc"]["name"]
+                try:
+                    external_attribute_defaults = external.__getattribute__(
+                        "_attribute_defaults"
+                    )
+                    if external_attribute_defaults:
+                        if external_attribute_defaults["doc"]["name"]:
+                            external_doc_name = external_attribute_defaults["doc"][
+                                "name"
+                            ]
+                except AttributeError:
+                    pass
                 # Don't add self.
                 if external_doc_name != document_name:
                     wrapper.append(
