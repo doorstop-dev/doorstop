@@ -15,7 +15,7 @@ from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core import Document
-from doorstop.core.publisher_latex import _lines_latex
+from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -191,6 +191,11 @@ def publish(
             wrapper.append("\\maketoc")
             wrapper.append("% Load the output file.")
             wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
+            if settings.PUBLISH_HEADING_LEVELS:
+                wrapper.append("\\section{Traceability}")
+            else:
+                wrapper.append("\\section*{Traceability}")
+            wrapper.append("\\input{traceability.tex}")
             wrapper.append("\\end{document}")
             common.write_lines(wrapper, path3)
 
@@ -213,8 +218,10 @@ def publish(
         _index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
-    if index and matrix and count:
-        _matrix(path, tree=obj if is_tree(obj) else None)
+    if (index or ext == ".tex") and (matrix and count):
+        _matrix(
+            path, tree=obj if is_tree(obj) else None, ext=ext if ext == ".tex" else None
+        )
 
     # Return the published path
     if count:
@@ -354,7 +361,10 @@ def _matrix(directory, tree, filename=MATRIX, ext=None):
     if tree:
         log.info("creating an {}...".format(filename))
         content = _matrix_content(tree)
-        common.write_csv(content, path)
+        if ext == ".tex":
+            _matrix_latex(content, path)
+        else:
+            common.write_csv(content, path)
     else:
         log.warning("no data for {}".format(filename))
 

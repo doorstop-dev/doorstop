@@ -2,6 +2,7 @@
 
 """Functions to publish LaTeX documents."""
 
+import os
 import re
 
 from doorstop import common, settings
@@ -451,3 +452,63 @@ def _format_latex_text(text):
             if tableFound:
                 block.append("\\end{longtable}")
     return block
+
+
+def _matrix_latex(table, path):
+    """Create a traceability table for LaTeX."""
+    # Setup.
+    traceability = []
+    head, tail = os.path.split(path)
+    tail = "traceability.tex"
+    file = os.path.join(head, tail)
+    count = 0
+    # Start the table.
+    table_start = "\\begin{longtable}{"
+    table_head = ""
+    header_data = table.__next__()
+    for column in header_data:
+        count = count + 1
+        table_start = table_start + "|l"
+        if len(table_head) > 0:
+            table_head = table_head + " & "
+        table_head = table_head + "\\textbf{" + str(column) + "}"
+    table_start = table_start + "|}"
+    table_head = table_head + "\\\\"
+    traceability.append(table_start)
+    traceability.append(
+        "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
+    )
+    traceability.append("\\hline")
+    traceability.append(table_head)
+    traceability.append("\\hline")
+    traceability.append("\\endfirsthead")
+    traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\")
+    traceability.append("\\hline")
+    traceability.append(table_head)
+    traceability.append("\\hline")
+    traceability.append("\\endhead")
+    traceability.append("\\hline")
+    traceability.append(
+        "\\multicolumn{{{n}}}{{r}}{{\\textit{{Continued on next page.}}}}\\\\".format(
+            n=count
+        )
+    )
+    traceability.append("\\endfoot")
+    traceability.append("\\hline")
+    traceability.append("\\endlastfoot")
+    # Add rows.
+    for row in table:
+        row_text = ""
+        for column in row:
+            if len(row_text) > 0:
+                row_text = row_text + " & "
+            if column:
+                row_text = row_text + "\\hyperref[{u}]{{{u}}}".format(u=str(column))
+            else:
+                row_text = row_text + " "
+        row_text = row_text + "\\\\"
+        traceability.append(row_text)
+        traceability.append("\\hline")
+    # End the table.
+    traceability.append("\\end{longtable}")
+    common.write_lines(traceability, file)
