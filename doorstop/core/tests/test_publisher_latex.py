@@ -94,6 +94,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
 
+
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
     @patch("builtins.open")
@@ -123,3 +124,43 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
+
+
+    @patch("os.path.isdir", Mock(return_value=False))
+    @patch("os.makedirs")
+    @patch("builtins.open")
+    def test_publish_tree(self, mock_open, mock_makedirs):
+        """Verify a LaTeX document tree can be published."""
+        dirpath = os.path.join("mock", "directory")
+        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
+            read_data="$body"
+        ).return_value
+        expected_calls = []
+        for obj2, _ in iter_documents(self.mock_tree, dirpath, ".tex"):
+            expected_calls.append(
+                call(
+                    os.path.join(
+                        "mock", "directory", "doc-{n}.tex".format(n=str(obj2))
+                    ),
+                    "wb",
+                )
+            )
+            expected_calls.append(
+                call(
+                    os.path.join("mock", "directory", "{n}.tex".format(n=str(obj2))),
+                    "wb",
+                )
+            )
+
+        expected_calls.append(
+            call(os.path.join("mock", "directory", "compile.sh"), "wb")
+        )
+        expected_calls.append(
+            call(os.path.join("mock", "directory", "traceability.tex"), "wb")
+        )
+        # Act
+        dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, dirpath2)
+        self.assertEqual(expected_calls, mock_open.call_args_list)
+        self.assertEqual(mock_open.call_count, 4)
