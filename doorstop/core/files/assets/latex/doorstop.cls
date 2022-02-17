@@ -138,6 +138,9 @@
 \definecolor{grey}{rgb}{0.75,0.75,0.75}
 \definecolor{orchid}{rgb}{0.8516,0.4375,0.8359}
 
+% Set internal link color
+\hypersetup{linkcolor=orchid}
+
 % Setup how the TOC looks
 % Section
 \titlecontents*{section}[1.5em]
@@ -269,7 +272,7 @@
 \newcommand{\maketoc}{
 	\pagestyle{fancy}
 	\thispagestyle{fancy}
-  {\hypersetup{linkcolor=orchid} \tableofcontents }
+  \tableofcontents
 	\clearpage{\thispagestyle{blankpage}\cleardoublepage}
 	\pagestyle{fancy}
 }
