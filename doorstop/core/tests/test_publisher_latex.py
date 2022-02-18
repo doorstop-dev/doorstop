@@ -6,15 +6,17 @@
 
 import os
 import unittest
+from shutil import rmtree
 from unittest import mock
 from unittest.mock import Mock, call, patch
 
 from doorstop.core import publisher
+from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import MockDataMixIn, MockDocument
+from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
 from doorstop.core.types import iter_documents
 
-YAML_LATEX = """
+YAML_LATEX_DOC = """
 settings:
   digits: 3
   prefix: REQ
@@ -71,7 +73,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify a LaTeX document can be published with LaTeX doc data."""
         dirpath = os.path.join("mock", "directory")
         document = MockDocument("/some/path")
-        document._file = YAML_LATEX
+        document._file = YAML_LATEX_DOC
         document._items = LINES
         document.load(reload=True)
         path = os.path.join(dirpath, str(self.document))
@@ -93,7 +95,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
-
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -124,7 +125,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
-
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -164,3 +164,52 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 4)
+
+
+class TestDocument(MockDataMixIn, unittest.TestCase):
+    """Unit tests for the doorstop.core.publisher_latex module."""
+
+    # pylint: disable=no-value-for-parameter
+
+    def setUp(self):
+        """Setup test folder."""
+        # Build a tree.
+        self.mock_tree = build(cwd=ROOT, root=ROOT, request_next_number=None)
+        self.dirpath = os.path.join("mock", "LaTeX", "directory")
+        os.makedirs(self.dirpath)
+
+    def tearDown(self):
+        """Remove test folder."""
+        rmtree("mock")
+
+    def test_publish_latex_document_copies_assets(self):
+        """Verify that LaTeX assets are published."""
+        expected_walk = """directory/
+    traceability.tex
+    TUT.tex
+    doc-REQ.tex
+    HLT.tex
+    compile.sh
+    Tutorial.tex
+    doc-HLT.tex
+    REQ.tex
+    LLT.tex
+    doc-LLT.tex
+    assets/
+        logo-black-white.png
+        doorstop.cls
+"""
+        # Act
+        path2 = publisher.publish(self.mock_tree, self.dirpath, ".tex")
+        # Assert
+        self.assertIs(self.dirpath, path2)
+        # Get the exported tree.
+        walk = ""
+        for root, _, files in os.walk(self.dirpath):
+            level = root.replace(self.dirpath, "").count(os.sep)
+            indent = " " * 4 * (level)
+            walk = walk + "{}{}/\n".format(indent, os.path.basename(root))
+            subindent = " " * 4 * (level + 1)
+            for f in files:
+                walk = walk + "{}{}\n".format(subindent, f)
+        self.assertEqual(expected_walk, walk)
