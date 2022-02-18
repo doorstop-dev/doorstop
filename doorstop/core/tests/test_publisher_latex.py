@@ -129,6 +129,39 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
     @patch("builtins.open")
+    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
+    def test_publish_document_no_headings_with_latex_data(
+        self, mock_open, mock_makedirs
+    ):
+        """Verify a LaTeX document can be published with LaTeX doc data but without publishing heading levels."""
+        dirpath = os.path.join("mock", "directory")
+        document = MockDocument("/some/path")
+        document._file = YAML_LATEX_DOC
+        document._items = LINES
+        document.load(reload=True)
+        path = os.path.join(dirpath, str(self.document))
+        expected_calls = [
+            call(
+                os.path.join("mock", "directory", "Tutorial.tex"),
+                "wb",
+            ),
+            call(
+                os.path.join("mock", "directory", "{n}.tex".format(n=str(document))),
+                "wb",
+            ),
+            call(os.path.join("mock", "directory", "compile.sh"), "wb"),
+        ]
+        # Act
+        path2 = publisher.publish(document, path, ".tex")
+        # Assert
+        self.assertIs(path, path2)
+        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        self.assertEqual(expected_calls, mock_open.call_args_list)
+        self.assertEqual(mock_open.call_count, 3)
+
+    @patch("os.path.isdir", Mock(return_value=False))
+    @patch("os.makedirs")
+    @patch("builtins.open")
     def test_publish_tree(self, mock_open, mock_makedirs):
         """Verify a LaTeX document tree can be published."""
         dirpath = os.path.join("mock", "directory")
