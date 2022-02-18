@@ -10,7 +10,7 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import Mock, call, patch
 
-from doorstop.core import publisher
+from doorstop.core import publisher  # , publisher_latex
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
@@ -63,8 +63,8 @@ outline:
 """.lstrip()
 
 
-class TestModule(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module."""
+class TestPublisherModule(MockDataMixIn, unittest.TestCase):
+    """Unit tests for the doorstop.core.publisher_latex module, more specifically the changes introduced by the doorstop.core.publisher_latex module."""
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -199,8 +199,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(mock_open.call_count, 4)
 
 
-class TestDocument(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module."""
+class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
+    """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
 
     # pylint: disable=no-value-for-parameter
 
@@ -246,3 +246,36 @@ class TestDocument(MockDataMixIn, unittest.TestCase):
             for f in files:
                 walk = walk + "{}{}\n".format(subindent, f)
         self.assertEqual(expected_walk, walk)
+
+
+#
+# class TestPublisherLaTeXModule(MockDataMixIn, unittest.TestCase):
+#     """Unit tests for the doorstop.core.publisher_latex module by separate function tests."""
+#
+#     @patch("builtins.open")
+#     def test_lines_latex_headings(self, mock_open):
+#         """Verify a LaTeX document can be published with LaTeX doc data."""
+#         # dirpath = os.path.join("mock", "directory")
+#         # document = MockDocument("/some/path")
+#         # document._file = YAML_LATEX_DOC
+#         # document._items = LINES
+#         # document.load(reload=True)
+#         # path = os.path.join(dirpath, str(self.document))
+#         # expected_calls = [
+#         #     call(
+#         #         os.path.join("mock", "directory", "Tutorial.tex"),
+#         #         "wb",
+#         #     ),
+#         #     call(
+#         #         os.path.join("mock", "directory", "{n}.tex".format(n=str(document))),
+#         #         "wb",
+#         #     ),
+#         #     call(os.path.join("mock", "directory", "compile.sh"), "wb"),
+#         # ]
+#         # # Act
+#         # path2 = publisher.publish(document, path, ".tex")
+#         # # Assert
+#         # self.assertIs(path, path2)
+#         # mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+#         # self.assertEqual(expected_calls, mock_open.call_args_list)
+#         self.assertEqual(mock_open.call_count, 3)
