@@ -15,54 +15,14 @@ from doorstop.core import publisher, publisher_latex
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument, MockItem
-from doorstop.core.tests.helpers import getLines, getWalk
+from doorstop.core.tests.helpers import (
+    LINES,
+    YAML_LATEX_DOC,
+    YAML_LATEX_NO_DOC,
+    getLines,
+    getWalk,
+)
 from doorstop.core.types import iter_documents
-
-YAML_LATEX_DOC = """
-settings:
-  digits: 3
-  prefix: REQ
-  sep: '-'
-attributes:
-  defaults:
-    doc:
-      name: 'Tutorial'
-      title: 'Development test document'
-      ref: 'TUT-DS-22'
-      by: 'Jng'
-      major: 1
-      minor: A
-  publish:
-    - CUSTOM-ATTRIB
-"""
-
-YAML_LATEX_NO_DOC = """
-settings:
-  digits: 3
-  prefix: REQ
-  sep: '-'
-attributes:
-  defaults:
-    doc:
-      name: ''
-      title: ''
-      ref: ''
-      by: ''
-      major: ''
-      minor: ''
-  publish:
-    - CUSTOM-ATTRIB
-"""
-
-LINES = """
-initial: 1.2.3
-outline:
-        - REQ001: # Lorem ipsum d...
-        - REQ003: # Unicode: -40° ±1%
-        - REQ004: # Hello, world! !['..
-        - REQ002: # Hello, world! !["...
-        - REQ2-001: # Hello, world!
-"""
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
@@ -179,22 +139,52 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
     def test_setting_publish_heading_levels_true(self):
-        """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately."""
+        """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when True."""
         # Setup
         generated_data = """active: true
 derived: false
-header: ''
-level: 1.0
-normative: true
+header: 'Header name'
+level: '1.0'
+normative: false
 ref: ''
 reviewed:
 text: |
-  Test of a single text line.
+  Test of a single text line as a header!
 """
-        expected_result = r"""\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}
+        expected_result = r"""\section{Test of a single text line as a header!}\label{REQ-001}\zlabel{REQ-001}
 
-Test of a single text line.
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
 
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
+    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
+    def test_setting_publish_heading_levels_false(self):
+        """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when False."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: 'Header name'
+level: '1.0'
+normative: false
+ref: ''
+reviewed:
+text: |
+  Test of a single text line as a header!
+"""
+        expected_result = r"""\section*{Test of a single text line as a header!}\label{REQ-001}\zlabel{REQ-001}
 
 """
         # Arrange

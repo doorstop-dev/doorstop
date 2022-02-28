@@ -22,7 +22,6 @@ def _lines_latex(obj, **kwargs):
     """
     linkify = kwargs.get("linkify", False)
     for item in iter_items(obj):
-
         heading = "\\" + "sub" * (item.depth - 1) + "section*{"
         headingLev = "\\" + "sub" * (item.depth - 1) + "section{"
 
@@ -41,7 +40,6 @@ def _lines_latex(obj, **kwargs):
             yield standard + attr_list
             yield from text_lines[1:]
         else:
-
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
