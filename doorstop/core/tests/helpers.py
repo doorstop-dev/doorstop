@@ -18,3 +18,11 @@ def getWalk(walk_path):
         for f in files:
             walk = walk + "{}{}\n".format(subindent, f)
     return walk
+
+
+def getLines(gen):
+    # Get the generated lines.
+    result = ""
+    for line in gen:
+        result = result + line + "\n"
+    return result
