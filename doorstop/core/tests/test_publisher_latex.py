@@ -275,6 +275,78 @@ Test of a single text line.
         # Assert
         self.assertEqual(expected_result, result)
 
+    @patch("doorstop.settings.PUBLISH_BODY_LEVELS", True)
+    def test_setting_publish_body_levels_true(self):
+        """Verify that the settings.PUBLISH_BODY_LEVELS changes the output appropriately when True."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: ''
+level: '1.1'
+normative: true
+ref: ''
+reviewed:
+text: |
+  Test of a single text line.
+"""
+        expected_result = r"""\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}
+
+Test of a single text line.
+
+
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
+
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
+    @patch("doorstop.settings.PUBLISH_BODY_LEVELS", False)
+    def test_setting_publish_body_levels_false(self):
+        """Verify that the settings.PUBLISH_BODY_LEVELS changes the output appropriately when False."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: ''
+level: '1.1'
+normative: true
+ref: ''
+reviewed:
+text: |
+  Test of a single text line.
+"""
+        expected_result = r"""\subsection*{REQ-001}\label{REQ-001}\zlabel{REQ-001}
+
+Test of a single text line.
+
+
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
+
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
