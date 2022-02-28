@@ -15,7 +15,7 @@ from doorstop.core import publisher, publisher_latex
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument, MockItem
-from doorstop.core.tests.helpers import (
+from doorstop.core.tests.helpers_latex import (
     LINES,
     YAML_LATEX_DOC,
     YAML_LATEX_NO_DOC,
@@ -185,6 +185,78 @@ text: |
   Test of a single text line as a header!
 """
         expected_result = r"""\section*{Test of a single text line as a header!}\label{REQ-001}\zlabel{REQ-001}
+
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
+
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_setting_enable_headers_true(self):
+        """Verify that the settings.ENABLE_HEADERS changes the output appropriately when True."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: 'Header name'
+level: '1.0'
+normative: true
+ref: ''
+reviewed:
+text: |
+  Test of a single text line.
+"""
+        expected_result = r"""\section{Header name{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}
+
+Test of a single text line.
+
+
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
+
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", False)
+    def test_setting_enable_headers_false(self):
+        """Verify that the settings.ENABLE_HEADERS changes the output appropriately when False."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: 'Header name'
+level: '1.0'
+normative: true
+ref: ''
+reviewed:
+text: |
+  Test of a single text line.
+"""
+        expected_result = r"""\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}
+
+Test of a single text line.
+
 
 """
         # Arrange
