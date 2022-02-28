@@ -11,18 +11,18 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import Mock, call, patch
 
-from doorstop.core import publisher
+from doorstop.core import publisher, publisher_latex
 from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
-from doorstop.core.tests.helpers import getWalk
+from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument, MockItem
+from doorstop.core.tests.helpers import getLines, getWalk
 from doorstop.core.types import iter_documents
 
 YAML_LATEX_DOC = """
 settings:
   digits: 3
   prefix: REQ
-  sep: ''
+  sep: '-'
 attributes:
   defaults:
     doc:
@@ -34,13 +34,13 @@ attributes:
       minor: A
   publish:
     - CUSTOM-ATTRIB
-""".lstrip()
+"""
 
 YAML_LATEX_NO_DOC = """
 settings:
   digits: 3
   prefix: REQ
-  sep: ''
+  sep: '-'
 attributes:
   defaults:
     doc:
@@ -52,7 +52,7 @@ attributes:
       minor: ''
   publish:
     - CUSTOM-ATTRIB
-""".lstrip()
+"""
 
 LINES = """
 initial: 1.2.3
@@ -62,7 +62,7 @@ outline:
         - REQ004: # Hello, world! !['..
         - REQ002: # Hello, world! !["...
         - REQ2-001: # Hello, world!
-""".lstrip()
+"""
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
@@ -78,6 +78,11 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         document._file = YAML_LATEX_DOC
         document._items = LINES
         document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = LINES
+        item.load(reload=True)
+        document._items.append(item)
         path = os.path.join(dirpath, str(self.document))
         expected_calls = [
             call(
@@ -108,6 +113,11 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         document._file = YAML_LATEX_NO_DOC
         document._items = LINES
         document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = LINES
+        item.load(reload=True)
+        document._items.append(item)
         path = os.path.join(dirpath, str(self.document))
         expected_calls = [
             call(
@@ -167,6 +177,42 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 4)
 
+    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
+    def test_setting_publish_heading_levels_true(self):
+        """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately."""
+        # Setup
+        generated_data = """active: true
+derived: false
+header: ''
+level: 1.0
+normative: true
+ref: ''
+reviewed:
+text: |
+  Test of a single text line.
+"""
+        expected_result = r"""\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}
+
+Test of a single text line.
+
+
+"""
+        # Arrange
+        document = MockDocument("/some/path")
+        path = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, path)
+        item._file = generated_data
+        item.load(reload=True)
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        document._items.append(item)
+
+        # Act
+        result = getLines(publisher_latex._lines_latex(document))
+
+        # Assert
+        self.assertEqual(expected_result, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
@@ -223,36 +269,3 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(self.expected_walk, walk)
-
-
-#
-# class TestPublisherLaTeXModule(MockDataMixIn, unittest.TestCase):
-#     """Unit tests for the doorstop.core.publisher_latex module by separate function tests."""
-#
-#     @patch("builtins.open")
-#     def test_lines_latex_headings(self, mock_open):
-#         """Verify a LaTeX document can be published with LaTeX doc data."""
-#         # dirpath = os.path.join("mock", "directory")
-#         # document = MockDocument("/some/path")
-#         # document._file = YAML_LATEX_DOC
-#         # document._items = LINES
-#         # document.load(reload=True)
-#         # path = os.path.join(dirpath, str(self.document))
-#         # expected_calls = [
-#         #     call(
-#         #         os.path.join("mock", "directory", "Tutorial.tex"),
-#         #         "wb",
-#         #     ),
-#         #     call(
-#         #         os.path.join("mock", "directory", "{n}.tex".format(n=str(document))),
-#         #         "wb",
-#         #     ),
-#         #     call(os.path.join("mock", "directory", "compile.sh"), "wb"),
-#         # ]
-#         # # Act
-#         # path2 = publisher.publish(document, path, ".tex")
-#         # # Assert
-#         # self.assertIs(path, path2)
-#         # mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
-#         # self.assertEqual(expected_calls, mock_open.call_args_list)
-#         self.assertEqual(mock_open.call_count, 3)
