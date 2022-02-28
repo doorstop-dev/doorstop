@@ -73,7 +73,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         document._file = YAML_LATEX_NO_DOC
         document._items = LINES
         document.load(reload=True)
-        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        itemPath = os.path.join("path", "to", "TST-001.yml")
         item = MockItem(document, itemPath)
         item._file = LINES
         item.load(reload=True)
@@ -81,7 +81,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         path = os.path.join(dirpath, str(self.document))
         expected_calls = [
             call(
-                os.path.join("mock", "directory", "doc-REQ.tex"),
+                os.path.join("mock", "directory", "doc-TST.tex"),
                 "wb",
             ),
             call(
@@ -346,6 +346,41 @@ Test of a single text line.
 
         # Assert
         self.assertEqual(expected_result, result)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", True)
+    def test_setting_publish_child_links_true(self):
+        """Verify that the settings.PUBLISH_CHILD_LINKS changes the output appropriately when True."""
+        expected = (
+            r"\subsection{req4}\label{req4}\zlabel{req4}" + "\n\n"
+            r"This shall..." + "\n\n"
+            r"\begin{quote} \verb|Doorstop.sublime-project|\end{quote}" + "\n\n"
+            r"\textbf{Parent links: sys4}" + "\n\n"
+        )
+        lines = publisher.publish_lines(self.item3, ".tex")
+        # Act
+        text = "".join(line + "\n" for line in lines)
+        # Assert
+        print("EXPECTED")
+        print(expected)
+        print("######################")
+        print("REAL")
+        print(text)
+        self.assertEqual(expected, text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    def test_setting_publish_child_links_false(self):
+        """Verify that the settings.PUBLISH_CHILD_LINKS changes the output appropriately when False."""
+        expected = (
+            r"\subsection{req4}\label{req4}\zlabel{req4}" + "\n\n"
+            r"This shall..." + "\n\n"
+            r"\begin{quote} \verb|Doorstop.sublime-project|\end{quote}" + "\n\n"
+            r"\textbf{Links: sys4}" + "\n\n"
+        )
+        lines = publisher.publish_lines(self.item3, ".tex")
+        # Act
+        text = "".join(line + "\n" for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):

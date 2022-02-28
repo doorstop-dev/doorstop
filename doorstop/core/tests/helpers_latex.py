@@ -27,7 +27,7 @@ attributes:
 YAML_LATEX_NO_DOC = """
 settings:
   digits: 3
-  prefix: REQ
+  prefix: TST
   sep: '-'
 attributes:
   defaults:
