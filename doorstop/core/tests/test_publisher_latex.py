@@ -454,6 +454,101 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         with self.assertRaises(DoorstopError):
             _ = getLines(publisher.publish_lines(item, ".tex"))
 
+    def test_enumerate_environment_normal_ending(self):
+        """Verify that enumerate environments are published correctly with normal ending."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of enumeration end." + "\n"
+            r"  " + "\n"
+            r"  1. item one" + "\n"
+            r"  21. item two" + "\n"
+            r"  441. item three"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of enumeration end.\\" + "\n\n"
+            r"\begin{enumerate}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"\end{enumerate}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_enumerate_environment_empty_row_ending(self):
+        """Verify that enumerate environments are published correctly with and empty row ending."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of enumeration end." + "\n"
+            r"  " + "\n"
+            r"  1. item one" + "\n"
+            r"  21. item two" + "\n"
+            r"  441. item three" + "\n"
+            r"" + "\n"
+            r"  This is not an item!"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of enumeration end.\\" + "\n\n"
+            r"\begin{enumerate}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"\end{enumerate}" + "\n\n"
+            r"This is not an item!" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_enumerate_environment_multiline_item(self):
+        """Verify that enumerate environments are published correctly with multiline items."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of enumeration end." + "\n"
+            r"  " + "\n"
+            r"  1. item one" + "\n"
+            r"  21. item two" + "\n"
+            r"  441. item three"
+            "\n"
+            r"  This still a part of the previous item!" + "\n"
+            r"  **This too!**" + "\n"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of enumeration end.\\" + "\n\n"
+            r"\begin{enumerate}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"This still a part of the previous item!" + "\n"
+            r"\textbf{This too!}" + "\n"
+            r"\end{enumerate}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
