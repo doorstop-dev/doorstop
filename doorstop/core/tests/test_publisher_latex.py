@@ -645,6 +645,80 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    def test_table_no_start_at_eof(self):
+        """Verify that a table is not started if end-of-file is reached."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n" r"  Test of table." + "\n" r"  " + "\n" r"  |||"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of table.\\" + "\n\n"
+            r"|||" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_table_no_start_unbalanced(self):
+        """Verify that a table is not started if columns are unbalanced."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of table." + "\n"
+            r"  " + "\n"
+            r"  |||" + "\n"
+            r"  |---|"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of table.\\" + "\n\n"
+            r"|||" + "\n"
+            r"|---|" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_table_no_start_wrong_dashes(self):
+        """Verify that a table is not started if dash count is less than three."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of table." + "\n"
+            r"  " + "\n"
+            r"  |||" + "\n"
+            r"  |-|-|"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of table.\\" + "\n\n"
+            r"|||" + "\n"
+            r"|-|-|" + "\n\n"
+        )
+        # Act
+        result = ""
+        with self.assertLogs("publisher_latex", level="WARNING") as cm:
+            print("cm")
+            print(cm)
+            result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
