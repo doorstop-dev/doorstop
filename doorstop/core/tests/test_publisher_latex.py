@@ -245,11 +245,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(item, ".tex"))
 
         # Assert
-        print("EXPECTED")
-        print(expected)
-        print("REAL")
-        print(result)
-        print("####################")
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_BODY_LEVELS", False)
@@ -283,36 +278,37 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", True)
     def test_setting_publish_child_links_true(self):
         """Verify that the settings.PUBLISH_CHILD_LINKS changes the output appropriately when True."""
+        # Setup
         expected = (
             r"\subsection{req4}\label{req4}\zlabel{req4}" + "\n\n"
             r"This shall..." + "\n\n"
             r"\begin{quote} \verb|Doorstop.sublime-project|\end{quote}" + "\n\n"
             r"\textbf{Parent links: sys4}" + "\n\n"
         )
-        lines = publisher.publish_lines(self.item3, ".tex")
         # Act
-        result = "".join(line + "\n" for line in lines)
+        result = getLines(publisher.publish_lines(self.item3, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_setting_publish_child_links_false(self):
         """Verify that the settings.PUBLISH_CHILD_LINKS changes the output appropriately when False."""
+        # Setup
         expected = (
             r"\subsection{req4}\label{req4}\zlabel{req4}" + "\n\n"
             r"This shall..." + "\n\n"
             r"\begin{quote} \verb|Doorstop.sublime-project|\end{quote}" + "\n\n"
             r"\textbf{Links: sys4}" + "\n\n"
         )
-        lines = publisher.publish_lines(self.item3, ".tex")
         # Act
-        result = "".join(line + "\n" for line in lines)
+        result = getLines(publisher.publish_lines(self.item3, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_reference_check_ref_false(self):
         """Verify that external references are published correctly with settings.CHECK_REF set to False."""
+        # Setup
         mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
         self.item6.unlink("sys3")
         expected = (
@@ -323,14 +319,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
-            lines = publisher.publish_lines(self.item6, ".tex")
-            result = "".join(line + "\n" for line in lines)
+            result = getLines(publisher.publish_lines(self.item6, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", True)
     def test_external_reference_check_ref_true(self):
         """Verify that external references are published correctly with settings.CHECK_REF set to True."""
+        # Setup
         mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
         self.item6.unlink("sys3")
         expected = (
@@ -341,14 +337,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
-            lines = publisher.publish_lines(self.item6, ".tex")
-            result = "".join(line + "\n" for line in lines)
+            result = getLines(publisher.publish_lines(self.item6, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_ref_check_ref_false(self):
         """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to False."""
+        # Setup
         mock_value = ("path/to/mock/abc123", None)
         self.item5.unlink("sys3")
         expected = (
@@ -358,14 +354,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
-            lines = publisher.publish_lines(self.item5, ".tex")
-            result = "".join(line + "\n" for line in lines)
+            result = getLines(publisher.publish_lines(self.item5, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", True)
     def test_external_ref_check_ref_true(self):
         """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to True."""
+        # Setup
         mock_value = ("path/to/mock/abc123", None)
         self.item5.unlink("sys3")
         expected = (
@@ -375,8 +371,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
-            lines = publisher.publish_lines(self.item5, ".tex")
-            result = "".join(line + "\n" for line in lines)
+            result = getLines(publisher.publish_lines(self.item5, ".tex"))
         # Assert
         self.assertEqual(expected, result)
 
