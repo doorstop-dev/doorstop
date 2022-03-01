@@ -386,6 +386,13 @@ def _format_latex_text(text):
                                     line = re.sub("&\\s*$", "\\\\\\\\", line)
                                 else:
                                     line = line + "\\\\"
+                            else:
+                                log.warning(
+                                    "Possibly incorrectly specified table found."
+                                )
+                        else:
+                            log.warning("Possibly unbalanced table found.")
+
             else:
                 if not headerDone:
                     line = "\\hline"
