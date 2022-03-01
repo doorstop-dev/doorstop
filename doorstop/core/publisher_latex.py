@@ -134,7 +134,7 @@ def _format_latex_ref(item):
         else:
             return "\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path)
     else:
-        return "\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=item.ref)
+        return "\\begin{{quote}} \\verb|{r}|\\end{{quote}}".format(r=item.ref)
 
 
 def _format_latex_references(item):
@@ -165,7 +165,7 @@ def _format_latex_references(item):
             path = ref_item["path"]
             path = path.replace("\\", "/")  # always use unix-style paths
             text_refs.append(
-                "\\begin{{quote}} '\\verb|{r}|'\\end{{quote}}".format(r=path)
+                "\\begin{{quote}} \\verb|{r}|\\end{{quote}}".format(r=path)
             )
         return "\n".join(ref for ref in text_refs)
 
