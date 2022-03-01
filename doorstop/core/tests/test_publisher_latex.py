@@ -11,6 +11,7 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import Mock, call, patch
 
+from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.document import Document
@@ -411,6 +412,69 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
 
         # Assert
         self.assertEqual(expected, result)
+
+    def test_multiline_math(self):
+        """Verify that math environments over multiple lines are published correctly."""
+        # Setup
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of multiline math environments." + "\n"
+            r"  " + "\n"
+            r"  $$" + "\n"
+            r"  \frac{a*b}{0} = \infty{}" + "\n"
+            r"  \text{where}" + "\n"
+            r"  a = 2.0" + "\n"
+            r"  b = 32" + "\n"
+            r"  $$"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of multiline math environments.\\" + "\n\n"
+            r"$\\" + "\n"
+            r"\frac{a*b}{0} = \infty{}\\" + "\n"
+            r"\text{where}\\" + "\n"
+            r"a = 2.0\\" + "\n"
+            r"b = 32\\" + "\n"
+            r"$" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_multiline_math_error(self):
+        """Verify that math environments that are badly specified generates an error."""
+        # Setup
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of multiline math environments." + "\n"
+            r"  " + "\n"
+            r"  $$\frac{a*b}{0} = \infty{}$$where$$s" + "\n"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        # Act & Assert
+        with self.assertRaises(DoorstopError):
+            _ = getLines(publisher.publish_lines(item, ".tex"))
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
