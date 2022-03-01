@@ -524,8 +524,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"  " + "\n"
             r"  1. item one" + "\n"
             r"  21. item two" + "\n"
-            r"  441. item three"
-            "\n"
+            r"  441. item three" + "\n"
             r"  This still a part of the previous item!" + "\n"
             r"  **This too!**" + "\n"
         )
@@ -543,6 +542,103 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"This still a part of the previous item!" + "\n"
             r"\textbf{This too!}" + "\n"
             r"\end{enumerate}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_itemize_environment_normal_ending(self):
+        """Verify that itemize environments are published correctly with normal ending."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of itemization end." + "\n"
+            r"  " + "\n"
+            r"  * item one" + "\n"
+            r"  + item two" + "\n"
+            r"  - item three"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of itemization end.\\" + "\n\n"
+            r"\begin{itemize}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"\end{itemize}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_itemize_environment_empty_row_ending(self):
+        """Verify that itemize environments are published correctly with and empty row ending."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of itemization end." + "\n"
+            r"  " + "\n"
+            r"  * item one" + "\n"
+            r"  + item two" + "\n"
+            r"  - item three" + "\n"
+            r"" + "\n"
+            r"  This is not an item!"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of itemization end.\\" + "\n\n"
+            r"\begin{itemize}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"\end{itemize}" + "\n\n"
+            r"This is not an item!" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_itemize_environment_multiline_item(self):
+        """Verify that itemize environments are published correctly with multiline items."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of itemization end." + "\n"
+            r"  " + "\n"
+            r"  * item one" + "\n"
+            r"  + item two" + "\n"
+            r"  - item three" + "\n"
+            r"  This still a part of the previous item!" + "\n"
+            r"  This too!" + "\n"
+            r"  " + "\n"
+            r"  But not this!" + "\n"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of itemization end.\\" + "\n\n"
+            r"\begin{itemize}" + "\n"
+            r"\item item one" + "\n"
+            r"\item item two" + "\n"
+            r"\item item three" + "\n"
+            r"This still a part of the previous item!" + "\n"
+            r"This too!" + "\n"
+            r"\end{itemize}" + "\n\n"
+            r"But not this!" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
