@@ -242,7 +242,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
-
         # Assert
         self.assertEqual(expected, result)
 
@@ -270,7 +269,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
-
         # Assert
         self.assertEqual(expected, result)
 
@@ -378,12 +376,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """Verify that custom attributes are published correctly."""
         # Setup
         generated_data = (
-            r"active: true" + "\n"
-            r"derived: false" + "\n"
-            r"header: ''" + "\n"
-            r"level: 1.1" + "\n"
-            r"normative: true" + "\n"
-            r"reviewed:" + "\n"
             r"CUSTOM-ATTRIB: true" + "\n"
             r"invented-by: jane@example.com" + "\n"
             r"text: |" + "\n"
@@ -398,7 +390,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         item.load(reload=True)
         document._items.append(item)
         expected = (
-            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of custom attributes." + "\n"
             r"\begin{longtable}{|l|l|}" + "\n"
             r"Attribute & Value\\" + "\n"
@@ -409,7 +401,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = getLines(publisher.publish_lines(document, ".tex"))
-
         # Assert
         self.assertEqual(expected, result)
 
@@ -417,12 +408,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """Verify that math environments over multiple lines are published correctly."""
         # Setup
         generated_data = (
-            r"active: true" + "\n"
-            r"derived: false" + "\n"
-            r"header: ''" + "\n"
-            r"level: 1.1" + "\n"
-            r"normative: true" + "\n"
-            r"reviewed:" + "\n"
             r"text: |" + "\n"
             r"  Test of multiline math environments." + "\n"
             r"  " + "\n"
@@ -438,7 +423,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of multiline math environments.\\" + "\n\n"
             r"$\\" + "\n"
             r"\frac{a*b}{0} = \infty{}\\" + "\n"
@@ -449,7 +434,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
-
         # Assert
         self.assertEqual(expected, result)
 
@@ -457,12 +441,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """Verify that math environments that are badly specified generates an error."""
         # Setup
         generated_data = (
-            r"active: true" + "\n"
-            r"derived: false" + "\n"
-            r"header: ''" + "\n"
-            r"level: 1.1" + "\n"
-            r"normative: true" + "\n"
-            r"reviewed:" + "\n"
             r"text: |" + "\n"
             r"  Test of multiline math environments." + "\n"
             r"  " + "\n"
