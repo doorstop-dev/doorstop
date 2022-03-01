@@ -11,10 +11,16 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import Mock, call, patch
 
-from doorstop.core import publisher, publisher_latex
+from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument, MockItem
+from doorstop.core.tests import (
+    ROOT,
+    MockDataMixIn,
+    MockDocument,
+    MockItem,
+    MockItemAndVCS,
+)
 from doorstop.core.tests.helpers_latex import (
     LINES,
     YAML_LATEX_DOC,
@@ -33,6 +39,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     @patch("builtins.open")
     def test_publish_document_with_latex_data(self, mock_open, mock_makedirs):
         """Verify a LaTeX document can be published with LaTeX doc data."""
+        # Setup
         dirpath = os.path.join("mock", "directory")
         document = MockDocument("/some/path")
         document._file = YAML_LATEX_DOC
@@ -68,6 +75,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     @patch("builtins.open")
     def test_publish_document_without_latex_data(self, mock_open, mock_makedirs):
         """Verify a LaTeX document can be published without LaTeX doc data."""
+        # Setup
         dirpath = os.path.join("mock", "directory")
         document = MockDocument("/some/path")
         document._file = YAML_LATEX_NO_DOC
@@ -103,6 +111,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     @patch("builtins.open")
     def test_publish_tree(self, mock_open, mock_makedirs):
         """Verify a LaTeX document tree can be published."""
+        # Setup
         dirpath = os.path.join("mock", "directory")
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
@@ -141,211 +150,135 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     def test_setting_publish_heading_levels_true(self):
         """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when True."""
         # Setup
-        generated_data = """active: true
-derived: false
-header: 'Header name'
-level: '1.0'
-normative: false
-ref: ''
-reviewed:
-text: |
-  Test of a single text line as a header!
-"""
-        expected_result = r"""\section{Test of a single text line as a header!}\label{REQ-001}\zlabel{REQ-001}
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        expected = r"\subsection{Heading}\label{req3}\zlabel{req3}" + "\n\n"
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
-
+        result = getLines(publisher.publish_lines(self.item, ".tex"))
         # Assert
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
     def test_setting_publish_heading_levels_false(self):
         """Verify that the settings.PUBLISH_HEADING_LEVELS changes the output appropriately when False."""
         # Setup
-        generated_data = """active: true
-derived: false
-header: 'Header name'
-level: '1.0'
-normative: false
-ref: ''
-reviewed:
-text: |
-  Test of a single text line as a header!
-"""
-        expected_result = r"""\section*{Test of a single text line as a header!}\label{REQ-001}\zlabel{REQ-001}
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        expected = r"\subsection*{Heading}\label{req3}\zlabel{req3}" + "\n\n"
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
-
+        result = getLines(publisher.publish_lines(self.item, ".tex"))
         # Assert
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_setting_enable_headers_true(self):
         """Verify that the settings.ENABLE_HEADERS changes the output appropriately when True."""
-        # Setup
-        generated_data = """active: true
-derived: false
-header: 'Header name'
-level: '1.0'
-normative: true
-ref: ''
-reviewed:
-text: |
-  Test of a single text line.
-"""
-        expected_result = r"""\section{Header name{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}
-
-Test of a single text line.
-
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header name'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{Header name{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            + "\n\n"
+            r"Test of a single text line." + "\n\n"
+        )
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
-
+        result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.ENABLE_HEADERS", False)
     def test_setting_enable_headers_false(self):
         """Verify that the settings.ENABLE_HEADERS changes the output appropriately when False."""
-        # Setup
-        generated_data = """active: true
-derived: false
-header: 'Header name'
-level: '1.0'
-normative: true
-ref: ''
-reviewed:
-text: |
-  Test of a single text line.
-"""
-        expected_result = r"""\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}
-
-Test of a single text line.
-
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header name'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of a single text line." + "\n\n"
+        )
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
-
+        result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_BODY_LEVELS", True)
     def test_setting_publish_body_levels_true(self):
         """Verify that the settings.PUBLISH_BODY_LEVELS changes the output appropriately when True."""
         # Setup
-        generated_data = """active: true
-derived: false
-header: ''
-level: '1.1'
-normative: true
-ref: ''
-reviewed:
-text: |
-  Test of a single text line.
-"""
-        expected_result = r"""\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}
-
-Test of a single text line.
-
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of a single text line." + "\n\n"
+        )
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
+        result = getLines(publisher.publish_lines(item, ".tex"))
 
         # Assert
-        self.assertEqual(expected_result, result)
+        print("EXPECTED")
+        print(expected)
+        print("REAL")
+        print(result)
+        print("####################")
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_BODY_LEVELS", False)
     def test_setting_publish_body_levels_false(self):
         """Verify that the settings.PUBLISH_BODY_LEVELS changes the output appropriately when False."""
         # Setup
-        generated_data = """active: true
-derived: false
-header: ''
-level: '1.1'
-normative: true
-ref: ''
-reviewed:
-text: |
-  Test of a single text line.
-"""
-        expected_result = r"""\subsection*{REQ-001}\label{REQ-001}\zlabel{REQ-001}
-
-Test of a single text line.
-
-
-"""
-        # Arrange
-        document = MockDocument("/some/path")
-        path = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, path)
-        item._file = generated_data
-        item.load(reload=True)
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        document._items.append(item)
-
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\subsection*{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of a single text line." + "\n\n"
+        )
         # Act
-        result = getLines(publisher_latex._lines_latex(document))
+        result = getLines(publisher.publish_lines(item, ".tex"))
 
         # Assert
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", True)
     def test_setting_publish_child_links_true(self):
@@ -358,9 +291,9 @@ Test of a single text line.
         )
         lines = publisher.publish_lines(self.item3, ".tex")
         # Act
-        text = "".join(line + "\n" for line in lines)
+        result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_setting_publish_child_links_false(self):
@@ -373,9 +306,9 @@ Test of a single text line.
         )
         lines = publisher.publish_lines(self.item3, ".tex")
         # Act
-        text = "".join(line + "\n" for line in lines)
+        result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_reference_check_ref_false(self):
@@ -391,9 +324,9 @@ Test of a single text line.
         # Act
         with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
             lines = publisher.publish_lines(self.item6, ".tex")
-            text = "".join(line + "\n" for line in lines)
+            result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", True)
     def test_external_reference_check_ref_true(self):
@@ -409,9 +342,9 @@ Test of a single text line.
         # Act
         with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
             lines = publisher.publish_lines(self.item6, ".tex")
-            text = "".join(line + "\n" for line in lines)
+            result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_ref_check_ref_false(self):
@@ -426,9 +359,9 @@ Test of a single text line.
         # Act
         with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
             lines = publisher.publish_lines(self.item5, ".tex")
-            text = "".join(line + "\n" for line in lines)
+            result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
 
     @patch("doorstop.settings.CHECK_REF", True)
     def test_external_ref_check_ref_true(self):
@@ -443,9 +376,10 @@ Test of a single text line.
         # Act
         with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
             lines = publisher.publish_lines(self.item5, ".tex")
-            text = "".join(line + "\n" for line in lines)
+            result = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        self.assertEqual(expected, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
