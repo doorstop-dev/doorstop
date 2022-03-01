@@ -43,7 +43,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         dirpath = os.path.join("mock", "directory")
         document = MockDocument("/some/path")
         document._file = YAML_LATEX_DOC
-        document._items = LINES
         document.load(reload=True)
         itemPath = os.path.join("path", "to", "REQ-001.yml")
         item = MockItem(document, itemPath)
@@ -79,7 +78,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         dirpath = os.path.join("mock", "directory")
         document = MockDocument("/some/path")
         document._file = YAML_LATEX_NO_DOC
-        document._items = LINES
         document.load(reload=True)
         itemPath = os.path.join("path", "to", "TST-001.yml")
         item = MockItem(document, itemPath)
@@ -372,6 +370,45 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Act
         with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
             result = getLines(publisher.publish_lines(self.item5, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_custom_attributes(self):
+        """Verify that custom attributes are published correctly."""
+        # Setup
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"CUSTOM-ATTRIB: true" + "\n"
+            r"invented-by: jane@example.com" + "\n"
+            r"text: |" + "\n"
+            r"  Test of custom attributes."
+        )
+        document = MockDocument("/some/path")
+        document._file = YAML_LATEX_DOC
+        document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = generated_data
+        item.load(reload=True)
+        document._items.append(item)
+        expected = (
+            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of custom attributes." + "\n"
+            r"\begin{longtable}{|l|l|}" + "\n"
+            r"Attribute & Value\\" + "\n"
+            r"\hline" + "\n"
+            r"CUSTOM-ATTRIB & True" + "\n"
+            r"invented-by & jane@example.com" + "\n"
+            r"\end{longtable}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(document, ".tex"))
+
         # Assert
         self.assertEqual(expected, result)
 
