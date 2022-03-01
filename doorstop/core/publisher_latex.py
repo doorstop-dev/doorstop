@@ -6,6 +6,7 @@ import os
 import re
 
 from doorstop import common, settings
+from doorstop.common import DoorstopError
 from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
@@ -272,11 +273,14 @@ def _format_latex_text(text):
                     + _latex_convert(math_match[2])
                 )
             else:
-                line = "ERROR: Cannot handle multiple math environments on one row."
+                raise DoorstopError(
+                    "Cannot handle multiple math environments on one row."
+                )
         else:
             line = _latex_convert(line)
         # Skip all other changes if in MATH!
         if mathFound:
+            line = line + "\\\\"
             block.append(line)
             continue
         #############################

@@ -71,6 +71,7 @@
 \RequirePackage{titlesec}
 \RequirePackage{appendix}
 % The following packages are REQUIRED to make the Doorstop publish functions work.
+\RequirePackage{amsmath}
 \RequirePackage{ulem}
 \RequirePackage{longtable}
 \RequirePackage{fancyvrb}
