@@ -360,11 +360,6 @@ Test of a single text line.
         # Act
         text = "".join(line + "\n" for line in lines)
         # Assert
-        print("EXPECTED")
-        print(expected)
-        print("######################")
-        print("REAL")
-        print(text)
         self.assertEqual(expected, text)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
@@ -382,6 +377,75 @@ Test of a single text line.
         # Assert
         self.assertEqual(expected, text)
 
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_external_reference_check_ref_false(self):
+        """Verify that external references are published correctly with settings.CHECK_REF set to False."""
+        mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
+        self.item6.unlink("sys3")
+        expected = (
+            r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
+            r"Heading" + "\n\n"
+            r"\begin{quote} \verb|abc1|\end{quote}" + "\n"
+            r"\begin{quote} \verb|abc2|\end{quote}" + "\n\n"
+        )
+        # Act
+        with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item6, ".tex")
+            text = "".join(line + "\n" for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch("doorstop.settings.CHECK_REF", True)
+    def test_external_reference_check_ref_true(self):
+        """Verify that external references are published correctly with settings.CHECK_REF set to True."""
+        mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
+        self.item6.unlink("sys3")
+        expected = (
+            r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
+            r"Heading" + "\n\n"
+            r"\begin{quote} \verb|path/to/mock/file1| (line 3)\end{quote}" + "\n"
+            r"\begin{quote} \verb|path/to/mock/file2|\end{quote}" + "\n\n"
+        )
+        # Act
+        with patch.object(self.item6, "find_references", Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item6, ".tex")
+            text = "".join(line + "\n" for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_external_ref_check_ref_false(self):
+        """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to False."""
+        mock_value = ("path/to/mock/abc123", None)
+        self.item5.unlink("sys3")
+        expected = (
+            r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
+            r"Heading" + "\n\n"
+            r"\begin{quote} \verb|abc123|\end{quote}" + "\n\n"
+        )
+        # Act
+        with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item5, ".tex")
+            text = "".join(line + "\n" for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
+
+    @patch("doorstop.settings.CHECK_REF", True)
+    def test_external_ref_check_ref_true(self):
+        """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to True."""
+        mock_value = ("path/to/mock/abc123", None)
+        self.item5.unlink("sys3")
+        expected = (
+            r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
+            r"Heading" + "\n\n"
+            r"\begin{quote} \verb|path/to/mock/abc123|\end{quote}" + "\n\n"
+        )
+        # Act
+        with patch.object(self.item5, "find_ref", Mock(return_value=mock_value)):
+            lines = publisher.publish_lines(self.item5, ".tex")
+            text = "".join(line + "\n" for line in lines)
+        # Assert
+        self.assertEqual(expected, text)
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
