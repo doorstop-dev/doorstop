@@ -22,6 +22,7 @@ attributes:
       minor: A
   publish:
     - CUSTOM-ATTRIB
+    - NEED-TWO
 """
 
 YAML_LATEX_NO_DOC = """
@@ -40,6 +41,7 @@ attributes:
       minor: ''
   publish:
     - CUSTOM-ATTRIB
+    - NEED-TWO
 """
 
 LINES = """
