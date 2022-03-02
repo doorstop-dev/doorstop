@@ -168,9 +168,7 @@ def publish(
             wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
             wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
             wrapper.append("")
-            wrapper.append(
-                "% Add all documents as external references to allow cross-references."
-            )
+            info_text_set = False
             for external, _ in iter_documents(obj, path, ext):
                 # Check for defined document attributes.
                 external_doc_name = "doc-" + str(external)
@@ -187,6 +185,11 @@ def publish(
                     pass
                 # Don't add self.
                 if external_doc_name != document_name:
+                    if not info_text_set:
+                        wrapper.append(
+                            "% Add all documents as external references to allow cross-references."
+                        )
+                        info_text_set = True
                     wrapper.append(
                         "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
                     )
@@ -199,11 +202,14 @@ def publish(
             wrapper.append("\\maketoc")
             wrapper.append("% Load the output file.")
             wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
-            if settings.PUBLISH_HEADING_LEVELS:
-                wrapper.append("\\section{Traceability}")
-            else:
-                wrapper.append("\\section*{Traceability}")
-            wrapper.append("\\input{traceability.tex}")
+            # Include traceability matrix
+            if matrix and count:
+                wrapper.append("% Traceability matrix")
+                if settings.PUBLISH_HEADING_LEVELS:
+                    wrapper.append("\\section{Traceability}")
+                else:
+                    wrapper.append("\\section*{Traceability}")
+                wrapper.append("\\input{traceability.tex}")
             wrapper.append("\\end{document}")
             common.write_lines(wrapper, path3)
 
