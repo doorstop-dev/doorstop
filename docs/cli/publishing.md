@@ -28,9 +28,9 @@ You can now execute the file 'compile.sh' twice in the exported folder to produc
 published: <...>/path/to/name_here_is_ignored.tex
 $ cd path/to/
 $ . ./compile.sh
-This is pdfTeX, Version <Lot\'s of text cut out!>
+This is pdfTeX, Version <Lot's of text cut out!>
 $ . ./compile.sh
-This is pdfTeX, Version <Lot\'s of text cut out!>
+This is pdfTeX, Version <Lot's of text cut out!>
 ```
 
 ## Example collection of documents
@@ -43,9 +43,9 @@ You can now execute the file 'compile.sh' twice in the exported folder to produc
 published: <...>/path/to
 $ cd path/to/
 $ . ./compile.sh
-This is pdfTeX, Version <Lot\'s of text cut out!>
+This is pdfTeX, Version <Lot's of text cut out!>
 $ . ./compile.sh
-This is pdfTeX, Version <Lot\'s of text cut out!>
+This is pdfTeX, Version <Lot's of text cut out!>
 ```
 
 # Additional formats
