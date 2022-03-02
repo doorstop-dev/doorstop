@@ -1,8 +1,7 @@
 name: Makefile CI
 
 on:
-  push:
-    branches: [ * ]
+  push
   pull_request:
     branches: [ develop ]
 
