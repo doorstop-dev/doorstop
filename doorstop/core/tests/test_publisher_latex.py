@@ -947,8 +947,8 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         """Remove test folder."""
         rmtree("mock")
 
-    def test_publish_latex_document_copies_assets(self):
-        """Verify that LaTeX assets are published."""
+    def test_publish_latex_tree_copies_assets(self):
+        """Verify that LaTeX assets are published when publishing a tree."""
         # Act
         path2 = publisher.publish(self.mock_tree, self.dirpath, ".tex")
         # Assert
@@ -956,6 +956,27 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(self.expected_walk, walk)
+
+    def test_publish_latex_document_copies_assets(self):
+        """Verify that LaTeX assets are published when publishing a document."""
+        expected_walk = """{n}/
+    TUT.tex
+    compile.sh
+    doc-TUT.tex
+    assets/
+        doorstop.cls
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        # Act
+        dirpath = self.dirpath + "/dummy.tex"
+        path2 = publisher.publish(self.mock_tree.documents[1], dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
     def test_publish_document_no_headings_with_latex_data(self):
