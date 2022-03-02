@@ -106,13 +106,12 @@ def publish(
     compile_files = []
     compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
-        head, tail = os.path.split(path2)
-        tail = "compile.sh"
-        compile_path = os.path.join(head, tail)
-
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
+            head, tail = os.path.split(path2)
+            tail = "compile.sh"
+            compile_path = os.path.join(head, tail)
             # Check for defined document attributes.
             document_name = "doc-" + str(obj2)
             document_title = "Test document for development of \\textit{Doorstop}"
