@@ -727,6 +727,63 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    def test_plantuml_with_title(self):
+        """Verify that a plantuml image is generated correctly with title."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r'  plantuml format="png" alt="State Diagram Loading" title="State Diagram"'
+            + "\n"
+            r"  @startuml" + "\n"
+            r"  scale 600 width" + "\n"
+            r"" + "\n"
+            r"  [*] -> State1" + "\n"
+            r"  State1 --> State2 : Succeeded" + "\n"
+            r"" + "\n"
+            r"  @enduml" + "\n"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\begin{plantuml}{State-Diagram}" + "\n"
+            r"@startuml" + "\n"
+            r"scale 600 width" + "\n\n"
+            r"[*] -> State1" + "\n"
+            r"State1 --> State2 : Succeeded" + "\n\n"
+            r"@enduml" + "\n"
+            r"\end{plantuml}" + "\n"
+            r"\process{State-Diagram}{0.8\textwidth}{State Diagram}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_plantuml_no_title(self):
+        """Verify that an error is raised if a plantUML is missing the title."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r'  plantuml format="png"' + "\n"
+            r"  @startuml" + "\n"
+            r"  scale 600 width" + "\n"
+            r"" + "\n"
+            r"  [*] -> State1" + "\n"
+            r"  State1 --> State2 : Succeeded" + "\n"
+            r"" + "\n"
+            r"  @enduml" + "\n"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        # Act & Assert
+        with self.assertRaises(DoorstopError):
+            _ = getLines(publisher.publish_lines(item, ".tex"))
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
