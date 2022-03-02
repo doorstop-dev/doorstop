@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [ develop ]
 
+env:
+  PATH: /usr/local/bin/python:${PATH}
+
 jobs:
   test:
     runs-on:
@@ -13,11 +16,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Remove python 2
-      run: sudo rm -fr /usr/bin/python
-
     - name: Activate python 3
-      run: sudo ln -s /usr/local/bin/python3 /usr/bin/python
+      run: sudo ln -s /usr/local/bin/python3 /usr/local/bin/python
 
     - name: Install poetry
       run: pip3 install poetry
