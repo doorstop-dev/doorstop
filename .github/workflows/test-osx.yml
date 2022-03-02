@@ -9,21 +9,21 @@ jobs:
   test:
     runs-on:
     - macos-latest
+    strategy:
+      matrix:
+        python-version: [ '3.7', '3.8', '3.9' ]
+    name: Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Activate python 3-1
-      run: echo "$PATH" && which python && python version
-
-    - name: Activate python 3-2
-      run: echo "/usr/local/bin/python:$PATH" >> ~/.profile
-
-    - name: Activate python 3-3
-      run: echo "$PATH" && which python && python version
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
 
     - name: Install poetry
-      run: pip3 install poetry
+      run: pip install poetry
 
     - name: Install graphviz
       run: brew install graphviz
