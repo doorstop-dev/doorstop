@@ -13,8 +13,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Activate python 3
-      run: ls -la /usr/local/bin/
+    - name: Activate python 3-1
+      run: echo "$PATH" && which python && python version
+
+    - name: Activate python 3-2
+      run: echo "/usr/local/bin/python:$PATH" >> ~/.profile
+
+    - name: Activate python 3-3
+      run: echo "$PATH" && which python && python version
 
     - name: Install poetry
       run: pip3 install poetry
