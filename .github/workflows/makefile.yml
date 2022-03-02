@@ -1,0 +1,30 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ * ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  test:
+
+    runs-on:
+    - ubuntu-latest
+    - windows-latest
+    - macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: doctor
+      run: make doctor
+
+    - name: Install dependencies
+      run: make install
+
+    - name: Run test
+      run: make test
+
+    - name: Run full CI
+      run: make ci
