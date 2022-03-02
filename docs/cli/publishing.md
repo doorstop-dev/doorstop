@@ -20,7 +20,7 @@ Individual documents or the collection of all documents can be published as a La
 
 ## Example individual document
 ```
-$ doorstop publish --latex TUT path/to/name_here_is_ignored.tex
+$ doorstop publish TUT path/to/name_here_is_ignored.tex
 building tree...
 publishing document TUT to '<...>/path/to/name_here_is_ignored.tex'...
 WARNING: LaTeX export does not support custom file names. Change in .doorstop.yml instead.
