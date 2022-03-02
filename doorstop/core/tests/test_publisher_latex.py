@@ -785,7 +785,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _ = getLines(publisher.publish_lines(item, ".tex"))
 
     def test_missing_ending_code(self):
-        """Verify that the code block ended correclty even if ending was not detected before end-of-file."""
+        """Verify that the code block ended correctly even if ending was not detected before end-of-file."""
         # Setup
         generated_data = (
             r"text: |" + "\n"
@@ -809,7 +809,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_missing_ending_plantuml(self):
-        """Verify that the plantUML block ended correclty even if ending was not detected before end-of-file."""
+        """Verify that the plantUML block ended correctly even if ending was not detected before end-of-file."""
         # Setup
         generated_data = (
             r"text: |" + "\n"
@@ -833,7 +833,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_missing_ending_table(self):
-        """Verify that the table ended correclty even if ending was not detected before end-of-file."""
+        """Verify that the table ended correctly even if ending was not detected before end-of-file."""
         # Setup
         generated_data = (
             r"text: |" + "\n"
@@ -854,6 +854,58 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"\hline" + "\n"
             r"without&end\\" + "\n"
             r"\end{longtable}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_image_with_title(self):
+        """Verify that images are published correctly when title is set."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of image with title." + "\n\n"
+            r'  ![Doorstop Logo](assets/logo-black-white.png "Doorstop Logo")'
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of image with title.\\" + "\n\n"
+            r"\begin{figure}[h!]\center" + "\n"
+            r"\includegraphics[width=0.8\textwidth]{assets/logo-black-white.png}"
+            r"\label{fig:DoorstopLogo}\zlabel{fig:DoorstopLogo}"
+            r"\caption{Doorstop Logo}" + "\n"
+            r"\end{figure}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_image_without_title(self):
+        """Verify that images are published correctly when title is **not** set."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of image with title." + "\n\n"
+            r"  ![Doorstop Alt Text](assets/logo-black-white.png)"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of image with title.\\" + "\n\n"
+            r"\begin{figure}[h!]\center" + "\n"
+            r"\includegraphics[width=0.8\textwidth]{assets/logo-black-white.png}"
+            r"\label{fig:DoorstopAltText}\zlabel{fig:DoorstopAltText}"
+            r"\caption{Doorstop Alt Text}" + "\n"
+            r"\end{figure}" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
