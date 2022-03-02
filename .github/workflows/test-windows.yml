@@ -17,7 +17,7 @@ jobs:
       run: pip install poetry
 
     - name: Install graphviz
-      run: winget install graphviz
+      run: choco install graphviz
 
     - name: doctor
       run: make doctor
