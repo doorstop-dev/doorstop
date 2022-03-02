@@ -1,0 +1,29 @@
+name: Makefile CI - Test Linux
+
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  test:
+    runs-on:
+    - ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install poetry
+      run: pip install poetry
+
+    - name: Install graphviz
+      run: sudo apt install graphviz
+
+    - name: doctor
+      run: make doctor
+
+    - name: Run test
+      run: make test
+
+    - name: Run full CI
+      run: make ci
