@@ -147,12 +147,17 @@ DOORSTOP := poetry run doorstop
 YAML := $(wildcard */*.yml */*/*.yml */*/*/*/*.yml)
 
 .PHONY: reqs
-reqs: doorstop reqs-html reqs-md reqs-txt
+reqs: doorstop reqs-html reqs-latex reqs-md reqs-txt
 
 .PHONY: reqs-html
 reqs-html: install docs/gen/*.html
 docs/gen/*.html: $(YAML)
 	$(DOORSTOP) publish all docs/gen --html
+
+.PHONY: reqs-latex
+reqs-latex: install docs/gen/*.tex
+docs/gen/*.tex: $(YAML)
+	$(DOORSTOP) publish all docs/gen --latex
 
 .PHONY: reqs-md
 reqs-md: install docs/gen/*.md
