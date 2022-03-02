@@ -6,14 +6,13 @@ on:
     branches: [ develop ]
 
 jobs:
-  # test:
-  #   runs-on:
-  #   - macos-latest
-
-  call-workflow-2-in-local-repo:
-    uses: ./.github/workflows/execute-tests.yml
+  test:
     runs-on:
     - macos-latest
+
+    call-workflow-2-in-local-repo:
+      uses: ./.github/workflows/execute-tests.yml
+
     #
     # strategy:
     #   matrix:
