@@ -1,4 +1,4 @@
-name: Linux Test
+name: Windows Test
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     runs-on:
-    - ubuntu-latest
+    - windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
       run: pip install poetry
 
     - name: Install graphviz
-      run: sudo apt install graphviz
+      run: winget install graphviz
 
     - name: doctor
       run: make doctor
