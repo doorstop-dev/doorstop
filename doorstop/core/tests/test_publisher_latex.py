@@ -971,7 +971,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         )
         # Act
         dirpath = self.dirpath + "/dummy.tex"
-        path2 = publisher.publish(self.mock_tree.documents[1], dirpath, ".tex")
+        path2 = publisher.publish(self.mock_tree.find_document("TUT"), dirpath, ".tex")
         # Assert
         self.assertIs(dirpath, path2)
         # Get the exported tree.
