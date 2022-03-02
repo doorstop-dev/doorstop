@@ -686,7 +686,13 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"|---|" + "\n\n"
         )
         # Act
-        result = getLines(publisher.publish_lines(item, ".tex"))
+        result = ""
+        with self.assertLogs("doorstop.core.publisher_latex", level="WARNING") as logs:
+            result = getLines(publisher.publish_lines(item, ".tex"))
+            self.assertIn(
+                "WARNING:doorstop.core.publisher_latex:Possibly unbalanced table found.",
+                logs.output,
+            )
         # Assert
         self.assertEqual(expected, result)
 
@@ -712,10 +718,12 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = ""
-        with self.assertLogs("publisher_latex", level="WARNING") as cm:
-            print("cm")
-            print(cm)
+        with self.assertLogs("doorstop.core.publisher_latex", level="WARNING") as logs:
             result = getLines(publisher.publish_lines(item, ".tex"))
+            self.assertIn(
+                "WARNING:doorstop.core.publisher_latex:Possibly incorrectly specified table found.",
+                logs.output,
+            )
         # Assert
         self.assertEqual(expected, result)
 
@@ -762,12 +770,6 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.assertIs(self.dirpath, path2)
         # Get the exported tree.
         walk = getWalk(self.dirpath)
-        print("EXPECTED")
-        print(self.expected_walk)
-        print("##########################")
-        print("REAL")
-        print(walk)
-        print("##########################")
         self.assertEqual(self.expected_walk, walk)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
