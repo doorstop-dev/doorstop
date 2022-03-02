@@ -13,10 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run:
-        - pip install poetry
-        - apt install graphviz
+    - name: Install poetry
+      run: pip install poetry
+
+    - name: Install graphviz
+      run: apt install graphviz
 
     - name: doctor
       run: make doctor
@@ -34,10 +35,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run:
-        - pip install poetry
-        - brew install graphviz
+    - name: Install poetry
+      run: pip install poetry
+
+    - name: Install graphviz
+      run: brew install graphviz
 
     - name: doctor
       run: make doctor
@@ -55,10 +57,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run:
-        - pip install poetry
-        - winget install graphviz
+    - name: Install poetry
+      run: pip install poetry
+
+    - name: Install graphviz
+      run: winget install graphviz
 
     - name: doctor
       run: make doctor
