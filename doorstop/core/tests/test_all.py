@@ -489,20 +489,7 @@ class TestExporter(unittest.TestCase):
         self.assertEqual(expected, actual)
         move_file(temp, path)
 
-    @unittest.skipUnless(os.getenv(ENV), REASON)
-    def test_export_xlsx(self):
-        """Verify a document can be exported as an XLSX file."""
-        path = os.path.join(FILES, "exported.xlsx")
-        temp = os.path.join(self.temp, "exported.xlsx")
-        expected = read_xlsx(path)
-        # Act
-        path2 = core.exporter.export(self.document, temp)
-        # Assert
-        self.assertIs(temp, path2)
-        actual = read_xlsx(temp)
-        if actual != expected:
-            common.log.error(f"Published content changed: {path}")
-        move_file(temp, path)
+
 
 
 class TestPublisher(unittest.TestCase):
@@ -513,7 +500,6 @@ class TestPublisher(unittest.TestCase):
     @patch("doorstop.core.document.Document", DocumentNoSkip)
     def setUp(self):
         self.tree = core.build(cwd=FILES, root=FILES)
-        # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document("REQ")
         self.temp = tempfile.mkdtemp()
 
@@ -654,10 +640,10 @@ class TestModule(unittest.TestCase):
 
 def log_data(expected, actual):
     """Log list values."""
-    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+    for index, (e, a) in enumerate(zip(expected, actual)):
         logging.debug(
             "\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-                i=index, e=pprint.pformat(evalue), a=pprint.pformat(avalue)
+                i=index, e=pprint.pformat(e), a=pprint.pformat(a)
             )
         )
 
