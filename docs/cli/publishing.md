@@ -16,10 +16,10 @@ $ doorstop publish all ./dist/
 
 # LaTeX
 
-Individual of the collection of documents can be published as a LaTeX-format file that then can be typeset by running ```pdflatex``` on the exported files. To ensure easy compilation of a complete collection with cross-references and generated plantUML diagrams, a ```compile.sh```-file is automatically created in the export folder.
+Individual documents or the collection of all documents can be published as a LaTeX-format file that then can be typeset by running ```pdflatex``` on the exported files. To ensure easy compilation of a complete collection with cross-references and generated plantUML diagrams, a ```compile.sh```-file is automatically created in the export folder.
 
 ## Example individual document
-```sh
+```
 $ doorstop publish --latex TUT path/to/name_here_is_ignored.tex
 building tree...
 publishing document TUT to '<...>/path/to/name_here_is_ignored.tex'...
@@ -34,7 +34,7 @@ This is pdfTeX, Version <Lot\'s of text cut out!>
 ```
 
 ## Example collection of documents
-```sh
+```
 $ doorstop publish --latex all path/to/
 building tree...
 loading documents...
