@@ -455,7 +455,7 @@ def _format_latex_text(text):
                 block.append("\\end{itemize}")
             if plantUMLFound:
                 block.append("\\end{plantuml}")
-                line = (
+                block.append(
                     "\\process{"
                     + plantUMLFile
                     + "}{0.8\\textwidth}{"
