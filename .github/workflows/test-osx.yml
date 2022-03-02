@@ -10,8 +10,8 @@ jobs:
     runs-on:
     - macos-latest
 
-    call-workflow-2-in-local-repo:
-      uses: ./.github/workflows/execute-tests.yml
+    # call-workflow-2-in-local-repo:
+    uses: ./.github/workflows/execute-tests.yml
 
     #
     # strategy:
