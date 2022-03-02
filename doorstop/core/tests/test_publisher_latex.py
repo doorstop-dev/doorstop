@@ -732,19 +732,19 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.dirpath = os.path.join("mock", "LaTeX", self.hex)
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
-    traceability.tex
-    TUT.tex
-    doc-TUT.tex
-    doc-REQ.tex
     HLT.tex
+    LLT.tex
+    REQ.tex
+    TUT.tex
     compile.sh
     doc-HLT.tex
-    REQ.tex
-    LLT.tex
     doc-LLT.tex
+    doc-REQ.tex
+    doc-TUT.tex
+    traceability.tex
     assets/
-        logo-black-white.png
         doorstop.cls
+        logo-black-white.png
 """.format(
             n=self.hex
         )
@@ -762,6 +762,12 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.assertIs(self.dirpath, path2)
         # Get the exported tree.
         walk = getWalk(self.dirpath)
+        print("EXPECTED")
+        print(self.expected_walk)
+        print("##########################")
+        print("REAL")
+        print(walk)
+        print("##########################")
         self.assertEqual(self.expected_walk, walk)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)

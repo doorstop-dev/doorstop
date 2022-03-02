@@ -56,15 +56,15 @@ outline:
 
 def getWalk(walk_path):
     # Get the exported tree.
-    walk = ""
-    for root, _, files in os.walk(walk_path):
+    walk = []
+    for root, _, files in sorted(os.walk(walk_path)):
         level = root.replace(walk_path, "").count(os.sep)
         indent = " " * 4 * (level)
-        walk = walk + "{}{}/\n".format(indent, os.path.basename(root))
+        walk.append("{}{}/\n".format(indent, os.path.basename(root)))
         subindent = " " * 4 * (level + 1)
-        for f in files:
-            walk = walk + "{}{}\n".format(subindent, f)
-    return walk
+        for f in sorted(files):
+            walk.append("{}{}\n".format(subindent, f))
+    return "".join(line + "" for line in walk)
 
 
 def getLines(gen):
