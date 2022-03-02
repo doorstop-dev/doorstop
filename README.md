@@ -1,4 +1,6 @@
-[![Linux Test Status](https://github.com/neerdoc/doorstop/actions/workflows/test-linux.yml/badge.svg)](https://github.com/neerdoc/doorstop/actions/workflows/test-linux.yml)
+[![Linux Test](https://github.com/neerdoc/doorstop/actions/workflows/test-linux.yml/badge.svg)](https://github.com/neerdoc/doorstop/actions/workflows/test-linux.yml)
+[![Mac OS X Test](https://github.com/neerdoc/doorstop/actions/workflows/test-osx.yml/badge.svg)](https://github.com/neerdoc/doorstop/actions/workflows/test-osx.yml)
+[![Windows Test](https://github.com/neerdoc/doorstop/actions/workflows/test-windows.yml/badge.svg)](https://github.com/neerdoc/doorstop/actions/workflows/test-windows.yml)
 <br>
 [![Unix Build Status](https://img.shields.io/travis/com/doorstop-dev/doorstop/develop.svg?label=unix)](https://travis-ci.com/doorstop-dev/doorstop)
 [![Windows Build Status](https://img.shields.io/appveyor/ci/jacebrowning/doorstop/develop.svg?label=windows)](https://ci.appveyor.com/project/jacebrowning/doorstop)
