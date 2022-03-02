@@ -419,6 +419,10 @@ def _format_latex_text(text):
             plantUML_title = re.search('title="(.*)"', line)
             if plantUML_title:
                 plantUMLName = plantUML_title.groups(0)[0]
+            else:
+                raise DoorstopError(
+                    "'title' is required for plantUML processing in LaTeX."
+                )
             plantUMLFile = re.sub("\\s", "-", plantUMLName)
             line = "\\begin{plantuml}{" + plantUMLFile + "}"
             plantUMLFound = True
