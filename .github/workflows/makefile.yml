@@ -6,12 +6,47 @@ on:
     branches: [ develop ]
 
 jobs:
-  test:
-
+  test-linux:
     runs-on:
     - ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: doctor
+      run: make doctor
+
+    - name: Install dependencies
+      run: make install
+
+    - name: Run test
+      run: make test
+
+    - name: Run full CI
+      run: make ci
+
+  test-macosx:
+    runs-on:
+    - macosx-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: doctor
+      run: make doctor
+
+    - name: Install dependencies
+      run: make install
+
+    - name: Run test
+      run: make test
+
+    - name: Run full CI
+      run: make ci
+
+  test-windows:
+    runs-on:
     - windows-latest
-    - macos-latest
 
     steps:
     - uses: actions/checkout@v2
