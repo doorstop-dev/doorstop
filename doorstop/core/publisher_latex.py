@@ -254,6 +254,38 @@ def _format_latex_text(text):
     for i, line in enumerate(text):
         noParagraph = False
         #############################
+        ## Fix images.
+        #############################
+        image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
+        if image_match:
+            image_title, image_path = image_match[0]
+            # Check for title. If not found, alt_text will be used as caption.
+            title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
+            if title_match:
+                image_path, image_title = title_match[0]
+            # Make a safe label.
+            label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
+            # Make the string to replace!
+            replacement = (
+                r"\includegraphics[width=0.8\textwidth]{"
+                + image_path
+                + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
+                + r"\caption{"
+                + _latex_convert(image_title)
+                + r"}"
+            ).replace("\\", "\\\\")
+            # Replace with LaTeX format.
+            line = re.sub(
+                r"!\[(.*)\]\((.*)\)",
+                replacement,
+                line,
+            )
+            # Create the figure.
+            block.append(r"\begin{figure}[h!]\center")
+            block.append(line)
+            line = r"\end{figure}"
+
+        #############################
         ## Fix $ and MATH.
         #############################
         math_match = re.split("\\$\\$", line)
