@@ -784,6 +784,82 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         with self.assertRaises(DoorstopError):
             _ = getLines(publisher.publish_lines(item, ".tex"))
 
+    def test_missing_ending_code(self):
+        """Verify that the code block ended correclty even if ending was not detected before end-of-file."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of code block." + "\n\n"
+            r"  ```This is an unended code block."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of code block.\\" + "\n\n"
+            r"\begin{lstlisting}" + "\n"
+            r"This is an unended code block." + "\n"
+            r"\end{lstlisting}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_missing_ending_plantuml(self):
+        """Verify that the plantUML block ended correclty even if ending was not detected before end-of-file."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of plantUML block." + "\n\n"
+            r'  plantuml format="png" alt="State Diagram Loading" title="State Diagram"'
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of plantUML block.\\" + "\n\n"
+            r"\begin{plantuml}{State-Diagram}" + "\n"
+            r"\end{plantuml}" + "\n"
+            r"\process{State-Diagram}{0.8\textwidth}{State Diagram}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_missing_ending_table(self):
+        """Verify that the table ended correclty even if ending was not detected before end-of-file."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of table ending." + "\n\n"
+            r"  |cool|table|" + "\n"
+            r"  |---|---|" + "\n"
+            r"  |without|end|"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of table ending.\\" + "\n\n"
+            r"\begin{longtable}{|l|l|}" + "\n"
+            r"cool&table\\" + "\n"
+            r"\hline" + "\n"
+            r"without&end\\" + "\n"
+            r"\end{longtable}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
