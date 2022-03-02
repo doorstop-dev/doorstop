@@ -13,11 +13,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: pip install poetry
+
     - name: doctor
       run: make doctor
-
-    - name: Install dependencies
-      run: make install
 
     - name: Run test
       run: make test
@@ -32,11 +32,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: pip install poetry
+
     - name: doctor
       run: make doctor
-
-    - name: Install dependencies
-      run: make install
 
     - name: Run test
       run: make test
@@ -51,11 +51,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: pip install poetry
+
     - name: doctor
       run: make doctor
-
-    - name: Install dependencies
-      run: make install
 
     - name: Run test
       run: make test
