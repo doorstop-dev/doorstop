@@ -737,11 +737,6 @@ class TestPublish(TempTestCase):
         self.assertIs(None, main(["publish", "tut", "--no-child-links"]))
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_document_without_body_levels(self):
-        """Verify 'doorstop publish' can create output without body levels."""
-        self.assertIs(None, main(["publish", "tut", "--no-body-levels"]))
-        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
-
     def test_publish_document_no_body_levels(self):
         """Verify 'doorstop publish' can create output without body levels."""
         self.assertIs(None, main(["publish", "tut", "--no-levels=body"]))

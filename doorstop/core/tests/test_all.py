@@ -23,20 +23,6 @@ from doorstop.core.builder import _clear_tree, _get_tree
 from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
 from doorstop.core.vcs import mockvcs
 
-# Whenever the export format is changed:
-#  1. set CHECK_EXPORTED_CONTENT to False
-#  2. re-run all tests
-#  3. manually verify the newly exported content is correct
-#  4. set CHECK_EXPORTED_CONTENT to True
-CHECK_EXPORTED_CONTENT = True
-
-# Whenever the publish format is changed:
-#  1. set CHECK_PUBLISHED_CONTENT to False
-#  2. re-run all tests
-#  3. manually verify the newly published content is correct
-#  4. set CHECK_PUBLISHED_CONTENT to True
-CHECK_PUBLISHED_CONTENT = True
-
 
 class TestItem(unittest.TestCase):
     """Integration tests for the Item class."""
@@ -472,9 +458,8 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_yml(temp)
-            self.assertEqual(expected, actual)
+        actual = read_yml(temp)
+        self.assertEqual(expected, actual)
         move_file(temp, path)
 
     def test_export_csv(self):
@@ -486,9 +471,8 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_csv(temp)
-            self.assertEqual(expected, actual)
+        actual = read_csv(temp)
+        self.assertEqual(expected, actual)
         move_file(temp, path)
 
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -501,12 +485,11 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_csv(temp, delimiter="\t")
-            self.assertEqual(expected, actual)
+        actual = read_csv(temp, delimiter="\t")
+        self.assertEqual(expected, actual)
         move_file(temp, path)
 
-    @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
+    @unittest.skipUnless(os.getenv(ENV), REASON)
     def test_export_xlsx(self):
         """Verify a document can be exported as an XLSX file."""
         path = os.path.join(FILES, "exported.xlsx")
@@ -516,11 +499,10 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_xlsx(temp)
-            self.assertEqual(expected, actual)
-        else:  # binary file always changes, only copy when not checking
-            move_file(temp, path)
+        actual = read_xlsx(temp)
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+        move_file(temp, path)
 
 
 class TestPublisher(unittest.TestCase):
@@ -569,8 +551,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
@@ -582,8 +563,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     def test_lines_markdown_document(self):
@@ -594,8 +574,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
@@ -607,8 +586,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     @unittest.skipIf(
@@ -621,11 +599,11 @@ class TestPublisher(unittest.TestCase):
         expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, ".html", linkify=True)
-        text = "".join(line + "\n" for line in lines)
+        actual = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+        common.write_text(actual, path)
 
     @unittest.skipIf(
         sys.version_info < (3, 9),
@@ -638,11 +616,11 @@ class TestPublisher(unittest.TestCase):
         expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(self.document, ".html")
-        text = "".join(line + "\n" for line in lines)
+        actual = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+        common.write_text(actual, path)
 
 
 class TestModule(unittest.TestCase):

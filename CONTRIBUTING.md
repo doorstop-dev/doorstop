@@ -54,7 +54,7 @@ $ make docs
 Keep all of the above tasks running on change:
 
 ```sh
-$ make watch
+$ make dev
 ```
 
 > In order to have OS X notifications, `brew install terminal-notifier`.
