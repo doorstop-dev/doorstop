@@ -13,8 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install python 3
-      run: brew install python3
+    - name: Remove python 2
+      run: sudo rm -fr /usr/bin/python
 
     - name: Activate python 3
       run: sudo ln -s /usr/local/bin/python3 /usr/bin/python
