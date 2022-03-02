@@ -187,6 +187,7 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         ".yml": "yaml",
         ".csv": "csv",
         ".xlsx": "xlsx",
+        ".tex": "latex",
     }.items():
         try:
             if getattr(args, option):

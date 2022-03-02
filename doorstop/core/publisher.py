@@ -12,8 +12,10 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
+from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core import Document
+from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -70,7 +72,7 @@ def publish(
     ext = ext or os.path.splitext(path)[-1] or ".html"
     check(ext)
     if linkify is None:
-        linkify = is_tree(obj) and ext in [".html", ".md"]
+        linkify = is_tree(obj) and ext in [".html", ".md", ".tex"]
     if index is None:
         index = is_tree(obj) and ext == ".html"
     if matrix is None:
@@ -94,13 +96,121 @@ def publish(
         template = HTMLTEMPLATE
     template_assets = os.path.join(os.path.dirname(__file__), "files", "assets")
     if os.path.isdir(template_assets):
+        if ext == ".tex":
+            template_assets = template_assets + "/latex"
         log.info("Copying %s to %s", template_assets, assets_dir)
         common.copy_dir_contents(template_assets, assets_dir)
 
     # Publish documents
     count = 0
+    compile_files = []
+    compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
+        # Publish wrapper files for LaTeX.
+        if ext == ".tex":
+            head, tail = os.path.split(path2)
+            tail = "compile.sh"
+            compile_path = os.path.join(head, tail)
+            # Check for defined document attributes.
+            document_name = "doc-" + str(obj2)
+            document_title = "Test document for development of \\textit{Doorstop}"
+            document_ref = ""
+            document_by = ""
+            document_major = ""
+            document_minor = ""
+            try:
+                attribute_defaults = obj2.__getattribute__("_attribute_defaults")
+                if attribute_defaults:
+                    if attribute_defaults["doc"]["name"]:
+                        document_name = attribute_defaults["doc"]["name"]
+                    if attribute_defaults["doc"]["title"]:
+                        document_title = attribute_defaults["doc"]["title"]
+                    if attribute_defaults["doc"]["ref"]:
+                        document_ref = attribute_defaults["doc"]["ref"]
+                    if attribute_defaults["doc"]["by"]:
+                        document_by = attribute_defaults["doc"]["by"]
+                    if attribute_defaults["doc"]["major"]:
+                        document_major = attribute_defaults["doc"]["major"]
+                    if attribute_defaults["doc"]["minor"]:
+                        document_minor = attribute_defaults["doc"]["minor"]
+            except AttributeError:
+                pass
+            # Add to compile.sh
+            compile_files.append(
+                "pdflatex -shell-escape {n}.tex".format(n=document_name)
+            )
+            # Create the wrapper file.
+            head, tail = os.path.split(path2)
+            if tail != str(obj2) + ".tex":
+                log.warning(
+                    "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
+                )
+            tail = document_name + ".tex"
+            path2 = os.path.join(head, str(obj2) + ".tex")
+            path3 = os.path.join(head, tail)
+            wrapper = []
+            wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
+            wrapper.append("\\usepackage[utf8]{inputenc}")
+            wrapper.append("")
+            wrapper.append("%% Change these to change logotype and/or copyright.")
+            wrapper.append("% \\def\\owner{Whatever Inc.}")
+            wrapper.append("% \\def\\logo{assets/logo-black-white.png}")
+            wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
+            wrapper.append("")
+            wrapper.append("% Define the header.")
+            wrapper.append("\\def\\doccategory{{{t}}}".format(t=str(obj2)))
+            wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
+            wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
+            wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
+            wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
+            wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
+            wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
+            wrapper.append("")
+            info_text_set = False
+            for external, _ in iter_documents(obj, path, ext):
+                # Check for defined document attributes.
+                external_doc_name = "doc-" + str(external)
+                try:
+                    external_attribute_defaults = external.__getattribute__(
+                        "_attribute_defaults"
+                    )
+                    if external_attribute_defaults:
+                        if external_attribute_defaults["doc"]["name"]:
+                            external_doc_name = external_attribute_defaults["doc"][
+                                "name"
+                            ]
+                except AttributeError:
+                    pass
+                # Don't add self.
+                if external_doc_name != document_name:
+                    if not info_text_set:
+                        wrapper.append(
+                            "% Add all documents as external references to allow cross-references."
+                        )
+                        info_text_set = True
+                    wrapper.append(
+                        "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
+                    )
+                    wrapper.append(
+                        "\\externaldocument{{{n}}}".format(n=external_doc_name)
+                    )
+            wrapper.append("")
+            wrapper.append("\\begin{document}")
+            wrapper.append("\\makecoverpage")
+            wrapper.append("\\maketoc")
+            wrapper.append("% Load the output file.")
+            wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
+            # Include traceability matrix
+            if matrix and count:
+                wrapper.append("% Traceability matrix")
+                if settings.PUBLISH_HEADING_LEVELS:
+                    wrapper.append("\\section{Traceability}")
+                else:
+                    wrapper.append("\\section*{Traceability}")
+                wrapper.append("\\input{traceability.tex}")
+            wrapper.append("\\end{document}")
+            common.write_lines(wrapper, path3)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
@@ -111,13 +221,20 @@ def publish(
         if obj2.copy_assets(assets_dir):
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
+    if ext == ".tex":
+        common.write_lines(compile_files, compile_path)
+        msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
+        utilities.show(msg, flush=True)
+
     # Create index
     if index and count:
         _index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
-    if index and matrix and count:
-        _matrix(path, tree=obj if is_tree(obj) else None)
+    if (index or ext == ".tex") and (matrix and count):
+        _matrix(
+            path, tree=obj if is_tree(obj) else None, ext=ext if ext == ".tex" else None
+        )
 
     # Return the published path
     if count:
@@ -257,7 +374,10 @@ def _matrix(directory, tree, filename=MATRIX, ext=None):
     if tree:
         log.info("creating an {}...".format(filename))
         content = _matrix_content(tree)
-        common.write_csv(content, path)
+        if ext == ".tex":
+            _matrix_latex(content, path)
+        else:
+            common.write_csv(content, path)
     else:
         log.warning("no data for {}".format(filename))
 
@@ -697,7 +817,12 @@ def _lines_html(
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {".txt": _lines_text, ".md": _lines_markdown, ".html": _lines_html}
+FORMAT_LINES = {
+    ".txt": _lines_text,
+    ".md": _lines_markdown,
+    ".html": _lines_html,
+    ".tex": _lines_latex,
+}
 
 
 def check(ext):
