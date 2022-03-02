@@ -6,7 +6,7 @@ on:
     branches: [ develop ]
 
 env:
-  PATH: /usr/local/bin/python:${PATH}
+  PATH: /usr/local/bin/python:$PATH
 
 jobs:
   test:
