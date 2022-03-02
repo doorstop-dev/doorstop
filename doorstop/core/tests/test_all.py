@@ -490,8 +490,6 @@ class TestExporter(unittest.TestCase):
         move_file(temp, path)
 
 
-
-
 class TestPublisher(unittest.TestCase):
     """Integration tests for the doorstop.core.publisher module."""
 
