@@ -9,7 +9,6 @@ import logging
 import os
 import pprint
 import shutil
-import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
