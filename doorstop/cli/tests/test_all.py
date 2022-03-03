@@ -86,6 +86,15 @@ class TestCreate(TempTestCase):
     @patch("subprocess.call", Mock())
     def test_create(self):
         """Verify 'doorstop create' can be called."""
+        print("OS")
+        print(os.getenv(ENV))
+        print("################################")
+        print("ENV")
+        print(env)
+        print("################################")
+        print("REASON")
+        print(REASON)
+        print("################################")
         self.assertIs(None, main(["create", "_TEMP", self.temp, "-p", "REQ"]))
 
     @patch("subprocess.call", Mock())
