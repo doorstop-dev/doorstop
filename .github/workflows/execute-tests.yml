@@ -41,8 +41,8 @@ jobs:
     - name: doctor
       run: make doctor
 
-    # - name: Run test
-    #   run: make test
+    - name: Run test
+      run: make test
 
     - name: Run full CI
       run: make ci

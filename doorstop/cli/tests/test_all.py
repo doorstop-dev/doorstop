@@ -86,17 +86,16 @@ class TestCreate(TempTestCase):
     @patch("subprocess.call", Mock())
     def test_create(self):
         """Verify 'doorstop create' can be called."""
-        print("OS")
-        print(os.getenv(ENV))
-        print("################################")
-        print("ENV")
-        print(ENV)
-        print("################################")
-        print("REASON")
-        print(REASON)
-        print("################################")
+        print("##############################")
+        print("self.temp")
+        print(self.temp)
+        print("cwd")
+        print(os.getcwd())
+        print("file path")
+        os.chdir(os.path.dirname(__file__))
+        print(os.getcwd())
+        print("##############################")
         self.assertIs(None, main(["create", "_TEMP", self.temp, "-p", "REQ"]))
-        # self.assertEqual(1,2)
 
     @patch("subprocess.call", Mock())
     def test_create_error_unknwon_parent(self):
