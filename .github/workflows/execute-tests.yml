@@ -22,7 +22,6 @@ on:
 jobs:
   test:
     runs-on: ${{ inputs.os }}
-
     strategy:
       matrix:
         python-version: [ '3.7', '3.8' ]

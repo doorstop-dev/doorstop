@@ -10,8 +10,8 @@ jobs:
     runs-on:
     - macos-latest
     uses: ./.github/workflows/execute-tests.yml
-      with:
-        os: 'macos-latest'
+    with:
+      os: 'macos-latest'
 
     #
     # strategy:
