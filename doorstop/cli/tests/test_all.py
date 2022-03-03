@@ -90,12 +90,13 @@ class TestCreate(TempTestCase):
         print(os.getenv(ENV))
         print("################################")
         print("ENV")
-        print(env)
+        print(ENV)
         print("################################")
         print("REASON")
         print(REASON)
         print("################################")
         self.assertIs(None, main(["create", "_TEMP", self.temp, "-p", "REQ"]))
+        # self.assertEqual(1,2)
 
     @patch("subprocess.call", Mock())
     def test_create_error_unknwon_parent(self):
