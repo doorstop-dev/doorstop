@@ -40,15 +40,15 @@ jobs:
 
     - name: Install graphviz Mac OS X
       run: brew install graphviz
-      if: ${{ os == 'macos-latest' }}
+      if: ${{ inputs.os == 'macos-latest' }}
 
     - name: Install graphviz Windows
       run: choco install graphviz
-      if: ${{ os == 'windows-latest' }}
+      if: ${{ inputs.os == 'windows-latest' }}
 
     - name: Install graphviz Ubuntu
       run: sudo apt install graphviz
-      if: ${{ os == 'ubuntu-latest' }}
+      if: ${{ inputs.os == 'ubuntu-latest' }}
 
     - name: doctor
       run: make doctor
