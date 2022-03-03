@@ -47,9 +47,10 @@ class TestConfigureSettings(SettingsTestCase):
         args.reorder = False
         args.beta = None
         # Act
-        with catch_warnings(record=True) as warnings:
+        with catch_warnings(record=True) as _warnings:
             utilities.configure_settings(args)
-            assert warnings, "Expected one or more warnings"
+            # TODO: Enable this when future warnings are added
+            # assert warnings, "Expected one or more warnings"
         # Assert
         self.assertFalse(settings.REFORMAT)
         self.assertFalse(settings.REORDER)
@@ -63,7 +64,8 @@ class TestConfigureSettings(SettingsTestCase):
         self.assertFalse(settings.WARN_ALL)
         self.assertFalse(settings.ERROR_ALL)
         self.assertTrue(settings.ENABLE_HEADERS)
-        self.assertIn("--no-body-levels", str(warnings[-1].message))
+        # TODO: Enable this when future warnings are added
+        # self.assertIn("foobar", str(warnings[-1].message))
 
 
 class TestLiteralEval(unittest.TestCase):
