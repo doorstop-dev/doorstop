@@ -54,6 +54,11 @@ jobs:
       - name: Check system dependencies
         run: make doctor
 
+      - uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+
       - name: Install project dependencies
         run: make install
 
