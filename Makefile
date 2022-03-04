@@ -68,7 +68,7 @@ format: install
 .PHONY: check
 check: install format  ## Run formaters, linters, and static analysis
 ifdef CI
-	git diff --exit-code
+	git diff --exit-code -- '***.py'
 endif
 	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
 	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
