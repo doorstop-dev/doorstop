@@ -15,7 +15,7 @@ from doorstop.cli.tests import FILES, ROOT
 
 if "TRAVIS" in os.environ:
     PATH = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "doorstop")
-elif "GITHUB" in os.environ and os.name == "nt":
+elif "GITHUB_ACTIONS" in os.environ and os.name == "nt":
     PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop")
 elif os.name == "nt":
     PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop.exe")
@@ -46,9 +46,13 @@ class TestBase(unittest.TestCase):
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
         print(
-            "##################################\n{n}\n##################################".format(
-                n=os.environ
-            )
+            "##################################\n"
+            + "{n}".format(n=os.environ)
+            + "\n"
+            + "##################################\n"
+            + "{n}".format(n=cmd)
+            + "\n"
+            + "##################################\n"
         )
         cp = subprocess.run(cmd, shell=True, stdout=stdout, stderr=subprocess.PIPE)
         if cp.returncode != returncode:
