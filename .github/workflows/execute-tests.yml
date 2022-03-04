@@ -85,7 +85,7 @@ jobs:
     #####################################
 
     # Check pre-requisites
-    - name: doctor
+    - name: Check pre-requisites
       run: make doctor
 
     # Run the test suite. Reset to head when done.
