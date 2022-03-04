@@ -25,7 +25,7 @@ jobs:
     steps:
     - name: Checkout
       run: |
-        mkdir ${{ inputs.workpath }}
+        mkdir -p ${{ inputs.workpath }}
         git clone $${{ github.GITHUB_REPOSITORY }} ${{ inputs.workpath }} --depth 1
     # - uses: actions/checkout@v3
     #   with:
