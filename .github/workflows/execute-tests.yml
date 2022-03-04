@@ -31,7 +31,9 @@ jobs:
       if: ${{ inputs.os == 'macos-latest' }}
 
     - name: Install graphviz Windows
-      run: choco install graphviz
+      run: |
+        echo ${env.GITHUB_WORKSPACE}
+        choco install graphviz
       if: ${{ inputs.os == 'windows-latest' }}
 
     - name: Install graphviz Ubuntu
