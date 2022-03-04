@@ -1,0 +1,104 @@
+name: Execute tests
+
+# This workflow is a reusable workflow. That is defined here.
+on:
+  workflow_call:
+    # Require calling workflows to set variables that are OS dependent.
+    inputs:
+      architecture:
+        required: true
+        type: string
+      basepath:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+      workpath:
+        required: true
+        type: string
+
+# Define the jobs.
+jobs:
+  # Execute tests.
+  test:
+    # Set which OS is used.
+    runs-on: ${{ inputs.os }}
+    # Define all python versions to test.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.7', '3.8', '3.9']
+    name: Python ${{ matrix.python-version }}
+
+    # Set the default working directory.
+    defaults:
+      run:
+        working-directory: ${{ inputs.workpath }}
+
+    # Define all job steps.
+    steps:
+      # Use a manual checkout.
+    - name: Checkout *nix
+      if: ${{ inputs.os != 'windows-latest' }}
+      run: |
+        mkdir -p ${{ inputs.workpath }}
+        git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $GITHUB_REF_NAME
+
+      # Use a manual checkout to force C: to be used on Windows. Otherwise some
+      # tests will fail due to default checkout is on D: while temporary paths
+      # are on C:.
+    - name: Checkout Windows
+      # Cannot start powershell from a path that does not exist, so change
+      # working directory for this step only.
+      working-directory: ${{ inputs.basepath }}
+      if: ${{ inputs.os == 'windows-latest' }}
+      run: |
+        mkdir -p ${{ inputs.workpath }}
+        git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $env:GITHUB_REF_NAME
+
+    # Create the matrix to test all defined python versions.
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: ${{ inputs.architecture }}
+
+    # Install poetry.
+    - name: Install poetry
+      run: pip install poetry
+
+    #####################################
+    # Install graphviz depending on OS. #
+    #####################################
+    # Mac OS X
+    - name: Install graphviz Mac OS X
+      if: ${{ inputs.os == 'macos-latest' }}
+      run: brew install graphviz
+
+    # Ubuntu
+    - name: Install graphviz Ubuntu
+      if: ${{ inputs.os == 'ubuntu-latest' }}
+      run: sudo apt install graphviz
+
+    # Windows
+    - name: Install graphviz Windows
+      if: ${{ inputs.os == 'windows-latest' }}
+      run: choco install graphviz
+    #####################################
+    # Done graphviz depending on OS.    #
+    #####################################
+
+    # Check pre-requisites
+    - name: Check pre-requisites
+      run: make doctor
+
+    # Run the test suite. Reset to head when done.
+    - name: Run test
+      run: |
+        make test
+        git clean -f
+        git checkout .
+
+    # Run the full CI suite.
+    - name: Run full CI
+      run: make ci

@@ -1,0 +1,17 @@
+name: Mac OS X Test
+
+# Run on all pushes and PRs to 'develop'.
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
+
+# Run on all pushes and PRs to 'develop'.
+jobs:
+  test:
+    uses: ./.github/workflows/execute-tests.yml
+    with:
+      architecture: x64
+      basepath: '/Users/runner/work'
+      os: 'macos-latest'
+      workpath: '/Users/runner/work/doorstop/doorstop'

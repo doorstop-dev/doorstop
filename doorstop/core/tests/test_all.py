@@ -9,7 +9,6 @@ import logging
 import os
 import pprint
 import shutil
-import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -573,10 +572,6 @@ class TestPublisher(unittest.TestCase):
         self.assertEqual(expected, text)
         common.write_text(text, path)
 
-    @unittest.skipIf(
-        sys.version_info < (3, 9),
-        reason="Output format differs with older versions of Python",
-    )
     def test_lines_html_document_linkify(self):
         """Verify HTML can be published from a document."""
         path = os.path.join(FILES, "published.html")
@@ -589,10 +584,6 @@ class TestPublisher(unittest.TestCase):
             common.log.error(f"Published content changed: {path}")
         common.write_text(actual, path)
 
-    @unittest.skipIf(
-        sys.version_info < (3, 9),
-        reason="Output format differs with older versions of Python",
-    )
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_html_document_without_child_links(self):
         """Verify HTML can be published from a document w/o child links."""
