@@ -8,17 +8,20 @@ on:
 
 # Call the reusable workflow.
 jobs:
-  test:
+  # Test 32-bit.
+  test-x86:
     uses: ./.github/workflows/execute-tests.yml
     with:
-      architecture: x64
+      architecture: x86
       basepath: 'D:\'
       os: 'windows-latest'
       workpath: 'C:\a\doorstop\doorstop'
 
+  # Test 64-bit.
+  test-x64:
     uses: ./.github/workflows/execute-tests.yml
     with:
-      architecture: x86
+      architecture: x64
       basepath: 'D:\'
       os: 'windows-latest'
       workpath: 'C:\a\doorstop\doorstop'
