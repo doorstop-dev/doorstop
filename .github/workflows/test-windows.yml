@@ -3,15 +3,9 @@ name: Windows
 on: push
 
 jobs:
-  test-x86:
-    uses: ./.github/workflows/execute-tests.yml
-    with:
-      architecture: x86
-      basepath: 'D:\'
-      os: "windows-latest"
-      workpath: 'C:\a\doorstop\doorstop'
 
-  test-x64:
+
+  Test:
     uses: ./.github/workflows/execute-tests.yml
     with:
       architecture: x64

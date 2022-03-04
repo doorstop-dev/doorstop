@@ -3,7 +3,7 @@ name: Linux
 on: push
 
 jobs:
-  test:
+  Test:
     uses: ./.github/workflows/execute-tests.yml
     with:
       architecture: x64
