@@ -11,6 +11,14 @@ jobs:
   test:
     uses: ./.github/workflows/execute-tests.yml
     with:
+      architecture: x64
+      basepath: 'D:\'
+      os: 'windows-latest'
+      workpath: 'C:\a\doorstop\doorstop'
+
+    uses: ./.github/workflows/execute-tests.yml
+    with:
+      architecture: x86
       basepath: 'D:\'
       os: 'windows-latest'
       workpath: 'C:\a\doorstop\doorstop'

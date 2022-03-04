@@ -11,6 +11,7 @@ jobs:
   test:
     uses: ./.github/workflows/execute-tests.yml
     with:
+      architecture: x64
       basepath: '/Users/runner/work'
       os: 'macos-latest'
       workpath: '/Users/runner/work/doorstop/doorstop'
