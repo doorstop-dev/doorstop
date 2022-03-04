@@ -44,8 +44,6 @@ jobs:
       run: |
         mkdir -p ${{ inputs.workpath }}
         git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $GITHUB_REF_NAME
-        cd ${{ inputs.workpath }}
-        git branch -a
 
     # Create the matrix to test all defined python versions.
     - uses: actions/setup-python@v2
