@@ -45,6 +45,7 @@ class TestBase(unittest.TestCase):
         """Call 'doorstop' with a string of arguments."""
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
+        print("##################################\n{n}\n##################################".format(os.environ))
         cp = subprocess.run(cmd, shell=True, stdout=stdout, stderr=subprocess.PIPE)
         if cp.returncode != returncode:
             raise AssertionError("command failed: doorstop {}".format(args))
