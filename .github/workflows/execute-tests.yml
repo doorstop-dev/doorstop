@@ -18,10 +18,17 @@ jobs:
         python-version: [ '3.7', ]
     name: Python ${{ matrix.python-version }}
 
+    defaults:
+      working-directory: ${{ inputs.workpath }}
+
     steps:
-    - uses: actions/checkout@v3
-      with:
-        path: ${{ inputs.workpath }}
+    - name: Checkout
+      run: |
+        mkdir ${{ inputs.workpath }}
+        git clone $${{ GITHUB_REPOSITORY }} ${{ inputs.workpath }} --depth 1
+    # - uses: actions/checkout@v3
+    #   with:
+    #     path: ${{ inputs.workpath }}
 
     - uses: actions/setup-python@v2
       with:
