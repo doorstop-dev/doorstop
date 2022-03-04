@@ -44,6 +44,7 @@ jobs:
       run: |
         mkdir -p ${{ inputs.workpath }}
         git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1
+        cd doorstop
         git branch -a
         git checkout $GITHUB_REF
         git branch -a
