@@ -72,7 +72,7 @@ class ReferenceFinder:
         log.debug("searching for ref '{}'...".format(ref_path))
         ref_full_path = os.path.normpath(os.path.join(root, ref_path))
 
-        for path, filename, relpath in tree.vcs.paths:
+        for path, _filename, relpath in tree.vcs.paths:
             # Skip the item's file while searching
             if path == item_path:
                 continue

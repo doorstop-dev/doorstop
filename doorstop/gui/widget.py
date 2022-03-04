@@ -9,8 +9,7 @@ from unittest.mock import Mock
 
 try:
     import tkinter as tk
-    from tkinter import ttk
-    from tkinter import font
+    from tkinter import font, ttk
 except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
@@ -129,102 +128,102 @@ def Tk():
 
     # # Fonts
     global fontNormal
-    fontNormal = font.Font(family='TkDefaultFont', size=1)
+    fontNormal = font.Font(family="TkDefaultFont", size=1)
     global fontFixed
-    fontFixed = font.Font(family='Courier New', size=1)
+    fontFixed = font.Font(family="Courier New", size=1)
 
     # # Styles (http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/ttk-style-layer.html)
 
     # Style for Button
     global styleDsTButton
     styleDsTButton = ttk.Style()
-    styleDsTButton.configure('ds.TButton', font=fontNormal)
+    styleDsTButton.configure("ds.TButton", font=fontNormal)
 
     # Style for Checkbutton
     global styleDsTCheckbutton
     styleDsTCheckbutton = ttk.Style()
-    styleDsTCheckbutton.configure('ds.TCheckbutton', font=fontNormal)
+    styleDsTCheckbutton.configure("ds.TCheckbutton", font=fontNormal)
 
     # Style for Combobox
     global styleDsTCombobox
     styleDsTCombobox = ttk.Style()
-    styleDsTCombobox.configure('ds.TCombobox', font=fontNormal)
+    styleDsTCombobox.configure("ds.TCombobox", font=fontNormal)
 
     # Style for Entry
     global styleDsTEntry
     styleDsTEntry = ttk.Style()
-    styleDsTEntry.configure('ds.TEntry', font=fontNormal)
+    styleDsTEntry.configure("ds.TEntry", font=fontNormal)
 
     # Style for Frame
     global styleDsTFrame
     styleDsTFrame = ttk.Style()
-    styleDsTFrame.configure('ds.TFrame', font=fontNormal)
+    styleDsTFrame.configure("ds.TFrame", font=fontNormal)
 
     # Style for Label
     global styleDsTLabel
     styleDsTLabel = ttk.Style()
-    styleDsTLabel.configure('ds.TLabel', font=fontNormal)
+    styleDsTLabel.configure("ds.TLabel", font=fontNormal)
 
     # Style for LabelFrame
     global styleDsTLabelFrame
     styleDsTLabelFrame = ttk.Style()
-    styleDsTLabelFrame.configure('ds.TLabelFrame', font=fontNormal)
+    styleDsTLabelFrame.configure("ds.TLabelFrame", font=fontNormal)
 
     # Style for Menubutton
     global styleDsTMenubutton
     styleDsTMenubutton = ttk.Style()
-    styleDsTMenubutton.configure('ds.TMenubutton', font=fontNormal)
+    styleDsTMenubutton.configure("ds.TMenubutton", font=fontNormal)
 
     # Style for Notebook
     global styleDsTNotebook
     styleDsTNotebook = ttk.Style()
-    styleDsTNotebook.configure('ds.TNotebook', font=fontNormal)
+    styleDsTNotebook.configure("ds.TNotebook", font=fontNormal)
 
     # Style for PanedWindow
     global styleDsTPanedwindow
     styleDsTPanedwindow = ttk.Style()
-    styleDsTPanedwindow.configure('ds.TPanedwindow', font=fontNormal)
+    styleDsTPanedwindow.configure("ds.TPanedwindow", font=fontNormal)
 
     # Style for Progressbar
     global styleDsHorizontalTProgressbar
     styleDsHorizontalTProgressbar = ttk.Style()
     styleDsHorizontalTProgressbar.configure(
-        'ds.Horizontal.TProgressbar', font=fontNormal
+        "ds.Horizontal.TProgressbar", font=fontNormal
     )
     global styleDsVerticalTProgressbar
     styleDsVerticalTProgressbar = ttk.Style()
-    styleDsVerticalTProgressbar.configure('ds.Vertical.TProgressbar', font=fontNormal)
+    styleDsVerticalTProgressbar.configure("ds.Vertical.TProgressbar", font=fontNormal)
 
     # Style for Radiobutton
     global styleDsTRadiobutton
     styleDsTRadiobutton = ttk.Style()
-    styleDsTRadiobutton.configure('ds.TRadiobutton', font=fontNormal)
+    styleDsTRadiobutton.configure("ds.TRadiobutton", font=fontNormal)
 
     # Style for Scale
     global styleDsHorizontalTScale
     styleDsHorizontalTScale = ttk.Style()
-    styleDsHorizontalTScale.configure('ds.Horizontal.TScale', font=fontNormal)
+    styleDsHorizontalTScale.configure("ds.Horizontal.TScale", font=fontNormal)
     global styleDsVerticalTScale
     styleDsVerticalTScale = ttk.Style()
-    styleDsVerticalTScale.configure('ds.Vertical.TScale', font=fontNormal)
+    styleDsVerticalTScale.configure("ds.Vertical.TScale", font=fontNormal)
 
     # Style for Scrollbar
     global styleDsHorizontalTScrollbar
     styleDsHorizontalTScrollbar = ttk.Style()
-    styleDsHorizontalTScrollbar.configure('ds.Horizontal.TScrollbar', font=fontNormal)
+    styleDsHorizontalTScrollbar.configure("ds.Horizontal.TScrollbar", font=fontNormal)
     global styleDsVerticalTScrollbar
     styleDsVerticalTScrollbar = ttk.Style()
-    styleDsVerticalTScrollbar.configure('ds.Vertical.TScrollbar', font=fontNormal)
+    styleDsVerticalTScrollbar.configure("ds.Vertical.TScrollbar", font=fontNormal)
 
     # Style for Separator
     global styleDsTSeparator
     styleDsTSeparator = ttk.Style()
-    styleDsTSeparator.configure('ds.TSeparator', font=fontNormal)
+    styleDsTSeparator.configure("ds.TSeparator", font=fontNormal)
 
     # Style for Sizegrip
     global styleDsTSizegrip
     styleDsTSizegrip = ttk.Style()
-    styleDsTSizegrip.configure('ds.TSizegrip', font=fontNormal)
+    styleDsTSizegrip.configure("ds.TSizegrip", font=fontNormal)
 
     # Style for Treeview
     global styleDsTreeview
@@ -236,7 +235,7 @@ def Tk():
     styleDsTreeviewHeading.configure("Treeview.Heading", font=fontNormal)
 
     resetFontSize()
-    result.option_add('*TCombobox*Listbox.font', fontNormal)
+    result.option_add("*TCombobox*Listbox.font", fontNormal)
     return result
 
 
@@ -249,12 +248,12 @@ def adjustFontSize(fontSizeDelta: int) -> None:
             return
         else:
             currFont.configure(size=max(1, abs(currFont["size"]) + fontSizeDelta))
-    styleDsTreeview.configure('Treeview', rowheight=fontNormal.metrics()['linespace'])
+    styleDsTreeview.configure("Treeview", rowheight=fontNormal.metrics()["linespace"])
 
 
 def resetFontSize() -> None:
     # Shared style
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         initsize = 14
     else:
         initsize = 10
@@ -264,7 +263,7 @@ def resetFontSize() -> None:
 
 def noUserInput_init(widget):
     widget.configure(state=tk.NORMAL)
-    widget.bind('<1>', lambda event: widget.focus_set())
+    widget.bind("<1>", lambda event: widget.focus_set())
     widget.configure(state=tk.DISABLED)
     return widget
 

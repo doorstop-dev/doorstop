@@ -12,26 +12,28 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
+from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core import Document
+from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
-    'markdown.extensions.extra',
-    'markdown.extensions.sane_lists',
+    "markdown.extensions.extra",
+    "markdown.extensions.sane_lists",
     PlantUMLMarkdownExtension(
-        server='http://www.plantuml.com/plantuml',
+        server="http://www.plantuml.com/plantuml",
         cachedir=tempfile.gettempdir(),
-        format='svg',
-        classes='class1,class2',
-        title='UML',
-        alt='UML Diagram',
+        format="svg",
+        classes="class1,class2",
+        title="UML",
+        alt="UML Diagram",
     ),
 )
-CSS = os.path.join(os.path.dirname(__file__), 'files', 'doorstop.css')
-HTMLTEMPLATE = 'sidebar'
-INDEX = 'index.html'
-MATRIX = 'traceability.csv'
+CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
+HTMLTEMPLATE = "sidebar"
+INDEX = "index.html"
+MATRIX = "traceability.csv"
 
 log = common.logger(__name__)
 
@@ -67,12 +69,12 @@ def publish(
 
     """
     # Determine the output format
-    ext = ext or os.path.splitext(path)[-1] or '.html'
+    ext = ext or os.path.splitext(path)[-1] or ".html"
     check(ext)
     if linkify is None:
-        linkify = is_tree(obj) and ext in ['.html', '.md']
+        linkify = is_tree(obj) and ext in [".html", ".md", ".tex"]
     if index is None:
-        index = is_tree(obj) and ext == '.html'
+        index = is_tree(obj) and ext == ".html"
     if matrix is None:
         matrix = is_tree(obj)
 
@@ -84,7 +86,7 @@ def publish(
         )  # path is a filename
 
     if os.path.isdir(assets_dir):
-        log.info('Deleting contents of assets directory %s', assets_dir)
+        log.info("Deleting contents of assets directory %s", assets_dir)
         common.delete_contents(assets_dir)
     else:
         os.makedirs(assets_dir)
@@ -92,15 +94,123 @@ def publish(
     # If publish html and then markdown ensure that the html template are still available
     if not template:
         template = HTMLTEMPLATE
-    template_assets = os.path.join(os.path.dirname(__file__), 'files', 'assets')
+    template_assets = os.path.join(os.path.dirname(__file__), "files", "assets")
     if os.path.isdir(template_assets):
+        if ext == ".tex":
+            template_assets = template_assets + "/latex"
         log.info("Copying %s to %s", template_assets, assets_dir)
         common.copy_dir_contents(template_assets, assets_dir)
 
     # Publish documents
     count = 0
+    compile_files = []
+    compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
+        # Publish wrapper files for LaTeX.
+        if ext == ".tex":
+            head, tail = os.path.split(path2)
+            tail = "compile.sh"
+            compile_path = os.path.join(head, tail)
+            # Check for defined document attributes.
+            document_name = "doc-" + str(obj2)
+            document_title = "Test document for development of \\textit{Doorstop}"
+            document_ref = ""
+            document_by = ""
+            document_major = ""
+            document_minor = ""
+            try:
+                attribute_defaults = obj2.__getattribute__("_attribute_defaults")
+                if attribute_defaults:
+                    if attribute_defaults["doc"]["name"]:
+                        document_name = attribute_defaults["doc"]["name"]
+                    if attribute_defaults["doc"]["title"]:
+                        document_title = attribute_defaults["doc"]["title"]
+                    if attribute_defaults["doc"]["ref"]:
+                        document_ref = attribute_defaults["doc"]["ref"]
+                    if attribute_defaults["doc"]["by"]:
+                        document_by = attribute_defaults["doc"]["by"]
+                    if attribute_defaults["doc"]["major"]:
+                        document_major = attribute_defaults["doc"]["major"]
+                    if attribute_defaults["doc"]["minor"]:
+                        document_minor = attribute_defaults["doc"]["minor"]
+            except AttributeError:
+                pass
+            # Add to compile.sh
+            compile_files.append(
+                "pdflatex -shell-escape {n}.tex".format(n=document_name)
+            )
+            # Create the wrapper file.
+            head, tail = os.path.split(path2)
+            if tail != str(obj2) + ".tex":
+                log.warning(
+                    "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
+                )
+            tail = document_name + ".tex"
+            path2 = os.path.join(head, str(obj2) + ".tex")
+            path3 = os.path.join(head, tail)
+            wrapper = []
+            wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
+            wrapper.append("\\usepackage[utf8]{inputenc}")
+            wrapper.append("")
+            wrapper.append("%% Change these to change logotype and/or copyright.")
+            wrapper.append("% \\def\\owner{Whatever Inc.}")
+            wrapper.append("% \\def\\logo{assets/logo-black-white.png}")
+            wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
+            wrapper.append("")
+            wrapper.append("% Define the header.")
+            wrapper.append("\\def\\doccategory{{{t}}}".format(t=str(obj2)))
+            wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
+            wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
+            wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
+            wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
+            wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
+            wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
+            wrapper.append("")
+            info_text_set = False
+            for external, _ in iter_documents(obj, path, ext):
+                # Check for defined document attributes.
+                external_doc_name = "doc-" + str(external)
+                try:
+                    external_attribute_defaults = external.__getattribute__(
+                        "_attribute_defaults"
+                    )
+                    if external_attribute_defaults:
+                        if external_attribute_defaults["doc"]["name"]:
+                            external_doc_name = external_attribute_defaults["doc"][
+                                "name"
+                            ]
+                except AttributeError:
+                    pass
+                # Don't add self.
+                if external_doc_name != document_name:
+                    if not info_text_set:
+                        wrapper.append(
+                            "% Add all documents as external references to allow cross-references."
+                        )
+                        info_text_set = True
+                    wrapper.append(
+                        "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
+                    )
+                    wrapper.append(
+                        "\\externaldocument{{{n}}}".format(n=external_doc_name)
+                    )
+            wrapper.append("")
+            wrapper.append("\\begin{document}")
+            wrapper.append("\\makecoverpage")
+            wrapper.append("\\maketoc")
+            wrapper.append("% Load the output file.")
+            wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
+            # Include traceability matrix
+            if matrix and count:
+                wrapper.append("% Traceability matrix")
+                if settings.PUBLISH_HEADING_LEVELS:
+                    wrapper.append("\\section{Traceability}")
+                else:
+                    wrapper.append("\\section*{Traceability}")
+                wrapper.append("\\input{traceability.tex}")
+            wrapper.append("\\end{document}")
+            common.write_lines(wrapper, path3)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
@@ -109,19 +219,26 @@ def publish(
         )
         common.write_lines(lines, path2)
         if obj2.copy_assets(assets_dir):
-            log.info('Copied assets from %s to %s', obj.assets, assets_dir)
+            log.info("Copied assets from %s to %s", obj.assets, assets_dir)
+
+    if ext == ".tex":
+        common.write_lines(compile_files, compile_path)
+        msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
+        utilities.show(msg, flush=True)
 
     # Create index
     if index and count:
         _index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
-    if index and matrix and count:
-        _matrix(path, tree=obj if is_tree(obj) else None)
+    if (index or ext == ".tex") and (matrix and count):
+        _matrix(
+            path, tree=obj if is_tree(obj) else None, ext=ext if ext == ".tex" else None
+        )
 
     # Return the published path
     if count:
-        msg = "published to {} file{}".format(count, 's' if count > 1 else '')
+        msg = "published to {} file{}".format(count, "s" if count > 1 else "")
         log.info(msg)
         return path
     else:
@@ -129,7 +246,7 @@ def publish(
         return None
 
 
-def _index(directory, index=INDEX, extensions=('.html',), tree=None):
+def _index(directory, index=INDEX, extensions=(".html",), tree=None):
     """Create an HTML index of all files in a directory.
 
     :param directory: directory for index
@@ -154,7 +271,7 @@ def _index(directory, index=INDEX, extensions=('.html',), tree=None):
         log.warning("no files for {}".format(index))
 
 
-def _lines_index(filenames, charset='UTF-8', tree=None):
+def _lines_index(filenames, charset="UTF-8", tree=None):
     """Yield lines of HTML for index.html.
 
     :param filesnames: list of filenames to add to the index
@@ -162,82 +279,82 @@ def _lines_index(filenames, charset='UTF-8', tree=None):
     :param tree: optional tree to determine index structure
 
     """
-    yield '<!DOCTYPE html>'
-    yield '<head>'
+    yield "<!DOCTYPE html>"
+    yield "<head>"
     yield (
         '<meta http-equiv="content-type" content="text/html; '
         'charset={charset}">'.format(charset=charset)
     )
     yield '<style type="text/css">'
     yield from _lines_css()
-    yield '</style>'
-    yield '</head>'
-    yield '<body>'
+    yield "</style>"
+    yield "</head>"
+    yield "<body>"
     # Tree structure
     text = tree.draw() if tree else None
     if text:
-        yield ''
-        yield '<h3>Tree Structure:</h3>'
-        yield '<pre><code>' + text + '</pre></code>'
+        yield ""
+        yield "<h3>Tree Structure:</h3>"
+        yield "<pre><code>" + text + "</pre></code>"
     # Additional files
     if filenames:
         if text:
-            yield ''
-            yield '<hr>'
-        yield ''
-        yield '<h3>Published Documents:</h3>'
-        yield '<p>'
-        yield '<ul>'
+            yield ""
+            yield "<hr>"
+        yield ""
+        yield "<h3>Published Documents:</h3>"
+        yield "<p>"
+        yield "<ul>"
         for filename in filenames:
             name = os.path.splitext(filename)[0]
             yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-        yield '</ul>'
-        yield '</p>'
+        yield "</ul>"
+        yield "</p>"
     # Traceability table
     documents = tree.documents if tree else None
     if documents:
         if text or filenames:
-            yield ''
-            yield '<hr>'
-        yield ''
+            yield ""
+            yield "<hr>"
+        yield ""
         # table
-        yield '<h3>Item Traceability:</h3>'
-        yield '<p>'
-        yield '<table>'
+        yield "<h3>Item Traceability:</h3>"
+        yield "<p>"
+        yield "<table>"
         # header
         for document in documents:  # pylint: disable=not-an-iterable
             yield '<col width="100">'
-        yield '<tr>'
+        yield "<tr>"
         for document in documents:  # pylint: disable=not-an-iterable
             link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
             yield ('  <th height="25" align="center"> {link} </th>'.format(link=link))
-        yield '</tr>'
+        yield "</tr>"
         # data
         for index, row in enumerate(tree.get_traceability()):
             if index % 2:
                 yield '<tr class="alt">'
             else:
-                yield '<tr>'
+                yield "<tr>"
             for item in row:
                 if item is None:
-                    link = ''
+                    link = ""
                 else:
                     link = _format_html_item_link(item)
                 yield '  <td height="25" align="center"> {} </td>'.format(link)
-            yield '</tr>'
-        yield '</table>'
-        yield '</p>'
-    yield ''
-    yield '</body>'
-    yield '</html>'
+            yield "</tr>"
+        yield "</table>"
+        yield "</p>"
+    yield ""
+    yield "</body>"
+    yield "</html>"
 
 
 def _lines_css():
     """Yield lines of CSS to embedded in HTML."""
-    yield ''
+    yield ""
     for line in common.read_lines(CSS):
         yield line.rstrip()
-    yield ''
+    yield ""
 
 
 def _matrix(directory, tree, filename=MATRIX, ext=None):
@@ -251,13 +368,16 @@ def _matrix(directory, tree, filename=MATRIX, ext=None):
     """
     # Get path and format extension
     path = os.path.join(directory, filename)
-    ext = ext or os.path.splitext(path)[-1] or '.csv'
+    ext = ext or os.path.splitext(path)[-1] or ".csv"
 
     # Create the matrix
     if tree:
         log.info("creating an {}...".format(filename))
         content = _matrix_content(tree)
-        common.write_csv(content, path)
+        if ext == ".tex":
+            _matrix_latex(content, path)
+        else:
+            common.write_csv(content, path)
     else:
         log.warning("no data for {}".format(filename))
 
@@ -283,7 +403,7 @@ def _matrix_content(tree):
         yield tuple(map(_extract_uid, row))
 
 
-def publish_lines(obj, ext='.txt', **kwargs):
+def publish_lines(obj, ext=".txt", **kwargs):
     """Yield lines for a report in the specified format.
 
     :param obj: Item, list of Items, or Document to publish
@@ -357,13 +477,13 @@ def _lines_text(obj, indent=8, width=79, **_):
                     label = "Parent links: "
                 else:
                     label = "Links: "
-                slinks = label + ', '.join(str(l) for l in item.links)
+                slinks = label + ", ".join(str(l) for l in item.links)
                 yield from _chunks(slinks, width, indent)
             if settings.PUBLISH_CHILD_LINKS:
                 links = item.find_child_links()
                 if links:
                     yield ""  # break before links
-                    slinks = "Child links: " + ', '.join(str(l) for l in links)
+                    slinks = "Child links: " + ", ".join(str(l) for l in links)
                     yield from _chunks(slinks, width, indent)
 
             if item.document and item.document.publish:
@@ -380,7 +500,7 @@ def _lines_text(obj, indent=8, width=79, **_):
 def _chunks(text, width, indent):
     """Yield wrapped lines of text."""
     yield from textwrap.wrap(
-        text, width, initial_indent=' ' * indent, subsequent_indent=' ' * indent
+        text, width, initial_indent=" " * indent, subsequent_indent=" " * indent
     )
 
 
@@ -393,10 +513,10 @@ def _lines_markdown(obj, **kwargs):
     :return: iterator of lines of text
 
     """
-    linkify = kwargs.get('linkify', False)
+    linkify = kwargs.get("linkify", False)
     for item in iter_items(obj):
 
-        heading = '#' * item.depth
+        heading = "#" * item.depth
         level = _format_level(item.level)
 
         if item.heading:
@@ -404,11 +524,11 @@ def _lines_markdown(obj, **kwargs):
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level, t=text_lines[0] if text_lines else ''
+                    h=heading, lev=level, t=text_lines[0] if text_lines else ""
                 )
             else:
                 standard = "{h} {t}".format(
-                    h=heading, t=text_lines[0] if text_lines else ''
+                    h=heading, t=text_lines[0] if text_lines else ""
                 )
             attr_list = _format_md_attr_list(item, True)
             yield standard + attr_list
@@ -418,9 +538,9 @@ def _lines_markdown(obj, **kwargs):
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
-                    uid = '{h} <small>{u}</small>'.format(h=item.header, u=item.uid)
+                    uid = "{h} <small>{u}</small>".format(h=item.header, u=item.uid)
                 else:
-                    uid = '{u}'.format(u=item.uid)
+                    uid = "{u}".format(u=item.uid)
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
@@ -488,21 +608,21 @@ def _lines_markdown(obj, **kwargs):
 def _format_level(level):
     """Convert a level to a string and keep zeros if not a top level."""
     text = str(level)
-    if text.endswith('.0') and len(text) > 3:
+    if text.endswith(".0") and len(text) > 3:
         text = text[:-2]
     return text
 
 
 def _format_md_attr_list(item, linkify):
     """Create a Markdown attribute list for a heading."""
-    return " {{#{u} }}".format(u=item.uid) if linkify else ''
+    return " {{#{u} }}".format(u=item.uid) if linkify else ""
 
 
 def _format_text_ref(item):
     """Format an external reference in text."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
-        path = path.replace('\\', '/')  # always use unix-style paths
+        path = path.replace("\\", "/")  # always use unix-style paths
         if line:
             return "Reference: {p} (line {line})".format(p=path, line=line)
         else:
@@ -518,27 +638,27 @@ def _format_text_references(item):
         text_refs = []
         for ref_item in ref:
             path, line = ref_item
-            path = path.replace('\\', '/')  # always use unix-style paths
+            path = path.replace("\\", "/")  # always use unix-style paths
             if line:
                 text_refs.append("{p} (line {line})".format(p=path, line=line))
             else:
                 text_refs.append("{p}".format(p=path))
-        return "Reference: {}".format(', '.join(ref for ref in text_refs))
+        return "Reference: {}".format(", ".join(ref for ref in text_refs))
     else:
         references = item.references
         text_refs = []
         for ref_item in references:
-            path = ref_item['path']
-            path = path.replace('\\', '/')  # always use unix-style paths
+            path = ref_item["path"]
+            path = path.replace("\\", "/")  # always use unix-style paths
             text_refs.append("'{p}'".format(p=path))
-        return "Reference: {}".format(', '.join(text_ref for text_ref in text_refs))
+        return "Reference: {}".format(", ".join(text_ref for text_ref in text_refs))
 
 
 def _format_md_ref(item):
     """Format an external reference in Markdown."""
     if settings.CHECK_REF:
         path, line = item.find_ref()
-        path = path.replace('\\', '/')  # always use unix-style paths
+        path = path.replace("\\", "/")  # always use unix-style paths
         if line:
             return "> `{p}` (line {line})".format(p=path, line=line)
         else:
@@ -554,22 +674,22 @@ def _format_md_references(item):
         text_refs = []
         for ref_item in references:
             path, line = ref_item
-            path = path.replace('\\', '/')  # always use unix-style paths
+            path = path.replace("\\", "/")  # always use unix-style paths
 
             if line:
                 text_refs.append("> `{p}` (line {line})".format(p=path, line=line))
             else:
                 text_refs.append("> `{p}`".format(p=path))
 
-        return '\n'.join(ref for ref in text_refs)
+        return "\n".join(ref for ref in text_refs)
     else:
         references = item.references
         text_refs = []
         for ref_item in references:
             path = ref_item["path"]
-            path = path.replace('\\', '/')  # always use unix-style paths
+            path = path.replace("\\", "/")  # always use unix-style paths
             text_refs.append("> '{r}'".format(r=path))
-        return '\n'.join(ref for ref in text_refs)
+        return "\n".join(ref for ref in text_refs)
 
 
 def _format_md_links(items, linkify):
@@ -578,7 +698,7 @@ def _format_md_links(items, linkify):
     for item in items:
         link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
-    return ', '.join(links)
+    return ", ".join(links)
 
 
 def _format_md_item_link(item, linkify=True):
@@ -618,18 +738,18 @@ def _format_md_label_links(label, links, linkify):
 
 
 def _table_of_contents_md(obj, linkify=None):
-    toc = '### Table of Contents\n\n'
+    toc = "### Table of Contents\n\n"
 
     for item in iter_items(obj):
         if item.depth == 1:
-            prefix = ' * '
+            prefix = " * "
         else:
-            prefix = '    ' * (item.depth - 1)
-            prefix += '* '
+            prefix = "    " * (item.depth - 1)
+            prefix += "* "
 
         if item.heading:
             lines = item.text.splitlines()
-            heading = lines[0] if lines else ''
+            heading = lines[0] if lines else ""
         elif item.header:
             heading = "{h}".format(h=item.header)
         else:
@@ -637,14 +757,14 @@ def _table_of_contents_md(obj, linkify=None):
 
         if settings.PUBLISH_HEADING_LEVELS:
             level = _format_level(item.level)
-            lbl = '{lev} {h}'.format(lev=level, h=heading)
+            lbl = "{lev} {h}".format(lev=level, h=heading)
         else:
             lbl = heading
 
         if linkify:
-            line = '{p}[{lbl}](#{uid})\n'.format(p=prefix, lbl=lbl, uid=item.uid)
+            line = "{p}[{lbl}](#{uid})\n".format(p=prefix, lbl=lbl, uid=item.uid)
         else:
-            line = '{p}{lbl}\n'.format(p=prefix, lbl=lbl)
+            line = "{p}{lbl}\n".format(p=prefix, lbl=lbl)
         toc += line
     return toc
 
@@ -669,35 +789,40 @@ def _lines_html(
         document = True
     # Generate HTML
 
-    text = '\n'.join(_lines_markdown(obj, linkify=linkify))
+    text = "\n".join(_lines_markdown(obj, linkify=linkify))
     body = markdown.markdown(text, extensions=extensions)
 
     if toc:
         toc_md = _table_of_contents_md(obj, True)
         toc_html = markdown.markdown(toc_md, extensions=extensions)
     else:
-        toc_html = ''
+        toc_html = ""
 
     if document:
         try:
             bottle.TEMPLATE_PATH.insert(
-                0, os.path.join(os.path.dirname(__file__), '..', 'views')
+                0, os.path.join(os.path.dirname(__file__), "..", "views")
             )
-            if 'baseurl' not in bottle.SimpleTemplate.defaults:
-                bottle.SimpleTemplate.defaults['baseurl'] = ''
+            if "baseurl" not in bottle.SimpleTemplate.defaults:
+                bottle.SimpleTemplate.defaults["baseurl"] = ""
             html = bottle_template(
                 template, body=body, toc=toc_html, parent=obj.parent, document=obj
             )
         except Exception:
             log.error("Problem parsing the template %s", template)
             raise
-        yield '\n'.join(html.split(os.linesep))
+        yield "\n".join(html.split(os.linesep))
     else:
         yield body
 
 
 # Mapping from file extension to lines generator
-FORMAT_LINES = {'.txt': _lines_text, '.md': _lines_markdown, '.html': _lines_html}
+FORMAT_LINES = {
+    ".txt": _lines_text,
+    ".md": _lines_markdown,
+    ".html": _lines_html,
+    ".tex": _lines_latex,
+}
 
 
 def check(ext):
@@ -708,7 +833,7 @@ def check(ext):
     :return: lines generator if available
 
     """
-    exts = ', '.join(ext for ext in FORMAT_LINES)
+    exts = ", ".join(ext for ext in FORMAT_LINES)
     msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
 

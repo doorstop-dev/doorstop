@@ -72,7 +72,7 @@ def get(name):
     """Get a command function by name."""
     if name:
         log.debug("running command '{}'...".format(name))
-        return globals()['run_' + name]
+        return globals()["run_" + name]
     else:
         log.debug("launching main command...")
         return run
@@ -101,7 +101,7 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
         return False
 
     if len(tree) > 1 and valid:
-        utilities.show('\n' + tree.draw() + '\n')
+        utilities.show("\n" + tree.draw() + "\n")
 
     return valid
 
@@ -234,7 +234,7 @@ def run_edit(args, cwd, error, catch=True):
 
     """
     item = document = None
-    ext = utilities.get_ext(args, error, '.yml', '.yml', whole_tree=False)
+    ext = utilities.get_ext(args, error, ".yml", ".yml", whole_tree=False)
 
     with utilities.capture(catch=catch) as success:
 
@@ -310,7 +310,7 @@ def run_reorder(args, cwd, error, catch=True, _tree=None):
             document.index = True  # create index
             relpath = os.path.relpath(document.index, cwd)
             editor.edit(relpath, tool=args.tool)
-            get('reorder')(args, cwd, error, catch=False, _tree=tree)
+            get("reorder")(args, cwd, error, catch=False, _tree=tree)
 
     if not success:
         msg = "after fixing the error: doorstop reorder {}".format(document)
@@ -506,8 +506,8 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
     :param auto: include placeholders for new items on import
 
     """
-    whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, error, '.yml', '.csv', whole_tree=whole_tree)
+    whole_tree = args.prefix == "all"
+    ext = utilities.get_ext(args, error, ".yml", ".csv", whole_tree=whole_tree)
 
     # Get the tree or document
     with utilities.capture(catch=catch) as success:
@@ -552,8 +552,8 @@ def run_publish(args, cwd, error, catch=True):
     :param catch: catch and log :class:`~doorstop.common.DoorstopError`
 
     """
-    whole_tree = args.prefix == 'all'
-    ext = utilities.get_ext(args, error, '.txt', '.html', whole_tree)
+    whole_tree = args.prefix == "all"
+    ext = utilities.get_ext(args, error, ".txt", ".html", whole_tree)
 
     # Get the tree or document
     with utilities.capture(catch=catch) as success:
@@ -569,7 +569,7 @@ def run_publish(args, cwd, error, catch=True):
     # Set publishing arguments
     kwargs = {}
     if args.width:
-        kwargs['width'] = args.width
+        kwargs["width"] = args.width
 
     # Write to output file(s)
     if args.path:
@@ -650,7 +650,7 @@ def _iter_items(args, tree, error):
 
     """
     # Parse arguments
-    if args.label == 'all':
+    if args.label == "all":
         if args.item:
             error("argument -i/--item: not allowed with 'all'")
         if args.document:
@@ -661,7 +661,7 @@ def _iter_items(args, tree, error):
     document = None
 
     # Determine if tree, document, or item was requested
-    if args.label != 'all':
+    if args.label != "all":
         if not args.item:
             try:
                 document = tree.find_document(args.label)
@@ -697,7 +697,7 @@ def _export_import(args, cwd, error, document, ext):
     args.prefix = document.prefix
     path = "{}-{}{}".format(args.prefix, int(time.time()), ext)
     args.path = path
-    get('export')(args, cwd, error, catch=False, auto=True, _tree=document.tree)
+    get("export")(args, cwd, error, catch=False, auto=True, _tree=document.tree)
 
     # Open the exported file
     editor.edit(path, tool=args.tool)
@@ -706,7 +706,7 @@ def _export_import(args, cwd, error, document, ext):
     if utilities.ask("import from '{}'?".format(path)):
         args.attrs = {}
         args.map = {}
-        get('import')(args, cwd, error, catch=False, _tree=document.tree)
+        get("import")(args, cwd, error, catch=False, _tree=document.tree)
         common.delete(path)
     else:
         utilities.show("import canceled")

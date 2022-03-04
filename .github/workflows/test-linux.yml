@@ -1,0 +1,12 @@
+name: Linux
+
+on: push
+
+jobs:
+  Test:
+    uses: ./.github/workflows/execute-tests.yml
+    with:
+      architecture: x64
+      basepath: "/home/runner/work"
+      os: "ubuntu-latest"
+      workpath: "/home/runner/work/doorstop/doorstop"

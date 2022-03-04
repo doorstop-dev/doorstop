@@ -14,7 +14,7 @@ class StripPathMiddleware:  # pylint: disable=R0903
         self.app = app
 
     def __call__(self, e, h):
-        e['PATH_INFO'] = e['PATH_INFO'].rstrip('/')
+        e["PATH_INFO"] = e["PATH_INFO"].rstrip("/")
         return self.app(e, h)
 
 
@@ -25,9 +25,9 @@ def build_url(host=None, port=None, path=None):
     log.debug("building URL: {} + {} + {}".format(host, port, path))
     if not host:
         return None
-    url = 'http://{}'.format(host)
+    url = "http://{}".format(host)
     if port != 80:
-        url += ':{}'.format(port)
+        url += ":{}".format(port)
     if path:
         url += path
     return url
@@ -35,7 +35,7 @@ def build_url(host=None, port=None, path=None):
 
 def json_response(request):
     """Determine if the request's response should be JSON."""
-    if request.query.get('format') == 'json':
+    if request.query.get("format") == "json":
         return True
     else:
-        return request.content_type == 'application/json'
+        return request.content_type == "application/json"

@@ -131,7 +131,7 @@ def _file_yml(path, document, **_):
         add_item(document.prefix, uid, attrs=attrs, document=document)
 
 
-def _file_csv(path, document, delimiter=',', mapping=None):
+def _file_csv(path, document, delimiter=",", mapping=None):
     """Import items from a CSV export to a document.
 
     :param path: input file location
@@ -144,7 +144,7 @@ def _file_csv(path, document, delimiter=',', mapping=None):
 
     # Parse the file
     log.info("reading rows in {}...".format(path))
-    with open(path, 'r', encoding='utf-8') as stream:
+    with open(path, "r", encoding="utf-8") as stream:
         reader = csv.reader(stream, delimiter=delimiter)
         for _row in reader:
             row = []
@@ -152,9 +152,9 @@ def _file_csv(path, document, delimiter=',', mapping=None):
             for value in _row:
                 # convert string booleans
                 if isinstance(value, str):
-                    if value.lower() == 'true':
+                    if value.lower() == "true":
                         value = True
-                    elif value.lower() == 'false':
+                    elif value.lower() == "false":
                         value = False
                 row.append(value)
             rows.append(row)
@@ -175,7 +175,7 @@ def _file_tsv(path, document, mapping=None):
     :param mapping: dictionary mapping custom to standard attribute names
 
     """
-    _file_csv(path, document, delimiter='\t', mapping=mapping)
+    _file_csv(path, document, delimiter="\t", mapping=mapping)
 
 
 def _file_xlsx(path, document, mapping=None):
@@ -208,7 +208,7 @@ def _file_xlsx(path, document, mapping=None):
             data.append(row2)
 
     # Warn about workbooks that may be sized incorrectly
-    if index >= 2 ** 20 - 1:
+    if index >= 2**20 - 1:
         msg = "workbook contains the maximum number of rows"
         warnings.warn(msg, Warning)
 
@@ -236,7 +236,7 @@ def _itemize(header, data, document, mapping=None):
         for index, value in enumerate(row):
 
             # Key lookup
-            key = str(header[index]).lower().strip() if header[index] else ''
+            key = str(header[index]).lower().strip() if header[index] else ""
             if not key:
                 continue
 
@@ -249,38 +249,38 @@ def _itemize(header, data, document, mapping=None):
                     break
 
             # Convert values for particular keys
-            if key in ('uid', 'id'):  # 'id' for backwards compatibility
+            if key in ("uid", "id"):  # 'id' for backwards compatibility
                 uid = value
-            elif key == 'links':
+            elif key == "links":
                 # split links into a list
                 attrs[key] = _split_list(value)
 
-            elif key == 'references' and (value is not None):
-                ref_items = value.split('\n')
-                if ref_items[0] != '':
+            elif key == "references" and (value is not None):
+                ref_items = value.split("\n")
+                if ref_items[0] != "":
                     ref = []
                     for ref_item in ref_items:
-                        ref_item_components = ref_item.split(',')
+                        ref_item_components = ref_item.split(",")
 
-                        ref_type = ref_item_components[0].split(':')[1]
-                        ref_path = ref_item_components[1].split(':')[1]
+                        ref_type = ref_item_components[0].split(":")[1]
+                        ref_path = ref_item_components[1].split(":")[1]
 
-                        ref_dict = {'type': ref_type, 'path': ref_path}
+                        ref_dict = {"type": ref_type, "path": ref_path}
                         if len(ref_item_components) == 3:
-                            ref_keyword = ref_item_components[2].split(':')[1]
-                            ref_dict['keyword'] = ref_keyword
+                            ref_keyword = ref_item_components[2].split(":")[1]
+                            ref_dict["keyword"] = ref_keyword
 
                         ref.append(ref_dict)
 
                     attrs[key] = ref
-            elif key == 'active':
+            elif key == "active":
                 # require explicit disabling
-                attrs['active'] = value is not False
+                attrs["active"] = value is not False
             else:
                 attrs[key] = value
 
         # Get the next UID if the row is a new item
-        if attrs.get('text') and uid in (None, '', settings.PLACEHOLDER):
+        if attrs.get("text") and uid in (None, "", settings.PLACEHOLDER):
             uid = UID(
                 document.prefix, document.sep, document.next_number, document.digits
             )
@@ -314,10 +314,10 @@ def _split_list(value):
 
 # Mapping from file extension to file reader
 FORMAT_FILE = {
-    '.yml': _file_yml,
-    '.csv': _file_csv,
-    '.tsv': _file_tsv,
-    '.xlsx': _file_xlsx,
+    ".yml": _file_yml,
+    ".csv": _file_csv,
+    ".tsv": _file_tsv,
+    ".xlsx": _file_xlsx,
 }
 
 
@@ -329,7 +329,7 @@ def check(ext):
     :return: file importer if available
 
     """
-    exts = ', '.join(ext for ext in FORMAT_FILE)
+    exts = ", ".join(ext for ext in FORMAT_FILE)
     msg = "unknown import format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
     try:

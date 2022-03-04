@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=subprocess-run-check
 
 """Integration tests for the documentation tutorials."""
 
@@ -12,12 +13,14 @@ import unittest
 
 from doorstop.cli.tests import FILES, ROOT
 
-if 'TRAVIS' in os.environ:
-    PATH = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'doorstop')
-elif os.name == 'nt':
-    PATH = os.path.join(ROOT, '.venv', 'Scripts', 'doorstop.exe')
+if "TRAVIS" in os.environ:
+    PATH = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "doorstop")
+elif "GITHUB_ACTIONS" in os.environ and os.name == "nt":
+    PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop")
+elif os.name == "nt":
+    PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop.exe")
 else:
-    PATH = os.path.join(ROOT, '.venv', 'bin', 'doorstop')
+    PATH = os.path.join(ROOT, ".venv", "bin", "doorstop")
 DOORSTOP = os.path.normpath(PATH)
 
 
@@ -30,8 +33,8 @@ class TestBase(unittest.TestCase):
         self.temp = tempfile.mkdtemp()
         print("$ cd {}".format(self.temp))
         os.chdir(self.temp)
-        os.mkdir('.mockvcs')  # simulate a working copy
-        os.environ['EDITOR'] = 'cat'
+        os.mkdir(".mockvcs")  # simulate a working copy
+        os.environ["EDITOR"] = "cat"
 
     def tearDown(self):
         os.chdir(self.cwd)
@@ -130,9 +133,9 @@ class TestSection1(TestBase):
 
         # 3.1
 
-        dirpath = os.path.join(self.temp, 'path', 'to')
+        dirpath = os.path.join(self.temp, "path", "to")
         os.makedirs(dirpath)
-        path = os.path.join(FILES, 'exported.xlsx')
+        path = os.path.join(FILES, "exported.xlsx")
         shutil.copy(path, dirpath)
         self.doorstop("import path/to/exported.xlsx HLR")
 
@@ -162,26 +165,26 @@ class TestSection1(TestBase):
         self.doorstop("create A .")
         self.doorstop("create B b --parent A")
 
-        src = os.path.join(FILES, 'A001.txt')
-        dst = os.path.join(self.temp, 'A001.yml')
+        src = os.path.join(FILES, "A001.txt")
+        dst = os.path.join(self.temp, "A001.yml")
         shutil.copy(src, dst)
-        src = os.path.join(FILES, 'A002.txt')
-        dst = os.path.join(self.temp, 'A002.yml')
+        src = os.path.join(FILES, "A002.txt")
+        dst = os.path.join(self.temp, "A002.yml")
         shutil.copy(src, dst)
-        src = os.path.join(FILES, 'B001.txt')
-        dst = os.path.join(self.temp, 'b', 'B001.yml')
+        src = os.path.join(FILES, "B001.txt")
+        dst = os.path.join(self.temp, "b", "B001.yml")
         shutil.copy(src, dst)
-        src = os.path.join(FILES, 'B002.txt')
-        dst = os.path.join(self.temp, 'b', 'B002.yml')
+        src = os.path.join(FILES, "B002.txt")
+        dst = os.path.join(self.temp, "b", "B002.yml")
         shutil.copy(src, dst)
 
         cp = self.doorstop()
         self.assertIn(
-            b'WARNING: A: A001: detected a cycle with a back edge from B001 to A001',
+            b"WARNING: A: A001: detected a cycle with a back edge from B001 to A001",
             cp.stderr,
         )
         self.assertIn(
-            b'WARNING: A: A001: detected a cycle with a back edge from A002 to A002',
+            b"WARNING: A: A001: detected a cycle with a back edge from A002 to A002",
             cp.stderr,
         )
 
@@ -190,36 +193,34 @@ class TestSection1(TestBase):
 
         self.doorstop("create C .")
 
-        src = os.path.join(FILES, 'C001.txt')
-        dst = os.path.join(self.temp, 'C001.yml')
+        src = os.path.join(FILES, "C001.txt")
+        dst = os.path.join(self.temp, "C001.yml")
         shutil.copy(src, dst)
-        src = os.path.join(FILES, 'C002.txt')
-        dst = os.path.join(self.temp, 'C002.yml')
+        src = os.path.join(FILES, "C002.txt")
+        dst = os.path.join(self.temp, "C002.yml")
         shutil.copy(src, dst)
-        src = os.path.join(FILES, 'C003.txt')
-        dst = os.path.join(self.temp, 'C003.yml')
+        src = os.path.join(FILES, "C003.txt")
+        dst = os.path.join(self.temp, "C003.yml")
         shutil.copy(src, dst)
 
         cp = self.doorstop()
-        self.assertIn(b'WARNING: C: C001: suspect link: C002', cp.stderr)
-        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+        self.assertIn(b"WARNING: C: C001: suspect link: C002", cp.stderr)
+        self.assertIn(b"WARNING: C: C001: suspect link: C003", cp.stderr)
 
         cp = self.doorstop("clear C001 C004", 1)
-        self.assertIn(b'ERROR: no item with UID: C004', cp.stderr)
+        self.assertIn(b"ERROR: no item with UID: C004", cp.stderr)
 
         cp = self.doorstop("clear C001 C001 C002", stdout=subprocess.PIPE)
-        self.assertIn(
-            b'clearing item C001\'s suspect links to C001, C002...', cp.stdout
-        )
+        self.assertIn(b"clearing item C001's suspect links to C001, C002...", cp.stdout)
 
         cp = self.doorstop()
-        self.assertIn(b'WARNING: C: C001: suspect link: C003', cp.stderr)
+        self.assertIn(b"WARNING: C: C001: suspect link: C003", cp.stderr)
 
         cp = self.doorstop("clear C001", stdout=subprocess.PIPE)
-        self.assertIn(b'clearing item C001\'s suspect links...', cp.stdout)
+        self.assertIn(b"clearing item C001's suspect links...", cp.stdout)
 
         cp = self.doorstop()
-        self.assertNotIn(b'suspect link', cp.stderr)
+        self.assertNotIn(b"suspect link", cp.stderr)
 
     def test_custom_defaults(self):
         """Verify new item with custom defaults is working."""
@@ -227,25 +228,25 @@ class TestSection1(TestBase):
         self.doorstop("create REQ .")
 
         cp = self.doorstop("add -d no/such/file.yml REQ", 1)
-        self.assertIn(b'ERROR: reading ', cp.stderr)
+        self.assertIn(b"ERROR: reading ", cp.stderr)
 
-        self.assertFalse(os.path.isfile('REQ001.yml'))
+        self.assertFalse(os.path.isfile("REQ001.yml"))
 
-        template = os.path.join(FILES, 'template.yml')
+        template = os.path.join(FILES, "template.yml")
         self.doorstop("add -d {} REQ".format(template))
 
-        self.assertTrue(os.path.isfile('REQ001.yml'))
+        self.assertTrue(os.path.isfile("REQ001.yml"))
 
         cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
         self.assertIn(
-            b'1.0     REQ001'
+            b"1.0     REQ001"
             + str.encode(os.linesep)
             + str.encode(os.linesep)
-            + b'        Some text'
+            + b"        Some text"
             + str.encode(os.linesep)
-            + b'        with more than'
+            + b"        with more than"
             + str.encode(os.linesep)
-            + b'        one line.'
+            + b"        one line."
             + str.encode(os.linesep),
             cp.stdout,
         )
@@ -256,33 +257,33 @@ class TestSection1(TestBase):
         self.doorstop("create -s - REQ .")
 
         self.doorstop("add -n ABC REQ")
-        self.assertTrue(os.path.isfile('REQ-ABC.yml'))
+        self.assertTrue(os.path.isfile("REQ-ABC.yml"))
 
         self.doorstop("add -n 9 REQ")
-        self.assertTrue(os.path.isfile('REQ-009.yml'))
+        self.assertTrue(os.path.isfile("REQ-009.yml"))
 
         self.doorstop("add --name XYZ REQ")
-        self.assertTrue(os.path.isfile('REQ-XYZ.yml'))
+        self.assertTrue(os.path.isfile("REQ-XYZ.yml"))
 
         self.doorstop("add --number 99 REQ")
-        self.assertTrue(os.path.isfile('REQ-099.yml'))
+        self.assertTrue(os.path.isfile("REQ-099.yml"))
 
         cp = self.doorstop("publish REQ", stdout=subprocess.PIPE)
         self.assertIn(
-            b'1.0     REQ-ABC'
+            b"1.0     REQ-ABC"
             + str.encode(os.linesep)
             + str.encode(os.linesep)
-            + b'1.1     REQ-009'
+            + b"1.1     REQ-009"
             + str.encode(os.linesep)
             + str.encode(os.linesep)
-            + b'1.2     REQ-XYZ'
+            + b"1.2     REQ-XYZ"
             + str.encode(os.linesep)
             + str.encode(os.linesep)
-            + b'1.3     REQ-099',
+            + b"1.3     REQ-099",
             cp.stdout,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(format="%(message)s", level=logging.INFO)
     unittest.main(verbosity=0)

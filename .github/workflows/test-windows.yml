@@ -1,0 +1,14 @@
+name: Windows
+
+on: push
+
+jobs:
+
+
+  Test:
+    uses: ./.github/workflows/execute-tests.yml
+    with:
+      architecture: x64
+      basepath: 'D:\'
+      os: "windows-latest"
+      workpath: 'C:\a\doorstop\doorstop'

@@ -56,7 +56,7 @@ class Prefix(str):
         >>> Prefix.load_prefix("abc 123")
         'abc'
         """
-        return str(value).split(' ')[0] if value else ''
+        return str(value).split(" ", maxsplit=1)[0] if value else ""
 
 
 class UID:
@@ -100,19 +100,19 @@ class UID:
         self.stamp = stamp or Stamp()
         # Join values
         if len(values) == 0:  # pylint: disable=len-as-condition
-            self.value = ''
+            self.value = ""
         elif len(values) == 1:
             value = values[0]
-            if isinstance(value, str) and ':' in value:
+            if isinstance(value, str) and ":" in value:
                 # split UID:stamp into a dictionary
-                pair = value.rsplit(':', 1)
+                pair = value.rsplit(":", 1)
                 value = {pair[0]: pair[1]}
             if isinstance(value, dict):
                 first = list(value.items())[0]
                 self.value = str(first[0])
                 self.stamp = self.stamp or Stamp(first[1])
             else:
-                self.value = str(value) if values[0] else ''
+                self.value = str(value) if values[0] else ""
         elif len(values) == 4:
             # pylint: disable=no-value-for-parameter
             self.value = UID.join_uid_4(*values)
@@ -229,13 +229,13 @@ class UID:
         if m:
             try:
                 num = int(m.group(2))
-                return Prefix(m.group(1)), num, '', None
+                return Prefix(m.group(1)), num, "", None
             except ValueError:
                 return Prefix(m.group(1)), -1, m.group(2), None
         m = re.match(r"([\w.-]*\D)(\d+)", value)
         if m:
             num = m.group(2)
-            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), '', None
+            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), "", None
         return None, None, None, DoorstopError("invalid UID: {}".format(value))
 
     @staticmethod
@@ -267,7 +267,7 @@ class _Literal(str):
     def representer(dumper, data):
         """Return a custom dumper that formats str in the literal style."""
         return dumper.represent_scalar(
-            'tag:yaml.org,2002:str', data, style='|' if data else ''
+            "tag:yaml.org,2002:str", data, style="|" if data else ""
         )
 
 
@@ -300,18 +300,18 @@ class Text(str):
         """
         if not value:
             return ""
-        text_value = re.sub('^\n+', '', value)
-        text_value = re.sub('\n+$', '', text_value)
-        text_value = '\n'.join([s.rstrip() for s in text_value.split('\n')])
+        text_value = re.sub("^\n+", "", value)
+        text_value = re.sub("\n+$", "", text_value)
+        text_value = "\n".join([s.rstrip() for s in text_value.split("\n")])
         return text_value
 
     @staticmethod
-    def save_text(text, end='\n'):
+    def save_text(text, end="\n"):
         """Break a string at sentences and dump as wrapped literal YAML."""
         if text:
             return _Literal(text + end)
         else:
-            return ''
+            return ""
 
 
 class Level:
@@ -345,13 +345,13 @@ class Level:
 
     def __repr__(self):
         if self.heading:
-            level = '.'.join(str(n) for n in self._parts)
+            level = ".".join(str(n) for n in self._parts)
             return "Level('{}', heading=True)".format(level)
         else:
             return "Level('{}')".format(str(self))
 
     def __str__(self):
-        return '.'.join(str(n) for n in self.value)
+        return ".".join(str(n) for n in self.value)
 
     def __iter__(self):
         return iter(self._parts)
@@ -492,7 +492,7 @@ class Level:
 
         # Split strings by periods
         if isinstance(value, str):
-            nums = value.split('.')
+            nums = value.split(".")
         else:  # assume an iterable
             nums = value
 
@@ -520,12 +520,12 @@ class Level:
 
         """
         # Join the level's parts
-        level = '.'.join(str(n) for n in parts)
+        level = ".".join(str(n) for n in parts)
 
         # Convert formats to cleaner YAML formats
         if len(parts) == 1:
             return int(level)
-        elif len(parts) == 2 and not (level.endswith('0') and parts[-1]):
+        elif len(parts) == 2 and not (level.endswith("0") and parts[-1]):
             return float(level)
 
         return level
@@ -571,7 +571,7 @@ class Stamp:
         if isinstance(self.value, str):
             return self.value
         else:
-            return ''
+            return ""
 
     def __bool__(self):
         return bool(self.value)
@@ -593,7 +593,7 @@ class Stamp:
         hsh = hashlib.sha256()
         for value in values:
             hsh.update(str(value).encode())
-        return urlsafe_b64encode(hsh.digest()).decode('utf-8')
+        return urlsafe_b64encode(hsh.digest()).decode("utf-8")
 
 
 def to_bool(obj):
@@ -613,24 +613,24 @@ def to_bool(obj):
 
     """
     if isinstance(obj, str):
-        return obj.lower().strip() in ('yes', 'true', 'enabled', '1')
+        return obj.lower().strip() in ("yes", "true", "enabled", "1")
     else:
         return bool(obj)
 
 
 def is_tree(obj):
     """Determine if the object is a tree-like."""
-    return hasattr(obj, 'documents')
+    return hasattr(obj, "documents")
 
 
 def is_document(obj):
     """Determine if the object is a document-like."""
-    return hasattr(obj, 'items')
+    return hasattr(obj, "items")
 
 
 def is_item(obj):
     """Determine if the object is item-like."""
-    return hasattr(obj, 'text')
+    return hasattr(obj, "text")
 
 
 def iter_documents(obj, path, ext):

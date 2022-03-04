@@ -1,4 +1,11 @@
-# 2.2 (beta)
+# 3.0 (beta)
+
+- **BREAKING:** Dropped support for Python 3.6.
+- **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.
+- Fixed overriding default attributes with `doorstop add`. ([@tangoalx](https://github.com/doorstop-dev/doorstop/pull/544))
+- Add support for publishing to the LaTeX format. ([@neerdoc](https://github.com/doorstop-dev/doorstop/pull/545))
+
+# 2.2 (2022-01-22)
 
 - Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
 - Added custom attributes to published documents. ([@chrta](https://github.com/doorstop-dev/doorstop/pull/476))

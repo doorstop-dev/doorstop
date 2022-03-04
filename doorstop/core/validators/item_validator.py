@@ -217,5 +217,5 @@ class ItemValidator:
                     if child in skip:
                         continue
                     if child not in prefix:
-                        msg = 'no links from document: {}'.format(child)
+                        msg = "no links from document: {}".format(child)
                         yield DoorstopWarning(msg)
