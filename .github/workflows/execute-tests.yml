@@ -27,7 +27,7 @@ jobs:
       run: |
         mkdir -p ${{ inputs.workpath }}
         env
-        git clone ${{ github.repository }} ${{ inputs.workpath }} --depth 1
+        git clone ${{ GITHUB_SERVER_URL }}/${{ github.repository }} ${{ inputs.workpath }} --depth 1
     # - uses: actions/checkout@v3
     #   with:
     #     path: ${{ inputs.workpath }}
