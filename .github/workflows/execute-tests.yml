@@ -48,8 +48,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ inputs.architecture }}
 
-      - name: Install system dependencies
-        run: pip install poetry
+      - uses: Gr1N/setup-poetry@v7
 
       - name: Check system dependencies
         run: make doctor
