@@ -24,7 +24,7 @@ jobs:
     # Define all python versions to test.
     strategy:
       matrix:
-        python-version: [ '3.7', ]
+        python-version: [ '3.7', '3.8', '3.9', '3.10']
     name: Python ${{ matrix.python-version }}
 
     # Set the default working directory.
