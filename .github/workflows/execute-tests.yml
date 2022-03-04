@@ -26,7 +26,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ '3.7', '3.8', '3.9']
-        architecture: ['x64', 'i686']
+        architecture: ['x64', 'x86']
     name: Python ${{ matrix.python-version }}
 
     # Set the default working directory.
