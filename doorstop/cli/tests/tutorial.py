@@ -15,6 +15,8 @@ from doorstop.cli.tests import FILES, ROOT
 
 if "TRAVIS" in os.environ:
     PATH = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "doorstop")
+elif "GITHUB" in os.environ and os.name == "nt":
+    PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop")
 elif os.name == "nt":
     PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop.exe")
 else:
