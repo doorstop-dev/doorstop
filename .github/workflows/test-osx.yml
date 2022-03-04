@@ -10,4 +10,4 @@ jobs:
     uses: ./.github/workflows/execute-tests.yml
     with:
       os: 'macos-latest'
-      workpath: '/Users/runner/work/doorstop'
+      workpath: '/Users/runner/work/doorstop/doorstop'
