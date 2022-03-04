@@ -9,6 +9,9 @@ on:
       workpath:
         required: true
         type: string
+      basepath:
+        required: true
+        type: string
 
 jobs:
   test:
@@ -24,6 +27,7 @@ jobs:
 
     steps:
     - name: Checkout
+      working-directory: ${{ inputs.basepath }}
       run: |
         mkdir -p ${{ inputs.workpath }}
         env

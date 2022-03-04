@@ -9,5 +9,6 @@ jobs:
   test:
     uses: ./.github/workflows/execute-tests.yml
     with:
+      basepath: 'D:\'
       os: 'windows-latest'
-      workpath: 'C:\\a\\doorstop\\doorstop'
+      workpath: 'C:\a\doorstop\doorstop'
