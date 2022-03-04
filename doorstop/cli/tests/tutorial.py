@@ -44,9 +44,6 @@ class TestBase(unittest.TestCase):
         print("$ doorstop {}".format(args))
         cmd = "{} {} -v".format(DOORSTOP, args)
         cp = subprocess.run(cmd, shell=True, stdout=stdout, stderr=subprocess.PIPE)
-        print("cp")
-        print(cp)
-        print(cp.returncode)
         if cp.returncode != returncode:
             raise AssertionError("command failed: doorstop {}".format(args))
         return cp
