@@ -19,7 +19,8 @@ jobs:
     name: Python ${{ matrix.python-version }}
 
     defaults:
-      working-directory: ${{ inputs.workpath }}
+      run:
+        working-directory: ${{ inputs.workpath }}
 
     steps:
     - name: Checkout
