@@ -64,41 +64,41 @@ jobs:
           architecture: ${{ inputs.architecture }}
 
       # Install poetry.
-      - name: Install poetry
+      - name: Install Poetry
         run: pip install poetry
 
       #####################################
       # Install graphviz depending on OS. #
       #####################################
-      # Mac OS X
-      - name: Install graphviz Mac OS X
+      # macOS
+      - name: Install Graphviz (macOS)
         if: ${{ inputs.os == 'macos-latest' }}
         run: brew install graphviz
 
-      # Ubuntu
-      - name: Install graphviz Ubuntu
+      # Linux
+      - name: Install Graphviz (Linux)
         if: ${{ inputs.os == 'ubuntu-latest' }}
         run: sudo apt install graphviz
 
       # Windows
-      - name: Install graphviz Windows
+      - name: Install Graphviz (Windows)
         if: ${{ inputs.os == 'windows-latest' }}
         run: choco install graphviz
       #####################################
       # Done graphviz depending on OS.    #
       #####################################
 
-      # Check pre-requisites
-      - name: Check pre-requisites
+      - name: Check system dependencies
         run: make doctor
 
-      # Run the test suite. Reset to head when done.
-      - name: Run test
-        run: |
-          make test
-          git clean -f
-          git checkout .
+      - name: Install project dependencies
+        run: make install
 
-      # Run the full CI suite.
-      - name: Run full CI
-        run: make ci
+      - name: Run checks
+        run: make check
+
+      - name: Run tests
+        run: make test
+
+      - name: Run demo
+        run: make demo
