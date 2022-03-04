@@ -62,11 +62,11 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - name: Run checks
-        run: make check
-
       - name: Run tests
         run: make test
+
+      - name: Run checks
+        run: make check
 
       - name: Run demo
         run: make demo
