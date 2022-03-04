@@ -6,6 +6,9 @@ on:
       os:
         required: true
         type: string
+      workpath:
+        required: true
+        type: string
 
 jobs:
   test:
@@ -18,8 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        path: C:\a\doorstop\doorstop
-        if: ${{ inputs.os == 'windows-latest' }}
+        path: ${{ inputs.workpath }}
 
     - uses: actions/setup-python@v2
       with:

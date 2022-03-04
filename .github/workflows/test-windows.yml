@@ -10,3 +10,4 @@ jobs:
     uses: ./.github/workflows/execute-tests.yml
     with:
       os: 'windows-latest'
+      workpath: 'C:\a\doorstop'

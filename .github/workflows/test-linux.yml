@@ -10,3 +10,4 @@ jobs:
     uses: ./.github/workflows/execute-tests.yml
     with:
       os: 'ubuntu-latest'
+      workpath: '/home/runner/work/doorstop'
