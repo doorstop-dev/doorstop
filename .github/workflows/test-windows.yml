@@ -1,10 +1,12 @@
 name: Windows Test
 
+# Run on all pushes and PRs to 'develop'.
 on:
   push:
   pull_request:
     branches: [ develop ]
 
+# Call the reusable workflow.
 jobs:
   test:
     uses: ./.github/workflows/execute-tests.yml
