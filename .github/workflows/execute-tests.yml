@@ -46,6 +46,7 @@ jobs:
         git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1
         cd ${{ inputs.workpath }}
         git branch -a
+        env
         git checkout $GITHUB_REF
         git branch -a
 
