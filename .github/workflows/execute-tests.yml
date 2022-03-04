@@ -17,6 +17,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        path: C:\a\doorstop\doorstop
+        if: ${{ inputs.os == 'windows-latest' }}
 
     - uses: actions/setup-python@v2
       with:
