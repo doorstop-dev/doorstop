@@ -142,7 +142,7 @@ def load_yaml(text, path, loader=yaml.SafeLoader):
     return data
 
 
-def write_lines(lines, path, end="\n", encoding="utf-8"):
+def write_lines(lines, path, end="\n", encoding="utf-8", *, executable=False):
     """Write lines of text to a file.
 
     :param lines: iterator of strings
@@ -158,6 +158,8 @@ def write_lines(lines, path, end="\n", encoding="utf-8"):
         for line in lines:
             data = (line + end).encode(encoding)
             stream.write(data)
+    if executable and os.path.isfile(path):
+        os.chmod(path, 0o775)
     return path
 
 
