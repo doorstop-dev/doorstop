@@ -66,6 +66,7 @@ pylint = "~2.12"
 pytest = "^6.2.5"
 pytest-cov = "*"
 pytest-expecter = "*"
+pytest-sugar = "*"
 
 # Reports
 coveragespace = "^4.0"
