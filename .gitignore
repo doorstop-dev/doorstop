@@ -37,6 +37,7 @@ Icon*
 /pyunit.xml
 /tmp/
 *.tmp
+coverage.xml
 
 # Build and release directories
 /build/

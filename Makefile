@@ -82,6 +82,9 @@ PYTEST_OPTIONS := --doctest-modules
 ifndef DISABLE_COVERAGE
 PYTEST_OPTIONS += --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
 endif
+ifdef CI
+PYTEST_OPTIONS += --cov-report=xml
+endif
 
 .PHONY: test
 test: test-all ## Run unit and integration tests
