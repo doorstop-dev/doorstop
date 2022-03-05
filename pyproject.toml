@@ -43,7 +43,7 @@ classifiers = [
 python = "^3.7"
 
 PyYAML = "^5.1"
-Markdown = "^3.3.3"
+Markdown = "^3.3.6"
 bottle = "~0.12.13"
 requests = "^2.0"
 python-markdown-math = "~0.6"
