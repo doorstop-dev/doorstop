@@ -64,6 +64,11 @@ jobs:
       - name: Run tests
         run: make test
 
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
+
       - name: Run checks
         run: make check
 
