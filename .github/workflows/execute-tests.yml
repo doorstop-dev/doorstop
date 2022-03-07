@@ -58,15 +58,13 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - name: Run tests attempt 1
-        run: make test
-      - name: Run tests attempt 2
-        if: failure()
-        run: make test
-      - name: Run tests attempt 3
-        if: failure()
-        run: make test
-        fail_ci_if_error: true
+      - uses: Wandalen/wretry.action@v1.0.11
+        name: Run tests
+        with:
+          command: make test
+          attempt_limit: 3
+          attempt_delay: 2000
+          fail_ci_if_error: true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
