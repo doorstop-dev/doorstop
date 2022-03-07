@@ -58,15 +58,14 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - uses: Wandalen/wretry.action@v1.0.11
+      - uses: nick-fields/retry@v2
         name: Run tests
         with:
           command: make test
-          attempt_limit: 3
-          attempt_delay: 2000
+          max_attempts: 3
+          timeout_minutes: 60
           with: |
             fail_ci_if_error: true
-          working-directory: ${{ inputs.workpath }}
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
