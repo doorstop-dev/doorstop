@@ -67,7 +67,7 @@ jobs:
             make test
           max_attempts: 3
           timeout_minutes: 60
-          continue_or_error: false
+          continue_on_error: false
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
