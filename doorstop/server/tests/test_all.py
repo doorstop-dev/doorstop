@@ -29,11 +29,11 @@ class TestServer(unittest.TestCase):
             logging.info("waiting for the server to initialize...")
             # Check for response!
             url = "http://localhost:7867/documents"
-            for count in range(0, 29):
+            for _ in range(0, 29):
                 try:
-                    response = requests.head(url)
+                    _ = requests.head(url)
                     break
-                except requests.exceptions.RequestException as exc:
+                except requests.exceptions.RequestException:
                     time.sleep(1)
             logging.info("server is answering!")
             assert cls.process.is_alive()
