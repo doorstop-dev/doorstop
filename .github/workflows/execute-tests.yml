@@ -58,13 +58,16 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - name: Run tests
-        run: |
-          echo "Tests are run 3 times due to slow runners sometimes causing tests to fail without reason."
-          (echo "===== make test attempt 1 =====" && make test) || \
-          (echo "===== make test attempt 2 =====" && make test) || \
-          (echo "===== make test attempt 3 =====" && make test) || \
-          (echo "===== make test FAILED ALL ATTEMPTS!" && exit 1)
+      - name: Run tests attempt 1
+        run: make test
+      - name: Run tests attempt 2
+        if: failure()
+        run: make test
+      - name: Run tests attempt 3
+        if: failure()
+        run: make test
+        with:
+          fail_ci_if_error: true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
