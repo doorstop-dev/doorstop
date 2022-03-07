@@ -3,6 +3,7 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
+import codecs
 import csv
 import glob
 import logging
@@ -112,7 +113,7 @@ def read_text(path):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with codecs.open(path, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
