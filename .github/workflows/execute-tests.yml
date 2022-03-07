@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' }}
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}
         with:
           fail_ci_if_error: true
 
