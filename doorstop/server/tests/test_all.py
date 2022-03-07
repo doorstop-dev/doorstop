@@ -24,8 +24,17 @@ class TestServer(unittest.TestCase):
         if os.getenv(ENV):
             cls.process = Process(target=main.main, kwargs={"args": []})
             cls.process.start()
-            logging.info("delaying for the server to initialize...")
-            time.sleep(3)
+            logging.info("waiting for the server to initialize...")
+            count = 0
+            while not cls.process.is_alive():
+                logging.info("checking server...")
+                count += 1
+                time.sleep(3)
+                if count > 9:
+                    break
+            # Ensure server has time to write settings.
+            time.sleep(1)
+            logging.info("server process is alive!")
             assert cls.process.is_alive()
 
     @classmethod
