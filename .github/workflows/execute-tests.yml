@@ -61,11 +61,13 @@ jobs:
       - uses: nick-fields/retry@v2
         name: Run tests
         with:
-          command: make test
+          command: |
+            ls
+            pwd
+            make test
           max_attempts: 3
           timeout_minutes: 60
-          with: |
-            fail_ci_if_error: true
+          continue_or_error: false
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
