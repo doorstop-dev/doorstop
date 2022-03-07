@@ -64,7 +64,8 @@ jobs:
           command: make test
           attempt_limit: 3
           attempt_delay: 2000
-          with: fail_ci_if_error: true
+          with: |
+            fail_ci_if_error: true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
