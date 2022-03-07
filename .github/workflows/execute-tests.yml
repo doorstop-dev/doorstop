@@ -58,16 +58,16 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - uses: nick-fields/retry@v2
-        name: Run tests
+      - name: Run tests attempt 1
+        run: make test
+      - name: Run tests attempt 2
+        if: ${{ failure() }}
+        run: make test
+      - name: Run tests attempt 3
+        if: ${{ failure() }}
+        run: make test
         with:
-          command: |
-            ls
-            pwd
-            make test
-          max_attempts: 3
-          timeout_minutes: 60
-          continue_on_error: false
+          fail_ci_if_error: true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
