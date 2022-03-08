@@ -3,13 +3,13 @@ on:
   workflow_call:
     inputs:
       basepath:
-        required: true
+        required: false
         type: string
       os:
         required: true
         type: string
       workpath:
-        required: true
+        required: false
         type: string
 
 jobs:
