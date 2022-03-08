@@ -9,6 +9,8 @@ import unittest
 from multiprocessing import Process
 from unittest.mock import patch
 
+import requests
+
 from doorstop import server
 from doorstop.server import main
 from doorstop.server.tests import ENV, REASON
@@ -24,8 +26,16 @@ class TestServer(unittest.TestCase):
         if os.getenv(ENV):
             cls.process = Process(target=main.main, kwargs={"args": []})
             cls.process.start()
-            logging.info("delaying for the server to initialize...")
-            time.sleep(3)
+            logging.info("waiting for the server to initialize...")
+            # Check for response!
+            url = "http://localhost:7867/documents"
+            for _ in range(0, 29):
+                try:
+                    _ = requests.head(url)
+                    break
+                except requests.exceptions.RequestException:
+                    time.sleep(1)
+            logging.info("server is answering!")
             assert cls.process.is_alive()
 
     @classmethod

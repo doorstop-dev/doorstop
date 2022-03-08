@@ -58,7 +58,17 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - name: Run tests
+      # Some tests fails intermittently, likely due to the public runners being
+      # very slow. Especially any client/server tests seems to be problematic.
+      # This is a simple attempt to re-run the tests up to three times if they
+      # fail. Does not add any execution time if successful.
+      - name: Run tests attempt 1
+        run: make test
+      - name: Run tests attempt 2
+        if: ${{ failure() }}
+        run: make test
+      - name: Run tests attempt 3
+        if: ${{ failure() }}
         run: make test
 
       - name: Upload coverage
