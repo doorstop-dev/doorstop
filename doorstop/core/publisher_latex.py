@@ -270,6 +270,54 @@ def _typeset_latex_image(image_match, line, block):
     line = r"\end{figure}"
     return line
 
+def _typeset_latex_table(table_match, text, i, line, block, tableFound, headerDone, endPipes):
+    """Typeset tables."""
+    if not tableFound:
+        # Check next line for minimum 3 dashes and the same count of |.
+        if i < len(text) - 1:
+            nextLine = text[i + 1]
+            table_match_next = re.findall("\\|", nextLine)
+            if table_match_next:
+                if len(table_match) == len(table_match_next):
+                    table_match_dashes = re.findall("-{3,}", nextLine)
+                    if table_match_dashes:
+                        tableFound = True
+                        endPipes = bool(
+                            len(table_match) > len(table_match_dashes)
+                        )
+                        nextLine = re.sub(":-+:", "c", nextLine)
+                        nextLine = re.sub("-+:", "r", nextLine)
+                        nextLine = re.sub("-+", "l", nextLine)
+                        tableHeader = "\\begin{longtable}{" + nextLine + "}"
+                        block.append(tableHeader)
+                        # Fix the header.
+                        line = re.sub("\\|", "&", line)
+                        if endPipes:
+                            line = re.sub("^\\s*&", "", line)
+                            line = re.sub("&\\s*$", "\\\\\\\\", line)
+                        else:
+                            line = line + "\\\\"
+                    else:
+                        log.warning(
+                            "Possibly incorrectly specified table found."
+                        )
+                else:
+                    log.warning("Possibly unbalanced table found.")
+
+    else:
+        if not headerDone:
+            line = "\\hline"
+            headerDone = True
+        else:
+            # Fix the line.
+            line = re.sub("\\|", "&", line)
+            if endPipes:
+                line = re.sub("^\\s*&", "", line)
+                line = re.sub("&\\s*$", "\\\\\\\\", line)
+            else:
+                line = line + "\\\\"
+    return tableFound, headerDone, line, endPipes
+
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
     block = []
@@ -280,6 +328,7 @@ def _format_latex_text(text):
     plantUMLFound = False
     enumerationFound = False
     itemizeFound = False
+    endPipes = False
     for i, line in enumerate(text):
         noParagraph = False
         #############################
@@ -396,50 +445,7 @@ def _format_latex_text(text):
         # Check if line is part of table.
         table_match = re.findall("\\|", line)
         if table_match:
-            if not tableFound:
-                # Check next line for minimum 3 dashes and the same count of |.
-                if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    table_match_next = re.findall("\\|", nextLine)
-                    if table_match_next:
-                        if len(table_match) == len(table_match_next):
-                            table_match_dashes = re.findall("-{3,}", nextLine)
-                            if table_match_dashes:
-                                tableFound = True
-                                endPipes = bool(
-                                    len(table_match) > len(table_match_dashes)
-                                )
-                                nextLine = re.sub(":-+:", "c", nextLine)
-                                nextLine = re.sub("-+:", "r", nextLine)
-                                nextLine = re.sub("-+", "l", nextLine)
-                                tableHeader = "\\begin{longtable}{" + nextLine + "}"
-                                block.append(tableHeader)
-                                # Fix the header.
-                                line = re.sub("\\|", "&", line)
-                                if endPipes:
-                                    line = re.sub("^\\s*&", "", line)
-                                    line = re.sub("&\\s*$", "\\\\\\\\", line)
-                                else:
-                                    line = line + "\\\\"
-                            else:
-                                log.warning(
-                                    "Possibly incorrectly specified table found."
-                                )
-                        else:
-                            log.warning("Possibly unbalanced table found.")
-
-            else:
-                if not headerDone:
-                    line = "\\hline"
-                    headerDone = True
-                else:
-                    # Fix the line.
-                    line = re.sub("\\|", "&", line)
-                    if endPipes:
-                        line = re.sub("^\\s*&", "", line)
-                        line = re.sub("&\\s*$", "\\\\\\\\", line)
-                    else:
-                        line = line + "\\\\"
+            tableFound, headerDone, line, endPipes = _typeset_latex_table(table_match, text, i, line, block, tableFound, headerDone, endPipes)
         else:
             if tableFound:
                 block.append("\\end{longtable}")
