@@ -36,7 +36,7 @@ jobs:
         working-directory: ${{ inputs.basepath }}
         run: |
           mkdir -p ${{ inputs.workpath }}
-          mv $env:GITHUB_WORKSPACE ${{ inputs.workpath }}
+          copy $env:GITHUB_WORKSPACE ${{ inputs.workpath }}
           cd ${{ inputs.workpath }}
           ls
           pwd
