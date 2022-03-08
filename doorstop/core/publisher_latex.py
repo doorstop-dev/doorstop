@@ -240,6 +240,35 @@ def _latex_convert(line):
     line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
     return line
 
+def _typeset_latex_image(image_match, line, block):
+    """Typeset images."""
+    image_title, image_path = image_match[0]
+    # Check for title. If not found, alt_text will be used as caption.
+    title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
+    if title_match:
+        image_path, image_title = title_match[0]
+    # Make a safe label.
+    label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
+    # Make the string to replace!
+    replacement = (
+        r"\includegraphics[width=0.8\textwidth]{"
+        + image_path
+        + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
+        + r"\caption{"
+        + _latex_convert(image_title)
+        + r"}"
+    ).replace("\\", "\\\\")
+    # Replace with LaTeX format.
+    line = re.sub(
+        r"!\[(.*)\]\((.*)\)",
+        replacement,
+        line,
+    )
+    # Create the figure.
+    block.append(r"\begin{figure}[h!]\center")
+    block.append(line)
+    line = r"\end{figure}"
+    return line
 
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
@@ -258,33 +287,7 @@ def _format_latex_text(text):
         #############################
         image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
         if image_match:
-            image_title, image_path = image_match[0]
-            # Check for title. If not found, alt_text will be used as caption.
-            title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
-            if title_match:
-                image_path, image_title = title_match[0]
-            # Make a safe label.
-            label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
-            # Make the string to replace!
-            replacement = (
-                r"\includegraphics[width=0.8\textwidth]{"
-                + image_path
-                + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
-                + r"\caption{"
-                + _latex_convert(image_title)
-                + r"}"
-            ).replace("\\", "\\\\")
-            # Replace with LaTeX format.
-            line = re.sub(
-                r"!\[(.*)\]\((.*)\)",
-                replacement,
-                line,
-            )
-            # Create the figure.
-            block.append(r"\begin{figure}[h!]\center")
-            block.append(line)
-            line = r"\end{figure}"
-
+            line = _typeset_latex_image(image_match, line, block)
         #############################
         ## Fix $ and MATH.
         #############################
