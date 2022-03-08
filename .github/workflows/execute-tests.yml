@@ -37,8 +37,11 @@ jobs:
         run: |
           mkdir -p ${{ inputs.workpath }}
           env
-          copy $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\
+          mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\
           cd ${{ inputs.workpath }}
+          ls
+          pwd
+          cd $env:GITHUB_WORKSPACE
           ls
           pwd
       # - name: Checkout Unix
