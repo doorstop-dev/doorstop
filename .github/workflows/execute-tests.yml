@@ -26,19 +26,33 @@ jobs:
         working-directory: ${{ inputs.workpath }}
 
     steps:
-      - name: Checkout Unix
-        if: ${{ inputs.os != 'windows-latest' }}
-        run: |
-          mkdir -p ${{ inputs.workpath }}
-          git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $GITHUB_REF_NAME
-      - name: Checkout Windows
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Change path on Windows
+        if: ${{ input.os == 'windows-latest' }}
         # Cannot start powershell from a path that does not exist, so change
         # working directory for this step only.
         working-directory: ${{ inputs.basepath }}
-        if: ${{ inputs.os == 'windows-latest' }}
         run: |
           mkdir -p ${{ inputs.workpath }}
-          git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $env:GITHUB_REF_NAME
+          mv $env:GITHUB_WORKSPACE/* ${{ inputs.workpath }}
+          cd ${{ inputs.workpath }}
+          ls
+          pwd
+      # - name: Checkout Unix
+      #   if: ${{ inputs.os != 'windows-latest' }}
+      #   run: |
+      #     mkdir -p ${{ inputs.workpath }}
+      #     git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $GITHUB_REF_NAME
+      # - name: Checkout Windows
+      #   # Cannot start powershell from a path that does not exist, so change
+      #   # working directory for this step only.
+      #   working-directory: ${{ inputs.basepath }}
+      #   if: ${{ inputs.os == 'windows-latest' }}
+      #   run: |
+      #     mkdir -p ${{ inputs.workpath }}
+      #     git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $env:GITHUB_REF_NAME
 
       - uses: actions/setup-python@v2
         with:
