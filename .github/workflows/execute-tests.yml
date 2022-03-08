@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.7"]
     name: Python ${{ matrix.python-version }}
 
     defaults:
@@ -66,7 +66,10 @@ jobs:
       - uses: Gr1N/setup-poetry@v7
 
       - name: Check system dependencies
-        run: make doctor
+        run: |
+          ls
+          pwd
+          make doctor
 
       - uses: actions/cache@v2
         with:
