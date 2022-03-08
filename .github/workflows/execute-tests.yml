@@ -2,9 +2,6 @@ name: Execute tests
 on:
   workflow_call:
     inputs:
-      architecture:
-        required: true
-        type: string
       basepath:
         required: true
         type: string
@@ -46,7 +43,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ inputs.architecture }}
+          architecture: x64
 
       - uses: Gr1N/setup-poetry@v7
 
@@ -61,12 +58,22 @@ jobs:
       - name: Install project dependencies
         run: make install
 
-      - name: Run tests
+      # Some tests fails intermittently, likely due to the public runners being
+      # very slow. Especially any client/server tests seems to be problematic.
+      # This is a simple attempt to re-run the tests up to three times if they
+      # fail. Does not add any execution time if successful.
+      - name: Run tests attempt 1
+        run: make test
+      - name: Run tests attempt 2
+        if: ${{ failure() }}
+        run: make test
+      - name: Run tests attempt 3
+        if: ${{ failure() }}
         run: make test
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-        if: ${{ inputs.os == 'ubuntu-latest' }}
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}
         with:
           fail_ci_if_error: true
 
