@@ -30,13 +30,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Change path on Windows
-        if: ${{ input.os == 'windows-latest' }}
+        if: ${{ inputs.os == 'windows-latest' }}
         # Cannot start powershell from a path that does not exist, so change
         # working directory for this step only.
         working-directory: ${{ inputs.basepath }}
         run: |
           mkdir -p ${{ inputs.workpath }}
-          mv $env:GITHUB_WORKSPACE/* ${{ inputs.workpath }}
+          mv $env:GITHUB_WORKSPACE/* ${{ inputs.workpath }}/
           cd ${{ inputs.workpath }}
           ls
           pwd
