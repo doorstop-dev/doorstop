@@ -46,10 +46,7 @@ jobs:
       - uses: Gr1N/setup-poetry@v7
 
       - name: Check system dependencies
-        run: |
-          ls
-          pwd
-          make doctor
+        run: make doctor
 
       - uses: actions/cache@v2
         with:
