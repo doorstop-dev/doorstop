@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p ${{ inputs.workpath }}
           env
-          mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\
+          mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\ -Force
           cd ${{ inputs.workpath }}
           ls -Force
           pwd
