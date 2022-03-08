@@ -1,11 +1,13 @@
 name: macOS
 
-on: push
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
 
 jobs:
   Test:
     uses: ./.github/workflows/execute-tests.yml
     with:
-      basepath: "/Users/runner/work"
       os: "macos-latest"
       workpath: "/Users/runner/work/doorstop/doorstop"
