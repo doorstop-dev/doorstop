@@ -39,10 +39,10 @@ jobs:
           env
           mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\
           cd ${{ inputs.workpath }}
-          ls
+          ls -Force
           pwd
           cd $env:GITHUB_WORKSPACE
-          ls
+          ls -Force
           pwd
       # - name: Checkout Unix
       #   if: ${{ inputs.os != 'windows-latest' }}
