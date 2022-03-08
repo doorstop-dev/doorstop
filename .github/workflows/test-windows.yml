@@ -1,6 +1,9 @@
 name: Windows
 
-on: push
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
 
 jobs:
   Test:
