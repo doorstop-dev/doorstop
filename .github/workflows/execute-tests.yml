@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       workpath:
-        required: false
+        required: true
         type: string
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.7", "3.8", "3.9"]
     name: Python ${{ matrix.python-version }}
 
     defaults:
@@ -36,27 +36,7 @@ jobs:
         working-directory: ${{ inputs.basepath }}
         run: |
           mkdir -p ${{ inputs.workpath }}
-          env
           mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\ -Force
-          cd ${{ inputs.workpath }}
-          ls -Force
-          pwd
-          cd $env:GITHUB_WORKSPACE
-          ls -Force
-          pwd
-      # - name: Checkout Unix
-      #   if: ${{ inputs.os != 'windows-latest' }}
-      #   run: |
-      #     mkdir -p ${{ inputs.workpath }}
-      #     git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $GITHUB_REF_NAME
-      # - name: Checkout Windows
-      #   # Cannot start powershell from a path that does not exist, so change
-      #   # working directory for this step only.
-      #   working-directory: ${{ inputs.basepath }}
-      #   if: ${{ inputs.os == 'windows-latest' }}
-      #   run: |
-      #     mkdir -p ${{ inputs.workpath }}
-      #     git clone https://github.com/${{ github.repository }} ${{ inputs.workpath }} --depth 1 --branch $env:GITHUB_REF_NAME
 
       - uses: actions/setup-python@v2
         with:
