@@ -6,8 +6,6 @@ repo_url: https://github.com/doorstop-dev/doorstop
 edit_uri: https://github.com/doorstop-dev/doorstop/edit/develop/docs
 
 theme: readthedocs
-extra_css: []
-extra_javascript: []
 
 markdown_extensions:
   - admonition
