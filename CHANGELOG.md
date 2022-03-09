@@ -3,6 +3,7 @@
 - **BREAKING:** Dropped support for Python 3.6.
 - **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.
 - Fixed overriding default attributes with `doorstop add`. ([@tangoalx](https://github.com/doorstop-dev/doorstop/pull/544))
+- Fixed encoding error with special characters on Windows. ([@urbasus](https://github.com/doorstop-dev/doorstop/pull/526))
 - Add support for publishing to the LaTeX format. ([@neerdoc](https://github.com/doorstop-dev/doorstop/pull/545))
 
 # 2.2 (2022-01-22)
