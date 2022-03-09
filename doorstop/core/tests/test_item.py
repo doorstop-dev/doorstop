@@ -1050,3 +1050,31 @@ class TestUnknownItem(unittest.TestCase):
     def test_stamp(self):
         """Verify an unknown item has no stamp."""
         self.assertEqual(Stamp(None), self.item.stamp())
+
+
+class TestUTF8(unittest.TestCase):
+    """Unit tests for reading UTF8 formatted files."""
+
+    def test_load_cyrillic(self):
+        """Verify that cyrillic and other UTF-8 characters are correltly loaded and written."""
+        ITEM = "doorstop/core/tests/test_fixtures/002-utf8-characters/REQ-CYRILLIC.yml"
+        backup = common.read_text(ITEM)
+        item = Item(None, ITEM)
+        item.load()
+        item.save()
+        text = common.read_text(ITEM)
+        self.maxDiff = None
+        common.write_text(backup, ITEM)
+        self.assertEqual(backup, text)
+
+    def test_load_mit(self):
+        """Verify that an MIT licence is correltly loaded and written."""
+        ITEM = "doorstop/core/tests/test_fixtures/002-utf8-characters/REQ-MIT.yml"
+        backup = common.read_text(ITEM)
+        item = Item(None, ITEM)
+        item.load()
+        item.save()
+        text = common.read_text(ITEM)
+        self.maxDiff = None
+        common.write_text(backup, ITEM)
+        self.assertEqual(backup, text)
