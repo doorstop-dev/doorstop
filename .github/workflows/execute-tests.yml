@@ -1,0 +1,84 @@
+name: Execute tests
+on:
+  workflow_call:
+    inputs:
+      basepath:
+        required: false
+        type: string
+      os:
+        required: true
+        type: string
+      workpath:
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9"]
+    name: Python ${{ matrix.python-version }}
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.workpath }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Change path on Windows
+        if: ${{ inputs.os == 'windows-latest' }}
+        # Cannot start powershell from a path that does not exist, so change
+        # working directory for this step only.
+        working-directory: ${{ inputs.basepath }}
+        run: |
+          mkdir -p ${{ inputs.workpath }}
+          mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\ -Force
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - uses: Gr1N/setup-poetry@v7
+
+      - name: Check system dependencies
+        run: make doctor
+
+      - uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Install project dependencies
+        run: make install
+
+      # Some tests fails intermittently, likely due to the public runners being
+      # very slow. Especially any client/server tests seems to be problematic.
+      # This is a simple attempt to re-run the tests up to three times if they
+      # fail. Does not add any execution time if successful.
+      - name: Run tests attempt 1
+        run: make test
+      - name: Run tests attempt 2
+        if: ${{ failure() }}
+        run: make test
+      - name: Run tests attempt 3
+        if: ${{ failure() }}
+        run: make test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}
+        with:
+          fail_ci_if_error: true
+
+      - name: Run checks
+        run: make check
+        if: ${{ inputs.os == 'ubuntu-latest' }}
+
+      - name: Run demo
+        run: make demo
+        if: ${{ inputs.os == 'ubuntu-latest' }}

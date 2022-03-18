@@ -6,12 +6,16 @@ repo_url: https://github.com/doorstop-dev/doorstop
 edit_uri: https://github.com/doorstop-dev/doorstop/edit/develop/docs
 
 theme: readthedocs
-extra_css: []
-extra_javascript: []
+
+markdown_extensions:
+  - admonition
 
 nav:
 - Home: index.md
-- Setup: setup.md
+- Getting Started:
+  - Installation: getting-started/installation.md
+  - Setup: getting-started/setup.md
+  - Quickstart: getting-started/quickstart.md
 - Command-line Interface:
   - Creating Documents: cli/creation.md
   - Reordering Documents: cli/reordering.md

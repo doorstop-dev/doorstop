@@ -1,7 +1,8 @@
-[![Unix Build Status](https://img.shields.io/travis/com/doorstop-dev/doorstop/develop.svg?label=unix)](https://travis-ci.com/doorstop-dev/doorstop)
-[![Windows Build Status](https://img.shields.io/appveyor/ci/jacebrowning/doorstop/develop.svg?label=windows)](https://ci.appveyor.com/project/jacebrowning/doorstop)
+[![Linux Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml)
+[![Mac OS X Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml)
+[![Windows Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml)
 <br>
-[![Coverage Status](http://img.shields.io/coveralls/doorstop-dev/doorstop/develop.svg)](https://coveralls.io/r/doorstop-dev/doorstop)
+[![Coverage Status](https://img.shields.io/codecov/c/gh/doorstop-dev/doorstop)](https://codecov.io/gh/doorstop-dev/doorstop)
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=develop)
 [![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
 <br>
@@ -31,7 +32,7 @@ Additional references:
 
 ## Requirements
 
-* Python 3.5+
+* Python 3.7+
 * A version control system for requirements storage
 
 ## Installation

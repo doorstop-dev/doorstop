@@ -1,0 +1,13 @@
+name: Linux
+
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  Test:
+    uses: ./.github/workflows/execute-tests.yml
+    with:
+      os: "ubuntu-latest"
+      workpath: "/home/runner/work/doorstop/doorstop"

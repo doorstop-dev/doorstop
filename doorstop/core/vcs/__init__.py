@@ -34,7 +34,7 @@ def find_root(cwd):
     path = cwd
 
     log.debug("looking for working copy from {}...".format(path))
-    log.debug("options: {}".format(', '.join([d for d in DIRECTORIES])))
+    log.debug("options: {}".format(", ".join([d for d in DIRECTORIES])))
     while not any(d in DIRECTORIES for d in os.listdir(path)):
         parent = os.path.dirname(path)
         if path == parent:

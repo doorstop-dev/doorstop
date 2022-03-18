@@ -18,8 +18,8 @@ all: install
 .PHONY: ci
 ci: format check test mkdocs demo ## Run all tasks that determine CI status
 
-.PHONY: watch
-watch: install .clean-test ## Continuously run all CI tasks when files chanage
+.PHONY: dev
+dev: install .clean-test ## Continuously run all CI tasks when files chanage
 	poetry run sniffer
 
 .PHONY: run ## Start the program
@@ -61,14 +61,14 @@ endif
 
 .PHONY: format
 format: install
-	poetry run isort $(PACKAGES) --recursive --apply
+	poetry run isort $(PACKAGES)
 	poetry run black $(PACKAGES)
 	@ echo
 
 .PHONY: check
 check: install format  ## Run formaters, linters, and static analysis
 ifdef CI
-	git diff --exit-code
+	git diff --exit-code -- '***.py'
 endif
 	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
 	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
@@ -78,9 +78,12 @@ endif
 
 RANDOM_SEED ?= $(shell date +%s)
 
-NOSE_OPTIONS := --with-doctest --traverse-namespace
+PYTEST_OPTIONS := --doctest-modules
 ifndef DISABLE_COVERAGE
-NOSE_OPTIONS += --with-cov --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+PYTEST_OPTIONS += --cov=$(PACKAGE) --cov-report=html --cov-report=term-missing
+endif
+ifdef CI
+PYTEST_OPTIONS += --cov-report=xml
 endif
 
 .PHONY: test
@@ -88,7 +91,7 @@ test: test-all ## Run unit and integration tests
 
 .PHONY: test-unit
 test-unit: install
-	poetry run nosetests $(PACKAGE) $(NOSE_OPTIONS)
+	poetry run pytest $(PACKAGE) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	poetry run coveragespace update unit
 endif
@@ -98,7 +101,7 @@ test-int: test-all
 
 .PHONY: test-all
 test-all: install
-	TEST_INTEGRATION=true poetry run nosetests $(PACKAGES) $(NOSE_OPTIONS) --show-skipped
+	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	poetry run coveragespace update overall
 endif
@@ -147,17 +150,26 @@ DOORSTOP := poetry run doorstop
 YAML := $(wildcard */*.yml */*/*.yml */*/*/*/*.yml)
 
 .PHONY: reqs
-reqs: doorstop reqs-html reqs-md reqs-txt
+reqs: doorstop reqs-html reqs-latex reqs-md reqs-pdf reqs-txt
 
 .PHONY: reqs-html
 reqs-html: install docs/gen/*.html
 docs/gen/*.html: $(YAML)
 	$(DOORSTOP) publish all docs/gen --html
 
+.PHONY: reqs-latex
+reqs-latex: install docs/gen/*.tex
+docs/gen/*.tex: $(YAML)
+	$(DOORSTOP) publish all docs/gen --latex
+
 .PHONY: reqs-md
 reqs-md: install docs/gen/*.md
 docs/gen/*.md: $(YAML)
 	$(DOORSTOP) publish all docs/gen --markdown
+
+.PHONY: reqs-pdf
+reqs-pdf: reqs-latex
+	cd docs/gen && ./compile.sh
 
 .PHONY: reqs-txt
 reqs-txt: install docs/gen/*.txt

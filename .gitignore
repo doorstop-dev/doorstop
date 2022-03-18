@@ -22,6 +22,7 @@ Icon*
 /site/
 /*.html
 /docs/*.png
+texput.log
 
 # Google Drive
 *.gdoc
@@ -37,6 +38,7 @@ Icon*
 /pyunit.xml
 /tmp/
 *.tmp
+coverage.xml
 
 # Build and release directories
 /build/

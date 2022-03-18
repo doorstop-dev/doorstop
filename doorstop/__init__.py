@@ -19,15 +19,15 @@ from doorstop.core import (
     publisher,
 )
 
-__project__ = 'Doorstop'
+__project__ = "Doorstop"
 
 try:
     __version__ = get_distribution(__project__).version
 except DistributionNotFound:
-    __version__ = '(local)'
+    __version__ = "(local)"
 
-CLI = 'doorstop'
-GUI = 'doorstop-gui'
-SERVER = 'doorstop-server'
+CLI = "doorstop"
+GUI = "doorstop-gui"
+SERVER = "doorstop-server"
 VERSION = "{0} v{1}".format(__project__, __version__)
 DESCRIPTION = "Requirements management using version control."

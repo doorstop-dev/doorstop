@@ -7,7 +7,7 @@
     * Linux: [https://www.gnu.org/software/make](https://www.gnu.org/software/make)
     * Windows: [https://mingw.org/download/installer](https://mingw.org/download/installer)
 * Python: `$ pyenv install`
-* Poetry: [https://poetry.eustace.io/docs/#installation](https://poetry.eustace.io/docs/#installation)
+* Poetry: [https://python-poetry.org/docs/#installation](https://python-poetry.org/docs/#installation)
 * Graphviz:
     * macOS: `$ brew install graphviz`
     * Linux: [https://graphviz.org/download](https://graphviz.org/download/)
@@ -54,7 +54,7 @@ $ make docs
 Keep all of the above tasks running on change:
 
 ```sh
-$ make watch
+$ make dev
 ```
 
 > In order to have OS X notifications, `brew install terminal-notifier`.

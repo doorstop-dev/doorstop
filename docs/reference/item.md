@@ -11,20 +11,23 @@ can specify a name for the UID during item creation. The name must not contain
 separator characters.
 
 Example item:
+
 ```yaml
 active: true
 derived: false
+header: |
+  Identifiers
 level: 2.1
-normative: true
-reviewed: 1f33605bbc5d1a39c9a6441b91389e88
 links: []
+normative: true
 ref: ''
+reviewed: 9TcFUzsQWUHhoh5wsqnhL7VRtSqMaIhrCXg7mfIkxKM=
 text: |
   Doorstop **shall** provide unique and permanent identifiers to linkable
   sections of text.
 ```
 
-# Standard Attributes
+# Standard Item Attributes
 
 ## `active`
 
@@ -53,6 +56,7 @@ The value of this attribute does **not** contribute to the
 Indicates if the item is normative (true) or non-normative (false).
 
 [Wikipedia on Normative](https://en.wikipedia.org/wiki/Normative) in standards documents:
+
 > 'In standards terminology still used by some organizations, "normative" means
 > "considered to be a prescriptive part of the standard". It characterizes
 > that part of the standard which describes what ought (see philosophy above) to
@@ -102,6 +106,7 @@ The value of this attribute does **not** contribute to the
 ### Example: Header
 
 TST007.yml
+
 ```yaml
 level: 1.5
 normative: true
@@ -110,7 +115,7 @@ links:
 header: |
     Gradual Temperature Drop Test
 text: |
-    Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+    Lower the external air temperature gradually from 0 to -15 degrees Celsius over a period of 30 minutes.
     Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
 ```
 
@@ -118,7 +123,7 @@ When this item is published, Doorstop will place the item's Header next to its U
 
 ```
 TST007 Gradual Temperature Drop Test
-  Lower the external air temperature gradually from 0 to -15 degress Celsius over a period of 30 minutes.
+  Lower the external air temperature gradually from 0 to -15 degrees Celsius over a period of 30 minutes.
   Ensure the system performs a safe shutdown when -15 degrees Celsius is reached.
 
   Parent Item: REQ023 Temperature Interlock
@@ -149,7 +154,7 @@ In the following example, `REQ001` is a parent to the item.
 
 ```yaml
 links:
-- REQ001: 1f33605bbc5d1a39c9a6441b91389e88
+- REQ001: avwblqPimDJ2OgTrRCXxRPN8FQhUBWqPIXm7kSR95C4=
 ```
 
 A link consists of two parts, the parent item UID and the
@@ -279,6 +284,7 @@ of the item.
 ### Example: Heading
 
 REQ001.yml
+
 ```yaml
 level: 1.1.0
 normative: false
@@ -294,6 +300,7 @@ When this item is published, Doorstop will create a new heading with the text
 ### Example: Normative item
 
 REQ001.yml
+
 ```yaml
 level: 1.1.0
 normative: true
@@ -304,13 +311,14 @@ text: |
 When this item is published, Doorstop will create a new heading with the text
 "1.1.0 REQ001" and put the all of the text in its body.
 
-### Example: LaTex-like math expressions
+### Example: LaTeX-like math expressions
 
-You can use math expressions in LaTex interpreted by the markdown extension
+You can use math expressions in LaTeX interpreted by the markdown extension
 [python-markdown-math](https://pypi.org/project/python-markdown-math/) and rendered by
 [MathJax](https://github.com/mathjax/MathJax), when using the HTML publisher.
 
 TST008.yml
+
 ```yaml
 level: 1.6
 normative: true
@@ -321,10 +329,10 @@ text: |
   $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 ```
 
-# Extended Attributes
+# Extended Item Attributes
 
-In addition to the standard attributes, Doorstop will allow any number of
-custom attributes (key-value pairs) in the YAML file. The extended attributes
+In addition to the standard attributes, Doorstop will allow any number of custom
+extended attributes (key-value pairs) in the YAML file. The extended attributes
 will not be part of a published document, but they can be queried by a 3rd party
 application through the REST interface or the Python API.
 
@@ -392,3 +400,21 @@ otherwise the fingerprint changes.  Removing a reviewed attribute from the
 document configuration changes the fingerprint of all items of the document
 with such an attribute.  The type of the values, empty strings, lists, and
 dictionaries affect the fingerprint.
+
+## Publishing extended attributes
+
+Introduced in v2.2, Doorstop can include extended attributes in published output.
+
+Edit the document configuration file `.doorstop.yml` by hand to include the desired attributes.
+
+For example, to include the `invented-by` extended attribute key and value in the published output:
+
+```yaml
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ''
+attributes:
+  publish:
+    - invented-by
+```

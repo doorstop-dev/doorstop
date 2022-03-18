@@ -5,7 +5,6 @@
 import ast
 import logging
 import os
-import warnings
 from argparse import ArgumentTypeError
 
 from doorstop import common, settings
@@ -110,22 +109,17 @@ def configure_settings(args):
         settings.ERROR_ALL = args.error_all is True
 
     # Parse `add` settings
-    if hasattr(args, 'server') and args.server is not None:
+    if hasattr(args, "server") and args.server is not None:
         settings.SERVER_HOST = args.server
-    if hasattr(args, 'port') and args.port is not None:
+    if hasattr(args, "port") and args.port is not None:
         settings.SERVER_PORT = args.port
 
     # Parse `publish` settings
-    if hasattr(args, 'no_child_links') and args.no_child_links is not None:
+    if hasattr(args, "no_child_links") and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
-    if hasattr(args, 'no_body_levels') and args.no_body_levels is not None:
-        warnings.simplefilter('default')
-        msg = "'--no-body-levels' option will be removed in a future release"
-        warnings.warn(msg, DeprecationWarning)
-        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
-    if hasattr(args, 'no_levels') and args.no_levels is not None:
+    if hasattr(args, "no_levels") and args.no_levels is not None:
         settings.PUBLISH_BODY_LEVELS = False
-        settings.PUBLISH_HEADING_LEVELS = args.no_levels != 'all'
+        settings.PUBLISH_HEADING_LEVELS = args.no_levels != "all"
 
 
 def literal_eval(literal, error=None, default=None):
@@ -151,6 +145,7 @@ def literal_eval(literal, error=None, default=None):
             error(msg)
         else:
             log.critical(msg)
+        return None
 
 
 def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
@@ -165,7 +160,7 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
     :return: chosen extension
 
     """
-    path = args.path if hasattr(args, 'path') else None
+    path = args.path if hasattr(args, "path") else None
     ext = None
 
     # Get the default argument from a provided output path
@@ -180,12 +175,13 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
 
     # Override the extension if a format is specified
     for _ext, option in {
-        '.txt': 'text',
-        '.md': 'markdown',
-        '.html': 'html',
-        '.yml': 'yaml',
-        '.csv': 'csv',
-        '.xlsx': 'xlsx',
+        ".txt": "text",
+        ".md": "markdown",
+        ".html": "html",
+        ".yml": "yaml",
+        ".csv": "csv",
+        ".xlsx": "xlsx",
+        ".tex": "latex",
     }.items():
         try:
             if getattr(args, option):
@@ -229,7 +225,7 @@ def ask(question, default=None):
 
     """
     valid = {"yes": True, "y": True, "no": False, "n": False}
-    prompts = {'yes': " [Y/n] ", 'no': " [y/N] ", None: " [y/n] "}
+    prompts = {"yes": " [Y/n] ", "no": " [y/N] ", None: " [y/n] "}
 
     prompt = prompts.get(default, prompts[None])
     message = question + prompt
@@ -243,7 +239,7 @@ def ask(question, default=None):
         try:
             return valid[choice]
         except KeyError:
-            options = ', '.join(sorted(valid.keys()))
+            options = ", ".join(sorted(valid.keys()))
             print("valid responses: {}".format(options))
 
 
