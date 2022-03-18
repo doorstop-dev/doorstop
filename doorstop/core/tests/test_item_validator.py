@@ -300,26 +300,26 @@ class TestItemValidator(unittest.TestCase):
 
         self.assertTrue(self.item_validator.validate(self.item))
 
-    @patch('doorstop.settings.CHECK_CHILD_LINKS_STRICT', True)
+    @patch("doorstop.settings.CHECK_CHILD_LINKS_STRICT", True)
     def test_validate_strict_child_links(self):
         """Verify root items are linked to from all child documents"""
         root_doc = MockSimpleDocument()
         root_doc.prefix = "ROOT"
 
         child_doc_a = MockSimpleDocument()
-        child_doc_a.prefix = 'CHILD_A'
+        child_doc_a.prefix = "CHILD_A"
         child_doc_a.parent = root_doc.prefix
 
         child_doc_b = MockSimpleDocument()
-        child_doc_b.prefix = 'CHILD_B'
+        child_doc_b.prefix = "CHILD_B"
         child_doc_b.parent = root_doc.prefix
 
         root_doc.children = [child_doc_a.prefix, child_doc_b.prefix]
 
-        root_item_a = MockItem(root_doc, 'ROOT001.yml')
-        root_item_b = MockItem(root_doc, 'ROOT002.yml')
-        child_item_a = MockItem(child_doc_a, 'CHILD_A001.yml')
-        child_item_b = MockItem(child_doc_b, 'CHILD_B001.yml')
+        root_item_a = MockItem(root_doc, "ROOT001.yml")
+        root_item_b = MockItem(root_doc, "ROOT002.yml")
+        child_item_a = MockItem(child_doc_a, "CHILD_A001.yml")
+        child_item_b = MockItem(child_doc_b, "CHILD_B001.yml")
 
         all_items = [root_item_a, root_item_b, child_item_a, child_item_b]
 
@@ -356,11 +356,11 @@ class TestItemValidator(unittest.TestCase):
         self.item_validator = MockItemValidator()
         issues = list(self.item_validator.get_issues(root_item_a))
         self.assertEqual(len(issues), 1)
-        self.assertIn('no links from document: CHILD_B', "{}".format(issues))
+        self.assertIn("no links from document: CHILD_B", "{}".format(issues))
 
         issues = list(self.item_validator.get_issues(root_item_b))
         self.assertEqual(len(issues), 1)
-        self.assertIn('no links from document: CHILD_A', "{}".format(issues))
+        self.assertIn("no links from document: CHILD_A", "{}".format(issues))
 
         # Now make sure that every item in the root is
         # linked to by an item from every child document
