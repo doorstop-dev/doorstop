@@ -198,7 +198,13 @@ class ItemValidator:
 
         # Verify an item is being linked to (child links)
         if settings.CHECK_CHILD_LINKS and item.normative:
-            find_all = settings.CHECK_CHILD_LINKS_STRICT or False
+
+            mapped_document_prefixes = document.attribute("mapped_to")
+            if not mapped_document_prefixes:
+                mapped_document_prefixes = []
+
+            find_all = settings.CHECK_CHILD_LINKS_STRICT or mapped_document_prefixes
+
             items, documents = item.find_child_items_and_documents(
                 document=document, tree=tree, find_all=find_all
             )
@@ -209,13 +215,64 @@ class ItemValidator:
                         msg = "skipping issues against document %s..."
                         log.debug(msg, child_document)
                         continue
-                    msg = "no links from child document: {}".format(child_document)
+
+                    if child_document.prefix in mapped_document_prefixes:
+                        msg = "no links at all, missing mapped document: {}".format(
+                            child_document
+                        )
+                    else:
+                        msg = "no links at all, missing child document: {}".format(
+                            child_document
+                        )
                     yield DoorstopWarning(msg)
-            elif settings.CHECK_CHILD_LINKS_STRICT:
+
+            # here items are found but no strict checking is enabled
+            # only check "mapped_to" as mandatory links
+            else:
                 prefix = [item.document.prefix for item in items]
-                for child in document.children:
+
+                found = False
+                not_found_list = []
+
+                # check if at least on of the normal children exist
+                for child_document in documents:
+                    if child_document.prefix in skip:
+                        msg = "skipping issues against document %s..."
+                        log.debug(msg, child_document)
+                        continue
+
+                    # handle mapped documents later
+                    if child_document.prefix in mapped_document_prefixes:
+                        continue
+
+                    if child_document.prefix in prefix:
+                        # found at least one link from child document
+                        found = True
+                    else:
+                        not_found_list.append(child_document.prefix)
+
+                # not found anything but not strict: accept a link from any child document
+                if not found and not settings.CHECK_CHILD_LINKS_STRICT:
+                    for d in not_found_list:
+                        msg = "links found, missing at lest one document: {}".format(d)
+                        yield DoorstopWarning(msg)
+
+                if settings.CHECK_CHILD_LINKS_STRICT:
+                    # if strict check: report any document with no child links
+                    for d in not_found_list:
+                        msg = "no links from document: {}".format(d)
+                        yield DoorstopWarning(msg)
+
+                # handle mapped documents: they are treated like "strict"
+                for child in mapped_document_prefixes:
+                    if child in skip:
+                        msg = "skipping issues against mapped document %s..."
+                        log.debug(msg, child)
+                        continue
+
                     if child in skip:
                         continue
+
                     if child not in prefix:
-                        msg = "no links from document: {}".format(child)
+                        msg = "no links from mapped document: {}".format(child)
                         yield DoorstopWarning(msg)
