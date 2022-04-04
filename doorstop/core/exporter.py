@@ -53,7 +53,7 @@ def export(obj, path, ext=None, **kwargs):
         log.info("exporting to {}...".format(path2))
         if ext in FORMAT_LINES:
             lines = export_lines(obj2, ext, **kwargs)
-            common.write_lines(lines, path2)
+            common.write_lines(lines, path2, end=settings.WRITE_LINESEPERATOR)
         else:
             export_file(obj2, path2, ext, **kwargs)
 
