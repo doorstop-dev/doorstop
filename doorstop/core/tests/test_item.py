@@ -9,7 +9,7 @@ import unittest
 from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
-from doorstop import common
+from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
 from doorstop.core.tests import (
@@ -1054,6 +1054,13 @@ class TestUnknownItem(unittest.TestCase):
 
 class TestUTF8(unittest.TestCase):
     """Unit tests for reading UTF8 formatted files."""
+
+    def setUp(self):
+        """ This test suite uses `item.save()` which is based on os dependent settings.
+            In order to make golden sample tests work here, one harmonized line ending mus
+            be configured.
+        """
+        settings.WRITE_LINESEPERATOR = "\n"
 
     def test_load_cyrillic(self):
         """Verify that cyrillic and other UTF-8 characters are correltly loaded and written."""
