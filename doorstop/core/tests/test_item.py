@@ -1056,9 +1056,9 @@ class TestUTF8(unittest.TestCase):
     """Unit tests for reading UTF8 formatted files."""
 
     def setUp(self):
-        """ This test suite uses `item.save()` which is based on os dependent settings.
-            In order to make golden sample tests work here, one harmonized line ending mus
-            be configured.
+        """This test suite uses `item.save()` which is based on os dependent settings.
+        In order to make golden sample tests work here, one harmonized line ending mus
+        be configured.
         """
         settings.WRITE_LINESEPERATOR = "\n"
 
