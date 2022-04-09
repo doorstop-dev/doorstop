@@ -223,9 +223,9 @@ def publish(
 
     if ext == ".tex":
         common.write_lines(
-            compile_files, 
-            compile_path, 
-            end=settings.WRITE_LINESEPERATOR, 
+            compile_files,
+            compile_path,
+            end=settings.WRITE_LINESEPERATOR,
             executable=True,
         )
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
