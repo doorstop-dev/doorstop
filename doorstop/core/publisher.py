@@ -222,7 +222,12 @@ def publish(
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
     if ext == ".tex":
-        common.write_lines(compile_files, compile_path, end=settings.WRITE_LINESEPERATOR, executable=True)
+        common.write_lines(
+            compile_files, 
+            compile_path, 
+            end=settings.WRITE_LINESEPERATOR, 
+            executable=True,
+        )
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
