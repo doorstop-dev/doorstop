@@ -1085,3 +1085,27 @@ class TestUTF8(unittest.TestCase):
         self.maxDiff = None
         common.write_text(backup, ITEM)
         self.assertEqual(backup, text)
+
+
+class TestOSLineSep(unittest.TestCase):
+    """Unit tests os dependent line end handling."""
+
+    def setUp(self):
+        settings.WRITE_LINESEPERATOR = os.linesep
+
+    def test_write_os_dependend_line_seperator(self):
+        """Verify an item file is correctly loaded and written with appropriate line endings."""
+        if os.name == "nt":
+            ITEM = "doorstop/core/tests/test_fixtures/002-utf8-characters/REQ-CYRILLIC_crlf.yml"
+        else:
+            ITEM = (
+                "doorstop/core/tests/test_fixtures/002-utf8-characters/REQ-CYRILLIC.yml"
+            )
+        backup = common.read_text(ITEM)
+        item = Item(None, ITEM)
+        item.load()
+        item.save()
+        text = common.read_text(ITEM)
+        self.maxDiff = None
+        common.write_text(backup, ITEM)
+        self.assertEqual(backup, text)
