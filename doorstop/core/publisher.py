@@ -210,19 +210,24 @@ def publish(
                     wrapper.append("\\section*{Traceability}")
                 wrapper.append("\\input{traceability.tex}")
             wrapper.append("\\end{document}")
-            common.write_lines(wrapper, path3)
+            common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
         lines = publish_lines(
             obj2, ext, linkify=linkify, template=template, toc=toc, **kwargs
         )
-        common.write_lines(lines, path2)
+        common.write_lines(lines, path2, end=settings.WRITE_LINESEPERATOR)
         if obj2.copy_assets(assets_dir):
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
     if ext == ".tex":
-        common.write_lines(compile_files, compile_path, executable=True)
+        common.write_lines(
+            compile_files,
+            compile_path,
+            end=settings.WRITE_LINESEPERATOR,
+            executable=True,
+        )
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
@@ -266,7 +271,7 @@ def _index(directory, index=INDEX, extensions=(".html",), tree=None):
         path = os.path.join(directory, index)
         log.info("creating an {}...".format(index))
         lines = _lines_index(sorted(filenames), tree=tree)
-        common.write_lines(lines, path)
+        common.write_lines(lines, path, end=settings.WRITE_LINESEPERATOR)
     else:
         log.warning("no files for {}".format(index))
 

@@ -429,7 +429,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             assert self.path
             path = os.path.join(self.path, Document.INDEX)
             log.info("creating {} index...".format(self))
-            common.write_lines(self._lines_index(self.items), path)
+            common.write_lines(
+                self._lines_index(self.items), path, end=settings.WRITE_LINESEPERATOR
+            )
 
     @index.deleter
     def index(self):

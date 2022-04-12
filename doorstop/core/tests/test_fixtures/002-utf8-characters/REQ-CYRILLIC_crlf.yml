@@ -1,0 +1,16 @@
+active: true
+derived: false
+header: |
+  UTF-8
+level: 1.7.0
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  UTF-8 is supported. Verified by this file.
+
+  première is first
+  première is slightly different
+  Кириллица is Cyrillic
+  𐐀 am Deseret
