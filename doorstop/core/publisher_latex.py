@@ -28,6 +28,8 @@ def _lines_latex(obj, **kwargs):
 
         if item.heading:
             text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h}{t}{he}".format(
@@ -556,4 +558,4 @@ def _matrix_latex(table, path):
         traceability.append("\\hline")
     # End the table.
     traceability.append("\\end{longtable}")
-    common.write_lines(traceability, file)
+    common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)

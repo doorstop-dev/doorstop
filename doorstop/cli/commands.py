@@ -127,6 +127,7 @@ def run_create(args, cwd, _, catch=True):
             parent=args.parent,
             digits=args.digits,
             sep=args.separator,
+            itemformat=args.itemformat,
         )
 
     if not success:

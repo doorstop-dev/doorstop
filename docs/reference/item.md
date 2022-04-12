@@ -10,7 +10,24 @@ default, the number is automatically assigned by Doorstop. Optionally, a user
 can specify a name for the UID during item creation. The name must not contain
 separator characters.
 
-Example item:
+Items can be stored in different formats. Two types are currently supported and
+can be configured via [itemformat](document.md#itemformat) in the
+`.doorstop.yml` configuration file:
+
+The default `yaml` format stores the requirement items completely as yaml.
+Advantage is the standardized and easily parsable format in case the files
+need to be processed furher. The disadvantage is that there is little editor
+support when writing longer requirement texts, as the text need to adhere to the
+yaml formatting rules (e.g. indentation).
+
+The alternative `markdown` format stores requirement items as markdown text with
+yaml frontmatter. This concept is used by many other tools as well (e.g. 
+[jekyll](https://jekyllrb.com/docs/front-matter/)). With this format, the
+`header` attribute is automatically derived from the first *level 1* header 
+line within the text, the remaining content of the markdown text section 
+is used as `text` attribute.
+
+Example item in `yaml` format: `REQ_000.yml`
 
 ```yaml
 active: true
@@ -26,6 +43,32 @@ text: |
   Doorstop **shall** provide unique and permanent identifiers to linkable
   sections of text.
 ```
+
+The equivalent item in `markdown` format: `REQ_000.md`
+
+```text
+---
+active: true
+derived: false
+level: 2.1
+links: []
+normative: true
+ref: ''
+reviewed: 9TcFUzsQWUHhoh5wsqnhL7VRtSqMaIhrCXg7mfIkxKM=
+---
+
+# Identifiers
+
+Doorstop **shall** provide unique and permanent identifiers to linkable 
+sections of text.
+```
+
+Regarding the documentation below both formats are equivalent, besides the
+specific `header` and `text` handling as shown above. The decision can be based
+on whether the better text editing support of the `markdown` format or the
+consistent yaml structure is more important. The formats can also be freely 
+mixed within a [document tree](tree.md), the decision can be made and configured
+per document.
 
 # Standard Item Attributes
 
@@ -398,7 +441,7 @@ reviewed attributes to the document configuration does not change the
 fingerprint of existing items of the document, if they do not have them,
 otherwise the fingerprint changes.  Removing a reviewed attribute from the
 document configuration changes the fingerprint of all items of the document
-with such an attribute.  The type of the values, empty strings, lists, and
+with such an attribute. The type of the values, empty strings, lists, and
 dictionaries affect the fingerprint.
 
 ## Publishing extended attributes

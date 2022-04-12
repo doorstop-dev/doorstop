@@ -210,19 +210,24 @@ def publish(
                     wrapper.append("\\section*{Traceability}")
                 wrapper.append("\\input{traceability.tex}")
             wrapper.append("\\end{document}")
-            common.write_lines(wrapper, path3)
+            common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
         lines = publish_lines(
             obj2, ext, linkify=linkify, template=template, toc=toc, **kwargs
         )
-        common.write_lines(lines, path2)
+        common.write_lines(lines, path2, end=settings.WRITE_LINESEPERATOR)
         if obj2.copy_assets(assets_dir):
             log.info("Copied assets from %s to %s", obj.assets, assets_dir)
 
     if ext == ".tex":
-        common.write_lines(compile_files, compile_path, executable=True)
+        common.write_lines(
+            compile_files,
+            compile_path,
+            end=settings.WRITE_LINESEPERATOR,
+            executable=True,
+        )
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
@@ -266,7 +271,7 @@ def _index(directory, index=INDEX, extensions=(".html",), tree=None):
         path = os.path.join(directory, index)
         log.info("creating an {}...".format(index))
         lines = _lines_index(sorted(filenames), tree=tree)
-        common.write_lines(lines, path)
+        common.write_lines(lines, path, end=settings.WRITE_LINESEPERATOR)
     else:
         log.warning("no files for {}".format(index))
 
@@ -432,12 +437,15 @@ def _lines_text(obj, indent=8, width=79, **_):
         level = _format_level(item.level)
 
         if item.heading:
-
+            text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
+            text = os.linesep.join(text_lines)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=item.text)
+                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=text)
             else:
-                yield "{t}".format(t=item.text)
+                yield "{t}".format(t=text)
 
         else:
 
@@ -521,6 +529,8 @@ def _lines_markdown(obj, **kwargs):
 
         if item.heading:
             text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h} {lev} {t}".format(
@@ -749,7 +759,10 @@ def _table_of_contents_md(obj, linkify=None):
 
         if item.heading:
             lines = item.text.splitlines()
-            heading = lines[0] if lines else ""
+            if item.header:
+                heading = item.header
+            else:
+                heading = lines[0] if lines else ""
         elif item.header:
             heading = "{h}".format(h=item.header)
         else:

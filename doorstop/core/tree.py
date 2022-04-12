@@ -197,7 +197,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # decorators are applied to methods in the associated classes
     def create_document(
-        self, path, value, sep=None, digits=None, parent=None
+        self, path, value, sep=None, digits=None, parent=None, itemformat=None
     ):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -206,6 +206,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param sep: separator between prefix and numbers
         :param digits: number of digits for the document's numbers
         :param parent: parent document's prefix
+        :param itemformat: file format for storing items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the
             document cannot be created
@@ -224,7 +225,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 )
 
         document = Document.new(
-            self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
+            self,
+            path,
+            self.root,
+            prefix,
+            sep=sep,
+            digits=digits,
+            parent=parent,
+            itemformat=itemformat,
         )
         try:
             self._place(document)
