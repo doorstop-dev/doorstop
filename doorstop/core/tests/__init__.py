@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import List
+from typing import Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
@@ -95,12 +95,19 @@ class MockSimpleDocument:
         self.prefix = "RQ"
         self._items: List[Item] = []
         self.extended_reviewed: List[str] = []
+        self._data: Dict[str, str] = {}
 
     def __iter__(self):
         yield from self._items
 
     def set_items(self, items):
         self._items = items
+
+    def set_data(self, data):
+        self._data = data
+
+    def attribute(self, name):
+        return self._data.get(name)
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902

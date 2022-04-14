@@ -159,8 +159,8 @@ class TestDocument(unittest.TestCase):
     def test_load_unknown(self):
         """Verify loading a document config with an unknown key fails."""
         self.document._file = YAML_UNKNOWN
-        msg = "^unexpected document setting 'John' in: .*\\.doorstop.yml$"
-        self.assertRaisesRegex(DoorstopError, msg, self.document.load)
+        self.document.load()
+        self.assertEqual("Doe", self.document.attribute("John"))
 
     def test_load_unknown_attributes(self):
         """Verify loading a document config with unknown attributes fails."""

@@ -728,10 +728,18 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         tree = tree or self.tree
         if not document or not tree:
             return child_items, child_documents
+
+        # get list of mapped documents
+        mapped_document_prefixes = document.attribute("mapped_to") if document else []
+        if not mapped_document_prefixes:
+            mapped_document_prefixes = []
+
         # Find child objects
         log.debug("finding item {}'s child objects...".format(self))
         for document2 in tree:
-            if document2.parent == document.prefix:
+            if (document2.parent == document.prefix) or (
+                document2.prefix in mapped_document_prefixes
+            ):
                 child_documents.append(document2)
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:

@@ -627,9 +627,16 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
     def _draw_lines(self, encoding, html_links=False):
         """Generate lines of the tree structure."""
         # Build parent prefix string (`getattr` to enable mock testing)
-        prefix = getattr(self.document, "prefix", "") or str(self.document)
+        prefix_link = prefix = getattr(self.document, "prefix", "") or str(
+            self.document
+        )
+
+        attribute_fn = getattr(self.document, "attribute", None)
+        mapped = attribute_fn("mapped_to") if callable(attribute_fn) else None
+
+        prefix += " (" + ",".join(mapped) + ")" if mapped else ""
         if html_links:
-            prefix = '<a href="documents/{0}">{0}</a>'.format(prefix)
+            prefix = '<a href="documents/{0}">{1}</a>'.format(prefix_link, prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):

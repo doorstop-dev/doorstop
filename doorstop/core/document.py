@@ -186,11 +186,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     self._data[key] = value.strip()
                 elif key == "digits":
                     self._data[key] = int(value)  # type: ignore
+                elif key == "mapped_to":
+                    self._data[key] = value.strip()
                 else:
-                    msg = "unexpected document setting '{}' in: {}".format(
-                        key, self.config
+                    log.debug(
+                        "custom document attribute found:  {} = {}".format(key, value)
                     )
-                    raise DoorstopError(msg)
+                    # custom attribute
+                    self._data[key] = value
             except (AttributeError, TypeError, ValueError):
                 msg = "invalid value for '{}' in: {}".format(key, self.config)
                 raise DoorstopError(msg)
@@ -438,6 +441,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Delete the document's index if it exists."""
         log.info("deleting {} index...".format(self))
         common.delete(self.index)
+
+    def attribute(self, attrib):
+        """Get the item's custom attribute."""
+        return self._data.get(attrib)
 
     # actions ################################################################
 
