@@ -6,7 +6,6 @@
 """Graphical interface for Doorstop."""
 
 import argparse
-import functools
 import logging
 import os
 import sys
@@ -153,23 +152,6 @@ def run(args, cwd, error):
         app.mainloop()
 
         return True
-
-
-def _log(func):
-    """Log name and arguments."""
-
-    @functools.wraps(func)
-    def wrapped(self, *args, **kwargs):
-        sargs = "{}, {}".format(
-            ", ".join(repr(a) for a in args),
-            ", ".join("{}={}".format(k, repr(v)) for k, v in kwargs.items()),
-        )
-        msg = "log: {}: {}".format(func.__name__, sargs.strip(", "))
-        if not isinstance(self, ttk.Frame) or not self.ignore:
-            log.debug(msg.strip())
-        return func(self, *args, **kwargs)
-
-    return wrapped
 
 
 if __name__ == "__main__":
