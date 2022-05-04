@@ -277,6 +277,7 @@ def _typeset_latex_image(image_match, line, block):
     line = r"\end{figure}"
     return line
 
+
 def _fix_table_line(line, end_pipes):
     """Fix table by adding & for column breaking, \\ for row breaking and
     fixing pipes for tables with outside borders."""
@@ -288,33 +289,44 @@ def _fix_table_line(line, end_pipes):
         line = line + "\\\\"
     return line
 
+
+def _test_for_new_table(
+    table_match, text, i, line, block, table_found, header_done, end_pipes
+):
+    """Check if a new table is beginning or not. If new table is detected, write
+    table header and mark as found."""
+    # Check next line for minimum 3 dashes and the same count of |.
+    if i < len(text) - 1:
+        next_line = text[i + 1]
+        table_match_next = re.findall("\\|", next_line)
+        if table_match_next:
+            if len(table_match) == len(table_match_next):
+                table_match_dashes = re.findall("-{3,}", next_line)
+                if table_match_dashes:
+                    table_found = True
+                    end_pipes = bool(len(table_match) > len(table_match_dashes))
+                    next_line = re.sub(":-+:", "c", next_line)
+                    next_line = re.sub("-+:", "r", next_line)
+                    next_line = re.sub("-+", "l", next_line)
+                    table_header = "\\begin{longtable}{" + next_line + "}"
+                    block.append(table_header)
+                    # Fix the header.
+                    line = _fix_table_line(line, end_pipes)
+                else:
+                    log.warning("Possibly incorrectly specified table found.")
+            else:
+                log.warning("Possibly unbalanced table found.")
+    return table_found, header_done, line, end_pipes
+
+
 def _typeset_latex_table(
     table_match, text, i, line, block, table_found, header_done, end_pipes
 ):
     """Typeset tables."""
     if not table_found:
-        # Check next line for minimum 3 dashes and the same count of |.
-        if i < len(text) - 1:
-            next_line = text[i + 1]
-            table_match_next = re.findall("\\|", next_line)
-            if table_match_next:
-                if len(table_match) == len(table_match_next):
-                    table_match_dashes = re.findall("-{3,}", next_line)
-                    if table_match_dashes:
-                        table_found = True
-                        end_pipes = bool(len(table_match) > len(table_match_dashes))
-                        next_line = re.sub(":-+:", "c", next_line)
-                        next_line = re.sub("-+:", "r", next_line)
-                        next_line = re.sub("-+", "l", next_line)
-                        table_header = "\\begin{longtable}{" + next_line + "}"
-                        block.append(table_header)
-                        # Fix the header.
-                        line = _fix_table_line(line, end_pipes)
-                    else:
-                        log.warning("Possibly incorrectly specified table found.")
-                else:
-                    log.warning("Possibly unbalanced table found.")
-
+        table_found, header_done, line, end_pipes = _test_for_new_table(
+            table_match, text, i, line, block, table_found, header_done, end_pipes
+        )
     else:
         if not header_done:
             line = HLINE
