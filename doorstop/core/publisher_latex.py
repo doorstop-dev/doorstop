@@ -279,8 +279,11 @@ def _typeset_latex_image(image_match, line, block):
 
 
 def _fix_table_line(line, end_pipes):
-    """Fix table by adding & for column breaking, \\ for row breaking and
-    fixing pipes for tables with outside borders."""
+    r"""Fix table line.
+
+    Fix each line typeset for tables by adding & for column breaking, \\ for row
+    breaking and fixing pipes for tables with outside borders.
+    """
     line = re.sub("\\|", "&", line)
     if end_pipes:
         line = re.sub("^\\s*&", "", line)
@@ -290,11 +293,14 @@ def _fix_table_line(line, end_pipes):
     return line
 
 
-def _test_for_new_table(
+def _check_for_new_table(
     table_match, text, i, line, block, table_found, header_done, end_pipes
 ):
-    """Check if a new table is beginning or not. If new table is detected, write
-    table header and mark as found."""
+    """Check for new table.
+
+    Check if a new table is beginning or not. If new table is detected, write
+    table header and mark as found.
+    """
     # Check next line for minimum 3 dashes and the same count of |.
     if i < len(text) - 1:
         next_line = text[i + 1]
@@ -324,7 +330,7 @@ def _typeset_latex_table(
 ):
     """Typeset tables."""
     if not table_found:
-        table_found, header_done, line, end_pipes = _test_for_new_table(
+        table_found, header_done, line, end_pipes = _check_for_new_table(
             table_match, text, i, line, block, table_found, header_done, end_pipes
         )
     else:
