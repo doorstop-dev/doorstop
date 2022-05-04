@@ -277,6 +277,16 @@ def _typeset_latex_image(image_match, line, block):
     line = r"\end{figure}"
     return line
 
+def _fix_table_line(line, end_pipes):
+    """Fix table by adding & for column breaking, \\ for row breaking and
+    fixing pipes for tables with outside borders."""
+    line = re.sub("\\|", "&", line)
+    if end_pipes:
+        line = re.sub("^\\s*&", "", line)
+        line = re.sub("&\\s*$", "\\\\\\\\", line)
+    else:
+        line = line + "\\\\"
+    return line
 
 def _typeset_latex_table(
     table_match, text, i, line, block, table_found, header_done, end_pipes
@@ -299,12 +309,7 @@ def _typeset_latex_table(
                         table_header = "\\begin{longtable}{" + next_line + "}"
                         block.append(table_header)
                         # Fix the header.
-                        line = re.sub("\\|", "&", line)
-                        if end_pipes:
-                            line = re.sub("^\\s*&", "", line)
-                            line = re.sub("&\\s*$", "\\\\\\\\", line)
-                        else:
-                            line = line + "\\\\"
+                        line = _fix_table_line(line, end_pipes)
                     else:
                         log.warning("Possibly incorrectly specified table found.")
                 else:
@@ -316,12 +321,7 @@ def _typeset_latex_table(
             header_done = True
         else:
             # Fix the line.
-            line = re.sub("\\|", "&", line)
-            if end_pipes:
-                line = re.sub("^\\s*&", "", line)
-                line = re.sub("&\\s*$", "\\\\\\\\", line)
-            else:
-                line = line + "\\\\"
+            line = _fix_table_line(line, end_pipes)
     return table_found, header_done, line, end_pipes
 
 
