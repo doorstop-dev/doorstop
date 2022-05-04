@@ -3,33 +3,15 @@
 
 """Unit tests for the doorstop.core.validators.item_validator module."""
 
-import logging
 import os
 import unittest
-from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import core
 from doorstop.common import DoorstopError
 from doorstop.core.tests import MockItem, MockItemValidator, MockSimpleDocument
+from doorstop.core.tests.helpers import ListLogHandler
 from doorstop.core.types import Stamp
-
-
-class ListLogHandler(logging.NullHandler):
-    def __init__(self, log):
-        super().__init__()
-        self.records: List[str] = []
-        self.log = log
-
-    def __enter__(self):
-        self.log.addHandler(self)
-        return self
-
-    def __exit__(self, kind, value, traceback):
-        self.log.removeHandler(self)
-
-    def handle(self, record):
-        self.records.append(str(record.msg))
 
 
 class TestItemValidator(unittest.TestCase):
