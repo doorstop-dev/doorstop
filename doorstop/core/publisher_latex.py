@@ -395,7 +395,7 @@ def _format_latex_text(text):
         #############################
         ## Fix enumeration.
         #############################
-        enumeration_match = re.findall("^[0-9]+\\.\\s(.*)", line)
+        enumeration_match = re.findall(r"^\d+\\.\\s(.*)", line)
         if enumeration_match and not enumeration_found:
             block.append("\\begin{enumerate}")
             enumeration_found = True
@@ -403,7 +403,7 @@ def _format_latex_text(text):
             no_paragraph = True
             if enumeration_match:
                 # Replace the number.
-                line = re.sub("^[0-9]+\\.\\s", "\\\\item ", line)
+                line = re.sub(r"^\d+\\.\\s", "\\\\item ", line)
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
                     next_line = text[i + 1]
