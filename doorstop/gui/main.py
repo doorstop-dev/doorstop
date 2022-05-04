@@ -108,11 +108,11 @@ def run(args, cwd, error):
 
         from sys import platform as _platform
 
-        # Load the icon
-        if _platform in ("linux", "linux2"):
-            # Linux
-            from doorstop.gui import resources
+        from doorstop.gui import resources
 
+        # Load the icon
+        if _platform in ("linux", "linux2", "darwin"):
+            # Linux
             root.tk.call(
                 # pylint: disable=protected-access
                 "wm",
@@ -120,15 +120,10 @@ def run(args, cwd, error):
                 root._w,
                 tk.PhotoImage(data=resources.b64_doorstopicon_png),
             )
-        elif _platform == "darwin":
-            # macOS
-            pass  # TODO
         elif _platform in ("win32", "win64"):
             # Windows
             import base64
             import tempfile
-
-            from doorstop.gui import resources
 
             try:
                 with tempfile.TemporaryFile(
