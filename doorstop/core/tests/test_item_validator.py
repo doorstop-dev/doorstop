@@ -110,8 +110,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' HAS been changed, i.e., does NOT exist!
+        self.assertNotIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above
@@ -130,8 +134,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' has NOT been changed, i.e., DOES exist!
+        self.assertIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above
