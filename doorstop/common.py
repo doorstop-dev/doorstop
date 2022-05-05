@@ -160,7 +160,7 @@ def write_lines(lines, path, end="\n", encoding="utf-8", *, executable=False):
             data = (line + end).encode(encoding)
             stream.write(data)
     if executable and os.path.isfile(path):
-        os.chmod(path, 0o664)
+        os.chmod(path, 0o775)
     return path
 
 
