@@ -352,6 +352,8 @@ def _format_latex_text(text):
     code_found = False
     math_found = False
     plantuml_found = False
+    plantuml_file = ""
+    plantuml_name = ""
     enumeration_found = False
     itemize_found = False
     end_pipes = False
