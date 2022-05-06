@@ -80,16 +80,12 @@ def publish(
 
     if is_tree(obj):
         assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
+        output_dir = path
     else:
         assets_dir = os.path.join(
             os.path.dirname(path), Document.ASSETS
         )  # path is a filename
-
-    if os.path.isdir(assets_dir):
-        log.info("Deleting contents of assets directory %s", assets_dir)
-        common.delete_contents(assets_dir)
-    else:
-        os.makedirs(assets_dir)
+        output_dir = os.path.dirname(path)
 
     # If publish html and then markdown ensure that the html template are still available
     if not template:
@@ -98,6 +94,20 @@ def publish(
     if os.path.isdir(template_assets):
         if ext == ".tex":
             template_assets = template_assets + "/latex"
+        elif ext == ".md":
+            template_assets = template_assets + "/markdown"
+        elif ext == ".txt":
+            template_assets = template_assets + "/text"
+        else:
+            template_assets = template_assets + "/html"
+        # Remove existing assets first.
+        if os.path.isdir(assets_dir):
+            log.info("Deleting contents of assets directory %s", assets_dir)
+            common.delete_contents(assets_dir)
+        elif os.path.isdir(template_assets): # Create if assets actually exists.
+            os.makedirs(assets_dir)
+        else: # Create the output path only.
+            os.makedirs(output_dir)
         log.info("Copying %s to %s", template_assets, assets_dir)
         common.copy_dir_contents(template_assets, assets_dir)
 
