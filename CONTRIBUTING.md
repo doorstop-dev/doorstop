@@ -49,6 +49,17 @@ Build the documentation:
 $ make docs
 ```
 
+Local install for external testing:
+
+```sh
+$ make dev-install
+```
+
+Clean everything:
+```sh
+$ make clean
+```
+
 ## Automatic
 
 Keep all of the above tasks running on change:
