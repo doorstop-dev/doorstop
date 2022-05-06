@@ -113,7 +113,11 @@ def publish(
         common.copy_dir_contents(template_assets, assets_dir)
     else:
         # No template assets exist.
-        if not os.path.isdir(output_dir):
+        # Remove existing assets first.
+        if os.path.isdir(assets_dir):
+            log.info("Deleting contents of assets directory %s", assets_dir)
+            common.delete_contents(assets_dir)
+        elif not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
     # Publish documents
