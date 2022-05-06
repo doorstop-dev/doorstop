@@ -224,7 +224,7 @@ upload: dist ## Upload the current version to PyPI
 # CLEANUP #####################################################################
 
 .PHONY: clean
-clean: .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
+clean: .clean-dev-install .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
 
 .PHONY: clean-all
 clean-all: clean
@@ -234,6 +234,10 @@ clean-all: clean
 .clean-install:
 	find $(PACKAGES) -name '__pycache__' | xargs rm -rf
 	rm -rf *.egg-info
+
+.PHONY: .clean-dev-install
+.clean-dev-install:
+	pip uninstall --yes dist/doorstop*.whl
 
 .PHONY: .clean-test
 .clean-test:
