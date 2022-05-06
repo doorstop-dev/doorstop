@@ -106,11 +106,15 @@ def publish(
             common.delete_contents(assets_dir)
         elif os.path.isdir(template_assets):  # Create if assets actually exists.
             os.makedirs(assets_dir)
-        elif output_dir:  # Create the output path only.
+        else:  # Create the output path only.
             if not os.path.isdir(output_dir):
                 os.makedirs(output_dir)
         log.info("Copying %s to %s", template_assets, assets_dir)
         common.copy_dir_contents(template_assets, assets_dir)
+    else:
+        # No template assets exist.
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir)
 
     # Publish documents
     count = 0
