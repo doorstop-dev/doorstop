@@ -120,13 +120,13 @@ def publish(
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
-            log.trace("Generating compile script for LaTeX from %s", path2)
+            log.debug("Generating compile script for LaTeX from %s", path2)
             head, tail = os.path.split(path2)
             tail = "compile.sh"
             compile_path = os.path.join(head, tail)
             # Check for defined document attributes.
             document_name = "doc-" + obj2.prefix
-            log.trace("Document name is '%s'", document_name)
+            log.debug("Document name is '%s'", document_name)
             document_title = "Test document for development of \\textit{Doorstop}"
             document_ref = ""
             document_by = ""
