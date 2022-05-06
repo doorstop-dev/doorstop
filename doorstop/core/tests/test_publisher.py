@@ -112,7 +112,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        mock_makedirs.assert_called_once_with(dirpath)
         mock_copyassets.assert_called_once_with(assets_path)
 
     def test_publish_document_unknown(self):
