@@ -3,10 +3,8 @@
 
 """Unit tests for the doorstop.core.item module."""
 
-import logging
 import os
 import unittest
-from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import common, settings
@@ -84,23 +82,6 @@ ref: ''
 reviewed: null
 text: ''
 """.lstrip()
-
-
-class ListLogHandler(logging.NullHandler):
-    def __init__(self, log):
-        super().__init__()
-        self.records: List[str] = []
-        self.log = log
-
-    def __enter__(self):
-        self.log.addHandler(self)
-        return self
-
-    def __exit__(self, kind, value, traceback):
-        self.log.removeHandler(self)
-
-    def handle(self, record):
-        self.records.append(str(record.msg))
 
 
 class TestItem(unittest.TestCase):
@@ -1019,7 +1000,7 @@ class TestUnknownItem(unittest.TestCase):
     def test_le(self):
         """Verify unknown item's UID less operator."""
         self.assertTrue(self.item < UnknownItem("RQ002"))
-        self.assertFalse(self.item < self.item)
+        # self.assertEqual(self.item, self.item)
 
     def test_relpath(self):
         """Verify an item's relative path string can be read but not set."""

@@ -4,12 +4,18 @@
 
 import os
 import re
+from typing import List
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
+
+END_ENUMERATE = "\\end{enumerate}"
+END_ITEMIZE = "\\end{itemize}"
+END_LONGTABLE = "\\end{longtable}"
+HLINE = "\\hline"
 
 
 def _lines_latex(obj, **kwargs):
@@ -24,14 +30,14 @@ def _lines_latex(obj, **kwargs):
     linkify = kwargs.get("linkify", False)
     for item in iter_items(obj):
         heading = "\\" + "sub" * (item.depth - 1) + "section*{"
-        headingLev = "\\" + "sub" * (item.depth - 1) + "section{"
+        heading_level = "\\" + "sub" * (item.depth - 1) + "section{"
 
         if item.heading:
             text_lines = item.text.splitlines()
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h}{t}{he}".format(
-                    h=headingLev, t=text_lines[0] if text_lines else "", he="}"
+                    h=heading_level, t=text_lines[0] if text_lines else "", he="}"
                 )
             else:
                 standard = "{h}{t}{he}".format(
@@ -50,7 +56,7 @@ def _lines_latex(obj, **kwargs):
 
             # Level and UID
             if settings.PUBLISH_BODY_LEVELS:
-                standard = "{h}{u}{he}".format(h=headingLev, u=uid, he="}")
+                standard = "{h}{u}{he}".format(h=heading_level, u=uid, he="}")
             else:
                 standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
@@ -104,10 +110,10 @@ def _lines_latex(obj, **kwargs):
                         header_printed = True
                         yield "\\begin{longtable}{|l|l|}"
                         yield "Attribute & Value\\\\"
-                        yield "\\hline"
+                        yield HLINE
                     yield "{} & {}".format(attr, item.attribute(attr))
                 if header_printed:
-                    yield "\\end{longtable}"
+                    yield END_LONGTABLE
                 else:
                     yield ""
 
@@ -241,60 +247,134 @@ def _latex_convert(line):
     return line
 
 
+def _typeset_latex_image(image_match, line, block):
+    """Typeset images."""
+    image_title, image_path = image_match[0]
+    # Check for title. If not found, alt_text will be used as caption.
+    title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
+    if title_match:
+        image_path, image_title = title_match[0]
+    # Make a safe label.
+    label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
+    # Make the string to replace!
+    replacement = (
+        r"\includegraphics[width=0.8\textwidth]{"
+        + image_path
+        + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
+        + r"\caption{"
+        + _latex_convert(image_title)
+        + r"}"
+    ).replace("\\", "\\\\")
+    # Replace with LaTeX format.
+    line = re.sub(
+        r"!\[(.*)\]\((.*)\)",
+        replacement,
+        line,
+    )
+    # Create the figure.
+    block.append(r"\begin{figure}[h!]\center")
+    block.append(line)
+    line = r"\end{figure}"
+    return line
+
+
+def _fix_table_line(line, end_pipes):
+    r"""Fix table line.
+
+    Fix each line typeset for tables by adding & for column breaking, \\ for row
+    breaking and fixing pipes for tables with outside borders.
+    """
+    line = re.sub("\\|", "&", line)
+    if end_pipes:
+        line = re.sub("^\\s*&", "", line)
+        line = re.sub("&\\s*$", "\\\\\\\\", line)
+    else:
+        line = line + "\\\\"
+    return line
+
+
+def _check_for_new_table(
+    table_match, text, i, line, block, table_found, header_done, end_pipes
+):
+    """Check for new table.
+
+    Check if a new table is beginning or not. If new table is detected, write
+    table header and mark as found.
+    """
+    # Check next line for minimum 3 dashes and the same count of |.
+    if i < len(text) - 1:
+        next_line = text[i + 1]
+        table_match_next = re.findall("\\|", next_line)
+        if table_match_next:
+            if len(table_match) == len(table_match_next):
+                table_match_dashes = re.findall("-{3,}", next_line)
+                if table_match_dashes:
+                    table_found = True
+                    end_pipes = bool(len(table_match) > len(table_match_dashes))
+                    next_line = re.sub(":-+:", "c", next_line)
+                    next_line = re.sub("-+:", "r", next_line)
+                    next_line = re.sub("-+", "l", next_line)
+                    table_header = "\\begin{longtable}{" + next_line + "}"
+                    block.append(table_header)
+                    # Fix the header.
+                    line = _fix_table_line(line, end_pipes)
+                else:
+                    log.warning("Possibly incorrectly specified table found.")
+            else:
+                log.warning("Possibly unbalanced table found.")
+    return table_found, header_done, line, end_pipes
+
+
+def _typeset_latex_table(
+    table_match, text, i, line, block, table_found, header_done, end_pipes
+):
+    """Typeset tables."""
+    if not table_found:
+        table_found, header_done, line, end_pipes = _check_for_new_table(
+            table_match, text, i, line, block, table_found, header_done, end_pipes
+        )
+    else:
+        if not header_done:
+            line = HLINE
+            header_done = True
+        else:
+            # Fix the line.
+            line = _fix_table_line(line, end_pipes)
+    return table_found, header_done, line, end_pipes
+
+
 def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
+    block: List[str]
     block = []
-    tableFound = False
-    headerDone = False
-    codeFound = False
-    mathFound = False
-    plantUMLFound = False
-    enumerationFound = False
-    itemizeFound = False
+    table_found = False
+    header_done = False
+    code_found = False
+    math_found = False
+    plantuml_found = False
+    plantuml_file = ""
+    plantuml_name = ""
+    enumeration_found = False
+    itemize_found = False
+    end_pipes = False
     for i, line in enumerate(text):
-        noParagraph = False
+        no_paragraph = False
         #############################
         ## Fix images.
         #############################
         image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
         if image_match:
-            image_title, image_path = image_match[0]
-            # Check for title. If not found, alt_text will be used as caption.
-            title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
-            if title_match:
-                image_path, image_title = title_match[0]
-            # Make a safe label.
-            label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
-            # Make the string to replace!
-            replacement = (
-                r"\includegraphics[width=0.8\textwidth]{"
-                + image_path
-                + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
-                + r"\caption{"
-                + _latex_convert(image_title)
-                + r"}"
-            ).replace("\\", "\\\\")
-            # Replace with LaTeX format.
-            line = re.sub(
-                r"!\[(.*)\]\((.*)\)",
-                replacement,
-                line,
-            )
-            # Create the figure.
-            block.append(r"\begin{figure}[h!]\center")
-            block.append(line)
-            line = r"\end{figure}"
-
+            line = _typeset_latex_image(image_match, line, block)
         #############################
         ## Fix $ and MATH.
         #############################
         math_match = re.split("\\$\\$", line)
         if len(math_match) > 1:
-            if mathFound and len(math_match) == 2:
-                mathFound = False
+            if math_found and len(math_match) == 2:
+                math_found = False
                 line = math_match[0] + "$" + _latex_convert(math_match[1])
             elif len(math_match) == 2:
-                mathFound = True
+                math_found = True
                 line = _latex_convert(math_match[0]) + "$" + math_match[1]
             elif len(math_match) == 3:
                 line = (
@@ -311,7 +391,7 @@ def _format_latex_text(text):
         else:
             line = _latex_convert(line)
         # Skip all other changes if in MATH!
-        if mathFound:
+        if math_found:
             line = line + "\\\\"
             block.append(line)
             continue
@@ -319,15 +399,15 @@ def _format_latex_text(text):
         ## Fix code blocks.
         #############################
         code_match = re.findall("```", line)
-        if codeFound:
-            noParagraph = True
+        if code_found:
+            no_paragraph = True
         if code_match:
-            if codeFound:
+            if code_found:
                 block.append("\\end{lstlisting}")
-                codeFound = False
+                code_found = False
             else:
                 block.append("\\begin{lstlisting}")
-                codeFound = True
+                code_found = True
             # Replace ```.
             line = re.sub("```", "", line)
         # Replace ` for inline code.
@@ -335,57 +415,57 @@ def _format_latex_text(text):
         #############################
         ## Fix enumeration.
         #############################
-        enumeration_match = re.findall("^[0-9]+\\.\\s(.*)", line)
-        if enumeration_match and not enumerationFound:
+        enumeration_match = re.findall(r"^\d+\.\s(.*)", line)
+        if enumeration_match and not enumeration_found:
             block.append("\\begin{enumerate}")
-            enumerationFound = True
-        if enumerationFound:
-            noParagraph = True
+            enumeration_found = True
+        if enumeration_found:
+            no_paragraph = True
             if enumeration_match:
                 # Replace the number.
-                line = re.sub("^[0-9]+\\.\\s", "\\\\item ", line)
+                line = re.sub(r"^\d+\.\s", "\\\\item ", line)
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    if nextLine == "":
+                    next_line = text[i + 1]
+                    if next_line == "":
                         block.append(line)
-                        line = "\\end{enumerate}"
-                        enumerationFound = False
+                        line = END_ENUMERATE
+                        enumeration_found = False
             else:
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    if nextLine == "":
+                    next_line = text[i + 1]
+                    if next_line == "":
                         block.append(line)
-                        line = "\\end{enumerate}"
-                        enumerationFound = False
+                        line = END_ENUMERATE
+                        enumeration_found = False
         #############################
         ## Fix itemize.
         #############################
         itemize_match = re.findall("^[\\*+-]\\s(.*)", line)
-        if itemize_match and not itemizeFound:
+        if itemize_match and not itemize_found:
             block.append("\\begin{itemize}")
-            itemizeFound = True
-        if itemizeFound:
-            noParagraph = True
+            itemize_found = True
+        if itemize_found:
+            no_paragraph = True
             if itemize_match:
                 # Replace the number.
                 line = re.sub("^[\\*+-]\\s", "\\\\item ", line)
                 # Look ahead - need empty line to end itemize!
                 if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    if nextLine == "":
+                    next_line = text[i + 1]
+                    if next_line == "":
                         block.append(line)
-                        line = "\\end{itemize}"
-                        itemizeFound = False
+                        line = END_ITEMIZE
+                        itemize_found = False
             else:
                 # Look ahead - need empty line to end itemize!
                 if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    if nextLine == "":
+                    next_line = text[i + 1]
+                    if next_line == "":
                         block.append(line)
-                        line = "\\end{itemize}"
-                        itemizeFound = False
+                        line = END_ITEMIZE
+                        itemize_found = False
 
         #############################
         ## Fix tables.
@@ -393,83 +473,46 @@ def _format_latex_text(text):
         # Check if line is part of table.
         table_match = re.findall("\\|", line)
         if table_match:
-            if not tableFound:
-                # Check next line for minimum 3 dashes and the same count of |.
-                if i < len(text) - 1:
-                    nextLine = text[i + 1]
-                    table_match_next = re.findall("\\|", nextLine)
-                    if table_match_next:
-                        if len(table_match) == len(table_match_next):
-                            table_match_dashes = re.findall("-{3,}", nextLine)
-                            if table_match_dashes:
-                                tableFound = True
-                                endPipes = bool(
-                                    len(table_match) > len(table_match_dashes)
-                                )
-                                nextLine = re.sub(":-+:", "c", nextLine)
-                                nextLine = re.sub("-+:", "r", nextLine)
-                                nextLine = re.sub("-+", "l", nextLine)
-                                tableHeader = "\\begin{longtable}{" + nextLine + "}"
-                                block.append(tableHeader)
-                                # Fix the header.
-                                line = re.sub("\\|", "&", line)
-                                if endPipes:
-                                    line = re.sub("^\\s*&", "", line)
-                                    line = re.sub("&\\s*$", "\\\\\\\\", line)
-                                else:
-                                    line = line + "\\\\"
-                            else:
-                                log.warning(
-                                    "Possibly incorrectly specified table found."
-                                )
-                        else:
-                            log.warning("Possibly unbalanced table found.")
-
-            else:
-                if not headerDone:
-                    line = "\\hline"
-                    headerDone = True
-                else:
-                    # Fix the line.
-                    line = re.sub("\\|", "&", line)
-                    if endPipes:
-                        line = re.sub("^\\s*&", "", line)
-                        line = re.sub("&\\s*$", "\\\\\\\\", line)
-                    else:
-                        line = line + "\\\\"
+            table_found, header_done, line, end_pipes = _typeset_latex_table(
+                table_match, text, i, line, block, table_found, header_done, end_pipes
+            )
         else:
-            if tableFound:
-                block.append("\\end{longtable}")
-            tableFound = False
-            headerDone = False
+            if table_found:
+                block.append(END_LONGTABLE)
+            table_found = False
+            header_done = False
         #############################
         ## Fix plantuml.
         #############################
-        if plantUMLFound:
-            noParagraph = True
+        if plantuml_found:
+            no_paragraph = True
         if re.findall("^plantuml\\s", line):
-            plantUML_title = re.search('title="(.*)"', line)
-            if plantUML_title:
-                plantUMLName = plantUML_title.groups(0)[0]
+            plantuml_title = re.search('title="(.*)"', line)
+            if plantuml_title:
+                plantuml_name = plantuml_title.groups(0)[0]
             else:
                 raise DoorstopError(
                     "'title' is required for plantUML processing in LaTeX."
                 )
-            plantUMLFile = re.sub("\\s", "-", plantUMLName)
-            line = "\\begin{plantuml}{" + plantUMLFile + "}"
-            plantUMLFound = True
+            plantuml_file = re.sub("\\s", "-", plantuml_name)
+            line = "\\begin{plantuml}{" + plantuml_file + "}"
+            plantuml_found = True
         if re.findall("@enduml", line):
             block.append(line)
             block.append("\\end{plantuml}")
             line = (
-                "\\process{" + plantUMLFile + "}{0.8\\textwidth}{" + plantUMLName + "}"
+                "\\process{"
+                + plantuml_file
+                + "}{0.8\\textwidth}{"
+                + plantuml_name
+                + "}"
             )
-            plantUMLFound = False
+            plantuml_found = False
 
         # Look ahead for empty line and add paragraph.
         if i < len(text) - 1:
-            nextLine = text[i + 1]
-            if nextLine == "" and not re.search("\\\\", line) and not noParagraph:
+            next_line = text[i + 1]
+            if next_line == "" and not re.search("\\\\", line) and not no_paragraph:
                 line = line + "\\\\"
 
         #############################
@@ -479,23 +522,23 @@ def _format_latex_text(text):
 
         # Check for end of file and end all environments.
         if i == len(text) - 1:
-            if codeFound:
+            if code_found:
                 block.append("\\end{lstlisting}")
-            if enumerationFound:
-                block.append("\\end{enumerate}")
-            if itemizeFound:
-                block.append("\\end{itemize}")
-            if plantUMLFound:
+            if enumeration_found:
+                block.append(END_ENUMERATE)
+            if itemize_found:
+                block.append(END_ITEMIZE)
+            if plantuml_found:
                 block.append("\\end{plantuml}")
                 block.append(
                     "\\process{"
-                    + plantUMLFile
+                    + plantuml_file
                     + "}{0.8\\textwidth}{"
-                    + plantUMLName
+                    + plantuml_name
                     + "}"
                 )
-            if tableFound:
-                block.append("\\end{longtable}")
+            if table_found:
+                block.append(END_LONGTABLE)
     return block
 
 
@@ -523,23 +566,23 @@ def _matrix_latex(table, path):
     traceability.append(
         "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
     )
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append(table_head)
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append("\\endfirsthead")
     traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\")
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append(table_head)
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append("\\endhead")
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append(
         "\\multicolumn{{{n}}}{{r}}{{\\textit{{Continued on next page.}}}}\\\\".format(
             n=count
         )
     )
     traceability.append("\\endfoot")
-    traceability.append("\\hline")
+    traceability.append(HLINE)
     traceability.append("\\endlastfoot")
     # Add rows.
     for row in table:
@@ -553,7 +596,7 @@ def _matrix_latex(table, path):
                 row_text = row_text + " "
         row_text = row_text + "\\\\"
         traceability.append(row_text)
-        traceability.append("\\hline")
+        traceability.append(HLINE)
     # End the table.
-    traceability.append("\\end{longtable}")
+    traceability.append(END_LONGTABLE)
     common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
