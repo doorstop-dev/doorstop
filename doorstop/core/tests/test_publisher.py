@@ -63,7 +63,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             linkify=False,
         )
 
-    @patch("os.path.isdir", Mock(side_effect=[True, False, False, False]))
+    @patch("os.path.isdir", Mock(side_effect=[False, True, False, False]))
     @patch("os.remove")
     @patch("glob.glob")
     @patch("builtins.open")
