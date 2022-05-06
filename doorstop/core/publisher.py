@@ -109,11 +109,13 @@ def publish(
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
+            log.trace("Generating compile script for LaTeX from %s", path2)
             head, tail = os.path.split(path2)
             tail = "compile.sh"
             compile_path = os.path.join(head, tail)
             # Check for defined document attributes.
-            document_name = "doc-" + str(obj2)
+            document_name = "doc-" + obj2.prefix
+            log.trace("Document name is '%s'", document_name)
             document_title = "Test document for development of \\textit{Doorstop}"
             document_ref = ""
             document_by = ""
@@ -142,12 +144,12 @@ def publish(
             )
             # Create the wrapper file.
             head, tail = os.path.split(path2)
-            if tail != str(obj2) + ".tex":
+            if tail != obj2.prefix + ".tex":
                 log.warning(
                     "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
                 )
             tail = document_name + ".tex"
-            path2 = os.path.join(head, str(obj2) + ".tex")
+            path2 = os.path.join(head, obj2.prefix + ".tex")
             path3 = os.path.join(head, tail)
             wrapper = []
             wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
@@ -159,7 +161,7 @@ def publish(
             wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
             wrapper.append("")
             wrapper.append("% Define the header.")
-            wrapper.append("\\def\\doccategory{{{t}}}".format(t=str(obj2)))
+            wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2.prefix))
             wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
             wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
             wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
@@ -170,7 +172,7 @@ def publish(
             info_text_set = False
             for external, _ in iter_documents(obj, path, ext):
                 # Check for defined document attributes.
-                external_doc_name = "doc-" + str(external)
+                external_doc_name = "doc-" + external.prefix
                 try:
                     external_attribute_defaults = external.__getattribute__(
                         "_attribute_defaults"
@@ -200,7 +202,7 @@ def publish(
             wrapper.append("\\makecoverpage")
             wrapper.append("\\maketoc")
             wrapper.append("% Load the output file.")
-            wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
+            wrapper.append("\\input{{{n}.tex}}".format(n=obj2.prefix))
             # Include traceability matrix
             if matrix and count:
                 wrapper.append("% Traceability matrix")
