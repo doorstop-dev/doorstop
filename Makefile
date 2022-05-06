@@ -22,6 +22,11 @@ ci: format check test mkdocs demo ## Run all tasks that determine CI status
 dev: install .clean-test ## Continuously run all CI tasks when files chanage
 	poetry run sniffer
 
+.PHONY: dev-install
+dev-install: install
+	poetry build
+	pip install --force dist/doorstop*.whl
+
 .PHONY: run ## Start the program
 run: install
 	poetry run python $(PACKAGE)/gui/main.py
