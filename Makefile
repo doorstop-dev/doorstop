@@ -22,6 +22,11 @@ ci: format check test mkdocs demo ## Run all tasks that determine CI status
 dev: install .clean-test ## Continuously run all CI tasks when files chanage
 	poetry run sniffer
 
+.PHONY: dev-install
+dev-install: install
+	poetry build
+	pip install --force dist/doorstop*.whl
+
 .PHONY: run ## Start the program
 run: install
 	poetry run python $(PACKAGE)/gui/main.py
@@ -219,7 +224,7 @@ upload: dist ## Upload the current version to PyPI
 # CLEANUP #####################################################################
 
 .PHONY: clean
-clean: .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
+clean: .clean-dev-install .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
 
 .PHONY: clean-all
 clean-all: clean
@@ -229,6 +234,10 @@ clean-all: clean
 .clean-install:
 	find $(PACKAGES) -name '__pycache__' | xargs rm -rf
 	rm -rf *.egg-info
+
+.PHONY: .clean-dev-install
+.clean-dev-install:
+	pip uninstall --yes dist/doorstop*.whl
 
 .PHONY: .clean-test
 .clean-test:

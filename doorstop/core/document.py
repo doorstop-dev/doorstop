@@ -292,6 +292,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Copy the contents of the assets directory."""
         if not self.assets:
             return
+        # Create folder if it does not exist.
+        if not os.path.isdir(dest):
+            os.makedirs(dest)
         common.copy_dir_contents(self.assets, dest)
 
     # properties #############################################################
