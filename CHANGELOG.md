@@ -4,7 +4,8 @@
 - **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.
 - Fixed overriding default attributes with `doorstop add`. ([@tangoalx](https://github.com/doorstop-dev/doorstop/pull/544))
 - Fixed encoding error with special characters on Windows. ([@urbasus](https://github.com/doorstop-dev/doorstop/pull/526))
-- Add support for publishing to the LaTeX format. ([@neerdoc](https://github.com/doorstop-dev/doorstop/pull/545))
+- Added support for publishing to the LaTeX format. ([@neerdoc](https://github.com/doorstop-dev/doorstop/pull/545))
+- Added support for storing items in Markdown with YAML front matter. ([@ckolumbus](https://github.com/doorstop-dev/doorstop/pull/566))
 
 # 2.2 (2022-01-22)
 
