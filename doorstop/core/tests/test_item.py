@@ -97,6 +97,20 @@ class TestItem(unittest.TestCase):
         """Verify an item cannot be initialized from an invalid path."""
         self.assertRaises(DoorstopError, Item, None, "not/a/path")
 
+    def test_init_invalid_format(self):
+        """Verify an exception is raised if invalid file format is given."""
+        self.assertRaises(
+            DoorstopError,
+            Item.new,
+            None,
+            None,
+            FILES,
+            FILES,
+            "REQ333",
+            level=(1, 2, 3),
+            itemformat_default="INVALID_FORMAT",
+        )
+
     def test_no_tree_references(self):
         """Verify a standalone item has no tree reference."""
         self.assertIs(None, self.item.tree)

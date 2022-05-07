@@ -437,12 +437,15 @@ def _lines_text(obj, indent=8, width=79, **_):
         level = _format_level(item.level)
 
         if item.heading:
-
+            text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
+            text = os.linesep.join(text_lines)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
-                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=item.text)
+                yield "{lev:<{s}}{t}".format(lev=level, s=indent, t=text)
             else:
-                yield "{t}".format(t=item.text)
+                yield "{t}".format(t=text)
 
         else:
 
@@ -526,6 +529,8 @@ def _lines_markdown(obj, **kwargs):
 
         if item.heading:
             text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h} {lev} {t}".format(
@@ -754,7 +759,10 @@ def _table_of_contents_md(obj, linkify=None):
 
         if item.heading:
             lines = item.text.splitlines()
-            heading = lines[0] if lines else ""
+            if item.header:
+                heading = item.header
+            else:
+                heading = lines[0] if lines else ""
         elif item.header:
             heading = "{h}".format(h=item.header)
         else:

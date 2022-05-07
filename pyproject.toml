@@ -46,6 +46,7 @@ pyyaml = "^5.1"
 markdown = "^3.3.6"
 bottle = "~0.12.13"
 requests = "^2.0"
+python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
 six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
