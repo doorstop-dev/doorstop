@@ -20,6 +20,7 @@ attributes:
       by: 'Jng'
       major: 1
       minor: A
+      copyright: 'Whatever Inc.'
   publish:
     - CUSTOM-ATTRIB
     - invented-by
@@ -39,6 +40,7 @@ attributes:
       by: ''
       major: ''
       minor: ''
+      copyright: ''
   publish:
     - CUSTOM-ATTRIB
 """
