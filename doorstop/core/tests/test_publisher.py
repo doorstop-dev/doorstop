@@ -53,7 +53,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        mock_makedirs.assert_called_once_with(dirpath)
         mock_open.assert_called_once_with(path, "wb")
         mock_lines.assert_called_once_with(
             self.document,
