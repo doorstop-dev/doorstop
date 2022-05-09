@@ -98,6 +98,7 @@ test: test-all ## Run unit and integration tests
 test-unit: install
 	poetry run pytest $(PACKAGE) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
+	@ echo
 	poetry run coveragespace update unit
 endif
 
@@ -108,6 +109,7 @@ test-int: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
+	@ echo
 	poetry run coveragespace update overall
 endif
 

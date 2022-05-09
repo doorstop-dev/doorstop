@@ -6,10 +6,13 @@ import argparse
 import codecs
 import csv
 import glob
+import io
 import logging
 import os
+import re
 import shutil
 
+import frontmatter
 import yaml
 
 verbosity = 0  # global verbosity setting for controlling string formatting
@@ -143,6 +146,33 @@ def load_yaml(text, path, loader=yaml.SafeLoader):
     return data
 
 
+def load_markdown(text, path, textattributekeys):
+    """Parse a dictionary from Markdown file with YAML frontmatter.
+
+    :param text: string containing markdown data with yaml frontmatter
+    :param path: file path for error messages
+
+    :return: dictionary
+
+    """
+    # Load YAML-frontmatter data from text
+    try:
+        data, content = frontmatter.parse(text, handler=frontmatter.YAMLHandler())
+    except yaml.error.YAMLError as exc:
+        msg = "invalid yaml contents: {}:\n{}".format(path, exc)
+        raise DoorstopError(msg) from None
+    # Ensure data is a dictionary
+    if not isinstance(data, dict):
+        msg = "invalid contents: {}".format(path)
+        raise DoorstopError(msg)
+
+    # parse content and update data dictionariy accordingly
+    update_data_from_markdown_content(data, content, textattributekeys)
+
+    # Return the parsed data
+    return data
+
+
 def write_lines(lines, path, end="\n", encoding="utf-8", *, executable=False):
     """Write lines of text to a file.
 
@@ -258,3 +288,59 @@ def delete_contents(dirname):
                     "Two assets folders have files or directories " "with the same name"
                 )
                 raise
+
+
+def update_data_from_markdown_content(data, content, textattributekeys):
+    """Update data dictionary based on text content and attribute keys to look for within the content."""
+    h1 = re.compile(r"^#{1}\s+(.*)")
+    # for line based iteration
+    s = io.StringIO(content)
+    # final text
+    header = None
+    text = ""
+
+    if "header" in textattributekeys:
+        # search for first content line and check
+        # if it is a h1 header
+        for l in s:
+            # skip empty lines
+            if len(l.strip()) == 0:
+                continue
+            # check if first found line is a header
+            m = h1.match(l.strip())
+            if m:
+                # header found
+                header = m.group(1)
+            else:
+                # no header found, add to normal text
+                text += l
+            break
+
+        # if header was found, skip empty lines before main text
+        if header:
+            for l in s:
+                if len(l.strip()) != 0:
+                    text += l
+                    break
+
+    # remaining content is normal text
+    for l in s:
+        text += l
+
+    if "header" in textattributekeys and header:
+        data["header"] = header
+
+    if "text" in textattributekeys:
+        data["text"] = text
+
+
+def dump_markdown(data, textattr):
+    content = ""
+    if "header" in textattr and textattr["header"].strip() != "":
+        content += "# {}\n".format(textattr["header"].strip())
+        content += "\n"
+
+    content += textattr["text"]
+
+    text = frontmatter.dumps(frontmatter.Post(content, **data))
+    return text

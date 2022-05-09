@@ -19,7 +19,16 @@ import yaml
 from doorstop import common, core
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
-from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
+from doorstop.core.tests import (
+    EMPTY,
+    ENV,
+    FILES,
+    FILES_MD,
+    REASON,
+    ROOT,
+    SYS,
+    DocumentNoSkip,
+)
 from doorstop.core.vcs import mockvcs
 
 
@@ -88,6 +97,39 @@ class TestItem(unittest.TestCase):
         self.assertRaises(DoorstopError, self.item.find_references)
 
 
+class TestItemMarkdown(unittest.TestCase):
+    """Integration tests for the Item class storage Markdown format."""
+
+    def setUp(self):
+        self.path = os.path.join(FILES_MD, "REQ001.md")
+        self.backup = common.read_text(self.path)
+        self.item = core.Item(None, self.path, itemformat="markdown")
+        self.item.tree = Mock()
+        self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
+
+    def tearDown(self):
+        common.write_text(self.backup, self.path)
+
+    def test_header(self):
+        """Verify header is parsed correctly"""
+        item2 = core.Item(None, self.path, itemformat="markdown")
+        self.assertEqual("Markdown Header", item2.header)
+
+    def test_save_load(self):
+        """Verify an item can be saved and loaded from a markdown file."""
+        self.item.header = "Another Header"
+        self.item.level = "1.2.3"
+        self.item.text = "Hello, world!"
+        self.item.links = ["SYS001", "SYS002"]
+        item2 = core.Item(
+            None, os.path.join(FILES_MD, "REQ001.md"), itemformat="markdown"
+        )
+        self.assertEqual("Another Header", item2.header)
+        self.assertEqual((1, 2, 3), item2.level)
+        self.assertEqual("Hello, world!", item2.text)
+        self.assertEqual(["SYS001", "SYS002"], item2.links)
+
+
 class TestDocument(unittest.TestCase):
     """Integration tests for the Document class."""
 
@@ -104,6 +146,7 @@ class TestDocument(unittest.TestCase):
         """Verify a document can be loaded from a directory."""
         doc = core.Document(FILES)
         self.assertEqual("REQ", doc.prefix)
+        self.assertEqual("yaml", doc.itemformat)
         self.assertEqual(2, doc.digits)
         self.assertEqual(6, len(doc.items))
 
@@ -111,6 +154,7 @@ class TestDocument(unittest.TestCase):
         """Verify a new document can be created."""
         document = core.Document.new(None, EMPTY, FILES, prefix="SYS", digits=4)
         self.assertEqual("SYS", document.prefix)
+        self.assertEqual("yaml", document.itemformat)
         self.assertEqual(4, document.digits)
         self.assertEqual(0, len(document.items))
 
@@ -228,6 +272,37 @@ class TestDocument(unittest.TestCase):
         expected = [(1, 0), (1, 1), (1, 2, 0), (1, 2, 1), (2, 1, 1), (2, 2)]
         actual = [item.level for item in document.items]
         self.assertListEqual(expected, actual)
+
+
+class TestDocumentMarkdown(unittest.TestCase):
+    """Integration tests for the Document class with Items in Markdown format."""
+
+    def setUp(self):
+        self.document = core.Document(FILES_MD, root=ROOT)
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        for filename in os.listdir(EMPTY):
+            path = os.path.join(EMPTY, filename)
+            common.delete(path)
+
+    def test_load(self):
+        """Verify a document can be loaded from a directory."""
+        doc = core.Document(FILES_MD)
+        self.assertEqual("REQMD", doc.prefix)
+        self.assertEqual("markdown", doc.itemformat)
+        self.assertEqual(2, doc.digits)
+        self.assertEqual(1, len(doc.items))
+
+    def test_new(self):
+        """Verify a new document can be created."""
+        document = core.Document.new(
+            None, EMPTY, FILES_MD, prefix="SYSMD", digits=4, itemformat="markdown"
+        )
+        self.assertEqual("SYSMD", document.prefix)
+        self.assertEqual("markdown", document.itemformat)
+        self.assertEqual(4, document.digits)
+        self.assertEqual(0, len(document.items))
 
 
 class TestTree(unittest.TestCase):
