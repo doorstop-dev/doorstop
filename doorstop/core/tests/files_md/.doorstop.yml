@@ -1,0 +1,6 @@
+settings:
+  digits: 2
+  parent: SYSMD
+  itemformat: markdown
+  prefix: REQMD
+  sep: ''

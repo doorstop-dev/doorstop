@@ -601,6 +601,7 @@ class TestModuleAddItem(unittest.TestCase):
     root = "ROOT"
     path = os.path.join(root, "DIRECTORY")
     parent = "PARENT_PREFIX"
+    itemformat = "yaml"
 
     mock_document = Mock()
     mock_document._items = []
@@ -622,6 +623,7 @@ class TestModuleAddItem(unittest.TestCase):
         TestModuleAddItem.mock_document.prefix = prefix
         TestModuleAddItem.mock_document.path = TestModuleAddItem.path
         TestModuleAddItem.mock_document.root = TestModuleAddItem.root
+        TestModuleAddItem.mock_document.itemformat = TestModuleAddItem.itemformat
         return TestModuleAddItem.mock_document
 
     @patch("doorstop.core.tree.Tree.find_document", mock_find_document)

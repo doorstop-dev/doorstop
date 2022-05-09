@@ -65,10 +65,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data["sep"] = Document.DEFAULT_SEP
         self._data["digits"] = Document.DEFAULT_DIGITS  # type: ignore
         self._data["parent"] = None  # type: ignore
+        self._data["itemformat"] = kwargs.get("itemformat")  # type: ignore
         self._extended_reviewed: List[str] = []
         self._items: List[Item] = []
         self._itered = False
         self.children: List[Document] = []
+
+        if not self._data["itemformat"]:
+            self._data["itemformat"] = Item.DEFAULT_ITEMFORMAT
 
     def __repr__(self):
         return "Document('{}')".format(self.path)
@@ -92,7 +96,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_document
     def new(
-        tree, path, root, prefix, sep=None, digits=None, parent=None, auto=None
+        tree,
+        path,
+        root,
+        prefix,
+        sep=None,
+        digits=None,
+        parent=None,
+        auto=None,
+        itemformat=None,
     ):  # pylint: disable=R0913,C0301
         """Create a new document.
 
@@ -106,6 +118,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param digits: number of digits for the new document
         :param parent: parent UID for the new document
         :param auto: automatically save the document
+
+        :param itemformat: file format for storing items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the document
             already exists
@@ -127,7 +141,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         Document._create(config, name="document")
 
         # Initialize the document
-        document = Document(path, root=root, tree=tree, auto=False)
+        document = Document(
+            path, root=root, tree=tree, auto=False, itemformat=itemformat
+        )
         document.prefix = (  # type: ignore
             prefix if prefix is not None else document.prefix
         )
@@ -186,6 +202,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     self._data[key] = value.strip()
                 elif key == "digits":
                     self._data[key] = int(value)  # type: ignore
+                elif key == "itemformat":
+                    self._data[key] = value.strip()
                 else:
                     msg = "unexpected document setting '{}' in: {}".format(
                         key, self.config
@@ -267,7 +285,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for filename in filenames:
                 path = os.path.join(dirpath, filename)
                 try:
-                    item = Item(self, path, root=self.root, tree=self.tree)
+                    item = Item(
+                        self,
+                        path,
+                        root=self.root,
+                        tree=self.tree,
+                        itemformat=self.itemformat,
+                    )
                 except DoorstopError:
                     pass  # skip non-item files
                 else:
@@ -380,6 +404,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def parent(self, value):
         """Set the document's parent document prefix."""
         self._data["parent"] = str(value) if value else ""
+
+    @property
+    def itemformat(self):
+        """Get storage format for item files."""
+        return self._data["itemformat"]
 
     @property
     def items(self):

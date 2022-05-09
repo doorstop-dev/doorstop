@@ -198,6 +198,13 @@ def _create(subs, shared):
     sub.add_argument("path", help="path to a directory for item files")
     sub.add_argument("-p", "--parent", help="prefix of parent document")
     sub.add_argument(
+        "-i",
+        "--itemformat",
+        choices=["yaml", "markdown"],
+        default="yaml",
+        help="item file format",
+    )
+    sub.add_argument(
         "-d",
         "--digits",
         help="number of digits in item UIDs",

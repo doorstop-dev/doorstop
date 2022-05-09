@@ -3,33 +3,15 @@
 
 """Unit tests for the doorstop.core.validators.item_validator module."""
 
-import logging
 import os
 import unittest
-from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import core
 from doorstop.common import DoorstopError
 from doorstop.core.tests import MockItem, MockItemValidator, MockSimpleDocument
+from doorstop.core.tests.helpers import ListLogHandler
 from doorstop.core.types import Stamp
-
-
-class ListLogHandler(logging.NullHandler):
-    def __init__(self, log):
-        super().__init__()
-        self.records: List[str] = []
-        self.log = log
-
-    def __enter__(self):
-        self.log.addHandler(self)
-        return self
-
-    def __exit__(self, kind, value, traceback):
-        self.log.removeHandler(self)
-
-    def handle(self, record):
-        self.records.append(str(record.msg))
 
 
 class TestItemValidator(unittest.TestCase):
@@ -128,8 +110,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' HAS been changed, i.e., does NOT exist!
+        self.assertNotIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above
@@ -148,8 +134,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' has NOT been changed, i.e., DOES exist!
+        self.assertIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above

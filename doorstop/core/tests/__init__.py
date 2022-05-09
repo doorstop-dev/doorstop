@@ -17,6 +17,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 
 TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), "files")
+FILES_MD = os.path.join(os.path.dirname(__file__), "files_md")
 SYS = os.path.join(FILES, "parent")
 TST = os.path.join(FILES, "child")
 EMPTY = os.path.join(FILES, "empty")  # an empty directory
@@ -93,6 +94,7 @@ class MockSimpleDocument:
     def __init__(self):
         self.parent = None
         self.prefix = "RQ"
+        self.itemformat = "yaml"
         self._items: List[Item] = []
         self.extended_reviewed: List[str] = []
 

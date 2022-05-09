@@ -20,9 +20,19 @@ from doorstop.core.types import UID, Level
 YAML_DEFAULT = """
 settings:
   digits: 3
+  itemformat: yaml
   prefix: REQ
   sep: ''
 """.lstrip()
+
+YAML_MARKDOWN = """
+settings:
+  digits: 4
+  itemformat: markdown
+  prefix: CUSTOM_MD
+  sep: '-'
+""".lstrip()
+
 
 YAML_CUSTOM = """
 settings:
@@ -140,7 +150,17 @@ class TestDocument(unittest.TestCase):
         """Verify the document config can be loaded from file."""
         self.document._file = YAML_CUSTOM
         self.document.load(reload=True)
+        self.assertEqual("yaml", self.document.itemformat)
         self.assertEqual("CUSTOM", self.document.prefix)
+        self.assertEqual("-", self.document.sep)
+        self.assertEqual(4, self.document.digits)
+
+    def test_load_markdown(self):
+        """Verify the document config can be loaded from file."""
+        self.document._file = YAML_MARKDOWN
+        self.document.load(reload=True)
+        self.assertEqual("markdown", self.document.itemformat)
+        self.assertEqual("CUSTOM_MD", self.document.prefix)
         self.assertEqual("-", self.document.sep)
         self.assertEqual(4, self.document.digits)
 

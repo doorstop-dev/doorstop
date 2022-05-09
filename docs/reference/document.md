@@ -18,6 +18,7 @@ Then open `REQ/.doorstop.yml` in any text editor:
 settings:
   digits: 3
   prefix: REQ
+  itemformat: yaml
   sep: ''
 ```
 
@@ -48,6 +49,12 @@ Defines the separator between the document prefix and the number in an item UID.
 The default value is the empty string.  You have to set it manually before an
 item is created.  Afterwards, it should be considered as read-only.  This
 document setting is mandatory.
+
+### `itemformat`
+
+Requirement items can be stored in different file formats. The two types
+currently supported are `yaml` and `markdown`. See the [item](item.md)
+documentation for more details. The default format is `yaml`.
 
 # Extended Document Attributes
 
