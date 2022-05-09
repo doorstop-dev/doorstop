@@ -84,11 +84,8 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(os.path.join(dirpath, "template"))
-        print(expected_calls)
-        print("-------------------------------------------")
-        print(mock_open.call_args_list)
         self.assertEqual(expected_calls, mock_open.call_args_list)
-        self.assertEqual(mock_open.call_count, 3)
+        self.assertEqual(mock_open.call_count, 7)
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -121,7 +118,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".tex", linkify=True, matrix=True)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        mock_makedirs.assert_called_once_with(dirpath)
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
 
@@ -140,14 +137,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             expected_calls.append(
                 call(
                     os.path.join(
-                        "mock", "directory", "doc-{n}.tex".format(n=str(obj2))
+                        "mock", "directory", "doc-{n}.tex".format(n=obj2.prefix)
                     ),
                     "wb",
                 )
             )
             expected_calls.append(
                 call(
-                    os.path.join("mock", "directory", "{n}.tex".format(n=str(obj2))),
+                    os.path.join("mock", "directory", "{n}.tex".format(n=obj2.prefix)),
                     "wb",
                 )
             )
