@@ -35,7 +35,6 @@ from doorstop.core.types import iter_documents
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module, more specifically the changes introduced by the doorstop.core.publisher_latex module."""
 
-    @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
     @patch("builtins.open")
     def test_publish_document_with_latex_data(self, mock_open, mock_makedirs):
@@ -53,6 +52,34 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         path = os.path.join(dirpath, str(self.document))
         expected_calls = [
             call(
+                os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)),
+                    "files",
+                    "templates",
+                    "latex",
+                    "logo-black-white.png",
+                ),
+                "rb",
+            ),
+            call(
+                os.path.join("mock", "directory", "template", "logo-black-white.png"),
+                "wb",
+            ),
+            call(
+                os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)),
+                    "files",
+                    "templates",
+                    "latex",
+                    "doorstop.cls",
+                ),
+                "rb",
+            ),
+            call(
+                os.path.join("mock", "directory", "template", "doorstop.cls"),
+                "wb",
+            ),
+            call(
                 os.path.join("mock", "directory", "Tutorial.tex"),
                 "wb",
             ),
@@ -66,7 +93,10 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".tex")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(os.path.join(dirpath, Document.ASSETS))
+        mock_makedirs.assert_called_once_with(os.path.join(dirpath, "template"))
+        print(expected_calls)
+        print("-------------------------------------------")
+        print(mock_open.call_args_list)
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 3)
 
