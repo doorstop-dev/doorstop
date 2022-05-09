@@ -10,7 +10,7 @@ import sys
 
 from doorstop import common, settings
 from doorstop.cli import commands, utilities
-from doorstop.core import document, publisher, vcs
+from doorstop.core import document, vcs
 
 log = common.logger(__name__)
 
@@ -530,7 +530,7 @@ def _publish(subs, shared):
         choices=["all", "body"],
         help="do not include levels on heading and non-heading or non-heading items",
     )
-    sub.add_argument("--template", help="template file", default=publisher.HTMLTEMPLATE)
+    sub.add_argument("--template", help="template file", default=None)
 
 
 if __name__ == "__main__":
