@@ -11,7 +11,6 @@ from unittest.mock import Mock, call, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.document import Document
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
 from doorstop.core.tests.helpers_latex import (
     LINES,
