@@ -118,7 +118,7 @@
 \newcommand{\definetrim}[2]{%
   \define@key{Gin}{#1}[]{\setkeys{Gin}{trim=#2,clip}}%
 }
-\def\logo{assets/logo-black-white.png}
+\def\logo{template/logo-black-white.png}
 \definetrim{logotrim}{0 100px 0 100px}
 
 % Define a copyright claimer.
