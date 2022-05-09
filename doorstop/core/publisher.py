@@ -14,8 +14,8 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-from doorstop.core import Document
 from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -30,10 +30,6 @@ EXTENSIONS = (
         alt="UML Diagram",
     ),
 )
-CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
-HTMLTEMPLATE = "sidebar"
-INDEX = "index.html"
-MATRIX = "traceability.csv"
 
 log = common.logger(__name__)
 
@@ -78,47 +74,8 @@ def publish(
     if matrix is None:
         matrix = is_tree(obj)
 
-    if is_tree(obj):
-        assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
-        output_dir = path
-    else:
-        assets_dir = os.path.join(
-            os.path.dirname(path), Document.ASSETS
-        )  # path is a filename
-        output_dir = os.path.dirname(path)
-
-    # If publish html and then markdown ensure that the html template are still available
-    if not template:
-        template = HTMLTEMPLATE
-    template_assets = os.path.join(os.path.dirname(__file__), "files", "assets")
-    if os.path.isdir(template_assets):
-        if ext == ".tex":
-            template_assets = template_assets + "/latex"
-        elif ext == ".md":
-            template_assets = template_assets + "/markdown"
-        elif ext == ".txt":
-            template_assets = template_assets + "/text"
-        else:
-            template_assets = template_assets + "/html"
-        # Remove existing assets first.
-        if os.path.isdir(assets_dir):
-            log.info("Deleting contents of assets directory %s", assets_dir)
-            common.delete_contents(assets_dir)
-        elif os.path.isdir(template_assets):  # Create if assets actually exists.
-            os.makedirs(assets_dir)
-        else:  # Create the output path only.
-            if not os.path.isdir(output_dir):
-                os.makedirs(output_dir)
-        log.info("Copying %s to %s", template_assets, assets_dir)
-        common.copy_dir_contents(template_assets, assets_dir)
-    else:
-        # No template assets exist.
-        # Remove existing assets first.
-        if os.path.isdir(assets_dir):
-            log.info("Deleting contents of assets directory %s", assets_dir)
-            common.delete_contents(assets_dir)
-        elif not os.path.isdir(output_dir):
-            os.makedirs(output_dir)
+    # Process templates.
+    assets_dir, template = get_template(obj, path, ext, template)
 
     # Publish documents
     count = 0
@@ -140,6 +97,7 @@ def publish(
             document_by = ""
             document_major = ""
             document_minor = ""
+            document_copyright = ""
             try:
                 attribute_defaults = obj2.__getattribute__("_attribute_defaults")
                 if attribute_defaults:
@@ -155,6 +113,8 @@ def publish(
                         document_major = attribute_defaults["doc"]["major"]
                     if attribute_defaults["doc"]["minor"]:
                         document_minor = attribute_defaults["doc"]["minor"]
+                    if attribute_defaults["doc"]["copyright"]:
+                        document_copyright = attribute_defaults["doc"]["copyright"]
             except AttributeError:
                 pass
             # Add to compile.sh
@@ -171,13 +131,10 @@ def publish(
             path2 = os.path.join(head, obj2.prefix + ".tex")
             path3 = os.path.join(head, tail)
             wrapper = []
-            wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
+            wrapper.append("\\documentclass[a4paper, twoside]{%s}" % template)
             wrapper.append("\\usepackage[utf8]{inputenc}")
             wrapper.append("")
-            wrapper.append("%% Change these to change logotype and/or copyright.")
-            wrapper.append("% \\def\\owner{Whatever Inc.}")
-            wrapper.append("% \\def\\logo{assets/logo-black-white.png}")
-            wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
+            wrapper.append("%\\def\\owner{{{n}}}".format(n=document_copyright))
             wrapper.append("")
             wrapper.append("% Define the header.")
             wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2.prefix))
