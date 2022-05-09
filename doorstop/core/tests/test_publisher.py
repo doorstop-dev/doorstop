@@ -26,7 +26,7 @@ from doorstop.core.tests import (
 class TestModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher module."""
 
-    @patch("os.path.isdir", Mock(return_value=False))
+    @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
     @patch("os.makedirs")
     @patch("builtins.open")
     def test_publish_document(self, mock_open, mock_makedirs):
@@ -63,7 +63,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             linkify=False,
         )
 
-    @patch("os.path.isdir", Mock(side_effect=[False, True, False, False]))
+    @patch("os.path.isdir", Mock(side_effect=[True, False, False, False, False, False]))
     @patch("os.remove")
     @patch("glob.glob")
     @patch("builtins.open")
