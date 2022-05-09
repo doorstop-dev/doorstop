@@ -39,6 +39,8 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     doc-TUT.tex
     traceability.tex
     assets/
+        logo-black-white.png
+    template/
         doorstop.cls
         logo-black-white.png
 """.format(
@@ -66,7 +68,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     TUT.tex
     compile.sh
     doc-TUT.tex
-    assets/
+    template/
         doorstop.cls
         logo-black-white.png
 """.format(
@@ -86,7 +88,6 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         """Verify a LaTeX document can be published with LaTeX doc data but without publishing heading levels."""
         # Act
         path2 = publisher.publish(self.mock_tree, self.dirpath, ".tex")
-        # path2 = publisher.publish(self.document, path, ".tex")
         # Assert
         self.assertIs(self.dirpath, path2)
         # Get the exported tree.
