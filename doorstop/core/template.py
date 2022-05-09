@@ -61,21 +61,20 @@ def get_template(obj, path, ext, template):
         log.info("Deleting contents of template directory %s", template_dir)
         common.delete_contents(template_dir)
 
-    # Only create template_dir if template actually exists.
-    if os.path.isdir(template_assets):
-        if not os.path.isdir(template_dir):
-            os.makedirs(template_dir)
-
     # Create the output path only.
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    log.info(
-        "Copying %s to %s",
-        template_assets,
-        os.path.join(os.path.dirname(path), "template"),
-    )
-    common.copy_dir_contents(template_assets, template_dir)
+    # Only create template_dir if template actually exists.
+    if os.path.isdir(template_assets):
+        if not os.path.isdir(template_dir):
+            os.makedirs(template_dir)
+        log.info(
+            "Copying %s to %s",
+            template_assets,
+            os.path.join(os.path.dirname(path), "template"),
+        )
+        common.copy_dir_contents(template_assets, template_dir)
 
     # Return correct template and assets folder.
     if not template:
