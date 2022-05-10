@@ -5,10 +5,10 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import unittest
 from pathlib import Path
 from secrets import token_hex
 from shutil import rmtree
-import unittest
 
 from doorstop.core import template
 from doorstop.core.builder import build
@@ -26,7 +26,6 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         self.mock_tree = build(cwd=ROOT, root=ROOT, request_next_number=None)
         self.hex = token_hex()
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
-        os.makedirs(self.dirpath)
 
     @classmethod
     def tearDownClass(cls):
@@ -38,22 +37,29 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Individual docs needs another level to prevent clashing between tests.
         self.dirpath = os.path.join(self.dirpath, self.hex)
         # Act
-        asset_dir, selected_template = template.get_template(self.mock_tree.documents[0], self.dirpath, ".html", None)
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree.documents[0], self.dirpath, ".html", None
+        )
         # Assert
-        self.assertEqual(os.path.join(os.path.dirname(self.dirpath),"assets")  ,asset_dir)
+        self.assertEqual(
+            os.path.join(os.path.dirname(self.dirpath), "assets"), asset_dir
+        )
         self.assertEqual("sidebar", selected_template)
 
     def test_standard_html_tree(self):
         """Verify that default html template is selected if no template is given and input is a tree."""
         # Act
-        asset_dir, selected_template = template.get_template(self.mock_tree, self.dirpath, ".html", None)
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", None
+        )
         # Assert
-        self.assertEqual(os.path.join(self.dirpath,"assets")  ,asset_dir)
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
         self.assertEqual("sidebar", selected_template)
 
     def test_standard_html_tree_with_assets(self):
         """Verify that default html template is selected if no template is given and input is a tree and there is an assets folder."""
         # Add assets folder.
+        os.makedirs(self.dirpath)
         os.mkdir(os.path.join(self.dirpath, "assets"))
         Path(os.path.join(self.dirpath, "assets", "file.txt")).touch()
         # file.txt should not be in expected output!
@@ -67,13 +73,45 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
             jquery.min.js
             sidebar.css
 """.format(
-                    n=self.hex
-                )
+            n=self.hex
+        )
 
         # Act
-        asset_dir, selected_template = template.get_template(self.mock_tree, self.dirpath, ".html", None)
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", None
+        )
         # Assert
-        self.assertEqual(os.path.join(self.dirpath,"assets")  ,asset_dir)
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
+        self.assertEqual("sidebar", selected_template)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_standard_html_tree_with_template(self):
+        """Verify that default html template is selected if no template is given and input is a tree and there is a template folder."""
+        # Add template folder.
+        os.makedirs(self.dirpath)
+        os.mkdir(os.path.join(self.dirpath, "template"))
+        Path(os.path.join(self.dirpath, "template", "file.txt")).touch()
+        # file.txt should not be in expected output!
+        expected_walk = """{n}/
+    template/
+        doorstop/
+            bootstrap.min.css
+            bootstrap.min.js
+            general.css
+            jquery.min.js
+            sidebar.css
+""".format(
+            n=self.hex
+        )
+
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", None
+        )
+        # Assert
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
         self.assertEqual("sidebar", selected_template)
         # Get the exported tree.
         walk = getWalk(self.dirpath)
