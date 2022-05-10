@@ -248,6 +248,36 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_setting_enable_headers_true_not_normative(self):
+        """Verify that the settings.ENABLE_HEADERS changes the output appropriately when True and normative is False."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header name'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: false" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{Header name}\label{REQ-001}\zlabel{REQ-001}" + "\n"
+            r"Test of a single text line." + "\n\n"
+        )
+        # Act
+        print("expected")
+        print(expected)
+        print("result")
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        print(result)
+        # Assert
+        self.assertEqual(expected, result)
+
     @patch("doorstop.settings.PUBLISH_BODY_LEVELS", True)
     def test_setting_publish_body_levels_true(self):
         """Verify that the settings.PUBLISH_BODY_LEVELS changes the output appropriately when True."""
