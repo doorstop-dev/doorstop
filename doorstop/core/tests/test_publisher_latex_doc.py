@@ -42,6 +42,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         logo-black-white.png
     template/
         doorstop.cls
+        doorstop.yml
         logo-black-white.png
 """.format(
             n=self.hex
@@ -70,6 +71,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     doc-TUT.tex
     template/
         doorstop.cls
+        doorstop.yml
         logo-black-white.png
 """.format(
             n=self.hex

@@ -69,6 +69,20 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
                 "wb",
             ),
             call(
+                os.path.join(
+                    os.path.dirname(os.path.dirname(__file__)),
+                    "files",
+                    "templates",
+                    "latex",
+                    "doorstop.yml",
+                ),
+                "rb",
+            ),
+            call(
+                os.path.join("mock", "directory", "template", "doorstop.yml"),
+                "wb",
+            ),
+            call(
                 os.path.join("mock", "directory", "Tutorial.tex"),
                 "wb",
             ),
@@ -84,7 +98,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         self.assertIs(path, path2)
         mock_makedirs.assert_called_with(os.path.join(dirpath, "template"))
         self.assertEqual(expected_calls, mock_open.call_args_list)
-        self.assertEqual(mock_open.call_count, 7)
+        self.assertEqual(mock_open.call_count, 9)
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
