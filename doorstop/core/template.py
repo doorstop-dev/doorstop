@@ -46,8 +46,6 @@ def get_template(obj, path, ext, template):
             "Template flag set, but no 'template' folder was found."
         )
     if document_template and not template:
-        print("document_template = %s" % document_template)
-        print("template = %s" % template)
         raise common.DoorstopError(
             "'template' folder found, but template flag not set."
         )
