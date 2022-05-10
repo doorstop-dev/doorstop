@@ -5,11 +5,10 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import unittest
 from pathlib import Path
 from secrets import token_hex
 from shutil import rmtree
-from unittest.mock import patch
+import unittest
 
 from doorstop.core import template
 from doorstop.core.builder import build
@@ -26,16 +25,18 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Build a tree.
         self.mock_tree = build(cwd=ROOT, root=ROOT, request_next_number=None)
         self.hex = token_hex()
-        self.dirpath = os.path.join("mock", "LaTeX", self.hex)
+        self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
 
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock")
+        rmtree("mock_%s" % __name__)
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
+        # Individual docs needs another level to prevent clashing between tests.
+        self.dirpath = os.path.join(self.dirpath, self.hex)
         # Act
         asset_dir, selected_template = template.get_template(self.mock_tree.documents[0], self.dirpath, ".html", None)
         # Assert
@@ -53,15 +54,18 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     def test_standard_html_tree_with_assets(self):
         """Verify that default html template is selected if no template is given and input is a tree and there is an assets folder."""
         # Add assets folder.
-        print("1")
-        print(getWalk(self.dirpath))
         os.mkdir(os.path.join(self.dirpath, "assets"))
-        print("2")
-        print(getWalk(self.dirpath))
         Path(os.path.join(self.dirpath, "assets", "file.txt")).touch()
-        print("3")
-        print(getWalk(self.dirpath))
+        # file.txt should not be in expected output!
         expected_walk = """{n}/
+    assets/
+    template/
+        doorstop/
+            bootstrap.min.css
+            bootstrap.min.js
+            general.css
+            jquery.min.js
+            sidebar.css
 """.format(
                     n=self.hex
                 )
