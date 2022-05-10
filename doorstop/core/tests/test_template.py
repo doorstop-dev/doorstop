@@ -32,7 +32,9 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         rmtree("mock_%s" % __name__)
-        rmtree(os.path.join("reqs", "template"))
+        template_dir = os.path.join("reqs", "template")
+        if os.path.isdir(template_dir):
+            rmtree(template_dir)
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
@@ -126,14 +128,10 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Create a custom template folder.
         doc_path = self.mock_tree.documents[0].path
         os.mkdir(os.path.join(doc_path, "template"))
+        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
         expected_walk = """{n}/
     template/
-        doorstop/
-            bootstrap.min.css
-            bootstrap.min.js
-            general.css
-            jquery.min.js
-            custom_css.css
+        custom_css.css
 """.format(
             n=self.hex
         )
@@ -146,10 +144,8 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         self.assertEqual("custom_css", selected_template)
         # Get the exported tree.
         walk = getWalk(self.dirpath)
-        print("walk")
-        print(walk)
         self.assertEqual(expected_walk, walk)
-        os.rmdir(os.path.join(doc_path, "template"))
+        rmtree(os.path.join(doc_path, "template"))
 
     def test_custom_template_without_folder(self):
         """Verify that a custom template that is missing a locally defined
@@ -171,7 +167,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
             asset_dir, selected_template = template.get_template(
             self.mock_tree, self.dirpath, ".html", None
         )
-        os.rmdir(os.path.join(doc_path, "template"))
+        rmtree(os.path.join(doc_path, "template"))
 
     def test_standard_latex_doc(self):
         """Verify that default latex template is selected if no template is given and input is a document."""
