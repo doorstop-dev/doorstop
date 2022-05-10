@@ -116,3 +116,27 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
+
+    def test_standard_latex_doc(self):
+        """Verify that default latex template is selected if no template is given and input is a document."""
+        # Individual docs needs another level to prevent clashing between tests.
+        self.dirpath = os.path.join(self.dirpath, self.hex)
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree.documents[0], self.dirpath, ".tex", None
+        )
+        # Assert
+        self.assertEqual(
+            os.path.join(os.path.dirname(self.dirpath), "assets"), asset_dir
+        )
+        self.assertEqual("template/doorstop", selected_template)
+
+    def test_standard_latex_tree(self):
+        """Verify that default latex template is selected if no template is given and input is a tree."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        # Assert
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
+        self.assertEqual("template/doorstop", selected_template)
