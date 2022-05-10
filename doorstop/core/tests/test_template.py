@@ -10,6 +10,7 @@ from pathlib import Path
 from secrets import token_hex
 from shutil import rmtree
 
+from doorstop.common import DoorstopError
 from doorstop.core import template
 from doorstop.core.builder import build
 from doorstop.core.tests import ROOT, MockDataMixIn
@@ -31,6 +32,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         rmtree("mock_%s" % __name__)
+        rmtree("reqs", "template")
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
@@ -121,6 +123,9 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         """Verify that a custom html template is used correctly."""
         # Check that only custom template is published.
         os.makedirs(self.dirpath)
+        # Create a custom template folder.
+        doc_path = self.mock_tree.documents[0].path
+        os.mkdir(os.path.join(doc_path, "template"))
         expected_walk = """{n}/
     template/
         doorstop/
@@ -128,7 +133,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
             bootstrap.min.js
             general.css
             jquery.min.js
-            sidebar.css
+            custom_css.css
 """.format(
             n=self.hex
         )
@@ -144,6 +149,29 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         print("walk")
         print(walk)
         self.assertEqual(expected_walk, walk)
+        os.rmdir(os.path.join(doc_path, "template"))
+
+    def test_custom_template_without_folder(self):
+        """Verify that a custom template that is missing a locally defined
+        custom 'template' folder fails."""
+        # Act
+        with self.assertRaises(DoorstopError):
+            asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", "custom_css"
+        )
+
+    def test_custom_folder_without_template(self):
+        """Verify that a custom template folder that is missing the template
+        flag fails."""
+        # Create a custom template folder.
+        doc_path = self.mock_tree.documents[0].path
+        os.mkdir(os.path.join(doc_path, "template"))
+        # Act
+        with self.assertRaises(DoorstopError):
+            asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", None
+        )
+        os.rmdir(os.path.join(doc_path, "template"))
 
     def test_standard_latex_doc(self):
         """Verify that default latex template is selected if no template is given and input is a document."""
@@ -157,7 +185,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         self.assertEqual(
             os.path.join(os.path.dirname(self.dirpath), "assets"), asset_dir
         )
-        self.assertEqual("template/doorstop", selected_template)
+        self.assertEqual("doorstop", selected_template)
 
     def test_standard_latex_tree(self):
         """Verify that default latex template is selected if no template is given and input is a tree."""
@@ -167,7 +195,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         )
         # Assert
         self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
-        self.assertEqual("template/doorstop", selected_template)
+        self.assertEqual("doorstop", selected_template)
 
     def test_standard_markdown_doc(self):
         """Verify that default markdown template is selected if no template is given and input is a document."""
