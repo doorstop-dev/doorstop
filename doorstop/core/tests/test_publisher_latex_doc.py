@@ -25,7 +25,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Build a tree.
         self.mock_tree = build(cwd=ROOT, root=ROOT, request_next_number=None)
         self.hex = token_hex()
-        self.dirpath = os.path.join("mock", "LaTeX", self.hex)
+        self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
     HLT.tex
@@ -50,7 +50,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock")
+        rmtree("mock_%s" % __name__)
 
     def test_publish_latex_tree_copies_assets(self):
         """Verify that LaTeX assets are published when publishing a tree."""
