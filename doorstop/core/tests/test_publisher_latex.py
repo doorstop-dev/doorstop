@@ -82,7 +82,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".tex")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(os.path.join(dirpath, "template"))
+        mock_makedirs.assert_called_with(os.path.join(dirpath, "template"))
         self.assertEqual(expected_calls, mock_open.call_args_list)
         self.assertEqual(mock_open.call_count, 7)
 
