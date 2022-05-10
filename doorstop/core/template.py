@@ -50,7 +50,6 @@ def get_template(obj, path, ext, template):
             "'template' folder found, but template flag not set."
         )
 
-
     # Get the builtin templates.
     template_assets = os.path.join(os.path.dirname(__file__), "files", "templates")
     builtin_template = None

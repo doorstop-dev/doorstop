@@ -152,9 +152,9 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         custom 'template' folder fails."""
         # Act
         with self.assertRaises(DoorstopError):
-            asset_dir, selected_template = template.get_template(
-            self.mock_tree, self.dirpath, ".html", "custom_css"
-        )
+            _, _ = template.get_template(
+                self.mock_tree, self.dirpath, ".html", "custom_css"
+            )
 
     def test_custom_folder_without_template(self):
         """Verify that a custom template folder that is missing the template
@@ -164,9 +164,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         os.mkdir(os.path.join(doc_path, "template"))
         # Act
         with self.assertRaises(DoorstopError):
-            asset_dir, selected_template = template.get_template(
-            self.mock_tree, self.dirpath, ".html", None
-        )
+            _, _ = template.get_template(self.mock_tree, self.dirpath, ".html", None)
         rmtree(os.path.join(doc_path, "template"))
 
     def test_standard_latex_doc(self):
