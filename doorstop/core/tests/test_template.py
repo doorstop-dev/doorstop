@@ -140,3 +140,27 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
         self.assertEqual("template/doorstop", selected_template)
+
+    def test_standard_markdown_doc(self):
+        """Verify that default markdown template is selected if no template is given and input is a document."""
+        # Individual docs needs another level to prevent clashing between tests.
+        self.dirpath = os.path.join(self.dirpath, self.hex)
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree.documents[0], self.dirpath, ".md", None
+        )
+        # Assert
+        self.assertEqual(
+            os.path.join(os.path.dirname(self.dirpath), "assets"), asset_dir
+        )
+        self.assertEqual(None, selected_template)
+
+    def test_standard_markdown_tree(self):
+        """Verify that default markdown template is selected if no template is given and input is a tree."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".md", None
+        )
+        # Assert
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
+        self.assertEqual(None, selected_template)
