@@ -35,6 +35,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     SKIP = ".doorstop.skip"  # indicates this document should be skipped
     ASSETS = "assets"
     INDEX = "index.yml"
+    TEMPLATE = "template"
 
     DEFAULT_PREFIX = Prefix("REQ")
     DEFAULT_SEP = ""
@@ -334,6 +335,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Get the path to the document's assets if they exist else `None`."""
         assert self.path
         path = os.path.join(self.path, Document.ASSETS)
+        return path if os.path.isdir(path) else None
+
+    @property
+    def template(self):
+        """Get the path to the document's template if they exist else `None`."""
+        assert self.path
+        path = os.path.join(self.path, Document.TEMPLATE)
         return path if os.path.isdir(path) else None
 
     @property  # type: ignore
