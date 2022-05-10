@@ -117,6 +117,34 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
 
+    def test_html_doc_with_custom_template(self):
+        """Verify that a custom html template is used correctly."""
+        # Check that only custom template is published.
+        os.makedirs(self.dirpath)
+        expected_walk = """{n}/
+    template/
+        doorstop/
+            bootstrap.min.css
+            bootstrap.min.js
+            general.css
+            jquery.min.js
+            sidebar.css
+""".format(
+            n=self.hex
+        )
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", "custom_css"
+        )
+        # Assert
+        self.assertEqual(os.path.join(self.dirpath, "assets"), asset_dir)
+        self.assertEqual("custom_css", selected_template)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        print("walk")
+        print(walk)
+        self.assertEqual(expected_walk, walk)
+
     def test_standard_latex_doc(self):
         """Verify that default latex template is selected if no template is given and input is a document."""
         # Individual docs needs another level to prevent clashing between tests.
