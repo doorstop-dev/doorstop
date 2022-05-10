@@ -6,6 +6,8 @@
 
 import os
 import unittest
+from secrets import token_hex
+from shutil import rmtree
 from unittest import mock
 from unittest.mock import MagicMock, Mock, call, patch
 
@@ -26,19 +28,29 @@ from doorstop.core.tests import (
 class TestModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher module."""
 
+    # pylint: disable=no-value-for-parameter
+    def setUp(self):
+        """Setup test folder."""
+        self.hex = token_hex()
+        self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
+
+    @classmethod
+    def tearDownClass(cls):
+        """Remove test folder."""
+        rmtree("mock_%s" % __name__)
+
     @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
     @patch("os.makedirs")
     @patch("builtins.open")
     def test_publish_document(self, mock_open, mock_makedirs):
         """Verify a document can be published."""
-        dirpath = os.path.join("mock", "directory")
-        path = os.path.join(dirpath, "published.html")
+        path = os.path.join(self.dirpath, "published.html")
         self.document.items = []
         # Act
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
+        mock_makedirs.assert_called_once_with(self.dirpath)
         mock_open.assert_called_once_with(path, "wb")
 
     @patch("os.path.isdir", Mock(return_value=False))
@@ -47,13 +59,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch("doorstop.core.publisher.publish_lines")
     def test_publish_document_html(self, mock_lines, mock_open, mock_makedirs):
         """Verify a (mock) HTML file can be created."""
-        dirpath = os.path.join("mock", "directory")
-        path = os.path.join(dirpath, "published.custom")
+        path = os.path.join(self.dirpath, "published.custom")
         # Act
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
+        mock_makedirs.assert_called_once_with(self.dirpath)
         mock_open.assert_called_once_with(path, "wb")
         mock_lines.assert_called_once_with(
             self.document,
@@ -72,10 +83,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self, mock_lines, mock_open, mock_glob, mock_rm
     ):
         """Verify that the contents of an assets directory next to the published file is deleted"""
-        dirpath = os.path.abspath(os.path.join("mock", "directory"))
-        path = os.path.join(dirpath, "published.custom")
+        path = os.path.join(self.dirpath, "published.custom")
         assets = [
-            os.path.join(dirpath, Document.ASSETS, dir) for dir in ["css", "logo.png"]
+            os.path.join(self.dirpath, Document.ASSETS, dir)
+            for dir in ["css", "logo.png"]
         ]
         mock_glob.return_value = assets
         # Act
@@ -101,9 +112,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self, mock_open, mock_makedirs, mock_copyassets
     ):
         """Verify that assets are published"""
-        dirpath = os.path.join("mock", "directory")
-        assets_path = os.path.join(dirpath, "assets")
-        path = os.path.join(dirpath, "published.custom")
+        assets_path = os.path.join(self.dirpath, "assets")
+        path = os.path.join(self.dirpath, "published.custom")
         document = MockDocument("/some/path")
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
@@ -112,7 +122,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
+        mock_makedirs.assert_called_once_with(self.dirpath)
         mock_copyassets.assert_called_once_with(assets_path)
 
     def test_publish_document_unknown(self):
@@ -128,25 +138,24 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch("builtins.open")
     def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
-        dirpath = os.path.join("mock", "directory")
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
         expected_calls = [
-            call(os.path.join("mock", "directory", "MOCK.html"), "wb"),
+            call(os.path.join(self.dirpath, "MOCK.html"), "wb"),
             call(
-                os.path.join("mock", "directory", "traceability.csv"),
+                os.path.join(self.dirpath, "traceability.csv"),
                 "w",
                 encoding="utf-8",
                 newline="",
             ),
         ]
         # Act
-        dirpath2 = publisher.publish(self.mock_tree, dirpath)
+        dirpath2 = publisher.publish(self.mock_tree, self.dirpath)
         # Assert
-        self.assertIs(dirpath, dirpath2)
+        self.assertIs(self.dirpath, dirpath2)
         self.assertEqual(expected_calls, mock_open.call_args_list)
-        mock_index.assert_called_once_with(dirpath, tree=self.mock_tree)
+        mock_index.assert_called_once_with(self.dirpath, tree=self.mock_tree)
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -154,17 +163,15 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch("builtins.open")
     def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
-        dirpath = os.path.join("mock", "directory")
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
-        expected_calls = [call(os.path.join("mock", "directory", "MOCK.html"), "wb")]
+        expected_calls = [call(os.path.join(self.dirpath, "MOCK.html"), "wb")]
         # Act
-        dirpath2 = publisher.publish(self.mock_tree, dirpath, index=False)
+        dirpath2 = publisher.publish(self.mock_tree, self.dirpath, index=False)
         # Assert
-        self.assertIs(dirpath, dirpath2)
+        self.assertIs(self.dirpath, dirpath2)
         self.assertEqual(0, mock_index.call_count)
-        print(mock_open.call_args_list)
         self.assertEqual(expected_calls, mock_open.call_args_list)
 
     def test_index(self):
@@ -547,7 +554,6 @@ class TestTableOfContents(unittest.TestCase):
     * 2.1 Plantuml
     * 2.1 REQ2-001\n"""
         toc = publisher._table_of_contents_md(self.document, linkify=None)
-        print(toc)
         self.assertEqual(expected, toc)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
@@ -562,7 +568,6 @@ class TestTableOfContents(unittest.TestCase):
     * Plantuml
     * REQ2-001\n"""
         toc = publisher._table_of_contents_md(self.document, linkify=None)
-        print(toc)
         self.assertEqual(expected, toc)
 
     def test_toc(self):
