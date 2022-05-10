@@ -32,7 +32,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         rmtree("mock_%s" % __name__)
-        rmtree("reqs", "template")
+        rmtree(os.path.join("reqs", "template"))
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
