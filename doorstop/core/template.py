@@ -105,10 +105,13 @@ def get_template(obj, path, ext, template):
 
     return assets_dir, template
 
+
 def read_template_data(assets_dir, template):
     """Read the template data file and return the data."""
     try:
-        template_data_file = os.path.abspath(os.path.join(assets_dir,"..","template","%s.yml" % template))
+        template_data_file = os.path.abspath(
+            os.path.join(assets_dir, "..", "template", "%s.yml" % template)
+        )
         with open(template_data_file, "r") as f:
             template_data = safe_load(f)
     except Exception as ex:

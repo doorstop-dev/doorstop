@@ -15,7 +15,14 @@ from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
-from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template, read_template_data
+from doorstop.core.template import (
+    CSS,
+    HTMLTEMPLATE,
+    INDEX,
+    MATRIX,
+    get_template,
+    read_template_data,
+)
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (

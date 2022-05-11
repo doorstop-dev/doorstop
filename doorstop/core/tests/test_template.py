@@ -247,15 +247,13 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         )
         template_data = template.read_template_data(asset_dir, selected_template)
         # Assert
-        self.assertEqual(template_data["documentclass"], ['a4paper','twoside'])
+        self.assertEqual(template_data["documentclass"], ["a4paper", "twoside"])
 
     def test_failed_read_template_data(self):
         """Verify that the read of LaTeX template data file raises an error if
         file is missing."""
         # Act
-        asset_dir, selected_template = template.get_template(
-            self.mock_tree, self.dirpath, ".tex", None
-        )
+        asset_dir, _ = template.get_template(self.mock_tree, self.dirpath, ".tex", None)
         # Assert
         with self.assertRaises(DoorstopError):
             _ = template.read_template_data(asset_dir, "bad_name")
