@@ -769,9 +769,8 @@ def _add_comment(wrapper, text):
             line += " " * (79 - len(line)) + "%"
             wrapper.append(line)
             line = "% " + word
-    if len(line) > 2:
-        line += " " * (79 - len(line)) + "%"
-        wrapper.append(line)
+    line += " " * (79 - len(line)) + "%"
+    wrapper.append(line)
     wrapper.append("%" * 80)
 
     return wrapper
