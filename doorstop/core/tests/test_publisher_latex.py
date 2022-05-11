@@ -375,6 +375,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """Verify that external references are published correctly with settings.CHECK_REF set to False."""
         # Setup
         mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
+        self.item6.load()
         self.item6.unlink("sys3")
         expected = (
             r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
@@ -393,6 +394,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """Verify that external references are published correctly with settings.CHECK_REF set to True."""
         # Setup
         mock_value = [("path/to/mock/file1", 3), ("path/to/mock/file2", None)]
+        self.item6.load()
         self.item6.unlink("sys3")
         expected = (
             r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
@@ -411,6 +413,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to False."""
         # Setup
         mock_value = ("path/to/mock/abc123", None)
+        self.item5.load()
         self.item5.unlink("sys3")
         expected = (
             r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
@@ -428,6 +431,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         """DEPRECATED: Verify that external references (OLD ref:) are published correctly with settings.CHECK_REF set to True."""
         # Setup
         mock_value = ("path/to/mock/abc123", None)
+        self.item5.load()
         self.item5.unlink("sys3")
         expected = (
             r"\subsubsection{req3}\label{req3}\zlabel{req3}" + "\n\n"
