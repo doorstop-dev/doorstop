@@ -660,36 +660,37 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     path3 = os.path.join(head, tail)
     # Load template data.
     template_data = read_template_data(assets_dir, template)
-    print("template_data")
-    print(template_data)
     check_latex_template_data(template_data)
     wrapper = []
     wrapper.append(
         "\\documentclass[%s]{template/%s}"
         % (", ".join(template_data["documentclass"]), template)
     )
-    wrapper.append("\\usepackage[utf8]{inputenc}")
-    # Add required packages if custom template is used.
-    if template != "doorstop":
-        wrapper.append("\\usepackage{amsmath}")
-        wrapper.append("\\usepackage{ulem}")
-        wrapper.append("\\usepackage{longtable}")
-        wrapper.append("\\usepackage{fancyvrb}")
-        wrapper.append("\\usepackage{xr-hyper}")
-        wrapper.append("\\usepackage[unicode,colorlinks]{hyperref}")
-        wrapper.append("\\usepackage{zref-user}")
-        wrapper.append("\\usepackage{zref-xr}")
+    # Add required packages from template data.
+    wrapper = _add_comment(
+        wrapper,
+        "These packages were automatically added from the template configuration file.",
+    )
+    for package, options in template_data["usepackage"].items():
+        package_line = "\\usepackage"
+        if options:
+            package_line += "[%s]" % ", ".join(options)
+        package_line += "{%s}" % package
+        wrapper.append(package_line)
+    wrapper = _add_comment(wrapper, "END data from the template configuration file.")
     wrapper.append("")
-    wrapper.append("\\def\\owner{{{n}}}".format(n=doc_attributes["copyright"]))
-    wrapper.append("")
-    wrapper.append("% Define the header.")
+    wrapper = _add_comment(
+        wrapper,
+        "These fields are generated from the default doc attribute in the .doorstop.yml file.",
+    )
+    wrapper.append("\\def\\doccopyright{{{n}}}".format(n=doc_attributes["copyright"]))
     wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj.prefix))
-    wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
-    wrapper.append("\\title{{{n}}}".format(n=doc_attributes["title"]))
+    wrapper.append("\\def\\doctitle{{{n}}}".format(n=doc_attributes["title"]))
     wrapper.append("\\def\\docref{{{n}}}".format(n=doc_attributes["ref"]))
     wrapper.append("\\def\\docby{{{n}}}".format(n=doc_attributes["by"]))
     wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=doc_attributes["major"]))
     wrapper.append("\\def\\docissueminor{{{n}}}".format(n=doc_attributes["minor"]))
+    wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
     wrapper.append("")
     info_text_set = False
     for external, _ in iter_documents(obj, path, ".tex"):
@@ -698,8 +699,9 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
         # Don't add self.
         if external_doc_attributes["name"] != doc_attributes["name"]:
             if not info_text_set:
-                wrapper.append(
-                    "% Add all documents as external references to allow cross-references."
+                wrapper = _add_comment(
+                    wrapper,
+                    "These are automatically added external references to make cross-references work between the PDFs.",
                 )
                 info_text_set = True
             wrapper.append(
@@ -708,10 +710,28 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
             wrapper.append(
                 "\\externaldocument{{{n}}}".format(n=external_doc_attributes["name"])
             )
+    if info_text_set:
+        wrapper = _add_comment(wrapper, "END external references.")
+    wrapper = _add_comment(
+        wrapper,
+        "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
+    )
+    for line in template_data["before_begin_document"]:
+        wrapper.append(line)
+    wrapper = _add_comment(
+        wrapper, "END custom data from the template configuration file."
+    )
     wrapper.append("")
     wrapper.append("\\begin{document}")
-    wrapper.append("\\maketitle")
-    wrapper.append("\\maketoc")
+    wrapper = _add_comment(
+        wrapper,
+        "These lines were automatically added from the template configuration file to allow full customization of the template _after_ \\begin{document}.",
+    )
+    for line in template_data["after_begin_document"]:
+        wrapper.append(line)
+    wrapper = _add_comment(
+        wrapper, "END custom data from the template configuration file."
+    )
     wrapper.append("% Load the output file.")
     wrapper.append("\\input{{{n}.tex}}".format(n=obj.prefix))
     # Include traceability matrix
@@ -727,3 +747,23 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
 
     # Add to compile.sh as return value.
     return path, "pdflatex -shell-escape {n}.tex".format(n=doc_attributes["name"])
+
+
+def _add_comment(wrapper, text):
+    """Add comments to the .tex output file in a pretty way."""
+    wrapper.append("%" * 80)
+    words = text.split(" ")
+    line = "%"
+    for word in words:
+        if len(line) + len(word) <= 77:
+            line += " %s" % word
+        else:
+            line += " " * (79 - len(line)) + "%"
+            wrapper.append(line)
+            line = "% " + word
+    if len(line) > 2:
+        line += " " * (79 - len(line)) + "%"
+        wrapper.append(line)
+    wrapper.append("%" * 80)
+
+    return wrapper
