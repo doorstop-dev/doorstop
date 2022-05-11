@@ -1,0 +1,4 @@
+# Define all options to class.
+documentclass:
+  - a4paper
+  - twoside

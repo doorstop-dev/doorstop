@@ -10,6 +10,7 @@ import bottle
 import markdown
 from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
+import yaml
 
 from doorstop import common, settings
 from doorstop.cli import utilities
@@ -97,7 +98,7 @@ def publish(
             document_by = ""
             document_major = ""
             document_minor = ""
-            document_copyright = ""
+            document_copyright = "Doorstop"
             try:
                 attribute_defaults = obj2.__getattribute__("_attribute_defaults")
                 if attribute_defaults:
@@ -130,16 +131,37 @@ def publish(
             tail = document_name + ".tex"
             path2 = os.path.join(head, obj2.prefix + ".tex")
             path3 = os.path.join(head, tail)
+            # Load template data.
+            try:
+                template_data_file = os.path.abspath(os.path.join(assets_dir,"..","template","%s.yml" % template))
+                print("template file = %s " % template_data_file)
+                with open(template_data_file, "r") as f:
+                    template_data = yaml.safe_load(f)
+            except Exception as ex:
+                msg = "Template data load '{}' failed: {}".format(f, ex)
+                raise DoorstopError(msg)
+            print("template_data")
+            print(template_data)
             wrapper = []
-            wrapper.append("\\documentclass[a4paper, twoside]{%s}" % template)
+            wrapper.append("\\documentclass[a4paper, twoside]{template/%s}" % template)
             wrapper.append("\\usepackage[utf8]{inputenc}")
+            # Add required packages if custom template is used.
+            if template != "doorstop":
+                wrapper.append("\\usepackage{amsmath}")
+                wrapper.append("\\usepackage{ulem}")
+                wrapper.append("\\usepackage{longtable}")
+                wrapper.append("\\usepackage{fancyvrb}")
+                wrapper.append("\\usepackage{xr-hyper}")
+                wrapper.append("\\usepackage[unicode,colorlinks]{hyperref}")
+                wrapper.append("\\usepackage{zref-user}")
+                wrapper.append("\\usepackage{zref-xr}")
             wrapper.append("")
-            wrapper.append("%\\def\\owner{{{n}}}".format(n=document_copyright))
+            wrapper.append("\\def\\owner{{{n}}}".format(n=document_copyright))
             wrapper.append("")
             wrapper.append("% Define the header.")
             wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2.prefix))
             wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
-            wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
+            wrapper.append("\\title{{{n}}}".format(n=document_title))
             wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
             wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
             wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
@@ -175,7 +197,7 @@ def publish(
                     )
             wrapper.append("")
             wrapper.append("\\begin{document}")
-            wrapper.append("\\makecoverpage")
+            wrapper.append("\\maketitle")
             wrapper.append("\\maketoc")
             wrapper.append("% Load the output file.")
             wrapper.append("\\input{{{n}.tex}}".format(n=obj2.prefix))
