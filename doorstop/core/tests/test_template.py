@@ -257,3 +257,67 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Assert
         with self.assertRaises(DoorstopError):
             _ = template.read_template_data(asset_dir, "bad_name")
+
+    def test_validate_template_data(self):
+        """Verify that the validation of template data works correctly."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        template_data = template.read_template_data(asset_dir, selected_template)
+        # Assert
+        template.check_latex_template_data(template_data)
+
+    def test_validate_template_data_no_package_information(self):
+        """Verify that the validation fails if packages are not defined at all."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        template_data = template.read_template_data(asset_dir, selected_template)
+        # Remove the usepackage key.
+        del template_data["usepackage"]
+        # Assert
+        with self.assertRaises(DoorstopError):
+            template.check_latex_template_data(template_data)
+
+    def test_validate_template_data_package_wrong_format(self):
+        """Verify that the validation fails if packages are not defined as a
+        package."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        template_data = template.read_template_data(asset_dir, selected_template)
+        # Change usepackage to a list.
+        template_data["usepackage"] = []
+        # Assert
+        with self.assertRaises(DoorstopError):
+            template.check_latex_template_data(template_data)
+
+    def test_validate_template_data_missing_a_package(self):
+        """Verify that the validation fails if a required package is missing."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        template_data = template.read_template_data(asset_dir, selected_template)
+        # Remove one of the usepackage sub keys.
+        del template_data["usepackage"][list(template.REQUIRED_LATEX_PACKAGES)[0]]
+        # Assert
+        with self.assertRaises(DoorstopError):
+            template.check_latex_template_data(template_data)
+
+    def test_validate_template_data_missing_an_option(self):
+        """Verify that the validation fails if a required option is missing
+        from a package."""
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".tex", None
+        )
+        template_data = template.read_template_data(asset_dir, selected_template)
+        # Remove one of the required options.
+        template_data["usepackage"]["hyperref"] = ["unicode",]
+        # Assert
+        with self.assertRaises(DoorstopError):
+            template.check_latex_template_data(template_data)
