@@ -317,7 +317,9 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         )
         template_data = template.read_template_data(asset_dir, selected_template)
         # Remove one of the required options.
-        template_data["usepackage"]["hyperref"] = ["unicode",]
+        template_data["usepackage"]["hyperref"] = [
+            "unicode",
+        ]
         # Assert
         with self.assertRaises(DoorstopError):
             template.check_latex_template_data(template_data)

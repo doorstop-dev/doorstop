@@ -13,7 +13,7 @@ from unittest.mock import patch
 from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, YAML_LATEX_NO_DOC ,getWalk
+from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, YAML_LATEX_NO_DOC, getWalk
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):

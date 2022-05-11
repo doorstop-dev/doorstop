@@ -664,7 +664,10 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     print(template_data)
     check_latex_template_data(template_data)
     wrapper = []
-    wrapper.append("\\documentclass[a4paper, twoside]{template/%s}" % template)
+    wrapper.append(
+        "\\documentclass[%s]{template/%s}"
+        % (", ".join(template_data["documentclass"]), template)
+    )
     wrapper.append("\\usepackage[utf8]{inputenc}")
     # Add required packages if custom template is used.
     if template != "doorstop":
