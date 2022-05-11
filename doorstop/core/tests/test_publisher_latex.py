@@ -61,7 +61,9 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             call(os.path.join("mock", "directory", "traceability.tex"), "wb")
         )
         # Act
-        dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
+        with patch('doorstop.core.publisher_latex.check_latex_template_data') as mock_check:
+            mock_check.get.return_value = None
+            dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
         # Assert
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(expected_calls, mock_open.call_args_list)
