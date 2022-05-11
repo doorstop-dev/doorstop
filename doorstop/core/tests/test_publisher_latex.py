@@ -12,128 +12,12 @@ from unittest.mock import Mock, call, patch
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
-from doorstop.core.tests.helpers_latex import (
-    LINES,
-    YAML_LATEX_DOC,
-    YAML_LATEX_NO_DOC,
-    getLines,
-)
+from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, getLines
 from doorstop.core.types import iter_documents
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publisher_latex module, more specifically the changes introduced by the doorstop.core.publisher_latex module."""
-
-    @patch("os.makedirs")
-    @patch("builtins.open")
-    def test_publish_document_with_latex_data(self, mock_open, mock_makedirs):
-        """Verify a LaTeX document can be published with LaTeX doc data."""
-        # Setup
-        dirpath = os.path.join("mock", "directory")
-        document = MockDocument("/some/path")
-        document._file = YAML_LATEX_DOC
-        document.load(reload=True)
-        itemPath = os.path.join("path", "to", "REQ-001.yml")
-        item = MockItem(document, itemPath)
-        item._file = LINES
-        item.load(reload=True)
-        document._items.append(item)
-        path = os.path.join(dirpath, str(self.document))
-        expected_calls = [
-            call(
-                os.path.join(
-                    os.path.dirname(os.path.dirname(__file__)),
-                    "files",
-                    "templates",
-                    "latex",
-                    "logo-black-white.png",
-                ),
-                "rb",
-            ),
-            call(
-                os.path.join("mock", "directory", "template", "logo-black-white.png"),
-                "wb",
-            ),
-            call(
-                os.path.join(
-                    os.path.dirname(os.path.dirname(__file__)),
-                    "files",
-                    "templates",
-                    "latex",
-                    "doorstop.cls",
-                ),
-                "rb",
-            ),
-            call(
-                os.path.join("mock", "directory", "template", "doorstop.cls"),
-                "wb",
-            ),
-            call(
-                os.path.join(
-                    os.path.dirname(os.path.dirname(__file__)),
-                    "files",
-                    "templates",
-                    "latex",
-                    "doorstop.yml",
-                ),
-                "rb",
-            ),
-            call(
-                os.path.join("mock", "directory", "template", "doorstop.yml"),
-                "wb",
-            ),
-            call(
-                os.path.join("mock", "directory", "Tutorial.tex"),
-                "wb",
-            ),
-            call(
-                os.path.join("mock", "directory", "{n}.tex".format(n=str(document))),
-                "wb",
-            ),
-            call(os.path.join("mock", "directory", "compile.sh"), "wb"),
-        ]
-        # Act
-        path2 = publisher.publish(document, path, ".tex")
-        # Assert
-        self.assertIs(path, path2)
-        mock_makedirs.assert_called_with(os.path.join(dirpath, "template"))
-        self.assertEqual(expected_calls, mock_open.call_args_list)
-        self.assertEqual(mock_open.call_count, 9)
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    @patch("builtins.open")
-    def test_publish_document_without_latex_data(self, mock_open, mock_makedirs):
-        """Verify a LaTeX document can be published without LaTeX doc data."""
-        # Setup
-        dirpath = os.path.join("mock", "directory")
-        document = MockDocument("/some/path")
-        document._file = YAML_LATEX_NO_DOC
-        document.load(reload=True)
-        itemPath = os.path.join("path", "to", "TST-001.yml")
-        item = MockItem(document, itemPath)
-        item._file = LINES
-        item.load(reload=True)
-        document._items.append(item)
-        path = os.path.join(dirpath, str(self.document))
-        expected_calls = [
-            call(
-                os.path.join("mock", "directory", "doc-TST.tex"),
-                "wb",
-            ),
-            call(
-                os.path.join("mock", "directory", "{n}.tex".format(n=str(document))),
-                "wb",
-            ),
-            call(os.path.join("mock", "directory", "compile.sh"), "wb"),
-        ]
-        # Act
-        path2 = publisher.publish(document, path, ".tex", linkify=True, matrix=True)
-        # Assert
-        self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(dirpath)
-        self.assertEqual(expected_calls, mock_open.call_args_list)
-        self.assertEqual(mock_open.call_count, 3)
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
