@@ -131,7 +131,7 @@ def publish(
             path2 = os.path.join(head, obj2.prefix + ".tex")
             path3 = os.path.join(head, tail)
             # Load template data.
-            template_data = read_template_data(assets_dir)
+            template_data = read_template_data(assets_dir, template)
             print("template_data")
             print(template_data)
             wrapper = []
