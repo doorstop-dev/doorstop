@@ -4,6 +4,8 @@ documentclass:
   - twoside
 # Define all 'usepackage' commands.
 usepackage:
+  inputenc:
+    - utf8
   amsmath:
   ulem:
   longtable:
@@ -15,3 +17,10 @@ usepackage:
     - colorlinks
   zref-user:
   zref-xr:
+# Define custom lines before \begin{document}
+before_begin_document:
+  - \def\docname{Doorstop - \doccategory{}}
+# Define custom lines after \begin{document}
+after_begin_document:
+  - \maketitle
+  - \maketoc
