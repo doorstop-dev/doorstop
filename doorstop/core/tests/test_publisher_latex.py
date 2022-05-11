@@ -149,6 +149,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         for obj2, _ in iter_documents(self.mock_tree, dirpath, ".tex"):
             expected_calls.append(
                 call(
+                    os.path.abspath(
+                        os.path.join("mock", "directory", "template", "doorstop.yml")
+                    ),
+                    "r",
+                )
+            )
+            expected_calls.append(
+                call(
                     os.path.join(
                         "mock", "directory", "doc-{n}.tex".format(n=obj2.prefix)
                     ),
@@ -173,7 +181,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIs(dirpath, dirpath2)
         self.assertEqual(expected_calls, mock_open.call_args_list)
-        self.assertEqual(mock_open.call_count, 4)
+        self.assertEqual(mock_open.call_count, 5)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
     def test_setting_publish_heading_levels_true(self):
