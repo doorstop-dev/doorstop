@@ -145,4 +145,3 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
-        self.assertTrue(False)
