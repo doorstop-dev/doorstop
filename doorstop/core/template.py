@@ -17,6 +17,7 @@ INDEX = "index.html"
 MATRIX = "traceability.csv"
 
 REQUIRED_LATEX_PACKAGES = {
+    "inputenc": None,
     "amsmath": None,
     "ulem": None,
     "longtable": None,
