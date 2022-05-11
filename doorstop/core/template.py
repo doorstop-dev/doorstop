@@ -148,7 +148,6 @@ def check_latex_template_data(template_data):
             log.error("%s is a required package. Please add it to the template configuration file.", package)
             raise DoorstopError("%s is a required package. Please add it to the template configuration file.", package)
         if options:
-            print("OPTIONS")
             for option in options:
                 if option not in template_data["usepackage"][package]:
                     log.error("%s is a required option for the %s package. Please add it to the template configuration file.", option, package)
