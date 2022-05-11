@@ -12,8 +12,8 @@ from unittest.mock import patch
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
-from doorstop.core.tests import ROOT, MockDataMixIn
-from doorstop.core.tests.helpers_latex import getWalk
+from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
+from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, YAML_LATEX_NO_DOC ,getWalk
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -95,3 +95,54 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(self.expected_walk, walk)
+
+    def test_publish_latex_document_with_attributes(self):
+        """Verify that LaTeX specific attributes are published when publishing a document."""
+        expected_walk = """{n}/
+    REQ.tex
+    Tutorial.tex
+    compile.sh
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_publish_latex_document_without_attributes(self):
+        """Verify that missing LaTeX attibutes does not fail publish."""
+        expected_walk = """{n}/
+    TST.tex
+    compile.sh
+    doc-TST.tex
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_NO_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+        self.assertTrue(False)
