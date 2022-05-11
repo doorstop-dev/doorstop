@@ -14,15 +14,13 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
-from doorstop.core.template import (
-    CSS,
-    HTMLTEMPLATE,
-    INDEX,
-    MATRIX,
-    get_template,
-    read_template_data,
+from doorstop.core.publisher_latex import (
+    _generate_latex_wrapper,
+    _get_compile_path,
+    _lines_latex,
+    _matrix_latex,
 )
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -86,130 +84,20 @@ def publish(
 
     # Publish documents
     count = 0
-    compile_files = []
-    compile_path = ""
+    if ext == ".tex":
+        compile_files = []
+        compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
             log.debug("Generating compile script for LaTeX from %s", path2)
-            head, tail = os.path.split(path2)
-            tail = "compile.sh"
-            compile_path = os.path.join(head, tail)
-            # Check for defined document attributes.
-            document_name = "doc-" + obj2.prefix
-            log.debug("Document name is '%s'", document_name)
-            document_title = "Test document for development of \\textit{Doorstop}"
-            document_ref = ""
-            document_by = ""
-            document_major = ""
-            document_minor = ""
-            document_copyright = "Doorstop"
-            try:
-                attribute_defaults = obj2.__getattribute__("_attribute_defaults")
-                if attribute_defaults:
-                    if attribute_defaults["doc"]["name"]:
-                        document_name = attribute_defaults["doc"]["name"]
-                    if attribute_defaults["doc"]["title"]:
-                        document_title = attribute_defaults["doc"]["title"]
-                    if attribute_defaults["doc"]["ref"]:
-                        document_ref = attribute_defaults["doc"]["ref"]
-                    if attribute_defaults["doc"]["by"]:
-                        document_by = attribute_defaults["doc"]["by"]
-                    if attribute_defaults["doc"]["major"]:
-                        document_major = attribute_defaults["doc"]["major"]
-                    if attribute_defaults["doc"]["minor"]:
-                        document_minor = attribute_defaults["doc"]["minor"]
-                    if attribute_defaults["doc"]["copyright"]:
-                        document_copyright = attribute_defaults["doc"]["copyright"]
-            except AttributeError:
-                pass
-            # Add to compile.sh
-            compile_files.append(
-                "pdflatex -shell-escape {n}.tex".format(n=document_name)
+            if count == 1:
+                compile_path = _get_compile_path(path2)
+            path2, file_to_compile = _generate_latex_wrapper(
+                obj2, path2, assets_dir, template, matrix, count
             )
-            # Create the wrapper file.
-            head, tail = os.path.split(path2)
-            if tail != obj2.prefix + ".tex":
-                log.warning(
-                    "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
-                )
-            tail = document_name + ".tex"
-            path2 = os.path.join(head, obj2.prefix + ".tex")
-            path3 = os.path.join(head, tail)
-            # Load template data.
-            template_data = read_template_data(assets_dir, template)
-            print("template_data")
-            print(template_data)
-            wrapper = []
-            wrapper.append("\\documentclass[a4paper, twoside]{template/%s}" % template)
-            wrapper.append("\\usepackage[utf8]{inputenc}")
-            # Add required packages if custom template is used.
-            if template != "doorstop":
-                wrapper.append("\\usepackage{amsmath}")
-                wrapper.append("\\usepackage{ulem}")
-                wrapper.append("\\usepackage{longtable}")
-                wrapper.append("\\usepackage{fancyvrb}")
-                wrapper.append("\\usepackage{xr-hyper}")
-                wrapper.append("\\usepackage[unicode,colorlinks]{hyperref}")
-                wrapper.append("\\usepackage{zref-user}")
-                wrapper.append("\\usepackage{zref-xr}")
-            wrapper.append("")
-            wrapper.append("\\def\\owner{{{n}}}".format(n=document_copyright))
-            wrapper.append("")
-            wrapper.append("% Define the header.")
-            wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj2.prefix))
-            wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
-            wrapper.append("\\title{{{n}}}".format(n=document_title))
-            wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
-            wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
-            wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
-            wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
-            wrapper.append("")
-            info_text_set = False
-            for external, _ in iter_documents(obj, path, ext):
-                # Check for defined document attributes.
-                external_doc_name = "doc-" + external.prefix
-                try:
-                    external_attribute_defaults = external.__getattribute__(
-                        "_attribute_defaults"
-                    )
-                    if external_attribute_defaults:
-                        if external_attribute_defaults["doc"]["name"]:
-                            external_doc_name = external_attribute_defaults["doc"][
-                                "name"
-                            ]
-                except AttributeError:
-                    pass
-                # Don't add self.
-                if external_doc_name != document_name:
-                    if not info_text_set:
-                        wrapper.append(
-                            "% Add all documents as external references to allow cross-references."
-                        )
-                        info_text_set = True
-                    wrapper.append(
-                        "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
-                    )
-                    wrapper.append(
-                        "\\externaldocument{{{n}}}".format(n=external_doc_name)
-                    )
-            wrapper.append("")
-            wrapper.append("\\begin{document}")
-            wrapper.append("\\maketitle")
-            wrapper.append("\\maketoc")
-            wrapper.append("% Load the output file.")
-            wrapper.append("\\input{{{n}.tex}}".format(n=obj2.prefix))
-            # Include traceability matrix
-            if matrix and count:
-                wrapper.append("% Traceability matrix")
-                if settings.PUBLISH_HEADING_LEVELS:
-                    wrapper.append("\\section{Traceability}")
-                else:
-                    wrapper.append("\\section*{Traceability}")
-                wrapper.append("\\input{traceability.tex}")
-            wrapper.append("\\end{document}")
-            common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
+            compile_files.append(file_to_compile)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))

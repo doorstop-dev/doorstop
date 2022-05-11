@@ -8,7 +8,8 @@ from typing import List
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import is_item, iter_items
+from doorstop.core.template import read_template_data
+from doorstop.core.types import is_item, iter_documents, iter_items
 
 log = common.logger(__name__)
 
@@ -602,3 +603,127 @@ def _matrix_latex(table, path):
     # End the table.
     traceability.append(END_LONGTABLE)
     common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
+
+
+def _get_compile_path(path):
+    """Return the path to the compile script."""
+    head, tail = os.path.split(path)
+    tail = "compile.sh"
+    return os.path.join(head, tail)
+
+
+def _get_document_attributes(obj):
+    """Try to get attributes from document."""
+    doc_attributes = {}
+    doc_attributes["name"] = "doc-" + obj.prefix
+    log.debug("Document name is '%s'", doc_attributes["name"])
+    doc_attributes["title"] = "Test document for development of \\textit{Doorstop}"
+    doc_attributes["ref"] = ""
+    doc_attributes["by"] = ""
+    doc_attributes["major"] = ""
+    doc_attributes["minor"] = ""
+    doc_attributes["copyright"] = "Doorstop"
+    try:
+        attribute_defaults = obj.__getattribute__("_attribute_defaults")
+        if attribute_defaults:
+            if attribute_defaults["doc"]["name"]:
+                doc_attributes["name"] = attribute_defaults["doc"]["name"]
+            if attribute_defaults["doc"]["title"]:
+                doc_attributes["title"] = attribute_defaults["doc"]["title"]
+            if attribute_defaults["doc"]["ref"]:
+                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+            if attribute_defaults["doc"]["by"]:
+                doc_attributes["by"] = attribute_defaults["doc"]["by"]
+            if attribute_defaults["doc"]["major"]:
+                doc_attributes["major"] = attribute_defaults["doc"]["major"]
+            if attribute_defaults["doc"]["minor"]:
+                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+            if attribute_defaults["doc"]["copyright"]:
+                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    except AttributeError:
+        pass
+    return doc_attributes
+
+
+def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
+    """Generate all wrapper scripts required for typesetting in LaTeX."""
+    # Check for defined document attributes.
+    doc_attributes = _get_document_attributes(obj)
+    print("attributes")
+    print(doc_attributes)
+    # Create the wrapper file.
+    head, tail = os.path.split(path)
+    if tail != obj.prefix + ".tex":
+        log.warning(
+            "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
+        )
+    tail = doc_attributes["name"] + ".tex"
+    path = os.path.join(head, obj.prefix + ".tex")
+    path3 = os.path.join(head, tail)
+    print("path = %s" % path)
+    print("path3 = %s" % path3)
+    # Load template data.
+    template_data = read_template_data(assets_dir, template)
+    print("template_data")
+    print(template_data)
+    wrapper = []
+    wrapper.append("\\documentclass[a4paper, twoside]{template/%s}" % template)
+    wrapper.append("\\usepackage[utf8]{inputenc}")
+    # Add required packages if custom template is used.
+    if template != "doorstop":
+        wrapper.append("\\usepackage{amsmath}")
+        wrapper.append("\\usepackage{ulem}")
+        wrapper.append("\\usepackage{longtable}")
+        wrapper.append("\\usepackage{fancyvrb}")
+        wrapper.append("\\usepackage{xr-hyper}")
+        wrapper.append("\\usepackage[unicode,colorlinks]{hyperref}")
+        wrapper.append("\\usepackage{zref-user}")
+        wrapper.append("\\usepackage{zref-xr}")
+    wrapper.append("")
+    wrapper.append("\\def\\owner{{{n}}}".format(n=doc_attributes["copyright"]))
+    wrapper.append("")
+    wrapper.append("% Define the header.")
+    wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj.prefix))
+    wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
+    wrapper.append("\\title{{{n}}}".format(n=doc_attributes["title"]))
+    wrapper.append("\\def\\docref{{{n}}}".format(n=doc_attributes["ref"]))
+    wrapper.append("\\def\\docby{{{n}}}".format(n=doc_attributes["by"]))
+    wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=doc_attributes["major"]))
+    wrapper.append("\\def\\docissueminor{{{n}}}".format(n=doc_attributes["minor"]))
+    wrapper.append("")
+    info_text_set = False
+    for external, _ in iter_documents(obj, path, ".tex"):
+        # Check for defined document attributes.
+        external_doc_attributes = _get_document_attributes(external)
+        # Don't add self.
+        if external_doc_attributes["name"] != doc_attributes["name"]:
+            if not info_text_set:
+                wrapper.append(
+                    "% Add all documents as external references to allow cross-references."
+                )
+                info_text_set = True
+            wrapper.append(
+                "\\zexternaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+            )
+            wrapper.append(
+                "\\externaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+            )
+    wrapper.append("")
+    wrapper.append("\\begin{document}")
+    wrapper.append("\\maketitle")
+    wrapper.append("\\maketoc")
+    wrapper.append("% Load the output file.")
+    wrapper.append("\\input{{{n}.tex}}".format(n=obj.prefix))
+    # Include traceability matrix
+    if matrix and count:
+        wrapper.append("% Traceability matrix")
+        if settings.PUBLISH_HEADING_LEVELS:
+            wrapper.append("\\section{Traceability}")
+        else:
+            wrapper.append("\\section*{Traceability}")
+        wrapper.append("\\input{traceability.tex}")
+    wrapper.append("\\end{document}")
+    common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
+
+    # Add to compile.sh as return value.
+    return path, "pdflatex -shell-escape {n}.tex".format(n=doc_attributes["name"])
