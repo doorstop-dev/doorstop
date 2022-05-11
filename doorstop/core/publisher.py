@@ -95,7 +95,7 @@ def publish(
             if count == 1:
                 compile_path = _get_compile_path(path2)
             path2, file_to_compile = _generate_latex_wrapper(
-                obj2, path2, assets_dir, template, matrix, count
+                obj2, path2, assets_dir, template, matrix, count, obj, path
             )
             compile_files.append(file_to_compile)
 

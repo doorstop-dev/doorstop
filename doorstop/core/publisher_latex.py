@@ -645,7 +645,9 @@ def _get_document_attributes(obj):
     return doc_attributes
 
 
-def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
+def _generate_latex_wrapper(
+    obj, path, assets_dir, template, matrix, count, parent, parent_path
+):
     """Generate all wrapper scripts required for typesetting in LaTeX."""
     # Check for defined document attributes.
     doc_attributes = _get_document_attributes(obj)
@@ -693,7 +695,7 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
     wrapper.append("")
     info_text_set = False
-    for external, _ in iter_documents(obj, path, ".tex"):
+    for external, _ in iter_documents(parent, parent_path, ".tex"):
         # Check for defined document attributes.
         external_doc_attributes = _get_document_attributes(external)
         # Don't add self.
@@ -712,6 +714,7 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
             )
     if info_text_set:
         wrapper = _add_comment(wrapper, "END external references.")
+        wrapper.append("")
     wrapper = _add_comment(
         wrapper,
         "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
@@ -732,16 +735,21 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     wrapper = _add_comment(
         wrapper, "END custom data from the template configuration file."
     )
-    wrapper.append("% Load the output file.")
+    wrapper.append("")
+    wrapper = _add_comment(wrapper, "Load the doorstop data file.")
     wrapper.append("\\input{{{n}.tex}}".format(n=obj.prefix))
+    wrapper = _add_comment(wrapper, "END doorstop data file.")
+    wrapper.append("")
     # Include traceability matrix
     if matrix and count:
-        wrapper.append("% Traceability matrix")
+        wrapper = _add_comment(wrapper, "Add traceability matrix.")
         if settings.PUBLISH_HEADING_LEVELS:
             wrapper.append("\\section{Traceability}")
         else:
             wrapper.append("\\section*{Traceability}")
         wrapper.append("\\input{traceability.tex}")
+        wrapper = _add_comment(wrapper, "END traceability matrix.")
+        wrapper.append("")
     wrapper.append("\\end{document}")
     common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
 
