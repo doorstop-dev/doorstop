@@ -122,7 +122,7 @@
 \definetrim{logotrim}{0 100px 0 100px}
 
 % Define a copyright claimer.
-\def\claimer{\color{black!40}All information in this document is the intellectual property of \owner{}. You are not allowed to disclose any information herein to a third party prior to written consent from \owner{}. All rights reserved. \copyright \owner{}}
+\def\claimer{\color{black!40}All information in this document is the intellectual property of \doccopyright{}. You are not allowed to disclose any information herein to a third party prior to written consent from \doccopyright{}. All rights reserved. \copyright \doccopyright{}}
 
 % Sets the counting depths for TOC
 \setcounter{tocdepth}{4}
