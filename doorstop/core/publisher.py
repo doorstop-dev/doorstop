@@ -10,13 +10,12 @@ import bottle
 import markdown
 from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
-import yaml
 
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
 from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
-from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template, read_template_data
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -132,14 +131,7 @@ def publish(
             path2 = os.path.join(head, obj2.prefix + ".tex")
             path3 = os.path.join(head, tail)
             # Load template data.
-            try:
-                template_data_file = os.path.abspath(os.path.join(assets_dir,"..","template","%s.yml" % template))
-                print("template file = %s " % template_data_file)
-                with open(template_data_file, "r") as f:
-                    template_data = yaml.safe_load(f)
-            except Exception as ex:
-                msg = "Template data load '{}' failed: {}".format(f, ex)
-                raise DoorstopError(msg)
+            template_data = read_template_data(assets_dir)
             print("template_data")
             print(template_data)
             wrapper = []
