@@ -8,7 +8,7 @@ from typing import List
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.template import read_template_data
+from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
 
 log = common.logger(__name__)
@@ -649,8 +649,6 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     """Generate all wrapper scripts required for typesetting in LaTeX."""
     # Check for defined document attributes.
     doc_attributes = _get_document_attributes(obj)
-    print("attributes")
-    print(doc_attributes)
     # Create the wrapper file.
     head, tail = os.path.split(path)
     if tail != obj.prefix + ".tex":
@@ -660,12 +658,11 @@ def _generate_latex_wrapper(obj, path, assets_dir, template, matrix, count):
     tail = doc_attributes["name"] + ".tex"
     path = os.path.join(head, obj.prefix + ".tex")
     path3 = os.path.join(head, tail)
-    print("path = %s" % path)
-    print("path3 = %s" % path3)
     # Load template data.
     template_data = read_template_data(assets_dir, template)
     print("template_data")
     print(template_data)
+    check_latex_template_data(template_data)
     wrapper = []
     wrapper.append("\\documentclass[a4paper, twoside]{template/%s}" % template)
     wrapper.append("\\usepackage[utf8]{inputenc}")

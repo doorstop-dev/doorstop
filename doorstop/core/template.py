@@ -16,6 +16,18 @@ HTMLTEMPLATE = "sidebar"
 INDEX = "index.html"
 MATRIX = "traceability.csv"
 
+REQUIRED_LATEX_PACKAGES = {"amsmath": None,
+  "ulem": None,
+  "longtable": None,
+   "fancyvrb": None,
+   "xr-hyper": None,
+   "hyperref": [
+     "unicode",
+     "colorlinks"],
+  "zref-user": None,
+   "zref-xr": None,
+}
+
 log = common.logger(__name__)
 
 
@@ -118,3 +130,26 @@ def read_template_data(assets_dir, template):
         msg = "Template data load '{}' failed: {}".format(template_data_file, ex)
         raise DoorstopError(msg)
     return template_data
+
+
+def check_latex_template_data(template_data):
+    """Check that all required packages have been defined in template data."""
+    # Check basics first.
+    if "usepackage" not in template_data:
+        log.error("There is no dictionary of packages in the template configuration file.")
+        raise DoorstopError("There is no list of packages in the template configuration file.")
+    if not isinstance(template_data["usepackage"], dict):
+        log.error("The 'usepackage' data in the configuration file is not a dictionary.")
+        raise DoorstopError("The 'usepackage' data in the configuration file is not a dictionary.")
+
+    # Iterate over all required packages.
+    for package, options in REQUIRED_LATEX_PACKAGES.items():
+        if package not in template_data["usepackage"]:
+            log.error("%s is a required package. Please add it to the template configuration file.", package)
+            raise DoorstopError("%s is a required package. Please add it to the template configuration file.", package)
+        if options:
+            print("OPTIONS")
+            for option in options:
+                if option not in template_data["usepackage"][package]:
+                    log.error("%s is a required option for the %s package. Please add it to the template configuration file.", option, package)
+                    raise DoorstopError("%s is a required option for the %s package. Please add it to the template configuration file.", option, package)
