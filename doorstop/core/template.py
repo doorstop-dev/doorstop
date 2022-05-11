@@ -105,14 +105,13 @@ def get_template(obj, path, ext, template):
 
     return assets_dir, template
 
-def read_template_data(assets_dir):
+def read_template_data(assets_dir, template):
     """Read the template data file and return the data."""
     try:
         template_data_file = os.path.abspath(os.path.join(assets_dir,"..","template","%s.yml" % template))
-        print("template file = %s " % template_data_file)
         with open(template_data_file, "r") as f:
             template_data = safe_load(f)
     except Exception as ex:
-        msg = "Template data load '{}' failed: {}".format(f, ex)
+        msg = "Template data load '{}' failed: {}".format(template_data_file, ex)
         raise DoorstopError(msg)
     return template_data
