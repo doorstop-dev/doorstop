@@ -409,6 +409,7 @@ def _lines_markdown(obj, **kwargs):
 
     """
     linkify = kwargs.get("linkify", False)
+    to_html = kwargs.get("to_html", False)
     for item in iter_items(obj):
 
         heading = "#" * item.depth
@@ -471,7 +472,7 @@ def _lines_markdown(obj, **kwargs):
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                links = _format_md_links(items2, linkify)
+                links = _format_md_links(items2, linkify, to_html=to_html)
                 label_links = _format_md_label_links(label, links, linkify)
                 yield label_links
 
@@ -481,7 +482,7 @@ def _lines_markdown(obj, **kwargs):
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"
-                    links = _format_md_links(items2, linkify)
+                    links = _format_md_links(items2, linkify, to_html=to_html)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
 
@@ -589,11 +590,14 @@ def _format_md_references(item):
         return "\n".join(ref for ref in text_refs)
 
 
-def _format_md_links(items, linkify):
+def _format_md_links(items, linkify, to_html=False):
     """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        link = _format_md_item_link(item, linkify=linkify)
+        if to_html:
+            link = _format_html_item_link(item, linkify=linkify)
+        else:
+            link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
     return ", ".join(links)
 
@@ -689,7 +693,7 @@ def _lines_html(
         document = True
     # Generate HTML
 
-    text = "\n".join(_lines_markdown(obj, linkify=linkify))
+    text = "\n".join(_lines_markdown(obj, linkify=linkify, to_html=True))
     body = markdown.markdown(text, extensions=extensions)
 
     if toc:
