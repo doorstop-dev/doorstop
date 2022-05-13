@@ -215,15 +215,15 @@ def _latex_convert(line):
     ## Fix BOLD and ITALICS and Strikethrough.
     #############################
     # Replace **.
-    line = re.sub("\\*\\*(.*)\\*\\*", "\\\\textbf{\\1}", line)
+    line = re.sub("\\*\\*(.*?)\\*\\*", "\\\\textbf{\\1}", line)
     # Replace __.
-    line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
+    line = re.sub("__(.*?)__", "\\\\textbf{\\1}", line)
     # Replace *.
-    line = re.sub("\\*(.*)\\*", "\\\\textit{\\1}", line)
+    line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
     # Replace _.
-    line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
+    line = re.sub("_(.*?)_", "\\\\textit{\\1}", line)
     # Replace ~~.
-    line = re.sub("~~(.*)~~", "\\\\sout{\\1}", line)
+    line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
     #############################
     ## Fix manual heading levels
     #############################
