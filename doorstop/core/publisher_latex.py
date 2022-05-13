@@ -40,11 +40,15 @@ def _lines_latex(obj, **kwargs):
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h}{t}{he}".format(
-                    h=heading_level, t=text_lines[0] if text_lines else "", he="}"
+                    h=heading_level,
+                    t=text_lines[0] if text_lines else "",
+                    he="}",
                 )
             else:
                 standard = "{h}{t}{he}".format(
-                    h=heading, t=text_lines[0] if text_lines else "", he="}"
+                    h=heading,
+                    t=text_lines[0] if text_lines else "",
+                    he="}",
                 )
             attr_list = _format_latex_attr_list(item, True)
             yield standard + attr_list
@@ -754,7 +758,9 @@ def _generate_latex_wrapper(
     common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
 
     # Add to compile.sh as return value.
-    return path, "pdflatex -halt-on-error -shell-escape {n}.tex".format(n=doc_attributes["name"])
+    return path, "pdflatex -halt-on-error -shell-escape {n}.tex".format(
+        n=doc_attributes["name"]
+    )
 
 
 def _add_comment(wrapper, text):
