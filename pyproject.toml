@@ -38,6 +38,11 @@ classifiers = [
     "Topic :: Text Processing :: Markup",
 ]
 
+# Set files that should be excluded from distribution.
+exclude = [
+  "**/tests/**"
+]
+
 [tool.poetry.dependencies]
 
 python = "^3.7"
