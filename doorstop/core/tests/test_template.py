@@ -156,17 +156,6 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
                 self.mock_tree, self.dirpath, ".html", "custom_css"
             )
 
-    def test_custom_folder_without_template(self):
-        """Verify that a custom template folder that is missing the template
-        flag fails."""
-        # Create a custom template folder.
-        doc_path = self.mock_tree.documents[0].path
-        os.mkdir(os.path.join(doc_path, "template"))
-        # Act
-        with self.assertRaises(DoorstopError):
-            _, _ = template.get_template(self.mock_tree, self.dirpath, ".html", None)
-        rmtree(os.path.join(doc_path, "template"))
-
     def test_standard_latex_doc(self):
         """Verify that default latex template is selected if no template is given and input is a document."""
         # Individual docs needs another level to prevent clashing between tests.

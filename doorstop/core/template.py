@@ -60,10 +60,6 @@ def get_template(obj, path, ext, template):
         raise common.DoorstopError(
             "Template flag set, but no 'template' folder was found."
         )
-    if document_template and not template:
-        raise common.DoorstopError(
-            "'template' folder found, but template flag not set."
-        )
 
     # Get the builtin templates.
     template_assets = os.path.join(os.path.dirname(__file__), "files", "templates")
@@ -92,8 +88,8 @@ def get_template(obj, path, ext, template):
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    # Copy template from document if it exists.
-    if document_template:
+    # Copy template from document if it exists and template is given.
+    if document_template and template:
         os.makedirs(template_dir)
         log.info(
             "Copying %s to %s",
