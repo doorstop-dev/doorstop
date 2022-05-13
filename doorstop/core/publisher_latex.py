@@ -215,6 +215,8 @@ def _latex_convert(line):
     """Single string conversion for LaTeX."""
     # Replace $.
     line = re.sub("\\$", "\\\\$", line)
+    # Replace &.
+    line = re.sub("&", "\\\\&", line)
     #############################
     ## Fix BOLD and ITALICS and Strikethrough.
     #############################
