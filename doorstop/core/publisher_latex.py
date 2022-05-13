@@ -754,7 +754,7 @@ def _generate_latex_wrapper(
     common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
 
     # Add to compile.sh as return value.
-    return path, "pdflatex -shell-escape {n}.tex".format(n=doc_attributes["name"])
+    return path, "pdflatex -halt-on-error -shell-escape {n}.tex".format(n=doc_attributes["name"])
 
 
 def _add_comment(wrapper, text):
