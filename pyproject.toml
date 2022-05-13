@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0b4"
+version = "3.0b5"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -9,6 +9,7 @@ license = "LGPLv3"
 authors = ["Jace Browning <jacebrowning@gmail.com>"]
 
 readme = "README.md"
+exclude = ["**/tests/**"]
 
 homepage = "https://pypi.org/project/Doorstop"
 documentation = "https://doorstop.readthedocs.io"
@@ -23,6 +24,7 @@ keywords = [
   "certification",
   "html",
 ]
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -36,11 +38,6 @@ classifiers = [
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
-]
-
-# Set files that should be excluded from distribution.
-exclude = [
-  "**/tests/**"
 ]
 
 [tool.poetry.dependencies]
