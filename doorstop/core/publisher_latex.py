@@ -414,7 +414,7 @@ def _format_latex_text(text):
             # Replace ```.
             line = re.sub("```", "", line)
         # Replace ` for inline code.
-        line = re.sub("`(.*)`", "\\\\lstinline`\\1`", line)
+        line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
         #############################
         ## Fix enumeration.
         #############################
