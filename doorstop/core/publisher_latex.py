@@ -41,13 +41,13 @@ def _lines_latex(obj, **kwargs):
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h}{t}{he}".format(
                     h=heading_level,
-                    t=text_lines[0] if text_lines else "",
+                    t=_latex_convert(text_lines[0]) if text_lines else "",
                     he="}",
                 )
             else:
                 standard = "{h}{t}{he}".format(
                     h=heading,
-                    t=text_lines[0] if text_lines else "",
+                    t=_latex_convert(text_lines[0]) if text_lines else "",
                     he="}",
                 )
             attr_list = _format_latex_attr_list(item, True)
@@ -57,7 +57,9 @@ def _lines_latex(obj, **kwargs):
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
-                    uid = "{h}{{\\small{{}}{u}}}".format(h=item.header, u=item.uid)
+                    uid = "{h}{{\\small{{}}{u}}}".format(
+                        h=_latex_convert(item.header), u=item.uid
+                    )
                 else:
                     uid = "{u}".format(u=item.uid)
 
