@@ -11,7 +11,6 @@ from unittest.mock import Mock, call, patch
 
 from yaml import safe_load
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
 from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, getLines
@@ -412,6 +411,93 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"\label{fig:DoorstopAltText}\zlabel{fig:DoorstopAltText}"
             r"\caption{Doorstop Alt Text}" + "\n"
             r"\end{figure}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_formatting_in_header_italics(self):
+        """Verify that italic formatting works in headers."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header with _italics_'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of plain text." + "\n"
+            r"  Test of _italic_ text."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{Header with \textit{italics}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            + "\n\n"
+            r"Test of plain text." + "\n"
+            r"Test of \textit{italic} text." + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_formatting_in_header_bold(self):
+        """Verify that bold formatting works in headers."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header with **bold**'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of plain text." + "\n"
+            r"  Test of **bold** text."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{Header with \textbf{bold}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            + "\n\n"
+            r"Test of plain text." + "\n"
+            r"Test of \textbf{bold} text." + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_formatting_in_header_special(self):
+        """Verify that special character formatting works in headers."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header with & sign'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: true" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of plain text." + "\n"
+            r"  Test of stuff & text."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{Header with \& sign{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            + "\n\n"
+            r"Test of plain text." + "\n"
+            r"Test of stuff \& text." + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
