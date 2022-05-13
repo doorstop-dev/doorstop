@@ -4,18 +4,12 @@
 
 # pylint: disable=unused-argument,protected-access
 
-import os
 import unittest
-from unittest import mock
-from unittest.mock import Mock, call, patch
-
-from yaml import safe_load
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, getLines
-from doorstop.core.types import iter_documents
+from doorstop.core.tests import MockDataMixIn, MockItemAndVCS
+from doorstop.core.tests.helpers_latex import getLines
 
 
 class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
