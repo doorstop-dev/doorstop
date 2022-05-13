@@ -8,7 +8,8 @@ from typing import List
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import is_item, iter_items
+from doorstop.core.template import check_latex_template_data, read_template_data
+from doorstop.core.types import is_item, iter_documents, iter_items
 
 log = common.logger(__name__)
 
@@ -39,20 +40,26 @@ def _lines_latex(obj, **kwargs):
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h}{t}{he}".format(
-                    h=heading_level, t=text_lines[0] if text_lines else "", he="}"
+                    h=heading_level,
+                    t=_latex_convert(text_lines[0]) if text_lines else "",
+                    he="}",
                 )
             else:
                 standard = "{h}{t}{he}".format(
-                    h=heading, t=text_lines[0] if text_lines else "", he="}"
+                    h=heading,
+                    t=_latex_convert(text_lines[0]) if text_lines else "",
+                    he="}",
                 )
             attr_list = _format_latex_attr_list(item, True)
             yield standard + attr_list
-            yield from text_lines[1:]
+            yield from _format_latex_text(text_lines[1:])
         else:
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
-                    uid = "{h}{{\\small{{}}{u}}}".format(h=item.header, u=item.uid)
+                    uid = "{h}{{\\small{{}}{u}}}".format(
+                        h=_latex_convert(item.header), u=item.uid
+                    )
                 else:
                     uid = "{u}".format(u=item.uid)
 
@@ -210,19 +217,21 @@ def _latex_convert(line):
     """Single string conversion for LaTeX."""
     # Replace $.
     line = re.sub("\\$", "\\\\$", line)
+    # Replace &.
+    line = re.sub("&", "\\\\&", line)
     #############################
     ## Fix BOLD and ITALICS and Strikethrough.
     #############################
     # Replace **.
-    line = re.sub("\\*\\*(.*)\\*\\*", "\\\\textbf{\\1}", line)
+    line = re.sub("\\*\\*(.*?)\\*\\*", "\\\\textbf{\\1}", line)
     # Replace __.
-    line = re.sub("__(.*)__", "\\\\textbf{\\1}", line)
+    line = re.sub("__(.*?)__", "\\\\textbf{\\1}", line)
     # Replace *.
-    line = re.sub("\\*(.*)\\*", "\\\\textit{\\1}", line)
+    line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
     # Replace _.
-    line = re.sub("_(.*)_", "\\\\textit{\\1}", line)
+    line = re.sub("_(.*?)_", "\\\\textit{\\1}", line)
     # Replace ~~.
-    line = re.sub("~~(.*)~~", "\\\\sout{\\1}", line)
+    line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
     #############################
     ## Fix manual heading levels
     #############################
@@ -413,7 +422,7 @@ def _format_latex_text(text):
             # Replace ```.
             line = re.sub("```", "", line)
         # Replace ` for inline code.
-        line = re.sub("`(.*)`", "\\\\lstinline`\\1`", line)
+        line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
         #############################
         ## Fix enumeration.
         #############################
@@ -602,3 +611,176 @@ def _matrix_latex(table, path):
     # End the table.
     traceability.append(END_LONGTABLE)
     common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
+
+
+def _get_compile_path(path):
+    """Return the path to the compile script."""
+    head, tail = os.path.split(path)
+    tail = "compile.sh"
+    return os.path.join(head, tail)
+
+
+def _get_document_attributes(obj):
+    """Try to get attributes from document."""
+    doc_attributes = {}
+    doc_attributes["name"] = "doc-" + obj.prefix
+    log.debug("Document name is '%s'", doc_attributes["name"])
+    doc_attributes["title"] = "Test document for development of \\textit{Doorstop}"
+    doc_attributes["ref"] = ""
+    doc_attributes["by"] = ""
+    doc_attributes["major"] = ""
+    doc_attributes["minor"] = ""
+    doc_attributes["copyright"] = "Doorstop"
+    try:
+        attribute_defaults = obj.__getattribute__("_attribute_defaults")
+        if attribute_defaults:
+            if attribute_defaults["doc"]["name"]:
+                doc_attributes["name"] = attribute_defaults["doc"]["name"]
+            if attribute_defaults["doc"]["title"]:
+                doc_attributes["title"] = attribute_defaults["doc"]["title"]
+            if attribute_defaults["doc"]["ref"]:
+                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+            if attribute_defaults["doc"]["by"]:
+                doc_attributes["by"] = attribute_defaults["doc"]["by"]
+            if attribute_defaults["doc"]["major"]:
+                doc_attributes["major"] = attribute_defaults["doc"]["major"]
+            if attribute_defaults["doc"]["minor"]:
+                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+            if attribute_defaults["doc"]["copyright"]:
+                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    except AttributeError:
+        pass
+    return doc_attributes
+
+
+def _generate_latex_wrapper(
+    obj, path, assets_dir, template, matrix, count, parent, parent_path
+):
+    """Generate all wrapper scripts required for typesetting in LaTeX."""
+    # Check for defined document attributes.
+    doc_attributes = _get_document_attributes(obj)
+    # Create the wrapper file.
+    head, tail = os.path.split(path)
+    if tail != obj.prefix + ".tex":
+        log.warning(
+            "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
+        )
+    tail = doc_attributes["name"] + ".tex"
+    path = os.path.join(head, obj.prefix + ".tex")
+    path3 = os.path.join(head, tail)
+    # Load template data.
+    template_data = read_template_data(assets_dir, template)
+    check_latex_template_data(template_data)
+    wrapper = []
+    wrapper.append(
+        "\\documentclass[%s]{template/%s}"
+        % (", ".join(template_data["documentclass"]), template)
+    )
+    # Add required packages from template data.
+    wrapper = _add_comment(
+        wrapper,
+        "These packages were automatically added from the template configuration file.",
+    )
+    for package, options in template_data["usepackage"].items():
+        package_line = "\\usepackage"
+        if options:
+            package_line += "[%s]" % ", ".join(options)
+        package_line += "{%s}" % package
+        wrapper.append(package_line)
+    wrapper = _add_comment(wrapper, "END data from the template configuration file.")
+    wrapper.append("")
+    wrapper = _add_comment(
+        wrapper,
+        "These fields are generated from the default doc attribute in the .doorstop.yml file.",
+    )
+    wrapper.append("\\def\\doccopyright{{{n}}}".format(n=doc_attributes["copyright"]))
+    wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj.prefix))
+    wrapper.append("\\def\\doctitle{{{n}}}".format(n=doc_attributes["title"]))
+    wrapper.append("\\def\\docref{{{n}}}".format(n=doc_attributes["ref"]))
+    wrapper.append("\\def\\docby{{{n}}}".format(n=doc_attributes["by"]))
+    wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=doc_attributes["major"]))
+    wrapper.append("\\def\\docissueminor{{{n}}}".format(n=doc_attributes["minor"]))
+    wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
+    wrapper.append("")
+    info_text_set = False
+    for external, _ in iter_documents(parent, parent_path, ".tex"):
+        # Check for defined document attributes.
+        external_doc_attributes = _get_document_attributes(external)
+        # Don't add self.
+        if external_doc_attributes["name"] != doc_attributes["name"]:
+            if not info_text_set:
+                wrapper = _add_comment(
+                    wrapper,
+                    "These are automatically added external references to make cross-references work between the PDFs.",
+                )
+                info_text_set = True
+            wrapper.append(
+                "\\zexternaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+            )
+            wrapper.append(
+                "\\externaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+            )
+    if info_text_set:
+        wrapper = _add_comment(wrapper, "END external references.")
+        wrapper.append("")
+    wrapper = _add_comment(
+        wrapper,
+        "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
+    )
+    for line in template_data["before_begin_document"]:
+        wrapper.append(line)
+    wrapper = _add_comment(
+        wrapper, "END custom data from the template configuration file."
+    )
+    wrapper.append("")
+    wrapper.append("\\begin{document}")
+    wrapper = _add_comment(
+        wrapper,
+        "These lines were automatically added from the template configuration file to allow full customization of the template _after_ \\begin{document}.",
+    )
+    for line in template_data["after_begin_document"]:
+        wrapper.append(line)
+    wrapper = _add_comment(
+        wrapper, "END custom data from the template configuration file."
+    )
+    wrapper.append("")
+    wrapper = _add_comment(wrapper, "Load the doorstop data file.")
+    wrapper.append("\\input{{{n}.tex}}".format(n=obj.prefix))
+    wrapper = _add_comment(wrapper, "END doorstop data file.")
+    wrapper.append("")
+    # Include traceability matrix
+    if matrix and count:
+        wrapper = _add_comment(wrapper, "Add traceability matrix.")
+        if settings.PUBLISH_HEADING_LEVELS:
+            wrapper.append("\\section{Traceability}")
+        else:
+            wrapper.append("\\section*{Traceability}")
+        wrapper.append("\\input{traceability.tex}")
+        wrapper = _add_comment(wrapper, "END traceability matrix.")
+        wrapper.append("")
+    wrapper.append("\\end{document}")
+    common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
+
+    # Add to compile.sh as return value.
+    return path, "pdflatex -halt-on-error -shell-escape {n}.tex".format(
+        n=doc_attributes["name"]
+    )
+
+
+def _add_comment(wrapper, text):
+    """Add comments to the .tex output file in a pretty way."""
+    wrapper.append("%" * 80)
+    words = text.split(" ")
+    line = "%"
+    for word in words:
+        if len(line) + len(word) <= 77:
+            line += " %s" % word
+        else:
+            line += " " * (79 - len(line)) + "%"
+            wrapper.append(line)
+            line = "% " + word
+    line += " " * (79 - len(line)) + "%"
+    wrapper.append(line)
+    wrapper.append("%" * 80)
+
+    return wrapper

@@ -135,6 +135,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     mock_document.prefix = "MOCK"
     mock_document.items = []
     mock_document.assets = None
+    mock_document.template = None
     mock_tree = MagicMock()
     mock_tree.documents = [mock_document]
 
@@ -185,6 +186,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     ]
     document.copy_assets = Mock()
     document.assets = None
+    document.template = None
 
     item3 = MockItem(
         None,

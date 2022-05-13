@@ -14,8 +14,13 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-from doorstop.core import Document
-from doorstop.core.publisher_latex import _lines_latex, _matrix_latex
+from doorstop.core.publisher_latex import (
+    _generate_latex_wrapper,
+    _get_compile_path,
+    _lines_latex,
+    _matrix_latex,
+)
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
 
 EXTENSIONS = (
@@ -30,10 +35,6 @@ EXTENSIONS = (
         alt="UML Diagram",
     ),
 )
-CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
-HTMLTEMPLATE = "sidebar"
-INDEX = "index.html"
-MATRIX = "traceability.csv"
 
 log = common.logger(__name__)
 
@@ -78,139 +79,25 @@ def publish(
     if matrix is None:
         matrix = is_tree(obj)
 
-    if is_tree(obj):
-        assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
-    else:
-        assets_dir = os.path.join(
-            os.path.dirname(path), Document.ASSETS
-        )  # path is a filename
-
-    if os.path.isdir(assets_dir):
-        log.info("Deleting contents of assets directory %s", assets_dir)
-        common.delete_contents(assets_dir)
-    else:
-        os.makedirs(assets_dir)
-
-    # If publish html and then markdown ensure that the html template are still available
-    if not template:
-        template = HTMLTEMPLATE
-    template_assets = os.path.join(os.path.dirname(__file__), "files", "assets")
-    if os.path.isdir(template_assets):
-        if ext == ".tex":
-            template_assets = template_assets + "/latex"
-        log.info("Copying %s to %s", template_assets, assets_dir)
-        common.copy_dir_contents(template_assets, assets_dir)
+    # Process templates.
+    assets_dir, template = get_template(obj, path, ext, template)
 
     # Publish documents
     count = 0
-    compile_files = []
-    compile_path = ""
+    if ext == ".tex":
+        compile_files = []
+        compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
         # Publish wrapper files for LaTeX.
         if ext == ".tex":
-            head, tail = os.path.split(path2)
-            tail = "compile.sh"
-            compile_path = os.path.join(head, tail)
-            # Check for defined document attributes.
-            document_name = "doc-" + str(obj2)
-            document_title = "Test document for development of \\textit{Doorstop}"
-            document_ref = ""
-            document_by = ""
-            document_major = ""
-            document_minor = ""
-            try:
-                attribute_defaults = obj2.__getattribute__("_attribute_defaults")
-                if attribute_defaults:
-                    if attribute_defaults["doc"]["name"]:
-                        document_name = attribute_defaults["doc"]["name"]
-                    if attribute_defaults["doc"]["title"]:
-                        document_title = attribute_defaults["doc"]["title"]
-                    if attribute_defaults["doc"]["ref"]:
-                        document_ref = attribute_defaults["doc"]["ref"]
-                    if attribute_defaults["doc"]["by"]:
-                        document_by = attribute_defaults["doc"]["by"]
-                    if attribute_defaults["doc"]["major"]:
-                        document_major = attribute_defaults["doc"]["major"]
-                    if attribute_defaults["doc"]["minor"]:
-                        document_minor = attribute_defaults["doc"]["minor"]
-            except AttributeError:
-                pass
-            # Add to compile.sh
-            compile_files.append(
-                "pdflatex -shell-escape {n}.tex".format(n=document_name)
+            log.debug("Generating compile script for LaTeX from %s", path2)
+            if count == 1:
+                compile_path = _get_compile_path(path2)
+            path2, file_to_compile = _generate_latex_wrapper(
+                obj2, path2, assets_dir, template, matrix, count, obj, path
             )
-            # Create the wrapper file.
-            head, tail = os.path.split(path2)
-            if tail != str(obj2) + ".tex":
-                log.warning(
-                    "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
-                )
-            tail = document_name + ".tex"
-            path2 = os.path.join(head, str(obj2) + ".tex")
-            path3 = os.path.join(head, tail)
-            wrapper = []
-            wrapper.append("\\documentclass[a4paper, twoside]{assets/doorstop}")
-            wrapper.append("\\usepackage[utf8]{inputenc}")
-            wrapper.append("")
-            wrapper.append("%% Change these to change logotype and/or copyright.")
-            wrapper.append("% \\def\\owner{Whatever Inc.}")
-            wrapper.append("% \\def\\logo{assets/logo-black-white.png}")
-            wrapper.append("% \\definetrim{logotrim}{0 100px 0 100px}")
-            wrapper.append("")
-            wrapper.append("% Define the header.")
-            wrapper.append("\\def\\doccategory{{{t}}}".format(t=str(obj2)))
-            wrapper.append("\\def\\docname{Doorstop - \\doccategory{}}")
-            wrapper.append("\\def\\doctitle{{{n}}}".format(n=document_title))
-            wrapper.append("\\def\\docref{{{n}}}".format(n=document_ref))
-            wrapper.append("\\def\\docby{{{n}}}".format(n=document_by))
-            wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=document_major))
-            wrapper.append("\\def\\docissueminor{{{n}}}".format(n=document_minor))
-            wrapper.append("")
-            info_text_set = False
-            for external, _ in iter_documents(obj, path, ext):
-                # Check for defined document attributes.
-                external_doc_name = "doc-" + str(external)
-                try:
-                    external_attribute_defaults = external.__getattribute__(
-                        "_attribute_defaults"
-                    )
-                    if external_attribute_defaults:
-                        if external_attribute_defaults["doc"]["name"]:
-                            external_doc_name = external_attribute_defaults["doc"][
-                                "name"
-                            ]
-                except AttributeError:
-                    pass
-                # Don't add self.
-                if external_doc_name != document_name:
-                    if not info_text_set:
-                        wrapper.append(
-                            "% Add all documents as external references to allow cross-references."
-                        )
-                        info_text_set = True
-                    wrapper.append(
-                        "\\zexternaldocument{{{n}}}".format(n=external_doc_name)
-                    )
-                    wrapper.append(
-                        "\\externaldocument{{{n}}}".format(n=external_doc_name)
-                    )
-            wrapper.append("")
-            wrapper.append("\\begin{document}")
-            wrapper.append("\\makecoverpage")
-            wrapper.append("\\maketoc")
-            wrapper.append("% Load the output file.")
-            wrapper.append("\\input{{{n}.tex}}".format(n=str(obj2)))
-            # Include traceability matrix
-            if matrix and count:
-                wrapper.append("% Traceability matrix")
-                if settings.PUBLISH_HEADING_LEVELS:
-                    wrapper.append("\\section{Traceability}")
-                else:
-                    wrapper.append("\\section*{Traceability}")
-                wrapper.append("\\input{traceability.tex}")
-            wrapper.append("\\end{document}")
-            common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
+            compile_files.append(file_to_compile)
 
         # Publish content to the specified path
         log.info("publishing to {}...".format(path2))
@@ -522,6 +409,7 @@ def _lines_markdown(obj, **kwargs):
 
     """
     linkify = kwargs.get("linkify", False)
+    to_html = kwargs.get("to_html", False)
     for item in iter_items(obj):
 
         heading = "#" * item.depth
@@ -584,7 +472,7 @@ def _lines_markdown(obj, **kwargs):
                     label = "Parent links:"
                 else:
                     label = "Links:"
-                links = _format_md_links(items2, linkify)
+                links = _format_md_links(items2, linkify, to_html=to_html)
                 label_links = _format_md_label_links(label, links, linkify)
                 yield label_links
 
@@ -594,7 +482,7 @@ def _lines_markdown(obj, **kwargs):
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"
-                    links = _format_md_links(items2, linkify)
+                    links = _format_md_links(items2, linkify, to_html=to_html)
                     label_links = _format_md_label_links(label, links, linkify)
                     yield label_links
 
@@ -702,11 +590,14 @@ def _format_md_references(item):
         return "\n".join(ref for ref in text_refs)
 
 
-def _format_md_links(items, linkify):
+def _format_md_links(items, linkify, to_html=False):
     """Format a list of linked items in Markdown."""
     links = []
     for item in items:
-        link = _format_md_item_link(item, linkify=linkify)
+        if to_html:
+            link = _format_html_item_link(item, linkify=linkify)
+        else:
+            link = _format_md_item_link(item, linkify=linkify)
         links.append(link)
     return ", ".join(links)
 
@@ -715,10 +606,10 @@ def _format_md_item_link(item, linkify=True):
     """Format an item link in Markdown."""
     if linkify and is_item(item):
         if item.header:
-            return "[{u} {h}]({p}.html#{u})".format(
+            return "[{u} {h}]({p}.md#{u})".format(
                 u=item.uid, h=item.header, p=item.document.prefix
             )
-        return "[{u}]({p}.html#{u})".format(u=item.uid, p=item.document.prefix)
+        return "[{u}]({p}.md#{u})".format(u=item.uid, p=item.document.prefix)
     else:
         return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
@@ -802,7 +693,7 @@ def _lines_html(
         document = True
     # Generate HTML
 
-    text = "\n".join(_lines_markdown(obj, linkify=linkify))
+    text = "\n".join(_lines_markdown(obj, linkify=linkify, to_html=True))
     body = markdown.markdown(text, extensions=extensions)
 
     if toc:

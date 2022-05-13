@@ -1,0 +1,26 @@
+# Define all options to class.
+documentclass:
+  - a4paper
+  - twoside
+# Define all 'usepackage' commands.
+usepackage:
+  inputenc:
+    - utf8
+  amsmath:
+  ulem:
+  longtable:
+  fancyvrb:
+  xr-hyper:
+  hyperref:
+    # Options are defined as sub-lists.
+    - unicode
+    - colorlinks
+  zref-user:
+  zref-xr:
+# Define custom lines before \begin{document}
+before_begin_document:
+  - \def\docname{Doorstop - \doccategory{}}
+# Define custom lines after \begin{document}
+after_begin_document:
+  - \maketitle
+  - \maketoc

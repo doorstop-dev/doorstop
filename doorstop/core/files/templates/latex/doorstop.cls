@@ -118,12 +118,11 @@
 \newcommand{\definetrim}[2]{%
   \define@key{Gin}{#1}[]{\setkeys{Gin}{trim=#2,clip}}%
 }
-\def\logo{assets/logo-black-white.png}
+\def\logo{template/logo-black-white.png}
 \definetrim{logotrim}{0 100px 0 100px}
 
 % Define a copyright claimer.
-\def\owner{Doorstop}
-\def\claimer{\color{black!40}All information in this document is the intellectual property of \owner{}. You are not allowed to disclose any information herein to a third party prior to written consent from \owner{}. All rights reserved. \copyright \owner{}}
+\def\claimer{\color{black!40}All information in this document is the intellectual property of \doccopyright{}. You are not allowed to disclose any information herein to a third party prior to written consent from \doccopyright{}. All rights reserved. \copyright \doccopyright{}}
 
 % Sets the counting depths for TOC
 \setcounter{tocdepth}{4}
@@ -253,7 +252,7 @@
 % Generate cover page/toc etc.
 % ******************************************************
 
-\newcommand{\makecoverpage}{
+\renewcommand{\maketitle}{
 	\pagestyle{empty}
 	\thispagestyle{empty}
 	%--- Make title page
