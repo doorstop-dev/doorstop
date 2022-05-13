@@ -48,7 +48,7 @@ def _lines_latex(obj, **kwargs):
                 )
             attr_list = _format_latex_attr_list(item, True)
             yield standard + attr_list
-            yield from text_lines[1:]
+            yield from _format_latex_text(text_lines[1:])
         else:
             uid = item.uid
             if settings.ENABLE_HEADERS:
