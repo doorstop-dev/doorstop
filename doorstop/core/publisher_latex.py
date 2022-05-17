@@ -625,7 +625,7 @@ def _get_document_attributes(obj):
     doc_attributes = {}
     doc_attributes["name"] = "doc-" + obj.prefix
     log.debug("Document name is '%s'", doc_attributes["name"])
-    doc_attributes["title"] = "Test document for development of \\textit{Doorstop}"
+    doc_attributes["title"] = "Test document for development of _Doorstop_"
     doc_attributes["ref"] = ""
     doc_attributes["by"] = ""
     doc_attributes["major"] = ""
@@ -693,13 +693,25 @@ def _generate_latex_wrapper(
         wrapper,
         "These fields are generated from the default doc attribute in the .doorstop.yml file.",
     )
-    wrapper.append("\\def\\doccopyright{{{n}}}".format(n=doc_attributes["copyright"]))
-    wrapper.append("\\def\\doccategory{{{t}}}".format(t=obj.prefix))
-    wrapper.append("\\def\\doctitle{{{n}}}".format(n=doc_attributes["title"]))
-    wrapper.append("\\def\\docref{{{n}}}".format(n=doc_attributes["ref"]))
-    wrapper.append("\\def\\docby{{{n}}}".format(n=doc_attributes["by"]))
-    wrapper.append("\\def\\docissuemajor{{{n}}}".format(n=doc_attributes["major"]))
-    wrapper.append("\\def\\docissueminor{{{n}}}".format(n=doc_attributes["minor"]))
+    wrapper.append(
+        "\\def\\doccopyright{{{n}}}".format(
+            n=_latex_convert(doc_attributes["copyright"])
+        )
+    )
+    wrapper.append("\\def\\doccategory{{{t}}}".format(t=_latex_convert(obj.prefix)))
+    wrapper.append(
+        "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
+    )
+    wrapper.append(
+        "\\def\\docref{{{n}}}".format(n=_latex_convert(doc_attributes["ref"]))
+    )
+    wrapper.append("\\def\\docby{{{n}}}".format(n=_latex_convert(doc_attributes["by"])))
+    wrapper.append(
+        "\\def\\docissuemajor{{{n}}}".format(n=_latex_convert(doc_attributes["major"]))
+    )
+    wrapper.append(
+        "\\def\\docissueminor{{{n}}}".format(n=_latex_convert(doc_attributes["minor"]))
+    )
     wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
     wrapper.append("")
     info_text_set = False
