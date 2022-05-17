@@ -166,11 +166,4 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.assertIs(dirpath, path2)
         # Get the contents.
         contents = getFileContents(os.path.join(self.dirpath, "doc-TST.tex"))
-        print("Expected")
-        print(expected)
-
-        print("actual")
-        for each in contents:
-            print(each)
-
         self.assertIn(expected, contents)
