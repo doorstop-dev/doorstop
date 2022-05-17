@@ -13,7 +13,12 @@ from unittest.mock import patch
 from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, YAML_LATEX_NO_DOC, getWalk
+from doorstop.core.tests.helpers_latex import (
+    YAML_LATEX_DOC,
+    YAML_LATEX_NO_DOC,
+    getFileContents,
+    getWalk,
+)
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -145,3 +150,27 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
+
+    def test_typesetting_of_title(self):
+        """Verify that titles are typeset correctly."""
+        expected = (
+            r"\def\doctitle{Test document for development of \textit{Doorstop}}" + "\n"
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_NO_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the contents.
+        contents = getFileContents(os.path.join(self.dirpath, "doc-TST.tex"))
+        print("Expected")
+        print(expected)
+
+        print("actual")
+        for each in contents:
+            print(each)
+
+        self.assertIn(expected, contents)

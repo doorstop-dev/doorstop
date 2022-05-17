@@ -18,8 +18,8 @@ attributes:
       title: 'Development test document'
       ref: 'TUT-DS-22'
       by: 'Jng'
-      major: 1
-      minor: A
+      major: '1'
+      minor: 'A'
       copyright: 'Whatever Inc.'
   publish:
     - CUSTOM-ATTRIB
@@ -75,3 +75,11 @@ def getLines(gen):
     for line in gen:
         result = result + line + "\n"
     return result
+
+
+def getFileContents(file):
+    """Return the contents of a file."""
+    data = []
+    with open(file, "r") as file_stream:
+        data = file_stream.readlines()
+    return data
