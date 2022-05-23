@@ -64,7 +64,7 @@ jobs:
         name: Run tests
         with:
           command: make test
-          current_path: ${{ inputs.basepath }}
+          current_path: ${{ inputs.workpath }}
           attempt_limit: 3
           attempt_delay: 2000
 
