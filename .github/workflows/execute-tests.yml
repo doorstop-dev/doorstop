@@ -60,7 +60,7 @@ jobs:
       # very slow. Especially any client/server tests seems to be problematic.
       # This is a simple attempt to re-run the tests up to three times if they
       # fail. Does not add any execution time if successful.
-      - uses: Wandalen/wretry.action@v1.0.11
+      - uses: Wandalen/wretry.action@v1.0.20
         name: Run tests
         with:
           command: make test
