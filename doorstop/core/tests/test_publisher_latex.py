@@ -485,13 +485,6 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
-
-        print("Expected")
-        print(expected)
-
-        print("actual")
-        print(result)
-
         self.assertEqual(expected, result)
 
     @patch("doorstop.settings.ENABLE_HEADERS", True)
