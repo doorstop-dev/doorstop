@@ -361,15 +361,14 @@ def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
     block: List[str]
     block = []
-    environment_data: List[bool]
     environment_data = {}
     environment_data["table_found"] = False
     header_done = False
     environment_data["code_found"] = False
     math_found = False
     environment_data["plantuml_found"] = False
-    environment_data["plantuml_file"] = ""
-    environment_data["plantuml_name"] = ""
+    plantuml_file = ""
+    plantuml_name = ""
     environment_data["enumeration_found"] = False
     environment_data["itemize_found"] = False
     end_pipes = False
@@ -430,7 +429,9 @@ def _format_latex_text(text):
         if environment_data["code_found"]:
             block.append(line)
             # Check for end of file and end all environments.
-            _check_for_eof(i, block, text, environment_data)
+            _check_for_eof(
+                i, block, text, environment_data, plantuml_name, plantuml_file
+            )
             continue
         # Replace ` for inline code.
         line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
@@ -528,19 +529,17 @@ def _format_latex_text(text):
                 raise DoorstopError(
                     "'title' is required for plantUML processing in LaTeX."
                 )
-            environment_data["plantuml_file"] = re.sub(
-                "\\s", "-", environment_data["plantuml_name"]
-            )
-            line = "\\begin{plantuml}{" + environment_data["plantuml_file"] + "}"
+            plantuml_file = re.sub("\\s", "-", plantuml_name)
+            line = "\\begin{plantuml}{" + plantuml_file + "}"
             environment_data["plantuml_found"] = True
         if re.findall("@enduml", line):
             block.append(line)
             block.append("\\end{plantuml}")
             line = (
                 "\\process{"
-                + environment_data["plantuml_file"]
+                + plantuml_file
                 + "}{0.8\\textwidth}{"
-                + environment_data["plantuml_name"]
+                + plantuml_name
                 + "}"
             )
             environment_data["plantuml_found"] = False
@@ -557,11 +556,11 @@ def _format_latex_text(text):
         block.append(line)
 
         # Check for end of file and end all environments.
-        _check_for_eof(i, block, text, environment_data)
+        _check_for_eof(i, block, text, environment_data, plantuml_name, plantuml_file)
     return block
 
 
-def _check_for_eof(index, block, text, environment_data):
+def _check_for_eof(index, block, text, environment_data, plantuml_name, plantuml_file):
     """Check for end of file and end all unended environments."""
     if index == len(text) - 1:
         if environment_data["code_found"]:
@@ -574,9 +573,9 @@ def _check_for_eof(index, block, text, environment_data):
             block.append("\\end{plantuml}")
             block.append(
                 "\\process{"
-                + environment_data["plantuml_file"]
+                + plantuml_file
                 + "}{0.8\\textwidth}{"
-                + environment_data["plantuml_name"]
+                + plantuml_name
                 + "}"
             )
         if environment_data["table_found"]:
