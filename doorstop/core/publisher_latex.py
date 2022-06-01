@@ -215,6 +215,9 @@ def _format_latex_label_links(label, links, linkify):
 
 def _latex_convert(line):
     """Single string conversion for LaTeX."""
+    #############################
+    ## Fix all special characters.
+    #############################
     # Replace $.
     line = re.sub("\\$", "\\\\$", line)
     # Replace &.
@@ -229,7 +232,7 @@ def _latex_convert(line):
     # Replace *.
     line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
     # Replace _.
-    line = re.sub("_(.*?)_", "\\\\textit{\\1}", line)
+    line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
     # Replace ~~.
     line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
     #############################
