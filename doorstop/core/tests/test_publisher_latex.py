@@ -446,6 +446,54 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    def test_italics_formatting(self):
+        """Verify that italic formatting works correctly in all aspects."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: false" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of plain text." + "\n"
+            r"  Test of _italic_ word." + "\n"
+            r"  Test of _italic\_word_ that has a \_ in it." + "\n"
+            r"  Test of _a longer italic text_." + "\n"
+            r"  Test of a single ital_i_c letter." + "\n"
+            r"  Test of *italic* word." + "\n"
+            r"  Test of *italic\_word* that has a \_ in it." + "\n"
+            r"  Test of *a longer italic text*." + "\n"
+            r"  Test of a single ital*i*c letter."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of plain text." + "\n"
+            r"Test of \textit{italic} word." + "\n"
+            r"Test of \textit{italic\_word} that has a \_ in it." + "\n"
+            r"Test of \textit{a longer italic text}." + "\n"
+            r"Test of a single ital\textit{i}c letter." + "\n"
+            r"Test of \textit{italic} word." + "\n"
+            r"Test of \textit{italic\_word} that has a \_ in it." + "\n"
+            r"Test of \textit{a longer italic text}." + "\n"
+            r"Test of a single ital\textit{i}c letter." + "\n" + "\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+
+        print("Expected")
+        print(expected)
+
+        print("actual")
+        print(result)
+
+        self.assertEqual(expected, result)
+
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_formatting_in_header_bold(self):
         """Verify that bold formatting works in headers."""
