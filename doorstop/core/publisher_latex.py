@@ -361,15 +361,17 @@ def _format_latex_text(text):
     """Fix all general text formatting to use LaTeX-macros."""
     block: List[str]
     block = []
-    table_found = False
+    environment_data: List[bool]
+    environment_data = {}
+    environment_data["table_found"] = False
     header_done = False
-    code_found = False
+    environment_data["code_found"] = False
     math_found = False
-    plantuml_found = False
-    plantuml_file = ""
-    plantuml_name = ""
-    enumeration_found = False
-    itemize_found = False
+    environment_data["plantuml_found"] = False
+    environment_data["plantuml_file"] = ""
+    environment_data["plantuml_name"] = ""
+    environment_data["enumeration_found"] = False
+    environment_data["itemize_found"] = False
     end_pipes = False
     for i, line in enumerate(text):
         no_paragraph = False
@@ -413,27 +415,33 @@ def _format_latex_text(text):
         ## Fix code blocks.
         #############################
         code_match = re.findall("```", line)
-        if code_found:
+        if environment_data["code_found"]:
             no_paragraph = True
         if code_match:
-            if code_found:
+            if environment_data["code_found"]:
                 block.append("\\end{lstlisting}")
-                code_found = False
+                environment_data["code_found"] = False
             else:
                 block.append("\\begin{lstlisting}")
-                code_found = True
+                environment_data["code_found"] = True
             # Replace ```.
             line = re.sub("```", "", line)
+        # Skip the rest since we are in a code block!
+        if environment_data["code_found"]:
+            block.append(line)
+            # Check for end of file and end all environments.
+            _check_for_eof(i, block, text, environment_data)
+            continue
         # Replace ` for inline code.
         line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
         #############################
         ## Fix enumeration.
         #############################
         enumeration_match = re.findall(r"^\d+\.\s(.*)", line)
-        if enumeration_match and not enumeration_found:
+        if enumeration_match and not environment_data["enumeration_found"]:
             block.append("\\begin{enumerate}")
-            enumeration_found = True
-        if enumeration_found:
+            environment_data["enumeration_found"] = True
+        if environment_data["enumeration_found"]:
             no_paragraph = True
             if enumeration_match:
                 # Replace the number.
@@ -444,7 +452,7 @@ def _format_latex_text(text):
                     if next_line == "":
                         block.append(line)
                         line = END_ENUMERATE
-                        enumeration_found = False
+                        environment_data["enumeration_found"] = False
             else:
                 # Look ahead - need empty line to end enumeration!
                 if i < len(text) - 1:
@@ -452,15 +460,15 @@ def _format_latex_text(text):
                     if next_line == "":
                         block.append(line)
                         line = END_ENUMERATE
-                        enumeration_found = False
+                        environment_data["enumeration_found"] = False
         #############################
         ## Fix itemize.
         #############################
         itemize_match = re.findall("^[\\*+-]\\s(.*)", line)
-        if itemize_match and not itemize_found:
+        if itemize_match and not environment_data["itemize_found"]:
             block.append("\\begin{itemize}")
-            itemize_found = True
-        if itemize_found:
+            environment_data["itemize_found"] = True
+        if environment_data["itemize_found"]:
             no_paragraph = True
             if itemize_match:
                 # Replace the number.
@@ -471,7 +479,7 @@ def _format_latex_text(text):
                     if next_line == "":
                         block.append(line)
                         line = END_ITEMIZE
-                        itemize_found = False
+                        environment_data["itemize_found"] = False
             else:
                 # Look ahead - need empty line to end itemize!
                 if i < len(text) - 1:
@@ -479,7 +487,7 @@ def _format_latex_text(text):
                     if next_line == "":
                         block.append(line)
                         line = END_ITEMIZE
-                        itemize_found = False
+                        environment_data["itemize_found"] = False
 
         #############################
         ## Fix tables.
@@ -487,18 +495,30 @@ def _format_latex_text(text):
         # Check if line is part of table.
         table_match = re.findall("\\|", line)
         if table_match:
-            table_found, header_done, line, end_pipes = _typeset_latex_table(
-                table_match, text, i, line, block, table_found, header_done, end_pipes
+            (
+                environment_data["table_found"],
+                header_done,
+                line,
+                end_pipes,
+            ) = _typeset_latex_table(
+                table_match,
+                text,
+                i,
+                line,
+                block,
+                environment_data["table_found"],
+                header_done,
+                end_pipes,
             )
         else:
-            if table_found:
+            if environment_data["table_found"]:
                 block.append(END_LONGTABLE)
-            table_found = False
+            environment_data["table_found"] = False
             header_done = False
         #############################
         ## Fix plantuml.
         #############################
-        if plantuml_found:
+        if environment_data["plantuml_found"]:
             no_paragraph = True
         if re.findall("^plantuml\\s", line):
             plantuml_title = re.search('title="(.*)"', line)
@@ -508,20 +528,22 @@ def _format_latex_text(text):
                 raise DoorstopError(
                     "'title' is required for plantUML processing in LaTeX."
                 )
-            plantuml_file = re.sub("\\s", "-", plantuml_name)
-            line = "\\begin{plantuml}{" + plantuml_file + "}"
-            plantuml_found = True
+            environment_data["plantuml_file"] = re.sub(
+                "\\s", "-", environment_data["plantuml_name"]
+            )
+            line = "\\begin{plantuml}{" + environment_data["plantuml_file"] + "}"
+            environment_data["plantuml_found"] = True
         if re.findall("@enduml", line):
             block.append(line)
             block.append("\\end{plantuml}")
             line = (
                 "\\process{"
-                + plantuml_file
+                + environment_data["plantuml_file"]
                 + "}{0.8\\textwidth}{"
-                + plantuml_name
+                + environment_data["plantuml_name"]
                 + "}"
             )
-            plantuml_found = False
+            environment_data["plantuml_found"] = False
 
         # Look ahead for empty line and add paragraph.
         if i < len(text) - 1:
@@ -535,25 +557,30 @@ def _format_latex_text(text):
         block.append(line)
 
         # Check for end of file and end all environments.
-        if i == len(text) - 1:
-            if code_found:
-                block.append("\\end{lstlisting}")
-            if enumeration_found:
-                block.append(END_ENUMERATE)
-            if itemize_found:
-                block.append(END_ITEMIZE)
-            if plantuml_found:
-                block.append("\\end{plantuml}")
-                block.append(
-                    "\\process{"
-                    + plantuml_file
-                    + "}{0.8\\textwidth}{"
-                    + plantuml_name
-                    + "}"
-                )
-            if table_found:
-                block.append(END_LONGTABLE)
+        _check_for_eof(i, block, text, environment_data)
     return block
+
+
+def _check_for_eof(index, block, text, environment_data):
+    """Check for end of file and end all unended environments."""
+    if index == len(text) - 1:
+        if environment_data["code_found"]:
+            block.append("\\end{lstlisting}")
+        if environment_data["enumeration_found"]:
+            block.append(END_ENUMERATE)
+        if environment_data["itemize_found"]:
+            block.append(END_ITEMIZE)
+        if environment_data["plantuml_found"]:
+            block.append("\\end{plantuml}")
+            block.append(
+                "\\process{"
+                + environment_data["plantuml_file"]
+                + "}{0.8\\textwidth}{"
+                + environment_data["plantuml_name"]
+                + "}"
+            )
+        if environment_data["table_found"]:
+            block.append(END_LONGTABLE)
 
 
 def _matrix_latex(table, path):
