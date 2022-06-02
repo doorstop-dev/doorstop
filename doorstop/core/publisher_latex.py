@@ -375,6 +375,31 @@ def _format_latex_text(text):
     for i, line in enumerate(text):
         no_paragraph = False
         #############################
+        ## Fix code blocks.
+        #############################
+        code_match = re.findall("```", line)
+        if environment_data["code_found"]:
+            no_paragraph = True
+        if code_match:
+            if environment_data["code_found"]:
+                block.append("\\end{lstlisting}")
+                environment_data["code_found"] = False
+            else:
+                block.append("\\begin{lstlisting}")
+                environment_data["code_found"] = True
+            # Replace ```.
+            line = re.sub("```", "", line)
+        # Skip the rest since we are in a code block!
+        if environment_data["code_found"]:
+            block.append(line)
+            # Check for end of file and end all environments.
+            _check_for_eof(
+                i, block, text, environment_data, plantuml_name, plantuml_file
+            )
+            continue
+        # Replace ` for inline code.
+        line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
+        #############################
         ## Fix images.
         #############################
         image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
@@ -410,31 +435,6 @@ def _format_latex_text(text):
             line = line + "\\\\"
             block.append(line)
             continue
-        #############################
-        ## Fix code blocks.
-        #############################
-        code_match = re.findall("```", line)
-        if environment_data["code_found"]:
-            no_paragraph = True
-        if code_match:
-            if environment_data["code_found"]:
-                block.append("\\end{lstlisting}")
-                environment_data["code_found"] = False
-            else:
-                block.append("\\begin{lstlisting}")
-                environment_data["code_found"] = True
-            # Replace ```.
-            line = re.sub("```", "", line)
-        # Skip the rest since we are in a code block!
-        if environment_data["code_found"]:
-            block.append(line)
-            # Check for end of file and end all environments.
-            _check_for_eof(
-                i, block, text, environment_data, plantuml_name, plantuml_file
-            )
-            continue
-        # Replace ` for inline code.
-        line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
         #############################
         ## Fix enumeration.
         #############################
