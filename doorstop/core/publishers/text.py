@@ -14,15 +14,28 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-# from doorstop.core.publisher_latex import (
-#     _generate_latex_wrapper,
-#     _get_compile_path,
-#     _lines_latex,
-#     _matrix_latex,
-# )
-# from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
+from doorstop.core.publisher_latex import (
+    _generate_latex_wrapper,
+    _get_compile_path,
+    _lines_latex,
+    _matrix_latex,
+)
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
 from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
-from doorstop.core.publishers import html, latex, markdown, text
+from doorstop.core.publishers.base import BaseWorkingCopy
+
+EXTENSIONS = (
+    "markdown.extensions.extra",
+    "markdown.extensions.sane_lists",
+    PlantUMLMarkdownExtension(
+        server="http://www.plantuml.com/plantuml",
+        cachedir=tempfile.gettempdir(),
+        format="svg",
+        classes="class1,class2",
+        title="UML",
+        alt="UML Diagram",
+    ),
+)
 
 log = common.logger(__name__)
 
@@ -126,6 +139,162 @@ def publish(
         return None
 
 
+def _index(directory, index=INDEX, extensions=(".html",), tree=None):
+    """Create an HTML index of all files in a directory.
+
+    :param directory: directory for index
+    :param index: filename for index
+    :param extensions: file extensions to include
+    :param tree: optional tree to determine index structure
+
+    """
+    # Get paths for the index index
+    filenames = []
+    for filename in os.listdir(directory):
+        if filename.endswith(extensions) and filename != INDEX:
+            filenames.append(os.path.join(filename))
+
+    # Create the index
+    if filenames:
+        path = os.path.join(directory, index)
+        log.info("creating an {}...".format(index))
+        lines = _lines_index(sorted(filenames), tree=tree)
+        common.write_lines(lines, path, end=settings.WRITE_LINESEPERATOR)
+    else:
+        log.warning("no files for {}".format(index))
+
+
+def _lines_index(filenames, charset="UTF-8", tree=None):
+    """Yield lines of HTML for index.html.
+
+    :param filesnames: list of filenames to add to the index
+    :param charset: character encoding for output
+    :param tree: optional tree to determine index structure
+
+    """
+    yield "<!DOCTYPE html>"
+    yield "<head>"
+    yield (
+        '<meta http-equiv="content-type" content="text/html; '
+        'charset={charset}">'.format(charset=charset)
+    )
+    yield '<style type="text/css">'
+    yield from _lines_css()
+    yield "</style>"
+    yield "</head>"
+    yield "<body>"
+    # Tree structure
+    text = tree.draw() if tree else None
+    if text:
+        yield ""
+        yield "<h3>Tree Structure:</h3>"
+        yield "<pre><code>" + text + "</pre></code>"
+    # Additional files
+    if filenames:
+        if text:
+            yield ""
+            yield "<hr>"
+        yield ""
+        yield "<h3>Published Documents:</h3>"
+        yield "<p>"
+        yield "<ul>"
+        for filename in filenames:
+            name = os.path.splitext(filename)[0]
+            yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+        yield "</ul>"
+        yield "</p>"
+    # Traceability table
+    documents = tree.documents if tree else None
+    if documents:
+        if text or filenames:
+            yield ""
+            yield "<hr>"
+        yield ""
+        # table
+        yield "<h3>Item Traceability:</h3>"
+        yield "<p>"
+        yield "<table>"
+        # header
+        for document in documents:  # pylint: disable=not-an-iterable
+            yield '<col width="100">'
+        yield "<tr>"
+        for document in documents:  # pylint: disable=not-an-iterable
+            link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
+            yield ('  <th height="25" align="center"> {link} </th>'.format(link=link))
+        yield "</tr>"
+        # data
+        for index, row in enumerate(tree.get_traceability()):
+            if index % 2:
+                yield '<tr class="alt">'
+            else:
+                yield "<tr>"
+            for item in row:
+                if item is None:
+                    link = ""
+                else:
+                    link = _format_html_item_link(item)
+                yield '  <td height="25" align="center"> {} </td>'.format(link)
+            yield "</tr>"
+        yield "</table>"
+        yield "</p>"
+    yield ""
+    yield "</body>"
+    yield "</html>"
+
+
+def _lines_css():
+    """Yield lines of CSS to embedded in HTML."""
+    yield ""
+    for line in common.read_lines(CSS):
+        yield line.rstrip()
+    yield ""
+
+
+def _matrix(directory, tree, filename=MATRIX, ext=None):
+    """Create a traceability matrix for all the items.
+
+    :param directory: directory for matrix
+    :param tree: tree to access the traceability data
+    :param filename: filename for matrix
+    :param ext: file extensionto use for the matrix
+
+    """
+    # Get path and format extension
+    path = os.path.join(directory, filename)
+    ext = ext or os.path.splitext(path)[-1] or ".csv"
+
+    # Create the matrix
+    if tree:
+        log.info("creating an {}...".format(filename))
+        content = _matrix_content(tree)
+        if ext == ".tex":
+            _matrix_latex(content, path)
+        else:
+            common.write_csv(content, path)
+    else:
+        log.warning("no data for {}".format(filename))
+
+
+def _extract_prefix(document):
+    if document:
+        return document.prefix
+    else:
+        return None
+
+
+def _extract_uid(item):
+    if item:
+        return item.uid
+    else:
+        return None
+
+
+def _matrix_content(tree):
+    """Yield rows of content for the traceability matrix."""
+    yield tuple(map(_extract_prefix, tree.documents))
+    for row in tree.get_traceability():
+        yield tuple(map(_extract_uid, row))
+
 
 def publish_lines(obj, ext=".txt", **kwargs):
     """Yield lines for a report in the specified format.
@@ -152,6 +321,7 @@ def _lines_text(obj, indent=8, width=79, **_):
 
     """
     for item in iter_items(obj):
+
         level = _format_level(item.level)
 
         if item.heading:
@@ -166,6 +336,7 @@ def _lines_text(obj, indent=8, width=79, **_):
                 yield "{t}".format(t=text)
 
         else:
+
             # Level and UID
             if item.header:
                 yield "{lev:<{s}}{u} {header}".format(
@@ -241,6 +412,7 @@ def _lines_markdown(obj, **kwargs):
     linkify = kwargs.get("linkify", False)
     to_html = kwargs.get("to_html", False)
     for item in iter_items(obj):
+
         heading = "#" * item.depth
         level = _format_level(item.level)
 
@@ -261,6 +433,7 @@ def _lines_markdown(obj, **kwargs):
             yield standard + attr_list
             yield from text_lines[1:]
         else:
+
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
