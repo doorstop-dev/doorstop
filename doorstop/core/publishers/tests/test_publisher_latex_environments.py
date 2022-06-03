@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.core.publisher_latex module."""
+"""Unit tests for the doorstop.core.publishers.latex module."""
 
 # pylint: disable=unused-argument,protected-access
 
@@ -13,7 +13,7 @@ from doorstop.core.tests.helpers_latex import getLines
 
 
 class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
-    """Unit tests for _environments_ in the doorstop.core.publisher_latex module."""
+    """Unit tests for _environments_ in the doorstop.core.publishers.latex module."""
 
     def test_multiline_math(self):
         """Verify that math environments over multiple lines are published correctly."""
@@ -298,10 +298,10 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = ""
-        with self.assertLogs("doorstop.core.publisher_latex", level="WARNING") as logs:
+        with self.assertLogs("doorstop.core.publishers.latex", level="WARNING") as logs:
             result = getLines(publisher.publish_lines(item, ".tex"))
             self.assertIn(
-                "WARNING:doorstop.core.publisher_latex:Possibly unbalanced table found.",
+                "WARNING:doorstop.core.publishers.latex:Possibly unbalanced table found.",
                 logs.output,
             )
         # Assert
@@ -329,10 +329,10 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = ""
-        with self.assertLogs("doorstop.core.publisher_latex", level="WARNING") as logs:
+        with self.assertLogs("doorstop.core.publishers.latex", level="WARNING") as logs:
             result = getLines(publisher.publish_lines(item, ".tex"))
             self.assertIn(
-                "WARNING:doorstop.core.publisher_latex:Possibly incorrectly specified table found.",
+                "WARNING:doorstop.core.publishers.latex:Possibly incorrectly specified table found.",
                 logs.output,
             )
         # Assert

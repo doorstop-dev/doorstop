@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.core.publisher_latex module."""
+"""Unit tests for the doorstop.core.publishers.latex module."""
 
 # pylint: disable=unused-argument,protected-access
 
@@ -22,7 +22,7 @@ from doorstop.core.tests.helpers_latex import (
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
+    """Unit tests for the doorstop.core.publishers.latex module by publishing a full document tree."""
 
     # pylint: disable=no-value-for-parameter
     def setUp(self):

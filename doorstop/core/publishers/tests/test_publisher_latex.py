@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.core.publisher_latex module."""
+"""Unit tests for the doorstop.core.publishers.latex module."""
 
 # pylint: disable=unused-argument,protected-access
 
@@ -18,7 +18,7 @@ from doorstop.core.types import iter_documents
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module, more specifically the changes introduced by the doorstop.core.publisher_latex module."""
+    """Unit tests for the doorstop.core.publishers.latex module, more specifically the changes introduced by the doorstop.core.publishers.latex module."""
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
@@ -64,7 +64,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             mock_open.side_effect = lambda *args, **kw: mock.mock_open(
                 read_data="$body"
             ).return_value
-            with patch("doorstop.core.publisher_latex.read_template_data") as mock_read:
+            with patch("doorstop.core.publishers.latex.read_template_data") as mock_read:
                 mock_read.return_value = template_data
                 dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
             # Assert
