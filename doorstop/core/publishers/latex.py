@@ -7,22 +7,55 @@ import re
 from typing import List
 
 from doorstop import common, settings
+from doorstop.cli import utilities
 from doorstop.common import DoorstopError
+from doorstop.core.publishers.base import BasePublisher
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
-from doorstop.core.publishers.base import BaseWorkingCopy
 
 log = common.logger(__name__)
 
 
-class WorkingCopy(BasePublisher):
+class LaTeXPublisher(BasePublisher):
     """LaTeX publisher."""
-    def __init__(self):
+
+    def __init__(self, obj):
         super()
-        END_ENUMERATE = "\\end{enumerate}"
-        END_ITEMIZE = "\\end{itemize}"
-        END_LONGTABLE = "\\end{longtable}"
-        HLINE = "\\hline"
+        self.END_ENUMERATE = "\\end{enumerate}"
+        self.END_ITEMIZE = "\\end{itemize}"
+        self.END_LONGTABLE = "\\end{longtable}"
+        self.HLINE = "\\hline"
+        self.compile_files = []
+        self.compile_path = ""
+
+    def preparePublish(self):
+        """Publish wrapper files for LaTeX."""
+        log.debug("Generating compile script for LaTeX from %s", self.path)
+        self.compile_path = self._get_compile_path()
+
+    def publishAction(self, object, path):
+        """Add file to compile.sh script."""
+        self.document = object
+        self.documentPath = path
+
+        log.debug("Generating compile script for LaTeX from %s", self.documentPath)
+        file_to_compile = self._generate_latex_wrapper()
+        self.compile_files.append(file_to_compile)
+
+    def concludePublish(self):
+        """Write out the compile.sh file."""
+        common.write_lines(
+            self.compile_files,
+            self.compile_path,
+            end=settings.WRITE_LINESEPERATOR,
+            executable=True,
+        )
+        msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
+        utilities.show(msg, flush=True)
+
+    def index(self, directory, index=None, extensions=(".html",), tree=None):
+        """No index for LaTeX."""
+        pass
 
     def lines(self, obj, **kwargs):
         """Yield lines for a LaTeX report.
@@ -46,24 +79,24 @@ class WorkingCopy(BasePublisher):
                 if settings.PUBLISH_HEADING_LEVELS:
                     standard = "{h}{t}{he}".format(
                         h=heading_level,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
+                        t=self._latex_convert(text_lines[0]) if text_lines else "",
                         he="}",
                     )
                 else:
                     standard = "{h}{t}{he}".format(
                         h=heading,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
+                        t=self._latex_convert(text_lines[0]) if text_lines else "",
                         he="}",
                     )
-                attr_list = _format_latex_attr_list(item, True)
+                attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
-                yield from _format_latex_text(text_lines[1:])
+                yield from self._format_latex_text(text_lines[1:])
             else:
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:
                         uid = "{h}{{\\small{{}}{u}}}".format(
-                            h=_latex_convert(item.header), u=item.uid
+                            h=self._latex_convert(item.header), u=item.uid
                         )
                     else:
                         uid = "{u}".format(u=item.uid)
@@ -74,23 +107,23 @@ class WorkingCopy(BasePublisher):
                 else:
                     standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
-                attr_list = _format_latex_attr_list(item, True)
+                attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
 
                 # Text
                 if item.text:
                     yield ""  # break before text
-                    yield from _format_latex_text(item.text.splitlines())
+                    yield from self._format_latex_text(item.text.splitlines())
 
                 # Reference
                 if item.ref:
                     yield ""  # break before reference
-                    yield _format_latex_ref(item)
+                    yield self.format_ref(item)
 
                 # Reference
                 if item.references:
                     yield ""  # break before reference
-                    yield _format_latex_references(item)
+                    yield self.format_references(item)
 
                 # Parent links
                 if item.links:
@@ -100,8 +133,8 @@ class WorkingCopy(BasePublisher):
                         label = "Parent links:"
                     else:
                         label = "Links:"
-                    links = _format_latex_links(items2, linkify)
-                    label_links = _format_latex_label_links(label, links, linkify)
+                    links = self.format_links(items2, linkify)
+                    label_links = self.format_label_links(label, links, linkify)
                     yield label_links
 
                 # Child links
@@ -110,8 +143,8 @@ class WorkingCopy(BasePublisher):
                     if items2:
                         yield ""  # break before links
                         label = "Child links:"
-                        links = _format_latex_links(items2, linkify)
-                        label_links = _format_latex_label_links(label, links, linkify)
+                        links = self.format_links(items2, linkify)
+                        label_links = self.format_label_links(label, links, linkify)
                         yield label_links
 
                 # Add custom publish attributes
@@ -124,41 +157,42 @@ class WorkingCopy(BasePublisher):
                             header_printed = True
                             yield "\\begin{longtable}{|l|l|}"
                             yield "Attribute & Value\\\\"
-                            yield HLINE
+                            yield self.HLINE
                         yield "{} & {}".format(attr, item.attribute(attr))
                     if header_printed:
-                        yield END_LONGTABLE
+                        yield self.END_LONGTABLE
                     else:
                         yield ""
 
             yield ""  # break between items
 
-
-    def _format_latex_attr_list(item, linkify):
+    def format_attr_list(self, item, linkify):
         """Create a LaTeX attribute list for a heading."""
         return (
-            "{l}{u}{le}{zl}{u}{le}".format(l="\\label{", zl="\\zlabel{", u=item.uid, le="}")
+            "{l}{u}{le}{zl}{u}{le}".format(
+                l="\\label{", zl="\\zlabel{", u=item.uid, le="}"
+            )
             if linkify
             else ""
         )
 
-
-    def _format_latex_ref(item):
+    def format_ref(self, item):
         """Format an external reference in LaTeX."""
         if settings.CHECK_REF:
             path, line = item.find_ref()
             path = path.replace("\\", "/")  # always use unix-style paths
             if line:
-                return "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(
-                    p=path, line=line
+                return (
+                    "\\begin{{quote}} \\verb|{p}| (line {line})\\end{{quote}}".format(
+                        p=path, line=line
+                    )
                 )
             else:
                 return "\\begin{{quote}} \\verb|{p}|\\end{{quote}}".format(p=path)
         else:
             return "\\begin{{quote}} \\verb|{r}|\\end{{quote}}".format(r=item.ref)
 
-
-    def _format_latex_references(item):
+    def format_references(self, item):
         """Format an external reference in LaTeX."""
         if settings.CHECK_REF:
             references = item.find_references()
@@ -190,17 +224,15 @@ class WorkingCopy(BasePublisher):
                 )
             return "\n".join(ref for ref in text_refs)
 
-
-    def _format_latex_links(items, linkify):
+    def format_links(self, items, linkify):
         """Format a list of linked items in LaTeX."""
         links = []
         for item in items:
-            link = _format_latex_item_link(item, linkify=linkify)
+            link = self.format_item_link(item, linkify=linkify)
             links.append(link)
         return ", ".join(links)
 
-
-    def _format_latex_item_link(item, linkify=True):
+    def format_item_link(self, item, linkify=True):
         """Format an item link in LaTeX."""
         if linkify and is_item(item):
             if item.header:
@@ -209,16 +241,14 @@ class WorkingCopy(BasePublisher):
         else:
             return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
-
-    def _format_latex_label_links(label, links, linkify):
+    def format_label_links(self, label, links, linkify):
         """Join a string of label and links with formatting."""
         if linkify:
             return "\\textbf{{{lb}}} {ls}".format(lb=label, ls=links)
         else:
             return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
 
-
-    def _latex_convert(line):
+    def _latex_convert(self, line):
         """Single string conversion for LaTeX."""
         #############################
         ## Fix all special characters.
@@ -250,7 +280,9 @@ class WorkingCopy(BasePublisher):
         # Replace ######.
         line = re.sub(
             "###### (.*)",
-            "\\\\subparagraph" + star + "{\\1 \\\\textbf{NOTE: This level is too deep.}}",
+            "\\\\subparagraph"
+            + star
+            + "{\\1 \\\\textbf{NOTE: This level is too deep.}}",
             line,
         )
         # Replace #####.
@@ -265,8 +297,7 @@ class WorkingCopy(BasePublisher):
         line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
         return line
 
-
-    def _typeset_latex_image(image_match, line, block):
+    def _typeset_latex_image(self, image_match, line, block):
         """Typeset images."""
         image_title, image_path = image_match[0]
         # Check for title. If not found, alt_text will be used as caption.
@@ -281,7 +312,7 @@ class WorkingCopy(BasePublisher):
             + image_path
             + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
             + r"\caption{"
-            + _latex_convert(image_title)
+            + self._latex_convert(image_title)
             + r"}"
         ).replace("\\", "\\\\")
         # Replace with LaTeX format.
@@ -296,8 +327,7 @@ class WorkingCopy(BasePublisher):
         line = r"\end{figure}"
         return line
 
-
-    def _fix_table_line(line, end_pipes):
+    def _fix_table_line(self, line, end_pipes):
         r"""Fix table line.
 
         Fix each line typeset for tables by adding & for column breaking, \\ for row
@@ -311,9 +341,8 @@ class WorkingCopy(BasePublisher):
             line = line + "\\\\"
         return line
 
-
     def _check_for_new_table(
-        table_match, text, i, line, block, table_found, header_done, end_pipes
+        self, table_match, text, i, line, block, table_found, header_done, end_pipes
     ):
         """Check for new table.
 
@@ -336,33 +365,31 @@ class WorkingCopy(BasePublisher):
                         table_header = "\\begin{longtable}{" + next_line + "}"
                         block.append(table_header)
                         # Fix the header.
-                        line = _fix_table_line(line, end_pipes)
+                        line = self._fix_table_line(line, end_pipes)
                     else:
                         log.warning("Possibly incorrectly specified table found.")
                 else:
                     log.warning("Possibly unbalanced table found.")
         return table_found, header_done, line, end_pipes
 
-
     def _typeset_latex_table(
-        table_match, text, i, line, block, table_found, header_done, end_pipes
+        self, table_match, text, i, line, block, table_found, header_done, end_pipes
     ):
         """Typeset tables."""
         if not table_found:
-            table_found, header_done, line, end_pipes = _check_for_new_table(
+            table_found, header_done, line, end_pipes = self._check_for_new_table(
                 table_match, text, i, line, block, table_found, header_done, end_pipes
             )
         else:
             if not header_done:
-                line = HLINE
+                line = self.HLINE
                 header_done = True
             else:
                 # Fix the line.
-                line = _fix_table_line(line, end_pipes)
+                line = self._fix_table_line(line, end_pipes)
         return table_found, header_done, line, end_pipes
 
-
-    def _format_latex_text(text):
+    def _format_latex_text(self, text):
         """Fix all general text formatting to use LaTeX-macros."""
         block: List[str]
         block = []
@@ -398,7 +425,7 @@ class WorkingCopy(BasePublisher):
             if environment_data["code_found"]:
                 block.append(line)
                 # Check for end of file and end all environments.
-                _check_for_eof(
+                self._check_for_eof(
                     i, block, text, environment_data, plantuml_name, plantuml_file
                 )
                 continue
@@ -409,7 +436,7 @@ class WorkingCopy(BasePublisher):
             #############################
             image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
             if image_match:
-                line = _typeset_latex_image(image_match, line, block)
+                line = self._typeset_latex_image(image_match, line, block)
             #############################
             ## Fix $ and MATH.
             #############################
@@ -417,24 +444,24 @@ class WorkingCopy(BasePublisher):
             if len(math_match) > 1:
                 if math_found and len(math_match) == 2:
                     math_found = False
-                    line = math_match[0] + "$" + _latex_convert(math_match[1])
+                    line = math_match[0] + "$" + self._latex_convert(math_match[1])
                 elif len(math_match) == 2:
                     math_found = True
-                    line = _latex_convert(math_match[0]) + "$" + math_match[1]
+                    line = self._latex_convert(math_match[0]) + "$" + math_match[1]
                 elif len(math_match) == 3:
                     line = (
-                        _latex_convert(math_match[0])
+                        self._latex_convert(math_match[0])
                         + "$"
                         + math_match[1]
                         + "$"
-                        + _latex_convert(math_match[2])
+                        + self._latex_convert(math_match[2])
                     )
                 else:
                     raise DoorstopError(
                         "Cannot handle multiple math environments on one row."
                     )
             else:
-                line = _latex_convert(line)
+                line = self._latex_convert(line)
             # Skip all other changes if in MATH!
             if math_found:
                 line = line + "\\\\"
@@ -457,7 +484,7 @@ class WorkingCopy(BasePublisher):
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            line = END_ENUMERATE
+                            line = self.END_ENUMERATE
                             environment_data["enumeration_found"] = False
                 else:
                     # Look ahead - need empty line to end enumeration!
@@ -465,7 +492,7 @@ class WorkingCopy(BasePublisher):
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            line = END_ENUMERATE
+                            line = self.END_ENUMERATE
                             environment_data["enumeration_found"] = False
             #############################
             ## Fix itemize.
@@ -484,7 +511,7 @@ class WorkingCopy(BasePublisher):
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            line = END_ITEMIZE
+                            line = self.END_ITEMIZE
                             environment_data["itemize_found"] = False
                 else:
                     # Look ahead - need empty line to end itemize!
@@ -492,7 +519,7 @@ class WorkingCopy(BasePublisher):
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            line = END_ITEMIZE
+                            line = self.END_ITEMIZE
                             environment_data["itemize_found"] = False
 
             #############################
@@ -506,7 +533,7 @@ class WorkingCopy(BasePublisher):
                     header_done,
                     line,
                     end_pipes,
-                ) = _typeset_latex_table(
+                ) = self._typeset_latex_table(
                     table_match,
                     text,
                     i,
@@ -518,7 +545,7 @@ class WorkingCopy(BasePublisher):
                 )
             else:
                 if environment_data["table_found"]:
-                    block.append(END_LONGTABLE)
+                    block.append(self.END_LONGTABLE)
                 environment_data["table_found"] = False
                 header_done = False
             #############################
@@ -561,19 +588,22 @@ class WorkingCopy(BasePublisher):
             block.append(line)
 
             # Check for end of file and end all environments.
-            _check_for_eof(i, block, text, environment_data, plantuml_name, plantuml_file)
+            self._check_for_eof(
+                i, block, text, environment_data, plantuml_name, plantuml_file
+            )
         return block
 
-
-    def _check_for_eof(index, block, text, environment_data, plantuml_name, plantuml_file):
+    def _check_for_eof(
+        self, index, block, text, environment_data, plantuml_name, plantuml_file
+    ):
         """Check for end of file and end all unended environments."""
         if index == len(text) - 1:
             if environment_data["code_found"]:
                 block.append("\\end{lstlisting}")
             if environment_data["enumeration_found"]:
-                block.append(END_ENUMERATE)
+                block.append(self.END_ENUMERATE)
             if environment_data["itemize_found"]:
-                block.append(END_ITEMIZE)
+                block.append(self.END_ITEMIZE)
             if environment_data["plantuml_found"]:
                 block.append("\\end{plantuml}")
                 block.append(
@@ -584,10 +614,9 @@ class WorkingCopy(BasePublisher):
                     + "}"
                 )
             if environment_data["table_found"]:
-                block.append(END_LONGTABLE)
+                block.append(self.END_LONGTABLE)
 
-
-    def _matrix_latex(table, path):
+    def matrix(self, table, path):
         """Create a traceability table for LaTeX."""
         # Setup.
         traceability = []
@@ -611,23 +640,23 @@ class WorkingCopy(BasePublisher):
         traceability.append(
             "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
         )
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append(table_head)
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append("\\endfirsthead")
         traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\")
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append(table_head)
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append("\\endhead")
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append(
             "\\multicolumn{{{n}}}{{r}}{{\\textit{{Continued on next page.}}}}\\\\".format(
                 n=count
             )
         )
         traceability.append("\\endfoot")
-        traceability.append(HLINE)
+        traceability.append(self.HLINE)
         traceability.append("\\endlastfoot")
         # Add rows.
         for row in table:
@@ -641,20 +670,18 @@ class WorkingCopy(BasePublisher):
                     row_text = row_text + " "
             row_text = row_text + "\\\\"
             traceability.append(row_text)
-            traceability.append(HLINE)
+            traceability.append(self.HLINE)
         # End the table.
-        traceability.append(END_LONGTABLE)
+        traceability.append(self.END_LONGTABLE)
         common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
 
-
-    def _get_compile_path(path):
+    def _get_compile_path(self):
         """Return the path to the compile script."""
-        head, tail = os.path.split(path)
+        head, tail = os.path.split(self.path)
         tail = "compile.sh"
         return os.path.join(head, tail)
 
-
-    def _get_document_attributes(obj):
+    def _get_document_attributes(self, obj):
         """Try to get attributes from document."""
         doc_attributes = {}
         doc_attributes["name"] = "doc-" + obj.prefix
@@ -686,32 +713,31 @@ class WorkingCopy(BasePublisher):
             pass
         return doc_attributes
 
-
-    def _generate_latex_wrapper(
-        obj, path, assets_dir, template, matrix, count, parent, parent_path
-    ):
+    def _generate_latex_wrapper(self):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
-        doc_attributes = _get_document_attributes(obj)
+        doc_attributes = self._get_document_attributes(self.document)
         # Create the wrapper file.
-        head, tail = os.path.split(path)
-        if tail != obj.prefix + ".tex":
+        head, tail = os.path.split(self.documentPath)
+        if tail != self.extract_prefix(self.document) + ".tex":
             log.warning(
                 "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
             )
         tail = doc_attributes["name"] + ".tex"
-        path = os.path.join(head, obj.prefix + ".tex")
-        path3 = os.path.join(head, tail)
+        self.documentPath = os.path.join(
+            head, self.extract_prefix(self.document) + ".tex"
+        )
+        wrapperPath = os.path.join(head, tail)
         # Load template data.
-        template_data = read_template_data(assets_dir, template)
+        template_data = read_template_data(self.assetsPath, self.template)
         check_latex_template_data(template_data)
         wrapper = []
         wrapper.append(
             "\\documentclass[%s]{template/%s}"
-            % (", ".join(template_data["documentclass"]), template)
+            % (", ".join(template_data["documentclass"]), self.template)
         )
         # Add required packages from template data.
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper,
             "These packages were automatically added from the template configuration file.",
         )
@@ -721,99 +747,118 @@ class WorkingCopy(BasePublisher):
                 package_line += "[%s]" % ", ".join(options)
             package_line += "{%s}" % package
             wrapper.append(package_line)
-        wrapper = _add_comment(wrapper, "END data from the template configuration file.")
+        wrapper = self._add_comment(
+            wrapper, "END data from the template configuration file."
+        )
         wrapper.append("")
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper,
             "These fields are generated from the default doc attribute in the .doorstop.yml file.",
         )
         wrapper.append(
             "\\def\\doccopyright{{{n}}}".format(
-                n=_latex_convert(doc_attributes["copyright"])
+                n=self._latex_convert(doc_attributes["copyright"])
             )
         )
-        wrapper.append("\\def\\doccategory{{{t}}}".format(t=_latex_convert(obj.prefix)))
         wrapper.append(
-            "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
+            "\\def\\doccategory{{{t}}}".format(
+                t=self._latex_convert(self.extract_prefix(self.document))
+            )
         )
         wrapper.append(
-            "\\def\\docref{{{n}}}".format(n=_latex_convert(doc_attributes["ref"]))
-        )
-        wrapper.append("\\def\\docby{{{n}}}".format(n=_latex_convert(doc_attributes["by"])))
-        wrapper.append(
-            "\\def\\docissuemajor{{{n}}}".format(n=_latex_convert(doc_attributes["major"]))
+            "\\def\\doctitle{{{n}}}".format(
+                n=self._latex_convert(doc_attributes["title"])
+            )
         )
         wrapper.append(
-            "\\def\\docissueminor{{{n}}}".format(n=_latex_convert(doc_attributes["minor"]))
+            "\\def\\docref{{{n}}}".format(n=self._latex_convert(doc_attributes["ref"]))
         )
-        wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
+        wrapper.append(
+            "\\def\\docby{{{n}}}".format(n=self._latex_convert(doc_attributes["by"]))
+        )
+        wrapper.append(
+            "\\def\\docissuemajor{{{n}}}".format(
+                n=self._latex_convert(doc_attributes["major"])
+            )
+        )
+        wrapper.append(
+            "\\def\\docissueminor{{{n}}}".format(
+                n=self._latex_convert(doc_attributes["minor"])
+            )
+        )
+        wrapper = self._add_comment(wrapper, "END data from the .doorstop.yml file.")
         wrapper.append("")
         info_text_set = False
-        for external, _ in iter_documents(parent, parent_path, ".tex"):
+        for external, _ in iter_documents(self.object, self.path, ".tex"):
             # Check for defined document attributes.
-            external_doc_attributes = _get_document_attributes(external)
+            external_doc_attributes = self._get_document_attributes(external)
             # Don't add self.
             if external_doc_attributes["name"] != doc_attributes["name"]:
                 if not info_text_set:
-                    wrapper = _add_comment(
+                    wrapper = self._add_comment(
                         wrapper,
                         "These are automatically added external references to make cross-references work between the PDFs.",
                     )
                     info_text_set = True
                 wrapper.append(
-                    "\\zexternaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+                    "\\zexternaldocument{{{n}}}".format(
+                        n=external_doc_attributes["name"]
+                    )
                 )
                 wrapper.append(
-                    "\\externaldocument{{{n}}}".format(n=external_doc_attributes["name"])
+                    "\\externaldocument{{{n}}}".format(
+                        n=external_doc_attributes["name"]
+                    )
                 )
         if info_text_set:
-            wrapper = _add_comment(wrapper, "END external references.")
+            wrapper = self._add_comment(wrapper, "END external references.")
             wrapper.append("")
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
         )
         for line in template_data["before_begin_document"]:
             wrapper.append(line)
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper, "END custom data from the template configuration file."
         )
         wrapper.append("")
         wrapper.append("\\begin{document}")
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _after_ \\begin{document}.",
         )
         for line in template_data["after_begin_document"]:
             wrapper.append(line)
-        wrapper = _add_comment(
+        wrapper = self._add_comment(
             wrapper, "END custom data from the template configuration file."
         )
         wrapper.append("")
-        wrapper = _add_comment(wrapper, "Load the doorstop data file.")
-        wrapper.append("\\input{{{n}.tex}}".format(n=obj.prefix))
-        wrapper = _add_comment(wrapper, "END doorstop data file.")
+        wrapper = self._add_comment(wrapper, "Load the doorstop data file.")
+        wrapper.append(
+            "\\input{{{n}.tex}}".format(n=self.extract_prefix(self.document))
+        )
+        wrapper = self._add_comment(wrapper, "END doorstop data file.")
         wrapper.append("")
         # Include traceability matrix
-        if matrix and count:
-            wrapper = _add_comment(wrapper, "Add traceability matrix.")
+        if self.matrix:
+            wrapper = self._add_comment(wrapper, "Add traceability matrix.")
             if settings.PUBLISH_HEADING_LEVELS:
                 wrapper.append("\\section{Traceability}")
             else:
                 wrapper.append("\\section*{Traceability}")
             wrapper.append("\\input{traceability.tex}")
-            wrapper = _add_comment(wrapper, "END traceability matrix.")
+            wrapper = self._add_comment(wrapper, "END traceability matrix.")
             wrapper.append("")
         wrapper.append("\\end{document}")
-        common.write_lines(wrapper, path3, end=settings.WRITE_LINESEPERATOR)
+        common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return path, "pdflatex -halt-on-error -shell-escape {n}.tex".format(
+        return "pdflatex -halt-on-error -shell-escape {n}.tex".format(
             n=doc_attributes["name"]
         )
 
-
-    def _add_comment(wrapper, text):
+    def _add_comment(self, wrapper, text):
         """Add comments to the .tex output file in a pretty way."""
         wrapper.append("%" * 80)
         words = text.split(" ")

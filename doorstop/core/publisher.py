@@ -3,26 +3,14 @@
 """Functions to publish documents and items."""
 
 import os
-import tempfile
-import textwrap
-
-import bottle
-import markdown
-from bottle import template as bottle_template
-from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
-from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-# from doorstop.core.publisher_latex import (
-#     _generate_latex_wrapper,
-#     _get_compile_path,
-#     _lines_latex,
-#     _matrix_latex,
-# )
-# from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX, get_template
-from doorstop.core.types import is_item, is_tree, iter_documents, iter_items
-from doorstop.core.publishers import html, latex, markdown, text
+from doorstop.core.publishers.html import HtmlPublisher
+from doorstop.core.publishers.latex import LaTeXPublisher
+from doorstop.core.publishers.markdown import MarkdownPublisher
+from doorstop.core.publishers.text import TextPublisher
+from doorstop.core.types import is_tree, iter_documents
 
 log = common.logger(__name__)
 
@@ -48,7 +36,7 @@ def publish(
     :param obj: (1) Item, list of Items, Document or (2) Tree
     :param path: (1) output file path or (2) output directory path
     :param ext: file extension to override output extension
-    :param linkify: turn links into hyperlinks (for Markdown or HTML)
+    :param linkify: turn links into hyperlinks (for Markdown, HTML or LaTeX)
     :param index: create an index.html (for HTML)
     :param matrix: create a traceability matrix, traceability.csv
 
@@ -59,62 +47,55 @@ def publish(
     """
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or ".html"
-    check(ext)
-    if linkify is None:
-        linkify = is_tree(obj) and ext in [".html", ".md", ".tex"]
-    if index is None:
-        index = is_tree(obj) and ext == ".html"
-    if matrix is None:
-        matrix = is_tree(obj)
+    publisher = check(ext, obj)
+    # Setup publisher.
+    publisher.setPath(path)
+    publisher.setup(linkify, index, matrix)
 
     # Process templates.
-    assets_dir, template = get_template(obj, path, ext, template)
+    publisher.processTemplates(template)
+
+    # Run all preparations.
+    publisher.preparePublish()
 
     # Publish documents
     count = 0
-    if ext == ".tex":
-        compile_files = []
-        compile_path = ""
     for obj2, path2 in iter_documents(obj, path, ext):
         count += 1
-        # Publish wrapper files for LaTeX.
-        if ext == ".tex":
-            log.debug("Generating compile script for LaTeX from %s", path2)
-            if count == 1:
-                compile_path = _get_compile_path(path2)
-            path2, file_to_compile = _generate_latex_wrapper(
-                obj2, path2, assets_dir, template, matrix, count, obj, path
-            )
-            compile_files.append(file_to_compile)
+        # Run all special actions.
+        publisher.publishAction(obj2, path2)
 
         # Publish content to the specified path
-        log.info("publishing to {}...".format(path2))
+        log.info("publishing to {}...".format(publisher.getDocumentPath()))
         lines = publish_lines(
-            obj2, ext, linkify=linkify, template=template, toc=toc, **kwargs
+            publisher,
+            obj2,
+            ext,
+            linkify=publisher.getLinkify(),
+            template=publisher.getTemplate(),
+            toc=toc,
+            **kwargs,
         )
-        common.write_lines(lines, path2, end=settings.WRITE_LINESEPERATOR)
-        if obj2.copy_assets(assets_dir):
-            log.info("Copied assets from %s to %s", obj.assets, assets_dir)
-
-    if ext == ".tex":
         common.write_lines(
-            compile_files,
-            compile_path,
-            end=settings.WRITE_LINESEPERATOR,
-            executable=True,
+            lines, publisher.getDocumentPath(), end=settings.WRITE_LINESEPERATOR
         )
-        msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
-        utilities.show(msg, flush=True)
+        if obj2.copy_assets(publisher.getAssetsPath()):
+            log.info(
+                "Copied assets from %s to %s", obj.assets, publisher.getAssetsPath()
+            )
 
     # Create index
-    if index and count:
-        _index(path, tree=obj if is_tree(obj) else None)
+    if publisher.getIndex() and count:
+        publisher.index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
-    if (index or ext == ".tex") and (matrix and count):
-        _matrix(
+    if (publisher.getIndex() or ext == ".tex") and (publisher.getMatrix() and count):
+        publisher.matrix(
             path, tree=obj if is_tree(obj) else None, ext=ext if ext == ".tex" else None
         )
+
+    # Run all concluding operations.
+    publisher.concludePublish()
 
     # Return the published path
     if count:
@@ -126,8 +107,7 @@ def publish(
         return None
 
 
-
-def publish_lines(obj, ext=".txt", **kwargs):
+def publish_lines(obj, ext=".txt", publisher=None, **kwargs):
     """Yield lines for a report in the specified format.
 
     :param obj: Item, list of Items, or Document to publish
@@ -136,7 +116,9 @@ def publish_lines(obj, ext=".txt", **kwargs):
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
     """
-    gen = check(ext)
+    if not publisher:
+        publisher = check(ext, obj)
+    gen = publisher.get_line_generator()
     log.debug("yielding {} as lines of {}...".format(obj, ext))
     yield from gen(obj, **kwargs)
 
@@ -562,17 +544,25 @@ def check(ext):
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown formats
 
-    :return: lines generator if available
+    :return: publisher class if available
 
     """
-    exts = ", ".join(ext for ext in FORMAT_LINES)
+    # Mapping from file extension to class.
+    PUBLISHER_LIST = {
+        ".txt": TextPublisher(obj),
+        ".md": MarkdownPublisher(obj),
+        ".html": HtmlPublisher(obj),
+        ".tex": LaTeXPublisher(obj),
+    }
+
+    exts = ", ".join(ext for ext in PUBLISHER_LIST)
     msg = "unknown publish format: {} (options: {})".format(ext or None, exts)
     exc = DoorstopError(msg)
 
     try:
-        gen = FORMAT_LINES[ext]
+        publisherClass = PUBLISHER_LIST[ext]
     except KeyError:
         raise exc from None
     else:
-        log.debug("found lines generator for: {}".format(ext))
-        return gen
+        log.debug("found publisher class for: {}".format(ext))
+        return publisherClass
