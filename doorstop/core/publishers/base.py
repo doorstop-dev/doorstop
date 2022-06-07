@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from doorstop import common, settings
 from doorstop.core.template import get_template
-from doorstop.core.types import is_tree
+from doorstop.core.types import is_tree, iter_items
 
 log = common.logger(__name__)
 
@@ -43,20 +43,61 @@ class BasePublisher(metaclass=ABCMeta):
             self.matrix = is_tree(self.object)
 
     def preparePublish(self):
-        """Replace this with code that should be run _before_ a document or tree
-        is published."""
-        pass
+        """Prepare publish.
 
-    def publishAction(self, object, path):
-        """Replace this with code that should be run _for each_ document
-        _during_ publishing."""
-        self.document = object
+        Replace this with code that should be run _before_ a document or tree
+        is published.
+        """
+
+    def publishAction(self, document, path):
+        """Publish action.
+
+        Replace this with code that should be run _for each_ document
+        _during_ publishing.
+        """
+        self.document = document
         self.documentPath = path
 
     def concludePublish(self):
-        """Replace this with code that should be run _after_ a document or tree
-        is published."""
-        pass
+        """Conclude publish.
+
+        Replace this with code that should be run _after_ a document or tree
+        is published.
+        """
+
+    def table_of_contents(self, linkify=None):
+        toc = "### Table of Contents\n\n"
+
+        for item in iter_items(self.object):
+            if item.depth == 1:
+                prefix = " * "
+            else:
+                prefix = "    " * (item.depth - 1)
+                prefix += "* "
+
+            if item.heading:
+                lines = item.text.splitlines()
+                if item.header:
+                    heading = item.header
+                else:
+                    heading = lines[0] if lines else ""
+            elif item.header:
+                heading = "{h}".format(h=item.header)
+            else:
+                heading = item.uid
+
+            if settings.PUBLISH_HEADING_LEVELS:
+                level = format_level(item.level)
+                lbl = "{lev} {h}".format(lev=level, h=heading)
+            else:
+                lbl = heading
+
+            if linkify:
+                line = "{p}[{lbl}](#{uid})\n".format(p=prefix, lbl=lbl, uid=item.uid)
+            else:
+                line = "{p}{lbl}\n".format(p=prefix, lbl=lbl)
+            toc += line
+        return toc
 
     @abstractmethod
     def lines(self, obj, **kwargs):  # pragma: no cover (abstract method)
@@ -71,7 +112,7 @@ class BasePublisher(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def index(
+    def create_index(
         self, directory, index=None, extensions=(".html",), tree=None
     ):  # pragma: no cover (abstract method)
         """Create an index of all files in a directory.
@@ -82,6 +123,10 @@ class BasePublisher(metaclass=ABCMeta):
         :param tree: optional tree to determine index structure
 
         """
+        raise NotImplementedError
+
+    def create_matrix(self, directory):  # pragma: no cover (abstract method)
+        """Create a traceability table."""
         raise NotImplementedError
 
     @abstractmethod
@@ -119,27 +164,6 @@ class BasePublisher(metaclass=ABCMeta):
     ):  # pragma: no cover (abstract method)
         """Join a string of label and links with formatting."""
         raise NotImplementedError
-
-    def extract_prefix(self, document):
-        """Return the document prefix."""
-        if document:
-            return document.prefix
-        else:
-            return None
-
-    def extract_uid(self, item):
-        """Return the item uid."""
-        if item:
-            return item.uid
-        else:
-            return None
-
-    def format_level(self, level):
-        """Convert a level to a string and keep zeros if not a top level."""
-        text = str(level)
-        if text.endswith(".0") and len(text) > 3:
-            text = text[:-2]
-        return text
 
     def get_line_generator(self):
         """Return the lines generator for the class."""
@@ -206,3 +230,27 @@ class BasePublisher(metaclass=ABCMeta):
     def getLinkify(self):
         """Get the linkify flag."""
         return self.linkify
+
+
+def extract_prefix(document):
+    """Return the document prefix."""
+    if document:
+        return document.prefix
+    else:
+        return None
+
+
+def extract_uid(item):
+    """Return the item uid."""
+    if item:
+        return item.uid
+    else:
+        return None
+
+
+def format_level(level):
+    """Convert a level to a string and keep zeros if not a top level."""
+    text = str(level)
+    if text.endswith(".0") and len(text) > 3:
+        text = text[:-2]
+    return text

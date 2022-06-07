@@ -86,13 +86,11 @@ def publish(
 
     # Create index
     if publisher.getIndex() and count:
-        publisher.index(path, tree=obj if is_tree(obj) else None)
+        publisher.create_index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
     if (publisher.getIndex() or ext == ".tex") and (publisher.getMatrix() and count):
-        publisher.matrix(
-            path, tree=obj if is_tree(obj) else None, ext=ext if ext == ".tex" else None
-        )
+        publisher.create_matrix(path)
 
     # Run all concluding operations.
     publisher.concludePublish()
@@ -549,10 +547,10 @@ def check(ext):
     """
     # Mapping from file extension to class.
     PUBLISHER_LIST = {
-        ".txt": TextPublisher(obj),
-        ".md": MarkdownPublisher(obj),
-        ".html": HtmlPublisher(obj),
-        ".tex": LaTeXPublisher(obj),
+        ".txt": TextPublisher(obj, ext),
+        ".md": MarkdownPublisher(obj, ext),
+        ".html": HtmlPublisher(obj, ext),
+        ".tex": LaTeXPublisher(obj, ext),
     }
 
     exts = ", ".join(ext for ext in PUBLISHER_LIST)

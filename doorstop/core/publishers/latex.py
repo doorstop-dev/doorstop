@@ -9,7 +9,7 @@ from typing import List
 from doorstop import common, settings
 from doorstop.cli import utilities
 from doorstop.common import DoorstopError
-from doorstop.core.publishers.base import BasePublisher
+from doorstop.core.publishers.base import BasePublisher, extract_prefix
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
 
@@ -19,8 +19,8 @@ log = common.logger(__name__)
 class LaTeXPublisher(BasePublisher):
     """LaTeX publisher."""
 
-    def __init__(self, obj):
-        super()
+    def __init__(self, obj, ext):
+        super().__init__(obj, ext)
         self.END_ENUMERATE = "\\end{enumerate}"
         self.END_ITEMIZE = "\\end{itemize}"
         self.END_LONGTABLE = "\\end{longtable}"
@@ -33,9 +33,9 @@ class LaTeXPublisher(BasePublisher):
         log.debug("Generating compile script for LaTeX from %s", self.path)
         self.compile_path = self._get_compile_path()
 
-    def publishAction(self, object, path):
+    def publishAction(self, document, path):
         """Add file to compile.sh script."""
-        self.document = object
+        self.document = document
         self.documentPath = path
 
         log.debug("Generating compile script for LaTeX from %s", self.documentPath)
@@ -53,9 +53,8 @@ class LaTeXPublisher(BasePublisher):
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
-    def index(self, directory, index=None, extensions=(".html",), tree=None):
+    def create_index(self, directory, index=None, extensions=(".html",), tree=None):
         """No index for LaTeX."""
-        pass
 
     def lines(self, obj, **kwargs):
         """Yield lines for a LaTeX report.
@@ -79,13 +78,13 @@ class LaTeXPublisher(BasePublisher):
                 if settings.PUBLISH_HEADING_LEVELS:
                     standard = "{h}{t}{he}".format(
                         h=heading_level,
-                        t=self._latex_convert(text_lines[0]) if text_lines else "",
+                        t=_latex_convert(text_lines[0]) if text_lines else "",
                         he="}",
                     )
                 else:
                     standard = "{h}{t}{he}".format(
                         h=heading,
-                        t=self._latex_convert(text_lines[0]) if text_lines else "",
+                        t=_latex_convert(text_lines[0]) if text_lines else "",
                         he="}",
                     )
                 attr_list = self.format_attr_list(item, True)
@@ -96,7 +95,7 @@ class LaTeXPublisher(BasePublisher):
                 if settings.ENABLE_HEADERS:
                     if item.header:
                         uid = "{h}{{\\small{{}}{u}}}".format(
-                            h=self._latex_convert(item.header), u=item.uid
+                            h=_latex_convert(item.header), u=item.uid
                         )
                     else:
                         uid = "{u}".format(u=item.uid)
@@ -224,7 +223,7 @@ class LaTeXPublisher(BasePublisher):
                 )
             return "\n".join(ref for ref in text_refs)
 
-    def format_links(self, items, linkify):
+    def format_links(self, items, linkify, to_html=False):
         """Format a list of linked items in LaTeX."""
         links = []
         for item in items:
@@ -248,136 +247,12 @@ class LaTeXPublisher(BasePublisher):
         else:
             return "\\textbf{{{lb} {ls}}}".format(lb=label, ls=links)
 
-    def _latex_convert(self, line):
-        """Single string conversion for LaTeX."""
-        #############################
-        ## Fix all special characters.
-        #############################
-        # Replace $.
-        line = re.sub("\\$", "\\\\$", line)
-        # Replace &.
-        line = re.sub("&", "\\\\&", line)
-        #############################
-        ## Fix BOLD and ITALICS and Strikethrough.
-        #############################
-        # Replace **.
-        line = re.sub("\\*\\*(.*?)\\*\\*", "\\\\textbf{\\1}", line)
-        # Replace __.
-        line = re.sub("__(.*?)__", "\\\\textbf{\\1}", line)
-        # Replace *.
-        line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
-        # Replace _.
-        line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
-        # Replace ~~.
-        line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
-        #############################
-        ## Fix manual heading levels
-        #############################
-        if settings.PUBLISH_BODY_LEVELS:
-            star = ""
-        else:
-            star = "*"
-        # Replace ######.
-        line = re.sub(
-            "###### (.*)",
-            "\\\\subparagraph"
-            + star
-            + "{\\1 \\\\textbf{NOTE: This level is too deep.}}",
-            line,
-        )
-        # Replace #####.
-        line = re.sub("##### (.*)", "\\\\subparagraph" + star + "{\\1}", line)
-        # Replace ####.
-        line = re.sub("#### (.*)", "\\\\paragraph" + star + "{\\1}", line)
-        # Replace ###.
-        line = re.sub("### (.*)", "\\\\subsubsection" + star + "{\\1}", line)
-        # Replace ##.
-        line = re.sub("## (.*)", "\\\\subsection" + star + "{\\1}", line)
-        # Replace #.
-        line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
-        return line
-
-    def _typeset_latex_image(self, image_match, line, block):
-        """Typeset images."""
-        image_title, image_path = image_match[0]
-        # Check for title. If not found, alt_text will be used as caption.
-        title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
-        if title_match:
-            image_path, image_title = title_match[0]
-        # Make a safe label.
-        label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
-        # Make the string to replace!
-        replacement = (
-            r"\includegraphics[width=0.8\textwidth]{"
-            + image_path
-            + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
-            + r"\caption{"
-            + self._latex_convert(image_title)
-            + r"}"
-        ).replace("\\", "\\\\")
-        # Replace with LaTeX format.
-        line = re.sub(
-            r"!\[(.*)\]\((.*)\)",
-            replacement,
-            line,
-        )
-        # Create the figure.
-        block.append(r"\begin{figure}[h!]\center")
-        block.append(line)
-        line = r"\end{figure}"
-        return line
-
-    def _fix_table_line(self, line, end_pipes):
-        r"""Fix table line.
-
-        Fix each line typeset for tables by adding & for column breaking, \\ for row
-        breaking and fixing pipes for tables with outside borders.
-        """
-        line = re.sub("\\|", "&", line)
-        if end_pipes:
-            line = re.sub("^\\s*&", "", line)
-            line = re.sub("&\\s*$", "\\\\\\\\", line)
-        else:
-            line = line + "\\\\"
-        return line
-
-    def _check_for_new_table(
-        self, table_match, text, i, line, block, table_found, header_done, end_pipes
-    ):
-        """Check for new table.
-
-        Check if a new table is beginning or not. If new table is detected, write
-        table header and mark as found.
-        """
-        # Check next line for minimum 3 dashes and the same count of |.
-        if i < len(text) - 1:
-            next_line = text[i + 1]
-            table_match_next = re.findall("\\|", next_line)
-            if table_match_next:
-                if len(table_match) == len(table_match_next):
-                    table_match_dashes = re.findall("-{3,}", next_line)
-                    if table_match_dashes:
-                        table_found = True
-                        end_pipes = bool(len(table_match) > len(table_match_dashes))
-                        next_line = re.sub(":-+:", "c", next_line)
-                        next_line = re.sub("-+:", "r", next_line)
-                        next_line = re.sub("-+", "l", next_line)
-                        table_header = "\\begin{longtable}{" + next_line + "}"
-                        block.append(table_header)
-                        # Fix the header.
-                        line = self._fix_table_line(line, end_pipes)
-                    else:
-                        log.warning("Possibly incorrectly specified table found.")
-                else:
-                    log.warning("Possibly unbalanced table found.")
-        return table_found, header_done, line, end_pipes
-
     def _typeset_latex_table(
         self, table_match, text, i, line, block, table_found, header_done, end_pipes
     ):
         """Typeset tables."""
         if not table_found:
-            table_found, header_done, line, end_pipes = self._check_for_new_table(
+            table_found, header_done, line, end_pipes = _check_for_new_table(
                 table_match, text, i, line, block, table_found, header_done, end_pipes
             )
         else:
@@ -386,7 +261,7 @@ class LaTeXPublisher(BasePublisher):
                 header_done = True
             else:
                 # Fix the line.
-                line = self._fix_table_line(line, end_pipes)
+                line = _fix_table_line(line, end_pipes)
         return table_found, header_done, line, end_pipes
 
     def _format_latex_text(self, text):
@@ -436,7 +311,7 @@ class LaTeXPublisher(BasePublisher):
             #############################
             image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
             if image_match:
-                line = self._typeset_latex_image(image_match, line, block)
+                line = _typeset_latex_image(image_match, line, block)
             #############################
             ## Fix $ and MATH.
             #############################
@@ -444,24 +319,24 @@ class LaTeXPublisher(BasePublisher):
             if len(math_match) > 1:
                 if math_found and len(math_match) == 2:
                     math_found = False
-                    line = math_match[0] + "$" + self._latex_convert(math_match[1])
+                    line = math_match[0] + "$" + _latex_convert(math_match[1])
                 elif len(math_match) == 2:
                     math_found = True
-                    line = self._latex_convert(math_match[0]) + "$" + math_match[1]
+                    line = _latex_convert(math_match[0]) + "$" + math_match[1]
                 elif len(math_match) == 3:
                     line = (
-                        self._latex_convert(math_match[0])
+                        _latex_convert(math_match[0])
                         + "$"
                         + math_match[1]
                         + "$"
-                        + self._latex_convert(math_match[2])
+                        + _latex_convert(math_match[2])
                     )
                 else:
                     raise DoorstopError(
                         "Cannot handle multiple math environments on one row."
                     )
             else:
-                line = self._latex_convert(line)
+                line = _latex_convert(line)
             # Skip all other changes if in MATH!
             if math_found:
                 line = line + "\\\\"
@@ -616,11 +491,12 @@ class LaTeXPublisher(BasePublisher):
             if environment_data["table_found"]:
                 block.append(self.END_LONGTABLE)
 
-    def matrix(self, table, path):
+    def create_matrix(self, directory):
         """Create a traceability table for LaTeX."""
         # Setup.
+        table = self.object.get_traceability()
         traceability = []
-        head, tail = os.path.split(path)
+        head, tail = os.path.split(directory)
         tail = "traceability.tex"
         file = os.path.join(head, tail)
         count = 0
@@ -681,52 +557,18 @@ class LaTeXPublisher(BasePublisher):
         tail = "compile.sh"
         return os.path.join(head, tail)
 
-    def _get_document_attributes(self, obj):
-        """Try to get attributes from document."""
-        doc_attributes = {}
-        doc_attributes["name"] = "doc-" + obj.prefix
-        log.debug("Document name is '%s'", doc_attributes["name"])
-        doc_attributes["title"] = "Test document for development of _Doorstop_"
-        doc_attributes["ref"] = ""
-        doc_attributes["by"] = ""
-        doc_attributes["major"] = ""
-        doc_attributes["minor"] = ""
-        doc_attributes["copyright"] = "Doorstop"
-        try:
-            attribute_defaults = obj.__getattribute__("_attribute_defaults")
-            if attribute_defaults:
-                if attribute_defaults["doc"]["name"]:
-                    doc_attributes["name"] = attribute_defaults["doc"]["name"]
-                if attribute_defaults["doc"]["title"]:
-                    doc_attributes["title"] = attribute_defaults["doc"]["title"]
-                if attribute_defaults["doc"]["ref"]:
-                    doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
-                if attribute_defaults["doc"]["by"]:
-                    doc_attributes["by"] = attribute_defaults["doc"]["by"]
-                if attribute_defaults["doc"]["major"]:
-                    doc_attributes["major"] = attribute_defaults["doc"]["major"]
-                if attribute_defaults["doc"]["minor"]:
-                    doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
-                if attribute_defaults["doc"]["copyright"]:
-                    doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
-        except AttributeError:
-            pass
-        return doc_attributes
-
     def _generate_latex_wrapper(self):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
-        doc_attributes = self._get_document_attributes(self.document)
+        doc_attributes = _get_document_attributes(self.document)
         # Create the wrapper file.
         head, tail = os.path.split(self.documentPath)
-        if tail != self.extract_prefix(self.document) + ".tex":
+        if tail != extract_prefix(self.document) + ".tex":
             log.warning(
                 "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
             )
         tail = doc_attributes["name"] + ".tex"
-        self.documentPath = os.path.join(
-            head, self.extract_prefix(self.document) + ".tex"
-        )
+        self.documentPath = os.path.join(head, extract_prefix(self.document) + ".tex")
         wrapperPath = os.path.join(head, tail)
         # Load template data.
         template_data = read_template_data(self.assetsPath, self.template)
@@ -737,7 +579,7 @@ class LaTeXPublisher(BasePublisher):
             % (", ".join(template_data["documentclass"]), self.template)
         )
         # Add required packages from template data.
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper,
             "These packages were automatically added from the template configuration file.",
         )
@@ -747,55 +589,53 @@ class LaTeXPublisher(BasePublisher):
                 package_line += "[%s]" % ", ".join(options)
             package_line += "{%s}" % package
             wrapper.append(package_line)
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper, "END data from the template configuration file."
         )
         wrapper.append("")
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper,
             "These fields are generated from the default doc attribute in the .doorstop.yml file.",
         )
         wrapper.append(
             "\\def\\doccopyright{{{n}}}".format(
-                n=self._latex_convert(doc_attributes["copyright"])
+                n=_latex_convert(doc_attributes["copyright"])
             )
         )
         wrapper.append(
             "\\def\\doccategory{{{t}}}".format(
-                t=self._latex_convert(self.extract_prefix(self.document))
+                t=_latex_convert(extract_prefix(self.document))
             )
         )
         wrapper.append(
-            "\\def\\doctitle{{{n}}}".format(
-                n=self._latex_convert(doc_attributes["title"])
-            )
+            "\\def\\doctitle{{{n}}}".format(n=_latex_convert(doc_attributes["title"]))
         )
         wrapper.append(
-            "\\def\\docref{{{n}}}".format(n=self._latex_convert(doc_attributes["ref"]))
+            "\\def\\docref{{{n}}}".format(n=_latex_convert(doc_attributes["ref"]))
         )
         wrapper.append(
-            "\\def\\docby{{{n}}}".format(n=self._latex_convert(doc_attributes["by"]))
+            "\\def\\docby{{{n}}}".format(n=_latex_convert(doc_attributes["by"]))
         )
         wrapper.append(
             "\\def\\docissuemajor{{{n}}}".format(
-                n=self._latex_convert(doc_attributes["major"])
+                n=_latex_convert(doc_attributes["major"])
             )
         )
         wrapper.append(
             "\\def\\docissueminor{{{n}}}".format(
-                n=self._latex_convert(doc_attributes["minor"])
+                n=_latex_convert(doc_attributes["minor"])
             )
         )
-        wrapper = self._add_comment(wrapper, "END data from the .doorstop.yml file.")
+        wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
         wrapper.append("")
         info_text_set = False
         for external, _ in iter_documents(self.object, self.path, ".tex"):
             # Check for defined document attributes.
-            external_doc_attributes = self._get_document_attributes(external)
+            external_doc_attributes = _get_document_attributes(external)
             # Don't add self.
             if external_doc_attributes["name"] != doc_attributes["name"]:
                 if not info_text_set:
-                    wrapper = self._add_comment(
+                    wrapper = _add_comment(
                         wrapper,
                         "These are automatically added external references to make cross-references work between the PDFs.",
                     )
@@ -811,44 +651,42 @@ class LaTeXPublisher(BasePublisher):
                     )
                 )
         if info_text_set:
-            wrapper = self._add_comment(wrapper, "END external references.")
+            wrapper = _add_comment(wrapper, "END external references.")
             wrapper.append("")
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _before_ \\begin{document}.",
         )
         for line in template_data["before_begin_document"]:
             wrapper.append(line)
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper, "END custom data from the template configuration file."
         )
         wrapper.append("")
         wrapper.append("\\begin{document}")
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper,
             "These lines were automatically added from the template configuration file to allow full customization of the template _after_ \\begin{document}.",
         )
         for line in template_data["after_begin_document"]:
             wrapper.append(line)
-        wrapper = self._add_comment(
+        wrapper = _add_comment(
             wrapper, "END custom data from the template configuration file."
         )
         wrapper.append("")
-        wrapper = self._add_comment(wrapper, "Load the doorstop data file.")
-        wrapper.append(
-            "\\input{{{n}.tex}}".format(n=self.extract_prefix(self.document))
-        )
-        wrapper = self._add_comment(wrapper, "END doorstop data file.")
+        wrapper = _add_comment(wrapper, "Load the doorstop data file.")
+        wrapper.append("\\input{{{n}.tex}}".format(n=extract_prefix(self.document)))
+        wrapper = _add_comment(wrapper, "END doorstop data file.")
         wrapper.append("")
         # Include traceability matrix
         if self.matrix:
-            wrapper = self._add_comment(wrapper, "Add traceability matrix.")
+            wrapper = _add_comment(wrapper, "Add traceability matrix.")
             if settings.PUBLISH_HEADING_LEVELS:
                 wrapper.append("\\section{Traceability}")
             else:
                 wrapper.append("\\section*{Traceability}")
             wrapper.append("\\input{traceability.tex}")
-            wrapper = self._add_comment(wrapper, "END traceability matrix.")
+            wrapper = _add_comment(wrapper, "END traceability matrix.")
             wrapper.append("")
         wrapper.append("\\end{document}")
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
@@ -858,20 +696,180 @@ class LaTeXPublisher(BasePublisher):
             n=doc_attributes["name"]
         )
 
-    def _add_comment(self, wrapper, text):
-        """Add comments to the .tex output file in a pretty way."""
-        wrapper.append("%" * 80)
-        words = text.split(" ")
-        line = "%"
-        for word in words:
-            if len(line) + len(word) <= 77:
-                line += " %s" % word
-            else:
-                line += " " * (79 - len(line)) + "%"
-                wrapper.append(line)
-                line = "% " + word
-        line += " " * (79 - len(line)) + "%"
-        wrapper.append(line)
-        wrapper.append("%" * 80)
 
-        return wrapper
+def _add_comment(wrapper, text):
+    """Add comments to the .tex output file in a pretty way."""
+    wrapper.append("%" * 80)
+    words = text.split(" ")
+    line = "%"
+    for word in words:
+        if len(line) + len(word) <= 77:
+            line += " %s" % word
+        else:
+            line += " " * (79 - len(line)) + "%"
+            wrapper.append(line)
+            line = "% " + word
+    line += " " * (79 - len(line)) + "%"
+    wrapper.append(line)
+    wrapper.append("%" * 80)
+
+    return wrapper
+
+
+def _latex_convert(line):
+    """Single string conversion for LaTeX."""
+    #############################
+    ## Fix all special characters.
+    #############################
+    # Replace $.
+    line = re.sub("\\$", "\\\\$", line)
+    # Replace &.
+    line = re.sub("&", "\\\\&", line)
+    #############################
+    ## Fix BOLD and ITALICS and Strikethrough.
+    #############################
+    # Replace **.
+    line = re.sub("\\*\\*(.*?)\\*\\*", "\\\\textbf{\\1}", line)
+    # Replace __.
+    line = re.sub("__(.*?)__", "\\\\textbf{\\1}", line)
+    # Replace *.
+    line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
+    # Replace _.
+    line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
+    # Replace ~~.
+    line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
+    #############################
+    ## Fix manual heading levels
+    #############################
+    if settings.PUBLISH_BODY_LEVELS:
+        star = ""
+    else:
+        star = "*"
+    # Replace ######.
+    line = re.sub(
+        "###### (.*)",
+        "\\\\subparagraph" + star + "{\\1 \\\\textbf{NOTE: This level is too deep.}}",
+        line,
+    )
+    # Replace #####.
+    line = re.sub("##### (.*)", "\\\\subparagraph" + star + "{\\1}", line)
+    # Replace ####.
+    line = re.sub("#### (.*)", "\\\\paragraph" + star + "{\\1}", line)
+    # Replace ###.
+    line = re.sub("### (.*)", "\\\\subsubsection" + star + "{\\1}", line)
+    # Replace ##.
+    line = re.sub("## (.*)", "\\\\subsection" + star + "{\\1}", line)
+    # Replace #.
+    line = re.sub("# (.*)", "\\\\section" + star + "{\\1}", line)
+    return line
+
+
+def _typeset_latex_image(image_match, line, block):
+    """Typeset images."""
+    image_title, image_path = image_match[0]
+    # Check for title. If not found, alt_text will be used as caption.
+    title_match = re.findall(r'(.*)\s+"(.*)"', image_path)
+    if title_match:
+        image_path, image_title = title_match[0]
+    # Make a safe label.
+    label = "fig:{l}".format(l=re.sub("[^0-9a-zA-Z]+", "", image_title))
+    # Make the string to replace!
+    replacement = (
+        r"\includegraphics[width=0.8\textwidth]{"
+        + image_path
+        + r"}}\label{{{l}}}\zlabel{{{l}}}".format(l=label)
+        + r"\caption{"
+        + _latex_convert(image_title)
+        + r"}"
+    ).replace("\\", "\\\\")
+    # Replace with LaTeX format.
+    line = re.sub(
+        r"!\[(.*)\]\((.*)\)",
+        replacement,
+        line,
+    )
+    # Create the figure.
+    block.append(r"\begin{figure}[h!]\center")
+    block.append(line)
+    line = r"\end{figure}"
+    return line
+
+
+def _fix_table_line(line, end_pipes):
+    r"""Fix table line.
+
+    Fix each line typeset for tables by adding & for column breaking, \\ for row
+    breaking and fixing pipes for tables with outside borders.
+    """
+    line = re.sub("\\|", "&", line)
+    if end_pipes:
+        line = re.sub("^\\s*&", "", line)
+        line = re.sub("&\\s*$", "\\\\\\\\", line)
+    else:
+        line = line + "\\\\"
+    return line
+
+
+def _check_for_new_table(
+    table_match, text, i, line, block, table_found, header_done, end_pipes
+):
+    """Check for new table.
+
+    Check if a new table is beginning or not. If new table is detected, write
+    table header and mark as found.
+    """
+    # Check next line for minimum 3 dashes and the same count of |.
+    if i < len(text) - 1:
+        next_line = text[i + 1]
+        table_match_next = re.findall("\\|", next_line)
+        if table_match_next:
+            if len(table_match) == len(table_match_next):
+                table_match_dashes = re.findall("-{3,}", next_line)
+                if table_match_dashes:
+                    table_found = True
+                    end_pipes = bool(len(table_match) > len(table_match_dashes))
+                    next_line = re.sub(":-+:", "c", next_line)
+                    next_line = re.sub("-+:", "r", next_line)
+                    next_line = re.sub("-+", "l", next_line)
+                    table_header = "\\begin{longtable}{" + next_line + "}"
+                    block.append(table_header)
+                    # Fix the header.
+                    line = _fix_table_line(line, end_pipes)
+                else:
+                    log.warning("Possibly incorrectly specified table found.")
+            else:
+                log.warning("Possibly unbalanced table found.")
+    return table_found, header_done, line, end_pipes
+
+
+def _get_document_attributes(obj):
+    """Try to get attributes from document."""
+    doc_attributes = {}
+    doc_attributes["name"] = "doc-" + obj.prefix
+    log.debug("Document name is '%s'", doc_attributes["name"])
+    doc_attributes["title"] = "Test document for development of _Doorstop_"
+    doc_attributes["ref"] = ""
+    doc_attributes["by"] = ""
+    doc_attributes["major"] = ""
+    doc_attributes["minor"] = ""
+    doc_attributes["copyright"] = "Doorstop"
+    try:
+        attribute_defaults = obj.__getattribute__("_attribute_defaults")
+        if attribute_defaults:
+            if attribute_defaults["doc"]["name"]:
+                doc_attributes["name"] = attribute_defaults["doc"]["name"]
+            if attribute_defaults["doc"]["title"]:
+                doc_attributes["title"] = attribute_defaults["doc"]["title"]
+            if attribute_defaults["doc"]["ref"]:
+                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+            if attribute_defaults["doc"]["by"]:
+                doc_attributes["by"] = attribute_defaults["doc"]["by"]
+            if attribute_defaults["doc"]["major"]:
+                doc_attributes["major"] = attribute_defaults["doc"]["major"]
+            if attribute_defaults["doc"]["minor"]:
+                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+            if attribute_defaults["doc"]["copyright"]:
+                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    except AttributeError:
+        pass
+    return doc_attributes
