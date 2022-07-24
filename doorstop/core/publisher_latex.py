@@ -57,7 +57,7 @@ def _lines_latex(obj, **kwargs):
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:
-                    uid = "{h}{{\\small{{}}{u}}}".format(
+                    uid = "{h}{{ \\small{{}}{u}}}".format(
                         h=_latex_convert(item.header), u=item.uid
                     )
                 else:
