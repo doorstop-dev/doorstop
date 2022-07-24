@@ -292,6 +292,19 @@ class Application(ttk.Frame):
                 self.stringvar_text.set(value)
 
             @_log
+            def entry_focusin(_):
+                """Handle entering an entry field."""
+                self.ignore = True
+
+            @_log
+            def entry_header_focusout(event):
+                """Handle updated header entry."""
+                self.ignore = False
+                thewidget = event.widget
+                value = thewidget.get()
+                self.stringvar_header.set(value)
+
+            @_log
             def text_extendedvalue_focusout(event):
                 """Handle updated extended attributes."""
                 self.ignore = False
@@ -304,6 +317,8 @@ class Application(ttk.Frame):
                 row=0, column=0, columnspan=3, sticky=tk.W, **kw_gp
             )
             self.text_header = widget.Entry(frame, textvariable=self.stringvar_header)
+            self.text_header.bind("<FocusIn>", entry_focusin)
+            self.text_header.bind("<FocusOut>", entry_header_focusout)
             self.text_header.grid(row=1, column=0, columnspan=3, **kw_gsp)
 
             # Selected Item
