@@ -239,7 +239,7 @@ clean-all: clean
 
 .PHONY: .clean-dev-install
 .clean-dev-install:
-	pip uninstall --yes dist/doorstop*.whl
+	- pip uninstall --yes dist/doorstop*.whl
 
 .PHONY: .clean-test
 .clean-test:
