@@ -52,7 +52,7 @@ python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
 six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
-openpyxl = "^2.6"
+openpyxl = ">=3.0.7"
 
 [tool.poetry.dev-dependencies]
 
