@@ -342,5 +342,5 @@ def dump_markdown(data, textattr):
 
     content += textattr["text"]
 
-    text = frontmatter.dumps(frontmatter.Post(content, **data))
+    text = frontmatter.dumps(frontmatter.Post(content, **data), Dumper=yaml.dumper.Dumper)
     return text
