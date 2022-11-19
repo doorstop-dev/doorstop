@@ -35,7 +35,7 @@
 
 # 2.0 (2019-11-30)
 
-- **BREAKING:** Switched to SHA256 for tracking changes to files and reviews of extended attributes.  Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.
+- **BREAKING:** Switched to SHA256 for tracking changes to files and reviews of extended attributes. Use `doorstop review all` followed by `doorstop clear all` to update an existing project. WARNING: This marks all items as reviewed and clears all suspect links.
 - Dropped support for Python 3.5.
 - Fixed a bug with items not getting saved after edits.
 - Added the ability to explicitly name a requirement.
@@ -53,9 +53,9 @@
 
 - Added preliminary support for item headers. ([@rickeywang](https://github.com/doorstop-dev/doorstop/pull/285))
 - Added major enhancements to the Desktop GUI. ([@elarivie](https://github.com/doorstop-dev/doorstop/pull/290))
-    + Converted document outline to a tree view.
-    + Made documents navigable via clicking links.
-    + Added an icon for Linux and Windows.
+  - Converted document outline to a tree view.
+  - Made documents navigable via clicking links.
+  - Added an icon for Linux and Windows.
 - Fixed duplicate headings when publishing. ([@guille-r](https://github.com/doorstop-dev/doorstop/pull/302))
 - Added Python 3.7 support.
 
@@ -79,7 +79,7 @@
 # 1.2 (2017-02-11)
 
 - Disabled excessive text cleanup in items. ([@michaelnt](https://github.com/michaelnt))
-    + Running `doorstop review all` will be required due to whitespace changes.
+  - Running `doorstop review all` will be required due to whitespace changes.
 - Added `--no-levels={all,body}` publishing options. ([@michaelnt](https://github.com/michaelnt))
 - Removed unnecessary line breaks (`<br>`) in generated HTML. ([@michaelnt](https://github.com/michaelnt))
 - **DEPRECATION WARNING:** `--no-body-levels` will not be supported in a future release.
