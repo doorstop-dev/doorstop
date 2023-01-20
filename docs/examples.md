@@ -13,3 +13,4 @@ Running `doorstop` in Docker: [tlwt/doorstop-docker](https://github.com/tlwt/doo
 
 - **[doorframe](https://doorframe.io/)**: This is (closed source) GitHub App that uses Doorstop as backend.
 - **[sevendays/doorhole](https://github.com/sevendays/doorhole)**: This is standalone GUI for Doorstop.
+- **[ownbee/doorstop-edit](https://github.com/ownbee/doorstop-edit)**: Cross-platform Doorstop GUI editor.
