@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0b8"
+version = "3.0b9"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -32,9 +32,9 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
@@ -42,7 +42,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.7"
+python = "^3.8"
 
 pyyaml = "^5.1"
 markdown = "^3.3.6"

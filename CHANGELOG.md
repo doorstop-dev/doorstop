@@ -1,6 +1,6 @@
 # 3.0 (beta)
 
-- **BREAKING:** Dropped support for Python 3.6.
+- **BREAKING:** Dropped support for Python 3.6 and 3.7.
 - **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.
 - Fixed overriding default attributes with `doorstop add`. ([@tangoalx](https://github.com/doorstop-dev/doorstop/pull/544))
 - Fixed encoding error with special characters on Windows. ([@urbasus](https://github.com/doorstop-dev/doorstop/pull/526))

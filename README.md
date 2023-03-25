@@ -27,13 +27,12 @@ Additional references:
 - talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
 - sample: [Generated HTML](http://doorstop-dev.github.io/doorstop/)
 
-
 # Setup
 
 ## Requirements
 
-* Python 3.7+
-* A version control system for requirements storage
+- Python 3.8+
+- A version control system for requirements storage
 
 ## Installation
 
