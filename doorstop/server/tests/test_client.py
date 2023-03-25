@@ -26,7 +26,7 @@ class TestModule(unittest.TestCase):
             exists = client.exists()
         # Assert
         url = "http://1.2.3.4:8080/documents"
-        mock_head.assert_called_once_with(url)
+        mock_head.assert_called_once_with(url, timeout=10)
         self.assertTrue(exists)
 
     @patch("doorstop.settings.SERVER_HOST", "1.2.3.4")
@@ -38,7 +38,7 @@ class TestModule(unittest.TestCase):
             exists = client.exists()
         # Assert
         url = "http://1.2.3.4:8080/documents"
-        mock_head.assert_called_once_with(url)
+        mock_head.assert_called_once_with(url, timeout=10)
         self.assertFalse(exists)
 
     @patch("doorstop.settings.SERVER_HOST", "1.2.3.4")
@@ -52,7 +52,7 @@ class TestModule(unittest.TestCase):
             exists = client.exists()
         # Assert
         url = "http://1.2.3.4:8080/documents"
-        mock_head.assert_called_once_with(url)
+        mock_head.assert_called_once_with(url, timeout=10)
         self.assertFalse(exists)
 
     @patch("doorstop.settings.SERVER_HOST", "")
@@ -64,7 +64,7 @@ class TestModule(unittest.TestCase):
         self.assertFalse(exists)
 
     @patch("doorstop.settings.SERVER_HOST", "1.2.3.4")
-    def test_check(self):  # pylint: disable=R0201
+    def test_check(self):
         """Verify the client can check a server."""
         with patch("doorstop.server.client.exists", Mock(return_value=True)):
             client.check()
@@ -82,7 +82,7 @@ class TestModule(unittest.TestCase):
             self.assertRaises(DoorstopError, client.check)
 
     @patch("doorstop.settings.SERVER_HOST", None)
-    def test_check_disabled(self):  # pylint: disable=R0201
+    def test_check_disabled(self):
         """Verify the client can check a disabled server."""
         with patch("doorstop.server.client.exists", Mock(return_value=False)):
             client.check()
@@ -100,7 +100,7 @@ class TestModule(unittest.TestCase):
         # Assert
         url = "http://1.2.3.4:8080/documents/PREFIX/numbers"
         headers = {"content-type": "application/json"}
-        mock_post.assert_called_once_with(url, headers=headers)
+        mock_post.assert_called_once_with(url, headers=headers, timeout=10)
         self.assertEqual(42, number)
 
     @patch("doorstop.settings.SERVER_HOST", "")

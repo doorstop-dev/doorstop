@@ -61,9 +61,13 @@ black = "^23.1"
 isort = "^5.12"
 
 # Linters
-mypy = "^0.790"
+mypy = "^1.1.1"
 pydocstyle = "*"
-pylint = "~2.12"
+pylint = "~2.15"
+types-markdown = "*"
+types-pyyaml = "*"
+types-requests = "*"
+types-setuptools = "*"
 
 # Testing
 pytest = "^6.2.5"

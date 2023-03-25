@@ -500,7 +500,7 @@ def _format_latex_text(text):
         if re.findall("^plantuml\\s", line):
             plantuml_title = re.search('title="(.*)"', line)
             if plantuml_title:
-                plantuml_name = plantuml_title.groups(0)[0]
+                plantuml_name = str(plantuml_title.groups(0)[0])
             else:
                 raise DoorstopError(
                     "'title' is required for plantUML processing in LaTeX."
@@ -564,7 +564,7 @@ def _matrix_latex(table, path):
     # Start the table.
     table_start = "\\begin{longtable}{"
     table_head = ""
-    header_data = table.__next__()
+    header_data = table.__next__()  # pylint: disable=unnecessary-dunder-call
     for column in header_data:
         count = count + 1
         table_start = table_start + "|l"

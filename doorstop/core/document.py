@@ -171,7 +171,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             def include(self, node):
                 container = IncludeLoader.filenames[0]  # type: ignore
                 dirname = os.path.dirname(container)
-                filename = os.path.join(dirname, self.construct_scalar(node))
+                filename = os.path.join(dirname, str(self.construct_scalar(node)))
                 IncludeLoader.filenames.insert(0, filename)  # type: ignore
                 try:
                     with open(filename, "r") as f:

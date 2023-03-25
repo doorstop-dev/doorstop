@@ -77,12 +77,12 @@ class TestRoutesHTML(BaseTestCase):
         self.assertIn("PREFIX", text)
         self.assertIn("PREFIX2", text)
 
-    def test_get_document(self):  # pylint: disable=R0201
+    def test_get_document(self):
         """Verify `/document/PREFIX` works (HTML)."""
         for line in server.get_document("prefix"):
             print(line)
 
-    def test_get_all_documents(self):  # pylint: disable=R0201
+    def test_get_all_documents(self):
         """Verify `/document/all` works (HTML)."""
         for line in server.get_all_documents():
             print(line)
@@ -93,7 +93,7 @@ class TestRoutesHTML(BaseTestCase):
         self.assertIn("UID", text)
         self.assertIn("UID2", text)
 
-    def test_get_item(self):  # pylint: disable=R0201
+    def test_get_item(self):
         """Verify `/document/PREFIX/items/UID` works (HTML)."""
         for line in server.get_item("prefix", "uid"):
             print(line)

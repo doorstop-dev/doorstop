@@ -3,7 +3,7 @@
 
 """Unit tests for the doorstop.core.importer module."""
 
-# pylint: disable=no-self-use,protected-access
+# pylint: disable=protected-access
 
 import logging
 import os

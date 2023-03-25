@@ -21,7 +21,7 @@ def exists(path="/documents"):
     if url:
         log.debug("looking for {}...".format(url))
         try:
-            response = requests.head(url)
+            response = requests.head(url, timeout=10)
         except requests.exceptions.RequestException as exc:
             log.debug(exc)
         else:
@@ -51,7 +51,7 @@ def get_next_number(prefix):
         log.info("no server to get the next number from")
         return None
     headers = {"content-type": "application/json"}
-    response = requests.post(url, headers=headers)
+    response = requests.post(url, headers=headers, timeout=10)
     if response.status_code == 200:
         data = response.json()
         number = data.get("next")

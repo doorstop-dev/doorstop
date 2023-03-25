@@ -127,9 +127,7 @@ class TestSection1(TestBase):
         # 3.3
 
         self.doorstop("import --item HLR HLR001")
-        self.doorstop(
-            "import --item LLR LLR001 " "--attr \"{'text': 'The item text.'}\""
-        )
+        self.doorstop("import --item LLR LLR001 --attr \"{'text': 'The item text.'}\"")
 
         # 3.1
 

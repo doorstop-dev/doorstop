@@ -38,7 +38,7 @@ class TestModule(unittest.TestCase):
 
     @patch("doorstop.core.builder.build", Mock(return_value=Tree(Mock())))
     @patch("doorstop.core.tree.Tree.find_document")
-    def test_find_document(self, mock_find_document):  # pylint: disable=R0201
+    def test_find_document(self, mock_find_document):
         """Verify documents can be found using a convenience function."""
         _clear_tree()
         prefix = "req"
@@ -47,7 +47,7 @@ class TestModule(unittest.TestCase):
 
     @patch("doorstop.core.builder.build", Mock(return_value=Tree(Mock())))
     @patch("doorstop.core.tree.Tree.find_item")
-    def test_find_item(self, mock_find_item):  # pylint: disable=R0201
+    def test_find_item(self, mock_find_item):
         """Verify items can be found using a convenience function."""
         _clear_tree()
         uid = "req1"

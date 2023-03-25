@@ -63,7 +63,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
         logging.debug("mock write path: {}".format(path))
         self._file = text
 
-    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+    def __bool__(self):
         return True
 
 
@@ -74,9 +74,7 @@ class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
 class MockItemValidator(ItemValidator):  # pylint: disable=W0223,R0902
     """Mock Item class with stubbed file IO."""
 
-    def _no_get_issues_document(
-        self, item, document, skip
-    ):  # pylint: disable=W0613,R0201
+    def _no_get_issues_document(self, item, document, skip):  # pylint: disable=W0613
         return
         yield  # pylint: disable=W0101
 
@@ -126,7 +124,7 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
         self.tree.vcs = WorkingCopy(None)
 
 
-class MockDataMixIn:  # pylint: disable=W0232,R0903
+class MockDataMixIn:  # pylint: disable=R0903
     """Data for test cases requiring mock items and documents."""
 
     # purely mock objects

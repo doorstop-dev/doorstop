@@ -31,7 +31,7 @@ class TestServer(unittest.TestCase):
             url = "http://localhost:7867/documents"
             for _ in range(0, 29):
                 try:
-                    _ = requests.head(url)
+                    _ = requests.head(url, timeout=10)
                     break
                 except requests.exceptions.RequestException:
                     time.sleep(1)
@@ -45,7 +45,7 @@ class TestServer(unittest.TestCase):
             logging.info("delaying for the server to shutdown...")
             time.sleep(1)
 
-    def test_check(self):  # pylint: disable=R0201
+    def test_check(self):
         """Verify the server can be checked."""
         server.check()
 
