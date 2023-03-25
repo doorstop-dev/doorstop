@@ -88,7 +88,6 @@ def run(args, cwd, error, catch=True):  # pylint: disable=W0613
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the tree
         tree = _get_tree(args, cwd, load=True)
 
@@ -116,7 +115,6 @@ def run_create(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the tree
         tree = _get_tree(args, cwd)
 
@@ -149,7 +147,6 @@ def run_delete(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the document
         tree = _get_tree(args, cwd)
         document = tree.find_document(args.prefix)
@@ -176,7 +173,6 @@ def run_add(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the document
         request_next_number = _request_next_number(args)
         tree = _get_tree(args, cwd, request_next_number=request_next_number)
@@ -209,7 +205,6 @@ def run_remove(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the item
         tree = _get_tree(args, cwd)
         item = tree.find_item(args.uid)
@@ -238,7 +233,6 @@ def run_edit(args, cwd, error, catch=True):
     ext = utilities.get_ext(args, error, ".yml", ".yml", whole_tree=False)
 
     with utilities.capture(catch=catch) as success:
-
         # get the item or document
         request_next_number = _request_next_number(args)
         tree = _get_tree(args, cwd, request_next_number=request_next_number)
@@ -278,7 +272,6 @@ def run_reorder(args, cwd, error, catch=True, _tree=None):
     reordered = False
 
     with utilities.capture(catch=catch) as success:
-
         # get the document
         tree = _tree or _get_tree(args, cwd)
         document = tree.find_document(args.prefix)
@@ -287,7 +280,6 @@ def run_reorder(args, cwd, error, catch=True, _tree=None):
         return False
 
     with utilities.capture(catch=catch) as success:
-
         # automatically order
         if args.auto:
             msg = "reordering document {}...".format(document)
@@ -334,7 +326,6 @@ def run_link(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the tree
         tree = _get_tree(args, cwd)
 
@@ -362,7 +353,6 @@ def run_unlink(args, cwd, _, catch=True):
 
     """
     with utilities.capture(catch=catch) as success:
-
         # get the tree
         tree = _get_tree(args, cwd)
 
@@ -458,9 +448,7 @@ def run_import(args, cwd, error, catch=True, _tree=None):
         error("specify [path], '--document', or '--item' to import")
 
     with utilities.capture(catch=catch) as success:
-
         if args.path:
-
             # get the document
             request_next_number = _request_next_number(args)
             tree = _tree or _get_tree(
@@ -512,7 +500,6 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
 
     # Get the tree or document
     with utilities.capture(catch=catch) as success:
-
         exporter.check(ext)
         tree = _tree or _get_tree(args, cwd, load=whole_tree)
         if not whole_tree:
@@ -558,7 +545,6 @@ def run_publish(args, cwd, error, catch=True):
 
     # Get the tree or document
     with utilities.capture(catch=catch) as success:
-
         publisher.check(ext)
         tree = _get_tree(args, cwd, load=whole_tree)
         if not whole_tree:

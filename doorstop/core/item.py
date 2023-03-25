@@ -894,6 +894,6 @@ class UnknownItem:
         """Get the unknown item's relative path string."""
         return "@{}{}".format(os.sep, self.UNKNOWN_PATH)
 
-    def stamp(self):  # pylint: disable=R0201
+    def stamp(self):
         """Return an empty stamp."""
         return Stamp(None)

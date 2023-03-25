@@ -165,12 +165,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Load the YAML file and process input tags."""
         # Read text from file
         text = self._read(yamlfile)
+
         # Parse YAML data from text
         class IncludeLoader(yaml.SafeLoader):
             def include(self, node):
                 container = IncludeLoader.filenames[0]  # type: ignore
                 dirname = os.path.dirname(container)
-                filename = os.path.join(dirname, self.construct_scalar(node))
+                filename = os.path.join(dirname, str(self.construct_scalar(node)))
                 IncludeLoader.filenames.insert(0, filename)  # type: ignore
                 try:
                     with open(filename, "r") as f:
@@ -661,7 +662,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         if isinstance(section, dict):  # a section
-
             # Get the item and subsection
             uid = list(section.keys())[0]
             if uid == "text":
@@ -697,7 +697,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 Document._reorder_section(subsection, level >> 1, document, list_of_ids)
 
         elif isinstance(section, list):  # a list of sections
-
             # Process each subsection
             for index, subsection in enumerate(section):
                 Document._reorder_section(
@@ -841,13 +840,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         # Check each item
         for item in items:
-
             # Check item
             for issue in chain(
                 hook(item=item, document=self, tree=self.tree),
                 item_validator.get_issues(item, skip=skip),
             ):
-
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
                     yield type(issue)("{}: {}".format(item.uid, issue))

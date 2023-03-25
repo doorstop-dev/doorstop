@@ -234,8 +234,8 @@ class UID:
                 return Prefix(m.group(1)), -1, m.group(2), None
         m = re.match(r"([\w.-]*\D)(\d+)", value)
         if m:
-            num = m.group(2)
-            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), int(num), "", None
+            num = int(m.group(2))
+            return Prefix(m.group(1).rstrip(settings.SEP_CHARS)), num, "", None
         return None, None, None, DoorstopError("invalid UID: {}".format(value))
 
     @staticmethod

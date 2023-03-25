@@ -285,7 +285,7 @@ def delete_contents(dirname):
                 os.remove(os.path.join(dirname, file))
             except FileExistsError:
                 log.warning(
-                    "Two assets folders have files or directories " "with the same name"
+                    "Two assets folders have files or directories with the same name"
                 )
                 raise
 
