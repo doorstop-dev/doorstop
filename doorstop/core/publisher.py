@@ -320,7 +320,6 @@ def _lines_text(obj, indent=8, width=79, **_):
 
     """
     for item in iter_items(obj):
-
         level = _format_level(item.level)
 
         if item.heading:
@@ -335,7 +334,6 @@ def _lines_text(obj, indent=8, width=79, **_):
                 yield "{t}".format(t=text)
 
         else:
-
             # Level and UID
             if item.header:
                 yield "{lev:<{s}}{u} {header}".format(
@@ -411,7 +409,6 @@ def _lines_markdown(obj, **kwargs):
     linkify = kwargs.get("linkify", False)
     to_html = kwargs.get("to_html", False)
     for item in iter_items(obj):
-
         heading = "#" * item.depth
         level = _format_level(item.level)
 
@@ -432,7 +429,6 @@ def _lines_markdown(obj, **kwargs):
             yield standard + attr_list
             yield from text_lines[1:]
         else:
-
             uid = item.uid
             if settings.ENABLE_HEADERS:
                 if item.header:

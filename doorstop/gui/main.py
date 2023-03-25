@@ -102,7 +102,6 @@ def run(args, cwd, error):
         return error("tkinter is not available")
 
     else:
-
         root = widget.Tk()
         root.title("{} ({})".format(__project__, __version__))
 

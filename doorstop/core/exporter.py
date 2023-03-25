@@ -114,7 +114,6 @@ def _lines_yaml(obj, **_):
 
     """
     for item in iter_items(obj):
-
         data = {str(item.uid): item.data}
         text = yaml.dump(data, default_flow_style=False, allow_unicode=True)
         yield text

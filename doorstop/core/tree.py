@@ -139,22 +139,18 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.debug("trying to add {}...".format(document))
         if not self.document:  # tree is empty
-
             if document.parent:
                 msg = "unknown parent for {}: {}".format(document, document.parent)
                 raise DoorstopError(msg)
             self.document = document
 
         elif document.parent:  # tree has documents, document has parent
-
             if document.parent.lower() == self.document.prefix.lower():
-
                 # Current document is the parent
                 node = Tree(document, self)
                 self.children.append(node)
 
             else:
-
                 # Search for the parent
                 for child in self.children:
                     try:
@@ -168,7 +164,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     raise DoorstopError(msg)
 
         else:  # tree has documents, but no parent specified for document
-
             msg = "no parent specified for {}".format(document)
             log.info(msg)
             prefixes = ", ".join(document.prefix for document in self)
@@ -558,7 +553,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 self.child = child
 
         if item.normative:
-
             # Start the next row or copy from recursion
             if row is None:
                 row = Row([None] * len(mapping))

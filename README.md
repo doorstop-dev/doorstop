@@ -1,6 +1,6 @@
-[![Linux Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml)
-[![Mac OS X Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml)
-[![Windows Test](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml)
+[![Linux Tests](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-linux.yml)
+[![macOS Tests](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-osx.yml)
+[![Windows Tests](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml)
 <br>
 [![Coverage Status](https://img.shields.io/codecov/c/gh/doorstop-dev/doorstop)](https://codecov.io/gh/doorstop-dev/doorstop)
 [![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=develop)

@@ -234,7 +234,6 @@ def _itemize(header, data, document, mapping=None):
         attrs = {}
         uid = None
         for index, value in enumerate(row):
-
             # Key lookup
             key = str(header[index]).lower().strip() if header[index] else ""
             if not key:
@@ -287,7 +286,6 @@ def _itemize(header, data, document, mapping=None):
 
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
-
             # Delete the old item
             try:
                 item = document.find_item(uid)

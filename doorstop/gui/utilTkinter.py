@@ -15,7 +15,6 @@ except ImportError as _exc:
 
 class HyperlinkManager:
     def __init__(self, text) -> None:
-
         self.text = text
 
         self.text.tag_config("hyper", underline=True)
