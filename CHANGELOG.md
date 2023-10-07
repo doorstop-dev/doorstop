@@ -7,6 +7,10 @@
 - Added support for publishing to the LaTeX format. ([@neerdoc](https://github.com/doorstop-dev/doorstop/pull/545))
 - Added support for storing items in Markdown with YAML front matter. ([@ckolumbus](https://github.com/doorstop-dev/doorstop/pull/566))
 
+# 2.2.1 (2023-10-07)
+
+- Upgrade PyYAML to 6.x to fix installation on newer versions of Python.
+
 # 2.2 (2022-01-22)
 
 - Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
