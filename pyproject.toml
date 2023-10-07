@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "2.2.post1"
+version = "2.2.1"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -41,9 +41,9 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.6.2"
+python = "^3.8"
 
-PyYAML = "^5.1"
+PyYAML = "^6.0"
 Markdown = "^3.3.3"
 bottle = "~0.12.13"
 requests = "^2.0"

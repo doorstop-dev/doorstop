@@ -1,3 +1,7 @@
+# 2.2.1 (2023-10-07)
+
+- Upgrade PyYAML to 6.x to fix installation on newer versions of Python.
+
 # 2.2 (2022-01-22)
 
 - Added support for UTF-8 symbols in references. ([@stanislaw](https://github.com/doorstop-dev/doorstop/pull/485))
