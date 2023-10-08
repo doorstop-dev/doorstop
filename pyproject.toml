@@ -79,7 +79,7 @@ pytest-sugar = "*"
 coveragespace = "^4.0"
 
 # Documentation
-mkdocs = "^1.2.3"
+mkdocs = "^1.5"
 pygments = "*"
 
 # Tooling
