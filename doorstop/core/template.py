@@ -105,11 +105,7 @@ def get_template(obj, path, ext, template):
             template_assets,
             os.path.join(os.path.dirname(path), "template"),
         )
-        if ext in [".md", ".tex", ".txt"]:
-            common.copy_dir_contents(template_assets, template_dir)
-        # Create default assets dir for html.    
-        else: 
-            common.copy_dir_contents(template_assets, assets_dir)
+        common.copy_dir_contents(template_assets, assets_dir)
 
     # Return correct template and assets folder.
     if not template:
