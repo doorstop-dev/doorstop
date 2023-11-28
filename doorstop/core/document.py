@@ -2,10 +2,12 @@
 
 """Representation of a collection of items."""
 
+import importlib
 import os
 import re
 from collections import OrderedDict
 from itertools import chain
+from pathlib import Path
 from typing import Dict, List
 
 import yaml
@@ -228,6 +230,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     key, self.config
                 )
                 raise DoorstopError(msg)
+
+        self.extensions = data.get("extensions", {})
+
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -760,6 +765,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             plevel = clevel.copy()
 
     @staticmethod
+    def _import_validator(path):
+        """ load an external python item validator file from .doorstop.yml"""
+        name = Path(path).stem
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    @staticmethod
     def _items_by_level(items, keep=None):
         """Iterate through items by level with the kept item first."""
         # Collect levels
@@ -816,6 +830,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         assert document_hook is None
         skip = [] if skip is None else skip
+
+        ext_validator = None
+        if "item_validator" in self.extensions:
+            ext_validator = self._import_validator(
+                os.path.join(self.path, self.extensions["item_validator"])
+            )
+            ext_validator = getattr(ext_validator, "item_validator")
+
+        extension_validator = ext_validator if ext_validator else lambda **kwargs: []
         hook = item_hook if item_hook else lambda **kwargs: []
 
         if self.prefix in skip:
@@ -844,6 +867,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for issue in chain(
                 hook(item=item, document=self, tree=self.tree),
                 item_validator.get_issues(item, skip=skip),
+                extension_validator(item=item),
             ):
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
