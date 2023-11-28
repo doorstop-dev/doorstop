@@ -417,6 +417,8 @@ def run_review(args, cwd, error, catch=True):
         for item in _iter_items(args, tree, error):
             utilities.show("marking item {} as reviewed...".format(item.uid))
             item.review()
+            if item.references:
+                assert isinstance(item.find_references(), list)
 
     if not success:
         return False
