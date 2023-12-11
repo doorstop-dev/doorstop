@@ -1,0 +1,12 @@
+exclude: ^(doorstop|docs)/.*
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+  - repo: https://gitlab.codethink.co.uk/lorry-mirrors/github/doorstop-dev/doorstop
+    rev: codethink-tag-3.0b11
+    hooks:
+    -   id: check-doorstop-errors
+    -   id: check-unreviewed-items
