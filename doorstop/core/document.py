@@ -77,6 +77,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         if not self._data["itemformat"]:
             self._data["itemformat"] = Item.DEFAULT_ITEMFORMAT
 
+        self.extensions = None
+
     def __repr__(self):
         return "Document('{}')".format(self.path)
 
@@ -766,10 +768,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
     @staticmethod
     def _import_validator(path):
-        """ load an external python item validator file from .doorstop.yml"""
+        """Load an external python item validator logic from doorstop yml defined for the folder."""
         name = Path(path).stem
-        spec = importlib.util.spec_from_file_location(name, path)
-        module = importlib.util.module_from_spec(spec)
+        spec = importlib.util.spec_from_file_location(name, path)  # type: ignore  # FIXME: retrieve correct types?
+        module = importlib.util.module_from_spec(spec)  # type: ignore  # FIXME: retrieve correct types?
         spec.loader.exec_module(module)
         return module
 
@@ -832,10 +834,10 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         skip = [] if skip is None else skip
 
         ext_validator = None
-        if "item_validator" in self.extensions:
-            ext_validator = self._import_validator(
-                os.path.join(self.path, self.extensions["item_validator"])
-            )
+        if "item_validator" in self.extensions:  # type: ignore
+            validator = self.extensions["item_validator"]  # type: ignore
+            path = os.path.join(self.path, validator)  # type: ignore
+            ext_validator = self._import_validator(path)
             ext_validator = getattr(ext_validator, "item_validator")
 
         extension_validator = ext_validator if ext_validator else lambda **kwargs: []

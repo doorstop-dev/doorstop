@@ -301,14 +301,14 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     def _hash_reference(self, path):
         """
-        Extension method created to generate checksum from the list of find_references
+        Extension method created to generate checksum from the list of find_references.
 
         :param path: a path from a reference inside the references list
         """
-        if not self.document.extensions["item_sha_required"]:
-            return
-
         sha = None
+        if not self.document.extensions["item_sha_required"]:
+            return sha
+
         try:
             sha256 = hashlib.sha256()
             with open(os.path.join(self.root, path), "rb") as f:
@@ -397,7 +397,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                         ref_dict["keyword"] = el["keyword"]  # type: ignore
 
                     if "sha" in el:
-                        ref_dict["sha"] = el["sha"]
+                        ref_dict["sha"] = el["sha"]  # type: ignore
                     stripped_value.append(ref_dict)
 
                 value = stripped_value  # type: ignore
@@ -895,20 +895,20 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             and self.references is not None
         ):
             references = self.references
-            for ref in range(len(references)):
+            for ref, _ in enumerate(references):
                 temp_sha = self._hash_reference(references[ref]["path"])
                 log.info(references[ref])
                 if "sha" in references[ref] and references[ref]["sha"] == temp_sha:
                     log.info(
-                        f"{references[ref]['path']} checksum did not change skipping update...")
+                        f"{references[ref]['path']} checksum did not change skipping update..."
+                    )
                     continue
-                elif "sha" in references[ref] and references[ref]["sha"] != temp_sha:
-                    log.info(
-                        f"updating checksum for {references[ref]['path']}")
+
+                if "sha" in references[ref] and references[ref]["sha"] != temp_sha:
+                    log.info(f"updating checksum for {references[ref]['path']}")
                     references[ref]["sha"] = temp_sha
                 else:
-                    log.info(
-                        f"Inserting checksum for {references[ref]['path']}")
+                    log.info(f"Inserting checksum for {references[ref]['path']}")
                     references[ref]["sha"] = temp_sha
 
         self._data["reviewed"] = self.stamp(links=True)
