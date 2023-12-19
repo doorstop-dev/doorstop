@@ -108,7 +108,6 @@ class MarkdownPublisher(BasePublisher):
         linkify = kwargs.get("linkify", False)
         to_html = kwargs.get("to_html", False)
         for item in iter_items(obj):
-
             heading = "#" * item.depth
             level = format_level(item.level)
 
@@ -129,7 +128,6 @@ class MarkdownPublisher(BasePublisher):
                 yield standard + attr_list
                 yield from text_lines[1:]
             else:
-
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:

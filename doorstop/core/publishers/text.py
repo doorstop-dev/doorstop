@@ -49,7 +49,6 @@ class TextPublisher(BasePublisher):
 
         """
         for item in iter_items(obj):
-
             level = format_level(item.level)
 
             if item.heading:
@@ -64,7 +63,6 @@ class TextPublisher(BasePublisher):
                     yield "{t}".format(t=text)
 
             else:
-
                 # Level and UID
                 if item.header:
                     yield "{lev:<{s}}{u} {header}".format(
