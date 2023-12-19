@@ -54,7 +54,7 @@ def publish(
 
     # Process templates.
     publisher.processTemplates(template)
-
+    log.info("Template = %s" % publisher.getTemplate())
     # Run all preparations.
     publisher.preparePublish()
 
