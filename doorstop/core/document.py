@@ -7,6 +7,7 @@ import re
 from collections import OrderedDict
 from itertools import chain
 from typing import Any, Dict, List
+
 import yaml
 
 from doorstop import common, settings

@@ -324,7 +324,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     sha256.update(fdata)
                 sha = sha256.hexdigest()
 
-        # We don't report missing files because validate and review already does it.
+        # We don't report missing files because validate already does that.
         except FileNotFoundError:
             pass
 
