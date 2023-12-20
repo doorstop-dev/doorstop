@@ -1,0 +1,73 @@
+# Environment variables declared in the `variables` dictionary below
+# can be expanded in job definitions or before_script below
+#
+variables:
+  # Docker Images
+  CONTAINER_REGISTRY: "gitlab.codethink.co.uk:5000/safety/dockerfiles"
+
+  NODE_IMAGE_ID: "d7aad9b98608971d0b5620a99290f76845269c49"
+  NODE_CONTAINER: "${CONTAINER_REGISTRY}/node:${NODE_IMAGE_ID}"
+
+  DCS_CONTAINER_REGISTRY: "gitlab.codethink.co.uk:5000/safety"
+  DCS_CONTAINER_IMAGE_ID: "00f2e962522ecab4f1d7a3a95224ff8efd299a53"
+  DCS_CONTAINER: "${DCS_CONTAINER_REGISTRY}/dcs-toolchain:${DCS_CONTAINER_IMAGE_ID}"
+
+default:
+  image: "${DCS_CONTAINER}"
+  tags:
+    # Check the runners in https://gitlab.codethink.co.uk/groups/codethink/-/wikis/Internal-Gitlab-Runners
+    - sml.amd64
+  before_script:
+    - pip install poetry
+    - make install
+
+#
+# Declare the stages
+#
+stages:
+  - lint
+  - test
+  - build
+#
+# Workflow rules for controlling when pipelines are created.
+# For more details see https://docs.gitlab.com/ee/ci/yaml/workflow.html
+#
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+###########################################################
+#                      Lint stage jobs                    #
+###########################################################
+
+#
+# General yaml linter, this recursively detects malformed YAML
+#
+lint-doorstop:
+  stage: lint
+  rules:
+    - changes:
+        - "*.py"
+        - "**/*.py"
+        - ".gitlab-ci.yml"
+  script:
+    - make check
+#
+# Validate the markdown for invalid links, using markdown-link-check, see:
+#
+#   https://github.com/tcort/markdown-link-check
+#
+test-doorstop:
+  stage: test
+  allow_failure: true # FIXME: fix doorstop tests
+  needs: [lint-doorstop]
+  script:
+    - make test
+
+build-doorstop:
+  stage: build
+  script:
+    - make dist
