@@ -12,8 +12,8 @@ from unittest.mock import Mock, call, patch
 from yaml import safe_load
 
 from doorstop.core import publisher
+from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC, getLines
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, getLines
 from doorstop.core.types import iter_documents
 
 

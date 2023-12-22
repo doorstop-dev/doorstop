@@ -12,13 +12,13 @@ from unittest.mock import patch
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
-from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
-from doorstop.core.tests.helpers_latex import (
+from doorstop.core.publishers.tests.helpers_latex import (
     YAML_LATEX_DOC,
     YAML_LATEX_NO_DOC,
     getFileContents,
     getWalk,
 )
+from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -61,7 +61,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     def test_publish_latex_tree_copies_assets(self):
         """Verify that LaTeX assets are published when publishing a tree."""
         # Act
-        path2 = publisher.publish(self.mock_tree, self.dirpath, ".tex")
+        path2 = publisher.publish(self.mock_tree, self.dirpath, ext=".tex")
         # Assert
         self.assertIs(self.dirpath, path2)
         # Get the exported tree.
