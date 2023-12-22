@@ -46,12 +46,10 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         expected_calls.append(
             call(os.path.join("mock", "directory", "compile.sh"), "wb")
         )
-        expected_calls.append(
-            call(os.path.join("mock", "directory", "traceability.tex"), "wb")
-        )
         # Load correct template data.
         template_data_file = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
+            "..",
             "files",
             "templates",
             "latex",
@@ -72,7 +70,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             # Assert
             self.assertIs(dirpath, dirpath2)
             self.assertEqual(expected_calls, mock_open.call_args_list)
-            self.assertEqual(mock_open.call_count, 4)
+            self.assertEqual(mock_open.call_count, 3)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
     def test_setting_publish_heading_levels_true(self):
