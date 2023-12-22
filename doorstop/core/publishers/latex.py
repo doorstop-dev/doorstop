@@ -505,7 +505,10 @@ class LaTeXPublisher(BasePublisher):
         # Start the table.
         table_start = "\\begin{longtable}{"
         table_head = ""
-        header_data = table.__next__()
+        try:
+            header_data = table.__next__()
+        except StopIteration:
+            return
         for column in header_data:
             count = count + 1
             table_start = table_start + "|l"
