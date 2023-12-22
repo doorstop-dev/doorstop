@@ -431,7 +431,7 @@ class LaTeXPublisher(BasePublisher):
             if re.findall("^plantuml\\s", line):
                 plantuml_title = re.search('title="(.*)"', line)
                 if plantuml_title:
-                    plantuml_name = plantuml_title.groups(0)[0]
+                    plantuml_name = str(plantuml_title.groups(0)[0])
                 else:
                     raise DoorstopError(
                         "'title' is required for plantUML processing in LaTeX."
@@ -494,11 +494,13 @@ class LaTeXPublisher(BasePublisher):
     def create_matrix(self, directory):
         """Create a traceability table for LaTeX."""
         # Setup.
-        table = self.object.get_traceability()
+        table = self.object.get_traceability().__iter__()
         traceability = []
         head, tail = os.path.split(directory)
-        tail = "traceability.tex"
-        file = os.path.join(head, tail)
+        if tail.endswith(".tex"):
+            file = os.path.join(head, "traceability.tex")
+        else:
+            file = os.path.join(directory, "traceability.tex")
         count = 0
         # Start the table.
         table_start = "\\begin{longtable}{"
@@ -554,8 +556,10 @@ class LaTeXPublisher(BasePublisher):
     def _get_compile_path(self):
         """Return the path to the compile script."""
         head, tail = os.path.split(self.path)
-        tail = "compile.sh"
-        return os.path.join(head, tail)
+        # If tail ends with .tex, replace it with compile.sh.
+        if tail.endswith(".tex"):
+            return os.path.join(head, "compile.sh")
+        return os.path.join(self.path, "compile.sh")
 
     def _generate_latex_wrapper(self):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
