@@ -205,7 +205,8 @@ class TestTableOfContents(unittest.TestCase):
     * 1.6 REQ004
     * 2.1 Plantuml
     * 2.1 REQ2-001\n"""
-        toc = publisher._table_of_contents_md(self.document, linkify=None)
+        md_publisher = publisher.check(".md", self.document)
+        toc = md_publisher.table_of_contents(linkify=None)
         self.assertEqual(expected, toc)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
@@ -219,7 +220,8 @@ class TestTableOfContents(unittest.TestCase):
     * REQ004
     * Plantuml
     * REQ2-001\n"""
-        toc = publisher._table_of_contents_md(self.document, linkify=None)
+        md_publisher = publisher.check(".md", self.document)
+        toc = md_publisher.table_of_contents(linkify=None)
         self.assertEqual(expected, toc)
 
     def test_toc(self):
@@ -232,5 +234,6 @@ class TestTableOfContents(unittest.TestCase):
     * [1.6 REQ004](#REQ004)
     * [2.1 Plantuml](#REQ002)
     * [2.1 REQ2-001](#REQ2-001)\n"""
-        toc = publisher._table_of_contents_md(self.document, linkify=True)
+        md_publisher = publisher.check(".md", self.document)
+        toc = md_publisher.table_of_contents(linkify=True)
         self.assertEqual(expected, toc)
