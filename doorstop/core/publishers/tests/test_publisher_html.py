@@ -9,11 +9,12 @@ import unittest
 from secrets import token_hex
 from shutil import rmtree
 from unittest import mock
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
+from doorstop.core.template import HTMLTEMPLATE
 from doorstop.core.tests import (
     EMPTY,
     FILES,
@@ -69,9 +70,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
-            template=publisher.HTMLTEMPLATE,
-            toc=True,
+            publisher=ANY,
             linkify=False,
+            template=HTMLTEMPLATE,
+            toc=True,
         )
 
     @patch("os.path.isdir", Mock(side_effect=[True, False, False, False, False, False]))
@@ -97,7 +99,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
-            template=publisher.HTMLTEMPLATE,
+            publisher=ANY,
+            template=HTMLTEMPLATE,
             toc=True,
             linkify=False,
         )
@@ -127,7 +130,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
-    @patch("doorstop.core.publisher._index")
+    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
     @patch("builtins.open")
     def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
@@ -152,7 +155,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
-    @patch("doorstop.core.publisher._index")
+    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
     @patch("builtins.open")
     def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
         """Verify a tree can be published."""
@@ -171,16 +174,18 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         """Verify an HTML index can be created."""
         # Arrange
         path = os.path.join(FILES, "index.html")
+        html_publisher = publisher.check(".html")
         # Act
-        publisher._index(FILES)
+        html_publisher.create_index(FILES)
         # Assert
         self.assertTrue(os.path.isfile(path))
 
     def test_index_no_files(self):
         """Verify an HTML index is only created when files exist."""
         path = os.path.join(EMPTY, "index.html")
+        html_publisher = publisher.check(".html")
         # Act
-        publisher._index(EMPTY)
+        html_publisher.create_index(EMPTY)
         # Assert
         self.assertFalse(os.path.isfile(path))
 
@@ -207,8 +212,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             (None, None, None, None, None),
         ]
         mock_tree.get_traceability = lambda: mock_trace
+        html_publisher = publisher.check(".html")
         # Act
-        publisher._index(FILES, index="index2.html", tree=mock_tree)
+        html_publisher.create_index(FILES, index="index2.html", tree=mock_tree)
         # Assert
         self.assertTrue(os.path.isfile(path))
 
@@ -235,11 +241,20 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             (None, None, None, None, None),
         ]
         mock_tree.get_traceability = lambda: mock_trace
+        html_publisher = publisher.check(".html", obj=mock_tree)
+        # Create the self.dirpath first.
+        os.makedirs(self.dirpath)
         # Act
-        publisher._matrix(FILES, tree=mock_tree, filename="testmatrix.csv")
+        html_publisher.create_matrix(self.dirpath)
         # Assert
-        self.assertTrue(os.path.isfile(path))
-        # TODO assert contents
+        result_file = os.path.join(self.dirpath, "traceability.csv")
+        self.assertTrue(os.path.isfile(result_file))
+        # Assert contents of FILES and traceability.csv
+        with open(result_file, "r") as file:
+            result_content = file.read()
+        with open(path, "r") as file:
+            expected_content = file.read()
+        self.assertEqual(expected_content, result_content)
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
