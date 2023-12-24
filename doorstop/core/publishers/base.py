@@ -75,6 +75,9 @@ class BasePublisher(metaclass=ABCMeta):
                 prefix = "    " * (item.depth - 1)
                 prefix += "* "
 
+            # Check if item has the attribute heading.
+            if not hasattr(item, "heading"):
+                break
             if item.heading:
                 lines = item.text.splitlines()
                 if item.header:
@@ -188,7 +191,7 @@ class BasePublisher(metaclass=ABCMeta):
     def processTemplates(self, template):
         """Retrieve the template and its path."""
         self.assetsPath, self.template = get_template(
-            self.document, self.path, self.ext, template
+            self.object, self.path, self.ext, template
         )
 
     def setAssetsPath(self, path):
