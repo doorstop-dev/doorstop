@@ -13,7 +13,7 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 from doorstop import common, settings
 from doorstop.core.publishers.base import extract_prefix, extract_uid
 from doorstop.core.publishers.markdown import MarkdownPublisher
-from doorstop.core.template import CSS, INDEX, MATRIX
+from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX
 from doorstop.core.types import is_item, is_tree
 
 log = common.logger(__name__)
@@ -200,18 +200,20 @@ class HtmlPublisher(MarkdownPublisher):
 
         # Generate HTML
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
-        body = markdown.markdown(text, extensions=self.ext)
+        body = markdown.markdown(text, extensions=self.EXTENSIONS)
 
         if toc:
             toc_md = self.table_of_contents(True)
-            toc_html = markdown.markdown(toc_md, extensions=self.ext)
+            toc_html = markdown.markdown(toc_md, extensions=self.EXTENSIONS)
         else:
             toc_html = ""
 
         if document:
+            if self.template == "":
+                self.template = HTMLTEMPLATE
             try:
                 bottle.TEMPLATE_PATH.insert(
-                    0, os.path.join(os.path.dirname(__file__), "..", "views")
+                    0, os.path.join(os.path.dirname(__file__), "..", "..", "views")
                 )
                 if "baseurl" not in bottle.SimpleTemplate.defaults:
                     bottle.SimpleTemplate.defaults["baseurl"] = ""
