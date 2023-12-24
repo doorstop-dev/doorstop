@@ -37,7 +37,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
+        if os.path.exists("mock_%s" % __name__):
+            rmtree("mock_%s" % __name__)
 
     def test_single_line_heading_to_markdown(self):
         """Verify a single line heading is published as a heading with an attribute equal to the item id"""
