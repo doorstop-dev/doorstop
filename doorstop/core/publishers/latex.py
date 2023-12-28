@@ -578,10 +578,14 @@ class LaTeXPublisher(BasePublisher):
         self.documentPath = os.path.join(head, extract_prefix(self.document) + ".tex")
         wrapperPath = os.path.join(head, tail)
         # Load template data.
-        self.templatePath = os.path.abspath(os.path.join(self.assetsPath, "..", "template"))
-        log.info("Loading template data from %s/%s.yml" % (self.templatePath, self.template))
+        templatePath = os.path.abspath(os.path.join(self.assetsPath, "..", "template"))
+        log.info(
+            "Loading template data from {}/{}.yml".format(templatePath, self.template)
+        )
         template_data = read_template_data(self.assetsPath, self.template)
-        check_latex_template_data(template_data, "%s/%s.yml" % (self.templatePath, self.template))
+        check_latex_template_data(
+            template_data, "{}/{}.yml".format(templatePath, self.template)
+        )
         wrapper = []
         wrapper.append(
             "\\documentclass[%s]{template/%s}"

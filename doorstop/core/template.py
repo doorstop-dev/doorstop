@@ -138,29 +138,41 @@ def read_template_data(assets_dir, template):
     return template_data
 
 
-def check_latex_template_data(template_data, filename):
+def check_latex_template_data(template_data, filename=None):
     """Check that all required packages have been defined in template data."""
     # Check basics first.
     if not isinstance(template_data, dict):
         log.error(
-            "There seems to be a problem with the template configuration file '%s'." % filename
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "There seems to be a problem with the template configuration file '%s'." % filename
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
         )
     if "usepackage" not in template_data:
         log.error(
-            "There is no dictionary of packages in the template configuration file '%s'." % filename
+            "There is no dictionary of packages in the template configuration file '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "There is no list of packages in the template configuration file '%s'." % filename
+            "There is no list of packages in the template configuration file '{}'.".format(
+                filename
+            )
         )
     if not isinstance(template_data["usepackage"], dict):
         log.error(
-            "The 'usepackage' data in the configuration file is not a dictionary '%s'." % filename
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "The 'usepackage' data in the configuration file is not a dictionary '%s'." % filename
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
 
     # Iterate over all required packages.
