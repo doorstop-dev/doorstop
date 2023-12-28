@@ -131,7 +131,7 @@ def read_template_data(assets_dir, template):
 def check_latex_template_data(template_data):
     """Check that all required packages have been defined in template data."""
     # Check basics first.
-    if "usepackage" not in template_data:
+    if not hasattr(template_data, "usepackage"):
         log.error(
             "There is no dictionary of packages in the template configuration file."
         )
