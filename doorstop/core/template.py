@@ -11,7 +11,7 @@ from doorstop.common import DoorstopError
 from doorstop.core import Document
 from doorstop.core.types import is_tree
 
-CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
+CSS = os.path.join(os.path.dirname(__file__), "files", "templates", "doorstop.css")
 HTMLTEMPLATE = "sidebar"
 INDEX = "index.html"
 MATRIX = "traceability.csv"
