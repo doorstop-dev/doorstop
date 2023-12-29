@@ -7,9 +7,9 @@
 %% and modify, as long as reference to the original author
 %% is given.
 %%
-%% Original author: Gustav Johansson, gustav@neer.se
+%% Original author: Gustav Wulf, gustav@neer.se
 %%
-%% Last modified by: Gustav Johansson, February 16, 2022.
+%% Last modified by: Gustav Wulf, December 29, 2023.
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -19,7 +19,7 @@
 % Identification
 % ******************************************************
 \def\classversion{1.0}
-\def\classdate{Feb 16, 2022}
+\def\classdate{Dec 29, 2023}
 
 \typeout{Document class version: \classversion}
 \typeout{Last modified: \classdate}
