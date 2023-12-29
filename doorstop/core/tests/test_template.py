@@ -70,12 +70,11 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         expected_walk = """{n}/
     assets/
     template/
-        doorstop/
-            bootstrap.min.css
-            bootstrap.min.js
-            general.css
-            jquery.min.js
-            sidebar.css
+        bootstrap.min.css
+        bootstrap.min.js
+        general.css
+        jquery.min.js
+        sidebar.css
 """.format(
             n=self.hex
         )
@@ -100,12 +99,11 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # file.txt should not be in expected output!
         expected_walk = """{n}/
     template/
-        doorstop/
-            bootstrap.min.css
-            bootstrap.min.js
-            general.css
-            jquery.min.js
-            sidebar.css
+        bootstrap.min.css
+        bootstrap.min.js
+        general.css
+        jquery.min.js
+        sidebar.css
 """.format(
             n=self.hex
         )
