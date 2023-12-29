@@ -65,10 +65,14 @@ class BasePublisher(metaclass=ABCMeta):
         is published.
         """
 
-    def table_of_contents(self, linkify=None):
+    def table_of_contents(self, linkify=None, obj=None):
         toc = "### Table of Contents\n\n"
+        if obj is None:
+            toc_doc = self.object
+        else:
+            toc_doc = obj
 
-        for item in iter_items(self.object):
+        for item in iter_items(toc_doc):
             if item.depth == 1:
                 prefix = " * "
             else:
@@ -76,8 +80,6 @@ class BasePublisher(metaclass=ABCMeta):
                 prefix += "* "
 
             # Check if item has the attribute heading.
-            if not hasattr(item, "heading"):
-                break
             if item.heading:
                 lines = item.text.splitlines()
                 if item.header:

@@ -203,7 +203,7 @@ class HtmlPublisher(MarkdownPublisher):
         body = markdown.markdown(text, extensions=self.EXTENSIONS)
 
         if toc:
-            toc_md = self.table_of_contents(True)
+            toc_md = self.table_of_contents(True, obj)
             toc_html = markdown.markdown(toc_md, extensions=self.EXTENSIONS)
         else:
             toc_html = ""
