@@ -228,8 +228,8 @@ def get_attr(prefix, uid, name):
             return str(value)
 
 
-@get("/template/doorstop/<filename>")
-def get_assets(filename):
+@get("/template/<filename>")
+def get_template(filename):
     """Serve static files. Mainly used to serve CSS files and javascript."""
     public_dir = os.path.join(
         os.path.dirname(__file__),
@@ -237,8 +237,7 @@ def get_assets(filename):
         "core",
         "files",
         "templates",
-        "html",
-        "doorstop",
+        "html"
     )
     return bottle.static_file(filename, root=public_dir)
 
