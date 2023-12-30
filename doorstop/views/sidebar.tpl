@@ -25,6 +25,6 @@
         $("#main a").attr("target", "parent");
 
   $(window).on('hashchange', function() {
-    $(window).scrollTop($(location.hash.toLowerCase()).offset().top);});
+    $(window).scrollTop();});
   });
 </script>
