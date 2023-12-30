@@ -620,6 +620,17 @@ class LaTeXPublisher(BasePublisher):
             "\\documentclass[%s]{template/%s}"
             % (", ".join(template_data["documentclass"]), self.template)
         )
+        # Add required packages.
+        wrapper = _add_comment(
+            wrapper,
+            "These packages are required.",
+        )
+        wrapper.append("\\usepackage{enumitem}")
+        wrapper = _add_comment(
+            wrapper, "END required packages."
+        )
+        wrapper.append("")
+
         # Add required packages from template data.
         wrapper = _add_comment(
             wrapper,
