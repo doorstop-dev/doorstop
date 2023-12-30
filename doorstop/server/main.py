@@ -232,12 +232,7 @@ def get_attr(prefix, uid, name):
 def get_template(filename):
     """Serve static files. Mainly used to serve CSS files and javascript."""
     public_dir = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "core",
-        "files",
-        "templates",
-        "html"
+        os.path.dirname(__file__), "..", "core", "files", "templates", "html"
     )
     return bottle.static_file(filename, root=public_dir)
 
