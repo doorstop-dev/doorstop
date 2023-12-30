@@ -24,7 +24,7 @@
 \typeout{Document class version: \classversion}
 \typeout{Last modified: \classdate}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{doorstop}
+\ProvidesClass{template/doorstop}
 
 % ******************************************************
 % Declare Options
