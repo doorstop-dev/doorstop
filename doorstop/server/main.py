@@ -237,6 +237,20 @@ def get_template(filename):
     return bottle.static_file(filename, root=public_dir)
 
 
+@get("/documents/assets/<filename>")
+def get_assets(filename):
+    """Serve static files. Used to serve images and other assets."""
+    # Since assets are stored in the document, we need to loop over all the
+    # documents to find the requested asset.
+    for document in tree:
+        # Check if the asset exists in the document's assets folder.
+        temporary_path = os.path.join(document.assets, filename)
+        if os.path.exists(temporary_path):
+            return bottle.static_file(filename, root=document.assets)
+    # If the asset does not exist, return a 404.
+    return bottle.HTTPError(404, "File does not exist.")
+
+
 @post("/documents/<prefix>/numbers")
 def post_numbers(prefix):
     """Create the next number in a document."""
