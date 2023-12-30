@@ -22,7 +22,7 @@ class LaTeXPublisher(BasePublisher):
     def __init__(self, obj, ext):
         super().__init__(obj, ext)
         self.END_ENUMERATE = "\\end{enumerate}"
-        self.END_ITEMIZE = "\\end{itemize}"
+        self.END_ITEMIZE = "\\end{itemizeDeep}"
         self.END_LONGTABLE = "\\end{longtable}"
         self.HLINE = "\\hline"
         self.compile_files = []
@@ -277,7 +277,11 @@ class LaTeXPublisher(BasePublisher):
         plantuml_file = ""
         plantuml_name = ""
         environment_data["enumeration_found"] = False
+        environment_data["enumeration_depth"] = 0
+        environment_data["enumeration_indent"] = 0
         environment_data["itemize_found"] = False
+        environment_data["itemize_depth"] = 0
+        environment_data["itemize_indent"] = 0
         end_pipes = False
         for i, line in enumerate(text):
             no_paragraph = False
@@ -372,30 +376,55 @@ class LaTeXPublisher(BasePublisher):
             #############################
             ## Fix itemize.
             #############################
-            itemize_match = re.findall("^[\\*+-]\\s(.*)", line)
-            if itemize_match and not environment_data["itemize_found"]:
-                block.append("\\begin{itemize}")
-                environment_data["itemize_found"] = True
-            if environment_data["itemize_found"]:
-                no_paragraph = True
-                if itemize_match:
-                    # Replace the number.
-                    line = re.sub("^[\\*+-]\\s", "\\\\item ", line)
-                    # Look ahead - need empty line to end itemize!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            line = self.END_ITEMIZE
-                            environment_data["itemize_found"] = False
-                else:
-                    # Look ahead - need empty line to end itemize!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            line = self.END_ITEMIZE
-                            environment_data["itemize_found"] = False
+            itemize_match = re.findall("^\\s*[\\*+-]\\s(.*)", line)
+            if itemize_match:
+                print(line)
+                indent = len(line) - len(line.lstrip())
+                print("M: {}".format(indent))
+                print(itemize_match)
+                if itemize_match and not environment_data["itemize_found"]:
+                    block.append("\\begin{itemizeDeep}")
+                    environment_data["itemize_found"] = True
+                    environment_data["itemize_depth"] = indent
+                elif itemize_match and environment_data["itemize_depth"] != indent:
+                    block.append("\\begin{itemizeDeep}")
+                    if environment_data["itemize_depth"] == 0:
+                        environment_data["itemize_indent"] = indent
+                    elif environment_data["itemize_depth"] + environment_data["itemize_indent"] != indent:
+                        raise DoorstopError(
+                            "Cannot change indentation depth inside a list."
+                        )
+                    environment_data["itemize_depth"] = indent
+                if environment_data["itemize_found"]:
+                    no_paragraph = True
+                    if itemize_match:
+                        # Replace the number.
+                        line = re.sub("^\\s*[\\*+-]\\s", "\\\\item ", line)
+                        # Look ahead - need empty line to end itemize!
+                        if i < len(text) - 1:
+                            next_line = text[i + 1]
+                            if next_line == "":
+                                block.append(line)
+                                while environment_data["itemize_depth"] > 0:
+                                    block.append(self.END_ITEMIZE)
+                                    environment_data["itemize_depth"] = (
+                                        environment_data["itemize_depth"] - environment_data["itemize_indent"]
+                                    )
+                                line = self.END_ITEMIZE
+                                environment_data["itemize_found"] = False
+                    else:
+                        # Look ahead - need empty line to end itemize!
+                        if i < len(text) - 1:
+                            next_line = text[i + 1]
+                            if next_line == "":
+                                block.append(line)
+                                while environment_data["itemize_depth"] > 0:
+                                    block.append(self.END_ITEMIZE)
+                                    environment_data["itemize_depth"] = (
+                                        environment_data["itemize_depth"] - environment_data["itemize_indent"]
+                                    )
+                                line = self.END_ITEMIZE
+                                environment_data["itemize_found"] = False
 
             #############################
             ## Fix tables.
