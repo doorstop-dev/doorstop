@@ -94,7 +94,7 @@ class LaTeXPublisher(BasePublisher):
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:
-                        uid = "{h}{{\\small{{}}{u}}}".format(
+                        uid = "{h}{{ - \\small{{}}\\texttt{{}}{u}}}".format(
                             h=_latex_convert(item.header), u=item.uid
                         )
                     else:
