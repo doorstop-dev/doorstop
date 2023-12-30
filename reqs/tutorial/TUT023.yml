@@ -1,0 +1,26 @@
+active: true
+derived: false
+header: |
+  Nested list
+level: 5.1.1
+links: []
+normative: false
+ref: ''
+reviewed: -jqMsO-XC6Xh4AhhKKWecewXvZao5nDtoUU6rpiL8dM=
+text: |
+  This is an example on how to create a list:
+  * Item 1
+  * Item 2
+  * Nested list
+    * Item 2.1
+    * Item 2.2
+    * Deeper nesting
+      * Item 2.2.1
+      * Item 2.2.2
+      * Item 2.2.3
+        + Empty
+          + Nesting
+            * Should work
+              - too!
+
+  _Note: The list above is not numbered, and it works with both `*`, `+` and `-`. It also works with two (2) or four (4) space indentation, although you should keep the same indentation in the list._
