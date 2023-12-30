@@ -124,7 +124,7 @@ def strip_path():
     request.environ["PATH_INFO"] = request.environ["PATH_INFO"].rstrip("/")
     if (
         len(request.environ["PATH_INFO"]) > 0
-        and request.environ["PATH_INFO"][-5:-1] == ".html"
+        and request.environ["PATH_INFO"][-5:] == ".html"
     ):
         request.environ["PATH_INFO"] = request.environ["PATH_INFO"][:-5]
 
