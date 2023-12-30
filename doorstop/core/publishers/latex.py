@@ -670,6 +670,38 @@ class LaTeXPublisher(BasePublisher):
         )
         wrapper = _add_comment(wrapper, "END data from the .doorstop.yml file.")
         wrapper.append("")
+
+        wrapper = _add_comment(
+            wrapper,
+            "LaTex is limited to four (4) levels of lists. The following code extends this to nine (9) levels.",
+        )
+        wrapper.append("% ******************************************************")
+        wrapper.append("% Increase nesting level for lists")
+        wrapper.append("% ******************************************************")
+        wrapper.append("\\setlistdepth{9}")
+        wrapper.append("\\newlist{itemizeDeep}{enumerate}{9}")
+        wrapper.append("\\setlist[itemizeDeep,1]{label=\\arabic*}")
+        wrapper.append("\\setlist[itemizeDeep,2]{label=\\Roman*}")
+        wrapper.append("\\setlist[itemizeDeep,3]{label=\\Alph*}")
+        wrapper.append("\\setlist[itemizeDeep,4]{label=\\roman*}")
+        wrapper.append("\\setlist[itemizeDeep,5]{label=\\alph*}")
+        wrapper.append("\\setlist[itemizeDeep,6]{label=\\arabic*}")
+        wrapper.append("\\setlist[itemizeDeep,7]{label=\\Roman*}")
+        wrapper.append("\\setlist[itemizeDeep,8]{label=\\Alph*}")
+        wrapper.append("\\setlist[itemizeDeep,9]{label=\\roman*}")
+        wrapper.append("\\newlist{enumerateDeep}{enumerate}{9}")
+        wrapper.append("\\setlist[enumerateDeep,1]{}")
+        wrapper.append("\\setlist[enumerateDeep,2]{}")
+        wrapper.append("\\setlist[enumerateDeep,3]{}")
+        wrapper.append("\\setlist[enumerateDeep,4]{}")
+        wrapper.append("\\setlist[enumerateDeep,5]{}")
+        wrapper.append("\\setlist[enumerateDeep,6]{}")
+        wrapper.append("\\setlist[enumerateDeep,7]{}")
+        wrapper.append("\\setlist[enumerateDeep,8]{}")
+        wrapper.append("\\setlist[enumerateDeep,9]{}")
+        wrapper = _add_comment(wrapper, "END list depth fix.")
+        wrapper.append("")
+
         info_text_set = False
         for external, _ in iter_documents(self.object, self.path, ".tex"):
             # Check for defined document attributes.
