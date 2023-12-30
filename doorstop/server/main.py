@@ -171,7 +171,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext=".html", linkify=True)
+        return publisher.publish_lines(document, ext=".html", linkify=True, toc=True)
 
 
 @get("/documents/<prefix>/items")
