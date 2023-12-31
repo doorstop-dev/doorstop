@@ -276,9 +276,9 @@ class LaTeXPublisher(BasePublisher):
         environment_data["plantuml_found"] = False
         plantuml_file = ""
         plantuml_name = ""
-        environment_data["enumeration_found"] = False
-        environment_data["enumeration_depth"] = 0
-        environment_data["enumeration_indent"] = 0
+        environment_data["enumerate_found"] = False
+        environment_data["enumerate_depth"] = 0
+        environment_data["enumerate_indent"] = 0
         environment_data["itemize_found"] = False
         environment_data["itemize_depth"] = 0
         environment_data["itemize_indent"] = 0
@@ -347,33 +347,33 @@ class LaTeXPublisher(BasePublisher):
                 block.append(line)
                 continue
             #############################
-            ## Fix enumeration.
+            ## Fix enumerate.
             #############################
-            enumeration_match = re.findall(r"^\s*\d+\.\s(.*)", line)
-            if enumeration_match:
+            enumerate_match = re.findall(r"^\s*\d+\.\s(.*)", line)
+            if enumerate_match:
                 indent = len(line) - len(line.lstrip())
-                if enumeration_match and not environment_data["enumeration_found"]:
+                if enumerate_match and not environment_data["enumerate_found"]:
                     block.append("\\begin{enumerateDeep}")
-                    environment_data["enumeration_found"] = True
-                    environment_data["enumeration_depth"] = indent
-                elif enumeration_match and environment_data["enumeration_depth"] < indent:
+                    environment_data["enumerate_found"] = True
+                    environment_data["enumerate_depth"] = indent
+                elif enumerate_match and environment_data["enumerate_depth"] < indent:
                     block.append("\\begin{enumerateDeep}")
-                    if environment_data["enumeration_depth"] == 0:
-                        environment_data["enumeration_indent"] = indent
-                    elif environment_data["enumeration_depth"] + environment_data["enumeration_indent"] != indent:
+                    if environment_data["enumerate_depth"] == 0:
+                        environment_data["enumerate_indent"] = indent
+                    elif environment_data["enumerate_depth"] + environment_data["enumerate_indent"] != indent:
                         raise DoorstopError(
                             "Cannot change indentation depth inside a list."
                         )
-                    environment_data["enumeration_depth"] = indent
-                elif enumeration_match and environment_data["enumeration_depth"] > indent:
-                    while environment_data["enumeration_depth"] > indent:
+                    environment_data["enumerate_depth"] = indent
+                elif enumerate_match and environment_data["enumerate_depth"] > indent:
+                    while environment_data["enumerate_depth"] > indent:
                         block.append(self.END_ENUMERATE)
-                        environment_data["enumeration_depth"] = (
-                            environment_data["enumeration_depth"] - environment_data["enumeration_indent"]
+                        environment_data["enumerate_depth"] = (
+                            environment_data["enumerate_depth"] - environment_data["enumerate_indent"]
                         )
-            if environment_data["enumeration_found"]:
+            if environment_data["enumerate_found"]:
                 no_paragraph = True
-                if enumeration_match:
+                if enumerate_match:
                     # Replace the number.
                     line = re.sub(r"^\s*\d+\.\s", "\\\\item ", line)
                     # Look ahead - need empty line to end enumeration!
@@ -381,28 +381,28 @@ class LaTeXPublisher(BasePublisher):
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            while environment_data["enumeration_depth"] > 0:
+                            while environment_data["enumerate_depth"] > 0:
                                 block.append(self.END_ENUMERATE)
-                                environment_data["enumeration_depth"] = (
-                                    environment_data["enumeration_depth"] - environment_data["enumeration_indent"]
+                                environment_data["enumerate_depth"] = (
+                                    environment_data["enumerate_depth"] - environment_data["enumerate_indent"]
                                 )
                             line = self.END_ENUMERATE
-                            environment_data["enumeration_found"] = False
-                            environment_data["enumeration_depth"] = 0
+                            environment_data["enumerate_found"] = False
+                            environment_data["enumerate_depth"] = 0
                 else:
                     # Look ahead - need empty line to end enumeration!
                     if i < len(text) - 1:
                         next_line = text[i + 1]
                         if next_line == "":
                             block.append(line)
-                            while environment_data["enumeration_depth"] > 0:
+                            while environment_data["enumerate_depth"] > 0:
                                 block.append(self.END_ENUMERATE)
-                                environment_data["enumeration_depth"] = (
-                                    environment_data["enumeration_depth"] - environment_data["enumeration_indent"]
+                                environment_data["enumerate_depth"] = (
+                                    environment_data["enumerate_depth"] - environment_data["enumerate_indent"]
                                 )
                             line = self.END_ENUMERATE
-                            environment_data["enumeration_found"] = False
-                            environment_data["enumeration_depth"] = 0
+                            environment_data["enumerate_found"] = False
+                            environment_data["enumerate_depth"] = 0
             #############################
             ## Fix itemize.
             #############################
@@ -541,11 +541,11 @@ class LaTeXPublisher(BasePublisher):
         if index == len(text) - 1:
             if environment_data["code_found"]:
                 block.append("\\end{lstlisting}")
-            if environment_data["enumeration_found"]:
-                while environment_data["enumeration_depth"] > 0:
+            if environment_data["enumerate_found"]:
+                while environment_data["enumerate_depth"] > 0:
                     block.append(self.END_ENUMERATE)
-                    environment_data["enumeration_depth"] = (
-                        environment_data["enumeration_depth"] - environment_data["enumeration_indent"]
+                    environment_data["enumerate_depth"] = (
+                        environment_data["enumerate_depth"] - environment_data["enumerate_indent"]
                     )
                 block.append(self.END_ENUMERATE)
             if environment_data["itemize_found"]:
