@@ -285,6 +285,7 @@ class LaTeXPublisher(BasePublisher):
         environment_data["plantuml_found"] = False
         plantuml_file = ""
         plantuml_name = ""
+        plantuml_count = 0
         environment_data["enumerate_found"] = False
         environment_ints["enumerate_depth"] = 0
         environment_ints["enumerate_indent"] = 0
@@ -300,6 +301,7 @@ class LaTeXPublisher(BasePublisher):
             if environment_data["plantuml_found"]:
                 no_paragraph = True
             if re.findall("^`*plantuml\\s", line):
+                plantuml_count = plantuml_count + 1
                 plantuml_title = re.search('title="(.*)"', line)
                 if plantuml_title:
                     plantuml_name = str(plantuml_title.groups(0)[0])
@@ -308,6 +310,7 @@ class LaTeXPublisher(BasePublisher):
                         "'title' is required for plantUML processing in LaTeX."
                     )
                 plantuml_file = re.sub("\\s", "-", plantuml_name)
+                block.append(r"\hyperref[fig:plant" + str(plantuml_count) + "]{" + plantuml_name + "}")
                 line = "\\begin{plantuml}{" + plantuml_file + "}"
                 environment_data["plantuml_found"] = True
             if re.findall("@enduml", line):
@@ -319,6 +322,7 @@ class LaTeXPublisher(BasePublisher):
                     + "}{0.8\\textwidth}{"
                     + plantuml_name
                     + "}"
+                    + "{" + str(plantuml_count) + "}"
                 )
                 environment_data["plantuml_found"] = False
             # Skip the rest since we are in a plantuml block!

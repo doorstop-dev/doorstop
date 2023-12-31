@@ -87,15 +87,16 @@
 \newenvironment{plantuml}[1]{\VerbatimOut{#1.txt}}{\endVerbatimOut}
 
 % Process a PlantUML code:
-\newcommand{\process}[3]{%
+\newcommand{\process}[4]{%
     % Call PlantUML to produce a svg vector graphcis:
     \immediate\write18{plantuml -tsvg #1.txt}
     % Call Inkscape to convert the svg to a pdf (pdflatex cannot use svg):
     \immediate\write18{inkscape #1.svg --export-pdf=#1.pdf}
     % Include the pdf:
-    \begin{figure}[h]
-        \includegraphics[width=#2]{#1.pdf}
+	\begin{figure}[!h]
+		\includegraphics[width=#2]{#1.pdf}
         \caption{#3}
+		\label{fig:plant#4}\zlabel{fig:plant#4}
     \end{figure}
     % Remove all intermediate files:
     \immediate\write18{rm #1.txt #1.svg #1.pdf}
