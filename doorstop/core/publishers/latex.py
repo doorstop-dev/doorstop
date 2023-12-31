@@ -287,12 +287,64 @@ class LaTeXPublisher(BasePublisher):
         for i, line in enumerate(text):
             no_paragraph = False
             #############################
+            ## Fix plantuml.
+            #############################
+            if environment_data["plantuml_found"]:
+                no_paragraph = True
+            if re.findall("^`*plantuml\\s", line):
+                plantuml_title = re.search('title="(.*)"', line)
+                if plantuml_title:
+                    plantuml_name = str(plantuml_title.groups(0)[0])
+                else:
+                    raise DoorstopError(
+                        "'title' is required for plantUML processing in LaTeX."
+                    )
+                plantuml_file = re.sub("\\s", "-", plantuml_name)
+                line = "\\begin{plantuml}{" + plantuml_file + "}"
+                environment_data["plantuml_found"] = True
+            if re.findall("@enduml", line):
+                block.append(line)
+                block.append("\\end{plantuml}")
+                line = (
+                    "\\process{"
+                    + plantuml_file
+                    + "}{0.8\\textwidth}{"
+                    + plantuml_name
+                    + "}"
+                )
+                environment_data["plantuml_found"] = False
+            # Skip the rest since we are in a plantuml block!
+            if environment_data["plantuml_found"]:
+                block.append(line)
+                # Check for end of file and end all environments.
+                self._check_for_eof(
+                    i,
+                    block,
+                    text,
+                    environment_data,
+                    environment_ints,
+                    plantuml_name,
+                    plantuml_file,
+                )
+                continue
+
+            #############################
             ## Fix code blocks.
             #############################
             code_match = re.findall("```", line)
             if environment_data["code_found"]:
                 no_paragraph = True
             if code_match:
+                # Check the next line for plantuml.
+                if i < len(text) - 1:
+                    next_line = text[i + 1]
+                    if re.findall("^`*plantuml\\s", next_line):
+                        continue
+                # Check previous line of @enduml.
+                if i > 0:
+                    previous_line = text[i - 1]
+                    if re.findall("@enduml", previous_line):
+                        continue
                 if environment_data["code_found"]:
                     block.append("\\end{lstlisting}")
                     environment_data["code_found"] = False
@@ -510,33 +562,6 @@ class LaTeXPublisher(BasePublisher):
                     block.append(self.END_LONGTABLE)
                 environment_data["table_found"] = False
                 header_done = False
-            #############################
-            ## Fix plantuml.
-            #############################
-            if environment_data["plantuml_found"]:
-                no_paragraph = True
-            if re.findall("^plantuml\\s", line):
-                plantuml_title = re.search('title="(.*)"', line)
-                if plantuml_title:
-                    plantuml_name = str(plantuml_title.groups(0)[0])
-                else:
-                    raise DoorstopError(
-                        "'title' is required for plantUML processing in LaTeX."
-                    )
-                plantuml_file = re.sub("\\s", "-", plantuml_name)
-                line = "\\begin{plantuml}{" + plantuml_file + "}"
-                environment_data["plantuml_found"] = True
-            if re.findall("@enduml", line):
-                block.append(line)
-                block.append("\\end{plantuml}")
-                line = (
-                    "\\process{"
-                    + plantuml_file
-                    + "}{0.8\\textwidth}{"
-                    + plantuml_name
-                    + "}"
-                )
-                environment_data["plantuml_found"] = False
 
             # Look ahead for empty line and add paragraph.
             if i < len(text) - 1:
@@ -773,12 +798,16 @@ class LaTeXPublisher(BasePublisher):
         wrapper.append("\\setlistdepth{9}")
         wrapper.append("\\newlist{itemizeDeep}{enumerate}{9}")
         wrapper.append("\\setlist[itemizeDeep,1]{label=\\textbullet}")
-        wrapper.append("\\setlist[itemizeDeep,2]{label=\\normalfont\\bfseries \\textendash}")
+        wrapper.append(
+            "\\setlist[itemizeDeep,2]{label=\\normalfont\\bfseries \\textendash}"
+        )
         wrapper.append("\\setlist[itemizeDeep,3]{label=\\textasteriskcentered}")
         wrapper.append("\\setlist[itemizeDeep,4]{label=\\textperiodcentered}")
         wrapper.append("\\setlist[itemizeDeep,5]{label=\\textopenbullet}")
         wrapper.append("\\setlist[itemizeDeep,6]{label=\\textbullet}")
-        wrapper.append("\\setlist[itemizeDeep,7]{label=\\normalfont\\bfseries \\textendash}")
+        wrapper.append(
+            "\\setlist[itemizeDeep,7]{label=\\normalfont\\bfseries \\textendash}"
+        )
         wrapper.append("\\setlist[itemizeDeep,8]{label=\\textasteriskcentered}")
         wrapper.append("\\setlist[itemizeDeep,9]{label=\\textperiodcentered}")
         wrapper.append("\\newlist{enumerateDeep}{enumerate}{9}")
