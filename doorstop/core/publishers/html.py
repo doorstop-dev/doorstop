@@ -218,7 +218,8 @@ class HtmlPublisher(MarkdownPublisher):
             else:
                 next_line = body_to_check[i + 1]
             (_, processed_block, processed_line) = self.process_lists(line, next_line)
-            block.append(processed_block)
+            if processed_block != "":
+                block.append(processed_block)
             block.append(processed_line)
         body = "\n".join(block)
 

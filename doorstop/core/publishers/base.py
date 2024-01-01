@@ -312,7 +312,10 @@ class BasePublisher(metaclass=ABCMeta):
                     (block, line) = self._check_for_list_end(
                         line, next_line, block, list_type
                     )
-        return (no_paragraph, "\n".join(block), line)
+        if len(block) > 0:
+            return (no_paragraph, "\n".join(block), line)
+        else:
+            return (no_paragraph, "", line)
 
     def _check_for_list_end(self, line, next_line, block, list_type):
         """Check if the list has ended."""
