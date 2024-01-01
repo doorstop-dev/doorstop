@@ -22,6 +22,14 @@ log = common.logger(__name__)
 class HtmlPublisher(MarkdownPublisher):
     """HTML publisher."""
 
+    def __init__(self, obj, ext):
+        super().__init__(obj, ext)
+        # Define lists.
+        self.list["start"] = {"itemize": "<ul>", "enumerate": "<ol>"}
+        self.list["end"] = {"itemize": "</ul>", "enumerate": "</ol>"}
+        self.list["start_item"] = {"itemize": "<li>", "enumerate": "<li>"}
+        self.list["end_item"] = {"itemize": "</li>", "enumerate": "</li>"}
+
     EXTENSIONS = (
         "markdown.extensions.extra",
         "markdown.extensions.sane_lists",
@@ -200,7 +208,19 @@ class HtmlPublisher(MarkdownPublisher):
 
         # Generate HTML
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
-        body = markdown.markdown(text, extensions=self.EXTENSIONS)
+        body_to_check = markdown.markdown(text, extensions=self.EXTENSIONS).splitlines()
+        block = []
+        # Check for nested lists since they are not supported by the markdown_sane_lists plugin.
+        for i, line in enumerate(body_to_check):
+            # Check if we are at the end of the body.
+            if i == len(body_to_check) - 1:
+                next_line = ""
+            else:
+                next_line = body_to_check[i + 1]
+            (_, processed_block, processed_line) = self.process_lists(line, next_line)
+            block.append(processed_block)
+            block.append(processed_line)
+        body = "\n".join(block)
 
         if toc:
             toc_md = self.table_of_contents(True, obj)

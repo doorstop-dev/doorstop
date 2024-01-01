@@ -29,12 +29,21 @@ class LaTeXPublisher(BasePublisher):
 
     def __init__(self, obj, ext):
         super().__init__(obj, ext)
-        self.END_ENUMERATE = "\\end{enumerateDeep}"
-        self.END_ITEMIZE = "\\end{itemizeDeep}"
         self.END_LONGTABLE = "\\end{longtable}"
         self.HLINE = "\\hline"
         self.compile_files = []
         self.compile_path = ""
+        # Define lists.
+        self.list["start"] = {
+            "itemize": r"\begin{itemizeDeep}",
+            "enumerate": r"\begin{enumerateDeep}",
+        }
+        self.list["end"] = {
+            "itemize": r"\end{itemizeDeep}",
+            "enumerate": r"\end{enumerateDeep}",
+        }
+        self.list["start_item"] = {"itemize": r"\\item ", "enumerate": r"\\item "}
+        self.list["end_item"] = {"itemize": "", "enumerate": ""}
 
     def preparePublish(self):
         """Publish wrapper files for LaTeX."""
@@ -277,7 +286,6 @@ class LaTeXPublisher(BasePublisher):
         block: List[str]
         block = []
         environment_data = {}
-        environment_ints = {}
         environment_data["table_found"] = False
         header_done = False
         environment_data["code_found"] = False
@@ -286,12 +294,6 @@ class LaTeXPublisher(BasePublisher):
         plantuml_file = ""
         plantuml_name = ""
         plantuml_count = 0
-        environment_data["enumerate_found"] = False
-        environment_ints["enumerate_depth"] = 0
-        environment_ints["enumerate_indent"] = 0
-        environment_data["itemize_found"] = False
-        environment_ints["itemize_depth"] = 0
-        environment_ints["itemize_indent"] = 0
         end_pipes = False
         for i, line in enumerate(text):
             no_paragraph = False
@@ -342,7 +344,6 @@ class LaTeXPublisher(BasePublisher):
                     block,
                     text,
                     environment_data,
-                    environment_ints,
                     plantuml_name,
                     plantuml_file,
                 )
@@ -382,7 +383,6 @@ class LaTeXPublisher(BasePublisher):
                     block,
                     text,
                     environment_data,
-                    environment_ints,
                     plantuml_name,
                     plantuml_file,
                 )
@@ -426,135 +426,15 @@ class LaTeXPublisher(BasePublisher):
                 block.append(line)
                 continue
             #############################
-            ## Fix enumerate.
+            ## Fix lists.
             #############################
-            enumerate_match = re.findall(r"^\s*\d+\.\s(.*)", line)
-            if enumerate_match:
-                indent = len(line) - len(line.lstrip())
-                if enumerate_match and not environment_data["enumerate_found"]:
-                    block.append("\\begin{enumerateDeep}")
-                    environment_data["enumerate_found"] = True
-                    environment_ints["enumerate_depth"] = indent
-                elif enumerate_match and environment_ints["enumerate_depth"] < indent:
-                    block.append("\\begin{enumerateDeep}")
-                    if environment_ints["enumerate_depth"] == 0:
-                        environment_ints["enumerate_indent"] = indent
-                    elif (
-                        environment_ints["enumerate_depth"]
-                        + environment_ints["enumerate_indent"]
-                        != indent
-                    ):
-                        raise DoorstopError(
-                            "Cannot change indentation depth inside a list."
-                        )
-                    environment_ints["enumerate_depth"] = indent
-                elif enumerate_match and environment_ints["enumerate_depth"] > indent:
-                    while environment_ints["enumerate_depth"] > indent:
-                        block.append(self.END_ENUMERATE)
-                        environment_ints["enumerate_depth"] = (
-                            environment_ints["enumerate_depth"]
-                            - environment_ints["enumerate_indent"]
-                        )
-            if environment_data["enumerate_found"]:
-                no_paragraph = True
-                if enumerate_match:
-                    # Replace the number.
-                    line = re.sub(r"^\s*\d+\.\s", "\\\\item ", line)
-                    # Look ahead - need empty line to end enumeration!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            while environment_ints["enumerate_depth"] > 0:
-                                block.append(self.END_ENUMERATE)
-                                environment_ints["enumerate_depth"] = (
-                                    environment_ints["enumerate_depth"]
-                                    - environment_ints["enumerate_indent"]
-                                )
-                            line = self.END_ENUMERATE
-                            environment_data["enumerate_found"] = False
-                            environment_ints["enumerate_depth"] = 0
-                else:
-                    # Look ahead - need empty line to end enumeration!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            while environment_ints["enumerate_depth"] > 0:
-                                block.append(self.END_ENUMERATE)
-                                environment_ints["enumerate_depth"] = (
-                                    environment_ints["enumerate_depth"]
-                                    - environment_ints["enumerate_indent"]
-                                )
-                            line = self.END_ENUMERATE
-                            environment_data["enumerate_found"] = False
-                            environment_ints["enumerate_depth"] = 0
-            #############################
-            ## Fix itemize.
-            #############################
-            itemize_match = re.findall("^\\s*[\\*+-]\\s(.*)", line)
-            if itemize_match:
-                # Do not create a list if CUSTOM-ATTRIB is found!
-                if not "CUSTOM-ATTRIB" in line:
-                    indent = len(line) - len(line.lstrip())
-                    if itemize_match and not environment_data["itemize_found"]:
-                        block.append("\\begin{itemizeDeep}")
-                        environment_data["itemize_found"] = True
-                        environment_ints["itemize_depth"] = indent
-                    elif itemize_match and environment_ints["itemize_depth"] < indent:
-                        block.append("\\begin{itemizeDeep}")
-                        if environment_ints["itemize_depth"] == 0:
-                            environment_ints["itemize_indent"] = indent
-                        elif (
-                            environment_ints["itemize_depth"]
-                            + environment_ints["itemize_indent"]
-                            != indent
-                        ):
-                            raise DoorstopError(
-                                "Cannot change indentation depth inside a list."
-                            )
-                        environment_ints["itemize_depth"] = indent
-                    elif itemize_match and environment_ints["itemize_depth"] > indent:
-                        while environment_ints["itemize_depth"] > indent:
-                            block.append(self.END_ITEMIZE)
-                            environment_ints["itemize_depth"] = (
-                                environment_ints["itemize_depth"]
-                                - environment_ints["itemize_indent"]
-                            )
-            if environment_data["itemize_found"]:
-                no_paragraph = True
-                if itemize_match:
-                    # Replace the number.
-                    line = re.sub("^\\s*[\\*+-]\\s", "\\\\item ", line)
-                    # Look ahead - need empty line to end itemize!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            while environment_ints["itemize_depth"] > 0:
-                                block.append(self.END_ITEMIZE)
-                                environment_ints["itemize_depth"] = (
-                                    environment_ints["itemize_depth"]
-                                    - environment_ints["itemize_indent"]
-                                )
-                            line = self.END_ITEMIZE
-                            environment_data["itemize_found"] = False
-                            environment_ints["itemize_depth"] = 0
-                else:
-                    # Look ahead - need empty line to end itemize!
-                    if i < len(text) - 1:
-                        next_line = text[i + 1]
-                        if next_line == "":
-                            block.append(line)
-                            while environment_ints["itemize_depth"] > 0:
-                                block.append(self.END_ITEMIZE)
-                                environment_ints["itemize_depth"] = (
-                                    environment_ints["itemize_depth"]
-                                    - environment_ints["itemize_indent"]
-                                )
-                            line = self.END_ITEMIZE
-                            environment_data["itemize_found"] = False
-                            environment_ints["itemize_depth"] = 0
+            # Check if we are at the end of the data.
+            if i == len(text) - 1:
+                next_line = ""
+            else:
+                next_line = text[i + 1]
+            (no_paragraph, processed_block, line) = self.process_lists(line, next_line)
+            block.append(processed_block)
 
             #############################
             ## Fix tables.
@@ -600,7 +480,6 @@ class LaTeXPublisher(BasePublisher):
                 block,
                 text,
                 environment_data,
-                environment_ints,
                 plantuml_name,
                 plantuml_file,
             )
@@ -612,7 +491,6 @@ class LaTeXPublisher(BasePublisher):
         block,
         text,
         environment_data,
-        environment_ints,
         plantuml_name,
         plantuml_file,
     ):
@@ -620,22 +498,6 @@ class LaTeXPublisher(BasePublisher):
         if index == len(text) - 1:
             if environment_data["code_found"]:
                 block.append("\\end{lstlisting}")
-            if environment_data["enumerate_found"]:
-                while environment_ints["enumerate_depth"] > 0:
-                    block.append(self.END_ENUMERATE)
-                    environment_ints["enumerate_depth"] = (
-                        environment_ints["enumerate_depth"]
-                        - environment_ints["enumerate_indent"]
-                    )
-                block.append(self.END_ENUMERATE)
-            if environment_data["itemize_found"]:
-                while environment_ints["itemize_depth"] > 0:
-                    block.append(self.END_ITEMIZE)
-                    environment_ints["itemize_depth"] = (
-                        environment_ints["itemize_depth"]
-                        - environment_ints["itemize_indent"]
-                    )
-                block.append(self.END_ITEMIZE)
             if environment_data["plantuml_found"]:
                 block.append("\\end{plantuml}")
                 block.append(

@@ -3,8 +3,11 @@
 """Abstract interface to publishers."""
 
 from abc import ABCMeta, abstractmethod
+from re import compile as re_compile
+from typing import Any
 
 from doorstop import common, settings
+from doorstop.common import DoorstopError
 from doorstop.core.template import get_template
 from doorstop.core.types import is_tree, iter_items
 
@@ -32,6 +35,20 @@ class BasePublisher(metaclass=ABCMeta):
         self.linkify = None
         self.index = None
         self.matrix = None
+        # Define lists.
+        self.list = dict[str, dict[str, Any]]()
+        self.list["depth"] = {"itemize": 0, "enumerate": 0}
+        self.list["indent"] = {"itemize": 0, "enumerate": 0}
+        self.list["found"] = {"itemize": False, "enumerate": False}
+        # Create regexps.
+        self.list["regexp"] = {
+            "itemize": re_compile(r"^\s*[\*+-]\s(.*)"),
+            "enumerate": re_compile(r"^\s*\d+\.\s(.*)"),
+        }
+        self.list["sub"] = {
+            "itemize": re_compile(r"^\s*[\*+-]\s"),
+            "enumerate": re_compile(r"^\s*\d+\.\s"),
+        }
 
     def setup(self, linkify, index, matrix):
         """Check and store linkfy, index and matrix settings."""
@@ -235,6 +252,81 @@ class BasePublisher(metaclass=ABCMeta):
     def getLinkify(self):
         """Get the linkify flag."""
         return self.linkify
+
+    def process_lists(self, line, next_line):
+        """Process lists in the line. Intended for LaTeX and HTML publishers."""
+        # Don't process custom attributes.
+        if "CUSTOM-ATTRIB" in line:
+            return (False, "", line)
+        # Loop over both list types.
+        for temp_type in ["itemize", "enumerate"]:
+            matches = self.list["regexp"][temp_type].findall(line)
+            if matches:
+                list_type = temp_type
+                # Cannot have both types on the same line.
+                break
+        block = []
+        no_paragraph = False
+        if matches:
+            indent = len(line) - len(line.lstrip())
+            if not self.list["found"][list_type]:
+                block.append(self.list["start"][list_type])
+                self.list["found"][list_type] = True
+                self.list["depth"][list_type] = indent
+            elif self.list["depth"][list_type] < indent:
+                block.append(self.list["start"][list_type])
+                if self.list["depth"][list_type] == 0:
+                    self.list["indent"][list_type] = indent
+                elif (
+                    self.list["depth"][list_type] + self.list["indent"][list_type]
+                    != indent
+                ):
+                    raise DoorstopError(
+                        "Cannot change indentation depth inside a list."
+                    )
+                self.list["depth"][list_type] = indent
+            elif self.list["depth"][list_type] > indent:
+                while self.list["depth"][list_type] > indent:
+                    block.append(self.list["end"][list_type])
+                    self.list["depth"][list_type] = (
+                        self.list["depth"][list_type] - self.list["indent"][list_type]
+                    )
+        # Check both list types.
+        for list_type in ["itemize", "enumerate"]:
+            if self.list["found"][list_type]:
+                no_paragraph = True
+                if self.list["found"][list_type]:
+                    # Replace the list identifier.
+                    line = (
+                        self.list["sub"][list_type].sub(
+                            self.list["start_item"][list_type], line
+                        )
+                        + self.list["end_item"][list_type]
+                    )
+                    # Look ahead - need empty line to end itemize!
+                    (block, line) = self._check_for_list_end(
+                        line, next_line, block, list_type
+                    )
+                else:
+                    # Look ahead - need empty line to end itemize!
+                    (block, line) = self._check_for_list_end(
+                        line, next_line, block, list_type
+                    )
+        return (no_paragraph, "\n".join(block), line)
+
+    def _check_for_list_end(self, line, next_line, block, list_type):
+        """Check if the list has ended."""
+        if next_line == "" or next_line.startswith("<p>"):
+            block.append(line)
+            while self.list["depth"][list_type] > 0:
+                block.append(self.list["end"][list_type])
+                self.list["depth"][list_type] = (
+                    self.list["depth"][list_type] - self.list["indent"][list_type]
+                )
+            line = self.list["end"][list_type]
+            self.list["found"][list_type] = False
+            self.list["depth"][list_type] = 0
+        return (block, line)
 
 
 def extract_prefix(document):
