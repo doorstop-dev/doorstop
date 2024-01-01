@@ -310,7 +310,13 @@ class LaTeXPublisher(BasePublisher):
                         "'title' is required for plantUML processing in LaTeX."
                     )
                 plantuml_file = re.sub("\\s", "-", plantuml_name)
-                block.append(r"\hyperref[fig:plant" + str(plantuml_count) + "]{" + plantuml_name + "}")
+                block.append(
+                    r"\hyperref[fig:plant"
+                    + str(plantuml_count)
+                    + "]{"
+                    + plantuml_name
+                    + "}"
+                )
                 line = "\\begin{plantuml}{" + plantuml_file + "}"
                 environment_data["plantuml_found"] = True
             if re.findall("@enduml", line):
@@ -322,7 +328,9 @@ class LaTeXPublisher(BasePublisher):
                     + "}{0.8\\textwidth}{"
                     + plantuml_name
                     + "}"
-                    + "{" + str(plantuml_count) + "}"
+                    + "{"
+                    + str(plantuml_count)
+                    + "}"
                 )
                 environment_data["plantuml_found"] = False
             # Skip the rest since we are in a plantuml block!
