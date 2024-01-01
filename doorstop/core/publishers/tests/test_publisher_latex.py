@@ -110,7 +110,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header name{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header name{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of a single text line." + "\n\n"
         )
@@ -436,7 +436,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \textit{italics}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \textit{italics}{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of \textit{italic} text." + "\n\n"
@@ -506,7 +506,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \textbf{bold}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \textbf{bold}{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of \textbf{bold} text." + "\n\n"
@@ -535,7 +535,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \& sign{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \& sign{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of stuff \& text." + "\n\n"

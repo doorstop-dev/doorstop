@@ -83,11 +83,11 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of enumeration end.\\" + "\n\n"
-            r"\begin{enumerate}" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
-            r"\end{enumerate}" + "\n\n"
+            r"\end{enumerateDeep}" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
@@ -114,11 +114,11 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of enumeration end.\\" + "\n\n"
-            r"\begin{enumerate}" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
-            r"\end{enumerate}" + "\n\n"
+            r"\end{enumerateDeep}" + "\n\n"
             r"This is not an item!" + "\n\n"
         )
         # Act
@@ -146,13 +146,13 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of enumeration end.\\" + "\n\n"
-            r"\begin{enumerate}" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
             r"This still a part of the previous item!" + "\n"
             r"\textbf{This too!}" + "\n"
-            r"\end{enumerate}" + "\n\n"
+            r"\end{enumerateDeep}" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
@@ -177,11 +177,11 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of itemization end.\\" + "\n\n"
-            r"\begin{itemize}" + "\n"
+            r"\begin{itemizeDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
-            r"\end{itemize}" + "\n\n"
+            r"\end{itemizeDeep}" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
@@ -208,11 +208,11 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of itemization end.\\" + "\n\n"
-            r"\begin{itemize}" + "\n"
+            r"\begin{itemizeDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
-            r"\end{itemize}" + "\n\n"
+            r"\end{itemizeDeep}" + "\n\n"
             r"This is not an item!" + "\n\n"
         )
         # Act
@@ -242,13 +242,13 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of itemization end.\\" + "\n\n"
-            r"\begin{itemize}" + "\n"
+            r"\begin{itemizeDeep}" + "\n"
             r"\item item one" + "\n"
             r"\item item two" + "\n"
             r"\item item three" + "\n"
             r"This still a part of the previous item!" + "\n"
             r"This too!" + "\n"
-            r"\end{itemize}" + "\n\n"
+            r"\end{itemizeDeep}" + "\n\n"
             r"But not this!" + "\n\n"
         )
         # Act
@@ -298,10 +298,12 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = ""
-        with self.assertLogs("doorstop.core.publishers.latex", level="WARNING") as logs:
+        with self.assertLogs(
+            "doorstop.core.publishers._latex_functions", level="WARNING"
+        ) as logs:
             result = getLines(publisher.publish_lines(item, ".tex"))
             self.assertIn(
-                "WARNING:doorstop.core.publishers.latex:Possibly unbalanced table found.",
+                "WARNING:doorstop.core.publishers._latex_functions:Possibly unbalanced table found.",
                 logs.output,
             )
         # Assert
@@ -329,10 +331,12 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = ""
-        with self.assertLogs("doorstop.core.publishers.latex", level="WARNING") as logs:
+        with self.assertLogs(
+            "doorstop.core.publishers._latex_functions", level="WARNING"
+        ) as logs:
             result = getLines(publisher.publish_lines(item, ".tex"))
             self.assertIn(
-                "WARNING:doorstop.core.publishers.latex:Possibly incorrectly specified table found.",
+                "WARNING:doorstop.core.publishers._latex_functions:Possibly incorrectly specified table found.",
                 logs.output,
             )
         # Assert
@@ -359,6 +363,7 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         )
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\hyperref[fig:plant1]{State Diagram}" + "\n"
             r"\begin{plantuml}{State-Diagram}" + "\n"
             r"@startuml" + "\n"
             r"scale 600 width" + "\n\n"
@@ -366,7 +371,7 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
             r"State1 --> State2 : Succeeded" + "\n\n"
             r"@enduml" + "\n"
             r"\end{plantuml}" + "\n"
-            r"\process{State-Diagram}{0.8\textwidth}{State Diagram}" + "\n\n"
+            r"\process{State-Diagram}{0.8\textwidth}{State Diagram}{1}" + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
@@ -434,6 +439,7 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of plantUML block.\\" + "\n\n"
+            r"\hyperref[fig:plant1]{State Diagram}" + "\n"
             r"\begin{plantuml}{State-Diagram}" + "\n"
             r"\end{plantuml}" + "\n"
             r"\process{State-Diagram}{0.8\textwidth}{State Diagram}" + "\n\n"
