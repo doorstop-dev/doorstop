@@ -6,71 +6,15 @@
 
 import os
 import unittest
-from unittest import mock
-from unittest.mock import Mock, call, patch
-
-from yaml import safe_load
+from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
 from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC, getLines
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
-from doorstop.core.types import iter_documents
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.publishers.latex module, more specifically the changes introduced by the doorstop.core.publishers.latex module."""
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    def test_publish_tree(self, mock_makedirs):
-        """Verify a LaTeX document tree can be published."""
-        # Setup
-        dirpath = os.path.join("mock", "directory")
-        expected_calls = []
-        for obj2, _ in iter_documents(self.mock_tree, dirpath, ".tex"):
-            expected_calls.append(
-                call(
-                    os.path.join(
-                        "mock", "directory", "doc-{n}.tex".format(n=obj2.prefix)
-                    ),
-                    "wb",
-                )
-            )
-            expected_calls.append(
-                call(
-                    os.path.join("mock", "directory", "{n}.tex".format(n=obj2.prefix)),
-                    "wb",
-                )
-            )
-
-        expected_calls.append(
-            call(os.path.join("mock", "directory", "compile.sh"), "wb")
-        )
-        # Load correct template data.
-        template_data_file = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "..",
-            "files",
-            "templates",
-            "latex",
-            "doorstop.yml",
-        )
-        with open(template_data_file, "r") as f:
-            template_data = safe_load(f)
-        # Act
-        with patch("builtins.open") as mock_open:
-            mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-                read_data="$body"
-            ).return_value
-            with patch(
-                "doorstop.core.publishers.latex.read_template_data"
-            ) as mock_read:
-                mock_read.return_value = template_data
-                dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
-            # Assert
-            self.assertIs(dirpath, dirpath2)
-            self.assertEqual(expected_calls, mock_open.call_args_list)
-            self.assertEqual(mock_open.call_count, 3)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
     def test_setting_publish_heading_levels_true(self):

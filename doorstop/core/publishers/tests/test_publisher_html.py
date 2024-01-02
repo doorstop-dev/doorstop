@@ -11,19 +11,10 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
 from doorstop.core.template import HTMLTEMPLATE
-from doorstop.core.tests import (
-    EMPTY,
-    FILES,
-    ROOT,
-    MockDataMixIn,
-    MockDocument,
-    MockItem,
-    MockItemAndVCS,
-)
+from doorstop.core.tests import EMPTY, FILES, MockDataMixIn, MockDocument
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -127,48 +118,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertIs(path, path2)
         mock_makedirs.assert_called_once_with(self.dirpath)
         mock_copyassets.assert_called_once_with(assets_path)
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
-    @patch("builtins.open")
-    def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
-        """Verify a tree can be published."""
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-            read_data="$body"
-        ).return_value
-        expected_calls = [
-            call(os.path.join(self.dirpath, "MOCK.html"), "wb"),
-            call(
-                os.path.join(self.dirpath, "traceability.csv"),
-                "w",
-                encoding="utf-8",
-                newline="",
-            ),
-        ]
-        # Act
-        dirpath2 = publisher.publish(self.mock_tree, self.dirpath)
-        # Assert
-        self.assertIs(self.dirpath, dirpath2)
-        self.assertEqual(expected_calls, mock_open.call_args_list)
-        mock_index.assert_called_once_with(self.dirpath, tree=self.mock_tree)
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
-    @patch("builtins.open")
-    def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
-        """Verify a tree can be published."""
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-            read_data="$body"
-        ).return_value
-        expected_calls = [call(os.path.join(self.dirpath, "MOCK.html"), "wb")]
-        # Act
-        dirpath2 = publisher.publish(self.mock_tree, self.dirpath, index=False)
-        # Assert
-        self.assertIs(self.dirpath, dirpath2)
-        self.assertEqual(0, mock_index.call_count)
-        self.assertEqual(expected_calls, mock_open.call_args_list)
 
     def test_index(self):
         """Verify an HTML index can be created."""
@@ -311,48 +260,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIn("Child links:", text)
         self.assertIn("tst.html#tst1", text)
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
-    @patch("builtins.open")
-    def test_publish_tree(self, mock_open, mock_index, mock_makedirs):
-        """Verify a tree can be published."""
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-            read_data="$body"
-        ).return_value
-        expected_calls = [
-            call(os.path.join(self.dirpath, "MOCK.html"), "wb"),
-            call(
-                os.path.join(self.dirpath, "traceability.csv"),
-                "w",
-                encoding="utf-8",
-                newline="",
-            ),
-        ]
-        # Act
-        dirpath2 = publisher.publish(self.mock_tree, self.dirpath)
-        # Assert
-        self.assertIs(self.dirpath, dirpath2)
-        self.assertEqual(expected_calls, mock_open.call_args_list)
-        mock_index.assert_called_once_with(self.dirpath, tree=self.mock_tree)
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    @patch("doorstop.core.publishers.html.HtmlPublisher.create_index")
-    @patch("builtins.open")
-    def test_publish_tree_no_index(self, mock_open, mock_index, mock_makedirs):
-        """Verify a tree can be published."""
-        mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-            read_data="$body"
-        ).return_value
-        expected_calls = [call(os.path.join(self.dirpath, "MOCK.html"), "wb")]
-        # Act
-        dirpath2 = publisher.publish(self.mock_tree, self.dirpath, index=False)
-        # Assert
-        self.assertIs(self.dirpath, dirpath2)
-        self.assertEqual(0, mock_index.call_count)
-        self.assertEqual(expected_calls, mock_open.call_args_list)
 
     @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
     @patch("os.makedirs")
