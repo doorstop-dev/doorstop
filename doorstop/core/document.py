@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 from itertools import chain
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import yaml
 
@@ -70,14 +70,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data["parent"] = None  # type: ignore
         self._data["itemformat"] = kwargs.get("itemformat")  # type: ignore
         self._extended_reviewed: List[str] = []
+        self.extensions: Dict[str, Any] = {}
         self._items: List[Item] = []
         self._itered = False
         self.children: List[Document] = []
 
         if not self._data["itemformat"]:
             self._data["itemformat"] = Item.DEFAULT_ITEMFORMAT
-
-        self.extensions = None
 
     def __repr__(self):
         return "Document('{}')".format(self.path)

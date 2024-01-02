@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import List
+from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
@@ -95,6 +95,7 @@ class MockSimpleDocument:
         self.itemformat = "yaml"
         self._items: List[Item] = []
         self.extended_reviewed: List[str] = []
+        self.extensions: Dict[str, Any] = {}
 
     def __iter__(self):
         yield from self._items
