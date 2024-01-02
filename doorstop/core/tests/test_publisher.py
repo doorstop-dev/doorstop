@@ -8,10 +8,12 @@ import os
 import unittest
 from secrets import token_hex
 from shutil import rmtree
+from unittest.mock import Mock, patch
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.tests import MockDataMixIn
+from doorstop.core.builder import build
+from doorstop.core.tests import EMPTY, MockDataMixIn
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -35,3 +37,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.assertRaises(
             DoorstopError, publisher.publish, self.document, "a.txt", ".a"
         )
+
+    @patch("doorstop.core.vcs.find_root", Mock(return_value=EMPTY))
+    def test_nothing_to_publish(self):
+        """Verify an exception is raised when publishing nothing."""
+        tree = build(EMPTY)
+        self.assertRaises(DoorstopError, publisher.publish, tree, "a.txt")
