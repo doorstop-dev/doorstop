@@ -165,23 +165,22 @@ def _get_document_attributes(obj):
     doc_attributes["major"] = ""
     doc_attributes["minor"] = ""
     doc_attributes["copyright"] = "Doorstop"
-    try:
-        attribute_defaults = obj.__getattribute__("_attribute_defaults")
-        if attribute_defaults:
-            if attribute_defaults["doc"]["name"]:
+    attribute_defaults = obj.__getattribute__("_attribute_defaults")
+    if attribute_defaults:
+        if "name" in attribute_defaults["doc"]:
+            # Name should only be set if it is not empty.
+            if attribute_defaults["doc"]["name"] != "":
                 doc_attributes["name"] = attribute_defaults["doc"]["name"]
-            if attribute_defaults["doc"]["title"]:
-                doc_attributes["title"] = attribute_defaults["doc"]["title"]
-            if attribute_defaults["doc"]["ref"]:
-                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
-            if attribute_defaults["doc"]["by"]:
-                doc_attributes["by"] = attribute_defaults["doc"]["by"]
-            if attribute_defaults["doc"]["major"]:
-                doc_attributes["major"] = attribute_defaults["doc"]["major"]
-            if attribute_defaults["doc"]["minor"]:
-                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
-            if attribute_defaults["doc"]["copyright"]:
-                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
-    except AttributeError:
-        pass
+        if "title" in attribute_defaults["doc"]:
+            doc_attributes["title"] = attribute_defaults["doc"]["title"]
+        if "ref" in attribute_defaults["doc"]:
+            doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+        if "by" in attribute_defaults["doc"]:
+            doc_attributes["by"] = attribute_defaults["doc"]["by"]
+        if "major" in attribute_defaults["doc"]:
+            doc_attributes["major"] = attribute_defaults["doc"]["major"]
+        if "minor" in attribute_defaults["doc"]:
+            doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+        if "copyright" in attribute_defaults["doc"]:
+            doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
     return doc_attributes
