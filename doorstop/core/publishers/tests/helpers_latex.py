@@ -26,7 +26,7 @@ attributes:
     - invented-by
 """
 
-YAML_LATEX_NO_DOC = """
+YAML_LATEX_EMPTY_DOC = """
 settings:
   digits: 3
   prefix: TST
@@ -43,6 +43,50 @@ attributes:
       copyright: ''
   publish:
     - CUSTOM-ATTRIB
+"""
+
+YAML_LATEX_NO_DOC = """
+settings:
+  digits: 3
+  prefix: TST
+  sep: '-'
+attributes:
+  defaults:
+  publish:
+    - CUSTOM-ATTRIB
+"""
+
+YAML_LATEX_NO_REF = """
+settings:
+  digits: 3
+  prefix: TST
+  sep: '-'
+attributes:
+  defaults:
+    doc:
+      name: 'Tutorial'
+      title: 'Development test document'
+      by: 'Jng'
+      major: '1'
+      minor: 'A'
+      copyright: 'Whatever Inc.'
+  publish:
+    - CUSTOM-ATTRIB
+    - invented-by
+"""
+
+YAML_LATEX_ONLY_REF = """
+settings:
+  digits: 3
+  prefix: TST
+  sep: '-'
+attributes:
+  defaults:
+    doc:
+      ref: 'TUT-DS-22'
+  publish:
+    - CUSTOM-ATTRIB
+    - invented-by
 """
 
 LINES = """
