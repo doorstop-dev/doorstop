@@ -8,21 +8,11 @@ import os
 import unittest
 from secrets import token_hex
 from shutil import rmtree
-from unittest import mock
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import Mock, patch
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.document import Document
-from doorstop.core.tests import (
-    EMPTY,
-    FILES,
-    ROOT,
-    MockDataMixIn,
-    MockDocument,
-    MockItem,
-    MockItemAndVCS,
-)
+from doorstop.core.publishers.tests.helpers import getLines
+from doorstop.core.tests import MockDataMixIn, MockItemAndVCS
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -124,3 +114,31 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             lines = publisher.publish_lines(self.item5, ".txt")
             text = "".join(line + "\n" for line in lines)
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
+
+    @patch("doorstop.settings.ENABLE_HEADERS", True)
+    def test_setting_enable_headers_true(self):
+        """Verify that the settings.ENABLE_HEADERS changes the output appropriately when True."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: 'Header name'" + "\n"
+            r"level: 1.0" + "\n"
+            r"normative: false" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of a single text line."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            "1.0     Header name"
+            + "\n"
+            + "Test of a single text line."
+            + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".txt"))
+        # Assert
+        self.assertEqual(expected, result)
