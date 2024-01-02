@@ -12,14 +12,13 @@ from unittest.mock import patch
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
+from doorstop.core.publishers.tests.helpers import getFileContents, getWalk
 from doorstop.core.publishers.tests.helpers_latex import (
     YAML_LATEX_DOC,
     YAML_LATEX_EMPTY_DOC,
     YAML_LATEX_NO_DOC,
     YAML_LATEX_NO_REF,
     YAML_LATEX_ONLY_REF,
-    getFileContents,
-    getWalk,
 )
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
 

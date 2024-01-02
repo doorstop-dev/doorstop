@@ -9,7 +9,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
-from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC, getLines
+from doorstop.core.publishers.tests.helpers import getLines
+from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
 
 

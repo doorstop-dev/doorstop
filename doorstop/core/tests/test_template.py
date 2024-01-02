@@ -13,7 +13,7 @@ from shutil import rmtree
 from doorstop.common import DoorstopError
 from doorstop.core import template
 from doorstop.core.builder import build
-from doorstop.core.publishers.tests.helpers_latex import getWalk
+from doorstop.core.publishers.tests.helpers import getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
 
 

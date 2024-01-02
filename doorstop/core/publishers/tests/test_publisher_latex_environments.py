@@ -8,7 +8,7 @@ import unittest
 
 from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.publishers.tests.helpers_latex import getLines
+from doorstop.core.publishers.tests.helpers import getLines
 from doorstop.core.tests import MockDataMixIn, MockItemAndVCS
 
 

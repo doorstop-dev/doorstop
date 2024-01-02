@@ -8,14 +8,10 @@ import os
 import unittest
 from secrets import token_hex
 from shutil import rmtree
-from unittest import mock
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import Mock, patch
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
-from doorstop.core.document import Document
 from doorstop.core.tests import (
-    EMPTY,
     FILES,
     ROOT,
     MockDataMixIn,
