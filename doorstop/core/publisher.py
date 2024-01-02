@@ -45,9 +45,15 @@ def publish(
     :return: output location if files created, else None
 
     """
+    # Check that we have something to publish first.
+    if is_tree(obj):
+        if len(obj) == 0:
+            raise DoorstopError("nothing to publish")
+
     # Determine the output format
     ext = ext or os.path.splitext(path)[-1] or ".html"
     publisher = check(ext, obj=obj)
+
     # Setup publisher.
     publisher.setPath(path)
     publisher.setup(linkify, index, matrix)
@@ -85,24 +91,20 @@ def publish(
             )
 
     # Create index
-    if publisher.getIndex() and count:
+    if publisher.getIndex():
         publisher.create_index(path, tree=obj if is_tree(obj) else None)
 
     # Create traceability matrix
-    if (publisher.getIndex() or ext == ".tex") and (publisher.getMatrix() and count):
+    if (publisher.getIndex() or ext == ".tex") and (publisher.getMatrix()):
         publisher.create_matrix(path)
 
     # Run all concluding operations.
     publisher.concludePublish()
 
     # Return the published path
-    if count:
-        msg = "published to {} file{}".format(count, "s" if count > 1 else "")
-        log.info(msg)
-        return path
-    else:
-        log.warning("nothing to publish")
-        return None
+    msg = "published to {} file{}".format(count, "s" if count > 1 else "")
+    log.info(msg)
+    return path
 
 
 def publish_lines(obj, ext=".txt", publisher=None, **kwargs):
@@ -110,8 +112,6 @@ def publish_lines(obj, ext=".txt", publisher=None, **kwargs):
 
     :param obj: Item, list of Items, or Document to publish
     :param ext: file extension to specify the output format
-
-    :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
 
     """
     if not publisher:
