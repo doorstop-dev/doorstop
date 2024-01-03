@@ -107,9 +107,8 @@ class HtmlPublisher(MarkdownPublisher):
         # Traceability table
         documents = tree.documents if tree else None
         if documents:
-            if text or filenames:
-                yield ""
-                yield "<hr>"
+            yield ""
+            yield "<hr>"
             yield ""
             # table
             yield "<h3>Item Traceability:</h3>"
