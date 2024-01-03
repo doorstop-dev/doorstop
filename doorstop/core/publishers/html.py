@@ -11,10 +11,11 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
+from doorstop.common import DoorstopError
 from doorstop.core.publishers.base import extract_prefix, extract_uid
 from doorstop.core.publishers.markdown import MarkdownPublisher
 from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX
-from doorstop.core.types import is_item, is_tree
+from doorstop.core.types import is_item
 
 log = common.logger(__name__)
 
@@ -240,8 +241,9 @@ class HtmlPublisher(MarkdownPublisher):
                     document=obj,
                 )
             except Exception:
-                log.error("Problem parsing the template %s", self.template)
-                raise
+                raise DoorstopError(
+                    "Problem parsing the template {}".format(self.template)
+                )
             yield "\n".join(html.split(os.linesep))
         else:
             yield body
