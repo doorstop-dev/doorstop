@@ -8,19 +8,11 @@ import os
 import unittest
 from secrets import token_hex
 from shutil import rmtree
-from unittest.mock import patch
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
-from doorstop.core.publishers.tests.helpers import getFileContents, getWalk
-from doorstop.core.publishers.tests.helpers_latex import (
-    YAML_LATEX_DOC,
-    YAML_LATEX_EMPTY_DOC,
-    YAML_LATEX_NO_DOC,
-    YAML_LATEX_NO_REF,
-    YAML_LATEX_ONLY_REF,
-)
-from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
+from doorstop.core.publishers.tests.helpers import getWalk
+from doorstop.core.tests import ROOT, MockDataMixIn
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -51,7 +43,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         rmtree("mock_%s" % __name__)
 
     def test_publish_markdown_tree_copies_assets(self):
-        """Verify that LaTeX assets are published when publishing a tree."""
+        """Verify that markdown assets are published when publishing a tree."""
         # Act
         path2 = publisher.publish(self.mock_tree, self.dirpath, ext=".md")
         # Assert
