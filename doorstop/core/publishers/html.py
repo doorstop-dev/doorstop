@@ -92,20 +92,18 @@ class HtmlPublisher(MarkdownPublisher):
             yield ""
             yield "<h3>Tree Structure:</h3>"
             yield "<pre><code>" + text + "</pre></code>"
-        # Additional files
-        if filenames:
-            if text:
-                yield ""
-                yield "<hr>"
             yield ""
-            yield "<h3>Published Documents:</h3>"
-            yield "<p>"
-            yield "<ul>"
-            for filename in filenames:
-                name = os.path.splitext(filename)[0]
-                yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
-            yield "</ul>"
-            yield "</p>"
+            yield "<hr>"
+        # Additional files
+        yield ""
+        yield "<h3>Published Documents:</h3>"
+        yield "<p>"
+        yield "<ul>"
+        for filename in filenames:
+            name = os.path.splitext(filename)[0]
+            yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+        yield "</ul>"
+        yield "</p>"
         # Traceability table
         documents = tree.documents if tree else None
         if documents:
