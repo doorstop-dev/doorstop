@@ -132,12 +132,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             "path/to/REQ-001.yml",
             _file=generated_data,
         )
-        expected = (
-            "1.0     Header name"
-            + "\n"
-            + "Test of a single text line."
-            + "\n\n"
-        )
+        expected = "1.0     Header name" + "\n" + "Test of a single text line." + "\n\n"
         # Act
         result = getLines(publisher.publish_lines(item, ".txt"))
         # Assert
