@@ -15,6 +15,17 @@ outline:
         - REQ002: # Hello, world! !["...
         - REQ2-001: # Hello, world!
 """
+YAML_CUSTOM_ATTRIBUTES = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: '-'
+attributes:
+  defaults:
+  publish:
+    - CUSTOM-ATTRIB
+    - invented-by
+"""
 
 
 def getWalk(walk_path):

@@ -11,7 +11,7 @@ from shutil import rmtree
 from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
-from doorstop.core.publishers.tests.helpers import getLines
+from doorstop.core.publishers.tests.helpers import YAML_CUSTOM_ATTRIBUTES, getLines
 from doorstop.core.tests import (
     FILES,
     ROOT,
@@ -238,6 +238,43 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".md"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_custom_attributes(self):
+        """Verify that custom attributes are published correctly."""
+        # Setup
+        generated_data = (
+            r"CUSTOM-ATTRIB: true" + "\n"
+            r"invented-by: jane@example.com" + "\n"
+            r"text: |" + "\n"
+            r"  Test of custom attributes."
+        )
+        document = MockDocument("/some/path")
+        document._file = YAML_CUSTOM_ATTRIBUTES
+        document.load(reload=True)
+        itemPath = os.path.join("path", "to", "REQ-001.yml")
+        item = MockItem(document, itemPath)
+        item._file = generated_data
+        item.load(reload=True)
+        document._items.append(item)
+        expected = (
+            "# 1.0 REQ-001 {#REQ-001 }"
+            + "\n\n"
+            + "Test of custom attributes."
+            + "\n\n"
+            + "| Attribute | Value |"
+            + "\n"
+            + "| --------- | ----- |"
+            + "\n"
+            + "| CUSTOM-ATTRIB | True |"
+            + "\n"
+            + "| invented-by | jane@example.com |"
+            + "\n"
+            + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(document, ".md"))
         # Assert
         self.assertEqual(expected, result)
 

@@ -69,6 +69,7 @@ class MarkdownPublisher(BasePublisher):
 
     def format_item_link(self, item, linkify=True):
         """Format an item link in Markdown."""
+        print("format_item_link")
         if linkify and is_item(item):
             if item.header:
                 return "[{u} {h}]({p}.md#{u})".format(
