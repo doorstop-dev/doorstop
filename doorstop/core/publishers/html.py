@@ -155,12 +155,9 @@ class HtmlPublisher(MarkdownPublisher):
         # ext = self.ext or os.path.splitext(path)[-1] or ".csv"
 
         # Create the matrix
-        if is_tree(self.object):
-            log.info("creating an {}...".format(filename))
-            content = self._matrix_content()
-            common.write_csv(content, path)
-        else:
-            log.warning("no data for {}".format(filename))
+        log.info("creating an {}...".format(filename))
+        content = self._matrix_content()
+        common.write_csv(content, path)
 
     def _matrix_content(self):
         """Yield rows of content for the traceability matrix."""
