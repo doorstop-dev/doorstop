@@ -108,6 +108,7 @@ class TextPublisher(BasePublisher):
                         slinks = "Child links: " + ", ".join(str(l) for l in links)
                         yield from self._chunks(slinks)
 
+                # Attributes
                 if item.document and item.document.publish:
                     yield ""
                     for attr in item.document.publish:
