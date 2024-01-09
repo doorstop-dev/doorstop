@@ -212,9 +212,11 @@ class HtmlPublisher(MarkdownPublisher):
         for i, line in enumerate(body_to_check):
             # Replace the temporary inline code blocks with the escaped back-ticks. If there are
             # multiple back-ticks in a row, we need group them in a single <code> block.
-            line = re.sub(r"(##!!TEMPINLINE!!##)+", lambda m: "<code>" + "&#96;" * int(len(m.group()) / 18) + "</code>", line)
-
-
+            line = re.sub(
+                r"(##!!TEMPINLINE!!##)+",
+                lambda m: "<code>" + "&#96;" * int(len(m.group()) / 18) + "</code>",
+                line,
+            )
 
             # line = line.replace("##!!TEMPINLINE!!##", "<code>&#96;</code>")
             # Check if we are at the end of the body.
