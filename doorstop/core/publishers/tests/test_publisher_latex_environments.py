@@ -406,7 +406,8 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         generated_data = (
             r"text: |" + "\n"
             r"  Test of code block." + "\n\n"
-            r"  ```This is an unended code block."
+            r"  ```" + "\n"
+            r"  This is an unended code block."
         )
         item = MockItemAndVCS(
             "path/to/REQ-001.yml",
@@ -417,6 +418,42 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
             r"Test of code block.\\" + "\n\n"
             r"\begin{lstlisting}" + "\n"
             r"This is an unended code block." + "\n"
+            r"\end{lstlisting}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_immediate_code_block(self):
+        """Verify that if the code block starts immediately, it is still published correctly."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  ```python" + "\n"
+            r"  def fibonacci(n):" + "\n"
+            r"      a, b = 0, 1" + "\n"
+            r"      while a < n:" + "\n"
+            r"          print(a, end=' ')" + "\n"
+            r"          a, b = b, a+b" + "\n"
+            r"      print()" + "\n"
+            r"  fibonacci(1000)" + "\n"
+            r"  ```"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\begin{lstlisting}[language=python]" + "\n"
+            r"def fibonacci(n):" + "\n"
+            r"    a, b = 0, 1" + "\n"
+            r"    while a < n:" + "\n"
+            r"        print(a, end=' ')" + "\n"
+            r"        a, b = b, a+b" + "\n"
+            r"    print()" + "\n"
+            r"fibonacci(1000)" + "\n"
             r"\end{lstlisting}" + "\n\n"
         )
         # Act
