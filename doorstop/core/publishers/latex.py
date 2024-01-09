@@ -523,11 +523,7 @@ class LaTeXPublisher(BasePublisher):
         # Setup.
         table = self.object.get_traceability().__iter__()
         traceability = []
-        head, tail = os.path.split(directory)
-        if tail.endswith(".tex"):
-            file = os.path.join(head, "traceability.tex")
-        else:
-            file = os.path.join(directory, "traceability.tex")
+        file = os.path.join(directory, "traceability.tex")
         count = 0
         # Start the table.
         table_start = "\\begin{longtable}{"
