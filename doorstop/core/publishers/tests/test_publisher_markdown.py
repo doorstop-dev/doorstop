@@ -38,7 +38,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             rmtree("mock_%s" % __name__)
 
     def test_single_line_heading_to_markdown(self):
-        """Verify a single line heading is published as a heading with an attribute equal to the item id"""
+        """Verify a single line heading is published as a heading with an attribute equal to the item id."""
         expected = "## 1.1 Heading {#req3 }\n\n"
         lines = publisher.publish_lines(self.item, ".md", linkify=True)
         # Act
