@@ -105,10 +105,7 @@ class BasePublisher(metaclass=ABCMeta):
             # Check if item has the attribute heading.
             if item.heading:
                 lines = item.text.splitlines()
-                if item.header:
-                    heading = item.header
-                else:
-                    heading = lines[0] if lines else ""
+                heading = lines[0] if lines else ""
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
