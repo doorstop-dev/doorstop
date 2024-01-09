@@ -54,10 +54,16 @@ class BasePublisher(metaclass=ABCMeta):
         """Check and store linkfy, index and matrix settings."""
         if linkify is None:
             self.linkify = is_tree(self.object) and self.ext in [".html", ".md", ".tex"]
+        else:
+            self.linkify = linkify
         if index is None:
             self.index = is_tree(self.object) and self.ext == ".html"
+        else:
+            self.index = index
         if matrix is None:
             self.matrix = is_tree(self.object)
+        else:
+            self.matrix = matrix
 
     def preparePublish(self):
         """Prepare publish.
