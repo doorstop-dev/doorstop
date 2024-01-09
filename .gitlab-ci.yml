@@ -62,7 +62,6 @@ lint-doorstop:
 #
 test-doorstop:
   stage: test
-  allow_failure: true # FIXME: fix doorstop tests
   needs: [lint-doorstop]
   script:
     - make test
