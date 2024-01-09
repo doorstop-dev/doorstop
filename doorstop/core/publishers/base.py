@@ -273,23 +273,17 @@ class BasePublisher(metaclass=ABCMeta):
         for list_type in ["itemize", "enumerate"]:
             if self.list["found"][list_type]:
                 no_paragraph = True
-                if self.list["found"][list_type]:
-                    # Replace the list identifier.
-                    line = (
-                        self.list["sub"][list_type].sub(
-                            self.list["start_item"][list_type], line
-                        )
-                        + self.list["end_item"][list_type]
+                # Replace the list identifier.
+                line = (
+                    self.list["sub"][list_type].sub(
+                        self.list["start_item"][list_type], line
                     )
-                    # Look ahead - need empty line to end itemize!
-                    (block, line) = self._check_for_list_end(
-                        line, next_line, block, list_type
-                    )
-                else:
-                    # Look ahead - need empty line to end itemize!
-                    (block, line) = self._check_for_list_end(
-                        line, next_line, block, list_type
-                    )
+                    + self.list["end_item"][list_type]
+                )
+                # Look ahead - need empty line to end itemize!
+                (block, line) = self._check_for_list_end(
+                    line, next_line, block, list_type
+                )
         if len(block) > 0:
             return (no_paragraph, "\n".join(block), line)
         else:
