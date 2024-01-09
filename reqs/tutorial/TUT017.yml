@@ -93,3 +93,31 @@ text: |
   which is rendered like this:
 
   $$k_{n+1} = n^2 + k_n^2 - k_{n-1}$$
+
+  ### Code blocks
+
+  Code blocks are either fenced by lines with three back-ticks \`\`\`. Optionally, you can add an
+  identifier for the language to use for syntax highlighting. For example, this snippet
+  shows a Python code block and thus starts with \`\`\`python:
+
+  ```python
+  def fibonacci(n):
+      a, b = 0, 1
+      while a < n:
+          print(a, end=' ')
+          a, b = b, a+b
+      print()
+  fibonacci(1000)
+  ```
+
+  They can also be inline `code` by a single back-tick \`.
+
+  C-code can be rendered with syntax highlighting by using the `c` identifier (\`\`\`c):
+
+  ```c
+  #include <stdio.h>
+  int main() {
+      printf("Hello, World!");
+      return 0;
+  }
+  ```
