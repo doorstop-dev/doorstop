@@ -3,6 +3,7 @@
 """Functions to publish documents and items."""
 
 import os
+import re
 import tempfile
 
 import bottle
@@ -203,10 +204,19 @@ class HtmlPublisher(MarkdownPublisher):
 
         # Generate HTML
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
+        # We need to handle escaped back-ticks before we pass the text to markdown.
+        text = text.replace("\\`", "##!!TEMPINLINE!!##")
         body_to_check = markdown.markdown(text, extensions=self.EXTENSIONS).splitlines()
         block = []
         # Check for nested lists since they are not supported by the markdown_sane_lists plugin.
         for i, line in enumerate(body_to_check):
+            # Replace the temporary inline code blocks with the escaped back-ticks. If there are
+            # multiple back-ticks in a row, we need group them in a single <code> block.
+            line = re.sub(r"(##!!TEMPINLINE!!##)+", lambda m: "<code>" + "&#96;" * int(len(m.group()) / 18) + "</code>", line)
+
+
+
+            # line = line.replace("##!!TEMPINLINE!!##", "<code>&#96;</code>")
             # Check if we are at the end of the body.
             if i == len(body_to_check) - 1:
                 next_line = ""
