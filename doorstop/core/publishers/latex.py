@@ -356,24 +356,26 @@ class LaTeXPublisher(BasePublisher):
             if environment_data["code_found"]:
                 no_paragraph = True
             if code_match:
-                # Check the next line for plantuml.
-                if i < len(text) - 1:
-                    next_line = text[i + 1]
-                    if re.findall("^`*plantuml\\s", next_line):
-                        continue
                 # Check previous line of @enduml.
                 if i > 0:
                     previous_line = text[i - 1]
                     if re.findall("@enduml", previous_line):
                         continue
                 if environment_data["code_found"]:
-                    block.append("\\end{lstlisting}")
+                    line = "\\end{lstlisting}"
                     environment_data["code_found"] = False
                 else:
-                    block.append("\\begin{lstlisting}")
+                    # Check for language.
+                    language = re.search("```(.*)", line)
+                    if language and str(language.groups(0)[0]) != "":
+                        line = (
+                            "\\begin{lstlisting}[language="
+                            + str(language.groups(0)[0])
+                            + "]"
+                        )
+                    else:
+                        line = "\\begin{lstlisting}"
                     environment_data["code_found"] = True
-                # Replace ```.
-                line = re.sub("```", "", line)
             # Skip the rest since we are in a code block!
             if environment_data["code_found"]:
                 block.append(line)
@@ -387,8 +389,14 @@ class LaTeXPublisher(BasePublisher):
                     plantuml_file,
                 )
                 continue
-            # Replace ` for inline code.
-            line = re.sub("`(.*?)`", "\\\\lstinline`\\1`", line)
+            # Replace ` for inline code, but not if it is already escaped.
+            # First replace escaped inline code.
+            line = re.sub("\\\\`", "##!!TEMPINLINE!!##", line)
+            # Then replace inline code.
+            line = re.sub("`(.+?)`", "\\\\lstinline`\\1`", line)
+            # Then replace escaped inline code back.
+            line = re.sub("##!!TEMPINLINE!!##", "\\\\`{}", line)
+
             #############################
             ## Fix images.
             #############################
