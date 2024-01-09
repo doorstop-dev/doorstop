@@ -201,14 +201,6 @@ class BasePublisher(metaclass=ABCMeta):
         """Set the export path of the tree and/or document."""
         self.path = path
 
-    def getPath(self):
-        """Get the export path of the tree and/or document."""
-        return self.path
-
-    def setDocumentPath(self, path):
-        """Set the export path of the individual document."""
-        self.documentPath = path
-
     def getDocumentPath(self):
         """Get the export path of the individual document."""
         return self.documentPath
@@ -219,41 +211,21 @@ class BasePublisher(metaclass=ABCMeta):
             self.object, self.path, self.ext, template
         )
 
-    def setAssetsPath(self, path):
-        """Set the assets path of the individual document."""
-        self.assetsPath = path
-
     def getAssetsPath(self):
         """Get the assets path of the individual document."""
         return self.assetsPath
-
-    def setTemplate(self, template):
-        """Set the template."""
-        self.template = template
 
     def getTemplate(self):
         """Get the template."""
         return self.template
 
-    def setIndex(self, index):
-        """Set the index flag."""
-        self.index = index
-
     def getIndex(self):
         """Get the index flag."""
         return self.index
 
-    def setMatrix(self, matrix):
-        """Set the matrix flag."""
-        self.matrix = matrix
-
     def getMatrix(self):
         """Get the matrix flag."""
         return self.matrix
-
-    def setLinkify(self, linkify):
-        """Set the linkify flag."""
-        self.linkify = linkify
 
     def getLinkify(self):
         """Get the linkify flag."""
@@ -340,10 +312,7 @@ class BasePublisher(metaclass=ABCMeta):
 
 def extract_prefix(document):
     """Return the document prefix."""
-    if document:
-        return document.prefix
-    else:
-        return None
+    return document.prefix
 
 
 def extract_uid(item):
