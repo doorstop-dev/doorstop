@@ -513,3 +513,48 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
         self.assertEqual(expected, result)
+
+    def test_missing_ending_newline_for_list(self):
+        """Verify that a list is ended correctly even if ending was not detected before end-of-file."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  List without newline:" + "\n"
+            r"  1. Item 1" + "\n"
+            r"    1. Item 1.1"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"List without newline:" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
+            r"\item Item 1" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
+            r"\item Item 1.1" + "\n"
+            r"\end{enumerateDeep}" + "\n"
+            r"\end{enumerateDeep}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_missing_changing_list_indentation(self):
+        """Verify that a list throws an error if indentation is changed in the middle of the list."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  List without newline:" + "\n"
+            r"    1. Item 1" + "\n"
+            r"        1. Item 1.1"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        # Act & Assert
+        with self.assertRaises(DoorstopError):
+            _ = getLines(publisher.publish_lines(item, ".tex"))
