@@ -2,18 +2,21 @@
 
 """Representation of a collection of items."""
 
-import importlib
 import os
 import re
 from collections import OrderedDict
 from itertools import chain
-from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
 
 from doorstop import common, settings
-from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.common import (
+    DoorstopError,
+    DoorstopInfo,
+    DoorstopWarning,
+    import_path_as_module,
+)
 from doorstop.core.base import (
     BaseFileObject,
     BaseValidatable,
@@ -766,13 +769,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             plevel = clevel.copy()
 
     @staticmethod
-    def _import_validator(path):
+    def _import_validator(path: str):
         """Load an external python item validator logic from doorstop yml defined for the folder."""
-        name = Path(path).stem
-        spec = importlib.util.spec_from_file_location(name, path)  # type: ignore  # FIXME: retrieve correct types?
-        module = importlib.util.module_from_spec(spec)  # type: ignore  # FIXME: retrieve correct types?
-        spec.loader.exec_module(module)
-        return module
+        return import_path_as_module(path)
 
     @staticmethod
     def _items_by_level(items, keep=None):

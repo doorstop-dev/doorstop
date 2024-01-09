@@ -11,6 +11,12 @@ import logging
 import os
 import re
 import shutil
+from importlib.abc import Loader
+from importlib.machinery import ModuleSpec
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+from types import ModuleType
+from typing import Union, cast
 
 import frontmatter
 import yaml
@@ -346,3 +352,12 @@ def dump_markdown(data, textattr):
         frontmatter.Post(content, **data), Dumper=yaml.dumper.Dumper
     )
     return text
+
+
+def import_path_as_module(path: Union[Path, str]) -> ModuleType:
+    name = Path(path).stem
+    spec = cast(ModuleSpec, spec_from_file_location(name, path))
+    module = cast(ModuleType, module_from_spec(spec))
+    loader = cast(Loader, spec.loader)
+    loader.exec_module(module)
+    return module
