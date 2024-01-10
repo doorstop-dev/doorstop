@@ -63,3 +63,30 @@ Supported formats:
 - Markdown: `.md`
 - HTML: `.html`
 - LaTeX: `.tex`
+
+# Templates
+
+Each output format also has support for templates that can adjust the formatting of the output. Any folder named `template` that is placed alongside the `.doorstop.yml` configuration file will be copied during the publishing process into the output folder. _Note: If multiple documents contain the `template` _folder, they will **all** be copied, although no overwriting is performed._
+
+A command line `--template` flag is provided to allow choosing the template by name. By default, both LaTeX and HTML publishing formats _require_ a template! Therefore, _doorstop_ provides standard templates for these formats that will be used automatically if no template name is given during publishing.
+
+The flag is used by providing the name of the template, i.e., `--template sidebar`.
+
+## HTML templates
+
+HTML template name will instruct the publisher to use the `<name>.css` file in the template folder as formatting. E.g., the default HTML template name is `sidebar`, which then will publish the HTML documents with the `sidebar.css` included in the output.
+
+## LaTeX templates
+
+LaTex template name will similarly instruct the publisher to use the `<name>.yml` _and_ the `<name>.cls` files in the template folder for formatting the output documents.
+
+Due to the rather high complexity of typesetting LaTeX documents, a configuration file `<name>.yml` must be provided to allow _doorstop_ to understand how to typeset the output documents as well as a normal LaTeX class template to provide the LaTeX specific formatting.
+
+The default LaTeX template is `doorstop`, and is included with _doorstop_. The `doorstop.yml` file is commented to provided guidance on how to write your own LaTeX template.
+
+# Assets
+
+In addition to the `template` folder, an `assets` folder placed next to the
+`.doorstop.yml` file for a document will also be copied in the same manner to
+the output folder. The purpose of the `assets` folder is to contain images or
+other external artifacts that can be included in the published documents.

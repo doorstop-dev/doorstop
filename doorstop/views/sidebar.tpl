@@ -12,8 +12,8 @@
     </div>
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="{{baseurl}}assets/doorstop/jquery.min.js"></script>
-<script src="{{baseurl}}assets/doorstop/bootstrap.min.js"></script>
+<script src="{{baseurl}}template/jquery.min.js"></script>
+<script src="{{baseurl}}template/bootstrap.min.js"></script>
 <script>
     $(function() {
         $("table").addClass("table");
@@ -25,6 +25,6 @@
         $("#main a").attr("target", "parent");
 
   $(window).on('hashchange', function() {
-    $(window).scrollTop($(location.hash.toLowerCase()).offset().top);});
+    $(window).scrollTop();});
   });
 </script>

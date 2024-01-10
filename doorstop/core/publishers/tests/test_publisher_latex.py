@@ -1,76 +1,21 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.core.publisher_latex module."""
+"""Unit tests for the doorstop.core.publishers.latex module."""
 
 # pylint: disable=unused-argument,protected-access
 
 import os
 import unittest
-from unittest import mock
-from unittest.mock import Mock, call, patch
-
-from yaml import safe_load
+from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
+from doorstop.core.publishers.tests.helpers import getLines
+from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, getLines
-from doorstop.core.types import iter_documents
 
 
 class TestPublisherModule(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module, more specifically the changes introduced by the doorstop.core.publisher_latex module."""
-
-    @patch("os.path.isdir", Mock(return_value=False))
-    @patch("os.makedirs")
-    def test_publish_tree(self, mock_makedirs):
-        """Verify a LaTeX document tree can be published."""
-        # Setup
-        dirpath = os.path.join("mock", "directory")
-        expected_calls = []
-        for obj2, _ in iter_documents(self.mock_tree, dirpath, ".tex"):
-            expected_calls.append(
-                call(
-                    os.path.join(
-                        "mock", "directory", "doc-{n}.tex".format(n=obj2.prefix)
-                    ),
-                    "wb",
-                )
-            )
-            expected_calls.append(
-                call(
-                    os.path.join("mock", "directory", "{n}.tex".format(n=obj2.prefix)),
-                    "wb",
-                )
-            )
-
-        expected_calls.append(
-            call(os.path.join("mock", "directory", "compile.sh"), "wb")
-        )
-        expected_calls.append(
-            call(os.path.join("mock", "directory", "traceability.tex"), "wb")
-        )
-        # Load correct template data.
-        template_data_file = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "files",
-            "templates",
-            "latex",
-            "doorstop.yml",
-        )
-        with open(template_data_file, "r") as f:
-            template_data = safe_load(f)
-        # Act
-        with patch("builtins.open") as mock_open:
-            mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-                read_data="$body"
-            ).return_value
-            with patch("doorstop.core.publisher_latex.read_template_data") as mock_read:
-                mock_read.return_value = template_data
-                dirpath2 = publisher.publish(self.mock_tree, dirpath, ".tex")
-            # Assert
-            self.assertIs(dirpath, dirpath2)
-            self.assertEqual(expected_calls, mock_open.call_args_list)
-            self.assertEqual(mock_open.call_count, 4)
+    """Unit tests for the doorstop.core.publishers.latex module, more specifically the changes introduced by the doorstop.core.publishers.latex module."""
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", True)
     def test_setting_publish_heading_levels_true(self):
@@ -110,7 +55,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header name{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header name{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of a single text line." + "\n\n"
         )
@@ -436,10 +381,51 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \textit{italics}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \textit{italics}{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of \textit{italic} text." + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_italics_formatting(self):
+        """Verify that italic formatting works correctly in all aspects."""
+        generated_data = (
+            r"active: true" + "\n"
+            r"derived: false" + "\n"
+            r"header: ''" + "\n"
+            r"level: 1.1" + "\n"
+            r"normative: false" + "\n"
+            r"reviewed:" + "\n"
+            r"text: |" + "\n"
+            r"  Test of plain text." + "\n"
+            r"  Test of _italic_ word." + "\n"
+            r"  Test of _italic\_word_ that has a \_ in it." + "\n"
+            r"  Test of _a longer italic text_." + "\n"
+            r"  Test of a single ital_i_c letter." + "\n"
+            r"  Test of *italic* word." + "\n"
+            r"  Test of *italic\_word* that has a \_ in it." + "\n"
+            r"  Test of *a longer italic text*." + "\n"
+            r"  Test of a single ital*i*c letter."
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\subsection{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of plain text." + "\n"
+            r"Test of \textit{italic} word." + "\n"
+            r"Test of \textit{italic\_word} that has a \_ in it." + "\n"
+            r"Test of \textit{a longer italic text}." + "\n"
+            r"Test of a single ital\textit{i}c letter." + "\n"
+            r"Test of \textit{italic} word." + "\n"
+            r"Test of \textit{italic\_word} that has a \_ in it." + "\n"
+            r"Test of \textit{a longer italic text}." + "\n"
+            r"Test of a single ital\textit{i}c letter." + "\n" + "\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".tex"))
@@ -465,7 +451,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \textbf{bold}{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \textbf{bold}{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of \textbf{bold} text." + "\n\n"
@@ -494,7 +480,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            r"\section{Header with \& sign{\small{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
+            r"\section{Header with \& sign{ - \small{}\texttt{}REQ-001}}\label{REQ-001}\zlabel{REQ-001}"
             + "\n\n"
             r"Test of plain text." + "\n"
             r"Test of stuff \& text." + "\n\n"

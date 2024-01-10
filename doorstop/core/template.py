@@ -11,7 +11,7 @@ from doorstop.common import DoorstopError
 from doorstop.core import Document
 from doorstop.core.types import is_tree
 
-CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
+CSS = os.path.join(os.path.dirname(__file__), "files", "templates", "doorstop.css")
 HTMLTEMPLATE = "sidebar"
 INDEX = "index.html"
 MATRIX = "traceability.csv"
@@ -91,12 +91,22 @@ def get_template(obj, path, ext, template):
     # Copy template from document if it exists and template is given.
     if document_template and template:
         os.makedirs(template_dir)
-        log.info(
-            "Copying %s to %s",
-            document_template,
-            os.path.join(os.path.dirname(path), "template"),
-        )
-        common.copy_dir_contents(document_template, template_dir)
+        if is_tree(obj):
+            for each in obj.documents:
+                log.info(
+                    "Copying %s to %s",
+                    each.template,
+                    os.path.join(os.path.dirname(path), "template"),
+                )
+                common.copy_dir_contents(each.template, template_dir)
+        else:
+            log.info(
+                "Copying %s to %s",
+                document_template,
+                os.path.join(os.path.dirname(path), "template"),
+            )
+            common.copy_dir_contents(document_template, template_dir)
+
     # Only create template_dir if template actually exists.
     elif os.path.isdir(template_assets):
         os.makedirs(template_dir)
@@ -128,22 +138,41 @@ def read_template_data(assets_dir, template):
     return template_data
 
 
-def check_latex_template_data(template_data):
+def check_latex_template_data(template_data, filename=None):
     """Check that all required packages have been defined in template data."""
     # Check basics first.
-    if "usepackage" not in template_data:
+    if not isinstance(template_data, dict):
         log.error(
-            "There is no dictionary of packages in the template configuration file."
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "There is no list of packages in the template configuration file."
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
+        )
+    if "usepackage" not in template_data:
+        log.error(
+            "There is no dictionary of packages in the template configuration file '{}'.".format(
+                filename
+            )
+        )
+        raise DoorstopError(
+            "There is no list of packages in the template configuration file '{}'.".format(
+                filename
+            )
         )
     if not isinstance(template_data["usepackage"], dict):
         log.error(
-            "The 'usepackage' data in the configuration file is not a dictionary."
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "The 'usepackage' data in the configuration file is not a dictionary."
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
 
     # Iterate over all required packages.

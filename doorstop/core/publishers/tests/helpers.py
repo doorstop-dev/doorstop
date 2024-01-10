@@ -6,45 +6,6 @@
 
 import os
 
-YAML_LATEX_DOC = """
-settings:
-  digits: 3
-  prefix: REQ
-  sep: '-'
-attributes:
-  defaults:
-    doc:
-      name: 'Tutorial'
-      title: 'Development test document'
-      ref: 'TUT-DS-22'
-      by: 'Jng'
-      major: 1
-      minor: A
-      copyright: 'Whatever Inc.'
-  publish:
-    - CUSTOM-ATTRIB
-    - invented-by
-"""
-
-YAML_LATEX_NO_DOC = """
-settings:
-  digits: 3
-  prefix: TST
-  sep: '-'
-attributes:
-  defaults:
-    doc:
-      name: ''
-      title: ''
-      ref: ''
-      by: ''
-      major: ''
-      minor: ''
-      copyright: ''
-  publish:
-    - CUSTOM-ATTRIB
-"""
-
 LINES = """
 initial: 1.2.3
 outline:
@@ -53,6 +14,17 @@ outline:
         - REQ004: # Hello, world! !['..
         - REQ002: # Hello, world! !["...
         - REQ2-001: # Hello, world!
+"""
+YAML_CUSTOM_ATTRIBUTES = """
+settings:
+  digits: 3
+  prefix: REQ
+  sep: '-'
+attributes:
+  defaults:
+  publish:
+    - CUSTOM-ATTRIB
+    - invented-by
 """
 
 
@@ -75,3 +47,11 @@ def getLines(gen):
     for line in gen:
         result = result + line + "\n"
     return result
+
+
+def getFileContents(file):
+    """Return the contents of a file."""
+    data = []
+    with open(file, "r") as file_stream:
+        data = file_stream.readlines()
+    return data

@@ -13,8 +13,8 @@ from shutil import rmtree
 from doorstop.common import DoorstopError
 from doorstop.core import template
 from doorstop.core.builder import build
+from doorstop.core.publishers.tests.helpers import getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
-from doorstop.core.tests.helpers_latex import getWalk
 
 
 class TestTemplate(MockDataMixIn, unittest.TestCase):
@@ -70,12 +70,11 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         expected_walk = """{n}/
     assets/
     template/
-        doorstop/
-            bootstrap.min.css
-            bootstrap.min.js
-            general.css
-            jquery.min.js
-            sidebar.css
+        bootstrap.min.css
+        bootstrap.min.js
+        general.css
+        jquery.min.js
+        sidebar.css
 """.format(
             n=self.hex
         )
@@ -100,12 +99,11 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # file.txt should not be in expected output!
         expected_walk = """{n}/
     template/
-        doorstop/
-            bootstrap.min.css
-            bootstrap.min.js
-            general.css
-            jquery.min.js
-            sidebar.css
+        bootstrap.min.css
+        bootstrap.min.js
+        general.css
+        jquery.min.js
+        sidebar.css
 """.format(
             n=self.hex
         )

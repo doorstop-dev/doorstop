@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.core.publisher_latex module."""
+"""Unit tests for the doorstop.core.publishers.latex module."""
 
 # pylint: disable=unused-argument,protected-access
 
@@ -12,12 +12,19 @@ from unittest.mock import patch
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
+from doorstop.core.publishers.tests.helpers import getFileContents, getWalk
+from doorstop.core.publishers.tests.helpers_latex import (
+    YAML_LATEX_DOC,
+    YAML_LATEX_EMPTY_DOC,
+    YAML_LATEX_NO_DOC,
+    YAML_LATEX_NO_REF,
+    YAML_LATEX_ONLY_REF,
+)
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
-from doorstop.core.tests.helpers_latex import YAML_LATEX_DOC, YAML_LATEX_NO_DOC, getWalk
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
-    """Unit tests for the doorstop.core.publisher_latex module by publishing a full document tree."""
+    """Unit tests for the doorstop.core.publishers.latex module by publishing a full document tree."""
 
     # pylint: disable=no-value-for-parameter
     def setUp(self):
@@ -56,7 +63,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     def test_publish_latex_tree_copies_assets(self):
         """Verify that LaTeX assets are published when publishing a tree."""
         # Act
-        path2 = publisher.publish(self.mock_tree, self.dirpath, ".tex")
+        path2 = publisher.publish(self.mock_tree, self.dirpath, ext=".tex")
         # Assert
         self.assertIs(self.dirpath, path2)
         # Get the exported tree.
@@ -137,6 +144,98 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_NO_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_typesetting_of_title(self):
+        """Verify that titles are typeset correctly."""
+        expected = (
+            r"\def\doctitle{Test document for development of \textit{Doorstop}}" + "\n"
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_NO_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the contents.
+        contents = getFileContents(os.path.join(self.dirpath, "doc-TST.tex"))
+        self.assertIn(expected, contents)
+
+    def test_attribute_empty(self):
+        """Verify that empty fields in attributes are typeset correctly."""
+        expected_walk = """{n}/
+    TST.tex
+    compile.sh
+    doc-TST.tex
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_EMPTY_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_attribute_no_ref(self):
+        """Verify that one missing field in attributes are typeset correctly."""
+        expected_walk = """{n}/
+    TST.tex
+    Tutorial.tex
+    compile.sh
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_NO_REF
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_attribute_only_ref(self):
+        """Verify that one missing field in attributes are typeset correctly."""
+        expected_walk = """{n}/
+    TST.tex
+    compile.sh
+    doc-TST.tex
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath + "/dummy.tex"
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_ONLY_REF
         doc_with_attributes.load(reload=True)
         # Act
         path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")

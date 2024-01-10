@@ -124,7 +124,7 @@ def strip_path():
     request.environ["PATH_INFO"] = request.environ["PATH_INFO"].rstrip("/")
     if (
         len(request.environ["PATH_INFO"]) > 0
-        and request.environ["PATH_INFO"][-5:-1] == ".html"
+        and request.environ["PATH_INFO"][-5:] == ".html"
     ):
         request.environ["PATH_INFO"] = request.environ["PATH_INFO"][:-5]
 
@@ -171,7 +171,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext=".html", linkify=True)
+        return publisher.publish_lines(document, ext=".html", linkify=True, toc=True)
 
 
 @get("/documents/<prefix>/items")
@@ -228,13 +228,27 @@ def get_attr(prefix, uid, name):
             return str(value)
 
 
-@get("/assets/doorstop/<filename>")
-def get_assets(filename):
+@get("/template/<filename>")
+def get_template(filename):
     """Serve static files. Mainly used to serve CSS files and javascript."""
     public_dir = os.path.join(
-        os.path.dirname(__file__), "..", "core", "files", "assets", "doorstop"
+        os.path.dirname(__file__), "..", "core", "files", "templates", "html"
     )
     return bottle.static_file(filename, root=public_dir)
+
+
+@get("/documents/assets/<filename>")
+def get_assets(filename):
+    """Serve static files. Used to serve images and other assets."""
+    # Since assets are stored in the document, we need to loop over all the
+    # documents to find the requested asset.
+    for document in tree:
+        # Check if the asset exists in the document's assets folder.
+        temporary_path = os.path.join(document.assets, filename)
+        if os.path.exists(temporary_path):
+            return bottle.static_file(filename, root=document.assets)
+    # If the asset does not exist, return a 404.
+    return bottle.HTTPError(404, "File does not exist.")
 
 
 @post("/documents/<prefix>/numbers")
