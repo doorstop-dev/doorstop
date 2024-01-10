@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Abstract interface to publishers."""
-from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
@@ -37,7 +36,7 @@ class BasePublisher(metaclass=ABCMeta):
         self.index = None
         self.matrix = None
         # Define lists.
-        self.list = dict[str, Dict[str, Any]]()
+        self.list: Dict[str, Dict[str, Any]] = {}
         self.list["depth"] = {"itemize": 0, "enumerate": 0}
         self.list["indent"] = {"itemize": 0, "enumerate": 0}
         self.list["found"] = {"itemize": False, "enumerate": False}
