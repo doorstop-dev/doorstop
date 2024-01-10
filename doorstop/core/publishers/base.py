@@ -4,7 +4,7 @@
 
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
-from typing import Any
+from typing import Any, Dict
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -36,7 +36,7 @@ class BasePublisher(metaclass=ABCMeta):
         self.index = None
         self.matrix = None
         # Define lists.
-        self.list = dict[str, dict[str, Any]]()
+        self.list = dict[str, Dict[str, Any]]()
         self.list["depth"] = {"itemize": 0, "enumerate": 0}
         self.list["indent"] = {"itemize": 0, "enumerate": 0}
         self.list["found"] = {"itemize": False, "enumerate": False}
