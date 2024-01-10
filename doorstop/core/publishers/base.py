@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Abstract interface to publishers."""
+from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
