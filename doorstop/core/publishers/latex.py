@@ -13,11 +13,14 @@ from doorstop.core.publishers._latex_functions import (
     _add_comment,
     _check_for_new_table,
     _fix_table_line,
-    _get_document_attributes,
     _latex_convert,
     _typeset_latex_image,
 )
-from doorstop.core.publishers.base import BasePublisher, extract_prefix
+from doorstop.core.publishers.base import (
+    BasePublisher,
+    extract_prefix,
+    get_document_attributes,
+)
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
 
@@ -587,7 +590,7 @@ class LaTeXPublisher(BasePublisher):
     def _generate_latex_wrapper(self):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
-        doc_attributes = _get_document_attributes(self.document)
+        doc_attributes = get_document_attributes(self.document)
         # Create the wrapper file.
         head, tail = os.path.split(self.documentPath)
         if tail != extract_prefix(self.document) + ".tex":
@@ -701,7 +704,7 @@ class LaTeXPublisher(BasePublisher):
         info_text_set = False
         for external, _ in iter_documents(self.object, self.path, ".tex"):
             # Check for defined document attributes.
-            external_doc_attributes = _get_document_attributes(external)
+            external_doc_attributes = get_document_attributes(external)
             # Don't add self.
             if external_doc_attributes["name"] != doc_attributes["name"]:
                 if not info_text_set:
