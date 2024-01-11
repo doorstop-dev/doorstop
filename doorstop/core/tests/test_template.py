@@ -9,12 +9,14 @@ import unittest
 from pathlib import Path
 from secrets import token_hex
 from shutil import rmtree
+from tempfile import mkdtemp
 
 from doorstop.common import DoorstopError
 from doorstop.core import template
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
+from doorstop.core.tests.helpers import build_expensive_tree
 
 
 class TestTemplate(MockDataMixIn, unittest.TestCase):
@@ -23,18 +25,25 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     # pylint: disable=no-value-for-parameter
     def setUp(self):
         """Setup test folder."""
+        # Create a temporary folder.
+        self.hex = token_hex()
+        self.datapath = os.path.abspath(os.path.join(self.datadir, self.hex))
+        self.dirpath = os.path.abspath(os.path.join(self.mockdir, self.hex))
         # Build a tree.
         self.mock_tree = build(cwd=ROOT, root=ROOT, request_next_number=None)
-        self.hex = token_hex()
-        self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
+
+    @classmethod
+    def setUpClass(cls):
+        """Setup test folder."""
+        # Create a temporary folder.
+        cls.testdir = mkdtemp()
+        cls.datadir = os.path.abspath(os.path.join(cls.testdir, "data_%s" % __name__))
+        cls.mockdir = os.path.abspath(os.path.join(cls.testdir, "mock_%s" % __name__))
 
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
-        template_dir = os.path.join("reqs", "template")
-        if os.path.isdir(template_dir):
-            rmtree(template_dir)
+        rmtree(cls.testdir)
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
@@ -119,8 +128,12 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
 
-    def test_html_doc_with_custom_template(self):
-        """Verify that a custom html template is used correctly."""
+    def test_html_tree_with_custom_template(self):
+        """Verify that a document tree with a custom html template is used correctly."""
+        # This test MUST use the expensive tree since it changes the document content
+        # in the source tree otherwise!
+        build_expensive_tree(self)
+
         # Check that only custom template is published.
         os.makedirs(self.dirpath)
         # Create a custom template folder.
@@ -143,7 +156,26 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
-        rmtree(os.path.join(doc_path, "template"))
+
+    def test_html_doc_with_custom_template(self):
+        """Verify that a custom html template is used correctly."""
+        # This test MUST use the expensive tree since it changes the document content
+        # in the source tree otherwise!
+        build_expensive_tree(self)
+
+        # Check that only custom template is published.
+        os.makedirs(self.dirpath)
+        # Create a custom template folder.
+        doc_path = self.mock_tree.documents[1].path
+        os.mkdir(os.path.join(doc_path, "template"))
+        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+        # Act
+        asset_dir, selected_template = template.get_template(
+            self.mock_tree.documents[1], doc_path, ".html", "custom_css"
+        )
+        # Assert
+        self.assertEqual(os.path.join(self.datapath, "reqs", "assets"), asset_dir)
+        self.assertEqual("custom_css", selected_template)
 
     def test_custom_template_without_folder(self):
         """Verify that a custom template that is missing a locally defined
