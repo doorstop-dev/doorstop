@@ -2,9 +2,12 @@
 
 """Abstract interface to publishers."""
 
+import os
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
 from typing import Any, Dict
+
+from markdown import markdown
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -79,7 +82,11 @@ class BasePublisher(metaclass=ABCMeta):
         _during_ publishing.
         """
         self.document = document
-        self.documentPath = path
+        # If path does not end with self.ext, add it.
+        if not path.endswith(self.ext):
+            self.documentPath = os.path.join(path, document.prefix + self.ext)
+        else:
+            self.documentPath = path
 
     def concludePublish(self):
         """Conclude publish.
@@ -170,9 +177,7 @@ class BasePublisher(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def format_links(
-        self, items, linkify, to_html=False
-    ):  # pragma: no cover (abstract method)
+    def format_links(self, items, linkify):  # pragma: no cover (abstract method)
         """Format a list of linked items."""
         raise NotImplementedError
 
@@ -322,33 +327,49 @@ def format_level(level):
     return text
 
 
-def get_document_attributes(obj):
+def get_document_attributes(obj, is_html=False, extensions=None):
     """Try to get attributes from document."""
     doc_attributes = {}
-    doc_attributes["name"] = "doc-" + obj.prefix
-    log.debug("Document name is '%s'", doc_attributes["name"])
+    if obj:
+        doc_attributes["name"] = "doc-" + obj.prefix
+    else:
+        doc_attributes["name"] = "doc-noname"
     doc_attributes["title"] = "Test document for development of _Doorstop_"
-    doc_attributes["ref"] = ""
-    doc_attributes["by"] = ""
-    doc_attributes["major"] = ""
+    doc_attributes["ref"] = "-"
+    doc_attributes["by"] = "-"
+    doc_attributes["major"] = "-"
     doc_attributes["minor"] = ""
     doc_attributes["copyright"] = "Doorstop"
-    attribute_defaults = obj.__getattribute__("_attribute_defaults")
-    if attribute_defaults:
-        if "name" in attribute_defaults["doc"]:
-            # Name should only be set if it is not empty.
-            if attribute_defaults["doc"]["name"] != "":
-                doc_attributes["name"] = attribute_defaults["doc"]["name"]
-        if "title" in attribute_defaults["doc"]:
-            doc_attributes["title"] = attribute_defaults["doc"]["title"]
-        if "ref" in attribute_defaults["doc"]:
-            doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
-        if "by" in attribute_defaults["doc"]:
-            doc_attributes["by"] = attribute_defaults["doc"]["by"]
-        if "major" in attribute_defaults["doc"]:
-            doc_attributes["major"] = attribute_defaults["doc"]["major"]
-        if "minor" in attribute_defaults["doc"]:
-            doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
-        if "copyright" in attribute_defaults["doc"]:
-            doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    if obj:
+        try:
+            attribute_defaults = obj.__getattribute__("_attribute_defaults")
+        except AttributeError:
+            attribute_defaults = None
+        if attribute_defaults:
+            if "name" in attribute_defaults["doc"]:
+                # Name should only be set if it is not empty.
+                if attribute_defaults["doc"]["name"] != "":
+                    doc_attributes["name"] = attribute_defaults["doc"]["name"]
+            if "title" in attribute_defaults["doc"]:
+                doc_attributes["title"] = attribute_defaults["doc"]["title"]
+            if "ref" in attribute_defaults["doc"]:
+                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+            if "by" in attribute_defaults["doc"]:
+                doc_attributes["by"] = attribute_defaults["doc"]["by"]
+            if "major" in attribute_defaults["doc"]:
+                doc_attributes["major"] = attribute_defaults["doc"]["major"]
+            if "minor" in attribute_defaults["doc"]:
+                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+            if "copyright" in attribute_defaults["doc"]:
+                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    # Check output format. If html we need go convert from markdown.
+    if is_html:
+        # Only convert title and copyright.
+        doc_attributes["title"] = markdown(
+            doc_attributes["title"], extensions=extensions
+        )
+        doc_attributes["copyright"] = markdown(
+            doc_attributes["copyright"], extensions=extensions
+        )
+
     return doc_attributes
