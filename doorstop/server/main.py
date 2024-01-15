@@ -149,7 +149,7 @@ def index():
     lines = html_publisher.lines_index(prefixes, tree=tree)
     yield template(
         "doorstop",
-        body="\n".join(str(lines)),
+        body="\n".join(lines),
         toc=None,
         doc_attributes={
             "name": "Index",
