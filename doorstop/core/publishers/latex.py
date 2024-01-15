@@ -56,7 +56,11 @@ class LaTeXPublisher(BasePublisher):
     def publishAction(self, document, path):
         """Add file to compile.sh script."""
         self.document = document
-        self.documentPath = path
+        # If path does not end with .tex, add it.
+        if not path.endswith(".tex"):
+            self.documentPath = os.path.join(path, document.prefix + ".tex")
+        else:
+            self.documentPath = path
 
         log.debug("Generating compile script for LaTeX from %s", self.documentPath)
         file_to_compile = self._generate_latex_wrapper()
@@ -243,7 +247,7 @@ class LaTeXPublisher(BasePublisher):
                 )
             return "\n".join(ref for ref in text_refs)
 
-    def format_links(self, items, linkify, to_html=False):
+    def format_links(self, items, linkify):
         """Format a list of linked items in LaTeX."""
         links = []
         for item in items:
