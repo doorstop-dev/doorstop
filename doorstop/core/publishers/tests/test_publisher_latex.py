@@ -112,11 +112,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
             r"Test of a single text line." + "\n\n"
         )
         # Act
-        print("expected")
-        print(expected)
-        print("result")
         result = getLines(publisher.publish_lines(item, ".tex"))
-        print(result)
         # Assert
         self.assertEqual(expected, result)
 
