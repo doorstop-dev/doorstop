@@ -94,10 +94,15 @@ def find_document(prefix):
     return document
 
 
-def find_item(uid):
-    """Find an item without an explicitly building a tree."""
+def find_item(uid,only_active = True):
+    """Find an item without an explicitly building a tree.
+    
+    :param uid:  UID
+    :param only_active: Returns only active items
+
+    """
     tree = _get_tree()
-    item = tree.find_item(uid)
+    item = tree.find_item(uid,only_active=only_active)
     return item
 
 

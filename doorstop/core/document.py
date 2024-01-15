@@ -562,7 +562,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         uid = UID(value)
-        item = self.find_item(uid)
+        item = self.find_item(uid,only_active=False)
         item.delete()
         if reorder:
             self.reorder()
@@ -780,10 +780,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for item in items_at_level:
                 yield level, item
 
-    def find_item(self, value, _kind=""):
+    def find_item(self, value, only_active = True, _kind=""):
         """Return an item by its UID.
 
         :param value: item or UID
+        :param only_active: Returns only active items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             cannot be found
@@ -797,7 +798,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 if item.active:
                     return item
                 else:
-                    log.trace("item is inactive: {}".format(item))  # type: ignore
+                    log.trace("item is inactive: {}".format(item))  # type: ignore'
+                    if not only_active:
+                        return item
 
         raise DoorstopError("no matching{} UID: {}".format(_kind, uid))
 
