@@ -11,7 +11,7 @@ from shutil import rmtree
 
 from doorstop.core import publisher
 from doorstop.core.builder import build
-from doorstop.core.publishers.tests.helpers import getWalk
+from doorstop.core.publishers.tests.helpers import HTML_TEMPLATE_WALK, getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
 
 
@@ -27,22 +27,17 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
-    HLT.html
-    LLT.html
-    REQ.html
-    TUT.html
     index.html
     traceability.csv
-    assets/
-        logo-black-white.png
-    template/
-        bootstrap.min.css
-        bootstrap.min.js
-        general.css
-        jquery.min.js
-        sidebar.css
-""".format(
-            n=self.hex
+    traceability.html
+    documents/
+        HLT.html
+        LLT.html
+        REQ.html
+        TUT.html
+        assets/
+            logo-black-white.png{w}""".format(
+            n=self.hex, w=HTML_TEMPLATE_WALK
         )
 
     @classmethod

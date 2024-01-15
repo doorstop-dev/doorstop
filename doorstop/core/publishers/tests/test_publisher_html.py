@@ -57,8 +57,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_makedirs.assert_called_with(
+            "{}/published.custom/documents".format(self.dirpath)
+        )
+        mock_open.assert_called_once_with("{}/documents/REQ.html".format(path), "wb")
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -87,7 +89,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_open.assert_called_once_with("{}/documents/REQ.html".format(path), "wb")
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -107,7 +109,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self, mock_open, mock_makedirs, mock_copyassets
     ):
         """Verify that assets are published"""
-        assets_path = os.path.join(self.dirpath, "assets")
+        assets_path = os.path.join(
+            self.dirpath, "published.custom", "documents", "assets"
+        )
         path = os.path.join(self.dirpath, "published.custom")
         document = MockDocument("/some/path")
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
@@ -117,7 +121,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
+        mock_makedirs.assert_called_with(
+            "{}/published.custom/documents".format(self.dirpath)
+        )
         mock_copyassets.assert_called_once_with(assets_path)
 
     def test_index(self):
@@ -273,8 +279,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_makedirs.assert_called_with("{}/documents".format(self.dirpath))
+        mock_open.assert_called_once_with(
+            "{}/documents/published.html".format(os.path.dirname(path)), "wb"
+        )
 
     def test_bad_html_template(self):
         """Verify a bad HTML template raises an error."""

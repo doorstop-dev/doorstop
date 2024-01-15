@@ -38,12 +38,12 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     HLT.tex
     LLT.tex
     REQ.tex
+    Requirements.tex
     TUT.tex
+    Tutorial.tex
     compile.sh
     doc-HLT.tex
     doc-LLT.tex
-    doc-REQ.tex
-    doc-TUT.tex
     traceability.tex
     assets/
         logo-black-white.png
@@ -74,8 +74,8 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         """Verify that LaTeX assets are published when publishing a document."""
         expected_walk = """{n}/
     TUT.tex
+    Tutorial.tex
     compile.sh
-    doc-TUT.tex
     template/
         doorstop.cls
         doorstop.yml

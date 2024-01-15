@@ -586,7 +586,8 @@ class TestPublisher(unittest.TestCase):
         path2 = core.publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        self.assertTrue(os.path.isfile(path))
+        filePath = os.path.join(self.temp, "documents", "published.html")
+        self.assertTrue(os.path.isfile(filePath))
 
     def test_publish_bad_link(self):
         """Verify a tree can be published with bad links."""

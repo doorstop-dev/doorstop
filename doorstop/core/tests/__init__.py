@@ -122,6 +122,8 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
         super().__init__(None, *args, **kwargs)
         self.tree = Mock()
         self.tree.vcs = WorkingCopy(None)
+        self.prefix = "REQ"
+        self._attribute_defaults = None
 
 
 class MockDataMixIn:  # pylint: disable=R0903
@@ -184,6 +186,7 @@ class MockDataMixIn:  # pylint: disable=R0903
     ]
     document.copy_assets = Mock()
     document.assets = None
+    document.prefix = "REQ"
     document.template = None
 
     item3 = MockItem(

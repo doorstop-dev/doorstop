@@ -33,6 +33,8 @@ class BaseTestCase(unittest.TestCase):
     mock_tree.__iter__.return_value = [mock_document, mock_document2]
     mock_tree.find_document = Mock(return_value=mock_document)
     mock_tree.find_item = Mock(return_value=mock_item)
+    mock_tree.draw.return_value = """PREFIX
+PREFIX2"""
 
     def setUp(self):
         self.server = server
@@ -67,9 +69,11 @@ class TestRoutesHTML(BaseTestCase):
 
     def test_get_index(self):
         """Verify `/` works (HTML)."""
-        for line in self.server.index():
-            print(line)
+        count = 0
+        for _ in self.server.index():
+            count += 1
         self.mock_tree.draw.assert_called_once_with(html_links=True)
+        self.assertEqual(count, 1)
 
     def test_get_documents(self):
         """Verify `/documents` works (HTML)."""
@@ -79,13 +83,17 @@ class TestRoutesHTML(BaseTestCase):
 
     def test_get_document(self):
         """Verify `/document/PREFIX` works (HTML)."""
-        for line in server.get_document("prefix"):
-            print(line)
+        count = 0
+        for _ in server.get_document("prefix"):
+            count += 1
+        self.assertEqual(count, 1)
 
     def test_get_all_documents(self):
         """Verify `/document/all` works (HTML)."""
-        for line in server.get_all_documents():
-            print(line)
+        count = 0
+        for _ in server.get_all_documents():
+            count += 1
+        self.assertGreater(count, 500)
 
     def test_get_items(self):
         """Verify `/document/PREFIX/items` works (HTML)."""
@@ -95,8 +103,10 @@ class TestRoutesHTML(BaseTestCase):
 
     def test_get_item(self):
         """Verify `/document/PREFIX/items/UID` works (HTML)."""
-        for line in server.get_item("prefix", "uid"):
-            print(line)
+        count = 0
+        for _ in server.get_item("prefix", "uid"):
+            count += 1
+        self.assertEqual(count, 1)
 
     def test_get_attrs(self):
         """Verify `/document/PREFIX/items/UID/attrs` works (HTML)."""
