@@ -59,7 +59,7 @@ class MarkdownPublisher(BasePublisher):
                 text_refs.append("> '{r}'".format(r=path))
             return "\n".join(ref for ref in text_refs)
 
-    def format_links(self, items, linkify, to_html=False):
+    def format_links(self, items, linkify):
         """Format a list of linked items in Markdown."""
         links = []
         for item in items:
@@ -106,7 +106,6 @@ class MarkdownPublisher(BasePublisher):
 
         """
         linkify = kwargs.get("linkify", False)
-        to_html = kwargs.get("to_html", False)
         for item in iter_items(obj):
             heading = "#" * item.depth
             level = format_level(item.level)
@@ -167,7 +166,7 @@ class MarkdownPublisher(BasePublisher):
                         label = "Parent links:"
                     else:
                         label = "Links:"
-                    links = self.format_links(items2, linkify, to_html=to_html)
+                    links = self.format_links(items2, linkify)
                     label_links = self.format_label_links(label, links, linkify)
                     yield label_links
 
@@ -177,7 +176,7 @@ class MarkdownPublisher(BasePublisher):
                     if items2:
                         yield ""  # break before links
                         label = "Child links:"
-                        links = self.format_links(items2, linkify, to_html=to_html)
+                        links = self.format_links(items2, linkify)
                         label_links = self.format_label_links(label, links, linkify)
                         yield label_links
 
