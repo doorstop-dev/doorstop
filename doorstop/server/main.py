@@ -17,12 +17,14 @@ from bottle import get, hook, post, request, response, template
 from doorstop import Tree, build, common, publisher, settings
 from doorstop.common import HelpFormatter
 from doorstop.core import vcs
+from doorstop.core.publishers.html import HtmlPublisher
 from doorstop.server import utilities
 
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
 tree: Tree = None  # type: ignore
+html_publisher: HtmlPublisher = None  # type: ignore
 numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
 
 
@@ -92,9 +94,12 @@ def run(args, cwd, _):
     :param error: function to call for CLI errors
 
     """
-    global tree
+    global tree, html_publisher
     tree = build(cwd=cwd, root=args.project)
     tree.load()
+    html_publisher = HtmlPublisher(tree, ext=".html")
+    # Force html_publisher to set index and matrix to True.
+    html_publisher.setup(True, True, True)
     host = args.host
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(
@@ -110,7 +115,8 @@ def run(args, cwd, _):
         args.baseurl += "/"
 
     bottle.SimpleTemplate.defaults["baseurl"] = args.baseurl
-    bottle.SimpleTemplate.defaults["navigation"] = True
+    # Remove navigation since we handle it ourselves.
+    bottle.SimpleTemplate.defaults["navigation"] = False
 
     if args.launch:
         url = utilities.build_url(host=host, port=port)
@@ -136,9 +142,49 @@ def enable_cors():
 
 
 @get("/")
+@get("/index")
 def index():
     """Read the tree."""
-    yield template("index", tree_code=tree.draw(html_links=True))
+    prefixes = [str(document.prefix) for document in tree]
+    lines = html_publisher.lines_index(prefixes, tree=tree)
+    yield template(
+        "doorstop",
+        body="\n".join(str(lines)),
+        toc=None,
+        doc_attributes={
+            "name": "Index",
+            "ref": "-",
+            "title": "Doorstop index",
+            "by": "-",
+            "major": "-",
+            "minor": "",
+        },
+        is_doc=False,
+    )
+
+
+@get("/traceability")
+def get_traceability():
+    """Read the traceability matrix."""
+    lines = html_publisher.lines_matrix()
+    if utilities.json_response(request):
+        data = {"traceability": lines}
+        return data
+    else:
+        return template(
+            "doorstop",
+            body="\n".join(lines),
+            toc=None,
+            doc_attributes={
+                "name": "Traceability",
+                "ref": "-",
+                "title": "Doorstop traceability matrix",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents")
@@ -149,7 +195,19 @@ def get_documents():
         data = {"prefixes": prefixes}
         return data
     else:
-        return template("document_list", prefixes=prefixes)
+        return template(
+            "document_list",
+            prefixes=prefixes,
+            doc_attributes={
+                "name": "Documents",
+                "ref": "-",
+                "title": "Doorstop document list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/all")
@@ -160,7 +218,19 @@ def get_all_documents():
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]
-        return template("document_list", prefixes=prefixes)
+        return template(
+            "document_list",
+            prefixes=prefixes,
+            doc_attributes={
+                "name": "Documents",
+                "ref": "-",
+                "title": "Doorstop document list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/<prefix>")
@@ -171,7 +241,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext=".html", linkify=True, toc=True)
+        return html_publisher.lines(document, ext=".html", linkify=True, toc=True)
 
 
 @get("/documents/<prefix>/items")
@@ -183,7 +253,20 @@ def get_items(prefix):
         data = {"uids": uids}
         return data
     else:
-        return template("item_list", prefix=prefix, items=uids)
+        return template(
+            "item_list",
+            prefix=prefix,
+            items=uids,
+            doc_attributes={
+                "name": "Items",
+                "ref": "-",
+                "title": "Doorstop item list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/<prefix>/items/<uid>")
