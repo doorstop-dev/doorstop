@@ -276,7 +276,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         uid = UID(value)
         for document in self:
             try:
-                document.find_item(uid,only_active=False)
+                document.find_item(uid, only_active=False)
             except DoorstopError:
                 pass  # item not found in that document
             else:
@@ -445,7 +445,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         except KeyError:
             for document in self:
                 try:
-                    item = document.find_item(uid, only_active=only_active,_kind=_kind)
+                    item = document.find_item(uid, only_active=only_active, _kind=_kind)
                 except DoorstopError:
                     pass  # item not found in that document
                 else:
