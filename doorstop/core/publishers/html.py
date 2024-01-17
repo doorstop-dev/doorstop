@@ -96,33 +96,21 @@ class HtmlPublisher(MarkdownPublisher):
             log.info("creating an {}...".format(index))
             lines = self.lines_index(sorted(filenames), tree=tree)
             # Format according to the template.
-            if self.template == "":
-                self.template = HTMLTEMPLATE
             templatePath = os.path.abspath(
                 os.path.join(self.assetsPath, "..", "..", "template", "views")
             )
-            try:
-                bottle.TEMPLATE_PATH.insert(0, templatePath)
-                if "baseurl" not in bottle.SimpleTemplate.defaults:
-                    bottle.SimpleTemplate.defaults["baseurl"] = ""
-                html = bottle_template(
-                    self.template,
-                    body="\n".join(lines),
-                    toc=None,
-                    doc_attributes={
-                        "name": "Index",
-                        "ref": "-",
-                        "title": "Doorstop index",
-                        "by": "-",
-                        "major": "-",
-                        "minor": "",
-                    },
-                    is_doc=False,
-                )
-            except Exception:
-                raise DoorstopError(
-                    "Problem parsing the template {}".format(self.template)
-                )
+            html = self.typesetTemplate(
+                templatePath,
+                "\n".join(lines),
+                doc_attributes={
+                    "name": "Index",
+                    "ref": "-",
+                    "title": "Doorstop index",
+                    "by": "-",
+                    "major": "-",
+                    "minor": "",
+                },
+            )
             common.write_text(html, path)
         else:
             log.warning("no files for {}".format(index))
@@ -186,27 +174,51 @@ class HtmlPublisher(MarkdownPublisher):
         templatePath = os.path.abspath(
             os.path.join(self.assetsPath, "..", "..", "template", "views")
         )
+        html = self.typesetTemplate(
+            templatePath,
+            "\n".join(lines),
+            doc_attributes={
+                "name": "Traceability",
+                "ref": "-",
+                "title": "Doorstop traceability matrix",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+        )
+        common.write_text(html, path)
+
+    def typesetTemplate(
+        self,
+        templatePath,
+        body,
+        doc_attributes,
+        toc=None,
+        parent=None,
+        document=None,
+        is_doc=False,
+        has_index=False,
+        has_matrix=False,
+    ):
+        """Typeset the template."""
         try:
             bottle.TEMPLATE_PATH.insert(0, templatePath)
             if "baseurl" not in bottle.SimpleTemplate.defaults:
                 bottle.SimpleTemplate.defaults["baseurl"] = ""
             html = bottle_template(
                 self.template,
-                body="\n".join(lines),
-                toc=None,
-                doc_attributes={
-                    "name": "Traceability",
-                    "ref": "-",
-                    "title": "Doorstop traceability matrix",
-                    "by": "-",
-                    "major": "-",
-                    "minor": "",
-                },
-                is_doc=False,
+                body=body,
+                toc=toc,
+                parent=parent,
+                document=document,
+                doc_attributes=doc_attributes,
+                is_doc=is_doc,
+                has_index=has_index,
+                has_matrix=has_matrix,
             )
         except Exception:
             raise DoorstopError("Problem parsing the template {}".format(self.template))
-        common.write_text(html, path)
+        return html
 
     def _matrix_content(self):
         """Yield rows of content for the traceability matrix in csv format."""
@@ -323,25 +335,17 @@ class HtmlPublisher(MarkdownPublisher):
             templatePath = os.path.abspath(
                 os.path.join(self.assetsPath, "..", "..", "template", "views")
             )
-            try:
-                bottle.TEMPLATE_PATH.insert(0, templatePath)
-                if "baseurl" not in bottle.SimpleTemplate.defaults:
-                    bottle.SimpleTemplate.defaults["baseurl"] = ""
-                html = bottle_template(
-                    self.template,
-                    body=body,
-                    toc=toc_html,
-                    parent=obj.parent,
-                    document=obj,
-                    doc_attributes=doc_attributes,
-                    is_doc=True,
-                    has_index=self.getIndex(),
-                    has_matrix=self.getMatrix(),
-                )
-            except Exception:
-                raise DoorstopError(
-                    "Problem parsing the template {}".format(self.template)
-                )
+            html = self.typesetTemplate(
+                templatePath,
+                body,
+                doc_attributes,
+                toc=toc_html,
+                parent=obj.parent,
+                document=obj,
+                is_doc=True,
+                has_index=self.getIndex(),
+                has_matrix=self.getMatrix(),
+            )
             yield "\n".join(html.split(os.linesep))
         else:
             yield body
