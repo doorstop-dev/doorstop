@@ -11,7 +11,6 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
 from doorstop.core.template import HTMLTEMPLATE
@@ -283,16 +282,3 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.assert_called_once_with(
             "{}/documents/published.html".format(os.path.dirname(path)), "wb"
         )
-
-    def test_bad_html_template(self):
-        """Verify a bad HTML template raises an error."""
-        # Arrange
-        self.document.items = []
-        # Act
-        gen = publisher.publish_lines(
-            self.document.items, ".html", template="DOES_NOT_EXIST"
-        )
-        # Assert
-        with self.assertRaises(DoorstopError):
-            for line in gen:
-                pass
