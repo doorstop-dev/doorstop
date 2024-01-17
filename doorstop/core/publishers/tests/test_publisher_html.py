@@ -14,7 +14,15 @@ from unittest.mock import ANY, MagicMock, Mock, call, patch
 from doorstop.core import publisher
 from doorstop.core.document import Document
 from doorstop.core.template import HTMLTEMPLATE
-from doorstop.core.tests import EMPTY, FILES, MockDataMixIn, MockDocument
+from doorstop.core.tests import (
+    EMPTY,
+    FILES,
+    ROOT,
+    MockDataMixIn,
+    MockDocument,
+    MockItem,
+)
+from doorstop.core.types import UID
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -282,3 +290,58 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.assert_called_once_with(
             "{}/documents/published.html".format(os.path.dirname(path)), "wb"
         )
+
+
+@patch("doorstop.core.item.Item", MockItem)
+class TestTableOfContents(unittest.TestCase):
+    """Unit tests for the Document class."""
+
+    def setUp(self):
+        self.document = MockDocument(FILES, root=ROOT)
+
+    def test_toc_no_links_or_heading_levels(self):
+        """Verify the table of contents is generated with heading levels"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": "1.2.3 REQ001", "uid": ""},
+            {"depth": 2, "text": "1.4 REQ003", "uid": ""},
+            {"depth": 2, "text": "1.5 REQ006", "uid": ""},
+            {"depth": 2, "text": "1.6 REQ004", "uid": ""},
+            {"depth": 2, "text": "2.1 Plantuml", "uid": ""},
+            {"depth": 2, "text": "2.1 REQ2-001", "uid": ""},
+        ]
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=None, obj=self.document)
+        self.assertEqual(expected, toc)
+
+    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
+    def test_toc_no_links(self):
+        """Verify the table of contents is generated without heading levels"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": UID("REQ001"), "uid": ""},
+            {"depth": 2, "text": UID("REQ003"), "uid": ""},
+            {"depth": 2, "text": UID("REQ006"), "uid": ""},
+            {"depth": 2, "text": UID("REQ004"), "uid": ""},
+            {"depth": 2, "text": "Plantuml", "uid": ""},
+            {"depth": 2, "text": UID("REQ2-001"), "uid": ""},
+        ]
+
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=None, obj=self.document)
+        self.assertEqual(expected, toc)
+
+    def test_toc(self):
+        """Verify the table of contents is generated with an ID for the heading"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": "1.2.3 REQ001", "uid": UID("REQ001")},
+            {"depth": 2, "text": "1.4 REQ003", "uid": UID("REQ003")},
+            {"depth": 2, "text": "1.5 REQ006", "uid": UID("REQ006")},
+            {"depth": 2, "text": "1.6 REQ004", "uid": UID("REQ004")},
+            {"depth": 2, "text": "2.1 Plantuml", "uid": UID("REQ002")},
+            {"depth": 2, "text": "2.1 REQ2-001", "uid": UID("REQ2-001")},
+        ]
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=True, obj=self.document)
+        self.assertEqual(expected, toc)
