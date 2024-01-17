@@ -95,12 +95,9 @@ class BasePublisher(metaclass=ABCMeta):
         is published.
         """
 
-    def table_of_contents(self, linkify=None, obj=None):
+    def table_of_contents(self, linkify=None):
         toc = "### Table of Contents\n\n"
-        if obj is None:
-            toc_doc = self.object
-        else:
-            toc_doc = obj
+        toc_doc = self.object
 
         for item in iter_items(toc_doc):
             if item.depth == 1:

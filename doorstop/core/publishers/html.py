@@ -349,10 +349,7 @@ class HtmlPublisher(MarkdownPublisher):
         """Generate a table of contents. Returns a nested list of items to be rendered with the template."""
         toc = []
         toc.append({"depth": 0, "text": "Table of Contents", "uid": "toc"})
-        if obj is None:
-            toc_doc = self.object
-        else:
-            toc_doc = obj
+        toc_doc = obj
 
         for item in iter_items(toc_doc):
             # Check if item has the attribute heading.
