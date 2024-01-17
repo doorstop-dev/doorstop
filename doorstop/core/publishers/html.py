@@ -12,7 +12,6 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
-from doorstop.common import DoorstopError
 from doorstop.core.publishers.base import (
     extract_prefix,
     extract_uid,
@@ -200,23 +199,20 @@ class HtmlPublisher(MarkdownPublisher):
         has_matrix=False,
     ):
         """Typeset the template."""
-        try:
-            bottle.TEMPLATE_PATH.insert(0, templatePath)
-            if "baseurl" not in bottle.SimpleTemplate.defaults:
-                bottle.SimpleTemplate.defaults["baseurl"] = ""
-            html = bottle_template(
-                self.template,
-                body=body,
-                toc=toc,
-                parent=parent,
-                document=document,
-                doc_attributes=doc_attributes,
-                is_doc=is_doc,
-                has_index=has_index,
-                has_matrix=has_matrix,
-            )
-        except Exception:
-            raise DoorstopError("Problem parsing the template {}".format(self.template))
+        bottle.TEMPLATE_PATH.insert(0, templatePath)
+        if "baseurl" not in bottle.SimpleTemplate.defaults:
+            bottle.SimpleTemplate.defaults["baseurl"] = ""
+        html = bottle_template(
+            self.template,
+            body=body,
+            toc=toc,
+            parent=parent,
+            document=document,
+            doc_attributes=doc_attributes,
+            is_doc=is_doc,
+            has_index=has_index,
+            has_matrix=has_matrix,
+        )
         return html
 
     def _matrix_content(self):
