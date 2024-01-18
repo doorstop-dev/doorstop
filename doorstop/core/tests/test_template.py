@@ -331,3 +331,10 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # Assert
         with self.assertRaises(DoorstopError):
             template.check_latex_template_data(template_data)
+
+    def test_validate_template_data_missing_dict(self):
+        """Verify that the validation fails if a required option is missing
+        from a package."""
+        # Assert
+        with self.assertRaises(DoorstopError):
+            template.check_latex_template_data([])
