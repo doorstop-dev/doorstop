@@ -68,14 +68,14 @@ def get_template(obj, path, ext, template):
     builtin_template = None
     # Check extension and set template folder accordingly.
     if ext == ".md":
-        template_assets = template_assets + "/markdown"
+        template_assets = os.sep.join([template_assets, "markdown"])
     elif ext == ".tex":
-        template_assets = template_assets + "/latex"
+        template_assets = os.sep.join([template_assets, "latex"])
         builtin_template = "doorstop"
     elif ext == ".txt":
-        template_assets = template_assets + "/text"
+        template_assets = os.sep.join([template_assets, "text"])
     else:
-        template_assets = template_assets + "/html"
+        template_assets = os.sep.join([template_assets, "html"])
         builtin_template = HTMLTEMPLATE
 
     # Remove existing templates and assets first.
