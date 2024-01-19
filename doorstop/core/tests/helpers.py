@@ -31,9 +31,5 @@ class ListLogHandler(NullHandler):
 
 def build_expensive_tree(obj):
     # Build a tree.
-    print("Building an expensive tree")
-    print("From:", ROOT)
-    print("To:", obj.datapath)
-    res = copytree(ROOT, obj.datapath)
-    print("Result:", res)
+    copytree(ROOT, obj.datapath)
     obj.mock_tree = build(cwd=obj.datapath, root=obj.datapath, request_next_number=None)
