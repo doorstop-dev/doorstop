@@ -42,7 +42,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         print("Test class directory: %s" % cls.testdir)
         print("Test data directory: %s" % cls.datadir)
         print("Test mock directory: %s" % cls.mockdir)
-        
+
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
