@@ -39,10 +39,14 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         cls.testdir = mkdtemp()
         cls.datadir = os.path.abspath(os.path.join(cls.testdir, "data_%s" % __name__))
         cls.mockdir = os.path.abspath(os.path.join(cls.testdir, "mock_%s" % __name__))
-
+        print("Test class directory: %s" % cls.testdir)
+        print("Test data directory: %s" % cls.datadir)
+        print("Test mock directory: %s" % cls.mockdir)
+        
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
+        print("Test class directory: %s" % cls.testdir)
         rmtree(cls.testdir)
 
     def test_standard_html_doc(self):
@@ -147,6 +151,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         """Verify that a custom html template is used correctly."""
         # This test MUST use the expensive tree since it changes the document content
         # in the source tree otherwise!
+        self.maxDiff = None
         build_expensive_tree(self)
 
         # Check that only custom template is published.
