@@ -151,21 +151,23 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         """Verify that a custom html template is used correctly."""
         # This test MUST use the expensive tree since it changes the document content
         # in the source tree otherwise!
-        self.maxDiff = None
-        print("doc_path BEFORE COPY: {}".format(self.mock_tree.documents[0].path))
-
         build_expensive_tree(self)
 
         # Check that only custom template is published.
         os.makedirs(self.dirpath)
-        # Create a custom template folder.
-        doc_path = self.mock_tree.documents[1].path
-        print("doc_path: {}".format(doc_path))
+        # Create a custom template folder for the REQ document.
+        print(self.mock_tree.documents[0].__dir__())
+        for each in self.mock_tree.documents:
+            if each.prefix == "TUT":
+                doc_path = each.path
+                doc = each
+                break
+        print("doc_path = {}".format(doc_path))
         os.mkdir(os.path.join(doc_path, "template"))
         Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
         # Act
         asset_dir, selected_template = template.get_template(
-            self.mock_tree.documents[1], doc_path, ".html", "custom_css"
+            doc, doc_path, ".html", "custom_css"
         )
         # Assert
         self.assertEqual(
