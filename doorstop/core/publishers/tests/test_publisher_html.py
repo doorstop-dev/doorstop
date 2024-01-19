@@ -65,9 +65,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_with(
-            "{}/published.custom/documents".format(self.dirpath)
+            os.sep.join([self.dirpath, "published.custom", "documents"])
         )
-        mock_open.assert_called_once_with("{}/documents/REQ.html".format(path), "wb")
+        mock_open.assert_called_once_with(
+            os.sep.join([path, "documents", "REQ.html"]), "wb"
+        )
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -96,7 +98,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_open.assert_called_once_with("{}/documents/REQ.html".format(path), "wb")
+        mock_open.assert_called_once_with(
+            os.sep.join([path, "documents", "REQ.html"]), "wb"
+        )
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -120,7 +124,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             self.dirpath, "published.custom", "documents", "assets"
         )
         path = os.path.join(self.dirpath, "published.custom")
-        document = MockDocument("/some/path")
+        document = MockDocument(os.sep.join(["some", "path"]))
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
@@ -129,7 +133,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIs(path, path2)
         mock_makedirs.assert_called_with(
-            "{}/published.custom/documents".format(self.dirpath)
+            os.sep.join([self.dirpath, "published.custom", "documents"])
         )
         mock_copyassets.assert_called_once_with(assets_path)
 
@@ -286,9 +290,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_with("{}/documents".format(self.dirpath))
+        mock_makedirs.assert_called_with(os.sep.join([self.dirpath, "documents"]))
         mock_open.assert_called_once_with(
-            "{}/documents/published.html".format(os.path.dirname(path)), "wb"
+            os.sep.join([os.path.dirname(path), "documents", "published.html"]), "wb"
         )
 
 
