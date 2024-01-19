@@ -34,5 +34,6 @@ def build_expensive_tree(obj):
     print("Building an expensive tree")
     print("From:", ROOT)
     print("To:", obj.datapath)
-    copytree(ROOT, obj.datapath)
+    res = copytree(ROOT, obj.datapath)
+    print("Result:", res)
     obj.mock_tree = build(cwd=obj.datapath, root=obj.datapath, request_next_number=None)

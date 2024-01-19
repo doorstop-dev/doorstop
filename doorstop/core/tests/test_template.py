@@ -173,6 +173,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
             asset_dir,
         )
         self.assertEqual("custom_css", selected_template)
+        self.assertEqual(1, 2)
 
     def test_custom_template_without_folder(self):
         """Verify that a custom template that is missing a locally defined
