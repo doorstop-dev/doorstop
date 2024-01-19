@@ -152,12 +152,15 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # This test MUST use the expensive tree since it changes the document content
         # in the source tree otherwise!
         self.maxDiff = None
+        print("doc_path BEFORE COPY: {}".format(self.mock_tree.documents[0].path))
+
         build_expensive_tree(self)
 
         # Check that only custom template is published.
         os.makedirs(self.dirpath)
         # Create a custom template folder.
         doc_path = self.mock_tree.documents[1].path
+        print("doc_path: {}".format(doc_path))
         os.mkdir(os.path.join(doc_path, "template"))
         Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
         # Act
