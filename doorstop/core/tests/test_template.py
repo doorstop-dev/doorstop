@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from pathlib import Path
 from secrets import token_hex
@@ -43,7 +44,10 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree(cls.testdir)
+        rmtree(
+            cls.testdir,
+            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
+        )
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
