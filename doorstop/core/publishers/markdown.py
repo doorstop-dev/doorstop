@@ -22,7 +22,7 @@ class MarkdownPublisher(BasePublisher):
 
     def format_attr_list(self, item, linkify):
         """Create a Markdown attribute list for a heading."""
-        return " {{#{u} }}".format(u=item.uid) if linkify else ""
+        return " {{#{u}}}".format(u=item.uid) if linkify else ""
 
     def format_ref(self, item):
         """Format an external reference in Markdown."""
