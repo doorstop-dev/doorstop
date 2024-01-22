@@ -12,7 +12,7 @@ from shutil import rmtree
 from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import getWalk
-from doorstop.core.tests import ROOT, MockDataMixIn
+from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -51,3 +51,20 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(self.expected_walk, walk)
+
+    def test_publish_markdown_document_to_path(self):
+        """Verify that single document export to path works."""
+        expected_walk = """{n}/
+    REQ.md
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath
+        doc = MockDocument(dirpath)
+        # Act
+        path2 = publisher.publish(doc, dirpath, ".md")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
