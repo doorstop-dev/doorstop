@@ -77,8 +77,11 @@ class LaTeXPublisher(BasePublisher):
         msg = "You can now execute the file 'compile.sh' twice in the exported folder to produce the PDFs!"
         utilities.show(msg, flush=True)
 
-    def create_index(self, directory, index=None, extensions=(".html",), tree=None):
+    def create_index(self, directory, index=None, extensions=(".tex",), tree=None):
         """No index for LaTeX."""
+
+    def table_of_contents(self, linkify=None, obj=None):
+        """No table of contents LaTeX."""
 
     def lines(self, obj, **kwargs):
         """Yield lines for a LaTeX report.

@@ -9,10 +9,10 @@ from typing import Any, Dict
 
 from markdown import markdown
 
-from doorstop import common, settings
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.template import get_template
-from doorstop.core.types import is_tree, iter_items
+from doorstop.core.types import is_tree
 
 log = common.logger(__name__)
 
@@ -95,38 +95,19 @@ class BasePublisher(metaclass=ABCMeta):
         is published.
         """
 
-    def table_of_contents(self, linkify=None):
-        toc = "### Table of Contents\n\n"
-        toc_doc = self.object
+    @abstractmethod
+    def table_of_contents(
+        self, linkify=None, obj=None
+    ):  # pragma: no cover (abstract method)
+        """Yield lines for a table of contents.
 
-        for item in iter_items(toc_doc):
-            if item.depth == 1:
-                prefix = " * "
-            else:
-                prefix = "    " * (item.depth - 1)
-                prefix += "* "
+        :param linkify: turn links into hyperlinks
+        :param obj: Item, list of Items, or Document to publish
 
-            # Check if item has the attribute heading.
-            if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
-            elif item.header:
-                heading = "{h}".format(h=item.header)
-            else:
-                heading = item.uid
+        :return: iterator of lines of text
 
-            if settings.PUBLISH_HEADING_LEVELS:
-                level = format_level(item.level)
-                lbl = "{lev} {h}".format(lev=level, h=heading)
-            else:
-                lbl = heading
-
-            if linkify:
-                line = "{p}[{lbl}](#{uid})\n".format(p=prefix, lbl=lbl, uid=item.uid)
-            else:
-                line = "{p}{lbl}\n".format(p=prefix, lbl=lbl)
-            toc += line
-        return toc
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def lines(self, obj, **kwargs):  # pragma: no cover (abstract method)

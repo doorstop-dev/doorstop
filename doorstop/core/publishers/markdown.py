@@ -2,9 +2,10 @@
 
 """Functions to publish documents and items."""
 
+from re import sub
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import BasePublisher, format_level
+from doorstop.core.publishers.base import BasePublisher, format_level, is_tree
 from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
@@ -13,7 +14,7 @@ log = common.logger(__name__)
 class MarkdownPublisher(BasePublisher):
     """Markdown publisher."""
 
-    def create_index(self, directory, index=None, extensions=(".html",), tree=None):
+    def create_index(self, directory, index=None, extensions=(".md",), tree=None):
         """No index for Markdown."""
 
     def create_matrix(self, directory):
@@ -70,11 +71,14 @@ class MarkdownPublisher(BasePublisher):
     def format_item_link(self, item, linkify=True):
         """Format an item link in Markdown."""
         if linkify and is_item(item):
+            link = clean_link("{u}".format(u=self._generate_heading_from_item(item)))
             if item.header:
-                return "[{u} {h}]({p}.md#{u})".format(
-                    u=item.uid, h=item.header, p=item.document.prefix
+                return "[{u} {h}]({p}.md#{l})".format(
+                    u=item.uid, l=link, h=item.header, p=item.document.prefix
                 )
-            return "[{u}]({p}.md#{u})".format(u=item.uid, p=item.document.prefix)
+            return "[{u}]({p}.md#{l})".format(
+                u=item.uid, l=link, p=item.document.prefix
+            )
         else:
             return str(item.uid)  # if not `Item`, assume this is an `UnknownItem`
 
@@ -85,113 +89,186 @@ class MarkdownPublisher(BasePublisher):
         else:
             return "*{lb} {ls}*".format(lb=label, ls=links)
 
+    def table_of_contents(self, linkify=None, obj=None):
+        """Generate a table of contents for a Markdown document."""
+        if is_tree(obj):
+            return ""
+
+        toc = "### Table of Contents\n\n"
+        toc_doc = obj
+
+        for item in iter_items(toc_doc):
+            if item.depth == 1:
+                prefix = " * "
+            else:
+                prefix = "    " * (item.depth - 1)
+                prefix += "* "
+
+            # Check if item has the attribute heading.
+            if item.heading:
+                lines = item.text.splitlines()
+                heading = lines[0] if lines else ""
+            elif item.header:
+                heading = "{h}".format(h=item.header)
+            else:
+                heading = item.uid
+
+            if settings.PUBLISH_HEADING_LEVELS:
+                level = format_level(item.level)
+                lbl = "{lev} {h}".format(lev=level, h=heading)
+            else:
+                lbl = heading
+
+            if linkify:
+                link = clean_link(self._generate_heading_from_item(item))
+                line = "{p}[{lbl}](#{l})\n".format(p=prefix, lbl=lbl, l=link)
+            else:
+                line = "{p}{lbl}\n".format(p=prefix, lbl=lbl)
+            toc += line
+        return toc
+
     def lines(self, obj, **kwargs):
         """Yield lines for a Markdown report.
 
         :param obj: Item, list of Items, or Document to publish
-        :param linkify: turn links into hyperlinks (for conversion to HTML)
-
-        :return: iterator of lines of text
-
-        """
-        yield from self._lines_markdown(obj, **kwargs)
-
-    def _lines_markdown(self, obj, **kwargs):
-        """Yield lines for a Markdown report.
-
-        :param obj: Item, list of Items, or Document to publish
-        :param linkify: turn links into hyperlinks (for conversion to HTML)
+        :param linkify: turn links into hyperlinks
 
         :return: iterator of lines of text
 
         """
         linkify = kwargs.get("linkify", False)
-        for item in iter_items(obj):
-            heading = "#" * item.depth
-            level = format_level(item.level)
+        toc = kwargs.get("toc", False)
+        if toc:
+            yield self.table_of_contents(linkify=linkify, obj=obj)
 
-            if item.heading:
-                text_lines = item.text.splitlines()
-                if item.header:
-                    text_lines.insert(0, item.header)
-                # Level and Text
-                if settings.PUBLISH_HEADING_LEVELS:
-                    standard = "{h} {lev} {t}".format(
-                        h=heading, lev=level, t=text_lines[0] if text_lines else ""
-                    )
-                else:
-                    standard = "{h} {t}".format(
-                        h=heading, t=text_lines[0] if text_lines else ""
-                    )
-                attr_list = self.format_attr_list(item, True)
-                yield standard + attr_list
-                yield from text_lines[1:]
+        yield from self._lines_markdown(obj, **kwargs)
+
+    def _generate_heading_from_item(self, item, to_html=False):
+        """Generate a heading from an item in a consistent way for Markdown.
+
+        This ensures that references between documents are consistent.
+        """
+        result = ""
+        heading = "#" * item.depth
+        level = format_level(item.level)
+        if item.heading:
+            text_lines = item.text.splitlines()
+            if item.header:
+                text_lines.insert(0, item.header)
+            # Level and Text
+            if settings.PUBLISH_HEADING_LEVELS:
+                standard = "{h} {lev} {t}".format(
+                    h=heading, lev=level, t=text_lines[0] if text_lines else ""
+                )
             else:
-                uid = item.uid
-                if settings.ENABLE_HEADERS:
-                    if item.header:
+                standard = "{h} {t}".format(
+                    h=heading, t=text_lines[0] if text_lines else ""
+                )
+            attr_list = self.format_attr_list(item, True)
+            result = standard + attr_list
+            result += "\n"
+            result += "\n".join(text_lines[1:])
+        else:
+            uid = item.uid
+            if settings.ENABLE_HEADERS:
+                if item.header:
+                    if to_html:
                         uid = "{h} <small>{u}</small>".format(h=item.header, u=item.uid)
                     else:
-                        uid = "{u}".format(u=item.uid)
-
-                # Level and UID
-                if settings.PUBLISH_BODY_LEVELS:
-                    standard = "{h} {lev} {u}".format(h=heading, lev=level, u=uid)
+                        uid = "{h} _{u}_".format(h=item.header, u=item.uid)
                 else:
-                    standard = "{h} {u}".format(h=heading, u=uid)
+                    uid = "{u}".format(u=item.uid)
 
-                attr_list = self.format_attr_list(item, True)
-                yield standard + attr_list
+            # Level and UID
+            if settings.PUBLISH_BODY_LEVELS:
+                standard = "{h} {lev} {u}".format(h=heading, lev=level, u=uid)
+            else:
+                standard = "{h} {u}".format(h=heading, u=uid)
 
-                # Text
-                if item.text:
-                    yield ""  # break before text
-                    yield from item.text.splitlines()
+            attr_list = self.format_attr_list(item, True)
+            result = standard + attr_list
+        return result
 
-                # Reference
-                if item.ref:
-                    yield ""  # break before reference
-                    yield self.format_ref(item)
+    def _lines_markdown(self, obj, **kwargs):
+        """Yield lines for a Markdown report.
 
-                # Reference
-                if item.references:
-                    yield ""  # break before reference
-                    yield self.format_references(item)
+        :param obj: Item, list of Items, or Document to publish
+        :param linkify: turn links into hyperlinks
 
-                # Parent links
-                if item.links:
+        :return: iterator of lines of text
+
+        """
+        linkify = kwargs.get("linkify", False)
+        to_html = kwargs.get("to_html", False)
+        for item in iter_items(obj):
+            # Create iten heading.
+            complete_heading = self._generate_heading_from_item(item, to_html=to_html)
+            yield complete_heading
+
+            # Text
+            if item.text:
+                yield ""  # break before text
+                yield from item.text.splitlines()
+
+            # Reference
+            if item.ref:
+                yield ""  # break before reference
+                yield self.format_ref(item)
+
+            # Reference
+            if item.references:
+                yield ""  # break before reference
+                yield self.format_references(item)
+
+            # Parent links
+            if item.links:
+                yield ""  # break before links
+                items2 = item.parent_items
+                if settings.PUBLISH_CHILD_LINKS:
+                    label = "Parent links:"
+                else:
+                    label = "Links:"
+                links = self.format_links(items2, linkify)
+                label_links = self.format_label_links(label, links, linkify)
+                yield label_links
+
+            # Child links
+            if settings.PUBLISH_CHILD_LINKS:
+                items2 = item.find_child_items()
+                if items2:
                     yield ""  # break before links
-                    items2 = item.parent_items
-                    if settings.PUBLISH_CHILD_LINKS:
-                        label = "Parent links:"
-                    else:
-                        label = "Links:"
+                    label = "Child links:"
                     links = self.format_links(items2, linkify)
                     label_links = self.format_label_links(label, links, linkify)
                     yield label_links
 
-                # Child links
-                if settings.PUBLISH_CHILD_LINKS:
-                    items2 = item.find_child_items()
-                    if items2:
-                        yield ""  # break before links
-                        label = "Child links:"
-                        links = self.format_links(items2, linkify)
-                        label_links = self.format_label_links(label, links, linkify)
-                        yield label_links
-
-                # Add custom publish attributes
-                if item.document and item.document.publish:
-                    header_printed = False
-                    for attr in item.document.publish:
-                        if not item.attribute(attr):
-                            continue
-                        if not header_printed:
-                            header_printed = True
-                            yield ""
-                            yield "| Attribute | Value |"
-                            yield "| --------- | ----- |"
-                        yield "| {} | {} |".format(attr, item.attribute(attr))
-                    yield ""
+            # Add custom publish attributes
+            if item.document and item.document.publish:
+                header_printed = False
+                for attr in item.document.publish:
+                    if not item.attribute(attr):
+                        continue
+                    if not header_printed:
+                        header_printed = True
+                        yield ""
+                        yield "| Attribute | Value |"
+                        yield "| --------- | ----- |"
+                    yield "| {} | {} |".format(attr, item.attribute(attr))
+                yield ""
 
             yield ""  # break between items
+
+
+def clean_link(uid):
+    """Clean a UID for use in a link.
+
+    1. Strip leading # and spaces.
+    2. Only smallcaps are allowed.
+    3. Spaces are replaced with hyphens.
+    5. All other special characters are removed.
+    """
+    uid = sub(r"^#*\s*", "", uid)
+    uid = uid.lower()
+    uid = uid.replace(" ", "-")
+    uid = sub("[^a-z0-9-]", "", uid)
+    return uid
