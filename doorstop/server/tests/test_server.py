@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Unit tests for the doorstop.server.main module."""
-
+import importlib.util
+import sys
 import unittest
+from io import StringIO
+from os import sep
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.server import main as server
@@ -39,6 +42,33 @@ PREFIX2"""
     def setUp(self):
         self.server = server
         self.server.tree = self.mock_tree
+
+
+class TestMain(unittest.TestCase):
+    """Unit tests for the `main` function."""
+
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_main_version(self, stdout):
+        """Verify the main CLI function can be called and retreive the version number."""
+        # Get current version from project.toml.
+        with open("pyproject.toml", "r") as f:
+            for line in f.readlines():
+                if "version" in line:
+                    version = line.split("=")[1].strip().replace('"', "")
+                    break
+        # Run the main function with the --version argument.
+        testargs = [sep.join(["doorstop", "server", "main.py"]), "--version"]
+        with patch.object(sys, "argv", testargs):
+            spec = importlib.util.spec_from_file_location("__main__", testargs[0])
+            runpy = importlib.util.module_from_spec(spec)
+            # Assert that the main function exits.
+            with self.assertRaises(SystemExit):
+                spec.loader.exec_module(runpy)
+            # Assert
+            self.assertIsNotNone(runpy)
+
+        # Assert that the version number is correct.
+        self.assertEqual("Doorstop v{}\n".format(version), stdout.getvalue())
 
 
 class TestModule(BaseTestCase):
