@@ -308,38 +308,34 @@ def format_level(level):
 def get_document_attributes(obj, is_html=False, extensions=None):
     """Try to get attributes from document."""
     doc_attributes = {}
-    if obj:
-        doc_attributes["name"] = "doc-" + obj.prefix
-    else:
-        doc_attributes["name"] = "doc-noname"
+    doc_attributes["name"] = "doc-" + obj.prefix
     doc_attributes["title"] = "Test document for development of _Doorstop_"
     doc_attributes["ref"] = "-"
     doc_attributes["by"] = "-"
     doc_attributes["major"] = "-"
     doc_attributes["minor"] = ""
     doc_attributes["copyright"] = "Doorstop"
-    if obj:
-        try:
-            attribute_defaults = obj.__getattribute__("_attribute_defaults")
-        except AttributeError:
-            attribute_defaults = None
-        if attribute_defaults:
-            if "name" in attribute_defaults["doc"]:
-                # Name should only be set if it is not empty.
-                if attribute_defaults["doc"]["name"] != "":
-                    doc_attributes["name"] = attribute_defaults["doc"]["name"]
-            if "title" in attribute_defaults["doc"]:
-                doc_attributes["title"] = attribute_defaults["doc"]["title"]
-            if "ref" in attribute_defaults["doc"]:
-                doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
-            if "by" in attribute_defaults["doc"]:
-                doc_attributes["by"] = attribute_defaults["doc"]["by"]
-            if "major" in attribute_defaults["doc"]:
-                doc_attributes["major"] = attribute_defaults["doc"]["major"]
-            if "minor" in attribute_defaults["doc"]:
-                doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
-            if "copyright" in attribute_defaults["doc"]:
-                doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    try:
+        attribute_defaults = obj.__getattribute__("_attribute_defaults")
+    except AttributeError:
+        attribute_defaults = None
+    if attribute_defaults:
+        if "name" in attribute_defaults["doc"]:
+            # Name should only be set if it is not empty.
+            if attribute_defaults["doc"]["name"] != "":
+                doc_attributes["name"] = attribute_defaults["doc"]["name"]
+        if "title" in attribute_defaults["doc"]:
+            doc_attributes["title"] = attribute_defaults["doc"]["title"]
+        if "ref" in attribute_defaults["doc"]:
+            doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+        if "by" in attribute_defaults["doc"]:
+            doc_attributes["by"] = attribute_defaults["doc"]["by"]
+        if "major" in attribute_defaults["doc"]:
+            doc_attributes["major"] = attribute_defaults["doc"]["major"]
+        if "minor" in attribute_defaults["doc"]:
+            doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+        if "copyright" in attribute_defaults["doc"]:
+            doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
     # Check output format. If html we need go convert from markdown.
     if is_html:
         # Only convert title and copyright.
