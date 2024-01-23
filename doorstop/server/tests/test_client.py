@@ -112,7 +112,7 @@ class TestModule(unittest.TestCase):
     def test_get_next_number_bad_response(self):
         """Verify the client can handle bad responses for the next number."""
         mock_response = Mock()
-        mock_response.status_code = 200
+        mock_response.status_code = 500
         mock_response.json = Mock(return_value={})
         mock_post = Mock(return_value=mock_response)
         # Act and assert
