@@ -166,8 +166,6 @@ class MarkdownPublisher(BasePublisher):
                 )
             attr_list = self.format_attr_list(item, True)
             result = standard + attr_list
-            result += "\n"
-            result += "\n".join(text_lines[1:])
         else:
             uid = item.uid
             if settings.ENABLE_HEADERS:
