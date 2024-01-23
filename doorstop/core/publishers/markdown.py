@@ -5,7 +5,7 @@
 from re import sub
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import BasePublisher, format_level, is_tree
+from doorstop.core.publishers.base import BasePublisher, format_level
 from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
@@ -91,8 +91,6 @@ class MarkdownPublisher(BasePublisher):
 
     def table_of_contents(self, linkify=None, obj=None):
         """Generate a table of contents for a Markdown document."""
-        if is_tree(obj):
-            return ""
 
         toc = "### Table of Contents\n\n"
         toc_doc = obj
