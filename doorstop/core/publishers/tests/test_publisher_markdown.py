@@ -166,10 +166,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            "# 1.0 REQ-001 {#REQ-001}"
-            + "\n\n"
-            + "Test of a single text line."
-            + "\n\n"
+            "# 1.0 REQ-001 {#REQ-001}" + "\n\n" + "Test of a single text line." + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".md"))
