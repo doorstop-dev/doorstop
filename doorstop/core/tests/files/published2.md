@@ -1,4 +1,4 @@
-### 1.2.3 REQ001 {#REQ001 }
+### 1.2.3 REQ001 {#REQ001}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua.
@@ -11,7 +11,7 @@ deserunt mollit anim id est laborum.
 
 *Links: SYS001, SYS002*
 
-## 1.4 REQ003 {#REQ003 }
+## 1.4 REQ003 {#REQ003}
 
 Unicode: -40° ±1%
 
@@ -19,7 +19,7 @@ Unicode: -40° ±1%
 
 *Links: REQ001*
 
-## 1.5 REQ006 {#REQ006 }
+## 1.5 REQ006 {#REQ006}
 
 Hello, world!
 
@@ -28,11 +28,11 @@ Hello, world!
 
 *Links: REQ001*
 
-## 1.6 REQ004 {#REQ004 }
+## 1.6 REQ004 {#REQ004}
 
 Hello, world!
 
-## 2.1 Plantuml <small>REQ002</small> {#REQ002 }
+## 2.1 Plantuml _REQ002_ {#REQ002}
 
 Hello, world!
 
@@ -54,7 +54,7 @@ System --> (Integrity)
 @enduml
 ```
 
-## 2.1 REQ2-001 {#REQ2-001 }
+## 2.1 REQ2-001 {#REQ2-001}
 
 Hello, world!
 
