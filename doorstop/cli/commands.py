@@ -181,7 +181,7 @@ def run_add(args, cwd, _, catch=True):
         # add items to it
         for _ in range(args.count):
             item = document.add_item(
-                level=args.level, defaults=args.defaults, name=args.name
+                level=args.level, defaults=args.defaults, name=args.name, reorder=args.noreorder
             )
             utilities.show("added item: {} ({})".format(item.uid, item.relpath))
 

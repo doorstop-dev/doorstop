@@ -284,6 +284,11 @@ def _add(subs, shared):
         metavar="FILE",
         help=("file in YAML format with default values for attributes of the new item"),
     )
+    sub.add_argument(
+        "--noreorder",
+        action="store_false",
+        help=("disable automatic reordering of file"),
+    )
 
 
 def _remove(subs, shared):
