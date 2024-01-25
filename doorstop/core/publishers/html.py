@@ -289,9 +289,10 @@ class HtmlPublisher(MarkdownPublisher):
             document = True
 
         # Check for defined document attributes.
-        doc_attributes = get_document_attributes(
-            obj, is_html=True, extensions=self.EXTENSIONS
-        )
+        if document:
+            doc_attributes = get_document_attributes(
+                obj, is_html=True, extensions=self.EXTENSIONS
+            )
 
         # Generate HTML
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
