@@ -48,7 +48,7 @@ python = "^3.8"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
-bottle = "~0.12.13"
+bottle = "~0.12.25"
 requests = "^2.0"
 python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
