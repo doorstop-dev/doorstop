@@ -14,7 +14,7 @@ from typing import Dict
 import bottle
 from bottle import get, hook, post, request, response, template
 
-from doorstop import Tree, build, common, publisher, settings
+from doorstop import Tree, build, common, settings
 from doorstop.common import HelpFormatter
 from doorstop.core import vcs
 from doorstop.core.publishers.html import HtmlPublisher
@@ -23,6 +23,7 @@ from doorstop.server import utilities
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
+config = {}
 tree: Tree = None  # type: ignore
 html_publisher: HtmlPublisher = None  # type: ignore
 numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
@@ -83,11 +84,12 @@ def main(args=None):
     )
 
     # Run the program
-    run(args, os.getcwd(), parser.error)
+    setup(args, os.getcwd(), parser.error)
+    run(args)
 
 
-def run(args, cwd, _):
-    """Start the server.
+def setup(args, cwd, _):
+    """Handle the setup of the server.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
     :param cwd: current working directory
@@ -121,8 +123,22 @@ def run(args, cwd, _):
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
+
+    # Configure the app.
+    config["host"] = host
+    config["port"] = port
+    config["args"] = args.debug
+
+
+def run(args):
     if not args.wsgi:
-        bottle.run(app=app, host=host, port=port, debug=args.debug, reloader=args.debug)
+        bottle.run(
+            app=app,
+            host=config["host"],
+            port=config["port"],
+            debug=config["args"],
+            reloader=config["args"],
+        )
 
 
 @hook("before_request")
@@ -166,11 +182,19 @@ def index():
 @get("/traceability")
 def get_traceability():
     """Read the traceability matrix."""
-    lines = html_publisher.lines_matrix()
     if utilities.json_response(request):
-        data = {"traceability": lines}
+        trace_list = tree.get_traceability()
+        # Convert the Items in the list to strings only.
+        traces = []
+        for row in trace_list:
+            trace_row = []
+            for col in row:
+                trace_row.append(str(col))
+            traces.append(trace_row)
+        data = {"traceability": traces}
         return data
     else:
+        lines = html_publisher.lines_matrix()
         return template(
             "doorstop",
             body="\n".join(lines),
@@ -274,10 +298,11 @@ def get_item(prefix, uid):
     """Read a document's item."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
+    lines = html_publisher.lines(item, ext=".html")
     if utilities.json_response(request):
         return {"data": item.data}
     else:
-        return publisher.publish_lines(item, ext=".html")
+        return "<br>".join(lines)
 
 
 @get("/documents/<prefix>/items/<uid>/attrs")
@@ -317,7 +342,9 @@ def get_template(filename):
     public_dir = os.path.join(
         os.path.dirname(__file__), "..", "core", "files", "templates", "html"
     )
-    return bottle.static_file(filename, root=public_dir)
+    if os.path.isfile(os.path.join(public_dir, filename)):
+        return bottle.static_file(filename, root=public_dir)
+    return bottle.HTTPError(404, "File does not exist.")
 
 
 @get("/documents/assets/<filename>")
@@ -327,9 +354,10 @@ def get_assets(filename):
     # documents to find the requested asset.
     for document in tree:
         # Check if the asset exists in the document's assets folder.
-        temporary_path = os.path.join(document.assets, filename)
-        if os.path.exists(temporary_path):
-            return bottle.static_file(filename, root=document.assets)
+        if document.assets:
+            temporary_path = os.path.join(document.assets, filename)
+            if os.path.exists(temporary_path):
+                return bottle.static_file(filename, root=document.assets)
     # If the asset does not exist, return a 404.
     return bottle.HTTPError(404, "File does not exist.")
 
