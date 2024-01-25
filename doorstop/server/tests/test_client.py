@@ -101,7 +101,7 @@ class TestModule(unittest.TestCase):
         with patch("requests.post", mock_post):
             number = client.get_next_number("PREFIX")
         # Assert
-        url = "http://1.2.3.4:8080/documents/PREFIX/numbers"
+        url = "http://1.2.3.4:8080/documents/PREFIX/numbers?format=json"
         headers = {"content-type": "application/json"}
         mock_post.assert_called_once_with(url, headers=headers, timeout=10)
         self.assertEqual(42, number)
