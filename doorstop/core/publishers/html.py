@@ -12,11 +12,15 @@ from bottle import template as bottle_template
 from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
-from doorstop.common import DoorstopError
-from doorstop.core.publishers.base import extract_prefix, extract_uid
+from doorstop.core.publishers.base import (
+    extract_prefix,
+    extract_uid,
+    format_level,
+    get_document_attributes,
+)
 from doorstop.core.publishers.markdown import MarkdownPublisher
-from doorstop.core.template import CSS, HTMLTEMPLATE, INDEX, MATRIX
-from doorstop.core.types import is_item
+from doorstop.core.template import HTMLTEMPLATE, INDEX, MATRIX
+from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
 
@@ -45,6 +49,29 @@ class HtmlPublisher(MarkdownPublisher):
         ),
     )
 
+    def publishAction(self, document, path):
+        """Publish action.
+
+        Replace this with code that should be run _for each_ document
+        _during_ publishing.
+        """
+        self.document = document
+        # Check if path ends with .html
+        if path.endswith(".html"):
+            # Split of the filename and add 'documents/' to the path.
+            documentPath = os.path.join(os.path.dirname(path), "documents")
+        else:
+            # Add 'documents/' to the path.
+            documentPath = os.path.join(path, "documents")
+        # Create the document directory if it does not exist.
+        if not os.path.exists(documentPath):
+            os.makedirs(documentPath)
+        # Check if path ends with .html
+        if path.endswith(".html"):
+            self.documentPath = os.path.join(documentPath, os.path.basename(path))
+        else:
+            self.documentPath = os.path.join(documentPath, document.prefix + ".html")
+
     def create_index(self, directory, index=INDEX, extensions=(".html",), tree=None):
         """Create an HTML index of all files in a directory.
 
@@ -56,46 +83,51 @@ class HtmlPublisher(MarkdownPublisher):
         """
         # Get paths for the index index
         filenames = []
-        for filename in os.listdir(directory):
-            if filename.endswith(extensions) and filename != INDEX:
-                filenames.append(os.path.join(filename))
+        tmpPath = os.path.join(directory, "documents")
+        if os.path.exists(tmpPath):
+            for filename in os.listdir(tmpPath):
+                if filename.endswith(extensions) and filename != INDEX:
+                    filenames.append(os.path.join(filename))
 
         # Create the index
         if filenames:
             path = os.path.join(directory, index)
             log.info("creating an {}...".format(index))
-            lines = self._lines_index(sorted(filenames), tree=tree)
-            common.write_lines(lines, path, end=settings.WRITE_LINESEPERATOR)
+            lines = self.lines_index(sorted(filenames), tree=tree)
+            # Format according to the template.
+            templatePath = os.path.abspath(
+                os.path.join(self.assetsPath, "..", "..", "template", "views")
+            )
+            html = self.typesetTemplate(
+                templatePath,
+                "\n".join(lines),
+                doc_attributes={
+                    "name": "Index",
+                    "ref": "-",
+                    "title": "Doorstop index",
+                    "by": "-",
+                    "major": "-",
+                    "minor": "",
+                },
+            )
+            common.write_text(html, path)
         else:
             log.warning("no files for {}".format(index))
 
-    def _lines_index(self, filenames, charset="UTF-8", tree=None):
+    def lines_index(self, filenames, tree=None):
         """Yield lines of HTML for index.html.
 
         :param filesnames: list of filenames to add to the index
-        :param charset: character encoding for output
         :param tree: optional tree to determine index structure
 
         """
-        yield "<!DOCTYPE html>"
-        yield "<head>"
-        yield (
-            '<meta http-equiv="content-type" content="text/html; '
-            'charset={charset}">'.format(charset=charset)
-        )
-        yield '<style type="text/css">'
-        yield from _lines_css()
-        yield "</style>"
-        yield "</head>"
-        yield "<body>"
         # Tree structure
-        text = tree.draw() if tree else None
-        if text:
-            yield ""
-            yield "<h3>Tree Structure:</h3>"
-            yield "<pre><code>" + text + "</pre></code>"
-            yield ""
-            yield "<hr>"
+        text = tree.draw(html_links=True) if tree else None
+        yield ""
+        yield "<h3>Tree Structure:</h3>"
+        yield "<pre><code>" + text + "</pre></code>"
+        yield ""
+        yield "<hr>"
         # Additional files
         yield ""
         yield "<h3>Published Documents:</h3>"
@@ -103,80 +135,134 @@ class HtmlPublisher(MarkdownPublisher):
         yield "<ul>"
         for filename in filenames:
             name = os.path.splitext(filename)[0]
-            yield '<li> <a href="{f}">{n}</a> </li>'.format(f=filename, n=name)
+            yield '<li> <a href="documents/{f}">{n}</a> </li>'.format(
+                f=filename, n=name
+            )
         yield "</ul>"
         yield "</p>"
-        # Traceability table
-        documents = tree.documents if tree else None
-        if documents:
-            yield ""
-            yield "<hr>"
-            yield ""
-            # table
-            yield "<h3>Item Traceability:</h3>"
-            yield "<p>"
-            yield "<table>"
-            # header
-            for document in documents:  # pylint: disable=not-an-iterable
-                yield '<col width="100">'
-            yield "<tr>"
-            for document in documents:  # pylint: disable=not-an-iterable
-                link = '<a href="{p}.html">{p}</a>'.format(p=document.prefix)
-                yield (
-                    '  <th height="25" align="center"> {link} </th>'.format(link=link)
-                )
-            yield "</tr>"
-            # data
-            for index, row in enumerate(tree.get_traceability()):
-                if index % 2:
-                    yield '<tr class="alt">'
-                else:
-                    yield "<tr>"
-                for item in row:
-                    if item is None:
-                        link = ""
-                    else:
-                        link = self.format_item_link(item)
-                    yield '  <td height="25" align="center"> {} </td>'.format(link)
-                yield "</tr>"
-            yield "</table>"
-            yield "</p>"
-        yield ""
-        yield "</body>"
-        yield "</html>"
 
     def create_matrix(self, directory):
-        """Create a traceability matrix for all the items.
+        """Create a traceability matrix for all the items. This will create a .csv and .html file.
 
         :param directory: directory for matrix
 
         """
+        ############################################################
+        # Create the csv matrix
+        ############################################################
         # Get path and format extension
         filename = MATRIX
         path = os.path.join(directory, filename)
-        # ext = self.ext or os.path.splitext(path)[-1] or ".csv"
 
         # Create the matrix
         log.info("creating an {}...".format(filename))
         content = self._matrix_content()
         common.write_csv(content, path)
 
+        ############################################################
+        # Create the HTML matrix
+        ############################################################
+        filename = MATRIX.replace(".csv", ".html")
+        path = os.path.join(directory, filename)
+        log.info("creating an {}...".format(filename))
+        lines = self.lines_matrix()
+        # Format according to the template.
+        if self.template == "":
+            self.template = HTMLTEMPLATE
+        templatePath = os.path.abspath(
+            os.path.join(self.assetsPath, "..", "..", "template", "views")
+        )
+        html = self.typesetTemplate(
+            templatePath,
+            "\n".join(lines),
+            doc_attributes={
+                "name": "Traceability",
+                "ref": "-",
+                "title": "Doorstop traceability matrix",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+        )
+        common.write_text(html, path)
+
+    def typesetTemplate(
+        self,
+        templatePath,
+        body,
+        doc_attributes,
+        toc=None,
+        parent=None,
+        document=None,
+        is_doc=False,
+        has_index=False,
+        has_matrix=False,
+    ):
+        """Typeset the template."""
+        bottle.TEMPLATE_PATH.insert(0, templatePath)
+        if "baseurl" not in bottle.SimpleTemplate.defaults:
+            bottle.SimpleTemplate.defaults["baseurl"] = ""
+        html = bottle_template(
+            self.template,
+            body=body,
+            toc=toc,
+            parent=parent,
+            document=document,
+            doc_attributes=doc_attributes,
+            is_doc=is_doc,
+            has_index=has_index,
+            has_matrix=has_matrix,
+        )
+        return html
+
     def _matrix_content(self):
-        """Yield rows of content for the traceability matrix."""
+        """Yield rows of content for the traceability matrix in csv format."""
         yield tuple(map(extract_prefix, self.object.documents))
         for row in self.object.get_traceability():
             yield tuple(map(extract_uid, row))
 
-    def format_item_link(self, item, linkify=True):
+    def lines_matrix(self):
+        """Traceability table for html output."""
+        yield '<table class="table">'
+        # header
+        yield "<thead>"
+        yield "<tr>"
+        for document in self.object:  # pylint: disable=not-an-iterable
+            link = '<a href="documents/{p}.html">{p}</a>'.format(p=document.prefix)
+            yield ('  <th scope="col">{link}</th>'.format(link=link))
+        yield "</tr>"
+        yield "</thead>"
+        # data
+        yield "<tbody>"
+        for index, row in enumerate(self.object.get_traceability()):
+            if index % 2:
+                yield '<tr class="alt">'
+            else:
+                yield "<tr>"
+            for item in row:
+                if item is None:
+                    link = ""
+                else:
+                    link = self.format_item_link(item, is_doc=False)
+                yield '  <td scope="row">{}</td>'.format(link)
+            yield "</tr>"
+        yield "</tbody>"
+        yield "</table>"
+
+    def format_item_link(self, item, linkify=True, is_doc=True):
         """Format an item link in HTML."""
         if linkify and is_item(item):
+            if is_doc:
+                tmpRef = ""
+            else:
+                tmpRef = "documents/"
             if item.header:
-                link = '<a href="{p}.html#{u}">{u} {h}</a>'.format(
-                    u=item.uid, h=item.header, p=item.document.prefix
+                link = '<a href="{r}{p}.html#{u}">{u} {h}</a>'.format(
+                    u=item.uid, h=item.header, p=item.document.prefix, r=tmpRef
                 )
             else:
-                link = '<a href="{p}.html#{u}">{u}</a>'.format(
-                    u=item.uid, p=item.document.prefix
+                link = '<a href="{r}{p}.html#{u}">{u}</a>'.format(
+                    u=item.uid, p=item.document.prefix, r=tmpRef
                 )
             return link
         else:
@@ -202,6 +288,12 @@ class HtmlPublisher(MarkdownPublisher):
         else:
             document = True
 
+        # Check for defined document attributes.
+        if document:
+            doc_attributes = get_document_attributes(
+                obj, is_html=True, extensions=self.EXTENSIONS
+            )
+
         # Generate HTML
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
         # We need to handle escaped back-ticks before we pass the text to markdown.
@@ -217,8 +309,6 @@ class HtmlPublisher(MarkdownPublisher):
                 lambda m: "<code>" + "&#96;" * int(len(m.group()) / 18) + "</code>",
                 line,
             )
-
-            # line = line.replace("##!!TEMPINLINE!!##", "<code>&#96;</code>")
             # Check if we are at the end of the body.
             if i == len(body_to_check) - 1:
                 next_line = ""
@@ -231,39 +321,54 @@ class HtmlPublisher(MarkdownPublisher):
         body = "\n".join(block)
 
         if toc:
-            toc_md = self.table_of_contents(True, obj)
-            toc_html = markdown.markdown(toc_md, extensions=self.EXTENSIONS)
+            toc_html = self.table_of_contents(True, obj)
         else:
             toc_html = ""
 
         if document:
             if self.template == "":
                 self.template = HTMLTEMPLATE
-            try:
-                bottle.TEMPLATE_PATH.insert(
-                    0, os.path.join(os.path.dirname(__file__), "..", "..", "views")
-                )
-                if "baseurl" not in bottle.SimpleTemplate.defaults:
-                    bottle.SimpleTemplate.defaults["baseurl"] = ""
-                html = bottle_template(
-                    self.template,
-                    body=body,
-                    toc=toc_html,
-                    parent=obj.parent,
-                    document=obj,
-                )
-            except Exception:
-                raise DoorstopError(
-                    "Problem parsing the template {}".format(self.template)
-                )
+            templatePath = os.path.abspath(
+                os.path.join(self.assetsPath, "..", "..", "template", "views")
+            )
+            html = self.typesetTemplate(
+                templatePath,
+                body,
+                doc_attributes,
+                toc=toc_html,
+                parent=obj.parent,
+                document=obj,
+                is_doc=True,
+                has_index=self.getIndex(),
+                has_matrix=self.getMatrix(),
+            )
             yield "\n".join(html.split(os.linesep))
         else:
             yield body
 
+    def table_of_contents(self, linkify=None, obj=None):
+        """Generate a table of contents. Returns a nested list of items to be rendered with the template."""
+        toc = []
+        toc.append({"depth": 0, "text": "Table of Contents", "uid": "toc"})
+        toc_doc = obj
 
-def _lines_css():
-    """Yield lines of CSS to embedded in HTML."""
-    yield ""
-    for line in common.read_lines(CSS):
-        yield line.rstrip()
-    yield ""
+        for item in iter_items(toc_doc):
+            # Check if item has the attribute heading.
+            if item.heading:
+                lines = item.text.splitlines()
+                heading = lines[0] if lines else ""
+            elif item.header:
+                heading = "{h}".format(h=item.header)
+            else:
+                heading = item.uid
+            if settings.PUBLISH_HEADING_LEVELS:
+                level = format_level(item.level)
+                lbl = "{lev} {h}".format(lev=level, h=heading)
+            else:
+                lbl = heading
+            if linkify:
+                uid = item.uid
+            else:
+                uid = ""
+            toc.append({"depth": item.depth, "text": lbl, "uid": uid})
+        return toc

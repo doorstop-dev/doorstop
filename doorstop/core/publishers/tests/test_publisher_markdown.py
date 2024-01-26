@@ -37,52 +37,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         if os.path.exists("mock_%s" % __name__):
             rmtree("mock_%s" % __name__)
 
-    def test_single_line_heading_to_markdown(self):
-        """Verify a single line heading is published as a heading with an attribute equal to the item id."""
-        expected = "## 1.1 Heading {#req3 }\n\n"
-        lines = publisher.publish_lines(self.item, ".md", linkify=True)
-        # Act
-        text = "".join(line + "\n" for line in lines)
-        # Assert
-        self.assertEqual(expected, text)
-
-    def test_multi_line_heading_to_markdown(self):
-        """Verify a multi line heading is published as a heading with an attribute equal to the item id"""
-        item = MockItemAndVCS(
-            "path/to/req3.yml",
-            _file=(
-                "links: [sys3]" + "\n"
-                "text: 'Heading\n\nThis section describes publishing.'" + "\n"
-                "level: 1.1.0" + "\n"
-                "normative: false"
-            ),
-        )
-        expected = "## 1.1 Heading {#req3 }\nThis section describes publishing.\n\n"
-        lines = publisher.publish_lines(item, ".md", linkify=True)
-        # Act
-        text = "".join(line + "\n" for line in lines)
-        # Assert
-        self.assertEqual(expected, text)
-
-    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
-    def test_multi_line_heading_to_markdown_no_heading_levels(self):
-        """Verify a multi line heading is published as a heading, without level, with an attribute equal to the item id"""
-        item = MockItemAndVCS(
-            "path/to/req3.yml",
-            _file=(
-                "links: [sys3]" + "\n"
-                "text: 'Heading\n\nThis section describes publishing.'" + "\n"
-                "level: 1.1.0" + "\n"
-                "normative: false"
-            ),
-        )
-        expected = "## Heading {#req3 }\nThis section describes publishing.\n\n"
-        lines = publisher.publish_lines(item, ".md", linkify=True)
-        # Act
-        text = "".join(line + "\n" for line in lines)
-        # Assert
-        self.assertEqual(expected, text)
-
     def test_lines_markdown_item(self):
         """Verify Markdown can be published from an item."""
         with patch.object(
@@ -103,30 +57,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             text = "".join(line + "\n" for line in lines)
         self.assertIn("> `path/to/mock/file1` (line 3)\n> `path/to/mock/file2`", text)
 
-    def test_lines_markdown_item_heading(self):
-        """Verify Markdown can be published from an item (heading)."""
-        expected = "## 1.1 Heading {#req3 }\n\n"
-        # Act
-        lines = publisher.publish_lines(self.item, ".md", linkify=True)
-        text = "".join(line + "\n" for line in lines)
-        # Assert
-        self.assertEqual(expected, text)
-
-    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
-    def test_lines_markdown_item_heading_no_heading_levels(self):
-        """Verify an item heading level can be ommitted."""
-        expected = "## Heading {#req3 }\n\n"
-        # Act
-        lines = publisher.publish_lines(self.item, ".md", linkify=True)
-        text = "".join(line + "\n" for line in lines)
-        # Assert
-        self.assertEqual(expected, text)
-
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_markdown_item_normative(self):
         """Verify Markdown can be published from an item (normative)."""
         expected = (
-            "## 1.2 req4 {#req4 }" + "\n\n"
+            "## 1.2 req4 {#req4}" + "\n\n"
             "This shall..." + "\n\n"
             "> `Doorstop.sublime-project`" + "\n\n"
             "*Links: sys4*" + "\n\n"
@@ -160,7 +95,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_lines_markdown_item_without_body_levels(self):
         """Verify Markdown can be published from an item (no body levels)."""
         expected = (
-            "## req4 {#req4 }" + "\n\n"
+            "## req4 {#req4}" + "\n\n"
             "This shall..." + "\n\n"
             "> `Doorstop.sublime-project`" + "\n\n"
             "*Links: sys4*" + "\n\n"
@@ -203,8 +138,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            "# 1.0 Header name {#REQ-001 }"
-            + "\n"
+            "# 1.0 Header name {#REQ-001}"
+            + "\n\n"
             + "Test of a single text line."
             + "\n\n"
         )
@@ -231,10 +166,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             _file=generated_data,
         )
         expected = (
-            "# 1.0 REQ-001 {#REQ-001 }"
-            + "\n\n"
-            + "Test of a single text line."
-            + "\n\n"
+            "# 1.0 REQ-001 {#REQ-001}" + "\n\n" + "Test of a single text line." + "\n\n"
         )
         # Act
         result = getLines(publisher.publish_lines(item, ".md"))
@@ -259,7 +191,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         item.load(reload=True)
         document._items.append(item)
         expected = (
-            "# 1.0 REQ-001 {#REQ-001 }"
+            "# 1.0 REQ-001 {#REQ-001}"
             + "\n\n"
             + "Test of custom attributes."
             + "\n\n"
@@ -297,7 +229,7 @@ class TestTableOfContents(unittest.TestCase):
     * 2.1 Plantuml
     * 2.1 REQ2-001\n"""
         md_publisher = publisher.check(".md", self.document)
-        toc = md_publisher.table_of_contents(linkify=None)
+        toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
         self.assertEqual(expected, toc)
 
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
@@ -312,19 +244,20 @@ class TestTableOfContents(unittest.TestCase):
     * Plantuml
     * REQ2-001\n"""
         md_publisher = publisher.check(".md", self.document)
-        toc = md_publisher.table_of_contents(linkify=None)
+        toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
         self.assertEqual(expected, toc)
 
     def test_toc(self):
         """Verify the table of contents is generated with an ID for the heading"""
         expected = """### Table of Contents
 
-        * [1.2.3 REQ001](#REQ001)
-    * [1.4 REQ003](#REQ003)
-    * [1.5 REQ006](#REQ006)
-    * [1.6 REQ004](#REQ004)
-    * [2.1 Plantuml](#REQ002)
-    * [2.1 REQ2-001](#REQ2-001)\n"""
+        * [1.2.3 REQ001](#123-req001-req001)
+    * [1.4 REQ003](#14-req003-req003)
+    * [1.5 REQ006](#15-req006-req006)
+    * [1.6 REQ004](#16-req004-req004)
+    * [2.1 Plantuml](#21-plantuml-req002-req002)
+    * [2.1 REQ2-001](#21-req2-001-req2-001)\n"""
+        self.maxDiff = None
         md_publisher = publisher.check(".md", self.document)
-        toc = md_publisher.table_of_contents(linkify=True)
+        toc = md_publisher.table_of_contents(linkify=True, obj=self.document)
         self.assertEqual(expected, toc)

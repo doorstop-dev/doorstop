@@ -2,13 +2,18 @@
 %setdefault('navigation', False)
 <!DOCTYPE html>
 <html>
-<head><title>{{title or 'Doorstop'}}</title>
+<head><title>{{!doc_attributes["name"]}}</title>
   <meta charset="utf-8" />
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-  <link rel="stylesheet" href="{{baseurl}}template/bootstrap.min.css" />
-  <link rel="stylesheet" href="{{baseurl}}template/general.css" />
-  {{! '<link type="text/css" rel="stylesheet" href="%s" />'%(baseurl+'template/'+stylesheet) if stylesheet else "" }}
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" ></script>
+  % if is_doc:
+  %   tmpRef='../'
+  % else:
+  %   tmpRef=''
+  % end
+  <link rel="stylesheet" href="{{baseurl}}{{tmpRef}}template/bootstrap.min.css" />
+  <link rel="stylesheet" href="{{baseurl}}{{tmpRef}}template/general.css" />
+  {{! '<link type="text/css" rel="stylesheet" href="%s" />'%(baseurl+tmpRef+'template/'+stylesheet) if stylesheet else "" }}
+  <script src="{{baseurl}}{{tmpRef}}template/tex-mml-chtml.js" id="MathJax-script" async></script>
   <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
     tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}

@@ -1,4 +1,4 @@
-% rebase('base.tpl', title='Doorstop')
+% rebase('base.tpl')
 <H1>Doorstop - List of items in {{prefix}}</H1>
 <P>
 <ul>

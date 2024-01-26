@@ -3,7 +3,11 @@
 
 """Unit test helper functions to reduce code duplication."""
 from logging import NullHandler
+from shutil import copytree
 from typing import List
+
+from doorstop.core.builder import build
+from doorstop.core.tests import ROOT
 
 
 class ListLogHandler(NullHandler):
@@ -23,3 +27,9 @@ class ListLogHandler(NullHandler):
 
     def handle(self, record):
         self.records.append(str(record.msg))
+
+
+def build_expensive_tree(obj):
+    # Build a tree.
+    copytree(ROOT, obj.datapath)
+    obj.mock_tree = build(cwd=obj.datapath, root=obj.datapath, request_next_number=None)

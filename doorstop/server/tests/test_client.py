@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Unit tests for the doorstop.server.client module."""
-
+import importlib.util
+import sys
 import unittest
+from io import StringIO
+from os import sep
 from unittest.mock import Mock, patch
 
 import requests
@@ -98,7 +101,7 @@ class TestModule(unittest.TestCase):
         with patch("requests.post", mock_post):
             number = client.get_next_number("PREFIX")
         # Assert
-        url = "http://1.2.3.4:8080/documents/PREFIX/numbers"
+        url = "http://1.2.3.4:8080/documents/PREFIX/numbers?format=json"
         headers = {"content-type": "application/json"}
         mock_post.assert_called_once_with(url, headers=headers, timeout=10)
         self.assertEqual(42, number)
@@ -112,9 +115,46 @@ class TestModule(unittest.TestCase):
     def test_get_next_number_bad_response(self):
         """Verify the client can handle bad responses for the next number."""
         mock_response = Mock()
-        mock_response.status_code = 200
+        mock_response.status_code = 500
         mock_response.json = Mock(return_value={})
         mock_post = Mock(return_value=mock_response)
         # Act and assert
         with patch("requests.post", mock_post):
             self.assertRaises(DoorstopError, client.get_next_number, "PREFIX")
+
+    def test_main_no_args(self):
+        """Verify the main client function will return an error if no arguments are given."""
+        # Run the main function without arguments.
+        testargs = [sep.join(["doorstop", "server", "client.py"])]
+        with patch.object(sys, "argv", testargs):
+            spec = importlib.util.spec_from_file_location("__main__", testargs[0])
+            runpy = importlib.util.module_from_spec(spec)
+            # Assert that the main function exits.
+            with self.assertRaises(SystemExit):
+                spec.loader.exec_module(runpy)
+            # Assert
+            self.assertIsNotNone(runpy)
+
+    @patch("sys.stdout", new_callable=StringIO)
+    @patch("doorstop.server.client.get_next_number", Mock(return_value=100))
+    @patch("doorstop.settings.SERVER_HOST", "1.2.3.4")
+    def test_main_one_arg(self, stdout):
+        """Verify the main client function will return a value if called with one argument."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json = Mock(return_value={"next": 422})
+        mock_post = Mock(return_value=mock_response)
+
+        # Run the main function with one argument.
+        testargs = [sep.join(["doorstop", "server", "client.py"]), "PREFIX"]
+        with patch.object(sys, "argv", testargs):
+            spec = importlib.util.spec_from_file_location("__main__", testargs[0])
+            runpy = importlib.util.module_from_spec(spec)
+            # Assert that the main function exits.
+            with patch("requests.post", mock_post):
+                spec.loader.exec_module(runpy)
+            # Assert
+            self.assertIsNotNone(runpy)
+
+        # Assert that the version number is correct.
+        self.assertEqual("422\n", stdout.getvalue())

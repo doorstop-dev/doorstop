@@ -782,15 +782,12 @@ class TestPublish(TempTestCase):
         self.assertIs(None, main(["publish", "req", path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_publish_document_html(self):
-        """Verify 'doorstop publish' can create HTML output."""
-        self.assertIs(None, main(["publish", "hlt", "--html"]))
-
     def test_publish_document_html_file(self):
         """Verify 'doorstop publish' can create an HTML file."""
         path = os.path.join(self.temp, "req.html")
         self.assertIs(None, main(["publish", "req", path]))
-        self.assertTrue(os.path.isfile(path))
+        filePath = os.path.join(self.temp, "documents", "req.html")
+        self.assertTrue(os.path.isfile(filePath))
 
     def test_publish_tree_html(self):
         """Verify 'doorstop publish' can create an HTML directory."""

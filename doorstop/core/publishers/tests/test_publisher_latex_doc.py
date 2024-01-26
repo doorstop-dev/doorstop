@@ -38,12 +38,12 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     HLT.tex
     LLT.tex
     REQ.tex
+    Requirements.tex
     TUT.tex
+    Tutorial.tex
     compile.sh
     doc-HLT.tex
     doc-LLT.tex
-    doc-REQ.tex
-    doc-TUT.tex
     traceability.tex
     assets/
         logo-black-white.png
@@ -74,8 +74,8 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         """Verify that LaTeX assets are published when publishing a document."""
         expected_walk = """{n}/
     TUT.tex
+    Tutorial.tex
     compile.sh
-    doc-TUT.tex
     template/
         doorstop.cls
         doorstop.yml
@@ -144,6 +144,31 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_NO_DOC
+        doc_with_attributes.load(reload=True)
+        # Act
+        path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")
+        # Assert
+        self.assertIs(dirpath, path2)
+        # Get the exported tree.
+        walk = getWalk(self.dirpath)
+        self.assertEqual(expected_walk, walk)
+
+    def test_publish_latex_document_to_path(self):
+        """Verify that single document export to path works."""
+        expected_walk = """{n}/
+    REQ.tex
+    Tutorial.tex
+    compile.sh
+    template/
+        doorstop.cls
+        doorstop.yml
+        logo-black-white.png
+""".format(
+            n=self.hex
+        )
+        dirpath = self.dirpath
+        doc_with_attributes = MockDocument(dirpath)
+        doc_with_attributes._file = YAML_LATEX_DOC
         doc_with_attributes.load(reload=True)
         # Act
         path2 = publisher.publish(doc_with_attributes, dirpath, ".tex")

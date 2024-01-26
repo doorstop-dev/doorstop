@@ -976,7 +976,6 @@ class TestDocumentReorder(unittest.TestCase):
 
         # Assert
         self.document._read_index.assert_called_once_with("mock_path")
-        print(self.document._items)
         actual = [item.level for item in self.document.items]
         self.assertListEqual(expected, actual)
         self.assertEqual(self.document.items[-2].text, "")
