@@ -14,15 +14,18 @@ from typing import Dict
 import bottle
 from bottle import get, hook, post, request, response, template
 
-from doorstop import Tree, build, common, publisher, settings
+from doorstop import Tree, build, common, settings
 from doorstop.common import HelpFormatter
 from doorstop.core import vcs
+from doorstop.core.publishers.html import HtmlPublisher
 from doorstop.server import utilities
 
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
+config = {}
 tree: Tree = None  # type: ignore
+html_publisher: HtmlPublisher = None  # type: ignore
 numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers
 
 
@@ -81,20 +84,24 @@ def main(args=None):
     )
 
     # Run the program
-    run(args, os.getcwd(), parser.error)
+    setup(args, os.getcwd(), parser.error)
+    run(args)
 
 
-def run(args, cwd, _):
-    """Start the server.
+def setup(args, cwd, _):
+    """Handle the setup of the server.
 
     :param args: Namespace of CLI arguments (from this module or the CLI)
     :param cwd: current working directory
     :param error: function to call for CLI errors
 
     """
-    global tree
+    global tree, html_publisher
     tree = build(cwd=cwd, root=args.project)
     tree.load()
+    html_publisher = HtmlPublisher(tree, ext=".html")
+    # Force html_publisher to set index and matrix to True.
+    html_publisher.setup(True, True, True)
     host = args.host
     port = args.port or settings.SERVER_PORT
     bottle.TEMPLATE_PATH.insert(
@@ -110,13 +117,28 @@ def run(args, cwd, _):
         args.baseurl += "/"
 
     bottle.SimpleTemplate.defaults["baseurl"] = args.baseurl
-    bottle.SimpleTemplate.defaults["navigation"] = True
+    # Remove navigation since we handle it ourselves.
+    bottle.SimpleTemplate.defaults["navigation"] = False
 
     if args.launch:
         url = utilities.build_url(host=host, port=port)
         webbrowser.open(url)
+
+    # Configure the app.
+    config["host"] = host
+    config["port"] = port
+    config["args"] = args.debug
+
+
+def run(args):
     if not args.wsgi:
-        bottle.run(app=app, host=host, port=port, debug=args.debug, reloader=args.debug)
+        bottle.run(
+            app=app,
+            host=config["host"],
+            port=config["port"],
+            debug=config["args"],
+            reloader=config["args"],
+        )
 
 
 @hook("before_request")
@@ -136,9 +158,57 @@ def enable_cors():
 
 
 @get("/")
+@get("/index")
 def index():
     """Read the tree."""
-    yield template("index", tree_code=tree.draw(html_links=True))
+    prefixes = [str(document.prefix) for document in tree]
+    lines = html_publisher.lines_index(prefixes, tree=tree)
+    yield template(
+        "doorstop",
+        body="\n".join(lines),
+        toc=None,
+        doc_attributes={
+            "name": "Index",
+            "ref": "-",
+            "title": "Doorstop index",
+            "by": "-",
+            "major": "-",
+            "minor": "",
+        },
+        is_doc=False,
+    )
+
+
+@get("/traceability")
+def get_traceability():
+    """Read the traceability matrix."""
+    if utilities.json_response(request):
+        trace_list = tree.get_traceability()
+        # Convert the Items in the list to strings only.
+        traces = []
+        for row in trace_list:
+            trace_row = []
+            for col in row:
+                trace_row.append(str(col))
+            traces.append(trace_row)
+        data = {"traceability": traces}
+        return data
+    else:
+        lines = html_publisher.lines_matrix()
+        return template(
+            "doorstop",
+            body="\n".join(lines),
+            toc=None,
+            doc_attributes={
+                "name": "Traceability",
+                "ref": "-",
+                "title": "Doorstop traceability matrix",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents")
@@ -149,7 +219,19 @@ def get_documents():
         data = {"prefixes": prefixes}
         return data
     else:
-        return template("document_list", prefixes=prefixes)
+        return template(
+            "document_list",
+            prefixes=prefixes,
+            doc_attributes={
+                "name": "Documents",
+                "ref": "-",
+                "title": "Doorstop document list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/all")
@@ -160,7 +242,19 @@ def get_all_documents():
         return data
     else:
         prefixes = [str(document.prefix) for document in tree]
-        return template("document_list", prefixes=prefixes)
+        return template(
+            "document_list",
+            prefixes=prefixes,
+            doc_attributes={
+                "name": "Documents",
+                "ref": "-",
+                "title": "Doorstop document list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/<prefix>")
@@ -171,7 +265,7 @@ def get_document(prefix):
         data = {str(item.uid): item.data for item in document}
         return data
     else:
-        return publisher.publish_lines(document, ext=".html", linkify=True, toc=True)
+        return html_publisher.lines(document, ext=".html", linkify=True, toc=True)
 
 
 @get("/documents/<prefix>/items")
@@ -183,7 +277,20 @@ def get_items(prefix):
         data = {"uids": uids}
         return data
     else:
-        return template("item_list", prefix=prefix, items=uids)
+        return template(
+            "item_list",
+            prefix=prefix,
+            items=uids,
+            doc_attributes={
+                "name": "Items",
+                "ref": "-",
+                "title": "Doorstop item list",
+                "by": "-",
+                "major": "-",
+                "minor": "",
+            },
+            is_doc=False,
+        )
 
 
 @get("/documents/<prefix>/items/<uid>")
@@ -191,10 +298,11 @@ def get_item(prefix, uid):
     """Read a document's item."""
     document = tree.find_document(prefix)
     item = document.find_item(uid)
+    lines = html_publisher.lines(item, ext=".html")
     if utilities.json_response(request):
         return {"data": item.data}
     else:
-        return publisher.publish_lines(item, ext=".html")
+        return "<br>".join(lines)
 
 
 @get("/documents/<prefix>/items/<uid>/attrs")
@@ -234,7 +342,9 @@ def get_template(filename):
     public_dir = os.path.join(
         os.path.dirname(__file__), "..", "core", "files", "templates", "html"
     )
-    return bottle.static_file(filename, root=public_dir)
+    if os.path.isfile(os.path.join(public_dir, filename)):
+        return bottle.static_file(filename, root=public_dir)
+    return bottle.HTTPError(404, "File does not exist.")
 
 
 @get("/documents/assets/<filename>")
@@ -244,9 +354,10 @@ def get_assets(filename):
     # documents to find the requested asset.
     for document in tree:
         # Check if the asset exists in the document's assets folder.
-        temporary_path = os.path.join(document.assets, filename)
-        if os.path.exists(temporary_path):
-            return bottle.static_file(filename, root=document.assets)
+        if document.assets:
+            temporary_path = os.path.join(document.assets, filename)
+            if os.path.exists(temporary_path):
+                return bottle.static_file(filename, root=document.assets)
     # If the asset does not exist, return a 404.
     return bottle.HTTPError(404, "File does not exist.")
 

@@ -9,9 +9,10 @@ import unittest
 from secrets import token_hex
 from shutil import rmtree
 
+from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.builder import build
-from doorstop.core.publishers.tests.helpers import getWalk
+from doorstop.core.publishers.tests.helpers import HTML_TEMPLATE_WALK, getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
 
 
@@ -27,22 +28,17 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
-    HLT.html
-    LLT.html
-    REQ.html
-    TUT.html
     index.html
     traceability.csv
-    assets/
-        logo-black-white.png
-    template/
-        bootstrap.min.css
-        bootstrap.min.js
-        general.css
-        jquery.min.js
-        sidebar.css
-""".format(
-            n=self.hex
+    traceability.html
+    documents/
+        HLT.html
+        LLT.html
+        REQ.html
+        TUT.html
+        assets/
+            logo-black-white.png{w}""".format(
+            n=self.hex, w=HTML_TEMPLATE_WALK
         )
 
     @classmethod
@@ -59,3 +55,9 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         # Get the exported tree.
         walk = getWalk(self.dirpath)
         self.assertEqual(self.expected_walk, walk)
+
+    def test_bad_html_template(self):
+        """Verify a bad HTML template raises an error."""
+        # Act
+        with self.assertRaises(DoorstopError):
+            publisher.publish(self.mock_tree, ".html", template="DOES_NOT_EXIST")

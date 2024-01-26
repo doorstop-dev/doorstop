@@ -38,6 +38,9 @@ class TextPublisher(BasePublisher):
     def format_links(self, items, linkify, to_html=False):
         """No links for text."""
 
+    def table_of_contents(self, linkify=None, obj=None):
+        """No table of contents text."""
+
     def lines(self, obj, **_):
         """Yield lines for a text report.
 

@@ -2,7 +2,7 @@
 
 """Package for doorstop."""
 
-from pkg_resources import DistributionNotFound, get_distribution
+from importlib.metadata import PackageNotFoundError, version
 
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core import (
@@ -22,8 +22,8 @@ from doorstop.core import (
 __project__ = "Doorstop"
 
 try:
-    __version__ = get_distribution(__project__).version
-except DistributionNotFound:
+    __version__ = version(__project__)
+except PackageNotFoundError:
     __version__ = "(local)"
 
 CLI = "doorstop"

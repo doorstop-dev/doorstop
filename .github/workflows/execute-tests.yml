@@ -65,18 +65,8 @@ jobs:
         with:
           command: make test
           current_path: ${{ inputs.workpath }}
-          attempt_limit: 3
+          attempt_limit: 5
           attempt_delay: 2000
-
-      # - name: Run tests attempt 1
-      #   run: make test
-      # - name: Run tests attempt 2
-      #   if: ${{ failure() }}
-      #   run: make test
-      # - name: Run tests attempt 3
-      #   if: ${{ failure() }}
-      #   run: make test
-
       - name: Upload coverage
         uses: codecov/codecov-action@v1
         if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}

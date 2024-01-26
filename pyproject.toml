@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0b11"
+version = "3.0b12"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -44,11 +44,11 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.8"
+python = "^3.8.10"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
-bottle = "~0.12.13"
+bottle = "~0.12.25"
 requests = "^2.0"
 python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
@@ -76,6 +76,8 @@ pytest = "^6.2.5"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"
+WebTest = "3.0.0"
+diff-cover = "8.0.3"
 
 # Reports
 coveragespace = "^4.0"
@@ -108,4 +110,4 @@ profile = "black"
 [build-system]
 
 requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+build-backend = "poetry.core.masonry.api"

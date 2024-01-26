@@ -11,11 +11,18 @@ from shutil import rmtree
 from unittest import mock
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
-from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.document import Document
 from doorstop.core.template import HTMLTEMPLATE
-from doorstop.core.tests import EMPTY, FILES, MockDataMixIn, MockDocument
+from doorstop.core.tests import (
+    EMPTY,
+    FILES,
+    ROOT,
+    MockDataMixIn,
+    MockDocument,
+    MockItem,
+)
+from doorstop.core.types import UID
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -57,8 +64,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_makedirs.assert_called_with(
+            os.sep.join([self.dirpath, "published.custom", "documents"])
+        )
+        mock_open.assert_called_once_with(
+            os.sep.join([path, "documents", "REQ.html"]), "wb"
+        )
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -87,7 +98,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_open.assert_called_once_with(
+            os.sep.join([path, "documents", "REQ.html"]), "wb"
+        )
         mock_lines.assert_called_once_with(
             self.document,
             ".html",
@@ -107,9 +120,11 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self, mock_open, mock_makedirs, mock_copyassets
     ):
         """Verify that assets are published"""
-        assets_path = os.path.join(self.dirpath, "assets")
+        assets_path = os.path.join(
+            self.dirpath, "published.custom", "documents", "assets"
+        )
         path = os.path.join(self.dirpath, "published.custom")
-        document = MockDocument("/some/path")
+        document = MockDocument(os.sep.join(["some", "path"]))
         mock_open.side_effect = lambda *args, **kw: mock.mock_open(
             read_data="$body"
         ).return_value
@@ -117,7 +132,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
+        mock_makedirs.assert_called_with(
+            os.sep.join([self.dirpath, "published.custom", "documents"])
+        )
         mock_copyassets.assert_called_once_with(assets_path)
 
     def test_index(self):
@@ -208,7 +225,12 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item(self):
         """Verify HTML can be published from an item."""
-        expected = '<h2 id="req3">1.1 Heading</h2>\n'
+        expected = """<h2 id="req3">1.1 Heading</h2>
+<p>Heading</p>
+<p><em>Parent links: {}</em></p>
+""".format(
+            self.item.parent_items[0].uid
+        )
         # Act
         lines = publisher.publish_lines(self.item, ".html")
         text = "".join(line + "\n" for line in lines)
@@ -218,7 +240,13 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
     def test_lines_html_item_no_heading_levels(self):
         """Verify an item heading level can be omitted."""
-        expected = '<h2 id="req3">Heading</h2>\n'
+        expected = """<h2 id="req3">Heading</h2>
+<p>Heading</p>
+<p><em>Parent links: {}</em></p>
+""".format(
+            self.item.parent_items[0].uid
+        )
+
         # Act
         lines = publisher.publish_lines(self.item, ".html")
         text = "".join(line + "\n" for line in lines)
@@ -227,7 +255,14 @@ class TestModule(MockDataMixIn, unittest.TestCase):
 
     def test_lines_html_item_linkify(self):
         """Verify HTML (hyper) can be published from an item."""
-        expected = '<h2 id="req3">1.1 Heading</h2>\n'
+        expected = """<h2 id="req3">1.1 Heading</h2>
+<p>Heading</p>
+<p><em>Parent links:</em> <a href="\\{p}.html#\\{u}">{u} {h}</a></p>
+""".format(
+            u=self.item.parent_items[0].uid,
+            h=self.item.parent_items[0].header,
+            p=self.item.parent_items[0].document.prefix,
+        )
         # Act
         lines = publisher.publish_lines(self.item, ".html", linkify=True)
         text = "".join(line + "\n" for line in lines)
@@ -273,18 +308,62 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
-
-    def test_bad_html_template(self):
-        """Verify a bad HTML template raises an error."""
-        # Arrange
-        self.document.items = []
-        # Act
-        gen = publisher.publish_lines(
-            self.document.items, ".html", template="DOES_NOT_EXIST"
+        mock_makedirs.assert_called_with(os.sep.join([self.dirpath, "documents"]))
+        mock_open.assert_called_once_with(
+            os.sep.join([os.path.dirname(path), "documents", "published.html"]), "wb"
         )
-        # Assert
-        with self.assertRaises(DoorstopError):
-            for line in gen:
-                pass
+
+
+@patch("doorstop.core.item.Item", MockItem)
+class TestTableOfContents(unittest.TestCase):
+    """Unit tests for the Document class."""
+
+    def setUp(self):
+        self.document = MockDocument(FILES, root=ROOT)
+
+    def test_toc_no_links_or_heading_levels(self):
+        """Verify the table of contents is generated with heading levels"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": "1.2.3 REQ001", "uid": ""},
+            {"depth": 2, "text": "1.4 REQ003", "uid": ""},
+            {"depth": 2, "text": "1.5 REQ006", "uid": ""},
+            {"depth": 2, "text": "1.6 REQ004", "uid": ""},
+            {"depth": 2, "text": "2.1 Plantuml", "uid": ""},
+            {"depth": 2, "text": "2.1 REQ2-001", "uid": ""},
+        ]
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=None, obj=self.document)
+        self.assertEqual(expected, toc)
+
+    @patch("doorstop.settings.PUBLISH_HEADING_LEVELS", False)
+    def test_toc_no_links(self):
+        """Verify the table of contents is generated without heading levels"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": UID("REQ001"), "uid": ""},
+            {"depth": 2, "text": UID("REQ003"), "uid": ""},
+            {"depth": 2, "text": UID("REQ006"), "uid": ""},
+            {"depth": 2, "text": UID("REQ004"), "uid": ""},
+            {"depth": 2, "text": "Plantuml", "uid": ""},
+            {"depth": 2, "text": UID("REQ2-001"), "uid": ""},
+        ]
+
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=None, obj=self.document)
+        self.assertEqual(expected, toc)
+
+    def test_toc(self):
+        """Verify the table of contents is generated with an ID for the heading"""
+        expected = [
+            {"depth": 0, "text": "Table of Contents", "uid": "toc"},
+            {"depth": 3, "text": "1.2.3 REQ001", "uid": UID("REQ001")},
+            {"depth": 2, "text": "1.4 REQ003", "uid": UID("REQ003")},
+            {"depth": 2, "text": "1.5 REQ006", "uid": UID("REQ006")},
+            {"depth": 2, "text": "1.6 REQ004", "uid": UID("REQ004")},
+            {"depth": 2, "text": "2.1 Plantuml", "uid": UID("REQ002")},
+            {"depth": 2, "text": "2.1 REQ2-001", "uid": UID("REQ2-001")},
+        ]
+        html_publisher = publisher.check(".html", self.document)
+        toc = html_publisher.table_of_contents(linkify=True, obj=self.document)
+        self.assertEqual(expected, toc)

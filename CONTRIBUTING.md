@@ -60,6 +60,12 @@ Clean everything:
 $ make clean
 ```
 
+Compare coverage to current `develop` branch to see if changes causes reduced coverage.
+Please run before creating a PR.
+```sh
+$ make test-cover
+```
+
 ## Automatic
 
 Keep all of the above tasks running on change:

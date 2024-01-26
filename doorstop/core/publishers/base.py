@@ -2,14 +2,17 @@
 
 """Abstract interface to publishers."""
 
+import os
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
 from typing import Any, Dict
 
-from doorstop import common, settings
+from markdown import markdown
+
+from doorstop import common
 from doorstop.common import DoorstopError
 from doorstop.core.template import get_template
-from doorstop.core.types import is_tree, iter_items
+from doorstop.core.types import is_tree
 
 log = common.logger(__name__)
 
@@ -79,7 +82,11 @@ class BasePublisher(metaclass=ABCMeta):
         _during_ publishing.
         """
         self.document = document
-        self.documentPath = path
+        # If path does not end with self.ext, add it.
+        if not path.endswith(self.ext):
+            self.documentPath = os.path.join(path, document.prefix + self.ext)
+        else:
+            self.documentPath = path
 
     def concludePublish(self):
         """Conclude publish.
@@ -88,41 +95,19 @@ class BasePublisher(metaclass=ABCMeta):
         is published.
         """
 
-    def table_of_contents(self, linkify=None, obj=None):
-        toc = "### Table of Contents\n\n"
-        if obj is None:
-            toc_doc = self.object
-        else:
-            toc_doc = obj
+    @abstractmethod
+    def table_of_contents(
+        self, linkify=None, obj=None
+    ):  # pragma: no cover (abstract method)
+        """Yield lines for a table of contents.
 
-        for item in iter_items(toc_doc):
-            if item.depth == 1:
-                prefix = " * "
-            else:
-                prefix = "    " * (item.depth - 1)
-                prefix += "* "
+        :param linkify: turn links into hyperlinks
+        :param obj: Item, list of Items, or Document to publish
 
-            # Check if item has the attribute heading.
-            if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
-            elif item.header:
-                heading = "{h}".format(h=item.header)
-            else:
-                heading = item.uid
+        :return: iterator of lines of text
 
-            if settings.PUBLISH_HEADING_LEVELS:
-                level = format_level(item.level)
-                lbl = "{lev} {h}".format(lev=level, h=heading)
-            else:
-                lbl = heading
-
-            if linkify:
-                line = "{p}[{lbl}](#{uid})\n".format(p=prefix, lbl=lbl, uid=item.uid)
-            else:
-                line = "{p}{lbl}\n".format(p=prefix, lbl=lbl)
-            toc += line
-        return toc
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def lines(self, obj, **kwargs):  # pragma: no cover (abstract method)
@@ -170,9 +155,7 @@ class BasePublisher(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def format_links(
-        self, items, linkify, to_html=False
-    ):  # pragma: no cover (abstract method)
+    def format_links(self, items, linkify):  # pragma: no cover (abstract method)
         """Format a list of linked items."""
         raise NotImplementedError
 
@@ -320,3 +303,47 @@ def format_level(level):
     if text.endswith(".0") and len(text) > 3:
         text = text[:-2]
     return text
+
+
+def get_document_attributes(obj, is_html=False, extensions=None):
+    """Try to get attributes from document."""
+    doc_attributes = {}
+    doc_attributes["name"] = "doc-" + obj.prefix
+    doc_attributes["title"] = "Test document for development of _Doorstop_"
+    doc_attributes["ref"] = "-"
+    doc_attributes["by"] = "-"
+    doc_attributes["major"] = "-"
+    doc_attributes["minor"] = ""
+    doc_attributes["copyright"] = "Doorstop"
+    try:
+        attribute_defaults = obj.__getattribute__("_attribute_defaults")
+    except AttributeError:
+        attribute_defaults = None
+    if attribute_defaults:
+        if "name" in attribute_defaults["doc"]:
+            # Name should only be set if it is not empty.
+            if attribute_defaults["doc"]["name"] != "":
+                doc_attributes["name"] = attribute_defaults["doc"]["name"]
+        if "title" in attribute_defaults["doc"]:
+            doc_attributes["title"] = attribute_defaults["doc"]["title"]
+        if "ref" in attribute_defaults["doc"]:
+            doc_attributes["ref"] = attribute_defaults["doc"]["ref"]
+        if "by" in attribute_defaults["doc"]:
+            doc_attributes["by"] = attribute_defaults["doc"]["by"]
+        if "major" in attribute_defaults["doc"]:
+            doc_attributes["major"] = attribute_defaults["doc"]["major"]
+        if "minor" in attribute_defaults["doc"]:
+            doc_attributes["minor"] = attribute_defaults["doc"]["minor"]
+        if "copyright" in attribute_defaults["doc"]:
+            doc_attributes["copyright"] = attribute_defaults["doc"]["copyright"]
+    # Check output format. If html we need go convert from markdown.
+    if is_html:
+        # Only convert title and copyright.
+        doc_attributes["title"] = markdown(
+            doc_attributes["title"], extensions=extensions
+        )
+        doc_attributes["copyright"] = markdown(
+            doc_attributes["copyright"], extensions=extensions
+        )
+
+    return doc_attributes
