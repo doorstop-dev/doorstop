@@ -171,6 +171,10 @@ class TestAdd(unittest.TestCase):
         self.assertIs(None, main(["add", "TUT", "--level", "1.42"]))
         self.assertTrue(os.path.isfile(self.path))
 
+    def test_add_noreorder(self):
+        """Verify 'doorstop add' can be called without reordering"""
+        self.assertIs(None, main(["add", "TUT", "--noreorder"]))
+
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ["add", "UNKNOWN"])
