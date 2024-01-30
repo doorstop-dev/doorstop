@@ -25,7 +25,6 @@ from doorstop.core.document import Document
 REQ_COUNT = 23
 ALL_COUNT = 55
 
-
 class TempTestCase(unittest.TestCase):
     """Base test case class with a temporary directory."""
 
@@ -89,7 +88,7 @@ class TestCreate(TempTestCase):
         self.assertIs(None, main(["create", "_TEMP", self.temp, "-p", "REQ"]))
 
     @patch("subprocess.call", Mock())
-    def test_create_error_unknwon_parent(self):
+    def test_create_error_unknown_parent(self):
         """Verify 'doorstop create' returns an error with an unknown parent."""
         self.assertRaises(
             SystemExit, main, ["create", "_TEMP", self.temp, "-p", "UNKNOWN"]
@@ -171,9 +170,17 @@ class TestAdd(unittest.TestCase):
         self.assertIs(None, main(["add", "TUT", "--level", "1.42"]))
         self.assertTrue(os.path.isfile(self.path))
 
-    def test_add_noreorder(self):
+    @patch("doorstop.core.document.Document.add_item")
+    def test_add_noreorder(self, mock_add_item):
         """Verify 'doorstop add' can be called without reordering"""
         self.assertIs(None, main(["add", "TUT", "--noreorder"]))
+        mock_add_item.assert_called_once_with(level=None, defaults=None, name=None, reorder=False)
+
+    @patch("doorstop.core.document.Document.add_item")
+    def test_add_reorder(self, mock_add_item):
+        """Verify 'doorstop add' can be called witout --noreorder parameter (automatic reordering)"""
+        self.assertIs(None, main(["add", "TUT"]))
+        mock_add_item.assert_called_once_with(level=None, defaults=None, name=None, reorder=True)
 
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
@@ -209,7 +216,7 @@ class TestAddServer(unittest.TestCase):
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(["add", "TUT", "--server", "1.2.3.4"]))
-        mock_add_item.assert_called_once_with(defaults=None, level=None, name=None)
+        mock_add_item.assert_called_once_with(defaults=None, level=None, name=None, reorder=True)
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
