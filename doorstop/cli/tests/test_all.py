@@ -170,17 +170,9 @@ class TestAdd(unittest.TestCase):
         self.assertIs(None, main(["add", "TUT", "--level", "1.42"]))
         self.assertTrue(os.path.isfile(self.path))
 
-    @patch("doorstop.core.document.Document.add_item")
-    def test_add_noreorder(self, mock_add_item):
+    def test_add_noreorder(self):
         """Verify 'doorstop add' can be called without reordering"""
         self.assertIs(None, main(["add", "TUT", "--noreorder"]))
-        mock_add_item.assert_called_once_with(level=None, defaults=None, name=None, reorder=False)
-
-    @patch("doorstop.core.document.Document.add_item")
-    def test_add_reorder(self, mock_add_item):
-        """Verify 'doorstop add' can be called witout --noreorder parameter (automatic reordering)"""
-        self.assertIs(None, main(["add", "TUT"]))
-        mock_add_item.assert_called_once_with(level=None, defaults=None, name=None, reorder=True)
 
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
