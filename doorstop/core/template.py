@@ -53,6 +53,7 @@ def get_template(obj, path, ext, template):
     output_dir = path
 
     if is_tree(obj):
+        document_template = None
         template_count = 0
         for each in obj.documents:
             if each.template:
