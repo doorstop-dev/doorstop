@@ -14,6 +14,7 @@ from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -41,10 +42,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree(
-            "mock_%s" % __name__,
-            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
-        )
+        rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_publish_markdown_tree_copies_assets(self):
         """Verify that markdown assets are published when publishing a tree."""

@@ -5,7 +5,6 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from pathlib import Path
 from secrets import token_hex
@@ -17,7 +16,7 @@ from doorstop.core import template
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import HTML_TEMPLATE_WALK, getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
-from doorstop.core.tests.helpers import build_expensive_tree
+from doorstop.core.tests.helpers import build_expensive_tree, on_error_with_retry
 
 
 class TestTemplate(MockDataMixIn, unittest.TestCase):
@@ -44,10 +43,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree(
-            cls.testdir,
-            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
-        )
+        rmtree(cls.testdir, onerror=on_error_with_retry)
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""

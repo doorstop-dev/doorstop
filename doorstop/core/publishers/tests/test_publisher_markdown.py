@@ -21,6 +21,7 @@ from doorstop.core.tests import (
     MockItem,
     MockItemAndVCS,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -36,13 +37,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         if os.path.exists("mock_%s" % __name__):
-            rmtree(
-                "mock_%s" % __name__,
-                onerror=lambda func, path, _: (
-                    os.chmod(path, stat.S_IWRITE),
-                    func(path),
-                ),
-            )
+            rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_lines_markdown_item(self):
         """Verify Markdown can be published from an item."""

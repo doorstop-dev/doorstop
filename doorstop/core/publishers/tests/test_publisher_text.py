@@ -14,6 +14,7 @@ from unittest.mock import Mock, patch
 from doorstop.core import publisher
 from doorstop.core.publishers.tests.helpers import getLines
 from doorstop.core.tests import MockDataMixIn, MockItemAndVCS
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -29,13 +30,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         if os.path.exists("mock_%s" % __name__):
-            rmtree(
-                "mock_%s" % __name__,
-                onerror=lambda func, path, _: (
-                    os.chmod(path, stat.S_IWRITE),
-                    func(path),
-                ),
-            )
+            rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""

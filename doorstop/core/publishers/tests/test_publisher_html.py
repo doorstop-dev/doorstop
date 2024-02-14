@@ -23,6 +23,7 @@ from doorstop.core.tests import (
     MockDocument,
     MockItem,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.types import UID
 
 
@@ -38,10 +39,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree(
-            "mock_%s" % __name__,
-            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
-        )
+        rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
     @patch("os.makedirs")
