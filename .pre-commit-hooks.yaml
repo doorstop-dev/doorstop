@@ -18,3 +18,12 @@
     verbose: true
     pass_filenames: false
     stages: [merge-commit, manual]
+
+  - id: check-change-coverage
+    name: check for coverage for the changes
+    description: ensures the changes introduces no uncovered code before pushing
+    entry: make test-cover
+    language: script
+    verbose: true
+    pass_filenames: false
+    stages: [push, manual]
