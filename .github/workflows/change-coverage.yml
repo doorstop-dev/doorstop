@@ -41,9 +41,5 @@ jobs:
       - name: Check coverage
         run: |
           TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
-          echo "Printing all commits on develop branch"
-          git for-each-ref --sort=-committerdate refs/heads/develop
-          echo "Printing the last commit on develop branch"
-          git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' '
-          echo "Comparing the current branch with the last commit on develop branch"
-          TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
+          git fetch origin develop:develop
+          TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=develop
