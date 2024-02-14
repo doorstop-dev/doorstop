@@ -13,6 +13,35 @@ on:
         type: string
 
 jobs:
+  change-coverage:
+    runs-on: ubuntu-latest
+    name: Change coverage
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+          architecture: x64
+
+      - uses: Gr1N/setup-poetry@v8
+
+      - name: Check system dependencies
+        run: make doctor
+
+      - uses: actions/cache@v2
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Install project dependencies
+        run: make install
+      
+      - name: Check coverage
+        run: git_hooks/check_change_coverage.sh
+
+
   test:
     runs-on: ${{ inputs.os }}
     strategy:
