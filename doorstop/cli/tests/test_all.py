@@ -4,6 +4,7 @@
 
 import os
 import shutil
+import stat
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -36,7 +37,13 @@ class TempTestCase(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.cwd)
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(
+                self.temp,
+                onerror=lambda func, path, _: (
+                    os.chmod(path, stat.S_IWRITE),
+                    func(path),
+                ),
+            )
 
 
 class MockTestCase(TempTestCase):
@@ -62,7 +69,10 @@ class TestMain(SettingsTestCase):
     def tearDown(self):
         super().tearDown()
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(
+            self.temp,
+            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
+        )
 
     def test_main(self):
         """Verify 'doorstop' can be called."""

@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -58,7 +59,10 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
+        rmtree(
+            "mock_%s" % __name__,
+            onerror=lambda func, path, _: (os.chmod(path, stat.S_IWRITE), func(path)),
+        )
 
     def test_publish_latex_tree_copies_assets(self):
         """Verify that LaTeX assets are published when publishing a tree."""

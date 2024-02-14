@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -28,7 +29,13 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         if os.path.exists("mock_%s" % __name__):
-            rmtree("mock_%s" % __name__)
+            rmtree(
+                "mock_%s" % __name__,
+                onerror=lambda func, path, _: (
+                    os.chmod(path, stat.S_IWRITE),
+                    func(path),
+                ),
+            )
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""
