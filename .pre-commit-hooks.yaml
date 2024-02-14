@@ -22,7 +22,7 @@
   - id: check-change-coverage
     name: check for coverage for the changes
     description: ensures the changes introduces no uncovered code before pushing
-    entry: make test-cover
+    entry: git_hooks/check_change_coverage.sh
     language: script
     verbose: true
     pass_filenames: false
