@@ -39,4 +39,4 @@ jobs:
         run: make install
       
       - name: Check coverage
-        run: make test-cover
+        run: TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(git for-each-ref --sort=-committerdate refs/heads/develop | cut -d ' ' -f1)
