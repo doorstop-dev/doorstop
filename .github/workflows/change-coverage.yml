@@ -39,4 +39,4 @@ jobs:
         run: make install
       
       - name: Check coverage
-        run: .github/workflows/check_change_coverage.sh
+        run: make test-cover
