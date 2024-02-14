@@ -41,4 +41,5 @@ jobs:
       - name: Check coverage
         run: |
           TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
-          TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(git for-each-ref --sort=-committerdate refs/heads/develop | cut -d ' ' -f1)
+          git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' '         
+          TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
