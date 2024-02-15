@@ -29,6 +29,7 @@ from doorstop.core.tests import (
     SYS,
     DocumentNoSkip,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.vcs import mockvcs
 
 
@@ -387,7 +388,7 @@ class TestImporter(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_import_yml(self):
         """Verify items can be imported from a YAML file."""
@@ -521,7 +522,7 @@ class TestExporter(unittest.TestCase):
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_export_yml(self):
         """Verify a document can be exported as a YAML file."""
@@ -577,7 +578,7 @@ class TestPublisher(unittest.TestCase):
 
     def tearDown(self):
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""

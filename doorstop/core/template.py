@@ -53,7 +53,17 @@ def get_template(obj, path, ext, template):
     output_dir = path
 
     if is_tree(obj):
-        document_template = obj.documents[0].template
+        document_template = None
+        template_count = 0
+        for each in obj.documents:
+            if each.template:
+                document_template = each.template
+                template_count += 1
+        if template_count > 1:
+            raise common.DoorstopError(
+                """Multiple templates found in tree. Please specify a single template for the tree.
+I.e., only one of the documents in the tree should have a template folder."""
+            )
     else:
         document_template = obj.template
 

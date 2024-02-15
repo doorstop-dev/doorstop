@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -22,6 +23,7 @@ from doorstop.core.tests import (
     MockDocument,
     MockItem,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.types import UID
 
 
@@ -37,7 +39,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
+        rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
     @patch("os.makedirs")
