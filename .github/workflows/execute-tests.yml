@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Change path on Windows
         if: ${{ inputs.os == 'windows-latest' }}
@@ -38,7 +38,7 @@ jobs:
           mkdir -p ${{ inputs.workpath }}
           mv $env:GITHUB_WORKSPACE\* ${{ inputs.workpath }}\ -Force
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
@@ -48,7 +48,7 @@ jobs:
       - name: Check system dependencies
         run: make doctor
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
@@ -60,7 +60,7 @@ jobs:
       # very slow. Especially any client/server tests seems to be problematic.
       # This is a simple attempt to re-run the tests up to three times if they
       # fail. Does not add any execution time if successful.
-      - uses: Wandalen/wretry.action@v1.0.20
+      - uses: Wandalen/wretry.action@v1.4.4
         name: Run tests
         with:
           command: make test

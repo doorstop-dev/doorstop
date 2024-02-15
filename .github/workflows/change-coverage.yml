@@ -18,9 +18,11 @@ jobs:
     name: Change coverage
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           architecture: x64
@@ -30,7 +32,7 @@ jobs:
       - name: Check system dependencies
         run: make doctor
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: .venv
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
@@ -41,6 +43,4 @@ jobs:
       - name: Check coverage
         run: |
           TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
-          git fetch origin develop:develop
-          # TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=develop
           TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
