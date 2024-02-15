@@ -143,6 +143,29 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         walk = getWalk(self.dirpath)
         self.assertEqual(expected_walk, walk)
 
+    def test_html_tree_with_multiple_template(self):
+        """Verify that a document tree with multiple custom html template throws an error."""
+        # This test MUST use the expensive tree since it changes the document content
+        # in the source tree otherwise!
+        build_expensive_tree(self)
+
+        # Check that only custom template is published.
+        os.makedirs(self.dirpath)
+        # Create a custom template folder.
+        doc_path = self.mock_tree.documents[0].path
+        os.mkdir(os.path.join(doc_path, "template"))
+        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+        # Create another custom template folder.
+        doc_path = self.mock_tree.documents[1].path
+        os.mkdir(os.path.join(doc_path, "template"))
+        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+
+        # Act
+        with self.assertRaises(DoorstopError):
+            _, _ = template.get_template(
+                self.mock_tree, self.dirpath, ".html", "custom_css"
+            )
+
     def test_html_doc_with_custom_template(self):
         """Verify that a custom html template is used correctly."""
         # This test MUST use the expensive tree since it changes the document content
