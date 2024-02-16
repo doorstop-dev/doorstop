@@ -14,6 +14,7 @@ from doorstop.common import DoorstopError
 from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.tests import EMPTY, ROOT, MockDataMixIn
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -40,7 +41,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         if os.path.exists("mock_%s" % __name__):
-            rmtree("mock_%s" % __name__)
+            rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_publish_document_unknown(self):
         """Verify an exception is raised when publishing unknown formats."""

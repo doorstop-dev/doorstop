@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -14,6 +15,7 @@ from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import HTML_TEMPLATE_WALK, getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -44,7 +46,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
+        rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_publish_html_tree_copies_assets(self):
         """Verify that html assets are published when publishing a tree."""

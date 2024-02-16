@@ -116,7 +116,7 @@ test-cover: install
 # Run first to generate coverage data current code.
 	TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
 # Run second to generate coverage data for the code in the develop branch.
-	TEST_INTEGRATION=true diff-cover ./coverage.xml --compare-branch=$(shell git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
+	TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(shell git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
 
 .PHONY: read-coverage
 read-coverage:

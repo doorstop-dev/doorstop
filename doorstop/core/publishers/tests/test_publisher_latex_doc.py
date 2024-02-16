@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
+import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -21,6 +22,7 @@ from doorstop.core.publishers.tests.helpers_latex import (
     YAML_LATEX_ONLY_REF,
 )
 from doorstop.core.tests import ROOT, MockDataMixIn, MockDocument
+from doorstop.core.tests.helpers import on_error_with_retry
 
 
 class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
@@ -58,7 +60,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
-        rmtree("mock_%s" % __name__)
+        rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
 
     def test_publish_latex_tree_copies_assets(self):
         """Verify that LaTeX assets are published when publishing a tree."""

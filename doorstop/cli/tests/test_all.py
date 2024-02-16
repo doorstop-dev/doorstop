@@ -21,6 +21,7 @@ from doorstop.cli.tests import (
 )
 from doorstop.core.builder import _clear_tree
 from doorstop.core.document import Document
+from doorstop.core.tests.helpers import on_error_with_retry
 
 REQ_COUNT = 23
 ALL_COUNT = 55
@@ -36,7 +37,7 @@ class TempTestCase(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.cwd)
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
 
 class MockTestCase(TempTestCase):
@@ -62,7 +63,7 @@ class TestMain(SettingsTestCase):
     def tearDown(self):
         super().tearDown()
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
