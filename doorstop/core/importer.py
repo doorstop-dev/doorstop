@@ -266,7 +266,7 @@ def _itemize(header, data, document, mapping=None):
 
                         ref_dict = {"type": ref_type, "path": ref_path}
                         if len(ref_item_components) == 3:
-                            ref_keyword = ref_item_components[2].split(":")[1]
+                            ref_keyword = ref_item_components[2].split(":", 1)[1]
                             ref_dict["keyword"] = ref_keyword
 
                         ref.append(ref_dict)
