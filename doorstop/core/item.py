@@ -358,7 +358,11 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     continue
                 stripped_value = []
                 for el in value:
-                    ref_dict = {"path": el["path"].strip(), "type": "file"}  # type: ignore
+                    if isinstance(el, dict) and "type" in el:
+                        type_stripped = el["type"].strip()
+                    else:
+                        type_stripped = "file"
+                    ref_dict = {"path": el["path"].strip(), "type": type_stripped}  # type: ignore
 
                     if "keyword" in el:
                         ref_dict["keyword"] = el["keyword"]  # type: ignore
