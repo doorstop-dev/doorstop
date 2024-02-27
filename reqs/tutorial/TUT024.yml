@@ -1,0 +1,37 @@
+active: true
+derived: false
+header: |
+  Ordered list with empty items
+level: 5.1.2
+links: []
+normative: false
+ref: ''
+reviewed: cGjgXyXJ935uKtAauBIH2yo8QMpe_WJNfEJ7UrNOOVg=
+text: |
+  This is an example with nesting and empty list items:
+  1. Item 1
+  1. Item 2
+      1. Item 2.1
+          1. Item 2.1.1
+  1. Item 3
+
+  _Notes_:
+
+  Numered (or **ordered**) lists in Markdown are a bit special.
+
+  They are identified with a number followed immediatly by a . (dot).
+
+  **What** number does not really matter!
+
+  Therefore, the easiest way to make sure **all** differenct markdown renderers
+  handles the list correctly is to use the same number for all items in the list,
+  i.e., 1.
+
+  The indentation is also important. Whereas the unordered lists can handle
+  different indentation, the ordered lists must have four (4) spaces
+  indentation for each level!
+
+  _**IMPORTANT**_
+
+  _Ordered lists that are nested in Markdown cannot automatically handle nested numbering!_
+  In other words, each nested level **will** start with the number 1!

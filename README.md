@@ -23,9 +23,9 @@ The project is licensed as [LGPLv3](https://github.com/doorstop-dev/doorstop/blo
 To report a problem or a security vulnerability please [raise an issue](https://github.com/doorstop-dev/doorstop/issues).
 Additional references:
 
-- publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
-- talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
-- sample: [Generated HTML](http://doorstop-dev.github.io/doorstop/)
+- Publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
+- Talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
+- Sample: [Generated HTML](http://doorstop-dev.github.io/doorstop/)
 
 # Setup
 

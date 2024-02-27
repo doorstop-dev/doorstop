@@ -11,8 +11,7 @@ from doorstop.common import DoorstopError
 from doorstop.core import Document
 from doorstop.core.types import is_tree
 
-CSS = os.path.join(os.path.dirname(__file__), "files", "doorstop.css")
-HTMLTEMPLATE = "sidebar"
+HTMLTEMPLATE = "doorstop"
 INDEX = "index.html"
 MATRIX = "traceability.csv"
 
@@ -42,18 +41,31 @@ def get_template(obj, path, ext, template):
     """
 
     # Set assets, ouput and template folders.
-    if is_tree(obj):
-        assets_dir = os.path.join(path, Document.ASSETS)  # path is a directory name
-        document_template = obj.documents[0].template
-        template_dir = os.path.join(path, "template")
-        output_dir = path
+    # If path ends with ext, use dirname since it is a file.
+    if path.endswith(ext):
+        path = os.path.dirname(path)
+    # If html, add documents to path.
+    if ext == ".html":
+        assets_dir = os.path.join(path, "documents", Document.ASSETS)
     else:
-        assets_dir = os.path.join(
-            os.path.dirname(path), Document.ASSETS
-        )  # path is a filename
+        assets_dir = os.path.join(path, Document.ASSETS)
+    template_dir = os.path.join(path, "template")
+    output_dir = path
+
+    if is_tree(obj):
+        document_template = None
+        template_count = 0
+        for each in obj.documents:
+            if each.template:
+                document_template = each.template
+                template_count += 1
+        if template_count > 1:
+            raise common.DoorstopError(
+                """Multiple templates found in tree. Please specify a single template for the tree.
+I.e., only one of the documents in the tree should have a template folder."""
+            )
+    else:
         document_template = obj.template
-        template_dir = os.path.join(os.path.dirname(path), "template")
-        output_dir = os.path.dirname(path)
 
     # Check for custom template and verify that it is available.
     if template and not document_template:
@@ -66,14 +78,14 @@ def get_template(obj, path, ext, template):
     builtin_template = None
     # Check extension and set template folder accordingly.
     if ext == ".md":
-        template_assets = template_assets + "/markdown"
+        template_assets = os.sep.join([template_assets, "markdown"])
     elif ext == ".tex":
-        template_assets = template_assets + "/latex"
+        template_assets = os.sep.join([template_assets, "latex"])
         builtin_template = "doorstop"
     elif ext == ".txt":
-        template_assets = template_assets + "/text"
+        template_assets = os.sep.join([template_assets, "text"])
     else:
-        template_assets = template_assets + "/html"
+        template_assets = os.sep.join([template_assets, "html"])
         builtin_template = HTMLTEMPLATE
 
     # Remove existing templates and assets first.
@@ -91,12 +103,22 @@ def get_template(obj, path, ext, template):
     # Copy template from document if it exists and template is given.
     if document_template and template:
         os.makedirs(template_dir)
-        log.info(
-            "Copying %s to %s",
-            document_template,
-            os.path.join(os.path.dirname(path), "template"),
-        )
-        common.copy_dir_contents(document_template, template_dir)
+        if is_tree(obj):
+            for each in obj.documents:
+                log.info(
+                    "Copying %s to %s",
+                    each.template,
+                    os.path.join(os.path.dirname(path), "template"),
+                )
+                common.copy_dir_contents(each.template, template_dir)
+        else:
+            log.info(
+                "Copying %s to %s",
+                document_template,
+                os.path.join(os.path.dirname(path), "template"),
+            )
+            common.copy_dir_contents(document_template, template_dir)
+
     # Only create template_dir if template actually exists.
     elif os.path.isdir(template_assets):
         os.makedirs(template_dir)
@@ -106,6 +128,13 @@ def get_template(obj, path, ext, template):
             os.path.join(os.path.dirname(path), "template"),
         )
         common.copy_dir_contents(template_assets, template_dir)
+        # If html template, also copy the default views files.
+        if ext == ".html" and builtin_template:
+            views_src_dir = os.path.join(os.path.dirname(__file__), "..", "views")
+            views_tgt_dir = os.path.join(template_dir, "views")
+            log.info("Copying %s to %s", views_src_dir, views_tgt_dir)
+            os.makedirs(views_tgt_dir)
+            common.copy_dir_contents(views_src_dir, views_tgt_dir)
 
     # Return correct template and assets folder.
     if not template:
@@ -128,22 +157,41 @@ def read_template_data(assets_dir, template):
     return template_data
 
 
-def check_latex_template_data(template_data):
+def check_latex_template_data(template_data, filename=None):
     """Check that all required packages have been defined in template data."""
     # Check basics first.
-    if "usepackage" not in template_data:
+    if not isinstance(template_data, dict):
         log.error(
-            "There is no dictionary of packages in the template configuration file."
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "There is no list of packages in the template configuration file."
+            "There seems to be a problem with the template configuration file '{}'.".format(
+                filename
+            )
+        )
+    if "usepackage" not in template_data:
+        log.error(
+            "There is no dictionary of packages in the template configuration file '{}'.".format(
+                filename
+            )
+        )
+        raise DoorstopError(
+            "There is no list of packages in the template configuration file '{}'.".format(
+                filename
+            )
         )
     if not isinstance(template_data["usepackage"], dict):
         log.error(
-            "The 'usepackage' data in the configuration file is not a dictionary."
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
         raise DoorstopError(
-            "The 'usepackage' data in the configuration file is not a dictionary."
+            "The 'usepackage' data in the configuration file is not a dictionary '{}'.".format(
+                filename
+            )
         )
 
     # Iterate over all required packages.
