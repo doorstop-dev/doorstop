@@ -11,6 +11,7 @@ Icon*
 # Temporary virtual environment files
 /.cache/
 /.venv/
+/.python-version
 
 # Temporary server files
 .env

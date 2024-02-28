@@ -29,6 +29,7 @@ from doorstop.core.tests import (
     SYS,
     DocumentNoSkip,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.vcs import mockvcs
 
 
@@ -387,7 +388,7 @@ class TestImporter(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_import_yml(self):
         """Verify items can be imported from a YAML file."""
@@ -521,7 +522,7 @@ class TestExporter(unittest.TestCase):
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_export_yml(self):
         """Verify a document can be exported as a YAML file."""
@@ -577,7 +578,7 @@ class TestPublisher(unittest.TestCase):
 
     def tearDown(self):
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""
@@ -586,7 +587,8 @@ class TestPublisher(unittest.TestCase):
         path2 = core.publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        self.assertTrue(os.path.isfile(path))
+        filePath = os.path.join(self.temp, "documents", "published.html")
+        self.assertTrue(os.path.isfile(filePath))
 
     def test_publish_bad_link(self):
         """Verify a tree can be published with bad links."""
@@ -652,12 +654,15 @@ class TestPublisher(unittest.TestCase):
         path = os.path.join(FILES, "published.html")
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, ".html", linkify=True)
+        lines = core.publisher.publish_lines(
+            self.document, ".html", linkify=True, toc=True
+        )
         actual = "".join(line + "\n" for line in lines)
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
         common.write_text(actual, path)
+        self.assertEqual(expected, actual)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_html_document_without_child_links(self):
@@ -665,12 +670,13 @@ class TestPublisher(unittest.TestCase):
         path = os.path.join(FILES, "published2.html")
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, ".html")
+        lines = core.publisher.publish_lines(self.document, ".html", toc=True)
         actual = "".join(line + "\n" for line in lines)
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
         common.write_text(actual, path)
+        self.assertEqual(expected, actual)
 
 
 class TestModule(unittest.TestCase):

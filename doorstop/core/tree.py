@@ -631,7 +631,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, "prefix", "") or str(self.document)
         if html_links:
-            prefix = '<a href="documents/{0}">{0}</a>'.format(prefix)
+            prefix = '<a href="documents/{0}.html">{0}</a>'.format(prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):

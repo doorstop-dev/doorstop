@@ -985,7 +985,6 @@ class TestFormatting(unittest.TestCase):
         item.load()
         item.save()
         text = common.read_text(self.ITEM)
-        self.maxDiff = None
         self.assertEqual(self.backup, text)
 
 
@@ -1065,7 +1064,6 @@ class TestUTF8(unittest.TestCase):
         item.load()
         item.save()
         text = common.read_text(ITEM)
-        self.maxDiff = None
         common.write_text(backup, ITEM)
         self.assertEqual(backup, text)
 
@@ -1077,7 +1075,6 @@ class TestUTF8(unittest.TestCase):
         item.load()
         item.save()
         text = common.read_text(ITEM)
-        self.maxDiff = None
         common.write_text(backup, ITEM)
         self.assertEqual(backup, text)
 
@@ -1101,6 +1098,5 @@ class TestOSLineSep(unittest.TestCase):
         item.load()
         item.save()
         text = common.read_text(ITEM)
-        self.maxDiff = None
         common.write_text(backup, ITEM)
         self.assertEqual(backup, text)

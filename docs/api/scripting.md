@@ -45,7 +45,6 @@ For this use case, create a script to call in place of the default command-line 
 ```python
 #!/usr/bin/env python
 
-
 import sys
 from doorstop import build, DoorstopInfo, DoorstopWarning, DoorstopError
 
@@ -56,12 +55,12 @@ def main():
     sys.exit(0 if success else 1)
 
 
-def check_document(document):
+def check_document(document, tree):
     if sum(1 for i in document if i.normative) < 10:
         yield DoorstopInfo("fewer than 10 normative items")
 
 
-def check_item(item):
+def check_item(item, document, tree):
     if not item.get('type'):
         yield DoorstopWarning("no type specified")
     if item.derived and not item.get('rationale'):

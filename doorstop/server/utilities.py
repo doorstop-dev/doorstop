@@ -34,8 +34,14 @@ def build_url(host=None, port=None, path=None):
 
 
 def json_response(request):
-    """Determine if the request's response should be JSON."""
+    """Determine if the request's response should be JSON.
+
+    This is done by checking if there is a query parameter named "format" with the value "json",
+    or if there is a json body in the request with a parameter named "format" with the value "json".
+    """
     if request.query.get("format") == "json":
         return True
-    else:
-        return request.content_type == "application/json"
+    if request.json:
+        if request.json.get("format") == "json":
+            return True
+    return False
