@@ -182,6 +182,7 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         ".csv": "csv",
         ".xlsx": "xlsx",
         ".tex": "latex",
+        ".adoc": "asciidoc",
     }.items():
         try:
             if getattr(args, option):

@@ -540,6 +540,7 @@ def _publish(subs, shared):
         "path", nargs="?", help="path to published file or directory for 'all'"
     )
     group = sub.add_mutually_exclusive_group()
+    group.add_argument("-a", "--asciidoc", action="store_true", help="output AsciiDoc")
     group.add_argument(
         "-t", "--text", action="store_true", help="output text (default when no path)"
     )
