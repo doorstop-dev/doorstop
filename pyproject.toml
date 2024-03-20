@@ -59,7 +59,7 @@ openpyxl = ">=3.1.2"
 [tool.poetry.dev-dependencies]
 
 # Formatters
-black = "^23.1"
+black = "^24.3"
 isort = "^5.12"
 
 # Linters
