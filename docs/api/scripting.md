@@ -72,3 +72,39 @@ if __name__ == '__main__':
 ```
 
 Both `document_hook` and `item_hook` are optional, but if provided these callbacks will be passed each corresponding instance. Each callback should yield instances of Doorstop's exception classes based on severity of the issue.
+
+## Validation Hook per folder
+
+Doorstop also has an extension which allows creating an item validation per folder, allowing the document to have different validations for each document section.
+To enable this mechanism you must insert into your `.doorstop.yml` file the following lines:
+
+```yaml
+extensions:
+  item_validator: .req_sha_item_validator.py # a python file path relative to .doorstop.yml
+```
+
+or
+
+```yaml
+extensions:
+  item_validator: ../validators/my_complex_validator.py # a python file path relative to .doorstop.yml
+```
+
+The referenced file must have a function called `item_validator` with a single parameter `item`.
+
+Example:
+
+```python
+
+
+def item_validator(item):
+    if getattr(item, "references") == None:
+        return [] # early return
+    for ref in item.references:
+        if ref['sha'] != item._hash_reference(ref['path']):
+            yield DoorstopError("Hash has changed and it was not reviewed properly")
+
+```
+
+Although it is not required, it is recommended to yield a Doorstop type such as,
+`DoorstopInfo`, `DoorstopError`, or `DoorstopWarning`.
