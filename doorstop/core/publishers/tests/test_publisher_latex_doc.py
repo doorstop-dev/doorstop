@@ -37,6 +37,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
+    EXT.tex
     HLT.tex
     LLT.tex
     REQ.tex
@@ -44,6 +45,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     TUT.tex
     Tutorial.tex
     compile.sh
+    doc-EXT.tex
     doc-HLT.tex
     doc-LLT.tex
     traceability.tex
