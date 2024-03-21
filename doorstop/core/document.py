@@ -6,12 +6,17 @@ import os
 import re
 from collections import OrderedDict
 from itertools import chain
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import yaml
 
 from doorstop import common, settings
-from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.common import (
+    DoorstopError,
+    DoorstopInfo,
+    DoorstopWarning,
+    import_path_as_module,
+)
 from doorstop.core.base import (
     BaseFileObject,
     BaseValidatable,
@@ -68,6 +73,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         self._data["parent"] = None  # type: ignore
         self._data["itemformat"] = kwargs.get("itemformat")  # type: ignore
         self._extended_reviewed: List[str] = []
+        self.extensions: Dict[str, Any] = {}
         self._items: List[Item] = []
         self._itered = False
         self.children: List[Document] = []
@@ -228,6 +234,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                     key, self.config
                 )
                 raise DoorstopError(msg)
+
+        self.extensions = data.get("extensions", {})
+
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -760,6 +769,11 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             plevel = clevel.copy()
 
     @staticmethod
+    def _import_validator(path: str):
+        """Load an external python item validator logic from doorstop yml defined for the folder."""
+        return import_path_as_module(path)
+
+    @staticmethod
     def _items_by_level(items, keep=None):
         """Iterate through items by level with the kept item first."""
         # Collect levels
@@ -816,6 +830,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """
         assert document_hook is None
         skip = [] if skip is None else skip
+
+        ext_validator = None
+        if "item_validator" in self.extensions:  # type: ignore
+            validator = self.extensions["item_validator"]  # type: ignore
+            path = os.path.join(self.path, validator)  # type: ignore
+            ext_validator = self._import_validator(path)
+            ext_validator = getattr(ext_validator, "item_validator")
+
+        extension_validator = ext_validator if ext_validator else lambda **kwargs: []
         hook = item_hook if item_hook else lambda **kwargs: []
 
         if self.prefix in skip:
@@ -844,6 +867,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             for issue in chain(
                 hook(item=item, document=self, tree=self.tree),
                 item_validator.get_issues(item, skip=skip),
+                extension_validator(item=item),
             ):
                 # Prepend the item's UID to yielded exceptions
                 if isinstance(issue, Exception):
