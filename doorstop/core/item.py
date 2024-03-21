@@ -3,6 +3,7 @@
 """Representation of an item in a document."""
 
 import functools
+import hashlib
 import linecache
 import os
 from typing import Any, List
@@ -263,7 +264,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     if "keyword" in ref_dict:
                         ref_keyword = ref_dict["keyword"]
                         stripped_ref_dict["keyword"] = ref_keyword
-
+                    if "sha" in ref_dict:
+                        stripped_ref_dict["sha"] = ref_dict["sha"]
                     stripped_value.append(stripped_ref_dict)
 
                 value = stripped_value
@@ -296,6 +298,37 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._set_attributes(data)
         # Set meta attributes
         self._loaded = True
+
+    def _hash_reference(self, path):
+        """
+        Extension method created to generate checksum from the list of find_references.
+
+        :param path: a path from a reference inside the references list
+        """
+        sha = None
+        if "item_sha_required" not in self.document.extensions:
+            return sha
+
+        try:
+            sha256 = hashlib.sha256()
+            with open(os.path.join(self.root, path), "rb") as f:
+                BUFSIZE = (
+                    int(self.document.extensions["item_sha_buffer_size"])
+                    if "item_sha_buffer_size" in self.document.extensions
+                    else 65536
+                )
+                while True:
+                    fdata = f.read(BUFSIZE)
+                    if not fdata:
+                        break
+                    sha256.update(fdata)
+                sha = sha256.hexdigest()
+
+        # We don't report missing files because validate already does that.
+        except FileNotFoundError:
+            pass
+
+        return sha
 
     @edit_item
     def save(self):
@@ -363,6 +396,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     if "keyword" in el:
                         ref_dict["keyword"] = el["keyword"]  # type: ignore
 
+                    if "sha" in el:
+                        ref_dict["sha"] = el["sha"]  # type: ignore
                     stripped_value.append(ref_dict)
 
                 value = stripped_value  # type: ignore
@@ -852,6 +887,30 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def review(self):
         """Mark the item as reviewed."""
         log.info("marking item as reviewed...")
+
+        # only introduce the sha for reference files if
+        # the option item_sha_required is defined in the extension section from .doorstop.yml
+        if (
+            "item_sha_required" in self.document.extensions
+            and self.references is not None
+        ):
+            references = self.references
+            for ref, _ in enumerate(references):
+                temp_sha = self._hash_reference(references[ref]["path"])
+                log.info(references[ref])
+                if "sha" in references[ref] and references[ref]["sha"] == temp_sha:
+                    log.info(
+                        f"{references[ref]['path']} checksum did not change skipping update..."
+                    )
+                    continue
+
+                if "sha" in references[ref] and references[ref]["sha"] != temp_sha:
+                    log.info(f"updating checksum for {references[ref]['path']}")
+                    references[ref]["sha"] = temp_sha
+                else:
+                    log.info(f"Inserting checksum for {references[ref]['path']}")
+                    references[ref]["sha"] = temp_sha
+
         self._data["reviewed"] = self.stamp(links=True)
 
     @delete_item
