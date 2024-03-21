@@ -24,7 +24,7 @@ from doorstop.core.document import Document
 from doorstop.core.tests.helpers import on_error_with_retry
 
 REQ_COUNT = 23
-ALL_COUNT = 55
+ALL_COUNT = 57
 
 
 class TempTestCase(unittest.TestCase):

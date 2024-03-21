@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import List
+from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
@@ -95,12 +95,22 @@ class MockSimpleDocument:
         self.itemformat = "yaml"
         self._items: List[Item] = []
         self.extended_reviewed: List[str] = []
+        self.extensions: Dict[str, Any] = {}
 
     def __iter__(self):
         yield from self._items
 
     def set_items(self, items):
         self._items = items
+
+
+class MockSimpleDocumentExtensions(MockSimpleDocument):
+    """Mock Document class that enable extensions."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        for k, v in kwargs.items():
+            self.extensions[k] = v
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902

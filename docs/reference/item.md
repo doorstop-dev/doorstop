@@ -243,10 +243,47 @@ of the item.
 
 ```yaml
 references:
-- path: tests/test1.cpp
-  type: file
-- path: tests/test2.cpp
-  type: file
+  - path: tests/test1.cpp
+    type: file
+  - path: tests/test2.cpp
+    type: file
+```
+
+### Generating hash for referenced files
+
+Doorstop has an extension to generate a hash for each referenced file inside the array.
+
+.doorstop.yml
+
+```yaml
+settings:
+  digits: 3
+  prefix: REQ
+  sep: ""
+extensions:
+  item_sha_required: true
+```
+
+Now when reviewing items, Doorstop will insert a field named `sha` where each item reference will
+contain a `sha256`.
+
+Example:
+
+```yaml
+active: true
+derived: false
+header: ""
+level: 2.0
+links: []
+normative: true
+ref: ""
+references:
+  - path: files/a.file
+    sha: 28c16553011a46bca9b78d189f8fd30c59c4138a1b6a9a4961f525849d48037e
+    type: file
+reviewed: BU95pdUUcz5DrFur8GUUqBaIXSNPBYMEZVMy-6IPM4s=
+text: |
+  My text
 ```
 
 ### Note: new behavior vs old behavior

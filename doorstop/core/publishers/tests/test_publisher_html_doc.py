@@ -34,6 +34,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
     traceability.csv
     traceability.html
     documents/
+        EXT.html
         HLT.html
         LLT.html
         REQ.html

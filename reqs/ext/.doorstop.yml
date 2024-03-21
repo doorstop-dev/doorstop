@@ -1,0 +1,9 @@
+settings:
+  digits: 3
+  itemformat: yaml
+  parent: REQ
+  prefix: EXT
+  sep: ""
+extensions:
+  item_validator: .req_sha_item_validator.py
+  item_sha_required: true
