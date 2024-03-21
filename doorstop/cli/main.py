@@ -7,6 +7,8 @@
 import argparse
 import os
 import sys
+from pathlib import Path
+from types import ModuleType
 
 from doorstop import common, settings
 from doorstop.cli import commands, utilities
@@ -48,6 +50,15 @@ def main(args=None):  # pylint: disable=R0915
         type=int,
         help="use a custom port for the server",
         default=settings.SERVER_PORT,
+    )
+
+    server.add_argument(
+        "--settings",
+        metavar="SETTINGS_FILE.py",
+        help="""Use a doorstop settings file instead of options arguments
+                NOTE: doorstop will ignore options passed from the cli""",
+        default=None,
+        type=str,
     )
     server.add_argument(
         "-f",
@@ -169,7 +180,21 @@ def main(args=None):  # pylint: disable=R0915
     utilities.configure_logging(args.verbose)
 
     # Configure settings
-    utilities.configure_settings(args)
+    if args.settings:
+        file_settings = common.import_path_as_module(Path(args.settings))
+        # get  overridden setting list
+        custom_settings = (
+            x
+            for x in dir(file_settings)
+            if not x.startswith("_")
+            and not isinstance(getattr(file_settings, x), ModuleType)
+        )
+        for i in custom_settings:
+            # if they are valid set them
+            if hasattr(settings, i):
+                setattr(settings, i, getattr(file_settings, i))
+    else:
+        utilities.configure_settings(args)
 
     # Run the program
     function = commands.get(args.command)
