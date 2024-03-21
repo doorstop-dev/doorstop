@@ -53,3 +53,44 @@ class TestItem(unittest.TestCase):
             validator = FileNotFoundError
 
         self.assertEqual(FileNotFoundError, validator)
+
+    @patch("doorstop.settings.CACHE_PATHS", False)
+    def test_find_references_and_get_sha(self):
+        """Verify an item's references can be found."""
+        path = os.path.join("path", "to", "RQ001.yml")
+        self.item = MockItem(MockSimpleDocumentExtensions(item_sha_required=True), path)
+        self.item.root = TESTS_ROOT
+
+        self.item.references = [
+            {"path": "files/REQ001.yml", "type": "file"},
+            {"path": "files/REQ002.yml", "type": "file"},
+        ]
+        # Generate sha through review
+        self.item.review()
+        refs = self.item.references
+
+        self.assertIn("sha", refs[0])
+        self.assertIn("sha", refs[1])
+
+
+    @patch("doorstop.settings.CACHE_PATHS", False)
+    def test_no_sha_ref(self):
+        """Verify sha is not obtained if extension is not enabled."""
+        path = os.path.join("path", "to", "RQ001.yml")
+        self.item = MockItem(
+            MockSimpleDocumentExtensions(),
+            path,
+        )
+
+        self.item.root = TESTS_ROOT
+
+        self.item.references = [
+            {"path": "files/REQ001.yml", "type": "file"},
+            {"path": "files/REQ002.yml", "type": "file"},
+        ]
+        # without item_sha_required, sha must return None
+        self.item.review()
+        refs = self.item.references
+        sha = self.item._hash_reference(refs[0]["path"])
+        self.assertNotIn("sha", refs[0].keys())
+        self.assertIsNone(sha)
