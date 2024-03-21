@@ -23,8 +23,8 @@ from doorstop.core.builder import _clear_tree
 from doorstop.core.document import Document
 from doorstop.core.tests.helpers import on_error_with_retry
 
-REQ_COUNT = 23
-ALL_COUNT = 55
+REQ_COUNT = 24
+ALL_COUNT = 56
 
 
 class TempTestCase(unittest.TestCase):
@@ -225,17 +225,25 @@ class TestRemove(unittest.TestCase):
     """Integration tests for the 'doorstop remove' command."""
 
     ITEM = os.path.join(TUTORIAL, "TUT003.yml")
+    INACTIVE_ITEM = os.path.join(TUTORIAL, "TUT026.yml")
 
     def setUp(self):
         self.backup = common.read_text(self.ITEM)
+        self.inactive_backup = common.read_text(self.INACTIVE_ITEM)
 
     def tearDown(self):
         common.write_text(self.backup, self.ITEM)
+        common.write_text(self.inactive_backup, self.INACTIVE_ITEM)
 
     def test_remove(self):
         """Verify 'doorstop remove' can be called."""
         self.assertIs(None, main(["remove", "tut3"]))
         self.assertFalse(os.path.exists(self.ITEM))
+
+    def test_remove_inactive(self):
+        """Verify 'doorstop remove' can remove inactive"""
+        self.assertIs(None, main(["remove", "tut26"]))
+        self.assertFalse(os.path.exists(self.INACTIVE_ITEM))
 
     def test_remove_error(self):
         """Verify 'doorstop remove' returns an error on unknown item UIDs."""

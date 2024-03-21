@@ -52,7 +52,7 @@ class TestModule(unittest.TestCase):
         _clear_tree()
         uid = "req1"
         find_item(uid)
-        mock_find_item.assert_called_once_with(uid)
+        mock_find_item.assert_called_once_with(uid, only_active=True)
 
     def test_tree_finds_documents(self):
         """Verify items can be found using a convenience function."""

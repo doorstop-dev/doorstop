@@ -580,6 +580,15 @@ outline:
         mock_reorder.assert_called_once_with(self.document.items, keep=None, start=None)
         mock_remove.assert_called_once_with(item.path)
 
+    @patch("doorstop.core.document.Document._reorder_automatic")
+    @patch("os.remove")
+    def test_remove_inactive_item(self, mock_remove, mock_reorder):
+        """Verify an item can be removed."""
+        with patch("doorstop.settings.REORDER", True):
+            item = self.document.remove_item("REQ005")
+        mock_reorder.assert_called_once_with(self.document.items, keep=None, start=None)
+        mock_remove.assert_called_once_with(item.path)
+
     @patch("os.remove")
     def test_remove_item_contains(self, mock_remove):
         """Verify a removed item is not contained in the document."""

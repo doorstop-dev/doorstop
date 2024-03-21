@@ -210,7 +210,7 @@ def run_remove(args, cwd, _, catch=True):
     with utilities.capture(catch=catch) as success:
         # get the item
         tree = _get_tree(args, cwd)
-        item = tree.find_item(args.uid)
+        item = tree.find_item(args.uid, only_active=False)
 
         # delete it
         item.delete()

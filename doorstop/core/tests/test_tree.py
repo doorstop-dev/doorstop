@@ -319,6 +319,13 @@ class TestTree(unittest.TestCase):
         self.tree.remove_item("req1", reorder=False)
         mock_delete.assert_called_once_with()
 
+    @patch("doorstop.settings.REORDER", False)
+    @patch("doorstop.core.item.Item.delete")
+    def test_remove_inactive_item(self, mock_delete):
+        """Verify an item can be removed from a document."""
+        self.tree.remove_item("req5", reorder=False)
+        mock_delete.assert_called_once_with()
+
     def test_remove_item_unknown_item(self):
         """Verify an exception is raised removing an unknown item."""
         self.assertRaises(DoorstopError, self.tree.remove_item, "req9999")
