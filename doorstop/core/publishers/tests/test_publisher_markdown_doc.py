@@ -29,6 +29,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
         os.makedirs(self.dirpath)
         self.expected_walk = """{n}/
+    EXT.md
     HLT.md
     LLT.md
     REQ.md
