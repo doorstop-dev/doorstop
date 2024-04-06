@@ -72,7 +72,6 @@ class TestItem(unittest.TestCase):
         self.assertIn("sha", refs[0])
         self.assertIn("sha", refs[1])
 
-
     @patch("doorstop.settings.CACHE_PATHS", False)
     def test_no_sha_ref(self):
         """Verify sha is not obtained if extension is not enabled."""
