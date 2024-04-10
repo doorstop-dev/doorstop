@@ -67,10 +67,12 @@ jobs:
           current_path: ${{ inputs.workpath }}
           attempt_limit: 5
           attempt_delay: 2000
+          
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v4
         if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
       - name: Run checks
