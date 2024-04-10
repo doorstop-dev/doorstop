@@ -6,6 +6,7 @@ import os
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
+from doorstop.core.publishers.asciidoc import AsciiDocPublisher
 from doorstop.core.publishers.html import HtmlPublisher
 from doorstop.core.publishers.latex import LaTeXPublisher
 from doorstop.core.publishers.markdown import MarkdownPublisher
@@ -133,6 +134,7 @@ def check(ext, obj=None):
     PUBLISHER_LIST = {
         ".txt": TextPublisher(obj, ext),
         ".md": MarkdownPublisher(obj, ext),
+        ".adoc": AsciiDocPublisher(obj, ext),
         ".html": HtmlPublisher(obj, ext),
         ".tex": LaTeXPublisher(obj, ext),
     }

@@ -789,6 +789,16 @@ class TestPublish(TempTestCase):
         self.assertIs(None, main(["publish", "req", path]))
         self.assertTrue(os.path.isfile(path))
 
+    def test_publish_document_asciidoc(self):
+        """Verify 'doorstop publish' can create AsciiDoc output."""
+        self.assertIs(None, main(["publish", "req", "--asciidoc"]))
+
+    def test_publish_document_asciidoc_file(self):
+        """Verify 'doorstop publish' can create an AsciiDoc file."""
+        path = os.path.join(self.temp, "req.adoc")
+        self.assertIs(None, main(["publish", "req", path]))
+        self.assertTrue(os.path.isfile(path))
+
     def test_publish_document_html_file(self):
         """Verify 'doorstop publish' can create an HTML file."""
         path = os.path.join(self.temp, "req.html")
