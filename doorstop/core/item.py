@@ -306,7 +306,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         :param path: a path from a reference inside the references list
         """
         sha = None
-        if not self.document.extensions["item_sha_required"]:
+        if "item_sha_required" not in self.document.extensions:
             return sha
 
         try:
