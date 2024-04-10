@@ -104,6 +104,15 @@ class MockSimpleDocument:
         self._items = items
 
 
+class MockSimpleDocumentExtensions(MockSimpleDocument):
+    """Mock Document class that enable extensions."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        for k, v in kwargs.items():
+            self.extensions[k] = v
+
+
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
     """Mock Document class that is always skipped in tree placement."""
 
