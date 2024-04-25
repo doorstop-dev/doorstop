@@ -94,8 +94,8 @@ class BaseWorkingCopy(metaclass=ABCMeta):
                     # Skip ignored paths
                     if self.ignored(relpath):
                         continue
-                    # Skip hidden paths
-                    if os.path.sep + "." in os.path.sep + relpath:
+                    # Skip hidden paths according to settings definition
+                    if not settings.ALLOW_HIDDEN_PATH_REFERENCES:
                         continue
                     self._path_cache.append((path, filename, relpath))
         yield from self._path_cache
