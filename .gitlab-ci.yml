@@ -48,11 +48,6 @@ workflow:
 #
 lint-doorstop:
   stage: lint
-  rules:
-    - changes:
-        - "*.py"
-        - "**/*.py"
-        - ".gitlab-ci.yml"
   script:
     - make check
 #
