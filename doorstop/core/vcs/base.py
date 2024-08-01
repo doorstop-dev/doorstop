@@ -78,7 +78,7 @@ class BaseWorkingCopy(metaclass=ABCMeta):
                     for line in common.read_lines(path):
                         pattern = line.strip(" @\\/*\n")
                         if pattern and not pattern.startswith("#"):
-                            self._ignores_cache.append("*" + pattern + "*")
+                            self._ignores_cache.append(pattern + "*")
         yield from self._ignores_cache
 
     @property
