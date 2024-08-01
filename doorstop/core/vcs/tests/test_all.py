@@ -20,5 +20,5 @@ class TestWorkingCopy(unittest.TestCase):
         patterns = list(self.wc.ignores)
         for pattern in patterns:
             print(pattern)
-        self.assertIn("*__pycache__*", patterns)
-        self.assertIn("*build*", patterns)
+        self.assertIn("__pycache__*", patterns)
+        self.assertIn("build*", patterns)
