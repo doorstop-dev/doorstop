@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0b16"
+version = "3.0b16+codethink-0.1"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -52,8 +52,9 @@ requests = "^2.0"
 python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
-six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
+six = "*"                                            # fixes https://github.com/dougn/python-plantuml/issues/11
 openpyxl = ">=3.1.2"
+setuptools = { version = ">=70", python = ">=3.12" }
 
 [tool.poetry.dev-dependencies]
 
