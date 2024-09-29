@@ -2,20 +2,85 @@
 
 """Functions to publish documents and items."""
 
+import os
 from re import sub
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import BasePublisher, format_level
+from doorstop.core.publishers.base import (
+    BasePublisher,
+    extract_prefix,
+    format_level,
+    get_document_attributes,
+)
 from doorstop.core.types import is_item, iter_items
 
 log = common.logger(__name__)
+INDEX = "index.md"
 
 
 class MarkdownPublisher(BasePublisher):
     """Markdown publisher."""
 
-    def create_index(self, directory, index=None, extensions=(".md",), tree=None):
-        """No index for Markdown."""
+    def create_index(self, directory, index=INDEX, extensions=(".md",), tree=None):
+        """Create an markdown index of all files in a directory.
+
+        :param directory: directory for index
+        :param index: filename for index
+        :param extensions: file extensions to include
+        :param tree: optional tree to determine index structure
+
+        """
+        # Get paths for the index index
+        filenames = []
+        for filename in os.listdir(directory):
+            if filename.endswith(extensions) and filename != INDEX:
+                filenames.append(os.path.join(filename))
+
+        # Create the index
+        if filenames:
+            path = os.path.join(directory, index)
+            log.info("creating an {}...".format(index))
+            lines = self.lines_index(sorted(filenames), tree=tree)
+            common.write_text(" # Requirements index", path)
+            common.write_text("\n".join(lines), path)
+        else:
+            log.warning("no files for {}".format(index))
+
+    def _index_tree(self, tree, depth):
+        """Recursively generate markdown index.
+
+        :param tree: optional tree to determine index structure
+        :param depth: depth recursed into tree
+        """
+
+        depth = depth + 1
+
+        title = get_document_attributes(tree.document)["title"]
+        prefix = extract_prefix(tree.document)
+        filename = f"{prefix}.md"
+
+        # Tree structure
+        yield " " * (depth * 2 - 1) + f"* [{prefix}]({filename}) - {title}"
+        # yield self.table_of_contents(linkify=True, obj=tree.document, depth=depth, heading=False)
+        for child in tree.children:
+            yield from self._index_tree(tree=child, depth=depth)
+
+    def lines_index(self, filenames, tree=None):
+        """Yield lines of Markdown for index.md.
+
+        :param filenames: list of filenames to add to the index
+        :param tree: optional tree to determine index structure
+        """
+        if tree:
+            yield from self._index_tree(tree, depth=0)
+
+        # Additional files
+        if filenames:
+            yield ""
+            yield "### Published Documents:"
+            for filename in filenames:
+                name = os.path.splitext(filename)[0]
+                yield " * [{n}]({f})".format(f=filename, n=name)
 
     def create_matrix(self, directory):
         """No traceability matrix for Markdown."""

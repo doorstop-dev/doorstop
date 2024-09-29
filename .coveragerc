@@ -7,6 +7,8 @@ omit =
     */tests/*
     */__main__.py
 
+dynamic_context = test_function
+
 [report]
 
 omit =
@@ -20,4 +22,7 @@ exclude_lines =
     raise NotImplementedError
     except DistributionNotFound
 
-skip_covered = true
+skip_covered = false
+
+[html]
+show_contexts = True

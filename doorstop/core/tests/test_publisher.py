@@ -128,6 +128,22 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(result, False)
 
+    def test_index_true_md(self):
+        """Verify that index = true forces true."""
+        tmp_publisher = publisher.check(".md", self.mock_tree)
+        tmp_publisher.setup(None, True, None)
+        do_index = tmp_publisher.getIndex()
+        # Assert
+        self.assertEqual(do_index, True)
+
+    def test_index_false_md(self):
+        """Verify that index = false forces false."""
+        tmp_publisher = publisher.check(".md", self.mock_tree)
+        tmp_publisher.setup(None, False, None)
+        do_index = tmp_publisher.getIndex()
+        # Assert
+        self.assertEqual(do_index, False)
+
     def test_index_none_for_txt(self):
         """Verify that index = None works correctly."""
         tmp_publisher = publisher.check(".txt", self.mock_tree)
@@ -136,7 +152,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(result, False)
 
-    def test_index_true(self):
+    def test_index_true_html(self):
         """Verify that index = true forces true."""
         tmp_publisher = publisher.check(".html", self.mock_tree)
         tmp_publisher.setup(None, True, None)
@@ -144,7 +160,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(do_index, True)
 
-    def test_index_false(self):
+    def test_index_false_html(self):
         """Verify that index = false forces false."""
         tmp_publisher = publisher.check(".html", self.mock_tree)
         tmp_publisher.setup(None, False, None)

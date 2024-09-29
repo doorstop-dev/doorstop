@@ -810,9 +810,37 @@ class TestPublish(TempTestCase):
         self.assertTrue(os.path.isdir(path))
         self.assertFalse(os.path.isfile(os.path.join(path, "index.html")))
 
+    def test_publish_tree_md(self):
+        """Verify 'doorstop publish' can create a Markdown directory."""
+        path = os.path.join(self.temp, "all")
+        self.assertIs(None, main(["publish", "all", path, "--markdown", "--index"]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, "index.md")))
+
     def test_publish_tree_no_path(self):
         """Verify 'doorstop publish' returns an error with no path."""
         self.assertRaises(SystemExit, main, ["publish", "all"])
+
+    def test_publish_tree_markdown_with_index(self):
+        """Verify 'doorstop publish' can create Markdown output for a tree,
+        with an index."""
+        path = os.path.join(self.temp, "all")
+        self.assertIs(None, main(["publish", "all", path, "--markdown", "--index"]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, "index.md")))
+
+    def test_publish_markdown_tree_no_path(self):
+        """Verify 'doorstop publish' returns an error with no path."""
+        self.assertRaises(
+            SystemExit,
+            main,
+            [
+                "publish",
+                "-m",
+                "--index",
+                "all",
+            ],
+        )
 
 
 class TestPublishCommand(TempTestCase):

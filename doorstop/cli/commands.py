@@ -561,6 +561,9 @@ def run_publish(args, cwd, error, catch=True):
     if args.width:
         kwargs["width"] = args.width
 
+    if args.index:
+        kwargs["index"] = True
+
     # Write to output file(s)
     if args.path:
         path = os.path.abspath(os.path.join(cwd, args.path))
