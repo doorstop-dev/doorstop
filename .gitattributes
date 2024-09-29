@@ -2,6 +2,11 @@
 CHANGELOG.md merge=union
 
 *.xlsx binary
+*.min.js binary
+*.min.css binary
+doorstop/core/files/templates/html/output/*.js binary
+doorstop/core/files/templates/html/tex-mml-chtml.js binary
+doorstop/core/tests/files/published*.html binary
 
 # Python, Git, and Cygwin have different ideas about the correct line endings
 *.yml  -text
