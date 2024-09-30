@@ -177,7 +177,7 @@ docs/gen/*.tex: $(YAML)
 .PHONY: reqs-md
 reqs-md: install docs/gen/*.md
 docs/gen/*.md: $(YAML)
-	$(DOORSTOP) publish all docs/gen --markdown
+	$(DOORSTOP) publish all docs/gen --markdown --index
 
 .PHONY: reqs-pdf
 reqs-pdf: reqs-latex
