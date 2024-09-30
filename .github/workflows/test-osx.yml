@@ -9,5 +9,5 @@ jobs:
   Test:
     uses: ./.github/workflows/execute-tests.yml
     with:
-      os: "macos-latest"
+      os: "macos-13"
       workpath: "/Users/runner/work/doorstop/doorstop"
