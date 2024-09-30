@@ -12,3 +12,5 @@ jobs:
       basepath: 'D:\'
       os: "windows-latest"
       workpath: 'C:\a\doorstop\doorstop'
+    secrets:
+      CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}

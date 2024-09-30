@@ -11,6 +11,9 @@ on:
       workpath:
         required: true
         type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: true
 
 jobs:
   test:
