@@ -11,6 +11,7 @@ jobs:
     with:
       os: "ubuntu-latest"
       workpath: "/home/runner/work/doorstop/doorstop"
+    if: github.event_name == 'pull_request'
 
   Test:
     uses: ./.github/workflows/execute-tests.yml
