@@ -11,6 +11,7 @@ import pprint
 import shutil
 import tempfile
 import unittest
+from typing import List
 from unittest.mock import Mock, patch
 
 import openpyxl
@@ -649,8 +650,17 @@ class TestPublisher(unittest.TestCase):
         self.assertEqual(expected, text)
         common.write_text(text, path)
 
-    def test_lines_html_document_linkify(self):
+    @patch("plantuml_markdown.PlantUMLPreprocessor.run")
+    @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
+    def test_lines_html_document_linkify(self, ext_init, ext_run):
         """Verify HTML can be published from a document."""
+
+        def run(lines: List[str]) -> List[str]:
+            return lines
+
+        ext_init.return_value = None
+        ext_run.side_effect = run
+
         path = os.path.join(FILES, "published.html")
         expected = common.read_text(path)
         # Act
@@ -664,9 +674,18 @@ class TestPublisher(unittest.TestCase):
         common.write_text(actual, path)
         self.assertEqual(expected, actual)
 
+    @patch("plantuml_markdown.PlantUMLPreprocessor.run")
+    @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
-    def test_lines_html_document_without_child_links(self):
+    def test_lines_html_document_without_child_links(self, ext_init, ext_run):
         """Verify HTML can be published from a document w/o child links."""
+
+        def run(lines: List[str]) -> List[str]:
+            return lines
+
+        ext_init.return_value = None
+        ext_run.side_effect = run
+
         path = os.path.join(FILES, "published2.html")
         expected = common.read_text(path)
         # Act
