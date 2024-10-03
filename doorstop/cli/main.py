@@ -179,12 +179,12 @@ def main(args=None):  # pylint: disable=R0915
         log.error(exc)
         success = False
     except KeyboardInterrupt:
-        log.debug("command cancelled")
+        log.debug(f"command cancelled: {args}")
         success = False
     if success:
-        log.debug("command succeeded")
+        log.debug("command succeeded: {args}")
     else:
-        log.debug("command failed")
+        log.debug(f"command failed: {args}")
         sys.exit(1)
 
 

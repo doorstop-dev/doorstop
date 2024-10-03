@@ -94,6 +94,10 @@ def launch(path, tool=None):
             args = ["start", path]
     elif os.name == "posix":
         args = ["xdg-open", path]
+    else:
+        raise DoorstopError(
+            "unknown operating system, unable to determine launch command"
+        )
 
     # Launch the editor
     try:
