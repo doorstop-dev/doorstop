@@ -11,8 +11,11 @@ jobs:
     with:
       os: "ubuntu-latest"
       workpath: "/home/runner/work/doorstop/doorstop"
+
   Test:
     uses: ./.github/workflows/execute-tests.yml
     with:
       os: "ubuntu-latest"
       workpath: "/home/runner/work/doorstop/doorstop"
+    secrets:
+      CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
