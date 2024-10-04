@@ -7,9 +7,9 @@ import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+import doorstop.core.editor
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-import doorstop.core.editor
 from doorstop.core.item import Item, UnknownItem
 from doorstop.core.tests import (
     EMPTY,
@@ -476,7 +476,7 @@ class TestItem(unittest.TestCase):
     @patch("doorstop.core.editor.sys.platform", "nt")
     @patch("doorstop.core.editor.shutil.which")
     @patch("doorstop.core.editor._call")
-    def test_launch_os_nt_cygwin(self,  mock_call, mock_which):
+    def test_launch_os_nt_cygwin(self, mock_call, mock_which):
         mock_call.side_effect = FileNotFoundError
         mock_which.return_value = "cygstart"
         self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
@@ -506,6 +506,16 @@ class TestItem(unittest.TestCase):
         mock_call.side_effect = FileNotFoundError
         self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
         mock_call.assert_called_once_with(["xdg-open", ""])
+
+    @patch("doorstop.core.editor.os.name", "unknown")
+    @patch("doorstop.core.editor.sys.platform", "unknown")
+    @patch("doorstop.core.editor.shutil.which")
+    @patch("doorstop.core.editor._call")
+    def test_launch_os_unknown(self, mock_call, mock_which):
+        mock_call.side_effect = FileNotFoundError
+        mock_which.return_value = "unknown"
+        self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
+        mock_call.assert_not_called()
 
     def test_link(self):
         """Verify links can be added to an item."""
