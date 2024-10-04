@@ -7,6 +7,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+import doorstop.core.editor
 from doorstop import common, settings
 from doorstop.common import DoorstopError
 from doorstop.core.item import Item, UnknownItem
@@ -470,6 +471,41 @@ class TestItem(unittest.TestCase):
         self.item.tree.vcs.edit.assert_called_once_with(self.item.path)
         mock_launch.assert_called_once_with(self.item.path, tool="mock_editor")
         mock_load.assert_called_once_with(True)
+
+    @patch("doorstop.core.editor.os.name", "nt")
+    @patch("doorstop.core.editor.sys.platform", "nt")
+    @patch("doorstop.core.editor.shutil.which")
+    @patch("doorstop.core.editor._call")
+    def test_launch_os_nt_cygwin(self, mock_call, mock_which):
+        mock_call.side_effect = FileNotFoundError
+        mock_which.return_value = "cygstart"
+        self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
+        mock_call.assert_called_once_with(["cygstart", ""])
+
+    @patch("doorstop.core.editor.os.name", "nt")
+    @patch("doorstop.core.editor.sys.platform", "nt")
+    @patch("doorstop.core.editor.shutil.which")
+    @patch("doorstop.core.editor._call")
+    def test_launch_os_nt(self, mock_call, mock_which):
+        mock_call.side_effect = FileNotFoundError
+        mock_which.return_value = "start"
+        self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
+        mock_call.assert_called_once_with(["start", ""])
+
+    @patch("doorstop.core.editor.sys.platform", "darwin")
+    @patch("doorstop.core.editor._call")
+    def test_launch_os_darwin(self, mock_call):
+        mock_call.side_effect = FileNotFoundError
+        self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
+        mock_call.assert_called_once_with(["open", ""])
+
+    @patch("doorstop.core.editor.os.name", "posix")
+    @patch("doorstop.core.editor.sys.platform", "posix")
+    @patch("doorstop.core.editor._call")
+    def test_launch_os_posix(self, mock_call):
+        mock_call.side_effect = FileNotFoundError
+        self.assertRaises(DoorstopError, doorstop.core.editor.launch, "")
+        mock_call.assert_called_once_with(["xdg-open", ""])
 
     def test_link(self):
         """Verify links can be added to an item."""
