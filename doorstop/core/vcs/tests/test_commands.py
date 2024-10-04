@@ -125,45 +125,6 @@ class TestSubversion(BaseTestCase, unittest.TestCase):
 
 
 @patch("subprocess.call")
-class TestVeracity(BaseTestCase, unittest.TestCase):
-    """Tests for the Veracity plugin."""
-
-    DIRECTORY = ".sgdrawer"
-
-    def test_lock(self, mock_call):
-        """Verify Veracity can lock files."""
-        self.lock()
-        calls = [call(("vv", "pull")), call(("vv", "update"))]
-        mock_call.assert_has_calls(calls)
-
-    def test_edit(self, mock_call):
-        """Verify Veracity can (fake) edit files."""
-        self.edit()
-        mock_call.assert_has_calls([])
-
-    def test_add(self, mock_call):
-        """Verify Veracity can add files."""
-        self.add()
-        calls = [call(("vv", "add", self.path))]
-        mock_call.assert_has_calls(calls)
-
-    def test_delete(self, mock_call):
-        """Verify Veracity can delete files."""
-        self.delete()
-        calls = [call(("vv", "remove", self.path))]
-        mock_call.assert_has_calls(calls)
-
-    def test_commit(self, mock_call):
-        """Verify Veracity can commit files."""
-        self.commit()
-        calls = [
-            call(("vv", "commit", "--message", self.message)),
-            call(("vv", "push")),
-        ]
-        mock_call.assert_has_calls(calls)
-
-
-@patch("subprocess.call")
 class TestMercurial(BaseTestCase, unittest.TestCase):
     """Tests for the Mercurial plugin."""
 
