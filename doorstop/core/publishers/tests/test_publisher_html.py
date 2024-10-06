@@ -52,8 +52,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
+        mock_makedirs.assert_called_with(os.sep.join([self.dirpath, "documents"]))
+        mock_open.assert_called_once_with(
+            os.sep.join([os.path.dirname(path), "documents", "published.html"]), "wb"
+        )
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
