@@ -24,6 +24,9 @@ RESERVED_WORDS = ["all"]  # keywords that cannot be used for prefixes
 PLACEHOLDER = "..."  # placeholder for new item UIDs on export/import
 PLACEHOLDER_COUNT = 1  # number of placeholders to include on export
 
+# VCS Behaviour
+ALLOW_HIDDEN_PATH_REFERENCES=False
+
 # Formatting settings
 MAX_LINE_LENGTH = 79  # line length to trigger multiline on extended attributes
 
