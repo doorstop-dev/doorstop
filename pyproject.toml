@@ -43,7 +43,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "^3.9"
+python = "<3.13,>=3.9"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
@@ -54,6 +54,7 @@ python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
 six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
 openpyxl = ">=3.1.2"
+verchew = "^3.4.2"
 
 [tool.poetry.dev-dependencies]
 
@@ -62,9 +63,9 @@ black = "^24.3"
 isort = "^5.12"
 
 # Linters
-mypy = "^1.1.1"
+mypy = ">=1.1.1"
 pydocstyle = "*"
-pylint = "~2.15"
+pylint = "~3.2.0"
 types-markdown = "*"
 types-pyyaml = "*"
 types-requests = "*"
@@ -105,6 +106,12 @@ quiet = true
 [tool.isort]
 
 profile = "black"
+
+[tool.pytest.ini_options]
+# log_cli = true
+# log_cli_level = "WARNING"
+log_file = "pytest.log"
+log_file_level = "DEBUG"
 
 [build-system]
 

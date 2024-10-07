@@ -107,8 +107,7 @@ def read_lines(path, encoding="utf-8"):
     """
     log.trace("reading lines from '{}'...".format(path))  # type: ignore
     with open(path, "r", encoding=encoding) as stream:
-        for line in stream:
-            yield line
+        yield from stream
 
 
 def read_text(path):

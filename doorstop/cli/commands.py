@@ -502,6 +502,8 @@ def run_export(args, cwd, error, catch=True, auto=False, _tree=None):
     ext = utilities.get_ext(args, error, ".yml", ".csv", whole_tree=whole_tree)
 
     # Get the tree or document
+    document = None
+
     with utilities.capture(catch=catch) as success:
         exporter.check(ext)
         tree = _tree or _get_tree(args, cwd, load=whole_tree)
@@ -547,6 +549,7 @@ def run_publish(args, cwd, error, catch=True):
     ext = utilities.get_ext(args, error, ".txt", ".html", whole_tree)
 
     # Get the tree or document
+    document = None
     with utilities.capture(catch=catch) as success:
         publisher.check(ext)
         tree = _get_tree(args, cwd, load=whole_tree)
@@ -665,12 +668,10 @@ def _iter_items(args, tree, error):
     if item:
         yield item
     elif document:
-        for item in document:
-            yield item
+        yield from document
     else:
         for document in tree:
-            for item in document:
-                yield item
+            yield from document
 
 
 def _export_import(args, cwd, error, document, ext):
