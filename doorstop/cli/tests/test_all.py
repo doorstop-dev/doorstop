@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from shutil import copytree
 from unittest.mock import Mock, patch
 
 from doorstop import common, settings
@@ -45,6 +46,7 @@ class MockTestCase(TempTestCase):
 
     def setUp(self):
         super().setUp()
+        copytree(os.path.join("reqs"), os.path.join(self.temp, "reqs"))
         os.chdir(self.temp)
         common.touch(".mockvcs")
         _clear_tree()
@@ -133,7 +135,7 @@ def get_next_number():
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.SERVER_HOST", None)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestAdd(unittest.TestCase):
+class TestAdd(MockTestCase):
     """Integration tests for the 'doorstop add' command."""
 
     @classmethod
@@ -183,7 +185,7 @@ class TestAdd(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestAddServer(unittest.TestCase):
+class TestAddServer(MockTestCase):
     """Integration tests for the 'doorstop add' command using a server."""
 
     @classmethod
@@ -221,7 +223,7 @@ class TestAddServer(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestRemove(unittest.TestCase):
+class TestRemove(MockTestCase):
     """Integration tests for the 'doorstop remove' command."""
 
     ITEM = os.path.join(TUTORIAL, "TUT003.yml")
@@ -244,7 +246,7 @@ class TestRemove(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestReorder(unittest.TestCase):
+class TestReorder(MockTestCase):
     """Integration tests for the 'doorstop reorder' command."""
 
     @classmethod
@@ -322,7 +324,7 @@ class TestReorder(unittest.TestCase):
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.SERVER_HOST", None)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestEdit(unittest.TestCase):
+class TestEdit(MockTestCase):
     """Integration tests for the 'doorstop edit' command."""
 
     @patch("subprocess.call", Mock())
@@ -376,7 +378,7 @@ class TestEdit(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestLink(unittest.TestCase):
+class TestLink(MockTestCase):
     """Integration tests for the 'doorstop link' command."""
 
     ITEM = os.path.join(TUTORIAL, "TUT003.yml")
@@ -404,7 +406,7 @@ class TestLink(unittest.TestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestUnlink(unittest.TestCase):
+class TestUnlink(MockTestCase):
     """Integration tests for the 'doorstop unlink' command."""
 
     ITEM = os.path.join(TUTORIAL, "TUT003.yml")
@@ -433,7 +435,7 @@ class TestUnlink(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
-class TestClear(unittest.TestCase):
+class TestClear(MockTestCase):
     """Integration tests for the 'doorstop clear' command."""
 
     @patch("doorstop.core.item.Item.clear")
@@ -482,7 +484,7 @@ class TestClear(unittest.TestCase):
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
-class TestReview(unittest.TestCase):
+class TestReview(MockTestCase):
     """Integration tests for the 'doorstop review' command."""
 
     @patch("doorstop.core.item.Item.review")
@@ -527,7 +529,7 @@ class TestReview(unittest.TestCase):
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.SERVER_HOST", None)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestImport(unittest.TestCase):
+class TestImport(MockTestCase):
     """Integration tests for the 'doorstop import' command."""
 
     def tearDown(self):
@@ -646,7 +648,7 @@ class TestImportFile(MockTestCase):
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
 @patch("doorstop.settings.ADDREMOVE_FILES", False)
-class TestImportServer(unittest.TestCase):
+class TestImportServer(MockTestCase):
     """Integration tests for the 'doorstop import' command using a server."""
 
     def tearDown(self):

@@ -611,6 +611,7 @@ def _get_tree(args, cwd, request_next_number=None, load=False):
 
     """
     utilities.show("building tree...", flush=True)
+    log.debug(f"Building tree at {cwd}, project root {args.project}, request_next_number={request_next_number}")
     tree = build(cwd=cwd, root=args.project, request_next_number=request_next_number)
 
     if load:

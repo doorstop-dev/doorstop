@@ -138,6 +138,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         """
         log.debug("trying to add {}...".format(document))
+        print(f"_place: {self.document}")
         if not self.document:  # tree is empty
             if document.parent:
                 msg = "unknown parent for {}: {}".format(document, document.parent)

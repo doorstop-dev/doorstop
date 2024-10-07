@@ -166,6 +166,7 @@ def main(args=None):  # pylint: disable=R0915
     args = parser.parse_args(args=args)
 
     # Configure logging
+    print(f"verbose: {args.verbose}")
     utilities.configure_logging(args.verbose)
 
     # Configure settings
