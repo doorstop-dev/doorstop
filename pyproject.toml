@@ -47,13 +47,16 @@ python = "^3.9"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
-bottle = "~0.12.25"
+bottle = "^0.13.1"
 requests = "^2.0"
 python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
 plantuml-markdown = "^3.4.2"
 six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
-openpyxl = ">=3.1.2"
+openpyxl = "^3.1.5"
+pytest-xdist = "^3.6.1"
+pytest = "^8.3.3"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.dev-dependencies]
 
@@ -71,7 +74,6 @@ types-requests = "*"
 types-setuptools = "*"
 
 # Testing
-pytest = "^6.2.5"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"

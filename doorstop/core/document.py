@@ -134,12 +134,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :return: new :class:`~doorstop.core.document.Document`
 
         """
+        log.debug(f"Adding document: prefix={prefix}, digits={digits}, seperator={sep}, auto={auto}, root={root}, tree={tree}, path={path}")
         # Check separator
         if sep and sep not in settings.SEP_CHARS:
             raise DoorstopError("invalid UID separator '{}'".format(sep))
 
         config = os.path.join(path, Document.CONFIG)
-
+        log.debug(f"Checking for document {config}")
         # Check for an existing document
         if os.path.exists(config):
             raise DoorstopError("document already exists: {}".format(path))
