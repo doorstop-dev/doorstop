@@ -5,15 +5,15 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core import publisher
 from doorstop.core.publishers.tests.helpers import YAML_CUSTOM_ATTRIBUTES, getLines
 from doorstop.core.tests import (
+    EMPTY,
     FILES,
     ROOT,
     MockDataMixIn,
@@ -22,6 +22,7 @@ from doorstop.core.tests import (
     MockItemAndVCS,
 )
 from doorstop.core.tests.helpers import on_error_with_retry
+from doorstop.core.types import UID
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):
@@ -263,3 +264,51 @@ class TestTableOfContents(unittest.TestCase):
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=True, obj=self.document)
         self.assertEqual(expected, toc)
+
+    def test_index(self):
+        """Verify an Markdown index can be created."""
+        # Arrange
+        path = os.path.join(FILES, "index.md")
+        md_publisher = publisher.check(".md")
+        # Act
+        md_publisher.create_index(FILES)
+        # Assert
+        self.assertTrue(os.path.isfile(path))
+
+    def test_index_no_files(self):
+        """Verify an Markdown index is only created when files exist."""
+        path = os.path.join(EMPTY, "index.md")
+        md_publisher = publisher.check(".md")
+        # Act
+        md_publisher.create_index(EMPTY)
+        # Assert
+        self.assertFalse(os.path.isfile(path))
+
+    def test_index_tree(self):
+        """Verify an Markdown index can be created with a tree."""
+        path = os.path.join(FILES, "index2.md")
+        mock_tree = MagicMock()
+        mock_tree.documents = []
+        for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
+            mock_document = MagicMock()
+            mock_document.prefix = prefix
+            mock_tree.documents.append(mock_document)
+        mock_tree.draw = lambda: "(mock tree structure)"
+        mock_item = Mock()
+        mock_item.uid = "KNOWN-001"
+        mock_item.document = Mock()
+        mock_item.document.prefix = "KNOWN"
+        mock_item.header = None
+        mock_item_unknown = Mock(spec=["uid"])
+        mock_item_unknown.uid = "UNKNOWN-002"
+        mock_trace = [
+            (None, mock_item, None, None, None),
+            (None, None, None, mock_item_unknown, None),
+            (None, None, None, None, None),
+        ]
+        mock_tree.get_traceability = lambda: mock_trace
+        md_publisher = publisher.check(".md")
+        # Act
+        md_publisher.create_index(FILES, index="index2.md", tree=mock_tree)
+        # Assert
+        self.assertTrue(os.path.isfile(path))

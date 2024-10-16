@@ -9,6 +9,9 @@ theme: readthedocs
 
 markdown_extensions:
   - admonition
+use_directory_urls: false
+hooks: 
+ - docs/gen_reqs.py
 
 nav:
 - Home: index.md
@@ -25,6 +28,7 @@ nav:
 - Desktop Interface: gui/overview.md
 - Web Interface: web.md
 - Scripting Interface: api/scripting.md
+- Doorstop's requirements: gen/index.md
 - Reference:
   - Tree: reference/tree.md
   - Document: reference/document.md

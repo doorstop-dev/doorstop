@@ -76,7 +76,9 @@ def main(args=None):  # pylint: disable=R0915
 
     # Build main parser
     parser = argparse.ArgumentParser(
-        prog=CLI, description=DESCRIPTION, **shared  # type: ignore
+        prog=CLI,
+        description=DESCRIPTION,
+        **shared,  # type: ignore
     )
     parser.add_argument(
         "-F",
@@ -536,6 +538,11 @@ def _publish(subs, shared):
         help="do not include levels on heading and non-heading or non-heading items",
     )
     sub.add_argument("--template", help="template file", default=None)
+    sub.add_argument(
+        "--index",
+        help="Generate top level index (when producing markdown).",
+        action="store_true",
+    )
 
 
 if __name__ == "__main__":
