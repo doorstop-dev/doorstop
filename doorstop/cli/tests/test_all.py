@@ -702,11 +702,17 @@ class TestExport(TempTestCase):
         self.assertRaises(SystemExit, main, ["export", "tut", path])
         self.assertFalse(os.path.isfile(path))
 
-    def test_export_tree_xlsx(self):
-        """Verify 'doorstop export' can create an XLSX directory."""
+    def test_export_tree_xlsx_dir(self):
+        """Verify 'doorstop export' can create an XLSX tree export."""
         path = os.path.join(self.temp, "all")
         self.assertIs(None, main(["export", "all", path, "--xlsx"]))
         self.assertTrue(os.path.isdir(path))
+
+    def test_export_tree_xlsx_file(self):
+        """Verify 'doorstop export' can create an XLSX tree export."""
+        path = os.path.join(self.temp, "all.xlsx")
+        self.assertIs(None, main(["export", "all", path, "--xlsx"]))
+        self.assertTrue(os.path.isfile(path))
 
     def test_export_tree_no_path(self):
         """Verify 'doorstop export' returns an error with no path."""

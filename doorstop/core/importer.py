@@ -194,6 +194,7 @@ def _file_xlsx(path, document, mapping=None):
     workbook = openpyxl.load_workbook(path, data_only=True)
     worksheet = workbook.active
 
+    log.debug(f"xlsx import: importing sheet {worksheet.title} in workbook {workbook}")
     index = 0
 
     # Extract header and data rows

@@ -3,7 +3,9 @@
 """Functions to export documents and items."""
 
 import datetime
+import logging
 import os
+
 from collections import defaultdict
 from typing import Any, Dict
 
@@ -12,7 +14,7 @@ import yaml
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
-from doorstop.core.types import iter_documents, iter_items
+from doorstop.core.types import iter_documents, iter_items, is_tree
 
 LIST_SEP = "\n"  # string separating list values when joined in a string
 
@@ -25,13 +27,15 @@ log = common.logger(__name__)
 def export(obj, path, ext=None, **kwargs):
     """Export an object to a given format.
 
-    The function can be called in two ways:
+    The function can be called in three ways:
 
     1. document or item-like object + output file path
     2. tree-like object + output directory path
+    3. tree-like object + output file path
 
-    :param obj: (1) Item, list of Items, Document or (2) Tree
-    :param path: (1) output file path or (2) output directory path
+
+    :param obj: (1) Item, list of Items, Document or (2) (3) Tree
+    :param path: (1) (3) output file path or (2) output directory path
     :param ext: file extension to override output extension
 
     :raises: :class:`doorstop.common.DoorstopError` for unknown file formats
@@ -40,8 +44,14 @@ def export(obj, path, ext=None, **kwargs):
 
     """
     # Determine the output format
+    is_dir = (os.path.splitext(path)[-1] == "")
     ext = ext or os.path.splitext(path)[-1] or ".csv"
     check(ext)
+
+    if can_export_tree(ext) and is_tree(obj) and not is_dir:
+        log.info("exporting to {}...".format(path))
+        export_file(obj, path, ext, **kwargs)
+        return path
 
     # Export documents
     count = 0
@@ -97,7 +107,7 @@ def export_file(obj, path, ext=None, **kwargs):
     """
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext, get_file_func=True)
-    log.debug("converting %s to file format %s...", obj, ext)
+    log.debug("converting {obj} to file format {ext} using {func}...")
     try:
         return func(obj, path, **kwargs)
     except IOError:
@@ -246,14 +256,39 @@ def _file_xlsx(obj, path, auto=False):
     :return: path of created file
 
     """
-    workbook = _get_xlsx(obj, auto)
+
+    log.debug(f"xlsx export: _file_xlsx called with {obj}, {path}, auto={auto}")
+    workbook = _get_xlsx(obj, path, auto)
     workbook.save(path)
 
     return path
 
 
-def _get_xlsx(obj, auto):
-    """Create an XLSX workbook object.
+def _get_xlsx(obj, path, auto):
+    # Create a new workbook
+    workbook = openpyxl.Workbook()
+    # We don't want the default sheet "Sheet"
+    workbook.remove(workbook.active)
+
+    first_sheet = None
+    if is_tree(obj):
+        log.debug("xlsx export: exporting tree")
+        for obj2, path2 in iter_documents(obj, path, ".xlsx"):
+            sheet = _add_xlsx_sheet(workbook, obj2, auto)
+            first_sheet = sheet or first_sheet
+    else:
+        log.debug("xlsx export: exporting single Item/Document")
+        first_sheet = _add_xlsx_sheet(workbook, obj, auto)
+
+    log.debug(f"xlsx export: First sheet is {first_sheet}")
+    assert first_sheet != None
+    workbook.active = first_sheet
+
+    return workbook
+
+
+def _add_xlsx_sheet(workbook, obj, auto):
+    """Add a sheet to XLSX workbook object.
 
     :param obj: Item, list of Items, or Document to export
     :param auto: include placeholders for new items on import
@@ -264,13 +299,16 @@ def _get_xlsx(obj, auto):
     col_widths: Dict[Any, float] = defaultdict(float)
     col = "A"
 
-    # Create a new workbook
-    workbook = openpyxl.Workbook()
-    worksheet = workbook.active
+    worksheet = workbook.create_sheet(title=obj.prefix)
 
+    log.debug(f"xls export: Created worksheet {worksheet.title}")
+
+    log.debug(f"xls export: populating cells")
     # Populate cells
     for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
+        log.debug(f"xls export: row={row}, data={data}")
         for col_idx, value in enumerate(data, start=1):
+            log.debug(f"xls export: column={col_idx}, value={value}")
             cell = worksheet.cell(column=col_idx, row=row)
 
             # wrap text in every cell
@@ -307,8 +345,7 @@ def _get_xlsx(obj, auto):
 
     # Freeze top row
     worksheet.freeze_panes = worksheet.cell(row=2, column=1)
-
-    return workbook
+    return worksheet
 
 
 def _width(text):
@@ -325,6 +362,8 @@ FORMAT_LINES = {".yml": _lines_yaml}
 FORMAT_FILE = {".csv": _file_csv, ".tsv": _file_tsv, ".xlsx": _file_xlsx}
 # Union of format dictionaries
 FORMAT = dict(list(FORMAT_LINES.items()) + list(FORMAT_FILE.items()))  # type: ignore
+# Can a given format export a whole tree?
+FORMAT_TREE = {".xlsx": True}
 
 
 def check(ext, get_lines_gen=False, get_file_func=False):
@@ -368,3 +407,7 @@ def check(ext, get_lines_gen=False, get_file_func=False):
         raise exc
 
     return None
+
+
+def can_export_tree(ext):
+    return ext in FORMAT_TREE

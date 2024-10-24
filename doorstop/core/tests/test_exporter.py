@@ -5,7 +5,9 @@
 import os
 import tempfile
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
+
+import openpyxl
 
 from doorstop.common import DoorstopError
 from doorstop.core import exporter
@@ -132,23 +134,25 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             self.item, path, delimiter="\t", auto=False
         )
 
-    @patch("doorstop.core.exporter._get_xlsx")
-    def test_file_xlsx(self, mock_get_xlsx):
+    @patch("doorstop.core.exporter._add_xlsx_sheet")
+    def test_file_xlsx(self, mock_add_xlsx_sheet):
         """Verify a (mock) XLSX file can be created."""
+        mock_add_xlsx_sheet.side_effect = lambda *args: args[0].create_sheet()
         temp = tempfile.gettempdir()
+
         path = os.path.join(temp, "exported.xlsx")
         # Act
         exporter._file_xlsx(self.item, path)  # pylint:disable=W0212
         # Assert
-        mock_get_xlsx.assert_called_once_with(self.item, False)
+        mock_add_xlsx_sheet.assert_called_once_with(ANY, self.item, False)
 
     def test_get_xlsx(self):
-        """Verify an XLSX object can be created."""
+        """Verify an XLSX worksheet object can be created."""
         # Act
-        workbook = exporter._get_xlsx(self.item4, auto=False)  # pylint: disable=W0212
+        workbook = openpyxl.Workbook()
+        worksheet = exporter._add_xlsx_sheet(workbook, self.item4, auto=False)  # pylint: disable=W0212
         # Assert
         rows = []
-        worksheet = workbook.active
         for data in worksheet.rows:
             rows.append([cell.value for cell in data])
         self.assertIn("long", rows[0])
@@ -157,10 +161,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def test_get_xlsx_auto(self):
         """Verify an XLSX object can be created with placeholder rows."""
         # Act
-        workbook = exporter._get_xlsx(self.item4, auto=True)  # pylint: disable=W0212
+        workbook = openpyxl.Workbook()
+        worksheet = exporter._add_xlsx_sheet(workbook, self.item4, auto=True)  # pylint: disable=W0212
         # Assert
         rows = []
-        worksheet = workbook.active
         for data in worksheet.rows:
             rows.append([cell.value for cell in data])
         self.assertEqual("...", rows[-1][0])
