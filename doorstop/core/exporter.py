@@ -264,6 +264,22 @@ def _file_xlsx(obj, path, auto=False):
     return path
 
 
+def _add_properties_sheet(wb, document_properties):
+    sheet = wb.create_sheet(title="Document Properties")
+    sheet.append([
+        "prefix",
+        "settings key",
+        "settings value",
+        "attributes key",
+        "attributes value",
+        ])
+    for prefix, data in document_properties.items():
+        for set_k, set_v in data["settings"].items():
+            sheet.append([prefix, repr(set_k), repr(set_v)])
+        for attr_k, attr_v in data["attributes"].items():
+            sheet.append([prefix, "", "", repr(attr_k), repr(attr_v)])
+
+
 def _get_xlsx(obj, path, auto):
     # Create a new workbook
     workbook = openpyxl.Workbook()
@@ -272,10 +288,17 @@ def _get_xlsx(obj, path, auto):
 
     first_sheet = None
     if is_tree(obj):
+        document_properties = {}
         log.debug("xlsx export: exporting tree")
         for obj2, path2 in iter_documents(obj, path, ".xlsx"):
             sheet = _add_xlsx_sheet(workbook, obj2, auto)
             first_sheet = sheet or first_sheet
+            document_properties[obj2.prefix] = {
+                    "settings": obj2.settings,
+                    "attributes": obj2.attributes
+                    }
+        if document_properties:
+            _add_properties_sheet(workbook, document_properties)
     else:
         log.debug("xlsx export: exporting single Item/Document")
         first_sheet = _add_xlsx_sheet(workbook, obj, auto)
