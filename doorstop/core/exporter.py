@@ -264,8 +264,10 @@ def _file_xlsx(obj, path, auto=False):
     return path
 
 
-def _add_properties_sheet(wb, document_properties):
+def _add_properties_sheet(wb, tree, document_properties):
     sheet = wb.create_sheet(title="Document Properties")
+    sheet.append(["Source Control Status:", tree.vcs.describe()])
+    sheet.append([])
     sheet.append([
         "prefix",
         "settings key",
@@ -298,7 +300,7 @@ def _get_xlsx(obj, path, auto):
                     "attributes": obj2.attributes
                     }
         if document_properties:
-            _add_properties_sheet(workbook, document_properties)
+            _add_properties_sheet(workbook, obj, document_properties)
     else:
         log.debug("xlsx export: exporting single Item/Document")
         first_sheet = _add_xlsx_sheet(workbook, obj, auto)
