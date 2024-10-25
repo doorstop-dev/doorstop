@@ -576,7 +576,7 @@ class TestImportFile(MockTestCase):
 
     def test_import_file_missing_prefix(self):
         """Verify 'doorstop import' returns an error with a missing prefix."""
-        path = os.path.join(FILES, "exported.xlsx")
+        path = os.path.join(FILES, "exported.csv")
         self.assertRaises(SystemExit, main, ["import", path])
 
     def test_import_file_extra_flags(self):
@@ -619,7 +619,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
     def test_import_tsv_to_document_existing(self):
         """Verify 'doorstop import' can import TSV to an existing document."""
@@ -630,7 +630,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
     def test_import_xlsx_to_document_existing(self):
         """Verify 'doorstop import' can import XLSX to an existing document."""
@@ -641,7 +641,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
