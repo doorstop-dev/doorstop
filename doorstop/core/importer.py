@@ -254,11 +254,15 @@ def _file_xlsx(path, document, mapping=None, tree=None, **_):
             tree = _get_tree()
         documents = []
         for worksheet in workbook.worksheets:
-            log.info(f"sheet {worksheet.title}...")
+            if worksheet.title == "Document Properties":
+                #TODO
+                continue
+            log.info(f"checking sheet {worksheet.title}...")
             document = _check_doc(tree, worksheet, workbook)
-            log.debug(f"importing into {document.prefix} {document.path}")
-            _load_xlsx(document, worksheet, mapping)
-            documents.append(document)
+            if document:
+                log.debug(f"importing into {document.prefix} {document.path}")
+                _load_xlsx(document, worksheet, mapping)
+                documents.append(document)
         return documents
 
 def _itemize(header, data, document, mapping=None):
