@@ -257,7 +257,7 @@ def _file_xlsx(path, document, mapping=None, tree=None, **_):
             log.info(f"sheet {worksheet.title}...")
             document = _check_doc(tree, worksheet, workbook)
             log.debug(f"importing into {document.prefix} {document.path}")
-            _load_xlsx(document, sheet, mapping)
+            _load_xlsx(document, worksheet, mapping)
             documents.append(document)
         return documents
 
