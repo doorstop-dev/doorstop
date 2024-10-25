@@ -24,23 +24,24 @@ _documents = []  # cache of unplaced documents
 log = common.logger(__name__)
 
 
-def import_file(path, document, ext=None, mapping=None, **kwargs):
+def import_file(path, ext=None, document=None, tree=None, mapping=None, **kwargs):
     """Import items from an exported file.
 
     :param path: input file location
-    :param document: document to import items
+    :param document: document to import items into
+    :param tree: tree to import documents into
     :param ext: file extension to override input path's extension
     :param mapping: dictionary mapping custom to standard attribute names
 
     :raise DoorstopError: for unknown file formats
 
-    :return: document with imported items
+    :return: list of Documents created/modified
 
     """
-    log.info("importing {} into {}...".format(path, document))
+    log.info(f"importing {path} into {document if document else tree}...")
     ext = ext or os.path.splitext(path)[-1]
     func = check(ext)
-    func(path, document, mapping=mapping, **kwargs)
+    return func(path, document, tree=tree, mapping=mapping, **kwargs)
 
 
 def create_document(prefix, path, parent=None, tree=None):
@@ -114,6 +115,7 @@ def _file_yml(path, document, **_):
     :param path: input file location
     :param document: document to import items
 
+    returns: list of Documents created/modified
     """
     # Parse the file
     log.info("reading items in {}...".format(path))
@@ -129,15 +131,18 @@ def _file_yml(path, document, **_):
         else:
             item.delete()
         add_item(document.prefix, uid, attrs=attrs, document=document)
+    return [document]
 
 
-def _file_csv(path, document, delimiter=",", mapping=None):
+def _file_csv(path, document, delimiter=",", mapping=None, **_):
     """Import items from a CSV export to a document.
 
     :param path: input file location
     :param document: document to import items
     :param delimiter: CSV field delimiter
     :param mapping: dictionary mapping custom to standard attribute names
+
+    returns: list of Documents created/modified
 
     """
     rows = []
@@ -165,36 +170,40 @@ def _file_csv(path, document, delimiter=",", mapping=None):
 
     # Import items from the rows
     _itemize(header, data, document, mapping=mapping)
+    return [document]
 
 
-def _file_tsv(path, document, mapping=None):
+def _file_tsv(path, document, mapping=None, **_):
     """Import items from a TSV export to a document.
 
     :param path: input file location
     :param document: document to import items
     :param mapping: dictionary mapping custom to standard attribute names
 
+    :return: list of Documents created/modified
     """
     _file_csv(path, document, delimiter="\t", mapping=mapping)
+    return [document]
 
 
-def _file_xlsx(path, document, mapping=None):
-    """Import items from an XLSX export to a document.
+def _check_doc(tree, worksheet, workbook):
+    log.debug(f"xlsx import: importing sheet {worksheet.title}")
+    prefix = worksheet.title
+    try:
+        document = tree.find_document(prefix)
+    except DoorstopError:
+        log.warn(f"no matching document found for sheet {worksheet.title}. "
+                 f"If you wish to import this, first create a document "
+                 f"with the prefix {prefix}")
+        return None
+    return document
 
-    :param path: input file location
-    :param document: document to import items
-    :param mapping: dictionary mapping custom to standard attribute names
 
-    """
+def _load_xlsx(document, worksheet, mapping):
+    log.info(f"Loading into document {document.path}, prefix {document.prefix}...")
+
     header = []
     data = []
-
-    # Parse the file
-    log.debug("reading rows in {}...".format(path))
-    workbook = openpyxl.load_workbook(path, data_only=True)
-    worksheet = workbook.active
-
-    log.debug(f"xlsx import: importing sheet {worksheet.title} in workbook {workbook}")
     index = 0
 
     # Extract header and data rows
@@ -213,16 +222,51 @@ def _file_xlsx(path, document, mapping=None):
         msg = "workbook contains the maximum number of rows"
         warnings.warn(msg, Warning)
 
-    # Import items from the rows
     _itemize(header, data, document, mapping=mapping)
 
+
+def _file_xlsx(path, document, mapping=None, tree=None, **_):
+    """Import items from an XLSX export to a document.
+
+    :param path: input file location
+    :param document: document to import items
+    :param mapping: dictionary mapping custom to standard attribute names
+
+    :return: list of Documents created/modified
+    """
+
+    # Parse the file
+    log.info(f"reading sheets in {path}...")
+    workbook = openpyxl.load_workbook(path, data_only=True)
+
+    if document:
+        if len(workbook.worksheets) == 1:
+            _load_xlsx(document, workbook.worksheets[0], mapping)
+        else:
+            sheet = workbook.get_sheet_by_name(document.prefix)
+            if sheet:
+                _load_xlsx(document, sheet, mapping)
+            else:
+                raise DoorstopError(f"No sheet matching {document.prefix}")
+        return [document]
+    else:
+        if not tree:
+            tree = _get_tree()
+        documents = []
+        for worksheet in workbook.worksheets:
+            log.info(f"sheet {worksheet.title}...")
+            document = _check_doc(tree, worksheet, workbook)
+            log.debug(f"importing into {document.prefix} {document.path}")
+            _load_xlsx(document, sheet, mapping)
+            documents.append(document)
+        return documents
 
 def _itemize(header, data, document, mapping=None):
     """Conversion function for multiple formats.
 
     :param header: list of columns names
     :param data: list of lists of row values
-    :param document: document to import items
+    :param document: document to import items into
     :param mapping: dictionary mapping custom to standard attribute names
 
     """
@@ -319,6 +363,7 @@ FORMAT_FILE = {
     ".xlsx": _file_xlsx,
 }
 
+FORMAT_TREE = {".xlsx": True}
 
 def check(ext):
     """Confirm an extension is supported for import.
@@ -338,3 +383,7 @@ def check(ext):
     else:
         log.debug("found file reader for: {}".format(ext))
         return func
+
+
+def can_import_tree(ext):
+    return ext in FORMAT_TREE
