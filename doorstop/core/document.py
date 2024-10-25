@@ -192,34 +192,33 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         IncludeLoader.filenames = [yamlfile]  # type: ignore
         return self._load(text, yamlfile, loader=IncludeLoader)
 
-    def load(self, reload=False):
-        """Load the document's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        data = self._load_with_include(self.config)
+    @property
+    def set_properties(self, data):
+        def fill_key(key, value):
+            match key:
+                case "prefix":
+                    self._data[key] = Prefix(value)
+                case "sep":
+                    self._data[key] = value.strip()
+                case "parent":
+                    self._data[key] = value.strip()
+                case "digits":
+                    self._data[key] = int(value)  # type: ignore
+                case "itemformat":
+                    self._data[key] = value.strip()
+                case _:
+                    msg = f"unexpected document setting '{key}' in: {self.config}"
+                    raise DoorstopError(msg)
+
         # Store parsed data
         sets = data.get("settings", {})
         for key, value in sets.items():
             try:
-                if key == "prefix":
-                    self._data[key] = Prefix(value)
-                elif key == "sep":
-                    self._data[key] = value.strip()
-                elif key == "parent":
-                    self._data[key] = value.strip()
-                elif key == "digits":
-                    self._data[key] = int(value)  # type: ignore
-                elif key == "itemformat":
-                    self._data[key] = value.strip()
-                else:
-                    msg = "unexpected document setting '{}' in: {}".format(
-                        key, self.config
-                    )
-                    raise DoorstopError(msg)
+                fill_key(key, value)
             except (AttributeError, TypeError, ValueError):
-                msg = "invalid value for '{}' in: {}".format(key, self.config)
+                msg = f"invalid value for '{key}' in: {self.config}"
                 raise DoorstopError(msg)
+
         # Store parsed attributes
         attributes = data.get("attributes", {})
         for key, value in attributes.items():
@@ -237,16 +236,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         self.extensions = data.get("extensions", {})
 
+    def load(self, reload=False):
+        """Load the document's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        data = self._load_with_include(self.config)
+        self._load_from_dict(data, reload)
         # Set meta attributes
         self._loaded = True
         if reload:
             list(self._iter(reload=reload))
 
-    @edit_document
-    def save(self):
-        """Save the document's properties to its file."""
-        log.debug("saving {}...".format(repr(self)))
-        # Format the data items
+    @property
+    def properties(self):
         data = {}
         sets = {}
         for key, value in self._data.items():
@@ -266,8 +269,14 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             attributes["reviewed"] = self._extended_reviewed
         if attributes:
             data["attributes"] = attributes
-        # Dump the data to YAML
-        text = self._dump(data)
+        return data
+
+    @edit_document
+    def save(self):
+        """Save the document's properties to its file."""
+        log.debug("saving {}...".format(repr(self)))
+       # Dump the data to YAML
+        text = self._dump(self.properties)
         # Save the YAML to file
         self._write(text, self.config)
         # Set meta attributes
