@@ -33,3 +33,7 @@ class WorkingCopy(BaseWorkingCopy):
 
     def commit(self, message=None):
         log.debug("$ simulated commit")
+
+    def describe(self):
+        log.debug("$ simulated describe")
+        return "mockvcs: simulated describe"
