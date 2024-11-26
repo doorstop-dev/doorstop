@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 from doorstop import settings
 from doorstop.cli import main
-from doorstop.cli.tests import SettingsTestCase
+from doorstop.cli.tests import FILES, SettingsTestCase
 
 
 class TestMain(SettingsTestCase):
@@ -84,3 +84,12 @@ class TestMain(SettingsTestCase):
             spec.loader.exec_module(runpy)
             # Assert
             self.assertIsNotNone(runpy)
+
+    @patch("doorstop.cli.commands.run", Mock())
+    def test_run_modified_settings_through_file(self):
+        """Verify --settings has override settings."""
+        main.main(args=["--settings", f"{FILES}/settings_modified.py"])
+        self.assertEqual(settings.MAX_LINE_LENGTH, 20)
+        # rollback to the original value to not impact an item test
+        settings.MAX_LINE_LENGTH = 79
+        self.assertEqual(settings.MAX_LINE_LENGTH, 79)
