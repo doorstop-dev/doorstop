@@ -1,4 +1,4 @@
-# 3.0 (beta)
+# 3.0
 
 - **BREAKING:** Dropped support for Python 3.6, 3.7, and 3.8.
 - **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.
