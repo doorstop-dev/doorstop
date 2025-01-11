@@ -7,7 +7,7 @@
     * Linux: [https://www.gnu.org/software/make](https://www.gnu.org/software/make)
     * Windows: [https://mingw.org/download/installer](https://mingw.org/download/installer)
 * Python: `$ pyenv install`
-* Poetry: [https://poetry.eustace.io/docs/#installation](https://poetry.eustace.io/docs/#installation)
+* Poetry: [https://python-poetry.org/docs/#installation](https://python-poetry.org/docs/#installation)
 * Graphviz:
     * macOS: `$ brew install graphviz`
     * Linux: [https://graphviz.org/download](https://graphviz.org/download/)
@@ -49,12 +49,29 @@ Build the documentation:
 $ make docs
 ```
 
+Local install for external testing:
+
+```sh
+$ make dev-install
+```
+
+Clean everything:
+```sh
+$ make clean
+```
+
+Compare coverage to current `develop` branch to see if changes causes reduced coverage.
+Please run before creating a PR.
+```sh
+$ make test-cover
+```
+
 ## Automatic
 
 Keep all of the above tasks running on change:
 
 ```sh
-$ make watch
+$ make dev
 ```
 
 > In order to have OS X notifications, `brew install terminal-notifier`.

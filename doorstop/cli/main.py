@@ -10,7 +10,7 @@ import sys
 
 from doorstop import common, settings
 from doorstop.cli import commands, utilities
-from doorstop.core import document, publisher, vcs
+from doorstop.core import document, vcs
 
 log = common.logger(__name__)
 
@@ -76,7 +76,9 @@ def main(args=None):  # pylint: disable=R0915
 
     # Build main parser
     parser = argparse.ArgumentParser(
-        prog=CLI, description=DESCRIPTION, **shared  # type: ignore
+        prog=CLI,
+        description=DESCRIPTION,
+        **shared,  # type: ignore
     )
     parser.add_argument(
         "-F",
@@ -179,12 +181,12 @@ def main(args=None):  # pylint: disable=R0915
         log.error(exc)
         success = False
     except KeyboardInterrupt:
-        log.debug("command cancelled")
+        log.debug(f"command cancelled: {args}")
         success = False
     if success:
-        log.debug("command succeeded")
+        log.debug("command succeeded: {args}")
     else:
-        log.debug("command failed")
+        log.debug(f"command failed: {args}")
         sys.exit(1)
 
 
@@ -197,6 +199,13 @@ def _create(subs, shared):
     sub.add_argument("prefix", help="document prefix for new item UIDs")
     sub.add_argument("path", help="path to a directory for item files")
     sub.add_argument("-p", "--parent", help="prefix of parent document")
+    sub.add_argument(
+        "-i",
+        "--itemformat",
+        choices=["yaml", "markdown"],
+        default="yaml",
+        help="item file format",
+    )
     sub.add_argument(
         "-d",
         "--digits",
@@ -276,6 +285,11 @@ def _add(subs, shared):
         "--defaults",
         metavar="FILE",
         help=("file in YAML format with default values for attributes of the new item"),
+    )
+    sub.add_argument(
+        "--noreorder",
+        action="store_false",
+        help=("disable automatic reordering of file"),
     )
 
 
@@ -507,6 +521,7 @@ def _publish(subs, shared):
         "-t", "--text", action="store_true", help="output text (default when no path)"
     )
     group.add_argument("-m", "--markdown", action="store_true", help="output Markdown")
+    group.add_argument("-l", "--latex", action="store_true", help="output LaTeX")
     group.add_argument(
         "-H", "--html", action="store_true", help="output HTML (default for 'all')"
     )
@@ -518,18 +533,16 @@ def _publish(subs, shared):
         help="do not include child links on items",
     )
     sub.add_argument(
-        "-L",
-        "--no-body-levels",
-        action="store_true",
-        default=None,
-        help="do not include levels on non-heading items",
-    )
-    sub.add_argument(
         "--no-levels",
         choices=["all", "body"],
         help="do not include levels on heading and non-heading or non-heading items",
     )
-    sub.add_argument("--template", help="template file", default=publisher.HTMLTEMPLATE)
+    sub.add_argument("--template", help="template file", default=None)
+    sub.add_argument(
+        "--index",
+        help="Generate top level index (when producing markdown).",
+        action="store_true",
+    )
 
 
 if __name__ == "__main__":

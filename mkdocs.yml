@@ -6,8 +6,12 @@ repo_url: https://github.com/doorstop-dev/doorstop
 edit_uri: https://github.com/doorstop-dev/doorstop/edit/develop/docs
 
 theme: readthedocs
-extra_css: []
-extra_javascript: []
+
+markdown_extensions:
+  - admonition
+use_directory_urls: false
+hooks:
+ - docs/generate.py
 
 nav:
 - Home: index.md
@@ -21,14 +25,17 @@ nav:
   - Validating Requirements: cli/validation.md
   - Publishing Documents: cli/publishing.md
   - Importing and Exporting: cli/interchange.md
-- Desktop Interface: gui/overview.md
-- Web Interface: web.md
-- Scripting Interface: api/scripting.md
+- Interfaces:
+  - Desktop Client: gui/overview.md
+  - Web Server: web.md
+  - Scripting API: api/scripting.md
 - Reference:
   - Tree: reference/tree.md
   - Document: reference/document.md
   - Item: reference/item.md
-- Examples: examples.md
+- Examples:
+  - 3rd-Party Projects: examples.md
+  - Doorstop's Requirements: gen/index.md
 - About:
   - Release Notes: about/changelog.md
   - Contributing: about/contributing.md

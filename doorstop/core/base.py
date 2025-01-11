@@ -288,7 +288,7 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        common.write_text(text, path)
+        common.write_text(text, path, end=settings.WRITE_LINESEPERATOR)
 
     @staticmethod
     def _dump(data):

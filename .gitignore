@@ -11,6 +11,7 @@ Icon*
 # Temporary virtual environment files
 /.cache/
 /.venv/
+/.python-version
 
 # Temporary server files
 .env
@@ -22,6 +23,7 @@ Icon*
 /site/
 /*.html
 /docs/*.png
+texput.log
 
 # Google Drive
 *.gdoc
@@ -37,6 +39,7 @@ Icon*
 /pyunit.xml
 /tmp/
 *.tmp
+coverage.xml
 
 # Build and release directories
 /build/

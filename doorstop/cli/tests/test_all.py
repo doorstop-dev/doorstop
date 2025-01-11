@@ -21,9 +21,10 @@ from doorstop.cli.tests import (
 )
 from doorstop.core.builder import _clear_tree
 from doorstop.core.document import Document
+from doorstop.core.tests.helpers import on_error_with_retry
 
-REQ_COUNT = 18
-ALL_COUNT = 50
+REQ_COUNT = 23
+ALL_COUNT = 57
 
 
 class TempTestCase(unittest.TestCase):
@@ -36,7 +37,7 @@ class TempTestCase(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.cwd)
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
 
 class MockTestCase(TempTestCase):
@@ -62,7 +63,7 @@ class TestMain(SettingsTestCase):
     def tearDown(self):
         super().tearDown()
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_main(self):
         """Verify 'doorstop' can be called."""
@@ -89,7 +90,7 @@ class TestCreate(TempTestCase):
         self.assertIs(None, main(["create", "_TEMP", self.temp, "-p", "REQ"]))
 
     @patch("subprocess.call", Mock())
-    def test_create_error_unknwon_parent(self):
+    def test_create_error_unknown_parent(self):
         """Verify 'doorstop create' returns an error with an unknown parent."""
         self.assertRaises(
             SystemExit, main, ["create", "_TEMP", self.temp, "-p", "UNKNOWN"]
@@ -171,6 +172,10 @@ class TestAdd(unittest.TestCase):
         self.assertIs(None, main(["add", "TUT", "--level", "1.42"]))
         self.assertTrue(os.path.isfile(self.path))
 
+    def test_add_noreorder(self):
+        """Verify 'doorstop add' can be called without reordering"""
+        self.assertIs(None, main(["add", "TUT", "--noreorder"]))
+
     def test_add_error(self):
         """Verify 'doorstop add' returns an error with an unknown prefix."""
         self.assertRaises(SystemExit, main, ["add", "UNKNOWN"])
@@ -205,7 +210,9 @@ class TestAddServer(unittest.TestCase):
     def test_add_custom_server(self, mock_add_item):
         """Verify 'doorstop add' can be called with a custom server."""
         self.assertIs(None, main(["add", "TUT", "--server", "1.2.3.4"]))
-        mock_add_item.assert_called_once_with(defaults=None, level=None, name=None)
+        mock_add_item.assert_called_once_with(
+            defaults=None, level=None, name=None, reorder=True
+        )
 
     def test_add_force(self):
         """Verify 'doorstop add' can be called with a missing server."""
@@ -737,11 +744,6 @@ class TestPublish(TempTestCase):
         self.assertIs(None, main(["publish", "tut", "--no-child-links"]))
         self.assertFalse(settings.PUBLISH_CHILD_LINKS)
 
-    def test_publish_document_without_body_levels(self):
-        """Verify 'doorstop publish' can create output without body levels."""
-        self.assertIs(None, main(["publish", "tut", "--no-body-levels"]))
-        self.assertFalse(settings.PUBLISH_BODY_LEVELS)
-
     def test_publish_document_no_body_levels(self):
         """Verify 'doorstop publish' can create output without body levels."""
         self.assertIs(None, main(["publish", "tut", "--no-levels=body"]))
@@ -787,15 +789,12 @@ class TestPublish(TempTestCase):
         self.assertIs(None, main(["publish", "req", path]))
         self.assertTrue(os.path.isfile(path))
 
-    def test_publish_document_html(self):
-        """Verify 'doorstop publish' can create HTML output."""
-        self.assertIs(None, main(["publish", "hlt", "--html"]))
-
     def test_publish_document_html_file(self):
         """Verify 'doorstop publish' can create an HTML file."""
         path = os.path.join(self.temp, "req.html")
         self.assertIs(None, main(["publish", "req", path]))
-        self.assertTrue(os.path.isfile(path))
+        filePath = os.path.join(self.temp, "documents", "req.html")
+        self.assertTrue(os.path.isfile(filePath))
 
     def test_publish_tree_html(self):
         """Verify 'doorstop publish' can create an HTML directory."""
@@ -811,9 +810,37 @@ class TestPublish(TempTestCase):
         self.assertTrue(os.path.isdir(path))
         self.assertFalse(os.path.isfile(os.path.join(path, "index.html")))
 
+    def test_publish_tree_md(self):
+        """Verify 'doorstop publish' can create a Markdown directory."""
+        path = os.path.join(self.temp, "all")
+        self.assertIs(None, main(["publish", "all", path, "--markdown", "--index"]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, "index.md")))
+
     def test_publish_tree_no_path(self):
         """Verify 'doorstop publish' returns an error with no path."""
         self.assertRaises(SystemExit, main, ["publish", "all"])
+
+    def test_publish_tree_markdown_with_index(self):
+        """Verify 'doorstop publish' can create Markdown output for a tree,
+        with an index."""
+        path = os.path.join(self.temp, "all")
+        self.assertIs(None, main(["publish", "all", path, "--markdown", "--index"]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, "index.md")))
+
+    def test_publish_markdown_tree_no_path(self):
+        """Verify 'doorstop publish' returns an error with no path."""
+        self.assertRaises(
+            SystemExit,
+            main,
+            [
+                "publish",
+                "-m",
+                "--index",
+                "all",
+            ],
+        )
 
 
 class TestPublishCommand(TempTestCase):

@@ -139,22 +139,18 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         """
         log.debug("trying to add {}...".format(document))
         if not self.document:  # tree is empty
-
             if document.parent:
                 msg = "unknown parent for {}: {}".format(document, document.parent)
                 raise DoorstopError(msg)
             self.document = document
 
         elif document.parent:  # tree has documents, document has parent
-
             if document.parent.lower() == self.document.prefix.lower():
-
                 # Current document is the parent
                 node = Tree(document, self)
                 self.children.append(node)
 
             else:
-
                 # Search for the parent
                 for child in self.children:
                     try:
@@ -168,7 +164,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                     raise DoorstopError(msg)
 
         else:  # tree has documents, but no parent specified for document
-
             msg = "no parent specified for {}".format(document)
             log.info(msg)
             prefixes = ", ".join(document.prefix for document in self)
@@ -197,7 +192,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
     # decorators are applied to methods in the associated classes
     def create_document(
-        self, path, value, sep=None, digits=None, parent=None
+        self, path, value, sep=None, digits=None, parent=None, itemformat=None
     ):  # pylint: disable=R0913
         """Create a new document and add it to the tree.
 
@@ -206,6 +201,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         :param sep: separator between prefix and numbers
         :param digits: number of digits for the document's numbers
         :param parent: parent document's prefix
+        :param itemformat: file format for storing items
 
         :raises: :class:`~doorstop.common.DoorstopError` if the
             document cannot be created
@@ -224,7 +220,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 )
 
         document = Document.new(
-            self, path, self.root, prefix, sep=sep, digits=digits, parent=parent
+            self,
+            path,
+            self.root,
+            prefix,
+            sep=sep,
+            digits=digits,
+            parent=parent,
+            itemformat=itemformat,
         )
         try:
             self._place(document)
@@ -550,7 +553,6 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                 self.child = child
 
         if item.normative:
-
             # Start the next row or copy from recursion
             if row is None:
                 row = Row([None] * len(mapping))
@@ -629,7 +631,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Build parent prefix string (`getattr` to enable mock testing)
         prefix = getattr(self.document, "prefix", "") or str(self.document)
         if html_links:
-            prefix = '<a href="documents/{0}">{0}</a>'.format(prefix)
+            prefix = '<a href="documents/{0}.html">{0}</a>'.format(prefix)
         yield prefix
         # Build child prefix strings
         for count, child in enumerate(self.children, start=1):

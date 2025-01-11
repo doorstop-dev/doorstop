@@ -34,7 +34,7 @@ are shown.
 * Duplicated levels within the items of a document.
 * An item has an empty text attribute.
 * An item has unreviewed changes.
-* An item is linked to an inactive item.
+* An item's child link is an inactive item.
 * An item is linked to a non-normative item.
 * An item is linked to itself.
 * An item has a suspect linked to an item those fingerprint is not equal to the
@@ -46,9 +46,9 @@ are shown.
 
 `ERROR` level messages are generated under the following conditions:
 
-* Link with a invalid UID.
-* Unknown item for an UID.
-* External reference cannot be found.
+* An item's parent link is an inactive item.
+* An item's link is an invalid or unknown UID.
+* An external reference cannot be found.
 
 ## Links
 

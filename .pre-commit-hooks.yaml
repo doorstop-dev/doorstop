@@ -1,0 +1,20 @@
+# expected stages: commit, commit-msg, manual, merge-commit, post-checkout, post-commit, post-merge, post-rewrite, prepare-commit-msg, push
+
+  - id: check-doorstop-errors
+    args: ["-W"]
+    name: check for doorstop errors
+    description: ensures the changes introduces no errors
+    entry: doorstop
+    language: python
+    verbose: true
+    pass_filenames: false
+    stages: [commit, push, manual]
+
+  - id: check-unreviewed-items
+    name: ensure that all requirements are reviewed before being committed
+    description: ensure that all documents/requirements are reviewed before being committed
+    entry: git_hooks/check_unreviewed_requirements.sh
+    language: script
+    verbose: true
+    pass_filenames: false
+    stages: [merge-commit, manual]

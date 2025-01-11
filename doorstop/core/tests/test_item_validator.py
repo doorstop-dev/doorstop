@@ -3,33 +3,15 @@
 
 """Unit tests for the doorstop.core.validators.item_validator module."""
 
-import logging
 import os
 import unittest
-from typing import List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop import core
 from doorstop.common import DoorstopError
 from doorstop.core.tests import MockItem, MockItemValidator, MockSimpleDocument
+from doorstop.core.tests.helpers import ListLogHandler
 from doorstop.core.types import Stamp
-
-
-class ListLogHandler(logging.NullHandler):
-    def __init__(self, log):
-        super().__init__()
-        self.records: List[str] = []
-        self.log = log
-
-    def __enter__(self):
-        self.log.addHandler(self)
-        return self
-
-    def __exit__(self, kind, value, traceback):
-        self.log.removeHandler(self)
-
-    def handle(self, record):
-        self.records.append(str(record.msg))
 
 
 class TestItemValidator(unittest.TestCase):
@@ -128,8 +110,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' HAS been changed, i.e., does NOT exist!
+        self.assertNotIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above
@@ -148,8 +134,12 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item.links = [{"mock_uid": None}, {"mock_uid": None}]
         self.item_validator.disable_get_issues_document()
+        # Assert that validation passes.
         self.assertTrue(self.item_validator.validate(self.item))
+        # Assert that stamp was added.
         self.assertEqual("abc123", self.item.links[0].stamp)
+        # Assert that 'mock_uid' has NOT been changed, i.e., DOES exist!
+        self.assertIn("mock_uid", self.item.data["links"][0])
 
         # two calls:
         # 1) setting up mock links with self.item.links above
@@ -299,3 +289,76 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
 
         self.assertTrue(self.item_validator.validate(self.item))
+
+    @patch("doorstop.settings.CHECK_CHILD_LINKS_STRICT", True)
+    def test_validate_strict_child_links(self):
+        """Verify root items are linked to from all child documents"""
+        root_doc = MockSimpleDocument()
+        root_doc.prefix = "ROOT"
+
+        child_doc_a = MockSimpleDocument()
+        child_doc_a.prefix = "CHILD_A"
+        child_doc_a.parent = root_doc.prefix
+
+        child_doc_b = MockSimpleDocument()
+        child_doc_b.prefix = "CHILD_B"
+        child_doc_b.parent = root_doc.prefix
+
+        root_doc.children = [child_doc_a.prefix, child_doc_b.prefix]
+
+        root_item_a = MockItem(root_doc, "ROOT001.yml")
+        root_item_b = MockItem(root_doc, "ROOT002.yml")
+        child_item_a = MockItem(child_doc_a, "CHILD_A001.yml")
+        child_item_b = MockItem(child_doc_b, "CHILD_B001.yml")
+
+        all_items = [root_item_a, root_item_b, child_item_a, child_item_b]
+
+        root_doc.set_items([root_item_a, root_item_b])
+        child_doc_a.set_items([child_item_a])
+        child_doc_b.set_items([child_item_b])
+
+        def mock_iter(seq):
+            """Create a mock __iter__ method."""
+
+            def _iter(self):  # pylint: disable=W0613
+                """Mock __iter__method."""
+                yield from seq
+
+            return _iter
+
+        mock_tree = Mock()
+        mock_tree.__iter__ = mock_iter([root_doc, child_doc_a, child_doc_b])
+        mock_tree.find_item = lambda uid: next(
+            filter(lambda item: item.uid == uid, all_items), None
+        )
+
+        for item in all_items:
+            item.text = "text"
+            item.tree = mock_tree
+
+        # Only create a link from each child document
+        # to a different item in the root document, such
+        # that not every item in the root has a child link
+        # from every document
+        child_item_a.links = [root_item_a.uid]
+        child_item_b.links = [root_item_b.uid]
+
+        self.item_validator = MockItemValidator()
+        issues = list(self.item_validator.get_issues(root_item_a))
+        self.assertEqual(len(issues), 1)
+        self.assertIn("no links from document: CHILD_B", "{}".format(issues))
+
+        issues = list(self.item_validator.get_issues(root_item_b))
+        self.assertEqual(len(issues), 1)
+        self.assertIn("no links from document: CHILD_A", "{}".format(issues))
+
+        # Now make sure that every item in the root is
+        # linked to by an item from every child document
+        child_item_a.links = [root_item_a.uid, root_item_b.uid]
+        child_item_b.links = [root_item_b.uid, root_item_a.uid]
+
+        issues = list(self.item_validator.get_issues(root_item_a))
+        self.assertEqual(len(issues), 0)
+
+        issues = list(self.item_validator.get_issues(root_item_b))
+        self.assertEqual(len(issues), 0)

@@ -2,6 +2,9 @@
 
 """Unit tests for the doorstop.cli.main module."""
 
+import importlib.util
+import sys
+from os import sep
 from unittest.mock import Mock, patch
 
 from doorstop import settings
@@ -10,7 +13,7 @@ from doorstop.cli.tests import SettingsTestCase
 
 
 class TestMain(SettingsTestCase):
-    """Unit tests for the `main` function."""  # pylint: disable=R0201
+    """Unit tests for the `main` function."""
 
     @patch("doorstop.cli.commands.get")
     def test_run(self, mock_get):
@@ -72,3 +75,12 @@ class TestMain(SettingsTestCase):
         self.assertFalse(settings.CACHE_PATHS)
         self.assertTrue(settings.WARN_ALL)
         self.assertTrue(settings.ERROR_ALL)
+
+    def test_main(self):
+        testargs = [sep.join(["doorstop", "cli", "main.py"])]
+        with patch.object(sys, "argv", testargs):
+            spec = importlib.util.spec_from_file_location("__main__", testargs[0])
+            runpy = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(runpy)
+            # Assert
+            self.assertIsNotNone(runpy)

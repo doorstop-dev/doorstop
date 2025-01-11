@@ -3,6 +3,7 @@
 """Settings for the Doorstop package."""
 
 import logging
+import os
 
 # Logging settings
 DEFAULT_LOGGING_FORMAT = "%(message)s"
@@ -49,6 +50,7 @@ PUBLISH_CHILD_LINKS = True  # include child links when publishing
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = True  # include levels on header items
 ENABLE_HEADERS = True  # use headers if defined
+WRITE_LINESEPERATOR = os.linesep
 
 # Version control settings
 ADDREMOVE_FILES = True  # automatically add/remove new/changed files

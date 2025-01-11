@@ -7,6 +7,8 @@ omit =
     */tests/*
     */__main__.py
 
+dynamic_context = test_function
+
 [report]
 
 omit =
@@ -19,6 +21,8 @@ exclude_lines =
     pragma: no cover
     raise NotImplementedError
     except DistributionNotFound
-    if __name__ == '__main__'
 
-skip_covered = true
+skip_covered = false
+
+[html]
+show_contexts = True

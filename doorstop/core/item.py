@@ -3,6 +3,7 @@
 """Representation of an item in a document."""
 
 import functools
+import hashlib
 import linecache
 import os
 from typing import Any, List
@@ -94,7 +95,11 @@ def requires_tree(func):
 class Item(BaseFileObject):  # pylint: disable=R0902
     """Represents an item file with linkable text."""
 
-    EXTENSIONS = ".yml", ".yaml"
+    EXTENSIONS = {
+        "yaml": [".yml", ".yaml"],
+        "markdown": [".md"],
+    }
+    MARKDOWN_TEXT_ATTRIBUTES = ["text", "header"]  # attributes parsed from content
 
     DEFAULT_LEVEL = Level("1.0")
     DEFAULT_ACTIVE = True
@@ -104,6 +109,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     DEFAULT_TEXT = Text()
     DEFAULT_REF = ""
     DEFAULT_HEADER = Text()
+    DEFAULT_ITEMFORMAT = "yaml"
 
     def __init__(self, document, path, root=os.getcwd(), **kwargs):
         """Initialize an item from an existing file.
@@ -124,16 +130,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         except DoorstopError:
             msg = "invalid item filename: {}".format(filename)
             raise DoorstopError(msg) from None
-        # Ensure the file extension is valid
-        if ext.lower() not in self.EXTENSIONS:
-            msg = "'{0}' extension not in {1}".format(path, self.EXTENSIONS)
-            raise DoorstopError(msg)
         # Initialize the item
         self.path = path
         self.root: str = root
         self.document = document
         self.tree = kwargs.get("tree")
         self.auto = kwargs.get("auto", Item.auto)
+        self.itemformat = kwargs.get("itemformat", Item.DEFAULT_ITEMFORMAT)
         self.reference_finder = ReferenceFinder()
         self.yaml_validator = YamlValidator()
         # Set default values
@@ -148,6 +151,15 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         self._data["links"] = set()  # type: ignore
         if settings.ENABLE_HEADERS:
             self._data["header"] = Item.DEFAULT_HEADER
+
+        Item._check_itemformat(self.itemformat, path)
+
+        # Ensure the file extension is valid
+        if ext.lower() not in Item.EXTENSIONS[self.itemformat]:
+            msg = "'{0}' extension for itemformat {1} not in {2}".format(
+                path, self.itemformat, Item.EXTENSIONS[self.itemformat]
+            )
+            raise DoorstopError(msg)
 
     def __repr__(self):
         return "Item('{}')".format(self.path)
@@ -167,7 +179,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     @add_item
     def new(
-        tree, document, path, root, uid, level=None, auto=None
+        tree, document, path, root, uid, level=None, auto=None, itemformat_default=None
     ):  # pylint: disable=R0913
         """Create a new item.
 
@@ -181,6 +193,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         :param level: level for the new item
         :param auto: automatically save the item
 
+        :param itemformat_default: file format for storing items, in case :param:`document` is not provided
+
         :raises: :class:`~doorstop.common.DoorstopError` if the item
             already exists
 
@@ -188,18 +202,39 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
         """
         UID(uid).check()
-        filename = str(uid) + Item.EXTENSIONS[0]
+
+        if document:
+            itemformat = document.itemformat
+        elif itemformat_default:
+            itemformat = itemformat_default
+        else:
+            itemformat = Item.DEFAULT_ITEMFORMAT
+        Item._check_itemformat(itemformat, path)
+
+        fileext = Item.EXTENSIONS[itemformat][0]
+        filename = str(uid) + fileext
         path2 = os.path.join(path, filename)
         # Create the initial item file
         log.debug("creating item file at {}...".format(path2))
         Item._create(path2, name="item")
         # Initialize the item
-        item = Item(document, path2, root=root, tree=tree, auto=False)
+        item = Item(
+            document, path2, root=root, tree=tree, auto=False, itemformat=itemformat
+        )
         item.level = level if level is not None else item.level  # type: ignore
         if auto or (auto is None and Item.auto):
             item.save()
         # Return the item
         return item
+
+    @staticmethod
+    def _check_itemformat(itemformat, path):
+        # Ensure itemformat is valid
+        if itemformat not in Item.EXTENSIONS:
+            msg = "'{0}' itemformat {1} not in {2}".format(
+                path, itemformat, Item.EXTENSIONS.keys()
+            )
+            raise DoorstopError(msg)
 
     def _set_attributes(self, attributes):
         """Set the item's attributes."""
@@ -229,7 +264,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     if "keyword" in ref_dict:
                         ref_keyword = ref_dict["keyword"]
                         stripped_ref_dict["keyword"] = ref_keyword
-
+                    if "sha" in ref_dict:
+                        stripped_ref_dict["sha"] = ref_dict["sha"]
                     stripped_value.append(stripped_ref_dict)
 
                 value = stripped_value
@@ -246,21 +282,76 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         log.debug("loading {}...".format(repr(self)))
         # Read text from file
         text = self._read(self.path)
-        # Parse YAML data from text
-        data = self._load(text, self.path)
+
+        if self.itemformat == "markdown":
+            # Parse YAML data from markdown with YAML frontmatter
+            data = common.load_markdown(text, self.path, Item.MARKDOWN_TEXT_ATTRIBUTES)
+        elif self.itemformat == "yaml":
+            # Parse YAML data from text
+            data = common.load_yaml(text, self.path)
+        else:
+            msg = "unknwon item format detected during load: {}({})".format(
+                self.uid, self.itemformat
+            )
+            raise DoorstopError(msg) from None
         # Store parsed data
         self._set_attributes(data)
         # Set meta attributes
         self._loaded = True
+
+    def _hash_reference(self, path):
+        """
+        Extension method created to generate checksum from the list of find_references.
+
+        :param path: a path from a reference inside the references list
+        """
+        sha = None
+        if "item_sha_required" not in self.document.extensions:
+            return sha
+
+        try:
+            sha256 = hashlib.sha256()
+            with open(os.path.join(self.root, path), "rb") as f:
+                BUFSIZE = (
+                    int(self.document.extensions["item_sha_buffer_size"])
+                    if "item_sha_buffer_size" in self.document.extensions
+                    else 65536
+                )
+                while True:
+                    fdata = f.read(BUFSIZE)
+                    if not fdata:
+                        break
+                    sha256.update(fdata)
+                sha = sha256.hexdigest()
+
+        # We don't report missing files because validate already does that.
+        except FileNotFoundError:
+            pass
+
+        return sha
 
     @edit_item
     def save(self):
         """Format and save the item's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
         # Format the data items
-        data = self._yaml_data()
-        # Dump the data to YAML
-        text = self._dump(data)
+        if self.itemformat == "markdown":
+            # Dump the data to YAML-frontmatter
+            data, textattr = self._yaml_data(
+                textattributekeys=Item.MARKDOWN_TEXT_ATTRIBUTES
+            )
+            # Dump the data to markdown text
+            text = common.dump_markdown(data, textattr)
+        elif self.itemformat == "yaml":
+            # Parse YAML data from text
+            data, _ = self._yaml_data()
+            # Dump the data to YAML
+            text = self._dump(data)
+        else:
+            msg = "unknwon item format detected during save: {}({})".format(
+                self.uid, self.itemformat
+            )
+            raise DoorstopError(msg) from None
         # Save the YAML to file
         self._write(text, self.path)
         # Set meta attributes
@@ -269,10 +360,20 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     # properties #############################################################
 
-    def _yaml_data(self):
+    def _yaml_data(self, textattributekeys=None):
         """Get all the item's data formatted for YAML dumping."""
         data = {}
+        textattributes = {}
+        if not textattributekeys:
+            textattributekeys = []
+
         for key, value in self._data.items():
+            # if key in list of pure text attributes,
+            # then store as-is in extra textattribute dict
+            if key in textattributekeys:
+                textattributes[key] = value
+                continue
+
             if key == "level":
                 value = value.yaml  # type: ignore
             elif key == "text":
@@ -295,6 +396,8 @@ class Item(BaseFileObject):  # pylint: disable=R0902
                     if "keyword" in el:
                         ref_dict["keyword"] = el["keyword"]  # type: ignore
 
+                    if "sha" in el:
+                        ref_dict["sha"] = el["sha"]  # type: ignore
                     stripped_value.append(ref_dict)
 
                 value = stripped_value  # type: ignore
@@ -305,13 +408,13 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             else:
                 value = _convert_to_yaml(0, len(key) + 2, value)
             data[key] = value
-        return data
+        return data, textattributes
 
     @property  # type: ignore
     @auto_load
     def data(self):
         """Load and get all the item's data formatted for YAML dumping."""
-        return self._yaml_data()
+        return self._yaml_data()[0]
 
     @property
     def uid(self):
@@ -784,6 +887,30 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     def review(self):
         """Mark the item as reviewed."""
         log.info("marking item as reviewed...")
+
+        # only introduce the sha for reference files if
+        # the option item_sha_required is defined in the extension section from .doorstop.yml
+        if (
+            "item_sha_required" in self.document.extensions
+            and self.references is not None
+        ):
+            references = self.references
+            for ref, _ in enumerate(references):
+                temp_sha = self._hash_reference(references[ref]["path"])
+                log.info(references[ref])
+                if "sha" in references[ref] and references[ref]["sha"] == temp_sha:
+                    log.info(
+                        f"{references[ref]['path']} checksum did not change skipping update..."
+                    )
+                    continue
+
+                if "sha" in references[ref] and references[ref]["sha"] != temp_sha:
+                    log.info(f"updating checksum for {references[ref]['path']}")
+                    references[ref]["sha"] = temp_sha
+                else:
+                    log.info(f"Inserting checksum for {references[ref]['path']}")
+                    references[ref]["sha"] = temp_sha
+
         self._data["reviewed"] = self.stamp(links=True)
 
     @delete_item
@@ -826,6 +953,6 @@ class UnknownItem:
         """Get the unknown item's relative path string."""
         return "@{}{}".format(os.sep, self.UNKNOWN_PATH)
 
-    def stamp(self):  # pylint: disable=R0201
+    def stamp(self):
         """Return an empty stamp."""
         return Stamp(None)

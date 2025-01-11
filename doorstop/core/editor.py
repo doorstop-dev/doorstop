@@ -3,11 +3,11 @@
 """Functions to edit documents and items."""
 
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
-from distutils.spawn import find_executable
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -87,13 +87,17 @@ def launch(path, tool=None):
     elif sys.platform.startswith("darwin"):
         args = ["open", path]
     elif os.name == "nt":
-        cygstart = find_executable("cygstart")
+        cygstart = shutil.which("cygstart")
         if cygstart:
             args = [cygstart, path]
         else:
             args = ["start", path]
     elif os.name == "posix":
         args = ["xdg-open", path]
+    else:
+        raise DoorstopError(
+            "unknown operating system, unable to determine launch command"
+        )
 
     # Launch the editor
     try:

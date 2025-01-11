@@ -2,7 +2,7 @@
 
 """Integration tests for the doorstop.cli package."""
 
-import imp  # pylint: disable=deprecated-module
+import importlib
 import sys
 import unittest
 from unittest.mock import Mock, patch
@@ -36,7 +36,7 @@ class TestImport(unittest.TestCase):
     def test_import(self):
         """Verify tkinter import errors are handled."""
         sys.modules["tkinter"] = Mock(side_effect=ImportError)
-        imp.reload(gui)
+        importlib.reload(gui)
         self.assertFalse(gui.run(None, None, lambda x: False))  # pylint: disable=W0212
         self.assertIsInstance(gui.tk, Mock)
 

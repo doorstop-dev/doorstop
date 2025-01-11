@@ -4,7 +4,7 @@
 
 import logging
 import os
-from typing import List
+from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.core.base import BaseFileObject
@@ -17,6 +17,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 
 TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), "files")
+FILES_MD = os.path.join(os.path.dirname(__file__), "files_md")
 SYS = os.path.join(FILES, "parent")
 TST = os.path.join(FILES, "child")
 EMPTY = os.path.join(FILES, "empty")  # an empty directory
@@ -62,7 +63,7 @@ class MockFileObject(BaseFileObject):  # pylint: disable=W0223,R0902
         logging.debug("mock write path: {}".format(path))
         self._file = text
 
-    def __bool__(self):  # override __len__ behavior, pylint: disable=R0201
+    def __bool__(self):
         return True
 
 
@@ -73,9 +74,7 @@ class MockItem(MockFileObject, Item):  # pylint: disable=W0223,R0902
 class MockItemValidator(ItemValidator):  # pylint: disable=W0223,R0902
     """Mock Item class with stubbed file IO."""
 
-    def _no_get_issues_document(
-        self, item, document, skip
-    ):  # pylint: disable=W0613,R0201
+    def _no_get_issues_document(self, item, document, skip):  # pylint: disable=W0613
         return
         yield  # pylint: disable=W0101
 
@@ -93,14 +92,25 @@ class MockSimpleDocument:
     def __init__(self):
         self.parent = None
         self.prefix = "RQ"
+        self.itemformat = "yaml"
         self._items: List[Item] = []
         self.extended_reviewed: List[str] = []
+        self.extensions: Dict[str, Any] = {}
 
     def __iter__(self):
         yield from self._items
 
     def set_items(self, items):
         self._items = items
+
+
+class MockSimpleDocumentExtensions(MockSimpleDocument):
+    """Mock Document class that enable extensions."""
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        for k, v in kwargs.items():
+            self.extensions[k] = v
 
 
 class MockDocumentSkip(MockDocument):  # pylint: disable=W0223,R0902
@@ -122,9 +132,11 @@ class MockItemAndVCS(MockItem):  # pylint: disable=W0223,R0902
         super().__init__(None, *args, **kwargs)
         self.tree = Mock()
         self.tree.vcs = WorkingCopy(None)
+        self.prefix = "REQ"
+        self._attribute_defaults = None
 
 
-class MockDataMixIn:  # pylint: disable=W0232,R0903
+class MockDataMixIn:  # pylint: disable=R0903
     """Data for test cases requiring mock items and documents."""
 
     # purely mock objects
@@ -133,6 +145,7 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     mock_document.prefix = "MOCK"
     mock_document.items = []
     mock_document.assets = None
+    mock_document.template = None
     mock_tree = MagicMock()
     mock_tree.documents = [mock_document]
 
@@ -183,6 +196,8 @@ class MockDataMixIn:  # pylint: disable=W0232,R0903
     ]
     document.copy_assets = Mock()
     document.assets = None
+    document.prefix = "REQ"
+    document.template = None
 
     item3 = MockItem(
         None,

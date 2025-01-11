@@ -279,7 +279,6 @@ class TestTree(unittest.TestCase):
         # Act
         rows2 = self.tree.get_traceability()
         # Assert
-        self.maxDiff = None
         self.assertListEqual(rows, rows2)
 
     def test_new_document(self):

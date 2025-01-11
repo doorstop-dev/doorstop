@@ -15,6 +15,8 @@ from doorstop.cli.tests import FILES, ROOT
 
 if "TRAVIS" in os.environ:
     PATH = os.path.join(os.environ["VIRTUAL_ENV"], "bin", "doorstop")
+elif "GITHUB_ACTIONS" in os.environ and os.name == "nt":
+    PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop")
 elif os.name == "nt":
     PATH = os.path.join(ROOT, ".venv", "Scripts", "doorstop.exe")
 else:
@@ -125,9 +127,7 @@ class TestSection1(TestBase):
         # 3.3
 
         self.doorstop("import --item HLR HLR001")
-        self.doorstop(
-            "import --item LLR LLR001 " "--attr \"{'text': 'The item text.'}\""
-        )
+        self.doorstop("import --item LLR LLR001 --attr \"{'text': 'The item text.'}\"")
 
         # 3.1
 

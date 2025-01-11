@@ -5,7 +5,6 @@
 import ast
 import logging
 import os
-import warnings
 from argparse import ArgumentTypeError
 
 from doorstop import common, settings
@@ -118,11 +117,6 @@ def configure_settings(args):
     # Parse `publish` settings
     if hasattr(args, "no_child_links") and args.no_child_links is not None:
         settings.PUBLISH_CHILD_LINKS = args.no_child_links is False
-    if hasattr(args, "no_body_levels") and args.no_body_levels is not None:
-        warnings.simplefilter("default")
-        msg = "'--no-body-levels' option will be removed in a future release"
-        warnings.warn(msg, DeprecationWarning)
-        settings.PUBLISH_BODY_LEVELS = not args.no_body_levels
     if hasattr(args, "no_levels") and args.no_levels is not None:
         settings.PUBLISH_BODY_LEVELS = False
         settings.PUBLISH_HEADING_LEVELS = args.no_levels != "all"
@@ -187,6 +181,7 @@ def get_ext(args, error, ext_stdout, ext_file, whole_tree=False):
         ".yml": "yaml",
         ".csv": "csv",
         ".xlsx": "xlsx",
+        ".tex": "latex",
     }.items():
         try:
             if getattr(args, option):

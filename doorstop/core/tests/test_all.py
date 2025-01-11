@@ -9,9 +9,9 @@ import logging
 import os
 import pprint
 import shutil
-import sys
 import tempfile
 import unittest
+from typing import List
 from unittest.mock import Mock, patch
 
 import openpyxl
@@ -20,22 +20,18 @@ import yaml
 from doorstop import common, core
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
-from doorstop.core.tests import EMPTY, ENV, FILES, REASON, ROOT, SYS, DocumentNoSkip
+from doorstop.core.tests import (
+    EMPTY,
+    ENV,
+    FILES,
+    FILES_MD,
+    REASON,
+    ROOT,
+    SYS,
+    DocumentNoSkip,
+)
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.vcs import mockvcs
-
-# Whenever the export format is changed:
-#  1. set CHECK_EXPORTED_CONTENT to False
-#  2. re-run all tests
-#  3. manually verify the newly exported content is correct
-#  4. set CHECK_EXPORTED_CONTENT to True
-CHECK_EXPORTED_CONTENT = True
-
-# Whenever the publish format is changed:
-#  1. set CHECK_PUBLISHED_CONTENT to False
-#  2. re-run all tests
-#  3. manually verify the newly published content is correct
-#  4. set CHECK_PUBLISHED_CONTENT to True
-CHECK_PUBLISHED_CONTENT = True
 
 
 class TestItem(unittest.TestCase):
@@ -103,6 +99,39 @@ class TestItem(unittest.TestCase):
         self.assertRaises(DoorstopError, self.item.find_references)
 
 
+class TestItemMarkdown(unittest.TestCase):
+    """Integration tests for the Item class storage Markdown format."""
+
+    def setUp(self):
+        self.path = os.path.join(FILES_MD, "REQ001.md")
+        self.backup = common.read_text(self.path)
+        self.item = core.Item(None, self.path, itemformat="markdown")
+        self.item.tree = Mock()
+        self.item.tree.vcs = mockvcs.WorkingCopy(EMPTY)
+
+    def tearDown(self):
+        common.write_text(self.backup, self.path)
+
+    def test_header(self):
+        """Verify header is parsed correctly"""
+        item2 = core.Item(None, self.path, itemformat="markdown")
+        self.assertEqual("Markdown Header", item2.header)
+
+    def test_save_load(self):
+        """Verify an item can be saved and loaded from a markdown file."""
+        self.item.header = "Another Header"
+        self.item.level = "1.2.3"
+        self.item.text = "Hello, world!"
+        self.item.links = ["SYS001", "SYS002"]
+        item2 = core.Item(
+            None, os.path.join(FILES_MD, "REQ001.md"), itemformat="markdown"
+        )
+        self.assertEqual("Another Header", item2.header)
+        self.assertEqual((1, 2, 3), item2.level)
+        self.assertEqual("Hello, world!", item2.text)
+        self.assertEqual(["SYS001", "SYS002"], item2.links)
+
+
 class TestDocument(unittest.TestCase):
     """Integration tests for the Document class."""
 
@@ -119,6 +148,7 @@ class TestDocument(unittest.TestCase):
         """Verify a document can be loaded from a directory."""
         doc = core.Document(FILES)
         self.assertEqual("REQ", doc.prefix)
+        self.assertEqual("yaml", doc.itemformat)
         self.assertEqual(2, doc.digits)
         self.assertEqual(6, len(doc.items))
 
@@ -126,6 +156,7 @@ class TestDocument(unittest.TestCase):
         """Verify a new document can be created."""
         document = core.Document.new(None, EMPTY, FILES, prefix="SYS", digits=4)
         self.assertEqual("SYS", document.prefix)
+        self.assertEqual("yaml", document.itemformat)
         self.assertEqual(4, document.digits)
         self.assertEqual(0, len(document.items))
 
@@ -245,6 +276,37 @@ class TestDocument(unittest.TestCase):
         self.assertListEqual(expected, actual)
 
 
+class TestDocumentMarkdown(unittest.TestCase):
+    """Integration tests for the Document class with Items in Markdown format."""
+
+    def setUp(self):
+        self.document = core.Document(FILES_MD, root=ROOT)
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        for filename in os.listdir(EMPTY):
+            path = os.path.join(EMPTY, filename)
+            common.delete(path)
+
+    def test_load(self):
+        """Verify a document can be loaded from a directory."""
+        doc = core.Document(FILES_MD)
+        self.assertEqual("REQMD", doc.prefix)
+        self.assertEqual("markdown", doc.itemformat)
+        self.assertEqual(2, doc.digits)
+        self.assertEqual(1, len(doc.items))
+
+    def test_new(self):
+        """Verify a new document can be created."""
+        document = core.Document.new(
+            None, EMPTY, FILES_MD, prefix="SYSMD", digits=4, itemformat="markdown"
+        )
+        self.assertEqual("SYSMD", document.prefix)
+        self.assertEqual("markdown", document.itemformat)
+        self.assertEqual(4, document.digits)
+        self.assertEqual(0, len(document.items))
+
+
 class TestTree(unittest.TestCase):
     """Integration tests for the core.Tree class."""
 
@@ -327,7 +389,7 @@ class TestImporter(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.cwd)
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_import_yml(self):
         """Verify items can be imported from a YAML file."""
@@ -461,7 +523,7 @@ class TestExporter(unittest.TestCase):
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.temp)
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_export_yml(self):
         """Verify a document can be exported as a YAML file."""
@@ -472,9 +534,8 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_yml(temp)
-            self.assertEqual(expected, actual)
+        actual = read_yml(temp)
+        self.assertEqual(expected, actual)
         move_file(temp, path)
 
     def test_export_csv(self):
@@ -486,9 +547,8 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_csv(temp)
-            self.assertEqual(expected, actual)
+        actual = read_csv(temp)
+        self.assertEqual(expected, actual)
         move_file(temp, path)
 
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -501,26 +561,9 @@ class TestExporter(unittest.TestCase):
         path2 = core.exporter.export(self.document, temp)
         # Assert
         self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_csv(temp, delimiter="\t")
-            self.assertEqual(expected, actual)
+        actual = read_csv(temp, delimiter="\t")
+        self.assertEqual(expected, actual)
         move_file(temp, path)
-
-    @unittest.skipUnless(os.getenv(ENV) or not CHECK_EXPORTED_CONTENT, REASON)
-    def test_export_xlsx(self):
-        """Verify a document can be exported as an XLSX file."""
-        path = os.path.join(FILES, "exported.xlsx")
-        temp = os.path.join(self.temp, "exported.xlsx")
-        expected = read_xlsx(path)
-        # Act
-        path2 = core.exporter.export(self.document, temp)
-        # Assert
-        self.assertIs(temp, path2)
-        if CHECK_EXPORTED_CONTENT:
-            actual = read_xlsx(temp)
-            self.assertEqual(expected, actual)
-        else:  # binary file always changes, only copy when not checking
-            move_file(temp, path)
 
 
 class TestPublisher(unittest.TestCase):
@@ -531,13 +574,12 @@ class TestPublisher(unittest.TestCase):
     @patch("doorstop.core.document.Document", DocumentNoSkip)
     def setUp(self):
         self.tree = core.build(cwd=FILES, root=FILES)
-        # self.document = core.Document(FILES, root=ROOT)
         self.document = self.tree.find_document("REQ")
         self.temp = tempfile.mkdtemp()
 
     def tearDown(self):
         if os.path.exists(self.temp):
-            shutil.rmtree(self.temp)
+            shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
     def test_publish_html(self):
         """Verify an HTML file can be created."""
@@ -546,7 +588,8 @@ class TestPublisher(unittest.TestCase):
         path2 = core.publisher.publish(self.document, path, ".html")
         # Assert
         self.assertIs(path, path2)
-        self.assertTrue(os.path.isfile(path))
+        filePath = os.path.join(self.temp, "documents", "published.html")
+        self.assertTrue(os.path.isfile(filePath))
 
     def test_publish_bad_link(self):
         """Verify a tree can be published with bad links."""
@@ -569,8 +612,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
@@ -582,8 +624,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     def test_lines_markdown_document(self):
@@ -594,8 +635,7 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
@@ -607,42 +647,55 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
+        self.assertEqual(expected, text)
         common.write_text(text, path)
 
-    @unittest.skipIf(
-        sys.version_info < (3, 9),
-        reason="Output format differs with older versions of Python",
-    )
-    def test_lines_html_document_linkify(self):
+    @patch("plantuml_markdown.PlantUMLPreprocessor.run")
+    @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
+    def test_lines_html_document_linkify(self, ext_init, ext_run):
         """Verify HTML can be published from a document."""
+
+        def run(lines: List[str]) -> List[str]:
+            return lines
+
+        ext_init.return_value = None
+        ext_run.side_effect = run
+
         path = os.path.join(FILES, "published.html")
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, ".html", linkify=True)
-        text = "".join(line + "\n" for line in lines)
+        lines = core.publisher.publish_lines(
+            self.document, ".html", linkify=True, toc=True
+        )
+        actual = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+        common.write_text(actual, path)
+        self.assertEqual(expected, actual)
 
-    @unittest.skipIf(
-        sys.version_info < (3, 9),
-        reason="Output format differs with older versions of Python",
-    )
+    @patch("plantuml_markdown.PlantUMLPreprocessor.run")
+    @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
-    def test_lines_html_document_without_child_links(self):
+    def test_lines_html_document_without_child_links(self, ext_init, ext_run):
         """Verify HTML can be published from a document w/o child links."""
+
+        def run(lines: List[str]) -> List[str]:
+            return lines
+
+        ext_init.return_value = None
+        ext_run.side_effect = run
+
         path = os.path.join(FILES, "published2.html")
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, ".html")
-        text = "".join(line + "\n" for line in lines)
+        lines = core.publisher.publish_lines(self.document, ".html", toc=True)
+        actual = "".join(line + "\n" for line in lines)
         # Assert
-        if CHECK_PUBLISHED_CONTENT:
-            self.assertEqual(expected, text)
-        common.write_text(text, path)
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+        common.write_text(actual, path)
+        self.assertEqual(expected, actual)
 
 
 class TestModule(unittest.TestCase):
@@ -676,10 +729,10 @@ class TestModule(unittest.TestCase):
 
 def log_data(expected, actual):
     """Log list values."""
-    for index, (evalue, avalue) in enumerate(zip(expected, actual)):
+    for index, (e, a) in enumerate(zip(expected, actual)):
         logging.debug(
             "\n{i} expected:\n{e}\n{i} actual:\n{a}".format(
-                i=index, e=pprint.pformat(evalue), a=pprint.pformat(avalue)
+                i=index, e=pprint.pformat(e), a=pprint.pformat(a)
             )
         )
 
