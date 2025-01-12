@@ -36,6 +36,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
@@ -43,7 +44,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "<3.13,>=3.9"
+python = "<3.14,>=3.9"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
@@ -76,8 +77,8 @@ pytest = "^6.2.5"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"
-WebTest = "3.0.0"
-diff-cover = "8.0.3"
+WebTest = "^3.0.0"
+diff-cover = "^8.0.3"
 
 # Reports
 coveragespace = "^6.1"
@@ -89,9 +90,9 @@ pygments = "*"
 # Tooling
 pyinstaller = "*"
 sniffer = "*"
-macfsevents = { version = "*", platform = "darwin" }
+macfsevents = { version = "*", platform = "darwin", markers = "python_version < '3.13'" }
 pync = { version = "*", platform = "darwin" }
-rope = "^0.14.0"
+rope = "*"
 
 [tool.poetry.scripts]
 
@@ -106,11 +107,6 @@ quiet = true
 [tool.isort]
 
 profile = "black"
-
-[tool.pytest.ini_options]
-
-log_file = "pytest.log"
-log_file_level = "DEBUG"
 
 [build-system]
 

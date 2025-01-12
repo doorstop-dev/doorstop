@@ -73,6 +73,7 @@
     "pyyaml",
     "quickstart",
     "sargs",
+    "setuptools",
     "sgignores",
     "spdx",
     "textit",
