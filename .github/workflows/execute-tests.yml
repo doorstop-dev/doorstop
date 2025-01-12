@@ -46,7 +46,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
 
-      - uses: Gr1N/setup-poetry@v8
+      - uses: Gr1N/setup-poetry@v9
 
       - name: Check system dependencies
         run: make doctor
