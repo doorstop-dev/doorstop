@@ -80,7 +80,7 @@ WebTest = "3.0.0"
 diff-cover = "8.0.3"
 
 # Reports
-coveragespace = "^4.0"
+coveragespace = "^6.1"
 
 # Documentation
 mkdocs = "^1.5"
@@ -108,8 +108,7 @@ quiet = true
 profile = "black"
 
 [tool.pytest.ini_options]
-# log_cli = true
-# log_cli_level = "WARNING"
+
 log_file = "pytest.log"
 log_file_level = "DEBUG"
 
