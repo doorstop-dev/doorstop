@@ -1,3 +1,11 @@
+# Introduction
+
+Doorstop provides flexible options for publishing your requirements documents into various formats. You can publish individual documents or the entire document hierarchy (including trace matrix) in plain text, HTML, LaTex or Markdown. Using templates, you can customize the styling of the generated documents.
+
+The publishing process preserves the contents and structure of your requirements (optionally including attributes) in a human-readable format. This document describes the process for generating these published documents.
+
+Note that published documents are not intended to be imported into Doorstop. If you want to export files to later re-import them, use the  [export command](interchange.md) instead.
+
 # Plain Text
 
 Individual documents can be displayed:
@@ -87,6 +95,75 @@ The default LaTeX template is `doorstop`, and is included with _doorstop_. The `
 # Assets
 
 In addition to the `template` folder, an `assets` folder placed next to the
-`.doorstop.yml` file for a document will also be copied in the same manner to
-the output folder. The purpose of the `assets` folder is to contain images or
-other external artifacts that can be included in the published documents.
+`.doorstop.yml` file for a document will also be copied to the output folder during publishing. The purpose of the `assets` folder is to contain images, diagrams or other external files that can be included in your published documents.
+
+```
+document_directory/
+├── .doorstop.yml
+├── assets/
+│   ├── images/
+│   │   ├── diagram1.png
+│   │   └── screenshot.jpg
+│   ├── attachments/
+│   │   └── specification.pdf
+│   └── other/
+│       └── data.csv
+└── items/
+    ├── REQ001.yml
+    └── REQ002.yml
+```
+
+To reference the assets in your document, you should use relative paths. The publishing process will maintain these references in the outputs. For example:
+
+```
+text: |
+  The system shall process input data according to the flow diagram below:
+
+  ![Data Flow Diagram](assets/images/diagram1.png)
+
+  The specification is available at [this link](assets/attachments/specification.pdf)
+```
+
+This example shows an inline image (`diagram1.png`) embedded in the HTML as an image and a download link (`specification.pdf`) for a referenced file.
+
+# Attributes
+
+Doorstop can store additional information about the requirement in "Attribute" fields. By default, the attributes are not included in the generated documents. However, you can customize which attributes appear in published outputs by updating the document's `.doorstop.yml` file.
+
+To include specific attributes in the published document, add a `publish` list under the `attributes` section in your `.doorstop.yml` file.
+
+Example:
+```
+settings:
+  digits: 3
+  prefix: SYSTEM-REQ
+  sep: '-'
+attributes:
+  publish:
+    - commentary
+    - rationale
+    - invented-by
+```
+
+In this example, three attributes will be included in the published documents:
+* `commentary` (built in attribute)
+* `rationale` (custom attribute)
+* `invented-by` (custom attribute)
+
+If the attribute is empty for the source item, the attribute caption will be omitted from the published document.
+
+The example generated markdown will look something like this:
+
+```
+### 1.2.5 SYSTEM-REQ-007 {#SYSTEM-REQ-007}
+
+Steamboat Willie **shall** whistle while he is driving his boat.
+
+| Attribute | Value |
+| --------- | ----- |
+| commentary | The song should be a happy tune |
+| rationale | Whistling will help demonstrate that Steamboat Willie is having a good time and is care-free. |
+| invented-by | Donald |
+```
+
+More information about attributes can be found in the [item](item.md#extended-item-attributes) description and [document](document.md#extended-document-attributes) extended attributes sections.
