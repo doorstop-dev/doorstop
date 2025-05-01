@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-"""Unit tests for the doorstop.common module """
+"""Unit tests for the doorstop.common module"""
 
 import unittest
 

@@ -41,8 +41,7 @@ class MarkdownPublisher(BasePublisher):
             path = os.path.join(directory, index)
             log.info("creating an {}...".format(index))
             lines = self.lines_index(sorted(filenames), tree=tree)
-            common.write_text(" # Requirements index", path)
-            common.write_text("\n".join(lines), path)
+            common.write_text("# Requirements index\n" + "\n".join(lines), path)
         else:
             log.warning("no files for {}".format(index))
 
