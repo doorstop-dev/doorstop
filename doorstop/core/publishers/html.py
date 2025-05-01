@@ -122,7 +122,7 @@ class HtmlPublisher(MarkdownPublisher):
 
         """
         # Tree structure
-        text: str = tree.draw(html_links=True) if tree else ''
+        text: str = tree.draw(html_links=True) if tree else ""
         yield ""
         yield "<h3>Tree Structure:</h3>"
         yield "<pre><code>" + text + "</pre></code>"
