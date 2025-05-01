@@ -287,12 +287,22 @@ class TestTableOfContents(unittest.TestCase):
     def test_index_tree(self):
         """Verify an Markdown index can be created with a tree."""
         path = os.path.join(FILES, "index2.md")
-        mock_tree = MagicMock()
-        mock_tree.documents = []
+        all_documents = []
+        all_trees = []
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
             mock_document = MagicMock()
+            mock_document._attribute_defaults = {"doc" : {"title" : f"The {prefix} document for Doorstop"}}
             mock_document.prefix = prefix
-            mock_tree.documents.append(mock_document)
+            all_documents.append(mock_document)
+
+            tree = MagicMock()
+            tree.document = mock_document
+            tree.children = []
+            all_trees.append(tree)
+
+        mock_tree = all_trees[0]  # pick "SYS" as top-level tree
+        mock_tree.children = all_trees[1:]
+        mock_tree.documents = all_documents
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
         mock_item.uid = "KNOWN-001"
