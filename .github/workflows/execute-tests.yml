@@ -19,7 +19,6 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     strategy:
-      fail-fast: true
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     name: Python ${{ matrix.python-version }}
@@ -64,7 +63,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork) }}
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && (github.event_name != 'pull_request' || (!github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]')) }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
