@@ -58,7 +58,7 @@ six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
 openpyxl = ">=3.1.2"
 verchew = "^3.4.2"
 
-[tool.poetry.dev-dependencies]
+[poetry.group.dev.dependencies]
 
 # Formatters
 black = "^24.3"
