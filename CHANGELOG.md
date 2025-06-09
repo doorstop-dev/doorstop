@@ -1,4 +1,8 @@
-# 3.0
+# 3.0.1 (2025-06-08)
+
+- Added support for Python 3.13.
+
+# 3.0 (2025-01-25)
 
 - **BREAKING:** Dropped support for Python 3.6, 3.7, and 3.8.
 - **BREAKING:** Removed `--no-body-levels` option to `doorstop publish`.

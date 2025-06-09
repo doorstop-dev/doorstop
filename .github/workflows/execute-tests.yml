@@ -19,9 +19,8 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     strategy:
-      fail-fast: true
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     name: Python ${{ matrix.python-version }}
 
     defaults:
@@ -46,7 +45,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
 
-      - uses: Gr1N/setup-poetry@v8
+      - uses: Gr1N/setup-poetry@v9
 
       - name: Check system dependencies
         run: make doctor
@@ -64,7 +63,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && github.repository == 'doorstop-dev/doorstop' }}
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && (github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/dependabot/') || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)) }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

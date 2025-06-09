@@ -27,7 +27,7 @@ jobs:
           python-version: "3.11"
           architecture: x64
 
-      - uses: Gr1N/setup-poetry@v8
+      - uses: Gr1N/setup-poetry@v9
 
       - name: Check system dependencies
         run: make doctor
@@ -39,7 +39,7 @@ jobs:
 
       - name: Install project dependencies
         run: make install
-      
+
       - name: Check coverage
         run: |
           TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
