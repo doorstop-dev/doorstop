@@ -14,7 +14,9 @@
     "site/": true,
   },
   "python.defaultInterpreterPath": ".venv/bin/python",
-  "pylint.args": ["--rcfile=.pylint.ini"],
+  "pylint.args": [
+    "--rcfile=.pylint.ini"
+  ],
   "editor.formatOnSave": true,
   "cSpell.words": [
     "Autobuild",
@@ -45,6 +47,7 @@
     "hyperref",
     "isort",
     "itered",
+    "Jace",
     "lgpl",
     "LINESEPERATOR",
     "linkify",
@@ -69,7 +72,9 @@
     "pyficache",
     "pygments",
     "pyinstaller",
+    "pylint",
     "pync",
+    "pytest",
     "pyyaml",
     "quickstart",
     "sargs",
@@ -84,7 +89,9 @@
     "unreviewed",
     "USERPROFILE",
     "venv",
+    "verchew",
     "vvignores",
+    "webtest",
     "winfo",
     "workpath",
     "xlsx",

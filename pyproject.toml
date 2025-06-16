@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0.1"
+version = "3.0.2"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -48,7 +48,7 @@ python = "<3.14,>=3.9"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
-bottle = "~0.12.25"
+bottle = "~0.13.4"
 requests = "^2.0"
 python-frontmatter = "^1.0"
 python-markdown-math = "~0.6"
@@ -77,7 +77,7 @@ pytest = "^6.2.5"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"
-WebTest = "^3.0.0"
+webtest = "^3.0.0"
 diff-cover = "^8.0.3"
 
 # Reports
