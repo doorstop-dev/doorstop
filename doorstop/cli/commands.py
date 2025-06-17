@@ -439,49 +439,61 @@ def run_import(args, cwd, error, catch=True, _tree=None):
     document = item = None
     attrs = utilities.literal_eval(args.attrs, error)
     mapping = utilities.literal_eval(args.map, error)
+    ext = utilities.get_ext(args, error, None, None)
+
     if args.path:
-        if not args.prefix:
+        if not args.prefix and not importer.can_import_tree(ext):
             error("when [path] specified, [prefix] is also required")
         elif args.document:
             error("'--document' cannot be used with [path] [prefix]")
         elif args.item:
             error("'--item' cannot be used with [path] [prefix]")
-        ext = utilities.get_ext(args, error, None, None)
-    elif not (args.document or args.item):
+    elif not (args.document or args.item or importer.can_import_tree(ext)):
         error("specify [path], '--document', or '--item' to import")
 
+    request_next_number = _request_next_number(args)
+    tree = _tree or _get_tree(
+        args, cwd, request_next_number=request_next_number
+    )
+
+    documents = []
     with utilities.capture(catch=catch) as success:
-        if args.path:
+        # import supports importing a tree and file passed in with no --document/--item and no prefix
+        if args.path and os.path.isfile(args.path) and \
+                importer.can_import_tree(ext) and \
+                not (args.document or args.item) and \
+                not args.prefix:
+            documents = importer.import_file(args.path, ext=ext, mapping=mapping, tree=tree)
+
+        # passed a path and prefix
+        elif args.path and args.prefix:
             # get the document
-            request_next_number = _request_next_number(args)
-            tree = _tree or _get_tree(
-                args, cwd, request_next_number=request_next_number
-            )
             document = tree.find_document(args.prefix)
+            log.debug(f"Found document: '{document}' for prefix {args.prefix}")
 
             # import items into it
             msg = "importing '{}' into document {}...".format(args.path, document)
             utilities.show(msg, flush=True)
-            importer.import_file(args.path, document, ext, mapping=mapping)
+            documents = importer.import_file(args.path, ext=ext, mapping=mapping, document=document)
 
         elif args.document:
             prefix, path = args.document
-            document = importer.create_document(prefix, path, parent=args.parent)
+            documents = [importer.create_document(prefix, path, parent=args.parent)]
         elif args.item:
             prefix, uid = args.item
             request_next_number = _request_next_number(args)
             item = importer.add_item(
                 prefix, uid, attrs=attrs, request_next_number=request_next_number
             )
+            documents = [item.document]
     if not success:
         return False
 
-    if document:
+    for doc in documents:
         utilities.show(
-            "imported document: {} ({})".format(document.prefix, document.relpath)
+            "imported into document: {} ({})".format(doc.prefix, doc.relpath)
         )
-    else:
-        assert item
+    if item:
         utilities.show("imported item: {} ({})".format(item.uid, item.relpath))
 
     return True

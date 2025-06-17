@@ -45,6 +45,11 @@ class MarkdownPublisher(BasePublisher):
         else:
             log.warning("no files for {}".format(index))
 
+        # Source control status
+            common.write_text(" # Source Control Status", path)
+            common.write_text(, path)
+
+
     def _index_tree(self, tree, depth):
         """Recursively generate markdown index.
 

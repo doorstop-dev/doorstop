@@ -52,3 +52,10 @@ def load(path):
 
     log.warning("no working copy found at: {}".format(path))
     return DEFAULT(path)
+
+def describe(path):
+    try:
+        find_root(path)
+    except:
+        return "Not in revision control"
+
