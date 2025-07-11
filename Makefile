@@ -7,30 +7,22 @@ PACKAGES := $(PACKAGE)
 CONFIG := $(wildcard *.py)
 MODULES := $(wildcard $(PACKAGE)/*.py)
 
-# Virtual environment paths
-VIRTUAL_ENV ?= .venv
-
 # MAIN TASKS ##################################################################
 
 .PHONY: all
 all: doctor format check test mkdocs demo ## Run all tasks that determine CI status
 
 .PHONY: dev
-dev: install .clean-test ## Continuously run all CI tasks when files change
-	poetry run sniffer
-
-.PHONY: dev-install
-dev-install: install
-	poetry build
-	pip install --force dist/doorstop*.whl
+dev: install .clean-test
+	uv run sniffer
 
 .PHONY: run ## Start the program
 run: install
-	poetry run python $(PACKAGE)/gui/main.py
+	uv run python $(PACKAGE)/gui/main.py
 
 .PHONY: demo
 demo: install
-	poetry run python $(PACKAGE)/cli/tests/tutorial.py
+	uv run python $(PACKAGE)/cli/tests/tutorial.py
 
 # SYSTEM DEPENDENCIES #########################################################
 
@@ -40,22 +32,9 @@ doctor:  ## Confirm system dependencies are available
 
 # PROJECT DEPENDENCIES ########################################################
 
-DEPENDENCIES := $(VIRTUAL_ENV)/.poetry-$(shell bin/checksum pyproject.toml poetry.lock)
-
 .PHONY: install
-install: $(DEPENDENCIES) .cache
-
-$(DEPENDENCIES): poetry.lock
-	@ rm -rf ~/Library/Preferences/pypoetry
-	@ poetry config virtualenvs.in-project true
-	poetry install
-	@ touch $@
-
-ifndef CI
-poetry.lock: pyproject.toml
-	poetry lock
-	@ touch $@
-endif
+install: .cache
+	uv sync
 
 .cache:
 	@ mkdir -p .cache
@@ -64,18 +43,18 @@ endif
 
 .PHONY: format
 format: install
-	poetry run isort $(PACKAGES)
-	poetry run black $(PACKAGES)
+	uv run isort $(PACKAGES)
+	uv run black $(PACKAGES)
 	@ echo
 
 .PHONY: check
-check: install format  ## Run formatters, linters, and static analysis
+check: install format
 ifdef CI
 	git diff --exit-code -- '***.py'
 endif
-	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
-	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
-	poetry run pydocstyle $(PACKAGES) $(CONFIG)
+	uv run mypy $(PACKAGES) --config-file=.mypy.ini
+	uv run pylint $(PACKAGES) --rcfile=.pylint.ini
+	uv run pydocstyle $(PACKAGES) $(CONFIG)
 
 # TESTS #######################################################################
 
@@ -90,14 +69,14 @@ PYTEST_OPTIONS += --cov-report=xml
 endif
 
 .PHONY: test
-test: test-all ## Run unit and integration tests
+test: test-all
 
 .PHONY: test-unit
 test-unit: install
-	poetry run pytest $(PACKAGE) $(PYTEST_OPTIONS)
+	uv run pytest $(PACKAGE) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	@ echo
-	poetry run coveragespace update unit
+	uv run coveragespace update unit
 endif
 
 .PHONY: test-int
@@ -105,18 +84,16 @@ test-int: test-all
 
 .PHONY: test-all
 test-all: install
-	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
+	TEST_INTEGRATION=true uv run pytest $(PACKAGES) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
 	@ echo
-	poetry run coveragespace update overall
+	uv run coveragespace update overall
 endif
 
 .PHONY: test-cover
 test-cover: install
-# Run first to generate coverage data current code.
-	TEST_INTEGRATION=true poetry run pytest doorstop --doctest-modules --cov=doorstop --cov-report=xml --cov-report=term-missing
-# Run second to generate coverage data for the code in the develop branch.
-	TEST_INTEGRATION=true poetry run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(shell git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
+	TEST_INTEGRATION=true uv run pytest $(PACKAGE) --doctest-modules --cov=$(PACKAGE) --cov-report=xml --cov-report=term-missing
+	TEST_INTEGRATION=true uv run diff-cover ./coverage.xml --fail-under=100 --compare-branch=$(shell git for-each-ref --sort=-committerdate refs/heads/develop | cut -f 1 -d ' ')
 
 .PHONY: read-coverage
 read-coverage:
@@ -127,37 +104,33 @@ read-coverage:
 MKDOCS_INDEX := site/index.html
 
 .PHONY: docs
-docs: mkdocs uml ## Generate documentation and UML
+docs: mkdocs uml
 
 .PHONY: mkdocs
 mkdocs: install $(MKDOCS_INDEX)
-$(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
+$(MKDOCS_INDEX): mkdocs.yml docs/*.md
 	@ mkdir -p docs/about
 	@ cd docs && ln -sf ../README.md index.md
 	@ cd docs/about && ln -sf ../../CHANGELOG.md changelog.md
 	@ cd docs/about && ln -sf ../../CONTRIBUTING.md contributing.md
 	@ cd docs/about && ln -sf ../../LICENSE.md license.md
-	poetry run mkdocs build --clean --strict
-
-docs/requirements.txt: poetry.lock
-	@ poetry run pip list --format=freeze | grep mkdocs > $@
-	@ poetry run pip list --format=freeze | grep Pygments >> $@
+	uv run mkdocs build --clean --strict
 
 .PHONY: uml
 uml: install docs/*.png
 docs/*.png: $(MODULES)
-	poetry run pyreverse $(PACKAGE) -p $(PACKAGE) -a 1 -f ALL -o png --ignore tests
+	uv run pyreverse $(PACKAGE) -p $(PACKAGE) -a 1 -f ALL -o png --ignore tests
 	- mv -f classes_$(PACKAGE).png docs/classes.png
 	- mv -f packages_$(PACKAGE).png docs/packages.png
 
 .PHONY: mkdocs-serve
 mkdocs-serve: mkdocs
 	eval "sleep 3; bin/open http://127.0.0.1:8000" &
-	poetry run mkdocs serve
+	uv run mkdocs serve
 
 # REQUIREMENTS ################################################################
 
-DOORSTOP := poetry run doorstop
+DOORSTOP := uv run doorstop
 
 YAML := $(wildcard */*.yml */*/*.yml */*/*/*/*.yml)
 
@@ -197,45 +170,37 @@ EXE_FILES := dist/$(PROJECT).*
 dist: install $(DIST_FILES)
 $(DIST_FILES): $(MODULES) pyproject.toml
 	rm -f $(DIST_FILES)
-	poetry build
+	uv run python -m build
 
 .PHONY: exe
 exe: install $(EXE_FILES)
 $(EXE_FILES): $(MODULES) $(PROJECT).spec
-	# For framework/shared support: https://github.com/yyuu/pyenv/wiki
-	poetry run pyinstaller doorstop.spec        --noconfirm --clean
-	poetry run pyinstaller doorstop-gui.spec    --noconfirm --clean
-	poetry run pyinstaller doorstop-server.spec --noconfirm --clean
+	uv run pyinstaller doorstop.spec        --noconfirm --clean
+	uv run pyinstaller doorstop-gui.spec    --noconfirm --clean
+	uv run pyinstaller doorstop-server.spec --noconfirm --clean
 
 $(PROJECT).spec:
-	@# The modules mdx_outline and mdx_math are not used in doorstop through import statements,
-	@# instead they are imported as markdown extensions. So these are explicitly referenced
-	@# here as "hidden-imports" so that pyinstaller will pick them up.
-	poetry run pyi-makespec doorstop/cli/main.py    --onefile --windowed --name=doorstop --hidden-import=mdx_outline --hidden-import=mdx_math
-	@# To include additional data files in the doorstop executable built by pyinstaller
-	@# they can be added to pyi-makespec using "--add-data", but that seems to become
-	@# platform dependent according to the pyi-makespec documentation, so a sed command
-	@# is used here to directly insert the data file names into the spec file.
+	uv run pyi-makespec doorstop/cli/main.py --onefile --windowed --name=doorstop --hidden-import=mdx_outline --hidden-import=mdx_math
 	sed 's/datas=\[/datas=\[("doorstop\/views", "doorstop\/views"), ("doorstop\/core\/files", "doorstop\/core\/files")/' --in-place doorstop.spec
-	poetry run pyi-makespec doorstop/gui/main.py    --onefile --windowed --name=doorstop-gui
-	poetry run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
+	uv run pyi-makespec doorstop/gui/main.py --onefile --windowed --name=doorstop-gui
+	uv run pyi-makespec doorstop/server/main.py --onefile --windowed --name=doorstop-server
 
 # RELEASE #####################################################################
 
 .PHONY: upload
-upload: dist ## Upload the current version to PyPI
+upload: dist
 	git diff --name-only --exit-code
-	poetry publish
+	uv run twine upload dist/*
 	bin/open https://pypi.org/project/$(PROJECT)
 
 # CLEANUP #####################################################################
 
 .PHONY: clean
-clean: .clean-dev-install .clean-build .clean-docs .clean-test .clean-install ## Delete all generated and temporary files
+clean: .clean-dev-install .clean-build .clean-docs .clean-test .clean-install
 
 .PHONY: clean-all
 clean-all: clean
-	rm -rf $(VIRTUAL_ENV)
+	rm -rf .venv
 
 .PHONY: .clean-install
 .clean-install:
@@ -244,7 +209,7 @@ clean-all: clean
 
 .PHONY: .clean-dev-install
 .clean-dev-install:
-	- pip uninstall --yes dist/doorstop*.whl
+	- uv pip uninstall $(PROJECT)
 
 .PHONY: .clean-test
 .clean-test:

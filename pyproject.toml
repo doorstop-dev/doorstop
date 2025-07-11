@@ -1,20 +1,11 @@
-[tool.poetry]
-
+[project]
 name = "doorstop"
 version = "3.0.2"
 description = "Requirements management using version control."
-
-license = "LGPLv3"
-
-authors = ["Jace Browning <jacebrowning@gmail.com>"]
-
 readme = "README.md"
-exclude = ["**/tests/**"]
-
-homepage = "https://pypi.org/project/Doorstop"
-documentation = "https://doorstop.readthedocs.io"
-repository = "https://github.com/doorstop-dev/doorstop"
-
+license = { text = "LGPLv3" }
+authors = [{ name = "Jace Browning", email = "jacebrowning@gmail.com" }]
+requires-python = ">=3.9,<3.14"
 keywords = [
   "requirements-management",
   "version-control",
@@ -24,91 +15,85 @@ keywords = [
   "certification",
   "html",
 ]
-
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Software Development :: Documentation",
-    "Topic :: Text Editors :: Documentation",
-    "Topic :: Text Processing :: Markup",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Documentation",
+  "Topic :: Text Editors :: Documentation",
+  "Topic :: Text Processing :: Markup",
 ]
 
-[tool.poetry.dependencies]
+dependencies = [
+  "pyyaml>=6.0",
+  "markdown>=3.3.3",
+  "bottle~=0.13.4",
+  "requests>=2.0",
+  "python-frontmatter>=1.0",
+  "python-markdown-math~=0.6",
+  "plantuml-markdown>=3.4.2",
+  "six",
+  "openpyxl>=3.1.2",
+  "verchew>=3.4.2",
+]
 
-python = "<3.14,>=3.9"
+[dependency-groups]
+dev = [
+  # Formatters
+  "black>=24.3",
+  "isort>=5.12",
 
-pyyaml = "^6.0"
-markdown = "^3.3.3"
-bottle = "~0.13.4"
-requests = "^2.0"
-python-frontmatter = "^1.0"
-python-markdown-math = "~0.6"
-plantuml-markdown = "^3.4.2"
-six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
-openpyxl = ">=3.1.2"
-verchew = "^3.4.2"
+  # Linters
+  "mypy>=1.1.1",
+  "pydocstyle",
+  "pylint~=3.2.0",
+  "types-markdown",
+  "types-pyyaml",
+  "types-requests",
+  "types-setuptools",
 
-[tool.poetry.dev-dependencies]
+  # Testing
+  "pytest>=6.2.5",
+  "pytest-cov",
+  "pytest-expecter",
+  "pytest-sugar",
+  "webtest>=3.0.0",
+  "diff-cover>=8.0.3",
 
-# Formatters
-black = "^24.3"
-isort = "^5.12"
+  # Reports
+  "coveragespace>=6.1",
 
-# Linters
-mypy = ">=1.1.1"
-pydocstyle = "*"
-pylint = "~3.2.0"
-types-markdown = "*"
-types-pyyaml = "*"
-types-requests = "*"
-types-setuptools = "*"
+  # Documentation
+  "mkdocs>=1.5",
+  "pygments",
 
-# Testing
-pytest = "^6.2.5"
-pytest-cov = "*"
-pytest-expecter = "*"
-pytest-sugar = "*"
-webtest = "^3.0.0"
-diff-cover = "^8.0.3"
+  # Tooling
+  "pyinstaller",
+  "sniffer",
+  "macfsevents; sys_platform == 'darwin' and python_version < '3.13'",
+  "pync; sys_platform == 'darwin'",
+  "rope",
+]
 
-# Reports
-coveragespace = "^6.1"
-
-# Documentation
-mkdocs = "^1.5"
-pygments = "*"
-
-# Tooling
-pyinstaller = "*"
-sniffer = "*"
-macfsevents = { version = "*", platform = "darwin", markers = "python_version < '3.13'" }
-pync = { version = "*", platform = "darwin" }
-rope = "*"
-
-[tool.poetry.scripts]
-
+[project.scripts]
 doorstop = "doorstop.cli.main:main"
 doorstop-gui = "doorstop.gui.main:main"
 doorstop-server = "doorstop.server.main:main"
 
-[tool.black]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[tool.black]
 quiet = true
 
 [tool.isort]
-
 profile = "black"
-
-[build-system]
-
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
