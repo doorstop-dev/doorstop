@@ -271,7 +271,7 @@ def _get_xlsx(obj, auto):
     # Populate cells
     for row, data in enumerate(_tabulate(obj, auto=auto), start=1):
         for col_idx, value in enumerate(data, start=1):
-            cell = worksheet.cell(column=col_idx, row=row)
+            cell = worksheet.cell(column=col_idx, row=row)  # type: ignore[union-attr]
 
             # wrap text in every cell
             alignment = openpyxl.styles.Alignment(
@@ -294,7 +294,7 @@ def _get_xlsx(obj, auto):
 
     # Add filter up to the last column
     col_letter = openpyxl.utils.get_column_letter(len(col_widths))
-    worksheet.auto_filter.ref = "A1:%s1" % col_letter
+    worksheet.auto_filter.ref = "A1:%s1" % col_letter  # type: ignore[union-attr]
 
     # Set column width based on column contents
     for col in col_widths:
@@ -302,11 +302,11 @@ def _get_xlsx(obj, auto):
             width = XLSX_MAX_WIDTH
         else:
             width = col_widths[col] + XLSX_FILTER_PADDING
-        col_letter = openpyxl.utils.get_column_letter(col)
-        worksheet.column_dimensions[col_letter].width = width
+        col_letter = openpyxl.utils.get_column_letter(col)  # type: ignore[arg-type]
+        worksheet.column_dimensions[col_letter].width = width  # type: ignore[union-attr]
 
     # Freeze top row
-    worksheet.freeze_panes = worksheet.cell(row=2, column=1)
+    worksheet.freeze_panes = worksheet.cell(row=2, column=1)  # type: ignore[union-attr]
 
     return workbook
 

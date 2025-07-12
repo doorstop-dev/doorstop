@@ -197,7 +197,7 @@ def _file_xlsx(path, document, mapping=None):
     index = 0
 
     # Extract header and data rows
-    for index, row in enumerate(worksheet.iter_rows()):
+    for index, row in enumerate(worksheet.iter_rows()):  # type: ignore[union-attr]
         row2 = []
         for cell in row:
             if index == 0:
