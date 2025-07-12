@@ -109,6 +109,16 @@ quiet = true
 
 profile = "black"
 
+[tool.ruff]
+lint.select = [
+    "C4",     # flake8-comprehensions
+    "E",      # flake8 built-ins
+    "F",      # flake8 built-ins
+]
+lint.ignore = [
+  "E501",  # line too long
+]
+
 [build-system]
 
 requires = ["poetry-core"]

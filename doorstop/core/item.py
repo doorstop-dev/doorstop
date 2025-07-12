@@ -270,7 +270,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
                 value = stripped_value
             elif key == "links":
-                value = set(UID(part) for part in value)
+                value = {UID(part) for part in value}
             elif key == "header":
                 value = Text(value)
             self._data[key] = value
@@ -618,7 +618,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
     @auto_save
     def links(self, value):
         """Set the list of item UIDs this item links to."""
-        self._data["links"] = set(UID(v) for v in value)  # type: ignore
+        self._data["links"] = {UID(v) for v in value}  # type: ignore
 
     @property
     def parent_links(self):

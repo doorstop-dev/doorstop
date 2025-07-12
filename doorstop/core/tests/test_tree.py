@@ -57,7 +57,7 @@ class TestTreeStrings(unittest.TestCase):
 
     def test_iter(self):
         """Verify a tree can be iterated over."""
-        items = [d for d in self.tree]
+        items = list(self.tree)
         self.assertListEqual(["a", "b1", "d", "e", "b2", "c1", "c2"], items)
 
     def test_contains(self):
