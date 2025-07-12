@@ -76,6 +76,7 @@ endif
 	poetry run mypy $(PACKAGES) --config-file=.mypy.ini
 	poetry run pylint $(PACKAGES) --rcfile=.pylint.ini
 	poetry run pydocstyle $(PACKAGES) $(CONFIG)
+	poetry run ruff check
 
 # TESTS #######################################################################
 

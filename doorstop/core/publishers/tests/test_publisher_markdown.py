@@ -22,7 +22,6 @@ from doorstop.core.tests import (
     MockItemAndVCS,
 )
 from doorstop.core.tests.helpers import on_error_with_retry
-from doorstop.core.types import UID
 
 
 class TestModule(MockDataMixIn, unittest.TestCase):

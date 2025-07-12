@@ -307,30 +307,30 @@ def update_data_from_markdown_content(data, content, textattributekeys):
     if "header" in textattributekeys:
         # search for first content line and check
         # if it is a h1 header
-        for l in s:
+        for line in s:
             # skip empty lines
-            if len(l.strip()) == 0:
+            if len(line.strip()) == 0:
                 continue
             # check if first found line is a header
-            m = h1.match(l.strip())
+            m = h1.match(line.strip())
             if m:
                 # header found
                 header = m.group(1)
             else:
                 # no header found, add to normal text
-                text += l
+                text += line
             break
 
         # if header was found, skip empty lines before main text
         if header:
-            for l in s:
-                if len(l.strip()) != 0:
-                    text += l
+            for line in s:
+                if len(line.strip()) != 0:
+                    text += line
                     break
 
     # remaining content is normal text
-    for l in s:
-        text += l
+    for line in s:
+        text += line
 
     if "header" in textattributekeys and header:
         data["header"] = header

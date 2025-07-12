@@ -5,7 +5,6 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -107,15 +106,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         text = "".join(line + "\n" for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
-
-    def test_lines_text_item(self):
-        """Verify text can be published from an item."""
-        with patch.object(
-            self.item5, "find_ref", Mock(return_value=("path/to/mock/file", 42))
-        ):
-            lines = publisher.publish_lines(self.item5, ".txt")
-            text = "".join(line + "\n" for line in lines)
-        self.assertIn("Reference: path/to/mock/file (line 42)", text)
 
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_setting_enable_headers_true(self):
