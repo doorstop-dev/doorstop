@@ -6,7 +6,6 @@ import os
 import unittest
 
 from doorstop import settings
-from doorstop.cli.main import main
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
 REQS = os.path.join(ROOT, "reqs")
