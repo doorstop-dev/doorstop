@@ -4,6 +4,7 @@
 
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, Mock, patch
 
@@ -13,7 +14,7 @@ from doorstop.core.item import Item
 from doorstop.core.validators.item_validator import ItemValidator
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+ROOT = Path(__file__).parent.parent.parent.parent.resolve()
 
 TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), "files")

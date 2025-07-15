@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Functions to build a tree and access documents and items."""
+from __future__ import annotations
 
 import os
-from typing import List, Optional
+from pathlib import Path
+from typing import Callable
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -12,10 +14,14 @@ from doorstop.core.document import Document
 from doorstop.core.tree import Tree
 
 log = common.logger(__name__)
-_tree: Optional[Tree] = None  # implicit tree for convenience functions
+_tree: Tree | None = None  # implicit tree for convenience functions
 
 
-def build(cwd=None, root=None, request_next_number=None) -> Tree:
+def build(
+    cwd: Path | None = None,
+    root: Path | None = None,
+    request_next_number: Callable | None = None,
+) -> Tree:
     """Build a tree from the current working directory or explicit root.
 
     :param cwd: current working directory
@@ -28,10 +34,10 @@ def build(cwd=None, root=None, request_next_number=None) -> Tree:
     :return: new :class:`~doorstop.core.tree.Tree`
 
     """
-    documents: List[Document] = []
+    documents: list[Document] = []
 
     # Find the root of the working copy
-    cwd = cwd or os.getcwd()
+    cwd = cwd or Path.cwd()
     root = root or vcs.find_root(cwd)
 
     # Find all documents in the working copy
