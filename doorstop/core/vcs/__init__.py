@@ -25,23 +25,20 @@ def find_root(cwd: Path | str) -> Path:
     """Find the root of the working copy.
 
     :param cwd: current working directory
-
-    :raises: :class:`doorstop.common.DoorstopError` if the root cannot be found
-
+    :raises: DoorstopError if the root cannot be found
     :return: path to root of working copy
-
     """
     path = Path(cwd)
 
     log.debug(f"looking for working copy from {path}...")
-    log.debug("options: {}".format(", ".join([d for d in DIRECTORIES])))
+    log.debug("options: {}".format(", ".join(DIRECTORIES)))
 
     for current_path in [path, *path.parents]:
-        if any(str(d) in DIRECTORIES for d in path.iterdir()):
-            log.debug("found working copy: {}".format(path))
+        if any(d.name in DIRECTORIES for d in current_path.iterdir()):
+            log.debug(f"found working copy: {current_path}")
             return current_path
 
-    msg = "no working copy found from: {}".format(cwd)
+    msg = f"no working copy found from: {cwd}"
     raise DoorstopError(msg)
 
 
