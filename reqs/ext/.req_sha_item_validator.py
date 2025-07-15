@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
-from doorstop import DoorstopInfo, DoorstopWarning, DoorstopError
+from doorstop import DoorstopWarning
 from subprocess import check_output
 from copy import copy
-from random import random
 
 
 def item_validator(item):
-    if getattr(item, "references") == None:
+    if getattr(item, "references") is None:
         return []
 
     for ref in item.references:

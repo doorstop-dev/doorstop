@@ -3,3 +3,8 @@
 """Web interface for Doorstop."""
 
 from .client import check, get_next_number
+
+__all__ = [
+    "check",
+    "get_next_number",
+]

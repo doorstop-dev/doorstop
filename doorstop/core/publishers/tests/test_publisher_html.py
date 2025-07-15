@@ -5,7 +5,6 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -40,20 +39,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     def tearDownClass(cls):
         """Remove test folder."""
         rmtree("mock_%s" % __name__, onerror=on_error_with_retry)
-
-    @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
-    @patch("os.makedirs")
-    @patch("builtins.open")
-    def test_publish_document(self, mock_open, mock_makedirs):
-        """Verify a document can be published."""
-        path = os.path.join(self.dirpath, "published.html")
-        self.document.items = []
-        # Act
-        path2 = publisher.publish(self.document, path)
-        # Assert
-        self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
 
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")

@@ -94,7 +94,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield from self._iter()
 
     def __len__(self):
-        return len(list(i for i in self._iter() if i.active))
+        return len([i for i in self._iter() if i.active])
 
     def __bool__(self):
         """Even empty documents should be considered truthy."""
@@ -226,7 +226,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             if key == "defaults":
                 self._attribute_defaults = value
             elif key == "reviewed":
-                self._extended_reviewed = sorted(set(v for v in value))
+                self._extended_reviewed = sorted(set(value))
             elif key == "publish":
                 self._attribute_publish = value
             else:

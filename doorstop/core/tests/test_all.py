@@ -182,7 +182,7 @@ class TestDocument(unittest.TestCase):
         expect = DoorstopWarning("duplicate level: 2.1 (REQ002, REQ2-001)")
         for issue in self.document.issues:
             logging.info(repr(issue))
-            if type(issue) == type(expect) and issue.args == expect.args:
+            if type(issue) is type(expect) and issue.args == expect.args:
                 break
         else:
             self.fail("issue not found: {}".format(expect))
@@ -194,7 +194,7 @@ class TestDocument(unittest.TestCase):
         expect = DoorstopInfo("skipped level: 1.2.3 (REQ001), 1.4 (REQ003)")
         for issue in self.document.issues:
             logging.info(repr(issue))
-            if type(issue) == type(expect) and issue.args == expect.args:
+            if type(issue) is type(expect) and issue.args == expect.args:
                 break
         else:
             self.fail("issue not found: {}".format(expect))

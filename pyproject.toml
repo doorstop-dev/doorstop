@@ -67,6 +67,7 @@ isort = "^5.12"
 mypy = ">=1.1.1"
 pydocstyle = "*"
 pylint = "~3.2.0"
+ruff = "^0.12.3"
 types-markdown = "*"
 types-pyyaml = "*"
 types-requests = "*"
@@ -107,6 +108,16 @@ quiet = true
 [tool.isort]
 
 profile = "black"
+
+[tool.ruff]
+lint.select = [
+    "C4",     # flake8-comprehensions
+    "E",      # flake8 built-ins
+    "F",      # flake8 built-ins
+]
+lint.ignore = [
+  "E501",  # line too long
+]
 
 [build-system]
 

@@ -6,3 +6,12 @@ from doorstop.core.builder import build, find_document, find_item
 from doorstop.core.document import Document
 from doorstop.core.item import Item
 from doorstop.core.tree import Tree
+
+__all__ = [
+    "build",
+    "find_document",
+    "find_item",
+    "Document",
+    "Item",
+    "Tree",
+]

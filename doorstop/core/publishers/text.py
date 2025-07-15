@@ -102,13 +102,15 @@ class TextPublisher(BasePublisher):
                         label = "Parent links: "
                     else:
                         label = "Links: "
-                    slinks = label + ", ".join(str(l) for l in item.links)
+                    slinks = label + ", ".join(str(link) for link in item.links)
                     yield from self._chunks(slinks)
                 if settings.PUBLISH_CHILD_LINKS:
                     links = item.find_child_links()
                     if links:
                         yield ""  # break before links
-                        slinks = "Child links: " + ", ".join(str(l) for l in links)
+                        slinks = "Child links: " + ", ".join(
+                            str(link) for link in links
+                        )
                         yield from self._chunks(slinks)
 
                 # Attributes

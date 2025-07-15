@@ -455,9 +455,7 @@ class Application(ttk.Frame):
         # Display the items in the document
         c_levelsItem = [""]
         for item in self.document.items:
-            theParent = next(
-                iter(reversed([x for x in c_levelsItem[: item.depth]])), ""
-            )
+            theParent = next(iter(reversed(list(c_levelsItem[: item.depth]))), "")
 
             while len(c_levelsItem) < item.depth:
                 c_levelsItem.append(item.uid)
