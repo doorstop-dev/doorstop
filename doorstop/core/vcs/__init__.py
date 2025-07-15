@@ -3,6 +3,7 @@
 """Interfaces to version control systems."""
 
 import os
+from pathlib import Path
 
 from doorstop import common
 from doorstop.common import DoorstopError
@@ -19,7 +20,7 @@ DIRECTORIES = {
 log = common.logger(__name__)
 
 
-def find_root(cwd):
+def find_root(cwd: Path | str) -> Path:
     """Find the root of the working copy.
 
     :param cwd: current working directory
@@ -29,19 +30,18 @@ def find_root(cwd):
     :return: path to root of working copy
 
     """
-    path = cwd
+    path = Path(cwd)
 
-    log.debug("looking for working copy from {}...".format(path))
+    log.debug(f"looking for working copy from {path}...")
     log.debug("options: {}".format(", ".join([d for d in DIRECTORIES])))
-    while not any(d in DIRECTORIES for d in os.listdir(path)):
-        parent = os.path.dirname(path)
-        if path == parent:
-            msg = "no working copy found from: {}".format(cwd)
-            raise DoorstopError(msg)
-        path = parent
 
-    log.debug("found working copy: {}".format(path))
-    return path
+    for current_path in [path, *path.parents]:
+        if any(str(d) in DIRECTORIES for d in path.iterdir()):
+            log.debug("found working copy: {}".format(path))
+            return current_path
+
+    msg = "no working copy found from: {}".format(cwd)
+    raise DoorstopError(msg)
 
 
 def load(path):
