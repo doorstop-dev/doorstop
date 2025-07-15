@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Common exceptions, classes, and functions for Doorstop."""
+from __future__ import annotations
 
 import argparse
 import codecs
