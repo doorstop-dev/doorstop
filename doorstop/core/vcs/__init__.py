@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Interfaces to version control systems."""
+from __future__ import annotations
 
 import os
 from pathlib import Path
