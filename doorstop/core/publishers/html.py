@@ -5,6 +5,7 @@
 import os
 import re
 import tempfile
+from pathlib import Path
 
 import bottle
 import markdown
@@ -141,7 +142,7 @@ class HtmlPublisher(MarkdownPublisher):
         yield "</ul>"
         yield "</p>"
 
-    def create_matrix(self, directory):
+    def create_matrix(self, directory: Path):
         """Create a traceability matrix for all the items. This will create a .csv and .html file.
 
         :param directory: directory for matrix
@@ -152,7 +153,7 @@ class HtmlPublisher(MarkdownPublisher):
         ############################################################
         # Get path and format extension
         filename = MATRIX
-        path = os.path.join(directory, filename)
+        path = directory / filename
 
         # Create the matrix
         log.info("creating an {}...".format(filename))
@@ -163,7 +164,7 @@ class HtmlPublisher(MarkdownPublisher):
         # Create the HTML matrix
         ############################################################
         filename = MATRIX.replace(".csv", ".html")
-        path = os.path.join(directory, filename)
+        path = directory / filename
         log.info("creating an {}...".format(filename))
         lines = self.lines_matrix()
         # Format according to the template.

@@ -16,7 +16,7 @@ from importlib.machinery import ModuleSpec
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from types import ModuleType
-from typing import Union, cast
+from typing import Iterable, Union, cast
 
 import frontmatter
 import yaml
@@ -217,7 +217,13 @@ def write_text(text, path, end="\n"):
     return path
 
 
-def write_csv(table, path, delimiter=",", newline="", encoding="utf-8"):
+def write_csv(
+    table: Iterable,
+    path: Path,
+    delimiter: str = ",",
+    newline: str | None = None,
+    encoding: str | None = "utf-8",
+):
     """Write table to a file.
 
     :param table: iterator of rows

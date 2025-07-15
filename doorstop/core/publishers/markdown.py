@@ -3,6 +3,7 @@
 """Functions to publish documents and items."""
 
 import os
+from pathlib import Path
 from re import sub
 
 from doorstop import common, settings
@@ -81,7 +82,7 @@ class MarkdownPublisher(BasePublisher):
                 name = os.path.splitext(filename)[0]
                 yield " * [{n}]({f})".format(f=filename, n=name)
 
-    def create_matrix(self, directory):
+    def create_matrix(self, directory: Path):
         """No traceability matrix for Markdown."""
 
     def format_attr_list(self, item, linkify):
