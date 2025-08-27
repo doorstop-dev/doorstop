@@ -168,13 +168,19 @@ class MarkdownPublisher(BasePublisher):
 
             # Check if item has the attribute heading.
             if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
+                if item.header:
+                    heading = "{h}".format(h=item.header)
+                else:
+                    lines = item.text.splitlines()
+                    heading = lines[0] if lines else ""
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
-                heading = item.uid
-
+                lines = item.text.splitlines()
+                heading = lines[0] if lines else ""
+            # For normative items, the UID is of interest, so append it.
+            if item.normative:
+                heading = heading + " (" + str(item.uid) + ")"
             if settings.PUBLISH_HEADING_LEVELS:
                 level = format_level(item.level)
                 lbl = "{lev} {h}".format(lev=level, h=heading)
