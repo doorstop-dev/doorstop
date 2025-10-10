@@ -109,6 +109,8 @@ class HtmlPublisher(MarkdownPublisher):
                     "major": "-",
                     "minor": "",
                 },
+                has_index=self.getIndex(),
+                has_matrix=self.getMatrix(),
             )
             common.write_text(html, path)
         else:
@@ -183,6 +185,8 @@ class HtmlPublisher(MarkdownPublisher):
                 "major": "-",
                 "minor": "",
             },
+            has_index=self.getIndex(),
+            has_matrix=self.getMatrix(),
         )
         common.write_text(html, path)
 
