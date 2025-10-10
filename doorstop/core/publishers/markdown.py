@@ -268,7 +268,11 @@ class MarkdownPublisher(BasePublisher):
             # Text
             if item.text:
                 yield ""  # break before text
-                yield from item.text.splitlines()
+                if item.heading:
+                    # First line was already printed in the heading. Do not repeat.
+                    yield from item.text.splitlines()[1:]
+                else:
+                    yield from item.text.splitlines()
 
             # Reference
             if item.ref:
