@@ -355,17 +355,18 @@ class HtmlPublisher(MarkdownPublisher):
         for item in iter_items(toc_doc):
             # Check if item has the attribute heading.
             if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
+                heading = item.title()
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
                 heading = item.uid
+
             if settings.PUBLISH_HEADING_LEVELS:
                 level = format_level(item.level)
                 lbl = "{lev} {h}".format(lev=level, h=heading)
             else:
                 lbl = heading
+
             if linkify:
                 uid = item.uid
             else:

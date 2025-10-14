@@ -573,6 +573,34 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         if settings.ENABLE_HEADERS:
             self._data["header"] = Text(value)
 
+    def title(self):
+        """Get the item's title.
+        
+        Read from either the header or the first line of the text field.
+
+        """
+        if self.header:
+            return self.header
+        lines = self.text.splitlines()
+        if lines:
+            return lines[0]
+        return ""
+
+    def description(self):
+        """Get the item's description.
+        
+        Read from the text field, omitting the first line if it would be
+        included in the item's title.
+
+        """
+        if self.header:
+            # Header is specified, so no need to omit the first line
+            return self.text
+        lines = self.text.splitlines()
+        if lines:
+            return lines[1:]
+        return ""
+
     @property  # type: ignore
     @auto_load
     def ref(self):
