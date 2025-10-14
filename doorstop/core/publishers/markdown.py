@@ -168,8 +168,7 @@ class MarkdownPublisher(BasePublisher):
 
             # Check if item has the attribute heading.
             if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
+                heading = item.title()
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
@@ -214,17 +213,14 @@ class MarkdownPublisher(BasePublisher):
         heading = "#" * item.depth
         level = format_level(item.level)
         if item.heading:
-            text_lines = item.text.splitlines()
-            if item.header:
-                text_lines.insert(0, item.header)
             # Level and Text
             if settings.PUBLISH_HEADING_LEVELS:
                 standard = "{h} {lev} {t}".format(
-                    h=heading, lev=level, t=text_lines[0] if text_lines else ""
+                    h=heading, lev=level, t=item.title()
                 )
             else:
                 standard = "{h} {t}".format(
-                    h=heading, t=text_lines[0] if text_lines else ""
+                    h=heading, t=item.title()
                 )
             attr_list = self.format_attr_list(item, True)
             result = standard + attr_list
