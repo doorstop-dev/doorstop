@@ -29,7 +29,7 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Contents
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu contents-menu">
               % old_depth = 0
               % for item in toc:
               %   if item['depth'] > old_depth:
