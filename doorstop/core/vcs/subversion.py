@@ -33,6 +33,9 @@ class WorkingCopy(BaseWorkingCopy):
         message = message or input("Commit message: ")
         self.call("svn", "commit", "--message", message)
 
+    def describe(self):
+        return "subversion: " + self.call("svnversion", return_stdout=True)
+
     @property
     def ignores(self):
         if self._ignores_cache is None:

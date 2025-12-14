@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from doorstop import common, settings
+from doorstop import common, settings as dsettings
 from doorstop.common import (
     DoorstopError,
     DoorstopInfo,
@@ -135,7 +135,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         """
         # Check separator
-        if sep and sep not in settings.SEP_CHARS:
+        if sep and sep not in dsettings.SEP_CHARS:
             raise DoorstopError("invalid UID separator '{}'".format(sep))
 
         config = os.path.join(path, Document.CONFIG)
@@ -192,36 +192,63 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         IncludeLoader.filenames = [yamlfile]  # type: ignore
         return self._load(text, yamlfile, loader=IncludeLoader)
 
-    def load(self, reload=False):
-        """Load the document's properties from its file."""
-        if self._loaded and not reload:
-            return
-        log.debug("loading {}...".format(repr(self)))
-        data = self._load_with_include(self.config)
-        # Store parsed data
-        sets = data.get("settings", {})
-        for key, value in sets.items():
-            try:
-                if key == "prefix":
+    @property
+    def settings(self):
+        """
+        Document settings as a dict
+        """
+        sets = {}
+        for key, value in self._data.items():
+            if key == "prefix":
+                sets[key] = str(value)
+            elif key == "parent":
+                if value:
+                    sets[key] = value
+            else:
+                sets[key] = value
+        return sets
+
+    @settings.setter
+    def settings(self, settings):
+        def fill_key(key, value):
+            match key:
+                case "prefix":
                     self._data[key] = Prefix(value)
-                elif key == "sep":
+                case "sep":
                     self._data[key] = value.strip()
-                elif key == "parent":
+                case "parent":
                     self._data[key] = value.strip()
-                elif key == "digits":
+                case "digits":
                     self._data[key] = int(value)  # type: ignore
-                elif key == "itemformat":
+                case "itemformat":
                     self._data[key] = value.strip()
-                else:
-                    msg = "unexpected document setting '{}' in: {}".format(
-                        key, self.config
-                    )
+                case _:
+                    msg = f"unexpected document setting '{key}' in: {self.config}"
                     raise DoorstopError(msg)
+
+        for key, value in settings.items():
+            try:
+                fill_key(key, value)
             except (AttributeError, TypeError, ValueError):
-                msg = "invalid value for '{}' in: {}".format(key, self.config)
+                msg = f"invalid value for '{key}' in: {self.config}"
                 raise DoorstopError(msg)
+
+    @property
+    def attributes(self):
+        """
+        Document attributes as a dict
+        """
+        # Save the attributes
+        attributes = {}
+        if self._attribute_defaults:
+            attributes["defaults"] = self._attribute_defaults
+        if self._extended_reviewed:
+            attributes["reviewed"] = self._extended_reviewed
+        return attributes
+
+    @attributes.setter
+    def attributes(self, attributes):
         # Store parsed attributes
-        attributes = data.get("attributes", {})
         for key, value in attributes.items():
             if key == "defaults":
                 self._attribute_defaults = value
@@ -235,8 +262,15 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 )
                 raise DoorstopError(msg)
 
+    def load(self, reload=False):
+        """Load the document's properties from its file."""
+        if self._loaded and not reload:
+            return
+        log.debug("loading {}...".format(repr(self)))
+        data = self._load_with_include(self.config)
+        self.settings = data["settings"] if "settings" in data else {}
+        self.attributes = data["attributes"] if "attributes" in data else {}
         self.extensions = data.get("extensions", {})
-
         # Set meta attributes
         self._loaded = True
         if reload:
@@ -246,27 +280,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def save(self):
         """Save the document's properties to its file."""
         log.debug("saving {}...".format(repr(self)))
-        # Format the data items
+
         data = {}
-        sets = {}
-        for key, value in self._data.items():
-            if key == "prefix":
-                sets[key] = str(value)
-            elif key == "parent":
-                if value:
-                    sets[key] = value
-            else:
-                sets[key] = value
-        data["settings"] = sets
-        # Save the attributes
-        attributes = {}
-        if self._attribute_defaults:
-            attributes["defaults"] = self._attribute_defaults
-        if self._extended_reviewed:
-            attributes["reviewed"] = self._extended_reviewed
-        if attributes:
-            data["attributes"] = attributes
-        # Dump the data to YAML
+        if self.settings:
+            data["settings"] = self.settings,
+        if self.attributes:
+            data["attributes"] = self.attributes
+
         text = self._dump(data)
         # Save the YAML to file
         self._write(text, self.config)
@@ -313,7 +333,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         except Exception:
                             log.error("Unable to load: %s", item)
                             raise
-                    if settings.CACHE_ITEMS and self.tree:
+                    if dsettings.CACHE_ITEMS and self.tree:
                         self.tree._item_cache[  # pylint: disable=protected-access
                             item.uid
                         ] = item
@@ -392,7 +412,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def sep(self, value):
         """Set the prefix-number separator to use for new item UIDs."""
         # TODO: raise a specific exception for invalid separator characters?
-        assert not value or value in settings.SEP_CHARS
+        assert not value or value in dsettings.SEP_CHARS
         self._data["sep"] = value.strip()
         # TODO: should the new separator be applied to all items?
 
@@ -480,7 +500,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             path = os.path.join(self.path, Document.INDEX)
             log.info("creating {} index...".format(self))
             common.write_lines(
-                self._lines_index(self.items), path, end=settings.WRITE_LINESEPERATOR
+                self._lines_index(self.items), path, end=dsettings.WRITE_LINESEPERATOR
             )
 
     @index.deleter
@@ -516,7 +536,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                         name, self.prefix
                     )
                     raise DoorstopError(msg)
-                if self.sep not in settings.SEP_CHARS:
+                if self.sep not in dsettings.SEP_CHARS:
                     msg = "cannot add item with name '{}' to document '{}' with an invalid separator '{}'".format(
                         name, self.prefix, self.sep
                     )
@@ -608,13 +628,13 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     def _lines_index(items):
         """Generate (pseudo) YAML lines for the document index."""
-        yield "#" * settings.MAX_LINE_LENGTH
+        yield "#" * dsettings.MAX_LINE_LENGTH
         yield "# THIS TEMPORARY FILE WILL BE DELETED AFTER DOCUMENT REORDERING"
         yield "# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL"
         yield "# A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new: "
         yield "# THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS"
         yield "# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION"
-        yield "#" * settings.MAX_LINE_LENGTH
+        yield "#" * dsettings.MAX_LINE_LENGTH
         yield ""
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
@@ -623,8 +643,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             lines = item.text.strip().splitlines()
             comment = lines[0].replace("\\", "\\\\") if lines else ""
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
-            if len(line) > settings.MAX_LINE_LENGTH:
-                line = line[: settings.MAX_LINE_LENGTH - 3] + "..."
+            if len(line) > dsettings.MAX_LINE_LENGTH:
+                line = line[: dsettings.MAX_LINE_LENGTH - 3] + "..."
             yield line
 
     @staticmethod
@@ -854,9 +874,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             return
 
         # Reorder or check item levels
-        if settings.REORDER:
+        if dsettings.REORDER:
             self.reorder(_items=items)
-        elif settings.CHECK_LEVELS:
+        elif dsettings.CHECK_LEVELS:
             yield from self._get_issues_level(items)
 
         item_validator = ItemValidator()

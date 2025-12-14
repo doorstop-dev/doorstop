@@ -66,6 +66,11 @@ class BaseWorkingCopy(metaclass=ABCMeta):
         """Unlock files, commit, and push."""
         raise NotImplementedError
 
+    @abstractmethod
+    def describe(self):  # pragma: no cover (abstract method)
+        """Unlock files, commit, and push."""
+        raise NotImplementedError
+
     @property
     def ignores(self):
         """Yield glob expressions to ignore."""

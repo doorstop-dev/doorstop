@@ -14,6 +14,7 @@ from warnings import catch_warnings
 from doorstop.common import DoorstopError
 from doorstop.core import importer
 from doorstop.core.builder import _set_tree
+from doorstop.core.tests import MockDataMixIn
 from doorstop.core.tests.test_document import FILES, MockItem
 from doorstop.core.tree import Tree
 
@@ -51,17 +52,16 @@ System --> (Integrity)
 ```"""
 
 
-class TestModule(unittest.TestCase):
+class TestModule(MockDataMixIn, unittest.TestCase):
     """Unit tests for the doorstop.core.importer module."""
 
     maxDiff = None
-
     def test_import_file_unknown(self):
         """Verify an exception is raised when importing unknown formats."""
         mock_document = Mock()
-        self.assertRaises(DoorstopError, importer.import_file, "a.a", mock_document)
+        self.assertRaises(DoorstopError, importer.import_file, "a.a", document=mock_document)
         self.assertRaises(
-            DoorstopError, importer.import_file, "a.csv", mock_document, ".a"
+            DoorstopError, importer.import_file, "a.csv", ext=".a", document=mock_document
         )
 
     @patch("doorstop.core.importer._file_csv")
@@ -70,15 +70,15 @@ class TestModule(unittest.TestCase):
         mock_path = "path/to/file.csv"
         mock_document = Mock()
         importer.FORMAT_FILE[".csv"] = mock_file_csv
-        importer.import_file(mock_path, mock_document)
-        mock_file_csv.assert_called_once_with(mock_path, mock_document, mapping=None)
+        importer.import_file(mock_path, document=mock_document)
+        mock_file_csv.assert_called_once_with(mock_path, document=mock_document, mapping=None)
 
     @patch("doorstop.core.importer.check")
     def test_import_file_custom_ext(self, mock_check):
         """Verify a custom extension can be specified for import."""
         mock_path = "path/to/file.ext"
         mock_document = Mock()
-        importer.import_file(mock_path, mock_document, ext=".custom")
+        importer.import_file(mock_path, document=mock_document, ext=".custom")
         mock_check.assert_called_once_with(".custom")
 
     @patch("doorstop.core.importer.add_item")
@@ -274,19 +274,7 @@ class TestModule(unittest.TestCase):
             mock_path, mock_document, delimiter="\t", mapping=None
         )
 
-    @patch("doorstop.core.importer._itemize")
-    def test_file_xlsx(self, mock_itemize):
-        """Verify a XLSX file can be imported."""
-        path = os.path.join(FILES, "exported.xlsx")
-        mock_document = Mock()
-        # Act
-        with catch_warnings():
-            importer._file_xlsx(path, mock_document)
-        # Assert
-        args, kwargs = mock_itemize.call_args
-        logging.debug("args: {}".format(args))
-        logging.debug("kwargs: {}".format(kwargs))
-        header, data, document = args
+    def _xlsx_check_header(self, header):
         expected_header = [
             "uid",
             "level",
@@ -301,6 +289,26 @@ class TestModule(unittest.TestCase):
             "reviewed",
         ]
         self.assertEqual(expected_header, header)
+
+    def _xlsx_check_tst(self, data):
+        expected_data = [
+            [
+                "tst003",
+                "1",
+                "Tutorial",
+                None,
+                None,
+                "",
+                True,
+                False,
+                None,
+                True,
+                None,
+            ]
+        ]
+        self.assertEqual(expected_data, data)
+
+    def _xlsx_check_req(self, data):
         expected_data = [
             [
                 "REQ001",
@@ -384,7 +392,55 @@ class TestModule(unittest.TestCase):
             ],
         ]
         self.assertEqual(expected_data, data)
+
+    @patch("doorstop.core.importer._itemize")
+    def test_file_xlsx_single(self, mock_itemize):
+        """Verify a XLSX file can be imported."""
+        path = os.path.join(FILES, "exported.xlsx")
+        mock_document = Mock()
+        # Act
+        with catch_warnings():
+            importer._file_xlsx(path, mock_document)
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        self._xlsx_check_header(header)
+        self._xlsx_check_req(data)
+
         self.assertIs(mock_document, document)
+
+    @patch("doorstop.core.importer._itemize")
+    def test_file_xlsx_all(self, mock_itemize):
+        """Verify a XLSX file can be imported."""
+
+        def check_itemize(*args, **kwargs):
+            logging.debug("args: {}".format(args))
+            logging.debug("kwargs: {}".format(kwargs))
+            header, data, document = args
+            self._xlsx_check_header(header)
+            match document.prefix:
+                case "REQ":
+                    self._xlsx_check_req(data)
+                case "tst":
+                    self._xlsx_check_tst(data)
+                case _:
+                    self.fail(f"unexpected sheet {document.prefix}")
+
+        path = os.path.join(FILES, "exported-all.xlsx")
+        mock_itemize.side_effect = check_itemize
+
+        # Act
+        with catch_warnings():
+            importer._file_xlsx(path, None)
+        # Assert
+        args, kwargs = mock_itemize.call_args
+        logging.debug("args: {}".format(args))
+        logging.debug("kwargs: {}".format(kwargs))
+        header, data, document = args
+        self._xlsx_check_header(header)
+        self._xlsx_check_req(data)
 
     @patch("doorstop.core.importer._itemize")
     def test_file_xlsx_formula(self, mock_itemize):

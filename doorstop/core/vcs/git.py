@@ -31,3 +31,6 @@ class WorkingCopy(BaseWorkingCopy):
         message = message or input("Commit message: ")
         self.call("git", "commit", "--all", "--message", message)
         self.call("git", "push")
+
+    def describe(self):
+        return "git: " + self.call("git", "describe", "--dirty", return_stdout=True)
