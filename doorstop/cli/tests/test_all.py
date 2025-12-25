@@ -796,6 +796,23 @@ class TestPublish(TempTestCase):
         filePath = os.path.join(self.temp, "documents", "req.html")
         self.assertTrue(os.path.isfile(filePath))
 
+    def test_publish_document_md_file_no_toc(self):
+        """Verify 'doorstop publish --no-toc' creates an MarkDownfile with no TOC."""
+        path = os.path.join(self.temp, "req.md")
+        self.assertIs(None, main(["publish", "--no-toc", "req", path]))
+        self.assertTrue(os.path.isfile(path))
+        text = common.read_text(path)
+        self.assertNotIn("Table of Contents", text)
+
+    def test_publish_document_html_file_no_toc(self):
+        """Verify 'doorstop publish --no-toc' creates an HTML file with no TOC."""
+        path = os.path.join(self.temp, "req.html")
+        self.assertIs(None, main(["publish", "--no-toc", "req", path]))
+        filePath = os.path.join(self.temp, "documents", "req.html")
+        self.assertTrue(os.path.isfile(filePath))
+        text = common.read_text(filePath)
+        self.assertNotIn("Table of Contents", text)
+
     def test_publish_tree_html(self):
         """Verify 'doorstop publish' can create an HTML directory."""
         path = os.path.join(self.temp, "all")
@@ -841,6 +858,13 @@ class TestPublish(TempTestCase):
                 "all",
             ],
         )
+
+    def test_publish_tree_html_no_toc(self):
+        """Verify 'doorstop publish --no-toc' returns a html document with no toc."""
+        path = os.path.join(self.temp, "all")
+        self.assertIs(None, main(["publish", "--no-toc", "all", path]))
+        self.assertTrue(os.path.isdir(path))
+        self.assertTrue(os.path.isfile(os.path.join(path, "index.html")))
 
 
 class TestPublishCommand(TempTestCase):
