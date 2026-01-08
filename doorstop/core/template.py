@@ -108,14 +108,14 @@ I.e., only one of the documents in the tree should have a template folder."""
                 log.info(
                     "Copying %s to %s",
                     each.template,
-                    os.path.join(os.path.dirname(path), "template"),
+                    template_dir,
                 )
                 common.copy_dir_contents(each.template, template_dir)
         else:
             log.info(
                 "Copying %s to %s",
                 document_template,
-                os.path.join(os.path.dirname(path), "template"),
+                template_dir,
             )
             common.copy_dir_contents(document_template, template_dir)
 
@@ -125,7 +125,7 @@ I.e., only one of the documents in the tree should have a template folder."""
         log.info(
             "Copying %s to %s",
             template_assets,
-            os.path.join(os.path.dirname(path), "template"),
+            template_dir,
         )
         common.copy_dir_contents(template_assets, template_dir)
         # If html template, also copy the default views files.
