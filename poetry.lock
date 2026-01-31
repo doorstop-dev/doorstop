@@ -520,7 +520,7 @@ description = "Fork of the standard library cgi and cgitb modules, being depreca
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["dev"]
-markers = "python_version == \"3.13\""
+markers = "python_version >= \"3.13\""
 files = [
     {file = "legacy_cgi-2.6.1-py3-none-any.whl", hash = "sha256:8eacc1522d9f76451337a4b5a0abf494158d39250754b0d1bc19a14c6512af9b"},
     {file = "legacy_cgi-2.6.1.tar.gz", hash = "sha256:f2ada99c747c3d72a473a6aaff6259a61f226b06fe9f3106e495ab83fd8f7a42"},
@@ -1599,5 +1599,5 @@ tests = ["PasteDeploy", "WSGIProxy2", "coverage", "pyquery", "pytest", "pytest-c
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<3.14"
-content-hash = "a924d933da7ea629feff1188d6414aac52c1e36d90cec93e3c2944a772a7a586"
+python-versions = ">=3.10,<3.15"
+content-hash = "9c09256c03ada4eb759317835b2cddefc2750148f30eabd6b015bea6e1b65fd3"
