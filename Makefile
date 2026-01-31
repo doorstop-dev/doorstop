@@ -34,9 +34,15 @@ demo: install
 
 # SYSTEM DEPENDENCIES #########################################################
 
+.PHONY: bootstrap
+bootstrap: ## Attempt to install system dependencies
+	asdf plugin add python
+	asdf plugin add poetry
+	asdf install
+
 .PHONY: doctor
 doctor:  ## Confirm system dependencies are available
-	bin/verchew
+	bin/verchew --exit-code
 
 # PROJECT DEPENDENCIES ########################################################
 
