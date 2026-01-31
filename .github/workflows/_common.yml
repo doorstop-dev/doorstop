@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         # Python 3.10 is excluded because macOS is missing gettext
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     name: Python ${{ matrix.python-version }}
 
     defaults:
