@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.0.2"
+version = "3.1"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
@@ -32,11 +32,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Documentation",
     "Topic :: Text Editors :: Documentation",
     "Topic :: Text Processing :: Markup",
@@ -44,7 +44,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 
-python = "<3.14,>=3.9"
+python = ">=3.10,<3.15"
 
 pyyaml = "^6.0"
 markdown = "^3.3.3"
@@ -57,7 +57,7 @@ six = "*" # fixes https://github.com/dougn/python-plantuml/issues/11
 openpyxl = ">=3.1.2"
 verchew = "^3.4.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 # Formatters
 black = "^24.3"
@@ -73,7 +73,7 @@ types-requests = "*"
 types-setuptools = "*"
 
 # Testing
-pytest = "^6.2.5"
+pytest = "^8.0"
 pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"
@@ -90,7 +90,6 @@ pygments = "*"
 # Tooling
 pyinstaller = "*"
 sniffer = "*"
-macfsevents = { version = "*", platform = "darwin", markers = "python_version < '3.13'" }
 pync = { version = "*", platform = "darwin" }
 rope = "*"
 

@@ -6,15 +6,8 @@ on:
     branches: [ develop ]
 
 jobs:
-  Coverage:
-    uses: ./.github/workflows/change-coverage.yml
-    with:
-      os: "ubuntu-latest"
-      workpath: "/home/runner/work/doorstop/doorstop"
-    if: github.event_name == 'pull_request'
-
   Test:
-    uses: ./.github/workflows/execute-tests.yml
+    uses: ./.github/workflows/_common.yml
     with:
       os: "ubuntu-latest"
       workpath: "/home/runner/work/doorstop/doorstop"

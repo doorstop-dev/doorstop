@@ -39,7 +39,7 @@ def build(cwd=None, root=None, request_next_number=None) -> Tree:
     skip_file_name = ".doorstop.skip-all"
     if not os.path.isfile(os.path.join(root, skip_file_name)):
         _document_from_path(root, root, documents)
-    exclude_dirnames = {".git", ".venv", "venv"}
+    exclude_dirnames = {".git", ".tox", ".venv", "venv"}
     if not os.path.isfile(os.path.join(root, skip_file_name)):
         for dirpath, dirnames, _ in os.walk(root, topdown=True):
             whilelist_dirnames = []

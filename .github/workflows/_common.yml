@@ -1,4 +1,5 @@
-name: Execute tests
+name: Common
+
 on:
   workflow_call:
     inputs:
@@ -19,8 +20,10 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Python 3.10 is excluded because macOS is missing gettext
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     name: Python ${{ matrix.python-version }}
 
     defaults:
@@ -63,7 +66,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && (github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/dependabot/') || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)) }}
+        if: ${{ inputs.os == 'ubuntu-latest' && matrix.python-version == '3.9' && (github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)) }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
