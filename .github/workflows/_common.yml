@@ -20,8 +20,10 @@ jobs:
   test:
     runs-on: ${{ inputs.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Python 3.10 is excluded because macOS is missing gettext
+        python-version: ["3.11", "3.12", "3.13"]
     name: Python ${{ matrix.python-version }}
 
     defaults:

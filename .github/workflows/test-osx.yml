@@ -9,7 +9,7 @@ jobs:
   Test:
     uses: ./.github/workflows/_common.yml
     with:
-      os: "macos-13"
+      os: "macos-14"
       workpath: "/Users/runner/work/doorstop/doorstop"
     secrets:
       CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
