@@ -1,3 +1,7 @@
+# 3.1 (2026-01-31)
+
+- Dropped support for Python 3.9 and added support for Python 3.14.
+
 # 3.0.2 (2025-06-16)
 
 - Upgraded `bottle` to fix import errors.
