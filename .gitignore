@@ -52,3 +52,4 @@ coverage.xml
 
 # Eclipse
 .settings
+$(git
