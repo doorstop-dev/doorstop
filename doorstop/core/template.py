@@ -69,9 +69,14 @@ I.e., only one of the documents in the tree should have a template folder."""
 
     # Check for custom template and verify that it is available.
     if template and not document_template:
-        raise common.DoorstopError(
-            "Template flag set, but no 'template' folder was found."
+        # log an error warning and stick to the builtin template
+        # raise common.DoorstopWarning(
+        #     "Template flag set, but no 'template' folder was found."
+        # )
+        log.error(
+            "Template flag set, but no 'template' folder was found. Standard template is used instead."
         )
+        template = None
 
     # Get the builtin templates.
     template_assets = os.path.join(os.path.dirname(__file__), "files", "templates")
