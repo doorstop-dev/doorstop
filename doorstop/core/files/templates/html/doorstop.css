@@ -2,6 +2,11 @@
 .caption {
     text-align: center;
     font-size:15px;
-    }
+}
 
 #img {width: 100%}
+
+.contents-menu {
+    max-height: 85vh;
+    overflow-y: scroll;
+}
