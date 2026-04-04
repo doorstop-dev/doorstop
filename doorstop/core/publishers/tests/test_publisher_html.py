@@ -230,9 +230,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         expected = """<h2 id="req3">1.1 Heading</h2>
 <p>Heading</p>
 <p><em>Parent links: {}</em></p>
-""".format(
-            self.item.parent_items[0].uid
-        )
+""".format(self.item.parent_items[0].uid)
         # Act
         lines = publisher.publish_lines(self.item, ".html")
         text = "".join(line + "\n" for line in lines)
@@ -245,9 +243,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         expected = """<h2 id="req3">Heading</h2>
 <p>Heading</p>
 <p><em>Parent links: {}</em></p>
-""".format(
-            self.item.parent_items[0].uid
-        )
+""".format(self.item.parent_items[0].uid)
 
         # Act
         lines = publisher.publish_lines(self.item, ".html")

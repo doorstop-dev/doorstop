@@ -79,9 +79,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # file.txt should be in expected output!
         expected_walk = """{n}/
     assets/
-        file.txt{w}""".format(
-            n=self.hex, w=HTML_TEMPLATE_WALK
-        )
+        file.txt{w}""".format(n=self.hex, w=HTML_TEMPLATE_WALK)
 
         # Act
         asset_dir, selected_template = template.get_template(
@@ -129,9 +127,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         expected_walk = """{n}/
     template/
         custom_css.css
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         # Act
         asset_dir, selected_template = template.get_template(
             self.mock_tree, self.dirpath, ".html", "custom_css"

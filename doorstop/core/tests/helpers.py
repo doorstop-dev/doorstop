@@ -2,6 +2,7 @@
 # pylint: disable=unused-argument,protected-access
 
 """Unit test helper functions to reduce code duplication."""
+
 from logging import NullHandler
 from os import chmod
 from shutil import copytree
