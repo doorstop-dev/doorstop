@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 """Unit tests for the doorstop.__init__ module."""
+
 import unittest
 from importlib import reload
 from importlib.metadata import PackageNotFoundError

@@ -451,7 +451,7 @@ class LaTeXPublisher(BasePublisher):
                 next_line = ""
             else:
                 next_line = text[i + 1]
-            (no_paragraph, processed_block, line) = self.process_lists(line, next_line)
+            no_paragraph, processed_block, line = self.process_lists(line, next_line)
             if processed_block != "":
                 block.append(processed_block)
             #############################

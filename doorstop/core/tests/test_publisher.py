@@ -33,9 +33,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
     TUT.md
     assets/
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
 
     @classmethod
     def tearDownClass(cls):

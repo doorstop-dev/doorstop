@@ -723,7 +723,7 @@ class TestPublish(TempTestCase):
 
     def tearDown(self):
         super().tearDown()
-        (settings.PUBLISH_CHILD_LINKS, settings.PUBLISH_BODY_LEVELS) = self.backup
+        settings.PUBLISH_CHILD_LINKS, settings.PUBLISH_BODY_LEVELS = self.backup
 
     def test_publish_unknown(self):
         """Verify 'doorstop publish' returns an error for an unknown format."""

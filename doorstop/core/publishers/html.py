@@ -314,7 +314,7 @@ class HtmlPublisher(MarkdownPublisher):
                 next_line = ""
             else:
                 next_line = body_to_check[i + 1]
-            (_, processed_block, processed_line) = self.process_lists(line, next_line)
+            _, processed_block, processed_line = self.process_lists(line, next_line)
             if processed_block != "":
                 block.append(processed_block)
             block.append(processed_line)
