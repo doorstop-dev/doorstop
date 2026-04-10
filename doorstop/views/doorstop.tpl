@@ -4,15 +4,16 @@
 <header class="navbar navbar-expand-lg navbar-dark bd-navbar sticky-top text-bg-secondary">
   <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Document attributes">
     <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav">
           % if is_doc:
-          %   tmpRef='../'
+          % tmpRef='../'
           % else:
-          %   tmpRef=''
+          % tmpRef=''
           % end
           % if has_index:
           <li class="nav-item">
@@ -29,16 +30,21 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Contents
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-scrollable">
               % old_depth = 0
               % for item in toc:
-              %   if item['depth'] > old_depth:
-                <ul>
-              %   elif item['depth'] < old_depth:
-                </ul>
-              %   end
-                <li><a class="dropdown-item" href="#{{item['uid']}}">{{item['text']}}</a></li>
-              %   old_depth = item['depth']
+              % if item['depth'] > old_depth:
+              % for _ in range(item['depth'] - old_depth):
+              <ul>
+                % end
+                % elif item['depth'] < old_depth: % for _ in range(old_depth - item['depth']): </ul>
+                  % end
+                  % end
+                  <li><a class="dropdown-item" href="#{{item['uid']}}">{{item['text']}}</a></li>
+                  % old_depth = item['depth']
+                  % end
+                  % for _ in range(old_depth):
+              </ul>
               % end
             </ul>
           </li>
@@ -51,7 +57,8 @@
         <div class="col-2">
           <div class="bd-lead text-nowrap">
             <!-- Insert logotype. -->
-            <img src="{{baseurl}}{{tmpRef}}template/logo-black-white.png" alt="Doorstop" height="128" class="d-inline-block align-text-top">
+            <img src="{{baseurl}}{{tmpRef}}template/logo-black-white.png" alt="Doorstop" height="128"
+              class="d-inline-block align-text-top">
           </div>
         </div>
         <div class="col-6 align-self-center">

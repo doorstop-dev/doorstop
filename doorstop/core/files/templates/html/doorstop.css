@@ -1,7 +1,17 @@
 /* Doorstop.css file. */
 .caption {
     text-align: center;
-    font-size:15px;
-    }
+    font-size: 15px;
+}
 
-#img {width: 100%}
+.dropdown-menu-scrollable {
+    max-height: 70vh;
+    /* 70% of viewport-height */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* hide horizontal scroll bar */
+}
+
+#img {
+    width: 100%
+}
