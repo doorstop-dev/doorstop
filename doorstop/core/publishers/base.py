@@ -5,12 +5,12 @@
 import os
 from abc import ABCMeta, abstractmethod
 from re import compile as re_compile
-from typing import Any, Dict
+from re import match as re_match
+from typing import Any, Dict, List
 
 from markdown import markdown
 
 from doorstop import common
-from doorstop.common import DoorstopError
 from doorstop.core.template import get_template
 from doorstop.core.types import is_tree
 
@@ -211,77 +211,113 @@ class BasePublisher(metaclass=ABCMeta):
         """Get the linkify flag."""
         return self.linkify
 
-    def process_lists(self, line, next_line):
-        """Process lists in the line. Intended for LaTeX and HTML publishers."""
-        # Don't process custom attributes.
-        if "CUSTOM-ATTRIB" in line:
-            return (False, "", line)
-        # Loop over both list types.
-        for temp_type in ["itemize", "enumerate"]:
-            matches = self.list["regexp"][temp_type].findall(line)
-            if matches:
-                list_type = temp_type
-                # Cannot have both types on the same line.
-                break
-        block = []
-        no_paragraph = False
-        if matches:
-            indent = len(line) - len(line.lstrip())
-            if not self.list["found"][list_type]:
-                block.append(self.list["start"][list_type])
-                self.list["found"][list_type] = True
-                self.list["depth"][list_type] = indent
-            elif self.list["depth"][list_type] < indent:
-                block.append(self.list["start"][list_type])
-                if self.list["depth"][list_type] == 0:
-                    self.list["indent"][list_type] = indent
-                elif (
-                    self.list["depth"][list_type] + self.list["indent"][list_type]
-                    != indent
-                ):
-                    raise DoorstopError(
-                        "Cannot change indentation depth inside a list."
-                    )
-                self.list["depth"][list_type] = indent
-            elif self.list["depth"][list_type] > indent:
-                while self.list["depth"][list_type] > indent:
-                    block.append(self.list["end"][list_type])
-                    self.list["depth"][list_type] = (
-                        self.list["depth"][list_type] - self.list["indent"][list_type]
-                    )
-        # Check both list types.
-        for list_type in ["itemize", "enumerate"]:
-            if self.list["found"][list_type]:
-                no_paragraph = True
-                # Replace the list identifier.
-                line = (
-                    self.list["sub"][list_type].sub(
-                        self.list["start_item"][list_type], line
-                    )
-                    + self.list["end_item"][list_type]
-                )
-                # Look ahead - need empty line to end itemize!
-                block, line = self._check_for_list_end(
-                    line, next_line, block, list_type
-                )
-        if len(block) > 0:
-            return (no_paragraph, "\n".join(block), line)
-        else:
-            return (no_paragraph, "", line)
+    def _normalize_list_indentation(self, text):
+        """Normalize list indentation based on relative hierarchy.
 
-    def _check_for_list_end(self, line, next_line, block, list_type):
-        """Check if the list has ended."""
-        if next_line == "" or next_line.startswith("<p>"):
-            block.append(line)
-            while self.list["depth"][list_type] > 0:
-                block.append(self.list["end"][list_type])
-                self.list["depth"][list_type] = (
-                    self.list["depth"][list_type] - self.list["indent"][list_type]
+        Handles inconsistent indentation by tracking relative levels instead
+        of absolute indent values. Converts to 4-space standard required by
+        most Markdown processors.
+
+        :param text: Markdown text with potentially inconsistent list indentation
+        :return: Text with normalized 4-space indentation per level
+        """
+        lines = text.split("\n")
+        list_items: List[Dict[str, int]] = []
+
+        # Parse list structure
+        for i, line in enumerate(lines):
+            match = re_match(r"^(\s*)([-*]|\d+\.)\s+", line)
+            if match:
+                list_items.append(
+                    {
+                        "index": i,
+                        "indent": len(match.group(1)),
+                    }
                 )
-            line = self.list["end"][list_type]
-            self.list["found"][list_type] = False
-            self.list["depth"][list_type] = 0
-        return (block, line)
+
+        if not list_items:
+            return text
+
+        # Split into separate list blocks (separated by non-list lines)
+        list_blocks: List[List[Dict[str, int]]] = []
+        current_block: List[Dict[str, int]] = []
+        prev_index = -2
+
+        for item in list_items:
+            # If line is not directly after previous, start new block
+            if item["index"] != prev_index + 1:
+                if current_block:
+                    list_blocks.append(current_block)
+                current_block = [item]
+            else:
+                current_block.append(item)
+            prev_index = item["index"]
+
+        if current_block:
+            list_blocks.append(current_block)
+
+        # Process each block independently
+        result = list(lines)
+
+        for block in list_blocks:
+            # Determine hierarchy levels using stack
+            indent_stack: List[int] = []
+
+            for item in block:
+                indent = item["indent"]
+
+                # Pop stack until we find a level less than current indent
+                while indent_stack and indent_stack[-1] >= indent:
+                    indent_stack.pop()
+
+                item["level"] = len(indent_stack)
+                indent_stack.append(indent)
+
+            # Apply normalization: level * 4 spaces
+            for item in block:
+                new_indent = item["level"] * 4
+                if item["indent"] != new_indent:
+                    result[item["index"]] = (
+                        " " * new_indent + result[item["index"]].lstrip()
+                    )
+
+        return "\n".join(result)
+
+    def _fix_list_spacing(self, text):
+        """Add blank lines around lists for proper markdown processing.
+
+        Markdown requires blank lines before and after list blocks to
+        properly recognize them as lists.
+
+        :param text: Markdown text
+        :return: Text with proper spacing around lists
+        """
+        list_pattern = r"^(\s*)([-*]|\d+\.)\s+"
+        lines = text.split("\n")
+        result: List[str] = []
+
+        for i, line in enumerate(lines):
+            is_list = re_match(list_pattern, line)
+            prev_is_list = i > 0 and re_match(list_pattern, lines[i - 1])
+            next_is_list = i < len(lines) - 1 and re_match(list_pattern, lines[i + 1])
+            prev_is_blank = i > 0 and lines[i - 1].strip() == ""
+
+            # Add blank line before first list item
+            if is_list and not prev_is_list and not prev_is_blank and result:
+                result.append("")
+
+            result.append(line)
+
+            # Add blank line after last list item
+            if (
+                is_list
+                and not next_is_list
+                and i < len(lines) - 1
+                and lines[i + 1].strip()
+            ):
+                result.append("")
+
+        return "\n".join(result)
 
 
 def extract_prefix(document):

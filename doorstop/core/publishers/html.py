@@ -275,7 +275,6 @@ class HtmlPublisher(MarkdownPublisher):
         :param linkify: turn links into hyperlinks
 
         :return: iterator of lines of text
-
         """
         linkify = kwargs.get("linkify", False)
         toc = kwargs.get("toc", False)
@@ -283,48 +282,47 @@ class HtmlPublisher(MarkdownPublisher):
         # Determine if a full HTML document should be generated
         try:
             iter(obj)
+            document = True
         except TypeError:
             document = False
-        else:
-            document = True
 
-        # Check for defined document attributes.
+        # Check for defined document attributes
         if document:
             doc_attributes = get_document_attributes(
                 obj, is_html=True, extensions=self.EXTENSIONS
             )
 
-        # Generate HTML
+        # Generate and process markdown
         text = "\n".join(self._lines_markdown(obj, linkify=linkify, to_html=True))
-        # We need to handle escaped back-ticks before we pass the text to markdown.
+
+        # Normalize list indentation and add proper spacing
+        text = self._normalize_list_indentation(text)
+        text = self._fix_list_spacing(text)
+
+        # Convert to HTML
         text = text.replace("\\`", "##!!TEMPINLINE!!##")
         body_to_check = markdown.markdown(text, extensions=self.EXTENSIONS).splitlines()
+
+        # Process HTML lines
         block = []
-        # Check for nested lists since they are not supported by the markdown_sane_lists plugin.
-        for i, line in enumerate(body_to_check):
-            # Replace the temporary inline code blocks with the escaped back-ticks. If there are
-            # multiple back-ticks in a row, we need group them in a single <code> block.
+        for line in body_to_check:
+            # Replace temporary inline code blocks with escaped back-ticks
             line = re.sub(
                 r"(##!!TEMPINLINE!!##)+",
                 lambda m: "<code>" + "&#96;" * int(len(m.group()) / 18) + "</code>",
                 line,
             )
-            # Check if we are at the end of the body.
-            if i == len(body_to_check) - 1:
-                next_line = ""
-            else:
-                next_line = body_to_check[i + 1]
-            _, processed_block, processed_line = self.process_lists(line, next_line)
-            if processed_block != "":
-                block.append(processed_block)
-            block.append(processed_line)
+            block.append(line)
+
         body = "\n".join(block)
 
+        # Generate table of contents if requested
         if toc:
             toc_html = self.table_of_contents(True, obj)
         else:
             toc_html = ""
 
+        # Generate full document or just body
         if document:
             if self.template == "":
                 self.template = HTMLTEMPLATE
