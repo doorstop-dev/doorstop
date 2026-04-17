@@ -129,6 +129,33 @@ grep -rn "src/sensors/temp.c"         # did the file move?
   cloned) → either clone it, or run with `-R/--no-ref-check` for that
   session (don't ship it).
 
+## "multiple root documents" on `doorstop`
+
+**Symptom**: `ERROR: multiple root documents: ...` listing two or more
+document directories (often with the same prefix).
+
+**Diagnosis**: Doorstop walks the VCS root (by default) and picks up every
+`.doorstop.yml` it finds. If your repo contains a second, unrelated
+Doorstop tree — a vendored example, a teaching fixture, a submodule, a
+test asset — both roots get merged into the same tree and clash.
+
+**Fix**: Drop a `.doorstop.skip-all` marker at the top of the subtree you
+want excluded. The file's contents are ignored; only its presence matters.
+
+```sh
+touch path/to/unrelated/doorstop/tree/.doorstop.skip-all
+doorstop                              # rescans — the subtree is pruned
+```
+
+The marker is recognized by `doorstop/core/builder.py`: when `os.walk`
+visits a directory containing a `.doorstop.skip-all` file, that directory
+and everything beneath it are removed from discovery.
+
+This is the same mechanism the skill itself uses: see
+`skills/doorstop/assets/.doorstop.skip-all` — it keeps the bundled
+`example_reqs/` tree from colliding with Doorstop's own requirements when
+this skill lives inside a repo that is itself a Doorstop project.
+
 ## "document already exists" on `doorstop create`
 
 **Symptom**: Create fails even though the path looks empty.

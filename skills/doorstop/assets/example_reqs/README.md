@@ -16,6 +16,18 @@ Use it as:
 - A target for skill verification — `doorstop` from the root should exit 0
   (with INFO about unreviewed items until you run `doorstop review all`).
 
+## Why the parent directory has `.doorstop.skip-all`
+
+The sibling `skills/doorstop/assets/.doorstop.skip-all` marker tells
+doorstop not to descend into this directory when scanning a VCS root. That
+matters when the skill is installed inside a repo that is *itself* a
+Doorstop project — without the marker, doorstop would try to merge this
+example tree into the host project's tree and fail with "multiple root
+documents".
+
+The marker lives one level **above** this directory, so it stays behind
+when you copy this tree elsewhere.
+
 ## Try it
 
 ```sh
@@ -25,5 +37,8 @@ cp -r /path/to/skills/doorstop/assets/example_reqs/. .
 doorstop                                # validate (INFO: unreviewed)
 doorstop review all                     # stamp everything
 doorstop                                # clean
-doorstop publish all ./publish          # HTML output
+doorstop publish REQ ./REQ.md           # single-doc Markdown publish
 ```
+
+Note the trailing `/.` in the `cp` above — copies the contents, not the
+directory itself.
