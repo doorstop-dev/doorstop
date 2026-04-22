@@ -33,18 +33,20 @@
             <ul class="dropdown-menu dropdown-menu-scrollable">
               % old_depth = 0
               % for item in toc:
-              % if item['depth'] > old_depth:
-              % for _ in range(item['depth'] - old_depth):
-              <ul>
+                % if item['depth'] > old_depth:
+                  % for _ in range(item['depth'] - old_depth):
+                    <ul>
+                  % end
+                % elif item['depth'] < old_depth: 
+                  % for _ in range(old_depth - item['depth']): 
+                    </ul>
+                  % end
                 % end
-                % elif item['depth'] < old_depth: % for _ in range(old_depth - item['depth']): </ul>
-                  % end
-                  % end
-                  <li><a class="dropdown-item" href="#{{item['uid']}}">{{item['text']}}</a></li>
-                  % old_depth = item['depth']
-                  % end
-                  % for _ in range(old_depth):
-              </ul>
+                <li><a class="dropdown-item" href="#{{item['uid']}}">{{item['text']}}</a></li>
+                % old_depth = item['depth']
+              % end
+              % for _ in range(old_depth):
+                </ul>
               % end
             </ul>
           </li>
