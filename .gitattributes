@@ -8,13 +8,13 @@ doorstop/core/files/templates/html/output/*.js binary
 doorstop/core/files/templates/html/tex-mml-chtml.js binary
 doorstop/core/tests/files/published*.html binary
 
-# Force LF line endings for YAML and test files to fix Windows tests
-*.yml text eol=lf
-doorstop/core/tests/files/** text eol=lf
+# Enforce consistent line endings for cross-platform compatibility
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.txt  text eol=lf
+*.md   text eol=lf
 
-# Keep these as-is (don't normalize)
-*.txt  -text
-*.md   -text
+# Keep these as-is (test output files, may contain mixed endings intentionally)
 *.html -text
 *.csv  -text
 *.tsv  -text
