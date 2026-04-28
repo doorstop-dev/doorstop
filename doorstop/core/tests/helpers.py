@@ -39,27 +39,42 @@ def build_expensive_tree(obj):
     obj.mock_tree = build(cwd=obj.datapath, root=obj.datapath, request_next_number=None)
 
 
-def on_error_with_retry(func, path, exc_info, retries=60):
+def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
     """Define a separate function to handle errors for rmtree.
-
     This callback function is used to retry rmtree operations
-    that fail for up to 60 seconds. This is necessary because
+    that fail for up to max_time seconds. This is necessary because
     Windows does not always release file handles immediately,
     and the rmtree operation can fail.
     """
-    if retries > 0:
+    import time
+    
+    start_time = time.time()
+    
+    for attempt in range(max_retries):
+        elapsed = time.time() - start_time
+        
+        # Timeout check
+        if elapsed >= max_time:
+            print(f"Timeout: Failed to remove {path} after {elapsed:.1f}s. Giving up.")
+            return
+        
         # Change the file permissions
-        chmod(path, S_IWRITE)
-        # Sleep for 1 seconds to wait for the race condition to resolve
-        sleep(1)
+        try:
+            chmod(path, S_IWRITE)
+        except Exception:
+            pass  # Ignore chmod failures
+        
+        # Sleep briefly
+        sleep(0.2)
+        
         try:
             # Try the operation again
             func(path)
-        # pylint: disable=broad-except
+            return  # Success!
         except Exception as e:
-            # If an error occurs, recurse with one fewer retry available
-            print(f"Retry {5 - retries} failed for {path}, error: {e}. Retrying...")
-            on_error_with_retry(func, path, exc_info, retries - 1)
-    else:
-        # If no retries are left, raise an exception or handle the final failure case
-        print(f"Failed to remove {path} after multiple retries.")
+            print(f"Retry {attempt + 1}/{max_retries} failed for {path}, error: {e}")
+            # Continue to next attempt
+    
+    # All retries exhausted
+    elapsed = time.time() - start_time
+    print(f"Failed to remove {path} after {attempt + 1} retries ({elapsed:.1f}s). Giving up.")

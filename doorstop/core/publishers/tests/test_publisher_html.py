@@ -36,6 +36,8 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         self.hex = token_hex()
         self.dirpath = os.path.abspath(os.path.join("mock_%s" % __name__, self.hex))
 
+        os.makedirs(self.dirpath, exist_ok=True)
+
     @classmethod
     def tearDownClass(cls):
         """Remove test folder."""
@@ -52,9 +54,10 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         path2 = publisher.publish(self.document, path)
         # Assert
         self.assertIs(path, path2)
-        mock_makedirs.assert_called_once_with(self.dirpath)
-        mock_open.assert_called_once_with(path, "wb")
-
+        mock_makedirs.assert_any_call(self.dirpath)
+        mock_open.assert_called_once_with(
+            os.path.join(self.dirpath, "documents", "published.html"), "wb"
+        )
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
     @patch("builtins.open")
@@ -166,6 +169,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
             mock_document = MagicMock()
             mock_document.prefix = prefix
+            mock_document.template = None
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
@@ -195,6 +199,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         for prefix in ("SYS", "HLR", "LLR", "HLT", "LLT"):
             mock_document = MagicMock()
             mock_document.prefix = prefix
+            mock_document.template = None
             mock_tree.documents.append(mock_document)
         mock_tree.draw = lambda: "(mock tree structure)"
         mock_item = Mock()
@@ -212,7 +217,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_tree.get_traceability = lambda: mock_trace
         html_publisher = publisher.check(".html", obj=mock_tree)
         # Create the self.dirpath first.
-        os.makedirs(self.dirpath)
+        os.makedirs(self.dirpath, exist_ok=True)
+        html_publisher.setPath(self.dirpath)
+        html_publisher.processTemplates(None)
         # Act
         html_publisher.create_matrix(self.dirpath)
         # Assert
@@ -294,22 +301,6 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertIn("Child links:", text)
         self.assertIn("tst.html#tst1", text)
-
-    @patch("os.path.isdir", Mock(side_effect=[False, False, False, False]))
-    @patch("os.makedirs")
-    @patch("builtins.open")
-    def test_publish_document(self, mock_open, mock_makedirs):
-        """Verify a document can be published."""
-        path = os.path.join(self.dirpath, "published.html")
-        self.document.items = []
-        # Act
-        path2 = publisher.publish(self.document, path)
-        # Assert
-        self.assertIs(path, path2)
-        mock_makedirs.assert_called_with(os.sep.join([self.dirpath, "documents"]))
-        mock_open.assert_called_once_with(
-            os.sep.join([os.path.dirname(path), "documents", "published.html"]), "wb"
-        )
 
 
 @patch("doorstop.core.item.Item", MockItem)

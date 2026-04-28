@@ -42,9 +42,12 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Remove test folder."""
-        rmtree(cls.testdir, onerror=on_error_with_retry)
-
+        """Cleanup test environment."""
+        try:
+            rmtree(cls.testdir, ignore_errors=True)
+        except:
+            pass
+    
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
         # Individual docs needs another level to prevent clashing between tests.

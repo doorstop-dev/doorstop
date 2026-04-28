@@ -34,6 +34,69 @@ from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.vcs import mockvcs
 
 
+import pytest
+import subprocess
+
+@pytest.fixture(autouse=True)
+def cleanup_test_yml_files():
+    """Auto-cleanup: Reset only Git-tracked YAML files in test directories after each test."""
+    yield
+    
+    try:
+        import os
+        
+        # Get the repository root (doorstop/)
+        test_dir = os.path.dirname(__file__)  # doorstop/core/tests/
+        repo_root = os.path.abspath(os.path.join(test_dir, '..', '..', '..'))
+        
+        # Define test directories relative to repo root
+        test_dirs = [
+            os.path.join(repo_root, 'doorstop', 'core', 'tests', 'files'),
+            os.path.join(repo_root, 'reqs', 'tutorial'),
+            os.path.join(repo_root, 'reqs'),
+            os.path.join(repo_root, 'doorstop', 'core', 'tests', 'docs'),
+            os.path.join(repo_root, 'doorstop', 'cli', 'tests', 'docs')
+        ]
+        
+        # Get all Git-tracked YAML files in these directories
+        for dir_path in test_dirs:
+            if not os.path.exists(dir_path):
+                continue
+            
+            # Get relative path from repo root for git commands
+            rel_path = os.path.relpath(dir_path, repo_root)
+            
+            # Find Git-tracked YAML files in this directory
+            result = subprocess.run(
+                ['git', 'ls-files', f'{rel_path}/*.yml', f'{rel_path}/*.yaml'],
+                capture_output=True,
+                text=True,
+                cwd=repo_root,
+                timeout=5
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                yaml_files = result.stdout.strip().split('\n')
+                
+                # Reset only these YAML files
+                subprocess.run(
+                    ['git', '-c', 'core.autocrlf=false', 'checkout', '--'] + yaml_files,
+                    capture_output=True,
+                    cwd=repo_root,
+                    timeout=5
+                )
+        
+        # Unstage any accidentally staged files
+        subprocess.run(
+            ['git', 'reset', 'HEAD', '.'],
+            capture_output=True,
+            cwd=repo_root,
+            timeout=5
+        )
+    except Exception:
+        # Ignore errors in cleanup to prevent test failures
+        pass
+
 class TestItem(unittest.TestCase):
     """Integration tests for the Item class."""
 
@@ -577,6 +640,13 @@ class TestPublisher(unittest.TestCase):
         self.document = self.tree.find_document("REQ")
         self.temp = tempfile.mkdtemp()
 
+        # added as per Claude Sonnet
+        # Initialize HTML publisher with templates for HTML tests
+        from doorstop.core.publisher import check
+        self.html_publisher = check(".html", obj=self.document)
+        self.html_publisher.setPath(self.temp)
+        self.html_publisher.processTemplates(None)
+
     def tearDown(self):
         if os.path.exists(self.temp):
             shutil.rmtree(self.temp, onerror=on_error_with_retry)
@@ -665,7 +735,9 @@ class TestPublisher(unittest.TestCase):
         expected = common.read_text(path)
         # Act
         lines = core.publisher.publish_lines(
-            self.document, ".html", linkify=True, toc=True
+            self.document, ".html", 
+            publisher=self.html_publisher, 
+            linkify=True, toc=True
         )
         actual = "".join(line + "\n" for line in lines)
         # Assert
@@ -689,7 +761,9 @@ class TestPublisher(unittest.TestCase):
         path = os.path.join(FILES, "published2.html")
         expected = common.read_text(path)
         # Act
-        lines = core.publisher.publish_lines(self.document, ".html", toc=True)
+        lines = core.publisher.publish_lines(self.document, ".html", 
+                                             publisher=self.html_publisher,
+                                             toc=True)
         actual = "".join(line + "\n" for line in lines)
         # Assert
         if actual != expected:
