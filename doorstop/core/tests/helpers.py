@@ -41,6 +41,7 @@ def build_expensive_tree(obj):
 
 def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
     """Define a separate function to handle errors for rmtree.
+
     This callback function is used to retry rmtree operations
     that fail for up to max_time seconds. This is necessary because
     Windows does not always release file handles immediately,
