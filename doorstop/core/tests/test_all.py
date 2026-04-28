@@ -20,6 +20,7 @@ import pytest
 import yaml
 
 from doorstop import common, core
+from doorstop.core.publisher import check
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
 from doorstop.core.tests import (
@@ -70,6 +71,7 @@ def cleanup_test_yml_files():
                 text=True,
                 cwd=repo_root,
                 timeout=5,
+                check=False,
             )
 
             if result.returncode == 0 and result.stdout.strip():
@@ -81,11 +83,16 @@ def cleanup_test_yml_files():
                     capture_output=True,
                     cwd=repo_root,
                     timeout=5,
+                    check=False,
                 )
 
         # Unstage any accidentally staged files
         subprocess.run(
-            ["git", "reset", "HEAD", "."], capture_output=True, cwd=repo_root, timeout=5
+            ["git", "reset", "HEAD", "."],
+            capture_output=True,
+            cwd=repo_root,
+            timeout=5,
+            check=False,
         )
     except Exception:
         # Ignore errors in cleanup to prevent test failures
@@ -637,7 +644,6 @@ class TestPublisher(unittest.TestCase):
 
         # added as per Claude Sonnet
         # Initialize HTML publisher with templates for HTML tests
-        from doorstop.core.publisher import check
 
         self.html_publisher = check(".html", obj=self.document)
         self.html_publisher.setPath(self.temp)

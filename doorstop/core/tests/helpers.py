@@ -3,11 +3,12 @@
 
 """Unit test helper functions to reduce code duplication."""
 
+import time
+
 from logging import NullHandler
 from os import chmod
 from shutil import copytree
 from stat import S_IWRITE
-from time import sleep
 from typing import List
 
 from doorstop.core.builder import build
@@ -46,7 +47,6 @@ def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
     Windows does not always release file handles immediately,
     and the rmtree operation can fail.
     """
-    import time
 
     start_time = time.time()
 
@@ -65,7 +65,7 @@ def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
             pass  # Ignore chmod failures
 
         # Sleep briefly
-        sleep(0.2)
+        time.sleep(0.2)
 
         try:
             # Try the operation again

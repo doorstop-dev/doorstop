@@ -29,7 +29,6 @@ def reset_fixture_files():
     # Cleanup: Reset only YAML files that are in Git
     try:
         test_dir = os.path.dirname(__file__)
-        files_dir = os.path.join(test_dir, "files")
 
         # get all git-tracked YAML-files in files/
         result = subprocess.run(
@@ -38,6 +37,7 @@ def reset_fixture_files():
             text=True,
             cwd=test_dir,
             timeout=5,
+            check=False,
         )
 
         if result.returncode == 0 and result.stdout.strip():
@@ -49,6 +49,7 @@ def reset_fixture_files():
                 capture_output=True,
                 cwd=test_dir,
                 timeout=5,
+                check=False,
             )
     except Exception:
         pass
