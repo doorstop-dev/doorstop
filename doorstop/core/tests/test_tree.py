@@ -7,11 +7,13 @@
 import logging
 import operator
 import os
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
 
-from unittest.mock import MagicMock, Mock, patch
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
 from doorstop.core.document import Document

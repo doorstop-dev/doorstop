@@ -9,16 +9,15 @@ import logging
 import os
 import pprint
 import shutil
+import subprocess
 import tempfile
 import unittest
 from typing import List
 from unittest.mock import Mock, patch
 
 import openpyxl
-import yaml
-
 import pytest
-import subprocess
+import yaml
 
 from doorstop import common, core
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
