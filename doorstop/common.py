@@ -121,10 +121,10 @@ def read_text(path):
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
         # Use built-in open() instead of codecs.open() to support newline parameter
-        with open(path, "r", encoding="utf-8", newline='') as f:
+        with open(path, "r", encoding="utf-8", newline="") as f:
             text = f.read()
             # Normalize line endings to \n for consistency
-            return text.replace('\r\n', '\n').replace('\r', '\n')
+            return text.replace("\r\n", "\n").replace("\r", "\n")
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
         raise DoorstopError(msg)

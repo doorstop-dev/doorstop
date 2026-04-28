@@ -47,26 +47,26 @@ def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
     and the rmtree operation can fail.
     """
     import time
-    
+
     start_time = time.time()
-    
+
     for attempt in range(max_retries):
         elapsed = time.time() - start_time
-        
+
         # Timeout check
         if elapsed >= max_time:
             print(f"Timeout: Failed to remove {path} after {elapsed:.1f}s. Giving up.")
             return
-        
+
         # Change the file permissions
         try:
             chmod(path, S_IWRITE)
         except Exception:
             pass  # Ignore chmod failures
-        
+
         # Sleep briefly
         sleep(0.2)
-        
+
         try:
             # Try the operation again
             func(path)
@@ -74,7 +74,9 @@ def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
         except Exception as e:
             print(f"Retry {attempt + 1}/{max_retries} failed for {path}, error: {e}")
             # Continue to next attempt
-    
+
     # All retries exhausted
     elapsed = time.time() - start_time
-    print(f"Failed to remove {path} after {attempt + 1} retries ({elapsed:.1f}s). Giving up.")
+    print(
+        f"Failed to remove {path} after {attempt + 1} retries ({elapsed:.1f}s). Giving up."
+    )

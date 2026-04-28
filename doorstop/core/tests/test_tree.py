@@ -9,51 +9,49 @@ import operator
 import os
 import tempfile
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+import pytest
 
+from unittest.mock import MagicMock, Mock, patch
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import EMPTY, FILES, SYS, MockDocumentSkip
 from doorstop.core.tree import Tree
 
-import pytest
-import subprocess
 
 @pytest.fixture(autouse=True, scope="class")
 def reset_fixture_files():
     """Reset only Git-tracked YAML files after each test class."""
     yield
-    
+
     # Cleanup: Reset only YAML files that are in Git
     try:
-        import os
-        import subprocess
-        
         test_dir = os.path.dirname(__file__)
-        files_dir = os.path.join(test_dir, 'files')
-        
+        files_dir = os.path.join(test_dir, "files")
+
         # get all git-tracked YAML-files in files/
         result = subprocess.run(
-            ['git', 'ls-files', 'files/*.yml', 'files/*.yaml'],
+            ["git", "ls-files", "files/*.yml", "files/*.yaml"],
             capture_output=True,
             text=True,
             cwd=test_dir,
-            timeout=5
+            timeout=5,
         )
-        
+
         if result.returncode == 0 and result.stdout.strip():
-            yaml_files = result.stdout.strip().split('\n')
-            
+            yaml_files = result.stdout.strip().split("\n")
+
             # reset those files
             subprocess.run(
-                ['git', 'checkout', '--'] + yaml_files,
+                ["git", "checkout", "--"] + yaml_files,
                 capture_output=True,
                 cwd=test_dir,
-                timeout=5
+                timeout=5,
             )
     except Exception:
         pass
+
+
 @patch("doorstop.core.document.Document", MockDocumentSkip)
 class TestTreeStrings(unittest.TestCase):
     """Unit tests for the Tree class using strings."""

@@ -58,6 +58,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         mock_open.assert_called_once_with(
             os.path.join(self.dirpath, "documents", "published.html"), "wb"
         )
+
     @patch("os.path.isdir", Mock(return_value=False))
     @patch("os.makedirs")
     @patch("builtins.open")
