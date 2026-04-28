@@ -20,9 +20,9 @@ import pytest
 import yaml
 
 from doorstop import common, core
-from doorstop.core.publisher import check
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import _clear_tree, _get_tree
+from doorstop.core.publisher import check
 from doorstop.core.tests import (
     EMPTY,
     ENV,

@@ -4,7 +4,6 @@
 """Unit test helper functions to reduce code duplication."""
 
 import time
-
 from logging import NullHandler
 from os import chmod
 from shutil import copytree
