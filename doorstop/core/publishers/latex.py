@@ -754,6 +754,7 @@ class LaTeXPublisher(BasePublisher):
         traceability = []
         file = os.path.join(directory, "traceability.tex")
 
+
         # Get documents for column headers
         documents = list(self.object.documents)
         count = len(documents)
@@ -810,6 +811,7 @@ class LaTeXPublisher(BasePublisher):
             row_text = row_text + "\\\\"
             traceability.append(row_text)
             traceability.append(self.HLINE)
+
 
         # End the table.
         traceability.append(self.END_LONGTABLE)
