@@ -533,25 +533,25 @@ class LaTeXPublisher(BasePublisher):
         # Setup.
         traceability = []
         file = os.path.join(directory, "traceability.tex")
-        
+
         # Get documents for column headers
         documents = list(self.object.documents)
         count = len(documents)
-        
+
         # Start the table.
         table_start = "\\begin{longtable}{"
         table_head = ""
-        
+
         # Build header from document prefixes (wie in HTML!)
         for document in documents:
             table_start = table_start + "|l"
             if len(table_head) > 0:
                 table_head = table_head + " & "
             table_head = table_head + "\\textbf{" + str(document.prefix) + "}"
-        
+
         table_start = table_start + "|}"
         table_head = table_head + "\\\\"
-        
+
         traceability.append(table_start)
         traceability.append(
             "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
@@ -574,7 +574,7 @@ class LaTeXPublisher(BasePublisher):
         traceability.append("\\endfoot")
         traceability.append(self.HLINE)
         traceability.append("\\endlastfoot")
-        
+
         # Add data rows (like in HTML export!)
         for row in self.object.get_traceability():
             row_text = ""
@@ -588,7 +588,7 @@ class LaTeXPublisher(BasePublisher):
             row_text = row_text + "\\\\"
             traceability.append(row_text)
             traceability.append(self.HLINE)
-        
+
         # End the table.
         traceability.append(self.END_LONGTABLE)
         common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
