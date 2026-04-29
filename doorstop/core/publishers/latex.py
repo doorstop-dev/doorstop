@@ -531,22 +531,27 @@ class LaTeXPublisher(BasePublisher):
     def create_matrix(self, directory):
         """Create a traceability table for LaTeX."""
         # Setup.
-        table = self.object.get_traceability().__iter__()
         traceability = []
         file = os.path.join(directory, "traceability.tex")
-        count = 0
+        
+        # Get documents for column headers
+        documents = list(self.object.documents)
+        count = len(documents)
+        
         # Start the table.
         table_start = "\\begin{longtable}{"
         table_head = ""
-        header_data = table.__next__()
-        for column in header_data:
-            count = count + 1
+        
+        # Build header from document prefixes (wie in HTML!)
+        for document in documents:
             table_start = table_start + "|l"
             if len(table_head) > 0:
                 table_head = table_head + " & "
-            table_head = table_head + "\\textbf{" + str(column) + "}"
+            table_head = table_head + "\\textbf{" + str(document.prefix) + "}"
+        
         table_start = table_start + "|}"
         table_head = table_head + "\\\\"
+        
         traceability.append(table_start)
         traceability.append(
             "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
@@ -569,8 +574,9 @@ class LaTeXPublisher(BasePublisher):
         traceability.append("\\endfoot")
         traceability.append(self.HLINE)
         traceability.append("\\endlastfoot")
-        # Add rows.
-        for row in table:
+        
+        # Add data rows (like in HTML export!)
+        for row in self.object.get_traceability():
             row_text = ""
             for column in row:
                 if len(row_text) > 0:
@@ -582,6 +588,7 @@ class LaTeXPublisher(BasePublisher):
             row_text = row_text + "\\\\"
             traceability.append(row_text)
             traceability.append(self.HLINE)
+        
         # End the table.
         traceability.append(self.END_LONGTABLE)
         common.write_lines(traceability, file, end=settings.WRITE_LINESEPERATOR)
