@@ -17,6 +17,7 @@ nav:
 - Home: index.md
 - Getting Started:
   - Installation: getting-started/installation.md
+  - Dependencies: getting-started/dependencies.md
   - Setup: getting-started/setup.md
   - Quickstart: getting-started/quickstart.md
 - Command-line Interface:
