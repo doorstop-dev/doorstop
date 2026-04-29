@@ -52,6 +52,3 @@ coverage.xml
 
 # Eclipse
 .settings
-
-#VSCode
-.vscode/
