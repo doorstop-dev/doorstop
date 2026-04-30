@@ -59,13 +59,13 @@ def _latex_convert(line, context=None):
         lang_match = re.match(r"^```(\w+)?", line.strip())
         if lang_match and lang_match.group(1):
             lang = lang_match.group(1)
-            return f"%%CODEBLOCK_START:{lang}%%"
+            return f"<<<CODEBLOCK_START:{lang}>>>"
         else:
-            return "%%CODEBLOCK_START%%"
+            return "<<<CODEBLOCK_START>>>"
     
     if re.match(r"^(    |\t)", line) and line.strip():
         code_content = line.lstrip()
-        return f"%%CODELINE:{code_content}%%"
+        return f"<<<CODELINE:{code_content}>>>"
     
     #############################
     ## Phase 0b: Preserve inline code AND markdown links
@@ -77,7 +77,7 @@ def _latex_convert(line, context=None):
     
     def protect_inline_code(match):
         code_segments.append(match.group(1))
-        return f"%%INLINECODE{len(code_segments)-1}%%"
+        return f"<<<INLINECODE{len(code_segments)-1}>>>"
     
     line = re.sub(inline_code_pattern, protect_inline_code, line)
     
@@ -90,7 +90,7 @@ def _latex_convert(line, context=None):
         link_text = match.group(1)
         link_url = match.group(2)
         link_segments.append((link_text, link_url))
-        return f"%%MDLINK{len(link_segments)-1}%%"
+        return f"<<<MDLINK{len(link_segments)-1}>>>"
     
     line = re.sub(
         r"\[([^\]]+)\]\(([^\)]+)\)",
@@ -140,7 +140,7 @@ def _latex_convert(line, context=None):
         
         # Replace placeholder with \href
         line = line.replace(
-            f"%%MDLINK{i}%%",
+            f"<<<MDLINK{i}>>>",
             f"\\href{{{link_url_safe}}}{{{link_text_processed}}}"
         )
     
@@ -199,7 +199,7 @@ def _latex_convert(line, context=None):
         code_escaped = code_escaped.replace("&", r"\&")
         
         line = line.replace(
-            f"%%INLINECODE{i}%%",
+            f"<<<INLINECODE{i}>>>",
             r"\texttt{" + code_escaped + "}"
         )
     
@@ -357,7 +357,7 @@ def _process_text_block(text_lines, context=None):
         converted = _latex_convert(line, context=line_context)
         
         # Handle code block start
-        if converted.startswith("%%CODEBLOCK_START"):
+        if converted.startswith("<<<CODEBLOCK_START"):
             if in_code_block:
                 log.warning(
                     f"Nested code block detected{_format_context(line_context)} "
@@ -368,7 +368,7 @@ def _process_text_block(text_lines, context=None):
             in_code_block = True
             
             # Extract language if present
-            lang_match = re.match(r"%%CODEBLOCK_START:(\w+)%%", converted)
+            lang_match = re.match(r"<<<CODEBLOCK_START:(\w+)>>>", converted)
             if lang_match:
                 code_language = lang_match.group(1)
                 yield f"\\begin{{lstlisting}}[language={code_language}]"
@@ -391,8 +391,8 @@ def _process_text_block(text_lines, context=None):
             continue
         
         # Handle indented code lines
-        if converted.startswith("%%CODELINE:"):
-            code_content = converted[len("%%CODELINE:"):-2]
+        if converted.startswith("<<<CODELINE:"):
+            code_content = converted[len("<<<CODELINE:"):-2]
             code_escaped = code_content.replace("\\", r"\textbackslash{}")
             code_escaped = code_escaped.replace("{", r"\{")
             code_escaped = code_escaped.replace("}", r"\}")
@@ -649,10 +649,8 @@ def _escape_latex_url(url):
 def _escape_latex_text(text):
     """
     Escape LaTeX special characters in text.
-    
     Used for link text, attribute values, table cells, etc.
     Does NOT process markdown formatting (bold, italic, etc.).
-    
     Escapes:
     - Backslash: \ → \\textbackslash{}
     - Braces: { } → \\{ \\}
@@ -663,19 +661,27 @@ def _escape_latex_text(text):
     - Dollar: $ → \\$
     - Caret: ^ → \\textasciicircum{}
     - Tilde: ~ → \\textasciitilde{}
-    
     Does NOT escape:
     - Square brackets: [ ] (they're fine in LaTeX text)
     - Parentheses: ( ) (they're fine in LaTeX text)
-    
     Args:
         text: Plain text string
-    
     Returns:
         LaTeX-escaped string
     """
-    # Order matters! Backslash first
-    text = text.replace("\\", r"\textbackslash{}")
+    # Use placeholders to avoid double-escaping the {} in LaTeX commands
+    BACKSLASH_PH = "<<<BACKSLASH>>>"
+    CARET_PH = "<<<CARET>>>"
+    TILDE_PH = "<<<TILDE>>>"
+    
+    # Phase 1: Replace backslash, caret, tilde with placeholders
+    # (These become LaTeX commands with {} that we don't want to escape)
+    text = text.replace("\\", BACKSLASH_PH)
+    text = text.replace("^", CARET_PH)
+    text = text.replace("~", TILDE_PH)
+    
+    # Phase 2: Escape braces and other special characters
+    # (Now we won't escape the {} in our LaTeX commands)
     text = text.replace("{", r"\{")
     text = text.replace("}", r"\}")
     text = text.replace("_", r"\_")
@@ -683,9 +689,12 @@ def _escape_latex_text(text):
     text = text.replace("#", r"\#")
     text = text.replace("%", r"\%")
     text = text.replace("$", r"\$")
-    text = text.replace("^", r"\textasciicircum{}")
-    text = text.replace("~", r"\textasciitilde{}")
+    
+    # Phase 3: Replace placeholders with proper LaTeX commands
+    # (The {} in these won't be escaped because Phase 2 is done)
+    text = text.replace(BACKSLASH_PH, r"\textbackslash{}")
+    text = text.replace(CARET_PH, r"\textasciicircum{}")
+    text = text.replace(TILDE_PH, r"\textasciitilde{}")
     
     # [ ] and ( ) are OK in LaTeX text, don't escape
-    
     return text
