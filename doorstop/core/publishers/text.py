@@ -6,7 +6,12 @@ import os
 import textwrap
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import BasePublisher, format_level
+from doorstop.core.publishers.base import (
+    BasePublisher,
+    format_level,
+    normalize_link_list,    # ← NEU
+    is_link_attribute,      # ← NEU
+)
 from doorstop.core.types import iter_items
 
 log = common.logger(__name__)
@@ -115,10 +120,47 @@ class TextPublisher(BasePublisher):
                 if item.document and item.document.publish:
                     yield ""
                     for attr in item.document.publish:
-                        if not item.attribute(attr):
+                        value = item.attribute(attr)
+                        if not value:
                             continue
-                        attr_line = "{}: {}".format(attr, item.attribute(attr))
-                        yield from self._chunks(attr_line)
+                        
+                        # ========== Handle link attributes specially ==========
+                        if is_link_attribute(attr):
+                            link_list = normalize_link_list(value)
+                            if link_list:
+                                # Format each link on a separate line for readability
+                                for i, link_text in enumerate(link_list, 1):
+                                    if len(link_list) > 1:
+                                        attr_line = "{} [{}]: {}".format(attr, i, link_text)
+                                    else:
+                                        attr_line = "{}: {}".format(attr, link_text)
+                                    yield from self._chunks(attr_line)
+                        
+                        # ========== Handle regular lists ==========
+                        elif isinstance(value, list):
+                            if len(value) > 0:
+                                items = [str(v).strip() for v in value if str(v).strip()]
+                                if items:
+                                    # Format as comma-separated or numbered list
+                                    if len(items) == 1:
+                                        attr_line = "{}: {}".format(attr, items[0])
+                                        yield from self._chunks(attr_line)
+                                    else:
+                                        for i, item_text in enumerate(items, 1):
+                                            attr_line = "{} [{}]: {}".format(attr, i, item_text)
+                                            yield from self._chunks(attr_line)
+                        
+                        # ========== Handle dictionaries ==========
+                        elif isinstance(value, dict):
+                            # Format each key-value pair
+                            for k, v in value.items():
+                                attr_line = "{} [{}]: {}".format(attr, k, str(v).strip())
+                                yield from self._chunks(attr_line)
+                        
+                        # ========== Handle simple values ==========
+                        else:
+                            attr_line = "{}: {}".format(attr, str(value))
+                            yield from self._chunks(attr_line)
 
             yield ""  # break between items
 

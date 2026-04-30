@@ -285,3 +285,45 @@
 \newcommand{\todo}[1]{%
 \noindent\textcolor{red}{\textbf{TODO:} #1}
 }
+
+% ============================================================
+% Customizable table styling hooks
+% ============================================================
+% These commands can be redefined in user templates to customize
+% the appearance of attribute tables.
+%
+% Example usage:
+%   \renewcommand{\tableheaderrow}[1]{\rowcolor{gray!10}\textbf{#1}}
+% ============================================================
+
+% ------------------------------------------------------------
+% Attribute tables
+% ------------------------------------------------------------
+
+% Attribute table header row styling
+\providecommand{\tableheaderrow}[1]{#1}
+
+% Attribute table alignment
+\providecommand{\tablealignment}{l}
+
+% Attribute table column width
+\providecommand{\attrtablecolwidth}{0.65\textwidth}
+
+% ------------------------------------------------------------
+% Traceability matrix
+% ------------------------------------------------------------
+
+% Matrix header cell styling
+% Default: plain text
+% Example: \renewcommand{\matrixheaderrow}[1]{\textbf{#1}}
+\providecommand{\matrixheaderrow}[1]{\textbf{#1}}
+
+% Matrix table alignment
+% Default: centered
+% Options: l (left), c (center), r (right)
+\providecommand{\matrixalignment}{c}
+
+% Matrix header row background
+% Default: none
+% Example: \renewcommand{\matrixheaderbg}{\rowcolor{blue!10}}
+\providecommand{\matrixheaderbg}{}
