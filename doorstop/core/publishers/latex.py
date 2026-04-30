@@ -13,13 +13,21 @@ from doorstop.core.publishers._latex_functions import (
     _add_comment,
     _check_for_new_table,
     _fix_table_line,
+    _format_simple_text_block,
+    _has_complex_formatting,
     _latex_convert,
+    _process_text_block,
     _typeset_latex_image,
+    _convert_markdown_link_to_href,
+    _escape_latex_text,
 )
 from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
+    format_level,
     get_document_attributes,
+    normalize_link_list, 
+    is_link_attribute, 
 )
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
@@ -94,8 +102,27 @@ class LaTeXPublisher(BasePublisher):
         """
         linkify = kwargs.get("linkify", False)
         for item in iter_items(obj):
-            heading = "\\" + "sub" * (item.depth - 1) + "section*{"
-            heading_level = "\\" + "sub" * (item.depth - 1) + "section{"
+            # Map item depth to LaTeX heading commands (max depth = 5)
+            if settings.PUBLISH_HEADING_LEVELS:
+                heading_map = {
+                    1: "\\section{",
+                    2: "\\subsection{",
+                    3: "\\subsubsection{",
+                    4: "\\paragraph{",
+                    5: "\\subparagraph{",
+                }
+            else:
+                heading_map = {
+                    1: "\\section*{",
+                    2: "\\subsection*{",
+                    3: "\\subsubsection*{",
+                    4: "\\paragraph*{",
+                    5: "\\subparagraph*{",
+                }
+            # Cap depth at 5 (LaTeX maximum)
+            safe_depth = min(item.depth, 5)
+            heading = heading_map.get(safe_depth, heading_map[1])
+            heading_level = heading  # Same as heading since we use the map
 
             if item.heading:
                 text_lines = item.text.splitlines()
@@ -116,7 +143,7 @@ class LaTeXPublisher(BasePublisher):
                     )
                 attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
-                yield from self._format_latex_text(text_lines[1:])
+                yield from self._format_latex_text(text_lines[1:], item=item)
             else:
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
@@ -139,7 +166,7 @@ class LaTeXPublisher(BasePublisher):
                 # Text
                 if item.text:
                     yield ""  # break before text
-                    yield from self._format_latex_text(item.text.splitlines())
+                    yield from self._format_latex_text(item.text.splitlines(), item=item)
 
                 # Reference
                 if item.ref:
@@ -181,17 +208,78 @@ class LaTeXPublisher(BasePublisher):
                             continue
                         if not header_printed:
                             header_printed = True
-                            yield "\\begin{longtable}{|l|l|}"
-                            yield "Attribute & Value\\\\"
+                            yield "\\begin{longtable}[\\tablealignment]{|l|p{\\attrtablecolwidth}|}"
                             yield self.HLINE
-                        yield "{} & {}".format(attr, item.attribute(attr))
+                            yield "\\tableheaderrow{Attribute} & \\tableheaderrow{Value}\\\\"
+                            yield self.HLINE
+
+                        value = item.attribute(attr)
+                        
+                        # ========== Handle link attributes specially ==========
+                        if is_link_attribute(attr):
+                            link_list = normalize_link_list(value)
+                            if link_list:
+                                # Convert each markdown link to LaTeX
+                                converted_links = [_convert_markdown_link_to_href(link) for link in link_list]
+                                
+                                value_str = " \\newline ".join(converted_links) if len(converted_links) > 1 else converted_links[0]
+                                yield "{} & {}\\\\".format(_escape_latex_text(attr), value_str)
+                                yield self.HLINE
+                                                                                        
+                        # ========== Handle regular lists ==========
+                        elif isinstance(value, list):
+                            if len(value) > 0:
+                                # Convert list items, strip whitespace
+                                items = []
+                                for v in value:
+                                    item_str = str(v).strip()
+                                    if item_str:
+                                        items.append(_latex_convert(item_str))
+                                
+                                if items:
+                                    if len(items) == 1:
+                                        value_str = items[0]
+                                    else:
+                                        value_str = " \\newline ".join(items)
+                                    
+                                    yield "{} & {}\\\\".format(
+                                        _escape_latex_text(attr),
+                                        value_str
+                                    )
+                                    yield self.HLINE
+                        
+                        # ========== Handle dictionaries ==========
+                        elif isinstance(value, dict):
+                            # Format as key: value pairs
+                            dict_items = []
+                            for k, v in value.items():
+                                k_str = _latex_convert(str(k))
+                                v_str = _latex_convert(str(v).strip())
+                                dict_items.append(f"\\textbf{{{k_str}}}: {v_str}")
+                            
+                            if dict_items:
+                                value_str = " \\newline ".join(dict_items)
+                                yield "{} & {}\\\\".format(
+                                    _escape_latex_text(attr),
+                                    value_str
+                                )
+                                yield self.HLINE
+                        
+                        # ========== Handle simple values ==========
+                        else:
+                            yield "{} & {}\\\\".format(
+                                _escape_latex_text(attr),
+                                _latex_convert(str(value))
+                            )
+                            yield self.HLINE
+                    
                     if header_printed:
                         yield self.END_LONGTABLE
                     else:
                         yield ""
 
             yield ""  # break between items
-
+            
     def format_attr_list(self, item, linkify):
         """Create a LaTeX attribute list for a heading."""
         return (
@@ -291,7 +379,7 @@ class LaTeXPublisher(BasePublisher):
                 line = _fix_table_line(line, end_pipes)
         return table_found, header_done, line, end_pipes
 
-    def _format_latex_text(self, text):
+    def _format_latex_text_legacy(self, text):
         """Fix all general text formatting to use LaTeX-macros."""
         block: List[str]
         block = []
@@ -305,23 +393,32 @@ class LaTeXPublisher(BasePublisher):
         plantuml_name = ""
         plantuml_count = 0
         end_pipes = False
+        
         for i, line in enumerate(text):
             no_paragraph = False
+            
             #############################
-            ## Fix plantuml.
+            ## Fix plantuml (BEFORE code blocks!)
             #############################
             if environment_data["plantuml_found"]:
                 no_paragraph = True
-            if re.findall("^`*plantuml\\s", line):
+
+            # Match both: `plantuml and ```plantuml
+            plantuml_match = re.search(r"^`+plantuml\s+(.*)$", line)
+            if plantuml_match:
                 plantuml_count = plantuml_count + 1
-                plantuml_title = re.search('title="(.*)"', line)
+                plantuml_params = plantuml_match.group(1)
+                
+                # Extract title (required for both formats)
+                plantuml_title = re.search(r'title="([^"]*)"', plantuml_params)
                 if plantuml_title:
-                    plantuml_name = str(plantuml_title.groups(0)[0])
+                    plantuml_name = str(plantuml_title.group(1))
                 else:
                     raise DoorstopError(
                         "'title' is required for plantUML processing in LaTeX."
                     )
-                plantuml_file = re.sub("\\s", "-", plantuml_name)
+                
+                plantuml_file = re.sub(r"\s", "-", plantuml_name)
                 block.append(
                     r"\hyperref[fig:plant"
                     + str(plantuml_count)
@@ -331,10 +428,13 @@ class LaTeXPublisher(BasePublisher):
                 )
                 line = "\\begin{plantuml}{" + plantuml_file + "}"
                 environment_data["plantuml_found"] = True
+
             if re.findall("@enduml", line):
-                block.append(line)
-                block.append("\\end{plantuml}")
-                line = (
+                block.append(line)  # Append @enduml
+                block.append("\\end{plantuml}")  # Append \end{plantuml}
+                
+                # ✅ Append \process immediately (don't assign to line!)
+                process_line = (
                     "\\process{"
                     + plantuml_file
                     + "}{0.8\\textwidth}{"
@@ -344,164 +444,126 @@ class LaTeXPublisher(BasePublisher):
                     + str(plantuml_count)
                     + "}"
                 )
+                block.append(process_line)
+                
                 environment_data["plantuml_found"] = False
+                continue  # ✅ Skip rest of loop iteration
+
             # Skip the rest since we are in a plantuml block!
             if environment_data["plantuml_found"]:
                 block.append(line)
-                # Check for end of file and end all environments.
                 self._check_for_eof(
-                    i,
-                    block,
-                    text,
-                    environment_data,
-                    plantuml_name,
-                    plantuml_file,
+                    i, block, text, environment_data,
+                    plantuml_name, plantuml_file,
                 )
                 continue
 
             #############################
-            ## Fix code blocks.
+            ## Fix code blocks (AFTER PlantUML!)
             #############################
             code_match = re.findall("```", line)
             if environment_data["code_found"]:
                 no_paragraph = True
+            
             if code_match:
-                # Check previous line of @enduml.
+                # Check previous line of @enduml
                 if i > 0:
                     previous_line = text[i - 1]
                     if re.findall("@enduml", previous_line):
-                        continue
-                if environment_data["code_found"]:
-                    line = "\\end{lstlisting}"
-                    environment_data["code_found"] = False
-                else:
-                    # Check for language.
-                    language = re.search("```(.*)", line)
-                    if language and str(language.groups(0)[0]) != "":
-                        line = (
-                            "\\begin{lstlisting}[language="
-                            + str(language.groups(0)[0])
-                            + "]"
-                        )
-                    else:
-                        line = "\\begin{lstlisting}"
-                    environment_data["code_found"] = True
-            # Skip the rest since we are in a code block!
-            if environment_data["code_found"]:
-                block.append(line)
-                # Check for end of file and end all environments.
-                self._check_for_eof(
-                    i,
-                    block,
-                    text,
-                    environment_data,
-                    plantuml_name,
-                    plantuml_file,
-                )
-                continue
-            # Replace ` for inline code, but not if it is already escaped.
-            # First replace escaped inline code.
-            line = re.sub("\\\\`", "##!!TEMPINLINE!!##", line)
-            # Then replace inline code.
-            line = re.sub("`(.+?)`", "\\\\lstinline`\\1`", line)
-            # Then replace escaped inline code back.
-            line = re.sub("##!!TEMPINLINE!!##", "\\\\`{}", line)
+                        continue  # Skip closing ``` after @enduml
+                
+        return block
 
-            #############################
-            ## Fix images.
-            #############################
+    def _format_latex_text(self, text_lines, item=None):
+        """
+        Format text with automatic routing to appropriate handler.
+        
+        Args:
+            text_lines: List of text lines to format
+            item: Optional Item object for context
+            
+        Returns:
+            List of formatted LaTeX lines
+        """
+        # Ensure we have a list
+        if isinstance(text_lines, str):
+            text_lines = text_lines.splitlines()
+        
+        # Check for complex formatting
+        if _has_complex_formatting(text_lines):
+            log.debug("Using legacy formatter for complex text")
+            return self._format_latex_text_legacy(text_lines)
+        else:
+            log.debug("Using simple formatter with modern code block support")
+            return self._post_process_simple_text(text_lines, item=item)
+
+    def _post_process_simple_text(self, text_lines, item=None):
+        """
+        Post-process simple text for images and lists.
+        
+        Args:
+            text_lines: List of text lines
+            item: Optional Item object for context
+            
+        Returns:
+            List of formatted LaTeX lines
+        """
+        # Build context
+        context = {}
+        if item:
+            context['item_uid'] = str(item.uid)
+            if hasattr(item, 'path'):
+                context['file'] = item.path
+            context['line_num'] = 1
+        
+        # Get basic formatting with code blocks handled
+        processed_lines = list(_format_simple_text_block(text_lines, context=context))
+        
+        result = []
+        for i, line in enumerate(processed_lines):
+            # Update line number in context
+            line_context = context.copy()
+            line_context['line_num'] = i + 1
+            
+            # Skip if in code environment
+            if line.strip().startswith("\\begin{lstlisting}") or \
+            line.strip().startswith("\\end{lstlisting}"):
+                result.append(line)
+                continue
+            
+            # Handle images
             image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
             if image_match:
-                line = _typeset_latex_image(image_match, line, block)
-            #############################
-            ## Fix $ and MATH.
-            #############################
-            math_match = re.split("\\$\\$", line)
-            if len(math_match) > 1:
-                if math_found and len(math_match) == 2:
-                    math_found = False
-                    line = math_match[0] + "$" + _latex_convert(math_match[1])
-                elif len(math_match) == 2:
-                    math_found = True
-                    line = _latex_convert(math_match[0]) + "$" + math_match[1]
-                elif len(math_match) == 3:
-                    line = (
-                        _latex_convert(math_match[0])
-                        + "$"
-                        + math_match[1]
-                        + "$"
-                        + _latex_convert(math_match[2])
-                    )
-                else:
-                    raise DoorstopError(
-                        "Cannot handle multiple math environments on one row."
-                    )
-            else:
-                line = _latex_convert(line)
-            # Skip all other changes if in MATH!
-            if math_found:
-                line = line + "\\\\"
-                block.append(line)
+                temp_block = []
+                line = _typeset_latex_image(image_match, line, temp_block)
+                result.extend(temp_block)
+                if line:
+                    result.append(line)
                 continue
-            #############################
-            ## Fix lists.
-            #############################
-            # Check if we are at the end of the data.
-            if i == len(text) - 1:
-                next_line = ""
-            else:
-                next_line = text[i + 1]
+            
+            # Handle lists
+            next_line = processed_lines[i + 1] if i + 1 < len(processed_lines) else ""
             no_paragraph, processed_block, line = self.process_lists(line, next_line)
-            if processed_block != "":
-                block.append(processed_block)
-            #############################
-            ## Fix tables.
-            #############################
-            # Check if line is part of table.
-            table_match = re.findall("\\|", line)
-            if table_match:
-                (
-                    environment_data["table_found"],
-                    header_done,
-                    line,
-                    end_pipes,
-                ) = self._typeset_latex_table(
-                    table_match,
-                    text,
-                    i,
-                    line,
-                    block,
-                    environment_data["table_found"],
-                    header_done,
-                    end_pipes,
-                )
-            else:
-                if environment_data["table_found"]:
-                    block.append(self.END_LONGTABLE)
-                environment_data["table_found"] = False
-                header_done = False
-
-            # Look ahead for empty line and add paragraph.
-            if i < len(text) - 1:
-                next_line = text[i + 1]
-                if next_line == "" and not re.search("\\\\", line) and not no_paragraph:
+            
+            if processed_block:
+                result.append(processed_block)
+            
+            # Add paragraph break, but NOT after:
+            # - Empty lines
+            # - Code block markers
+            # - Headings (section, subsection, etc.)
+            # - List items
+            if next_line == "" and not re.search(r"\\\\", line) and not no_paragraph:
+                # Check if line is a heading
+                is_heading = re.match(r'\\(section|subsection|subsubsection|paragraph|subparagraph)', line.strip())
+                
+                # Only add \\ if line has content and is not a heading
+                if line.strip() and not is_heading:
                     line = line + "\\\\"
 
-            #############################
-            ## All done. Add the line.
-            #############################
-            block.append(line)
-
-            # Check for end of file and end all environments.
-            self._check_for_eof(
-                i,
-                block,
-                text,
-                environment_data,
-                plantuml_name,
-                plantuml_file,
-            )
-        return block
+            result.append(line)        
+            
+        return result
 
     def _check_for_eof(
         self,
@@ -538,31 +600,33 @@ class LaTeXPublisher(BasePublisher):
         documents = list(self.object.documents)
         count = len(documents)
 
-        # Start the table.
-        table_start = "\\begin{longtable}{"
+        # Start the table with customizable alignment
+        table_start = "\\begin{longtable}[\\matrixalignment]{"
+
         table_head = ""
 
-        # Build header from document prefixes (wie in HTML!)
+        # Build header from document prefixes
+        header_cells = []
         for document in documents:
             table_start = table_start + "|l"
-            if len(table_head) > 0:
-                table_head = table_head + " & "
-            table_head = table_head + "\\textbf{" + str(document.prefix) + "}"
+            # Use matrix header styling hook
+            header_cells.append("\\matrixheaderrow{" + str(document.prefix) + "}")
 
         table_start = table_start + "|}"
-        table_head = table_head + "\\\\"
+        table_head = " & ".join(header_cells) + "\\\\"
 
         traceability.append(table_start)
         traceability.append(
             "\\caption{Traceability matrix.}\\label{tbl:trace}\\zlabel{tbl:trace}\\\\"
         )
         traceability.append(self.HLINE)
-        traceability.append(table_head)
+        # Apply header background styling (if defined)
+        traceability.append("\\matrixheaderbg" + table_head)
         traceability.append(self.HLINE)
         traceability.append("\\endfirsthead")
         traceability.append("\\caption{\\textit{(Continued)} Traceability matrix.}\\\\")
         traceability.append(self.HLINE)
-        traceability.append(table_head)
+        traceability.append("\\matrixheaderbg" + table_head)
         traceability.append(self.HLINE)
         traceability.append("\\endhead")
         traceability.append(self.HLINE)
@@ -575,7 +639,7 @@ class LaTeXPublisher(BasePublisher):
         traceability.append(self.HLINE)
         traceability.append("\\endlastfoot")
 
-        # Add data rows (like in HTML export!)
+        # Add data rows
         for row in self.object.get_traceability():
             row_text = ""
             for column in row:
@@ -605,13 +669,17 @@ class LaTeXPublisher(BasePublisher):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
         doc_attributes = get_document_attributes(self.document)
+        
+        # Sanitize the document name for use as filename (replace spaces with hyphens)
+        safe_name = doc_attributes["name"].replace(" ", "-")
+        
         # Create the wrapper file.
         head, tail = os.path.split(self.documentPath)
         if tail != extract_prefix(self.document) + ".tex":
             log.warning(
                 "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
             )
-        tail = doc_attributes["name"] + ".tex"
+        tail = safe_name + ".tex"
         self.documentPath = os.path.join(head, extract_prefix(self.document) + ".tex")
         wrapperPath = os.path.join(head, tail)
         # Load template data.
@@ -727,14 +795,18 @@ class LaTeXPublisher(BasePublisher):
                         "These are automatically added external references to make cross-references work between the PDFs.",
                     )
                     info_text_set = True
+                
+                # Sanitize external document name
+                external_safe_name = external_doc_attributes["name"].replace(" ", "-")
+                
                 wrapper.append(
                     "\\zexternaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
+                        n=external_safe_name
                     )
                 )
                 wrapper.append(
                     "\\externaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
+                        n=external_safe_name
                     )
                 )
         if info_text_set:
@@ -779,6 +851,6 @@ class LaTeXPublisher(BasePublisher):
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return "pdflatex -halt-on-error -shell-escape {n}.tex".format(
-            n=doc_attributes["name"]
+        return 'pdflatex -halt-on-error -shell-escape "{n}.tex"'.format(
+            n=safe_name
         )
