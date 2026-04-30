@@ -7,6 +7,10 @@ from doorstop.core.publishers._latex_functions import (
     _convert_markdown_link_to_href,
     _escape_latex_text,
     _escape_latex_url,
+    _add_comment,
+    _fix_table_line,
+    _check_for_new_table,
+    _typeset_latex_image,
 )
 
 
@@ -332,6 +336,51 @@ class TestMarkdownLinkEdgeCases:
         link = "[Link](https://example.com/tëst)"
         result = _convert_markdown_link_to_href(link)
         assert "tëst" in result
+
+class TestImageAndTableFunctions:
+    """Tests for image, table, and comment functions."""
+    
+    def test_add_comment_basic(self):
+        """Test basic comment addition."""
+        result = _add_comment("Test line")
+        assert result == "% Test line"
+    
+    def test_add_comment_empty_line(self):
+        """Test comment on empty line."""
+        result = _add_comment("")
+        assert result == "%"
+    
+    def test_add_comment_preserves_content(self):
+        """Test that comment preserves original content."""
+        original = "This is a test with special chars: #$%&"
+        result = _add_comment(original)
+        assert result == f"% {original}"
+    
+    def test_fix_table_line_escapes_cells(self):
+        """Test that table cells are properly escaped."""
+        # Table with special characters in cells
+        line = "| test_var | 100% | A&B |"
+        result = _fix_table_line(line)
+        # Should escape underscores, percent, ampersand
+        assert r"\_" in result
+        assert r"\%" in result
+        assert r"\&" in result
+    
+    def test_fix_table_line_preserves_pipes(self):
+        """Test that pipe delimiters are preserved."""
+        line = "| col1 | col2 | col3 |"
+        result = _fix_table_line(line)
+        assert result.count("|") == line.count("|")
+    
+    def test_fix_table_line_empty_cells(self):
+        """Test handling of empty table cells."""
+        line = "| | content | |"
+        result = _fix_table_line(line)
+        assert "| |" in result  # Empty cells preserved
+    
+    def test_check_for_new_table_detects_pipe_table(self):
+        """Test detection of pipe-delimited tables."""
+        line = "| Header
 
 
 # Run tests with: pytest doorstop/core/publishers/tests/test_latex_functions.py -v
