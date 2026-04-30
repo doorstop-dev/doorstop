@@ -30,19 +30,18 @@ def _add_comment(wrapper, text):
 def _latex_convert(line, context=None):
     """
     Convert markdown line to LaTeX format.
-    
     Processing order is CRITICAL:
     0a. Preserve inline code segments
     0b. Preserve URLs from markdown links
     1. Structural escaping (backslash, braces)
     2. Markdown formatting (bold, italic, strikethrough)
-    3. Convert preserved links to \href{}
-    4. Headings
-    5. Remaining special characters
-    6. Restore inline code
+    2b. Convert preserved links to \href{} - USE FINAL PLACEHOLDERS
+    3. Headings
+    4. Remaining special characters (SKIPS final placeholders)
+    5. Restore inline code
+    5b. Restore final hrefs
     """
     original_line = line
-    
     if context:
         item_uid = context.get('item_uid', 'unknown')
         source_file = context.get('file', 'unknown')
@@ -54,7 +53,6 @@ def _latex_convert(line, context=None):
     #############################
     ## Phase 0a: Code block detection
     #############################
-    
     if line.strip().startswith("```"):
         lang_match = re.match(r"^```(\w+)?", line.strip())
         if lang_match and lang_match.group(1):
@@ -70,28 +68,22 @@ def _latex_convert(line, context=None):
     #############################
     ## Phase 0b: Preserve inline code AND markdown links
     #############################
-    
     # Inline code: `code`
     inline_code_pattern = r"`([^`]+)`"
     code_segments = []
-    
     def protect_inline_code(match):
         code_segments.append(match.group(1))
         return f"<<<INLINECODE{len(code_segments)-1}>>>"
-    
     line = re.sub(inline_code_pattern, protect_inline_code, line)
     
     # Markdown links: [text](url)
-    # MUST preserve URLs before markdown formatting!
     link_segments = []
-    
     def protect_markdown_link(match):
         """Preserve entire link, process later"""
         link_text = match.group(1)
         link_url = match.group(2)
         link_segments.append((link_text, link_url))
         return f"<<<MDLINK{len(link_segments)-1}>>>"
-    
     line = re.sub(
         r"\[([^\]]+)\]\(([^\)]+)\)",
         protect_markdown_link,
@@ -99,17 +91,18 @@ def _latex_convert(line, context=None):
     )
     
     #############################
-    ## Phase 1: Structural escaping
+    ## Phase 1: Structural escaping - USE PLACEHOLDERS!
     #############################
+    BACKSLASH_PH = "<<<BACKSLASH_TEMP>>>"
     
-    line = re.sub(r"\\", r"\\textbackslash{}", line)
-    line = re.sub(r"\{", r"\\{", line)
-    line = re.sub(r"\}", r"\\}", line)
+    line = line.replace("\\", BACKSLASH_PH)
+    line = line.replace("{", r"\{")
+    line = line.replace("}", r"\}")
+    line = line.replace(BACKSLASH_PH, r"\textbackslash{}")
     
     #############################
     ## Phase 2: Markdown formatting
     #############################
-    
     line = re.sub(r"\*\*(.*?)\*\*", r"\\textbf{\1}", line)
     line = re.sub(r"__(.*?)__", r"\\textbf{\1}", line)
     line = re.sub(r"(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)", r"\\textit{\1}", line)
@@ -117,37 +110,55 @@ def _latex_convert(line, context=None):
     line = re.sub(r"~~(.*?)~~", r"\\sout{\1}", line)
     
     #############################
-    ## Phase 2b: Restore and convert markdown links
+    ## Phase 2b: Process and store links (don't insert yet!)
     #############################
+    # Store fully processed hrefs for insertion AFTER Phase 4
+    final_hrefs = {}
     
     for i, (link_text, link_url) in enumerate(link_segments):
-        # Process link_text for markdown formatting (it's already been through Phase 2)
-        # But we need to process it NOW because it was protected
-        link_text_processed = link_text
+        # Process link text completely:
+        # 1. Protect markdown markers
+        # 2. Escape LaTeX special chars
+        # 3. Apply markdown formatting
+        # 4. Escape remaining special chars (that Phase 4 would escape)
         
-        # Apply markdown formatting to link text
+        # Step 1: Protect markdown markers
+        link_text_temp = link_text
+        link_text_temp = link_text_temp.replace("**", "<<<MDLINKBOLD>>>")
+        link_text_temp = link_text_temp.replace("__", "<<<MDLINKBOLD2>>>")
+        link_text_temp = link_text_temp.replace("~~", "<<<MDLINKSTRIKE>>>")
+        link_text_temp = link_text_temp.replace("*", "<<<MDLINKITALIC>>>")
+        
+        # Step 2: Escape LaTeX special characters (\ { } _)
+        link_text_processed = _escape_latex_text(link_text_temp)
+        
+        # Step 3: Restore markdown markers
+        link_text_processed = link_text_processed.replace("<<<MDLINKBOLD>>>", "**")
+        link_text_processed = link_text_processed.replace("<<<MDLINKBOLD2>>>", "__")
+        link_text_processed = link_text_processed.replace("<<<MDLINKSTRIKE>>>", "~~")
+        link_text_processed = link_text_processed.replace("<<<MDLINKITALIC>>>", "*")
+        
+        # Step 4: Apply markdown formatting
         link_text_processed = re.sub(r"\*\*(.*?)\*\*", r"\\textbf{\1}", link_text_processed)
         link_text_processed = re.sub(r"__(.*?)__", r"\\textbf{\1}", link_text_processed)
-        link_text_processed = re.sub(r"(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)", r"\\textit{\1}", link_text_processed)
-        link_text_processed = re.sub(r"(?<!\\)_(?!_)(.*?)(?<!\\)_(?!_)", r"\\textit{\1}", link_text_processed)
         link_text_processed = re.sub(r"~~(.*?)~~", r"\\sout{\1}", link_text_processed)
+        link_text_processed = re.sub(r"(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)", r"\\textit{\1}", link_text_processed)
         
-        # Escape special chars in URL (but NOT underscores - they're part of URL)
-        link_url_safe = link_url.replace("#", r"\#")
-        link_url_safe = link_url_safe.replace("%", r"\%")
-        link_url_safe = link_url_safe.replace("&", r"\&")
-        # Note: DO NOT escape _ in URLs!
+        # Escape URL
+        link_url_safe = _escape_latex_url(link_url)
         
-        # Replace placeholder with \href
+        # Store the final href
+        final_hrefs[i] = f"\\href{{{link_url_safe}}}{{{link_text_processed}}}"
+        
+        # Replace with FINAL placeholder (will be inserted after Phase 4)
         line = line.replace(
             f"<<<MDLINK{i}>>>",
-            f"\\href{{{link_url_safe}}}{{{link_text_processed}}}"
+            f"<<<FINALHREF{i}>>>"
         )
     
     #############################
     ## Phase 3: Headings
     #############################
-    
     if settings.PUBLISH_HEADING_LEVELS:
         star = ""
     else:
@@ -172,41 +183,52 @@ def _latex_convert(line, context=None):
     
     #############################
     ## Phase 4: Remaining special characters
+    ## IMPORTANT: Skip <<<FINALHREF>>> placeholders!
     #############################
+    # We need to protect FINALHREF placeholders from this phase
+    # Split line by FINALHREF placeholders, process parts, rejoin
     
-    line = re.sub(r"#", r"\\#", line)
-    line = re.sub(r"\$", r"\\$", line)
-    line = re.sub(r"%", r"\\%", line)
-    line = re.sub(r"&", r"\\&", line)
-    line = re.sub(r"(?<!\\)_", r"\\_", line)  # NOW safe to escape underscores
-    line = re.sub(r"\^", r"\\textasciicircum{}", line)
-    line = re.sub(r"~", r"\\textasciitilde{}", line)
+    parts = re.split(r"(<<<FINALHREF\d+>>>)", line)
+    processed_parts = []
+    
+    for part in parts:
+        if part.startswith("<<<FINALHREF") and part.endswith(">>>"):
+            # Keep placeholder as-is
+            processed_parts.append(part)
+        else:
+            # Process this part
+            part = re.sub(r"#", r"\\#", part)
+            part = re.sub(r"\$", r"\\$", part)
+            part = re.sub(r"%", r"\\%", part)
+            part = re.sub(r"&", r"\\&", part)
+            part = re.sub(r"(?<!\\)_", r"\\_", part)
+            part = re.sub(r"\^", r"\\textasciicircum{}", part)
+            part = re.sub(r"~", r"\\textasciitilde{}", part)
+            processed_parts.append(part)
+    
+    line = "".join(processed_parts)
     
     #############################
     ## Phase 5: Restore inline code
     #############################
-    
     for i, code_content in enumerate(code_segments):
         code_escaped = code_content.replace("\\", r"\textbackslash{}")
         code_escaped = code_escaped.replace("{", r"\{")
         code_escaped = code_escaped.replace("}", r"\}")
-        code_escaped = code_escaped.replace("_", r"\_")
-        code_escaped = code_escaped.replace("^", r"\textasciicircum{}")
-        code_escaped = code_escaped.replace("~", r"\textasciitilde{}")
-        code_escaped = code_escaped.replace("#", r"\#")
-        code_escaped = code_escaped.replace("$", r"\$")
-        code_escaped = code_escaped.replace("%", r"\%")
-        code_escaped = code_escaped.replace("&", r"\&")
-        
         line = line.replace(
             f"<<<INLINECODE{i}>>>",
             r"\texttt{" + code_escaped + "}"
         )
     
     #############################
+    ## Phase 5b: Restore final hrefs
+    #############################
+    for i, href in final_hrefs.items():
+        line = line.replace(f"<<<FINALHREF{i}>>>", href)
+    
+    #############################
     ## Debug logging
     #############################
-    
     if r"\textbackslash{}\textbackslash{}" in line:
         log.warning(
             f"Double backslash detected{context_info}. "
@@ -393,19 +415,16 @@ def _process_text_block(text_lines, context=None):
         # Handle indented code lines
         if converted.startswith("<<<CODELINE:"):
             code_content = converted[len("<<<CODELINE:"):-2]
+            # Minimal escaping for \texttt{} context
+            # Only escape what actually breaks in \texttt{}:
             code_escaped = code_content.replace("\\", r"\textbackslash{}")
             code_escaped = code_escaped.replace("{", r"\{")
             code_escaped = code_escaped.replace("}", r"\}")
-            code_escaped = code_escaped.replace("_", r"\_")
-            code_escaped = code_escaped.replace("^", r"\textasciicircum{}")
-            code_escaped = code_escaped.replace("~", r"\textasciitilde{}")
-            code_escaped = code_escaped.replace("#", r"\#")
-            code_escaped = code_escaped.replace("$", r"\$")
-            code_escaped = code_escaped.replace("%", r"\%")
-            code_escaped = code_escaped.replace("&", r"\&")
+            # Characters that work fine in \texttt{} without escaping:
+            # _ # $ % & ^ ~ all render correctly in typewriter font
             yield f"\\texttt{{{code_escaped}}}"
             continue
-        
+
         # Regular line
         yield converted
     
