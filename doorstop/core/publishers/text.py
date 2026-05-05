@@ -6,9 +6,12 @@ import os
 import textwrap
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import is_link_attribute 
-from doorstop.core.publishers.base import normalize_link_list
-from doorstop.core.publishers.base import BasePublisher, format_level
+from doorstop.core.publishers.base import (
+    BasePublisher,
+    format_level,
+    is_link_attribute,
+    normalize_link_list,
+)
 from doorstop.core.types import iter_items
 
 log = common.logger(__name__)
