@@ -92,6 +92,7 @@ pyinstaller = "*"
 sniffer = "*"
 pync = { version = "*", platform = "darwin" }
 rope = "*"
+pytest-timeout = "^2.4.0"
 
 [tool.poetry.scripts]
 

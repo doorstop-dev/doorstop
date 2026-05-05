@@ -6,7 +6,7 @@
 import time
 from logging import NullHandler
 from os import chmod
-from shutil import copytree
+from shutil import copytree, ignore_patterns
 from stat import S_IWRITE
 from typing import List
 
@@ -34,10 +34,34 @@ class ListLogHandler(NullHandler):
 
 
 def build_expensive_tree(obj):
-    # Build a tree.
-    copytree(ROOT, obj.datapath)
+    """
+    Build a complete test tree by copying the entire repository.
+    
+    Creates a temporary copy of ROOT for tests that modify the document tree.
+    Ignores cache files, mock directories, and version control artifacts to
+    avoid copying errors (e.g., broken symlinks in VSCode worktrees).
+    
+    Args:
+        obj: Test object with 'datapath' attribute; sets obj.mock_tree
+    """
+    copytree(
+        ROOT, 
+        obj.datapath,
+        ignore=ignore_patterns(
+            'mock_test_publisher_*',  # Ignore mock directories
+            '.pytest_cache',           # Ignore pytest cache
+            '__pycache__',             # Ignore Python cache
+            '*.pyc',                   # Ignore compiled Python files
+            '.git',                    # Ignore .git directory (NOT .git*)
+            '.gitignore',              # Ignore .gitignore
+            '.gitattributes',          # Ignore .gitattributes
+            '.venv', 'venv',           # Ignore virtual environments (NOT .venv*)
+            'htmlcov',                 # Ignore coverage reports
+            '.coverage',               # Ignore coverage data (NOT .coverage*)
+            '*.egg-info'               # Ignore package metadata
+        )
+    )
     obj.mock_tree = build(cwd=obj.datapath, root=obj.datapath, request_next_number=None)
-
 
 def on_error_with_retry(func, path, exc_info, max_retries=10, max_time=5):
     """Define a separate function to handle errors for rmtree.

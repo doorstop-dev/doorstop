@@ -102,63 +102,70 @@ class LaTeXPublisher(BasePublisher):
         """
         linkify = kwargs.get("linkify", False)
         for item in iter_items(obj):
-            # Map item depth to LaTeX heading commands (max depth = 5)
-            if settings.PUBLISH_HEADING_LEVELS:
-                heading_map = {
-                    1: "\\section{",
-                    2: "\\subsection{",
-                    3: "\\subsubsection{",
-                    4: "\\paragraph{",
-                    5: "\\subparagraph{",
-                }
-            else:
-                heading_map = {
-                    1: "\\section*{",
-                    2: "\\subsection*{",
-                    3: "\\subsubsection*{",
-                    4: "\\paragraph*{",
-                    5: "\\subparagraph*{",
-                }
             # Cap depth at 5 (LaTeX maximum)
             safe_depth = min(item.depth, 5)
-            heading = heading_map.get(safe_depth, heading_map[1])
-            heading_level = heading  # Same as heading since we use the map
 
             if item.heading:
+                # For heading items, use PUBLISH_HEADING_LEVELS setting
+                if settings.PUBLISH_HEADING_LEVELS:
+                    heading_map = {
+                        1: "\\section{",
+                        2: "\\subsection{",
+                        3: "\\subsubsection{",
+                        4: "\\paragraph{",
+                        5: "\\subparagraph{",
+                    }
+                else:
+                    heading_map = {
+                        1: "\\section*{",
+                        2: "\\subsection*{",
+                        3: "\\subsubsection*{",
+                        4: "\\paragraph*{",
+                        5: "\\subparagraph*{",
+                    }
+                heading = heading_map.get(safe_depth, heading_map[1])
+                
                 text_lines = item.text.splitlines()
                 if item.header:
                     text_lines.insert(0, item.header)
                 # Level and Text
-                if settings.PUBLISH_HEADING_LEVELS:
-                    standard = "{h}{t}{he}".format(
-                        h=heading_level,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
-                        he="}",
-                    )
-                else:
-                    standard = "{h}{t}{he}".format(
-                        h=heading,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
-                        he="}",
-                    )
+                standard = "{h}{t}{he}".format(
+                    h=heading,
+                    t=_latex_convert(text_lines[0]) if text_lines else "",
+                    he="}",
+                )
                 attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
                 yield from self._format_latex_text(text_lines[1:], item=item)
             else:
+                # For body items (non-headings), use PUBLISH_BODY_LEVELS setting
+                if settings.PUBLISH_BODY_LEVELS:
+                    heading_map = {
+                        1: "\\section{",
+                        2: "\\subsection{",
+                        3: "\\subsubsection{",
+                        4: "\\paragraph{",
+                        5: "\\subparagraph{",
+                    }
+                else:
+                    heading_map = {
+                        1: "\\section*{",
+                        2: "\\subsection*{",
+                        3: "\\subsubsection*{",
+                        4: "\\paragraph*{",
+                        5: "\\subparagraph*{",
+                    }
+                heading = heading_map.get(safe_depth, heading_map[1])
+                
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:
                         uid = "{h}{{ - \\small{{}}\\texttt{{}}{u}}}".format(
                             h=_latex_convert(item.header), u=item.uid
                         )
-                    else:
-                        uid = "{u}".format(u=item.uid)
 
-                # Level and UID
-                if settings.PUBLISH_BODY_LEVELS:
-                    standard = "{h}{u}{he}".format(h=heading_level, u=uid, he="}")
-                else:
-                    standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
+                # Level and UID - use heading (already set based on PUBLISH_BODY_LEVELS)
+                standard = "{h}{u}{he}".format(h=heading, u=uid, he="}")
 
                 attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
@@ -393,32 +400,23 @@ class LaTeXPublisher(BasePublisher):
         plantuml_name = ""
         plantuml_count = 0
         end_pipes = False
-        
         for i, line in enumerate(text):
             no_paragraph = False
-            
             #############################
-            ## Fix plantuml (BEFORE code blocks!)
+            ## Fix plantuml.
             #############################
             if environment_data["plantuml_found"]:
                 no_paragraph = True
-
-            # Match both: `plantuml and ```plantuml
-            plantuml_match = re.search(r"^`+plantuml\s+(.*)$", line)
-            if plantuml_match:
+            if re.findall("^`*plantuml\\s", line):
                 plantuml_count = plantuml_count + 1
-                plantuml_params = plantuml_match.group(1)
-                
-                # Extract title (required for both formats)
-                plantuml_title = re.search(r'title="([^"]*)"', plantuml_params)
+                plantuml_title = re.search('title="(.*)"', line)
                 if plantuml_title:
-                    plantuml_name = str(plantuml_title.group(1))
+                    plantuml_name = str(plantuml_title.groups(0)[0])
                 else:
                     raise DoorstopError(
                         "'title' is required for plantUML processing in LaTeX."
                     )
-                
-                plantuml_file = re.sub(r"\s", "-", plantuml_name)
+                plantuml_file = re.sub("\\s", "-", plantuml_name)
                 block.append(
                     r"\hyperref[fig:plant"
                     + str(plantuml_count)
@@ -428,12 +426,9 @@ class LaTeXPublisher(BasePublisher):
                 )
                 line = "\\begin{plantuml}{" + plantuml_file + "}"
                 environment_data["plantuml_found"] = True
-
             if re.findall("@enduml", line):
-                block.append(line)  # Append @enduml
-                block.append("\\end{plantuml}")  # Append \end{plantuml}
-                
-                # ✅ Append \process immediately (don't assign to line!)
+                block.append(line)
+                block.append("\\end{plantuml}")
                 process_line = (
                     "\\process{"
                     + plantuml_file
@@ -445,33 +440,179 @@ class LaTeXPublisher(BasePublisher):
                     + "}"
                 )
                 block.append(process_line)
-                
                 environment_data["plantuml_found"] = False
-                continue  # ✅ Skip rest of loop iteration
-
+                continue
             # Skip the rest since we are in a plantuml block!
             if environment_data["plantuml_found"]:
                 block.append(line)
+                # Check for end of file and end all environments.
                 self._check_for_eof(
-                    i, block, text, environment_data,
-                    plantuml_name, plantuml_file,
+                    i,
+                    block,
+                    text,
+                    environment_data,
+                    plantuml_name,
+                    plantuml_file,
                 )
                 continue
 
             #############################
-            ## Fix code blocks (AFTER PlantUML!)
+            ## Fix code blocks.
             #############################
             code_match = re.findall("```", line)
             if environment_data["code_found"]:
                 no_paragraph = True
-            
             if code_match:
-                # Check previous line of @enduml
+                # Check previous line of @enduml.
                 if i > 0:
                     previous_line = text[i - 1]
                     if re.findall("@enduml", previous_line):
-                        continue  # Skip closing ``` after @enduml
-                
+                        continue
+                if environment_data["code_found"]:
+                    line = "\\end{lstlisting}"
+                    environment_data["code_found"] = False
+                    block.append(line)  # ✅ HINZUFÜGEN: Direkt appenden
+                    self._check_for_eof(  # ✅ HINZUFÜGEN: EOF check
+                        i,
+                        block,
+                        text,
+                        environment_data,
+                        plantuml_name,
+                        plantuml_file,
+                    )
+                    continue  # ✅ HINZUFÜGEN: Skip rest der Schleife!
+                else:
+                    # Check for language.
+                    language = re.search("```(.*)", line)
+                    if language and str(language.groups(0)[0]) != "":
+                        line = (
+                            "\\begin{lstlisting}[language="
+                            + str(language.groups(0)[0])
+                            + "]"
+                        )
+                    else:
+                        line = "\\begin{lstlisting}"
+                    environment_data["code_found"] = True
+            # Skip the rest since we are in a code block!
+            if environment_data["code_found"]:
+                block.append(line)
+                # Check for end of file and end all environments.
+                self._check_for_eof(
+                    i,
+                    block,
+                    text,
+                    environment_data,
+                    plantuml_name,
+                    plantuml_file,
+                )
+                continue
+            # Replace ` for inline code, but not if it is already escaped.
+            # First replace escaped inline code.
+            line = re.sub("\\\\`", "##!!TEMPINLINE!!##", line)
+            # Then replace inline code.
+            line = re.sub("`(.+?)`", "\\\\lstinline`\\1`", line)
+            # Then replace escaped inline code back.
+            line = re.sub("##!!TEMPINLINE!!##", "\\\\`{}", line)
+
+            #############################
+            ## Fix images.
+            #############################
+            image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
+            if image_match:
+                line = _typeset_latex_image(image_match, line, block)
+            #############################
+            ## Fix $ and MATH.
+            #############################
+            math_match = re.split("\\$\\$", line)
+            if len(math_match) > 1:
+                # Line contains $$
+                if math_found and len(math_match) == 2:
+                    math_found = False
+                    line = math_match[0] + "$" + math_match[1]
+                elif len(math_match) == 2:
+                    math_found = True
+                    line = _latex_convert(math_match[0]) + "$" + math_match[1]
+                elif len(math_match) == 3:
+                    line = (
+                        _latex_convert(math_match[0])
+                        + "$"
+                        + math_match[1]
+                        + "$"
+                        + _latex_convert(math_match[2])
+                    )
+                else:
+                    raise DoorstopError(
+                        "Cannot handle multiple math environments on one row."
+                    )
+            else:
+                # ✅ GEÄNDERT: Nur _latex_convert wenn NICHT in Math!
+                if not math_found:
+                    line = _latex_convert(line)
+                # else: line bleibt raw (wir sind in Math)
+
+            # Skip all other changes if in MATH!
+            if math_found:
+                line = line + "\\\\"
+                block.append(line)
+                continue
+            #############################
+            ## Fix lists.
+            #############################
+            # Check if we are at the end of the data.
+            if i == len(text) - 1:
+                next_line = ""
+            else:
+                next_line = text[i + 1]
+            no_paragraph, processed_block, line = self.process_lists(line, next_line)
+            if processed_block != "":
+                block.append(processed_block)
+            #############################
+            ## Fix tables.
+            #############################
+            # Check if line is part of table.
+            table_match = re.findall("\\|", line)
+            if table_match:
+                (
+                    environment_data["table_found"],
+                    header_done,
+                    line,
+                    end_pipes,
+                ) = self._typeset_latex_table(
+                    table_match,
+                    text,
+                    i,
+                    line,
+                    block,
+                    environment_data["table_found"],
+                    header_done,
+                    end_pipes,
+                )
+            else:
+                if environment_data["table_found"]:
+                    block.append(self.END_LONGTABLE)
+                environment_data["table_found"] = False
+                header_done = False
+
+            # Look ahead for empty line and add paragraph.
+            if i < len(text) - 1:
+                next_line = text[i + 1]
+                if next_line == "" and not re.search("\\\\", line) and not no_paragraph:
+                    line = line + "\\\\"
+
+            #############################
+            ## All done. Add the line.
+            #############################
+            block.append(line)
+
+            # Check for end of file and end all environments.
+            self._check_for_eof(
+                i,
+                block,
+                text,
+                environment_data,
+                plantuml_name,
+                plantuml_file,
+            )
         return block
 
     def _format_latex_text(self, text_lines, item=None):
@@ -536,30 +677,46 @@ class LaTeXPublisher(BasePublisher):
             if image_match:
                 temp_block = []
                 line = _typeset_latex_image(image_match, line, temp_block)
+                
+                # Add \\ to the last non-empty line before the image.
+                # But ONLY if it's plain text, not a LaTeX command.
+                for idx in range(len(result) - 1, -1, -1):
+                    if result[idx].strip():  # Found last non-empty line
+                        last_line = result[idx].rstrip()
+                        # Only add \\ if:
+                        # - Line doesn't already end with \\
+                        # - Line doesn't start with \ (LaTeX command)
+                        if (not last_line.endswith("\\\\") and
+                            not last_line.strip().startswith("\\")):
+                            result[idx] = last_line + "\\\\"
+                        break
+
+                # Add the figure block
                 result.extend(temp_block)
                 if line:
                     result.append(line)
                 continue
-            
+
             # Handle lists
             next_line = processed_lines[i + 1] if i + 1 < len(processed_lines) else ""
             no_paragraph, processed_block, line = self.process_lists(line, next_line)
             
+            # If we just started a list, add \\ to previous non-empty line
+            if processed_block and processed_block.strip().startswith("\\begin{"):
+                # We're starting a list environment
+                for idx in range(len(result) - 1, -1, -1):
+                    if result[idx].strip():  # Found last non-empty line
+                        last_line = result[idx].rstrip()
+                        if not last_line.endswith("\\\\"):
+                            result[idx] = last_line + "\\\\"
+                        break
+
             if processed_block:
                 result.append(processed_block)
             
-            # Add paragraph break, but NOT after:
-            # - Empty lines
-            # - Code block markers
-            # - Headings (section, subsection, etc.)
-            # - List items
-            if next_line == "" and not re.search(r"\\\\", line) and not no_paragraph:
-                # Check if line is a heading
-                is_heading = re.match(r'\\(section|subsection|subsubsection|paragraph|subparagraph)', line.strip())
-                
-                # Only add \\ if line has content and is not a heading
-                if line.strip() and not is_heading:
-                    line = line + "\\\\"
+            # NOTE: No \\ appending here - the new block-aware text processing preserves
+            # blank lines for LaTeX paragraph separation. Tables, lists, and code blocks
+            # have their own formatting. Adding \\ would break natural paragraph flow.
 
             result.append(line)        
             

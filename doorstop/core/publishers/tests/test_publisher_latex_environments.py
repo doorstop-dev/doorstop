@@ -504,9 +504,9 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of table ending.\\" + "\n\n"
             r"\begin{longtable}{|l|l|}" + "\n"
-            r"cool&table\\" + "\n"
+            r"cool & table \\" + "\n"
             r"\hline" + "\n"
-            r"without&end\\" + "\n"
+            r"without & end \\" + "\n"
             r"\end{longtable}" + "\n\n"
         )
         # Act
