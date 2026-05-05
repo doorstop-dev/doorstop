@@ -98,5 +98,14 @@
     "workpath",
     "xlsx",
     "yamlfile"
-  ]
+  ],
+  "python.testing.pytestArgs": [
+    ".",
+    "-v",
+    "--tb=short"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.autoTestDiscoverOnSaveEnabled": false
 }
