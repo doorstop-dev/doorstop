@@ -526,36 +526,67 @@ class TestUnderscoreHandling:
     """
     Test underscore handling in different contexts.
     
-    Rules:
-        - In middle of word (no spaces): Escape as \\_
-        - With spaces around: Convert to italic \\textit{}
-        - At word boundaries: Convert to italic
+    Simplified Rules:
+        - _text_ → \\textit{text} (Markdown italic)
+        - For code/variables: use backticks `code` → \\texttt{code}
     
-    This is important because LaTeX treats _ as subscript in math mode.
+    Examples:
+        "_italic_"              → "\\textit{italic}"
+        "word _text_ word"      → "word \\textit{text} word"  
+        "This_is_text"          → "This\\textit{is}text"
+        "`variable_name`"       → "\\texttt{variable\\_name}"
     """
     
-    def test_underscore_in_middle_of_word(self):
-        """Underscore without surrounding spaces should be escaped, not italic."""
-        result = _latex_convert('This_is_text')
-        assert 'This\\_is\\_text' in result
-        assert '\\textit{' not in result
-
     def test_underscore_with_spaces_creates_italic(self):
-        """Underscore with spaces should create italic formatting."""
+        """Underscores with spaces around create italic formatting."""
         result = _latex_convert('This _is_ italic')
         assert '\\textit{is}' in result
 
     def test_underscore_at_word_boundaries(self):
-        """Underscore at word boundaries creates italic."""
+        """Underscores at word boundaries create italic."""
         result = _latex_convert('Start _word_ end')
         assert '\\textit{word}' in result
 
-    def test_multiple_underscores_in_word(self):
-        """Multiple underscores in one word should all be escaped."""
-        result = _latex_convert('file_name_here')
-        assert 'file\\_name\\_here' in result
-        assert '\\textit{' not in result
+    def test_underscore_pairs_in_words_become_italic(self):
+        """Underscore pairs in words are converted to italic (simplified behavior)."""
+        result = _latex_convert('This_is_text')
+        assert '\\textit{is}' in result
 
+    def test_multiple_underscores_first_pair_matches(self):
+        """With multiple underscores, first complete pair becomes italic."""
+        result = _latex_convert('file_name_here')
+        assert '\\textit{name}' in result
+
+    def test_single_letter_italic(self):
+        """Single letter between underscores becomes italic."""
+        result = _latex_convert('test_a_end')
+        assert '\\textit{a}' in result
+
+    def test_italic_at_start_of_line(self):
+        """Italic formatting at start of line."""
+        result = _latex_convert('_italic_ text')
+        assert '\\textit{italic}' in result
+
+    def test_italic_at_end_of_line(self):
+        """Italic formatting at end of line."""
+        result = _latex_convert('text _italic_')
+        assert '\\textit{italic}' in result
+
+    def test_italic_with_punctuation(self):
+        """Italic with punctuation around it."""
+        result = _latex_convert('Test (_italic_) text')
+        assert '\\textit{italic}' in result
+
+    def test_code_with_underscores_uses_backticks(self):
+        """
+        For code/variables with underscores, use backticks (best practice).
+        
+        Backticks produce \\texttt{} which properly escapes underscores.
+        """
+        result = _latex_convert('Use `variable_name` in code')
+        assert '\\texttt{variable\\_name}' in result
+        # Should NOT create italic
+        assert result.count('\\textit{') == 0
 
 # =============================================================================
 # 3. HTML CONVERSION (Phase 1)

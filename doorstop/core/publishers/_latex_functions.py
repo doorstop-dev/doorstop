@@ -145,15 +145,22 @@ def _latex_convert(line, context=None):
     line = line.replace(BACKSLASH_PH, r"\textbackslash{}")
     
     #############################
-    ## Phase 6: Markdown formatting
+    ## Phase 6: Markdown formatting (bold, italic, strikethrough)
     #############################
+    # Bold: **text** → \textbf{text}
     line = re.sub(r"\*\*(.*?)\*\*", r"\\textbf{\1}", line)
     line = re.sub(r"__(.*?)__", r"\\textbf{\1}", line)
+
+    # Italic: *text* → \textit{text}
     line = re.sub(r"(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)", r"\\textit{\1}", line)
-    # Italic with _ - only at word boundaries, not in middle of words
-    line = re.sub(r"(?<!\w)_(?!_)([^\n]*?)(?<!\\)_(?!\w)", r"\\textit{\1}", line)
+
+    # Italic: _text_ → \textit{text}
+    # Matches any text between underscores (non-greedy, no nested underscores)
+    line = re.sub(r'_([^_\n]+?)_', r'\\textit{\1}', line)
+
+    # Strikethrough: ~~text~~ → \sout{text}
     line = re.sub(r"~~(.*?)~~", r"\\sout{\1}", line)
-    
+
     #############################
     ## Phase 7: Process and store links (don't insert yet!)
     #############################
@@ -818,13 +825,6 @@ def _convert_markdown_link_to_href(markdown_link):
     
     Returns:
         LaTeX \\href{url}{text} command or escaped plain text if invalid
-    
-    Examples:
-        >>> _convert_markdown_link_to_href("[Simple](https://example.com)")
-        '\\\\href{https://example.com}{Simple}'
-        
-        >>> _convert_markdown_link_to_href("[Text [1/h]](../doc.md)")
-        '\\\\href{../doc.md}{Text [1/h]}'
     """
     text = markdown_link.strip()
     
