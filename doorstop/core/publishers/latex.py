@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
+# pylint: disable=too-many-lines
 """Functions to publish LaTeX documents."""
 
 import os
 import re
-from typing import List
+from typing import Any, Dict, List
 
 from doorstop import common, settings
 from doorstop.cli import utilities
@@ -18,13 +19,11 @@ from doorstop.core.publishers._latex_functions import (
     _format_simple_text_block,
     _has_complex_formatting,
     _latex_convert,
-    _process_text_block,
     _typeset_latex_image,
 )
 from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
-    format_level,
     get_document_attributes,
     is_link_attribute,
     normalize_link_list,
@@ -124,7 +123,7 @@ class LaTeXPublisher(BasePublisher):
                         5: "\\subparagraph*{",
                     }
                 heading = heading_map.get(safe_depth, heading_map[1])
-                
+
                 text_lines = item.text.splitlines()
                 if item.header:
                     text_lines.insert(0, item.header)
@@ -156,7 +155,7 @@ class LaTeXPublisher(BasePublisher):
                         5: "\\subparagraph*{",
                     }
                 heading = heading_map.get(safe_depth, heading_map[1])
-                
+
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
                     if item.header:
@@ -173,7 +172,9 @@ class LaTeXPublisher(BasePublisher):
                 # Text
                 if item.text:
                     yield ""  # break before text
-                    yield from self._format_latex_text(item.text.splitlines(), item=item)
+                    yield from self._format_latex_text(
+                        item.text.splitlines(), item=item
+                    )
 
                 # Reference
                 if item.ref:
@@ -221,18 +222,27 @@ class LaTeXPublisher(BasePublisher):
                             yield self.HLINE
 
                         value = item.attribute(attr)
-                        
+
                         # ========== Handle link attributes specially ==========
                         if is_link_attribute(attr):
                             link_list = normalize_link_list(value)
                             if link_list:
                                 # Convert each markdown link to LaTeX
-                                converted_links = [_convert_markdown_link_to_href(link) for link in link_list]
-                                
-                                value_str = " \\newline ".join(converted_links) if len(converted_links) > 1 else converted_links[0]
-                                yield "{} & {}\\\\".format(_escape_latex_text(attr), value_str)
+                                converted_links = [
+                                    _convert_markdown_link_to_href(link)
+                                    for link in link_list
+                                ]
+
+                                value_str = (
+                                    " \\newline ".join(converted_links)
+                                    if len(converted_links) > 1
+                                    else converted_links[0]
+                                )
+                                yield "{} & {}\\\\".format(
+                                    _escape_latex_text(attr), value_str
+                                )
                                 yield self.HLINE
-                                                                                        
+
                         # ========== Handle regular lists ==========
                         elif isinstance(value, list):
                             if len(value) > 0:
@@ -242,19 +252,18 @@ class LaTeXPublisher(BasePublisher):
                                     item_str = str(v).strip()
                                     if item_str:
                                         items.append(_latex_convert(item_str))
-                                
+
                                 if items:
                                     if len(items) == 1:
                                         value_str = items[0]
                                     else:
                                         value_str = " \\newline ".join(items)
-                                    
+
                                     yield "{} & {}\\\\".format(
-                                        _escape_latex_text(attr),
-                                        value_str
+                                        _escape_latex_text(attr), value_str
                                     )
                                     yield self.HLINE
-                        
+
                         # ========== Handle dictionaries ==========
                         elif isinstance(value, dict):
                             # Format as key: value pairs
@@ -263,30 +272,28 @@ class LaTeXPublisher(BasePublisher):
                                 k_str = _latex_convert(str(k))
                                 v_str = _latex_convert(str(v).strip())
                                 dict_items.append(f"\\textbf{{{k_str}}}: {v_str}")
-                            
+
                             if dict_items:
                                 value_str = " \\newline ".join(dict_items)
                                 yield "{} & {}\\\\".format(
-                                    _escape_latex_text(attr),
-                                    value_str
+                                    _escape_latex_text(attr), value_str
                                 )
                                 yield self.HLINE
-                        
+
                         # ========== Handle simple values ==========
                         else:
                             yield "{} & {}\\\\".format(
-                                _escape_latex_text(attr),
-                                _latex_convert(str(value))
+                                _escape_latex_text(attr), _latex_convert(str(value))
                             )
                             yield self.HLINE
-                    
+
                     if header_printed:
                         yield self.END_LONGTABLE
                     else:
                         yield ""
 
             yield ""  # break between items
-            
+
     def format_attr_list(self, item, linkify):
         """Create a LaTeX attribute list for a heading."""
         return (
@@ -471,8 +478,8 @@ class LaTeXPublisher(BasePublisher):
                 if environment_data["code_found"]:
                     line = "\\end{lstlisting}"
                     environment_data["code_found"] = False
-                    block.append(line)  # ✅ HINZUFÜGEN: Direkt appenden
-                    self._check_for_eof(  # ✅ HINZUFÜGEN: EOF check
+                    block.append(line)
+                    self._check_for_eof(
                         i,
                         block,
                         text,
@@ -480,19 +487,18 @@ class LaTeXPublisher(BasePublisher):
                         plantuml_name,
                         plantuml_file,
                     )
-                    continue  # ✅ HINZUFÜGEN: Skip rest der Schleife!
+                    continue
+                # Check for language.
+                language = re.search("```(.*)", line)
+                if language and str(language.groups(0)[0]) != "":
+                    line = (
+                        "\\begin{lstlisting}[language="
+                        + str(language.groups(0)[0])
+                        + "]"
+                    )
                 else:
-                    # Check for language.
-                    language = re.search("```(.*)", line)
-                    if language and str(language.groups(0)[0]) != "":
-                        line = (
-                            "\\begin{lstlisting}[language="
-                            + str(language.groups(0)[0])
-                            + "]"
-                        )
-                    else:
-                        line = "\\begin{lstlisting}"
-                    environment_data["code_found"] = True
+                    line = "\\begin{lstlisting}"
+                environment_data["code_found"] = True
             # Skip the rest since we are in a code block!
             if environment_data["code_found"]:
                 block.append(line)
@@ -618,18 +624,18 @@ class LaTeXPublisher(BasePublisher):
     def _format_latex_text(self, text_lines, item=None):
         """
         Format text with automatic routing to appropriate handler.
-        
+
         Args:
             text_lines: List of text lines to format
             item: Optional Item object for context
-            
+
         Returns:
             List of formatted LaTeX lines
         """
         # Ensure we have a list
         if isinstance(text_lines, str):
             text_lines = text_lines.splitlines()
-        
+
         # Check for complex formatting
         if _has_complex_formatting(text_lines):
             log.debug("Using legacy formatter for complex text")
@@ -641,44 +647,45 @@ class LaTeXPublisher(BasePublisher):
     def _post_process_simple_text(self, text_lines, item=None):
         """
         Post-process simple text for images and lists.
-        
+
         Args:
             text_lines: List of text lines
             item: Optional Item object for context
-            
+
         Returns:
             List of formatted LaTeX lines
         """
         # Build context
-        context = {}
+        context: Dict[str, Any] = {}
         if item:
-            context['item_uid'] = str(item.uid)
-            if hasattr(item, 'path'):
-                context['file'] = item.path
-            context['line_num'] = 1
-            context['in_item_text'] = True
-        
+            context["item_uid"] = str(item.uid)
+            if hasattr(item, "path"):
+                context["file"] = item.path
+            context["line_num"] = 1
+            context["in_item_text"] = True
+
         # Get basic formatting with code blocks handled
         processed_lines = list(_format_simple_text_block(text_lines, context=context))
-        
-        result = []
+
+        result: List[str] = []
         for i, line in enumerate(processed_lines):
             # Update line number in context
             line_context = context.copy()
-            line_context['line_num'] = i + 1
-            
+            line_context["line_num"] = i + 1
+
             # Skip if in code environment
-            if line.strip().startswith("\\begin{lstlisting}") or \
-            line.strip().startswith("\\end{lstlisting}"):
+            if line.strip().startswith(
+                "\\begin{lstlisting}"
+            ) or line.strip().startswith("\\end{lstlisting}"):
                 result.append(line)
                 continue
-            
+
             # Handle images
             image_match = re.findall(r"!\[(.*)\]\((.*)\)", line)
             if image_match:
-                temp_block = []
+                temp_block: List[str] = []
                 line = _typeset_latex_image(image_match, line, temp_block)
-                
+
                 # Add \\ to the last non-empty line before the image.
                 # But ONLY if it's plain text, not a LaTeX command.
                 for idx in range(len(result) - 1, -1, -1):
@@ -687,8 +694,9 @@ class LaTeXPublisher(BasePublisher):
                         # Only add \\ if:
                         # - Line doesn't already end with \\
                         # - Line doesn't start with \ (LaTeX command)
-                        if (not last_line.endswith("\\\\") and
-                            not last_line.strip().startswith("\\")):
+                        if not last_line.endswith(
+                            "\\\\"
+                        ) and not last_line.strip().startswith("\\"):
                             result[idx] = last_line + "\\\\"
                         break
 
@@ -700,8 +708,8 @@ class LaTeXPublisher(BasePublisher):
 
             # Handle lists
             next_line = processed_lines[i + 1] if i + 1 < len(processed_lines) else ""
-            no_paragraph, processed_block, line = self.process_lists(line, next_line)
-            
+            _, processed_block, line = self.process_lists(line, next_line)
+
             # If we just started a list, add \\ to previous non-empty line
             if processed_block and processed_block.strip().startswith("\\begin{"):
                 # We're starting a list environment
@@ -714,13 +722,13 @@ class LaTeXPublisher(BasePublisher):
 
             if processed_block:
                 result.append(processed_block)
-            
+
             # NOTE: No \\ appending here - the new block-aware text processing preserves
             # blank lines for LaTeX paragraph separation. Tables, lists, and code blocks
             # have their own formatting. Adding \\ would break natural paragraph flow.
 
-            result.append(line)        
-            
+            result.append(line)
+
         return result
 
     def _check_for_eof(
@@ -827,10 +835,10 @@ class LaTeXPublisher(BasePublisher):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
         doc_attributes = get_document_attributes(self.document)
-        
+
         # Sanitize the document name for use as filename (replace spaces with hyphens)
         safe_name = doc_attributes["name"].replace(" ", "-")
-        
+
         # Create the wrapper file.
         head, tail = os.path.split(self.documentPath)
         if tail != extract_prefix(self.document) + ".tex":
@@ -953,20 +961,14 @@ class LaTeXPublisher(BasePublisher):
                         "These are automatically added external references to make cross-references work between the PDFs.",
                     )
                     info_text_set = True
-                
+
                 # Sanitize external document name
                 external_safe_name = external_doc_attributes["name"].replace(" ", "-")
-                
+
                 wrapper.append(
-                    "\\zexternaldocument{{{n}}}".format(
-                        n=external_safe_name
-                    )
+                    "\\zexternaldocument{{{n}}}".format(n=external_safe_name)
                 )
-                wrapper.append(
-                    "\\externaldocument{{{n}}}".format(
-                        n=external_safe_name
-                    )
-                )
+                wrapper.append("\\externaldocument{{{n}}}".format(n=external_safe_name))
         if info_text_set:
             wrapper = _add_comment(wrapper, "END external references.")
             wrapper.append("")
@@ -1009,6 +1011,4 @@ class LaTeXPublisher(BasePublisher):
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return 'pdflatex -halt-on-error -shell-escape "{n}.tex"'.format(
-            n=safe_name
-        )
+        return 'pdflatex -halt-on-error -shell-escape "{n}.tex"'.format(n=safe_name)

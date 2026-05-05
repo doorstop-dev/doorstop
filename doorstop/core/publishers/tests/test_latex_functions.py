@@ -71,49 +71,47 @@ Generate coverage report:
         --cov-report=term-missing
 """
 
-import pytest
 import re
-from doorstop.core.publishers._latex_functions import (
-    # Core conversion functions
-    _latex_convert,
-    _process_text_block,
-    _format_simple_text_block,
-    # Escaping functions
-    _escape_latex_text,
-    _escape_latex_url,
-    # Conversion functions
-    _convert_markdown_link_to_href,
-    _convert_html_to_latex,
-    # Helper functions
-    _has_complex_formatting,
-    _add_comment,
-    _fix_table_line,
-    _check_for_new_table,
-    _typeset_latex_image,
-    _format_context,
-)
+
+import pytest
 
 from doorstop import settings
+from doorstop.core.publishers._latex_functions import (  # Core conversion functions; Escaping functions; Conversion functions; Helper functions
+    _add_comment,
+    _check_for_new_table,
+    _convert_html_to_latex,
+    _convert_markdown_link_to_href,
+    _escape_latex_text,
+    _escape_latex_url,
+    _fix_table_line,
+    _format_context,
+    _format_simple_text_block,
+    _has_complex_formatting,
+    _latex_convert,
+    _process_text_block,
+    _typeset_latex_image,
+)
 
 # =============================================================================
 # 1. CHARACTER ESCAPING (Phase 4-5)
 # =============================================================================
 
+
 class TestTextEscaping:
     """
     Test _escape_latex_text() function (Phase 5).
-    
+
     Escapes the 10 LaTeX special characters in plain text:
         \ { } _ & # $ % ^ ~
-    
+
     Used in: Link text, table cells, attribute values, general text.
-    
-    Strategy: 
+
+    Strategy:
         - Backslash uses placeholder to avoid double-escaping braces
         - Caret/Tilde use ASCII commands to avoid math mode
         - Other chars use simple backslash prefix
     """
-    
+
     def test_escape_backslash(self):
         """Backslashes must use \\textbackslash{} to avoid conflicts with other commands."""
         result = _escape_latex_text("C:\\path\\to\\file")
@@ -158,38 +156,38 @@ class TestTextEscaping:
         """Comprehensive test for all 10 LaTeX special characters."""
         text = "Test & test # test $ test % test _ test ^ test ~ test"
         result = _escape_latex_text(text)
-        assert '\\&' in result
-        assert '\\#' in result
-        assert '\\$' in result
-        assert '\\%' in result
-        assert '\\_' in result
-        assert '\\textasciicircum{}' in result
-        assert '\\textasciitilde{}' in result
+        assert "\\&" in result
+        assert "\\#" in result
+        assert "\\$" in result
+        assert "\\%" in result
+        assert "\\_" in result
+        assert "\\textasciicircum{}" in result
+        assert "\\textasciitilde{}" in result
 
     def test_backslash_uses_placeholder_system(self):
         """Backslash escaping uses placeholder to prevent double-escaping of braces."""
         text = "C:\\\\path\\\\to\\\\file"
         result = _escape_latex_text(text)
         # Should use textbackslash{} command
-        assert '\\textbackslash{}' in result
+        assert "\\textbackslash{}" in result
         # Should NOT have double-escaped braces like \textbackslash\{\}
-        assert '\\textbackslash\\{' not in result
+        assert "\\textbackslash\\{" not in result
 
 
 class TestURLEscaping:
     """
     Test _escape_latex_url() function.
-    
+
     Escapes only characters that break in \\href{URL}{text}:
         # (hash/anchor)
         % (percent encoding)
         & (query parameters)
-    
+
     Important: Underscores are NOT escaped - they work fine in URLs.
-    
+
     Used in: \\href{} URL parameter, file paths in \\includegraphics.
     """
-    
+
     def test_escape_hash_for_anchors(self):
         """Hash symbols in URLs (anchors) must be escaped for LaTeX."""
         result = _escape_latex_url("https://example.com/page#section")
@@ -231,30 +229,31 @@ class TestURLEscaping:
         """URL containing all characters that need escaping."""
         url = "http://example.com/path?param=value&other=123#anchor"
         result = _escape_latex_url(url)
-        assert '\\#' in result
-        assert '\\&' in result
+        assert "\\#" in result
+        assert "\\&" in result
 
 
 # =============================================================================
 # 2. MARKDOWN CONVERSION (Phase 2-3, 6-8)
 # =============================================================================
 
+
 class TestMarkdownLinks:
     """
     Test _convert_markdown_link_to_href() function (Phase 7).
-    
+
     Converts Markdown links to LaTeX \\href{} commands:
         [text](url) → \\href{url}{text}
-    
+
     Challenges:
         - Nested brackets in text: [Text [nested] text](url)
         - Parentheses in URL: (disambiguation pages)
         - Special characters in both text and URL
         - Markdown formatting within link text
-    
+
     The function uses regex with nested bracket matching.
     """
-    
+
     def test_simple_link_conversion(self):
         """Basic markdown link should convert to \\href{} command."""
         link = "[Simple Link](https://example.com)"
@@ -346,23 +345,23 @@ class TestMarkdownLinks:
 
     def test_link_with_parentheses_in_url(self):
         """URLs with parentheses (Wikipedia disambiguation pages) should work."""
-        link = '[Wikipedia](https://en.wikipedia.org/wiki/Example_(disambiguation))'
+        link = "[Wikipedia](https://en.wikipedia.org/wiki/Example_(disambiguation))"
         result = _convert_markdown_link_to_href(link)
-        assert '\\href{' in result
-        assert 'Wikipedia' in result
-        assert 'disambiguation' in result
+        assert "\\href{" in result
+        assert "Wikipedia" in result
+        assert "disambiguation" in result
 
 
 class TestMarkdownLinkEdgeCases:
     """
     Edge cases and error handling for markdown link conversion.
-    
+
     Tests defensive programming and graceful degradation when:
         - Input is not a valid link
         - Links have unusual formatting
         - Brackets/parentheses are unbalanced
     """
-    
+
     def test_not_a_valid_link(self):
         """Text with brackets but no URL part should be returned unchanged."""
         text = "Just some [text] with brackets"
@@ -430,51 +429,51 @@ class TestMarkdownLinkEdgeCases:
 
     def test_link_without_url_part(self):
         """Link text without URL part: [text] with no ()."""
-        result = _convert_markdown_link_to_href('[text without url]')
-        assert 'text without url' in result
+        result = _convert_markdown_link_to_href("[text without url]")
+        assert "text without url" in result
 
     def test_link_with_unclosed_url(self):
         """Missing closing parenthesis for URL."""
-        link = '[text](http://example.com'
+        link = "[text](http://example.com"
         result = _convert_markdown_link_to_href(link)
-        assert 'text' in result
+        assert "text" in result
 
     def test_nested_brackets_and_parens_combined(self):
         """Complex nesting of both brackets and parentheses."""
-        link = '[Text [with nested] brackets](http://example.com)'
+        link = "[Text [with nested] brackets](http://example.com)"
         result = _convert_markdown_link_to_href(link)
-        assert '\\href{' in result
-        assert 'with nested' in result
-        assert 'example.com' in result
+        assert "\\href{" in result
+        assert "with nested" in result
+        assert "example.com" in result
 
 
 class TestMarkdownFormatting:
     """
     Test markdown formatting conversion (Phase 6).
-    
+
     Handled by _latex_convert():
         **text** → \\textbf{text}
         *text* or _text_ → \\textit{text}
         ~~text~~ → \\sout{text}
-    
+
     Special case: **## Heading** should remove bold before heading conversion.
     """
-    
+
     def test_bold_heading_level2(self):
         """Bold markup around headings should be removed: **## Text** → \\subsection{Text}."""
-        result = _latex_convert('**## Test Heading**')
-        assert '\\subsection{Test Heading}' in result
-        assert '**' not in result
+        result = _latex_convert("**## Test Heading**")
+        assert "\\subsection{Test Heading}" in result
+        assert "**" not in result
 
     def test_bold_heading_level3(self):
         """Works for all heading levels."""
-        result = _latex_convert('**### Test Heading**')
-        assert '\\subsubsection{Test Heading}' in result
+        result = _latex_convert("**### Test Heading**")
+        assert "\\subsubsection{Test Heading}" in result
 
     def test_normal_bold_text_unaffected(self):
         """Normal bold text (not around headings) should still work."""
-        result = _latex_convert('This is **bold** text')
-        assert '\\textbf{bold}' in result
+        result = _latex_convert("This is **bold** text")
+        assert "\\textbf{bold}" in result
 
     def test_link_with_bold_text(self):
         """Bold markdown in link text should be processed."""
@@ -498,7 +497,7 @@ class TestMarkdownFormatting:
 class TestHeadings:
     """
     Test heading conversion (Phase 8).
-    
+
     Markdown headings → LaTeX section commands:
         # → \\section
         ## → \\subsection
@@ -507,18 +506,19 @@ class TestHeadings:
         ##### → \\subparagraph
         ###### → warning (too deep for LaTeX)
     """
-    
+
     def test_heading_level_too_deep_warning(self, caplog):
         """Headings deeper than level 5 should trigger warning."""
         import logging
+
         caplog.set_level(logging.WARNING)
-        context = {'item_uid': 'REQ001', 'file': 'test.yml', 'line_num': 10}
+        context = {"item_uid": "REQ001", "file": "test.yml", "line_num": 10}
         result = _latex_convert("###### Very deep heading", context=context)
-        
+
         # Should log warning with context
         assert "Heading level too deep" in caplog.text
         assert "REQ001" in caplog.text
-        
+
         # Should still produce output (subparagraph with comment)
         assert "\\subparagraph" in result
         assert "too deep for LaTeX" in result
@@ -527,153 +527,158 @@ class TestHeadings:
 class TestUnderscoreHandling:
     """
     Test underscore handling in different contexts.
-    
+
     Simplified Rules:
         - _text_ → \\textit{text} (Markdown italic)
         - For code/variables: use backticks `code` → \\texttt{code}
-    
+
     Examples:
         "_italic_"              → "\\textit{italic}"
-        "word _text_ word"      → "word \\textit{text} word"  
+        "word _text_ word"      → "word \\textit{text} word"
         "This_is_text"          → "This\\textit{is}text"
         "`variable_name`"       → "\\texttt{variable\\_name}"
     """
-    
+
     def test_underscore_with_spaces_creates_italic(self):
         """Underscores with spaces around create italic formatting."""
-        result = _latex_convert('This _is_ italic')
-        assert '\\textit{is}' in result
+        result = _latex_convert("This _is_ italic")
+        assert "\\textit{is}" in result
 
     def test_underscore_at_word_boundaries(self):
         """Underscores at word boundaries create italic."""
-        result = _latex_convert('Start _word_ end')
-        assert '\\textit{word}' in result
+        result = _latex_convert("Start _word_ end")
+        assert "\\textit{word}" in result
 
     def test_underscore_pairs_in_words_become_italic(self):
         """Underscore pairs in words are converted to italic (simplified behavior)."""
-        result = _latex_convert('This_is_text')
-        assert '\\textit{is}' in result
+        result = _latex_convert("This_is_text")
+        assert "\\textit{is}" in result
 
     def test_multiple_underscores_first_pair_matches(self):
         """With multiple underscores, first complete pair becomes italic."""
-        result = _latex_convert('file_name_here')
-        assert '\\textit{name}' in result
+        result = _latex_convert("file_name_here")
+        assert "\\textit{name}" in result
 
     def test_single_letter_italic(self):
         """Single letter between underscores becomes italic."""
-        result = _latex_convert('test_a_end')
-        assert '\\textit{a}' in result
+        result = _latex_convert("test_a_end")
+        assert "\\textit{a}" in result
 
     def test_italic_at_start_of_line(self):
         """Italic formatting at start of line."""
-        result = _latex_convert('_italic_ text')
-        assert '\\textit{italic}' in result
+        result = _latex_convert("_italic_ text")
+        assert "\\textit{italic}" in result
 
     def test_italic_at_end_of_line(self):
         """Italic formatting at end of line."""
-        result = _latex_convert('text _italic_')
-        assert '\\textit{italic}' in result
+        result = _latex_convert("text _italic_")
+        assert "\\textit{italic}" in result
 
     def test_italic_with_punctuation(self):
         """Italic with punctuation around it."""
-        result = _latex_convert('Test (_italic_) text')
-        assert '\\textit{italic}' in result
+        result = _latex_convert("Test (_italic_) text")
+        assert "\\textit{italic}" in result
 
     def test_code_with_underscores_uses_backticks(self):
         """
         For code/variables with underscores, use backticks (best practice).
-        
+
         Backticks produce \\texttt{} which properly escapes underscores.
         """
-        result = _latex_convert('Use `variable_name` in code')
-        assert '\\texttt{variable\\_name}' in result
+        result = _latex_convert("Use `variable_name` in code")
+        assert "\\texttt{variable\\_name}" in result
         # Should NOT create italic
-        assert result.count('\\textit{') == 0
+        assert result.count("\\textit{") == 0
+
 
 # =============================================================================
 # 3. HTML CONVERSION (Phase 1)
 # =============================================================================
 
+
 class TestHTMLConversion:
     """
     Test _convert_html_to_latex() function (Phase 1).
-    
+
     Converts HTML tags to LaTeX or Markdown equivalents:
         <img src="..." alt="..."> → ![alt](src)
         <figcaption>text</figcaption> → *text* → \\textit{text}
         <cite>text</cite> → *text* → \\textit{text}
         <figure> → removed (content preserved)
         <a name="label"></a> → \\label{label}
-    
+
     Returns: (converted_line, list_of_labels)
         - Labels use placeholder <<<HTMLLABEL#>>> to avoid removal by HTML cleaner
     """
-    
+
     def test_html_anchor_to_label(self):
         """<a name="..."> should convert to LaTeX \\label{} command."""
         line, labels = _convert_html_to_latex('<a name="Test Section"></a>')
         # Should create placeholder
-        assert '<<<HTMLLABEL0>>>' in line
+        assert "<<<HTMLLABEL0>>>" in line
         # Label should sanitize spaces to hyphens
-        assert labels == ['\\label{Test-Section}']
+        assert labels == ["\\label{Test-Section}"]
 
     def test_html_img_to_markdown(self):
         """<img> tags should convert to Markdown image syntax for further processing."""
-        line, labels = _convert_html_to_latex('<img src="test.png" alt="Test Image" width=600>')
-        assert '![Test Image](test.png)' in line
+        line, labels = _convert_html_to_latex(
+            '<img src="test.png" alt="Test Image" width=600>'
+        )
+        assert "![Test Image](test.png)" in line
         assert labels == []
 
     def test_html_figcaption_to_italic(self):
         """<figcaption> should convert to italic markdown (processed in Phase 6)."""
-        line, labels = _convert_html_to_latex('<figcaption>Image caption</figcaption>')
-        assert '*Image caption*' in line
+        line, labels = _convert_html_to_latex("<figcaption>Image caption</figcaption>")
+        assert "*Image caption*" in line
 
     def test_html_cite_to_italic(self):
         """<cite> should convert to italic markdown."""
-        line, labels = _convert_html_to_latex('<cite>Reference 2024</cite>')
-        assert '*Reference 2024*' in line
+        line, labels = _convert_html_to_latex("<cite>Reference 2024</cite>")
+        assert "*Reference 2024*" in line
 
     def test_html_figure_tags_removed(self):
         """<figure> tags should be removed but content preserved."""
         line, labels = _convert_html_to_latex('<figure class="image">Content</figure>')
-        assert '<figure' not in line
-        assert 'Content' in line
+        assert "<figure" not in line
+        assert "Content" in line
 
     def test_html_combined_conversion(self):
         """Test combined HTML elements in one block (real-world scenario)."""
-        html = '''<figure>
+        html = """<figure>
 <a name="Test"></a>
 <img src="img.png" alt="Alt">
 <figcaption>Caption</figcaption>
-</figure>'''
+</figure>"""
         line, labels = _convert_html_to_latex(html)
         # Should have label placeholder
-        assert '<<<HTMLLABEL0>>>' in line
+        assert "<<<HTMLLABEL0>>>" in line
         # Should convert image to markdown
-        assert '![Alt](img.png)' in line
+        assert "![Alt](img.png)" in line
         # Should convert figcaption to italic
-        assert '*Caption*' in line
+        assert "*Caption*" in line
         # Should remove figure tags
-        assert '<figure' not in line
+        assert "<figure" not in line
 
 
 # =============================================================================
 # 4. CODE PROCESSING (Phase 2-3)
 # =============================================================================
 
+
 class TestInlineCode:
     """
     Test inline code conversion (Phase 3).
-    
+
     Converts: `code` → \\texttt{code}
-    
+
     Special handling in \\texttt{}:
         - Only \\, {, }, _ need escaping
         - Other special chars (#, $, %, etc.) work without escaping
-    
+
     This is different from normal text where all 10 special chars need escaping.
     """
-    
+
     def test_basic_inline_code(self):
         """Basic inline code conversion with no special characters."""
         result = _latex_convert("Use `python main.py` to run")
@@ -684,7 +689,7 @@ class TestInlineCode:
     def test_inline_code_with_underscore(self):
         """Underscores in inline code must be escaped (LaTeX subscript)."""
         result = _latex_convert("Use `variable_name` here")
-        assert '\\texttt{variable\\_name}' in result
+        assert "\\texttt{variable\\_name}" in result
 
     def test_inline_code_with_safe_special_chars(self):
         """Most special chars work without escaping in \\texttt{} environment."""
@@ -697,17 +702,17 @@ class TestInlineCode:
 class TestCodeBlocks:
     """
     Test fenced code block conversion (Phase 2).
-    
+
     Converts:
         ```lang → <<<CODEBLOCK_START:lang>>>
         ``` → <<<CODEBLOCK_START>>>
-        
+
     Later processed by _process_text_block() to:
         \\begin{lstlisting}[language=lang]
         ...
         \\end{lstlisting}
     """
-    
+
     def test_code_fence_with_language(self):
         """Code fence with language should create language-specific placeholder."""
         result = _latex_convert("```python")
@@ -720,7 +725,7 @@ class TestCodeBlocks:
 
     def test_common_languages_detected(self):
         """Test common programming language detection."""
-        languages = ['python', 'java', 'javascript', 'cpp', 'bash', 'sql', 'plantuml']
+        languages = ["python", "java", "javascript", "cpp", "bash", "sql", "plantuml"]
         for lang in languages:
             result = _latex_convert(f"```{lang}")
             assert f"<<<CODEBLOCK_START:{lang}>>>" == result
@@ -734,12 +739,12 @@ class TestCodeBlocks:
 class TestIndentedCode:
     """
     Test indented code line detection.
-    
+
     4 spaces or 1 tab at line start → treated as code.
     Converted to: <<<CODELINE:original_content>>>
     Later processed to: \\texttt{content}
     """
-    
+
     def test_four_space_indented_code(self):
         """4-space indented lines are treated as code."""
         result = _latex_convert("    code_here")
@@ -756,138 +761,136 @@ class TestIndentedCode:
 # 5. BLOCKQUOTES (Phase 0+)
 # =============================================================================
 
+
 class TestBlockquotes:
     """
     Test blockquote handling.
-    
+
     Converts:
         > Quote text → \\begin{quote} Quote text \\end{quote}
         > (empty) → Empty line within quote block
-    
+
     Features:
         - Multi-line blockquotes (consecutive > lines)
         - Auto-closing at end of input or when > stops
         - HTML/Markdown within blockquotes is processed
-    
+
     Processed by _process_text_block() using in_blockquote flag.
     """
-    
+
     def test_simple_blockquote(self):
         """Basic blockquote with multiple lines."""
         text_lines = [
-            '> This is a quote',
-            '> Second line',
+            "> This is a quote",
+            "> Second line",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert '\\end{quote}' in result_str
-        assert 'This is a quote' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "\\end{quote}" in result_str
+        assert "This is a quote" in result_str
 
     def test_blockquote_with_empty_line(self):
         """Empty lines within blockquotes (just >) should create spacing."""
         text_lines = [
-            '> First line',
-            '>',
-            '> Second line',
+            "> First line",
+            ">",
+            "> Second line",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert '\\end{quote}' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "\\end{quote}" in result_str
 
     def test_blockquote_with_html(self):
         """HTML tags within blockquotes should be converted (Phase 1 runs first)."""
         text_lines = [
-            '> <cite>Source</cite>',
+            "> <cite>Source</cite>",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert '\\textit{Source}' in result_str
-        assert '\\end{quote}' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "\\textit{Source}" in result_str
+        assert "\\end{quote}" in result_str
 
     def test_blockquote_with_image(self):
         """Images within blockquotes should be processed."""
         text_lines = [
-            '> Text before',
-            '>',
-            '> ![Alt](image.png)',
+            "> Text before",
+            ">",
+            "> ![Alt](image.png)",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert 'Text before' in result_str
-        assert '![Alt](image.png)' in result_str
-        assert '\\end{quote}' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "Text before" in result_str
+        assert "![Alt](image.png)" in result_str
+        assert "\\end{quote}" in result_str
 
     def test_blockquote_ends_at_normal_text(self):
         """Blockquote should end when lines stop starting with >."""
         text_lines = [
-            '> Quote line',
-            'Normal text',
+            "> Quote line",
+            "Normal text",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert '\\end{quote}' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "\\end{quote}" in result_str
         # Quote should end before normal text
-        quote_end = result_str.index('\\end{quote}')
-        normal_text = result_str.index('Normal text')
+        quote_end = result_str.index("\\end{quote}")
+        normal_text = result_str.index("Normal text")
         assert quote_end < normal_text
 
     def test_blockquote_auto_closes_at_eof(self):
         """Blockquote that reaches end of file should auto-close."""
         text_lines = [
-            '> Quote line 1',
-            '> Quote line 2',
+            "> Quote line 1",
+            "> Quote line 2",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert '\\begin{quote}' in result_str
-        assert '\\end{quote}' in result_str
+        result_str = "\n".join(result)
+        assert "\\begin{quote}" in result_str
+        assert "\\end{quote}" in result_str
 
 
 # =============================================================================
 # 6. TEXT BLOCK PIPELINE (Integration of All Phases)
 # =============================================================================
 
+
 class TestTextBlockProcessing:
     """
     Test _process_text_block() - the main pipeline orchestrator.
-    
+
     This function coordinates:
         - Code block detection and handling
         - Blockquote detection
         - Inline code processing
         - Line break insertion (\\\\)
         - Look-ahead for block elements
-    
+
     It calls _latex_convert() for each line and manages multi-line structures.
     """
-    
+
     def test_code_block_with_language_parameter(self):
         """Code block with language should create lstlisting with language parameter."""
-        text_lines = [
-            "```python",
-            "def test():",
-            "    pass",
-            "```"
-        ]
+        text_lines = ["```python", "def test():", "    pass", "```"]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         assert "[language=python]" in result_str
 
     def test_nested_code_block_warning(self, caplog):
         """Nested code blocks (``` inside ```) should trigger warning."""
         import logging
+
         caplog.set_level(logging.WARNING)
         text_lines = [
             "```python",
             "code1",
             "```java",  # Nested start - error in input
             "code2",
-            "```"
+            "```",
         ]
         result = list(_process_text_block(text_lines))
         assert "Nested code block detected" in caplog.text
@@ -895,11 +898,12 @@ class TestTextBlockProcessing:
     def test_unclosed_code_block_warning(self, caplog):
         """Unclosed code blocks should trigger warning and auto-close."""
         import logging
+
         caplog.set_level(logging.WARNING)
         text_lines = [
             "```python",
             "code line 1",
-            "code line 2"
+            "code line 2",
             # Missing closing ```
         ]
         result = list(_process_text_block(text_lines))
@@ -908,49 +912,33 @@ class TestTextBlockProcessing:
 
     def test_code_block_content_not_converted(self):
         """Content inside code blocks should not undergo LaTeX conversion."""
-        text_lines = [
-            "```",
-            "Text with & special # chars $ and % symbols",
-            "```"
-        ]
+        text_lines = ["```", "Text with & special # chars $ and % symbols", "```"]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         # Special chars should remain unescaped in code
         assert "Text with & special # chars $ and % symbols" in result_str
 
     def test_indented_code_line_to_texttt(self):
         """4-space indented lines should become \\texttt{} commands."""
-        text_lines = [
-            "Regular text",
-            "    indented_code_here",
-            "More text"
-        ]
+        text_lines = ["Regular text", "    indented_code_here", "More text"]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         assert "\\texttt{" in result_str
         assert "indented" in result_str
 
     def test_tab_indented_code_escapes_underscores(self):
         """Tab-indented lines with underscores should escape them in \\texttt{}."""
-        text_lines = [
-            "Regular text",
-            "\tcode_with_tab",
-            "More text"
-        ]
+        text_lines = ["Regular text", "\tcode_with_tab", "More text"]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         assert "\\texttt{" in result_str
         assert "\\texttt{code\\_with\\_tab}" in result_str
 
     def test_four_space_indented_escapes_underscores(self):
         """4-space indented code with underscores."""
-        text_lines = [
-            "Regular text",
-            "    code_with_spaces",
-            "More text"
-        ]
+        text_lines = ["Regular text", "    code_with_spaces", "More text"]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         assert "\\texttt{" in result_str
         assert "\\texttt{code\\_with\\_spaces}" in result_str
 
@@ -958,16 +946,16 @@ class TestTextBlockProcessing:
 class TestSimpleTextBlock:
     """
     Test _format_simple_text_block() - wrapper around _process_text_block().
-    
+
     This is the public interface for simple text formatting.
     Calls _process_text_block() and returns a generator.
     """
-    
+
     def test_code_block_wrapped_in_lstlisting(self):
         """Code blocks should be wrapped in lstlisting environment."""
         text = ["```python", "x = 1", "```"]
         result = list(_format_simple_text_block(text))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         assert "\\begin{lstlisting}[language=python]" in result_str
         assert "x = 1" in result_str
         assert "\\end{lstlisting}" in result_str
@@ -976,20 +964,14 @@ class TestSimpleTextBlock:
         """Inline code should convert to \\texttt{} commands."""
         text = ["Use `python main.py` to run"]
         result = list(_format_simple_text_block(text))
-        result_str = ''.join(result)
+        result_str = "".join(result)
         assert "\\texttt{python main.py}" in result_str
 
     def test_mixed_markdown_and_code(self):
         """Mixed markdown formatting, inline code, and code blocks."""
-        text = [
-            "**Bold** text with `code`",
-            "",
-            "```bash",
-            "ls -la",
-            "```"
-        ]
+        text = ["**Bold** text with `code`", "", "```bash", "ls -la", "```"]
         result = list(_format_simple_text_block(text))
-        result_str = ''.join(result)
+        result_str = "".join(result)
         assert "\\textbf{Bold}" in result_str
         assert "\\texttt{code}" in result_str
         assert "\\begin{lstlisting}[language=bash]" in result_str
@@ -998,123 +980,124 @@ class TestSimpleTextBlock:
 class TestLineBreakInsertion:
     """
     Test \\\\ (line break) insertion logic.
-    
+
     Rules for adding \\\\:
         ✓ Before code blocks (for proper vertical spacing)
         ✗ Before LaTeX commands (\\section, \\label, etc.)
         ✗ Before images (handled by figure environment)
         ✗ Inside blockquotes (breaks quote formatting)
-    
+
     Uses look-ahead to skip empty lines and find next content.
     """
-    
+
     def test_linebreak_before_code_block(self):
         """Normal text before code block should get \\\\ for spacing."""
         text_lines = [
-            'Normal text',
-            '```',
-            'code',
-            '```',
+            "Normal text",
+            "```",
+            "code",
+            "```",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert 'Normal text\\\\' in result_str
+        result_str = "\n".join(result)
+        assert "Normal text\\\\" in result_str
 
     def test_no_linebreak_before_label(self):
         """Labels should never get \\\\ (LaTeX command)."""
         text_lines = [
             '> <a name="test"></a>',
-            '> ![img](test.png)',
+            "> ![img](test.png)",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         # Label should not have \\
-        assert '\\label{test}\\\\' not in result_str
+        assert "\\label{test}\\\\" not in result_str
 
     def test_lookahead_detects_block_elements(self):
         """Look-ahead should detect LaTeX block elements and skip \\\\."""
         text_lines = [
-            'Text line',
-            '',
-            '\\label{test}',
+            "Text line",
+            "",
+            "\\label{test}",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         # No \\ because next non-empty is a block element
-        assert 'Text line\\\\' not in result_str
+        assert "Text line\\\\" not in result_str
 
     def test_lookahead_detects_images(self):
         """Look-ahead should detect markdown images."""
         text_lines = [
-            'Text before image',
-            '',
-            '![Alt text](image.png)',
+            "Text before image",
+            "",
+            "![Alt text](image.png)",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert 'Text before image\\\\' not in result_str
+        result_str = "\n".join(result)
+        assert "Text before image\\\\" not in result_str
 
     def test_lookahead_stops_at_text_content(self):
         """Look-ahead should stop at actual text content (not block element)."""
         text_lines = [
-            'Text line 1',
-            '',
-            'Text line 2',
+            "Text line 1",
+            "",
+            "Text line 2",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
+        result_str = "\n".join(result)
         # Two text lines in sequence: no \\ needed
-        assert 'Text line 1\\\\' not in result_str
+        assert "Text line 1\\\\" not in result_str
 
     def test_lookahead_skips_multiple_empty_lines(self):
         """Look-ahead should skip multiple empty lines to find code block."""
         text_lines = [
-            'Text line',
-            '',
-            '',
-            '```',
-            'code',
-            '```',
+            "Text line",
+            "",
+            "",
+            "```",
+            "code",
+            "```",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert 'Text line\\\\' in result_str
+        result_str = "\n".join(result)
+        assert "Text line\\\\" in result_str
 
     def test_lookahead_detects_begin_environment(self):
         """Look-ahead should detect \\begin{...} environments."""
         text_lines = [
-            'Text line',
-            '',
-            '\\begin{itemize}',
+            "Text line",
+            "",
+            "\\begin{itemize}",
         ]
         result = list(_process_text_block(text_lines))
-        result_str = '\n'.join(result)
-        assert 'Text line\\\\' not in result_str
+        result_str = "\n".join(result)
+        assert "Text line\\\\" not in result_str
 
 
 # =============================================================================
 # 7. COMPLEX FORMAT DETECTION
 # =============================================================================
 
+
 class TestComplexFormatDetection:
     """
     Test _has_complex_formatting() function.
-    
+
     Determines if text should use legacy formatter (True) or modern pipeline (False).
-    
+
     Complex formats (require legacy):
         - Tables (markdown pipes with header separator)
         - PlantUML diagrams
         - Math environments ($$)
         - Nested lists (indented list items)
-    
+
     Simple formats (handled by modern pipeline):
         - Bold, italic, strikethrough
         - Headings
         - Links, images
         - Code blocks (non-PlantUML)
     """
-    
+
     def test_simple_markdown_not_complex(self):
         """Simple markdown formatting should not be flagged as complex."""
         text = ["This is **bold** text", "And _italic_"]
@@ -1122,22 +1105,12 @@ class TestComplexFormatDetection:
 
     def test_table_with_separator_detected(self):
         """Tables with proper separator (|---|) should be detected."""
-        text = [
-            "| Col1 | Col2 |",
-            "|------|------|",
-            "| A    | B    |"
-        ]
+        text = ["| Col1 | Col2 |", "|------|------|", "| A    | B    |"]
         assert _has_complex_formatting(text) is True
 
     def test_plantuml_diagram_detected(self):
         """PlantUML diagrams should be detected as complex."""
-        text = [
-            '```plantuml',
-            "@startuml",
-            "A -> B",
-            "@enduml",
-            '```'
-        ]
+        text = ["```plantuml", "@startuml", "A -> B", "@enduml", "```"]
         assert _has_complex_formatting(text) is True
 
     def test_math_environment_detected(self):
@@ -1147,12 +1120,7 @@ class TestComplexFormatDetection:
 
     def test_regular_code_block_not_complex(self):
         """Regular code blocks (non-PlantUML) are not complex."""
-        text = [
-            "```python",
-            "def foo():",
-            "    pass",
-            "```"
-        ]
+        text = ["```python", "def foo():", "    pass", "```"]
         assert _has_complex_formatting(text) is False
 
     def test_empty_input_not_complex(self):
@@ -1186,38 +1154,38 @@ class TestComplexFormatDetection:
     def test_nested_bullet_lists_complex(self):
         """Nested bullet lists (indented) are complex."""
         text = [
-            '- Item 1',
-            '  - Nested item 1.1',
-            '  - Nested item 1.2',
-            '- Item 2',
+            "- Item 1",
+            "  - Nested item 1.1",
+            "  - Nested item 1.2",
+            "- Item 2",
         ]
         assert _has_complex_formatting(text) is True
 
     def test_nested_numbered_lists_complex(self):
         """Nested numbered lists are complex."""
         text = [
-            '1. Item 1',
-            '   1. Nested item 1.1',
-            '   2. Nested item 1.2',
-            '2. Item 2',
+            "1. Item 1",
+            "   1. Nested item 1.1",
+            "   2. Nested item 1.2",
+            "2. Item 2",
         ]
         assert _has_complex_formatting(text) is True
 
     def test_single_level_list_not_complex(self):
         """Single-level lists can be handled by modern pipeline."""
         text = [
-            '- Item 1',
-            '- Item 2',
-            '- Item 3',
+            "- Item 1",
+            "- Item 2",
+            "- Item 3",
         ]
         assert _has_complex_formatting(text) is False
 
     def test_mixed_nested_list_markers_complex(self):
         """Mixed nested list markers (-, +, *) are complex."""
         text = [
-            '* Item 1',
-            '  + Nested with different marker',
-            '* Item 2',
+            "* Item 1",
+            "  + Nested with different marker",
+            "* Item 2",
         ]
         assert _has_complex_formatting(text) is True
 
@@ -1225,27 +1193,27 @@ class TestComplexFormatDetection:
 class TestTableDetectionEdgeCases:
     """
     Edge cases for table detection within complex format detection.
-    
+
     Tables require:
         - At least one line with pipes
         - Followed by separator line with dashes
         - At least 3 dashes per column (|---|)
     """
-    
+
     def test_table_various_separator_patterns(self):
         """Different table separator patterns should all be detected."""
         # Minimum 3 dashes
         text1 = ["| H |", "|---|"]
         assert _has_complex_formatting(text1) is True
-        
+
         # More dashes
         text2 = ["| Header |", "|--------|"]
         assert _has_complex_formatting(text2) is True
-        
+
         # With center alignment
         text3 = ["| H |", "|:---:|"]
         assert _has_complex_formatting(text3) is True
-        
+
         # With left and right alignment
         text4 = ["| L | C | R |", "|:---|:--:|---:|"]
         assert _has_complex_formatting(text4) is True
@@ -1255,11 +1223,11 @@ class TestTableDetectionEdgeCases:
         # Only 2 dashes (not enough)
         text1 = ["| H |", "|--|", "| D |"]
         assert _has_complex_formatting(text1) is False
-        
+
         # No separator line
         text2 = ["| H1 | H2 |", "| D1 | D2 |"]
         assert _has_complex_formatting(text2) is False
-        
+
         # Just separator (no header or data)
         text3 = ["|---|---|"]
         assert _has_complex_formatting(text3) is False
@@ -1267,71 +1235,71 @@ class TestTableDetectionEdgeCases:
     def test_malformed_table_very_short_dashes(self):
         """Malformed tables with very short dashes are still detected as tables."""
         text_lines = [
-            '| Header 1 | Header 2 | Header 3 |',
-            '|-|-|-|',  # Very short but still valid
-            '| Cell 1 | Cell 2 | Cell 3 |',
+            "| Header 1 | Header 2 | Header 3 |",
+            "|-|-|-|",  # Very short but still valid
+            "| Cell 1 | Cell 2 | Cell 3 |",
         ]
         assert _has_complex_formatting(text_lines) is True
 
     def test_table_at_end_of_file(self):
         """Table starting at end of file should be detected."""
         text_lines = [
-            'Some text',
-            '| Header 1 | Header 2 |',
-            '|----------|----------|',
+            "Some text",
+            "| Header 1 | Header 2 |",
+            "|----------|----------|",
         ]
         assert _has_complex_formatting(text_lines) is True
 
     def test_non_table_at_eof_no_pipes(self):
         """Non-table at EOF should not trigger detection."""
         text_lines = [
-            'Some text',
-            'More text without pipes',
+            "Some text",
+            "More text without pipes",
         ]
         assert _has_complex_formatting(text_lines) is False
-    
+
     def test_table_at_eof_with_previous_pipes(self):
         """
         Table-like line at EOF when previous lines also have pipes.
-        
+
         Tests:
             elif i == len(text_lines) - 1 and i > 0:
                 prev_has_pipes = any("|" in text_lines[j] for j in range(max(0, i-2), i))
-        
+
         When prev_has_pipes is True, should NOT trigger EOF detection.
         """
         text_lines = [
-            'Some text | with | pipes',  # i-1 has pipes
-            '| Header 1 | Header 2 |',   # i (last line)
+            "Some text | with | pipes",  # i-1 has pipes
+            "| Header 1 | Header 2 |",  # i (last line)
         ]
         # Previous line has pipes, so prev_has_pipes = True
         # EOF check won't trigger
         # Will check for next line (doesn't exist) so returns False
         assert _has_complex_formatting(text_lines) is False
-    
+
     def test_table_at_eof_without_previous_pipes(self):
         """
         Table-like line at EOF WITHOUT pipes in previous lines.
         """
         text_lines = [
-            'Normal text line 1',
-            'Normal text line 2',
-            '| Header 1 | Header 2 |',  # Last line, no previous pipes
+            "Normal text line 1",
+            "Normal text line 2",
+            "| Header 1 | Header 2 |",  # Last line, no previous pipes
         ]
         # No pipes in previous lines
         # Should detect as "potential table start at EOF"
-        assert _has_complex_formatting(text_lines) is True    
+        assert _has_complex_formatting(text_lines) is True
 
     def test_two_line_document_pipes_at_end(self):
         """
         Two-line document where last line has pipes.
-        
+
         Tests: i == len(text_lines) - 1 and i > 0
         When len=2, i=1 (last line), 'i > 0' is True → EOF check runs.
         """
         text_lines = [
-            'First line without pipes',
-            '| Header 1 | Header 2 |',  # i=1, is EOF, i > 0 is True
+            "First line without pipes",
+            "| Header 1 | Header 2 |",  # i=1, is EOF, i > 0 is True
         ]
         # Previous line (i=0) has no pipes
         # Should trigger EOF table detection
@@ -1340,14 +1308,14 @@ class TestTableDetectionEdgeCases:
     def test_eof_check_looks_back_two_lines(self):
         """
         EOF table check looks at previous 2 lines for pipes.
-        
+
         Tests: range(max(0, i-2), i)
         Should check lines at indices i-2 and i-1.
         """
         text_lines = [
-            '| Line 0 | has pipes |',   # i-2 when i=2
-            'Line 1 no pipes',           # i-1 when i=2
-            '| Header 1 | Header 2 |',  # i=2 (last line)
+            "| Line 0 | has pipes |",  # i-2 when i=2
+            "Line 1 no pipes",  # i-1 when i=2
+            "| Header 1 | Header 2 |",  # i=2 (last line)
         ]
         # Check range(max(0, 2-2), 2) = range(0, 2) = [0, 1]
         # Line 0 has pipes → prev_has_pipes = True
@@ -1357,12 +1325,12 @@ class TestTableDetectionEdgeCases:
     def test_eof_check_at_index_1_looks_back_one_line(self):
         """
         When i=1 (second line), looks back at i-2=-1 → max(0, -1)=0.
-        
+
         Tests: max(0, i-2) when i-2 is negative.
         """
         text_lines = [
-            'First line',                # Index 0
-            '| Header 1 | Header 2 |',  # Index 1 (EOF)
+            "First line",  # Index 0
+            "| Header 1 | Header 2 |",  # Index 1 (EOF)
         ]
         # range(max(0, 1-2), 1) = range(max(0, -1), 1) = range(0, 1) = [0]
         # Line 0 has no pipes → prev_has_pipes = False
@@ -1372,98 +1340,97 @@ class TestTableDetectionEdgeCases:
     def test_eof_not_triggered_when_separator_exists(self):
         """
         EOF check should not run if proper separator exists.
-        
+
         Table is detected earlier via normal separator check.
         """
         text_lines = [
-            '| Header 1 | Header 2 |',
-            '|----------|----------|',  # Proper separator
+            "| Header 1 | Header 2 |",
+            "|----------|----------|",  # Proper separator
         ]
         # Detected on first line when checking next line
         # Never reaches EOF branch
         assert _has_complex_formatting(text_lines) is True
 
+
 class TestPlantUMLDetection:
     """
     Test PlantUML diagram detection.
-    
+
     PlantUML is detected by:
         - ```plantuml code fence
         - @startuml ... @enduml markers
     """
-    
+
     def test_plantuml_with_code_fence(self):
         """PlantUML with standard code fence backticks."""
-        text_lines = ['```plantuml', '@startuml', 'A -> B', '@enduml', '```']
+        text_lines = ["```plantuml", "@startuml", "A -> B", "@enduml", "```"]
         assert _has_complex_formatting(text_lines) is True
 
     def test_plantuml_detected(self):
         """PlantUML should be detected."""
-        text = [
-            '`plantuml title="Test"',
-            "@startuml",
-            "A -> B",
-            "@enduml"
-        ]
+        text = ['`plantuml title="Test"', "@startuml", "A -> B", "@enduml"]
         assert _has_complex_formatting(text) is True
+
 
 class TestNestedListDetection:
     """
     Test nested list detection.
-    
+
     Nested lists are detected by:
         - Indented list markers (-, *, +, 1., etc.)
         - At least 2 spaces or 1 tab before marker
     """
-    
+
     def test_simple_bullet_list_not_nested(self):
         """Simple bullet list with no indentation."""
         text_lines = [
-            '- Item 1',
-            '- Item 2',
-            '- Item 3',
+            "- Item 1",
+            "- Item 2",
+            "- Item 3",
         ]
         assert _has_complex_formatting(text_lines) is False
 
     def test_nested_bullet_list_two_spaces(self):
         """Nested bullet list with 2-space indentation."""
         text_lines = [
-            '- Item 1',
-            '  - Nested item',
-            '- Item 2',
+            "- Item 1",
+            "  - Nested item",
+            "- Item 2",
         ]
         assert _has_complex_formatting(text_lines) is True
 
     def test_nested_numbered_list(self):
         """Nested numbered list."""
         text_lines = [
-            '1. Item 1',
-            '   1. Nested item',
-            '2. Item 2',
+            "1. Item 1",
+            "   1. Nested item",
+            "2. Item 2",
         ]
         assert _has_complex_formatting(text_lines) is True
 
     def test_mixed_list_markers_nested(self):
         """Mixed list markers with nesting."""
         text_lines = [
-            '* Item 1',
-            '  + Nested with different marker',
-            '* Item 2',
+            "* Item 1",
+            "  + Nested with different marker",
+            "* Item 2",
         ]
         assert _has_complex_formatting(text_lines) is True
 
     def test_three_level_nesting(self):
         """Three levels of list nesting."""
         text_lines = [
-            '- Level 1',
-            '  - Level 2',
-            '    - Level 3',
+            "- Level 1",
+            "  - Level 2",
+            "    - Level 3",
         ]
         assert _has_complex_formatting(text_lines) is True
+
 
 # =============================================================================
 # 8. HELPER UTILITIES
 # =============================================================================
+
 
 class TestTableFormatting:
     """
@@ -1478,7 +1445,7 @@ class TestTableFormatting:
         - Escapes special LaTeX characters in cells
         - Handles end_pipes parameter (tables with/without ending |)
     """
-    
+
     def test_table_cell_escaping(self):
         """Table cells should have LaTeX special chars escaped."""
         line = "| test_var | 100% | A&B |"
@@ -1522,9 +1489,9 @@ class TestTableFormatting:
 class TestTableDetection:
     """
     Test _check_for_new_table() function.
-    
+
     Detects table start and sets up LaTeX longtable environment.
-    
+
     Logic:
         1. Current line has pipes
         2. Next line has dashes (|---|)
@@ -1532,24 +1499,24 @@ class TestTableDetection:
         4. Create \begin{longtable}{column_spec}
         5. Process header row
     """
-    
+
     def test_valid_table_detection(self):
         """Proper table with header and dash separator."""
         text = [
             "| Header1 | Header2 |",
             "|---------|---------|",
-            "| Cell1   | Cell2   |"
+            "| Cell1   | Cell2   |",
         ]
         i = 0
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
         table_found, header_done, line_result, end_pipes = result
-        
+
         assert table_found is True
         assert len(block) > 0
         assert "\\begin{longtable}" in block[0]
@@ -1559,26 +1526,27 @@ class TestTableDetection:
         text = [
             "| Left | Center | Right |",
             "|:-----|:------:|------:|",
-            "| L    | C      | R     |"
+            "| L    | C      | R     |",
         ]
         i = 0
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
         table_found = result[0]
-        
+
         assert table_found is True
         assert len(block) > 0
 
     def test_unbalanced_pipes_warning(self, caplog):
         """Different pipe counts between header and separator should warn."""
         import logging
+
         caplog.set_level(logging.WARNING)
-        
+
         text = [
             "| Header1 | Header2 |",
             "| No dashes here |",  # Wrong number of pipes
@@ -1587,18 +1555,19 @@ class TestTableDetection:
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
-        
+
         assert "Possibly unbalanced table" in caplog.text
 
     def test_no_separator_warning(self, caplog):
         """Table without dash separator should warn."""
         import logging
+
         caplog.set_level(logging.WARNING)
-        
+
         text = [
             "| Header1 | Header2 |",
             "| Cell1   | Cell2   |",  # No dashes
@@ -1607,11 +1576,11 @@ class TestTableDetection:
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
-        
+
         assert "Possibly incorrectly specified table" in caplog.text
 
     def test_no_next_line_returns_false(self):
@@ -1621,57 +1590,54 @@ class TestTableDetection:
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
         table_found = result[0]
-        
+
         assert table_found is False
 
     def test_next_line_no_pipes_returns_false(self):
         """Next line without pipes should return False."""
-        text = [
-            "| Header |",
-            "No pipes here"
-        ]
+        text = ["| Header |", "No pipes here"]
         i = 0
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
         table_found = result[0]
-        
+
         assert table_found is False
 
     def test_end_pipes_determination(self):
         """More pipes than dash groups means end_pipes = True."""
         text = [
             "| Col1 | Col2 | Col3 |",  # 4 pipes
-            "|------|------|------|",   # 3 dash groups
+            "|------|------|------|",  # 3 dash groups
         ]
         i = 0
         line = text[0]
         block = []
         table_match = re.findall(r"\|", line)
-        
+
         result = _check_for_new_table(
             table_match, text, i, line, block, False, False, False
         )
         table_found, header_done, line_result, end_pipes = result
-        
+
         assert end_pipes is True
 
 
 class TestImageTypesetting:
     """
     Test _typeset_latex_image() function.
-    
+
     Converts: ![alt](path) → LaTeX figure environment
-    
+
     Output:
         \\begin{figure}[h!]\\center
         \\includegraphics[width=0.8\\textwidth]{path}
@@ -1679,23 +1645,23 @@ class TestImageTypesetting:
         \\zlabel{fig:sanitized-alt}
         \\caption{alt or title}
         \\end{figure}
-    
+
     Features:
         - Sanitizes paths (spaces → hyphens)
         - Extracts title from "path" if present
         - Creates fig: labels for referencing
         - Sets standard width (0.8\\textwidth)
     """
-    
+
     def test_basic_image_conversion(self):
         """Basic image should create figure environment."""
         image_match = [("Test Image", "images/test.png")]
         line = "![Test Image](images/test.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "\\begin{figure}" in block_str
         assert "\\includegraphics" in block_str
         assert "Test Image" in block_str
@@ -1706,25 +1672,26 @@ class TestImageTypesetting:
         image_match = [("Alt Text", 'images/test.png "Actual Title"')]
         line = '![Alt Text](images/test.png "Actual Title")'
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "Actual Title" in block_str
         assert "images/test.png" in block_str
 
     def test_path_sanitization_spaces_to_hyphens(self, caplog):
         """Image paths with spaces should be sanitized to hyphens."""
         import logging
+
         caplog.set_level(logging.DEBUG)
-        
+
         image_match = [("Alt", "path with spaces.png")]
         line = "![Alt](path with spaces.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "path-with-spaces.png" in block_str
         assert "Image path sanitized" in caplog.text
 
@@ -1733,10 +1700,10 @@ class TestImageTypesetting:
         image_match = [("My Test Image 123", "test.png")]
         line = "![My Test Image 123](test.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "\\label{fig:" in block_str
         assert "\\zlabel{fig:" in block_str
 
@@ -1745,10 +1712,10 @@ class TestImageTypesetting:
         image_match = [("Test & Image 50%", "test.png")]
         line = "![Test & Image 50%](test.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "\\caption{" in block_str
         assert "Test" in block_str
 
@@ -1757,10 +1724,10 @@ class TestImageTypesetting:
         image_match = [("Image", "test.png")]
         line = "![Image](test.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "width=0.8\\textwidth" in block_str
 
     def test_figure_environment_structure(self):
@@ -1768,10 +1735,10 @@ class TestImageTypesetting:
         image_match = [("Test", "test.png")]
         line = "![Test](test.png)"
         block = []
-        
+
         result = _typeset_latex_image(image_match, line, block)
-        block_str = '\n'.join(str(item) for item in block)
-        
+        block_str = "\n".join(str(item) for item in block)
+
         assert "\\begin{figure}[h!]" in block_str
         assert "\\end{figure}" in result
         assert "\\center" in block_str
@@ -1780,25 +1747,25 @@ class TestImageTypesetting:
 class TestCommentWrapping:
     """
     Test _add_comment() function.
-    
+
     Wraps text in LaTeX comment lines (starting with %).
-    
+
     Format:
         %%%%%%%%%%%%%%%%... (80 chars)
         % Text here
         %%%%%%%%%%%%%%%%... (80 chars)
-    
+
     Features:
         - Word wrapping to fit line width
         - Preserves original content
         - Used for debugging output
     """
-    
+
     def test_basic_comment_wrapping(self):
         """Basic comment should have header and footer."""
         wrapper = []
         _add_comment(wrapper, "Test line")
-        
+
         assert len(wrapper) == 3
         assert "Test line" in wrapper[1]
         assert "%" * 80 in wrapper[0]
@@ -1808,7 +1775,7 @@ class TestCommentWrapping:
         """Comment on empty line should still have % markers."""
         wrapper = []
         _add_comment(wrapper, "")
-        
+
         assert len(wrapper) == 3
         assert wrapper[1].startswith("%")
         assert wrapper[1].endswith("%")
@@ -1818,7 +1785,7 @@ class TestCommentWrapping:
         wrapper = []
         original = "This is a test with special chars: #$%&"
         _add_comment(wrapper, original)
-        
+
         assert original in wrapper[1]
         assert wrapper[1].startswith("% ")
 
@@ -1827,7 +1794,7 @@ class TestCommentWrapping:
         wrapper = []
         long_word = "a" * 80
         _add_comment(wrapper, long_word)
-        
+
         assert len(wrapper) >= 3
         assert any(long_word in str(line) for line in wrapper)
 
@@ -1836,7 +1803,7 @@ class TestCommentWrapping:
         wrapper = []
         text = "word1 " * 20
         _add_comment(wrapper, text)
-        
+
         assert len(wrapper) >= 3
         assert "%" * 80 == wrapper[0]
         assert "%" * 80 == wrapper[-1]
@@ -1845,24 +1812,20 @@ class TestCommentWrapping:
 class TestContextFormatting:
     """
     Test _format_context() function.
-    
+
     Formats debugging context information:
         - item_uid: Item identifier
         - file: Source file path
         - line_num: Line number in file
-    
+
     Used in warning/error messages to help locate issues.
     """
-    
+
     def test_full_context_formatting(self):
         """Context with all fields should include UID, file, and line number."""
-        context = {
-            'item_uid': 'REQ123',
-            'file': 'requirements/req.yml',
-            'line_num': 42
-        }
+        context = {"item_uid": "REQ123", "file": "requirements/req.yml", "line_num": 42}
         result = _format_context(context)
-        
+
         assert "REQ123" in result
         assert "requirements/req.yml" in result
         assert "42" in result
@@ -1874,28 +1837,29 @@ class TestContextFormatting:
 
     def test_partial_context_with_uid_only(self):
         """Partial context with only some fields should work."""
-        context = {'item_uid': 'REQ999'}
+        context = {"item_uid": "REQ999"}
         result = _format_context(context)
         assert "REQ999" in result
 
     def test_context_with_file_and_line(self):
         """Context with file path and line number."""
-        context = {'item_uid': 'REQ-001', 'file': 'test.yml', 'line_num': 42}
+        context = {"item_uid": "REQ-001", "file": "test.yml", "line_num": 42}
         result = _format_context(context)
-        
-        assert 'REQ-001' in result
-        assert 'test.yml' in result
-        assert '42' in result
+
+        assert "REQ-001" in result
+        assert "test.yml" in result
+        assert "42" in result
 
 
 # =============================================================================
 # 9. FULL PIPELINE INTEGRATION
 # =============================================================================
 
+
 class TestFullPipelineIntegration:
     """
     Integration tests for _latex_convert() - the complete 14-phase pipeline.
-    
+
     Tests all phases working together:
         Phase 1:  HTML conversion
         Phase 2:  Code block detection
@@ -1907,15 +1871,15 @@ class TestFullPipelineIntegration:
         Phase 8:  Heading conversion
         Phase 9:  Special character escaping
         Phase 10-14: Placeholder restoration
-    
+
     These tests verify the phases don't interfere with each other.
     """
-    
+
     def test_all_special_characters_handled(self):
         """All 10 LaTeX special characters should be properly escaped."""
         input_text = r"\ { } _ # $ % & ^ ~"
         result = _latex_convert(input_text)
-        
+
         assert "textbackslash" in result
         assert result.count("\\{") >= 1
         assert result.count("\\}") >= 1
@@ -1924,29 +1888,31 @@ class TestFullPipelineIntegration:
         assert "\\$" in result
         assert "\\%" in result
         assert "\\&" in result
-        assert ("textasciicircum" in result or "\\^" in result)
-        assert ("textasciitilde" in result or "\\~" in result)
+        assert "textasciicircum" in result or "\\^" in result
+        assert "textasciitilde" in result or "\\~" in result
 
     def test_unmatched_braces_warning(self, caplog):
         """Unmatched braces should trigger warning."""
         import logging
+
         caplog.set_level(logging.WARNING)
-        
-        context = {'item_uid': 'TEST003', 'line_num': 10}
+
+        context = {"item_uid": "TEST003", "line_num": 10}
         result = _latex_convert("Text with {{{ many braces", context=context)
-        
+
         assert "Unmatched braces" in caplog.text
         assert "TEST003" in caplog.text
 
     def test_very_long_line_debug_log(self, caplog):
         """Very long lines (>500 chars) should trigger debug log."""
         import logging
+
         caplog.set_level(logging.DEBUG)
-        
-        context = {'item_uid': 'TEST004', 'line_num': 20}
+
+        context = {"item_uid": "TEST004", "line_num": 20}
         long_text = "a" * 600
         result = _latex_convert(long_text, context=context)
-        
+
         assert "Very long line detected" in caplog.text
 
     def test_long_line_still_processed(self):
@@ -1979,20 +1945,23 @@ class TestFullPipelineIntegration:
         """Link with empty text should be handled gracefully."""
         result = _latex_convert("[](https://example.com)")
         # Should either preserve or convert gracefully
-        assert ("[](https://example.com)" in result or
-                "\\href{https://example.com}{}" in result)
+        assert (
+            "[](https://example.com)" in result
+            or "\\href{https://example.com}{}" in result
+        )
+
 
 class TestHeadingNumbering:
     """
     Test context-aware heading numbering (Phase 8).
-    
+
     Heading numbering behavior depends on context:
         - Document-level headings: Controlled by PUBLISH_HEADING_LEVELS setting
         - Item text headings: ALWAYS unnumbered (in_item_text=True)
-    
+
     This prevents duplicate numbering where both the item header and
     internal headings would be numbered, creating confusion in TOC.
-    
+
     Example:
         Item SYSR-002 with level 1.1:
             Header: "1.1 Control of STO - SYSR-002" (numbered)
@@ -2000,146 +1969,146 @@ class TestHeadingNumbering:
                 ## Content    → Content (unnumbered, not in TOC)
                 ## Rationale  → Rationale (unnumbered, not in TOC)
     """
-    
+
     def test_heading_without_context_uses_setting(self):
         """
         Without context, headings use PUBLISH_HEADING_LEVELS setting.
-        
+
         This is for document-level headings (not inside items).
         """
         # When PUBLISH_HEADING_LEVELS is True (numbered)
         original_setting = settings.PUBLISH_HEADING_LEVELS
         try:
             settings.PUBLISH_HEADING_LEVELS = True
-            result = _latex_convert('## Test Heading')
-            assert '\\subsection{Test Heading}' in result
-            assert '\\subsection*{' not in result
-            
+            result = _latex_convert("## Test Heading")
+            assert "\\subsection{Test Heading}" in result
+            assert "\\subsection*{" not in result
+
             # When PUBLISH_HEADING_LEVELS is False (unnumbered)
             settings.PUBLISH_HEADING_LEVELS = False
-            result = _latex_convert('## Test Heading')
-            assert '\\subsection*{Test Heading}' in result
+            result = _latex_convert("## Test Heading")
+            assert "\\subsection*{Test Heading}" in result
         finally:
             settings.PUBLISH_HEADING_LEVELS = original_setting
-    
+
     def test_heading_in_item_text_always_unnumbered(self):
         """
         Headings with in_item_text=True are ALWAYS unnumbered.
-        
+
         This happens regardless of PUBLISH_HEADING_LEVELS setting.
         """
-        context = {'in_item_text': True, 'item_uid': 'TEST-001'}
-        
+        context = {"in_item_text": True, "item_uid": "TEST-001"}
+
         original_setting = settings.PUBLISH_HEADING_LEVELS
         try:
             # Even when PUBLISH_HEADING_LEVELS is True
             settings.PUBLISH_HEADING_LEVELS = True
-            result = _latex_convert('## Content', context=context)
-            assert '\\subsection*{Content}' in result
-            assert '\\subsection{Content}' not in result
-            
+            result = _latex_convert("## Content", context=context)
+            assert "\\subsection*{Content}" in result
+            assert "\\subsection{Content}" not in result
+
             # And when PUBLISH_HEADING_LEVELS is False
             settings.PUBLISH_HEADING_LEVELS = False
-            result = _latex_convert('## Rationale', context=context)
-            assert '\\subsection*{Rationale}' in result
+            result = _latex_convert("## Rationale", context=context)
+            assert "\\subsection*{Rationale}" in result
         finally:
             settings.PUBLISH_HEADING_LEVELS = original_setting
-    
+
     def test_all_heading_levels_unnumbered_in_item_text(self):
         """All heading levels (1-5) should be unnumbered in item text."""
-        context = {'in_item_text': True}
-        
+        context = {"in_item_text": True}
+
         test_cases = [
-            ('# Level 1', '\\section*{Level 1}'),
-            ('## Level 2', '\\subsection*{Level 2}'),
-            ('### Level 3', '\\subsubsection*{Level 3}'),
-            ('#### Level 4', '\\paragraph*{Level 4}'),
-            ('##### Level 5', '\\subparagraph*{Level 5}'),
+            ("# Level 1", "\\section*{Level 1}"),
+            ("## Level 2", "\\subsection*{Level 2}"),
+            ("### Level 3", "\\subsubsection*{Level 3}"),
+            ("#### Level 4", "\\paragraph*{Level 4}"),
+            ("##### Level 5", "\\subparagraph*{Level 5}"),
         ]
-        
+
         for markdown, expected in test_cases:
             result = _latex_convert(markdown, context=context)
             assert expected in result, f"Failed for: {markdown}"
-    
+
     def test_heading_level_6_always_unnumbered(self):
         """
         Level 6+ headings are ALWAYS unnumbered (too deep for LaTeX).
-        
+
         This is true regardless of context or settings.
         """
         # Without context
-        result = _latex_convert('###### Too Deep')
-        assert '\\subparagraph*{Too Deep' in result
-        assert 'too deep' in result.lower()
-        
+        result = _latex_convert("###### Too Deep")
+        assert "\\subparagraph*{Too Deep" in result
+        assert "too deep" in result.lower()
+
         # With item text context
-        context = {'in_item_text': True}
-        result = _latex_convert('###### Also Too Deep', context=context)
-        assert '\\subparagraph*{Also Too Deep' in result
-    
+        context = {"in_item_text": True}
+        result = _latex_convert("###### Also Too Deep", context=context)
+        assert "\\subparagraph*{Also Too Deep" in result
+
     def test_item_text_context_with_item_uid(self):
         """Context with item_uid should produce unnumbered headings."""
         context = {
-            'in_item_text': True,
-            'item_uid': 'SYSR-002',
-            'file': 'requirements/SYSR-002.yml',
+            "in_item_text": True,
+            "item_uid": "SYSR-002",
+            "file": "requirements/SYSR-002.yml",
         }
-        
-        result = _latex_convert('## Content', context=context)
-        assert '\\subsection*{Content}' in result
-    
+
+        result = _latex_convert("## Content", context=context)
+        assert "\\subsection*{Content}" in result
+
     def test_mixed_context_flags(self):
         """Test various context flag combinations."""
         # Only in_item_text=True
-        context1 = {'in_item_text': True}
-        result1 = _latex_convert('## Heading', context=context1)
-        assert '\\subsection*{Heading}' in result1
-        
+        context1 = {"in_item_text": True}
+        result1 = _latex_convert("## Heading", context=context1)
+        assert "\\subsection*{Heading}" in result1
+
         # in_item_text=False (explicit)
-        context2 = {'in_item_text': False}
-        result2 = _latex_convert('## Heading', context=context2)
+        context2 = {"in_item_text": False}
+        result2 = _latex_convert("## Heading", context=context2)
         # Should use PUBLISH_HEADING_LEVELS setting
-        assert '\\subsection' in result2
-        
+        assert "\\subsection" in result2
+
         # Empty context dict
         context3 = {}
-        result3 = _latex_convert('## Heading', context=context3)
+        result3 = _latex_convert("## Heading", context=context3)
         # Should use PUBLISH_HEADING_LEVELS setting
-        assert '\\subsection' in result3
-    
+        assert "\\subsection" in result3
+
     def test_heading_numbering_does_not_affect_content(self):
         """Numbering flag should only affect heading command, not content."""
-        context = {'in_item_text': True}
-        
-        result = _latex_convert('## Special Chars & Symbols %', context=context)
+        context = {"in_item_text": True}
+
+        result = _latex_convert("## Special Chars & Symbols %", context=context)
         # Should be unnumbered
-        assert '\\subsection*{' in result
+        assert "\\subsection*{" in result
         # Content should be preserved (though special chars may be escaped)
-        assert 'Special Chars' in result
-    
+        assert "Special Chars" in result
+
     def test_heading_with_markdown_formatting_in_title(self):
         """Headings can contain markdown formatting in title."""
-        context = {'in_item_text': True}
-        
-        result = _latex_convert('## **Bold** Heading', context=context)
-        assert '\\subsection*{' in result
+        context = {"in_item_text": True}
+
+        result = _latex_convert("## **Bold** Heading", context=context)
+        assert "\\subsection*{" in result
         # Bold should be converted
-        assert '\\textbf{Bold}' in result
-    
+        assert "\\textbf{Bold}" in result
+
     def test_document_level_heading_numbered(self):
         """
         Document-level headings (no context) should be numbered.
-        
+
         Simulates headings outside of item text (e.g., in a preamble).
         """
         original_setting = settings.PUBLISH_HEADING_LEVELS
         try:
             settings.PUBLISH_HEADING_LEVELS = True
-            
+
             # No context = document level
-            result = _latex_convert('# Document Section')
-            assert '\\section{Document Section}' in result
-            assert '*' not in result  # No star
+            result = _latex_convert("# Document Section")
+            assert "\\section{Document Section}" in result
+            assert "*" not in result  # No star
         finally:
             settings.PUBLISH_HEADING_LEVELS = original_setting
 
@@ -2147,111 +2116,112 @@ class TestHeadingNumbering:
 class TestHeadingNumberingIntegration:
     """
     Integration tests for heading numbering with _process_text_block().
-    
+
     Tests the full pipeline including context propagation.
     """
-    
+
     def test_multiple_headings_in_item_text(self):
         """Multiple headings in item text should all be unnumbered."""
-        context = {'in_item_text': True, 'item_uid': 'TEST-001'}
-        
+        context = {"in_item_text": True, "item_uid": "TEST-001"}
+
         text_lines = [
-            '## Content',
-            'Some text here.',
-            '## Rationale',
-            'More text.',
-            '### Details',
-            'Even more text.',
+            "## Content",
+            "Some text here.",
+            "## Rationale",
+            "More text.",
+            "### Details",
+            "Even more text.",
         ]
-        
+
         result = list(_process_text_block(text_lines, context=context))
-        result_str = '\n'.join(result)
-        
+        result_str = "\n".join(result)
+
         # All headings should be unnumbered
-        assert '\\subsection*{Content}' in result_str
-        assert '\\subsection*{Rationale}' in result_str
-        assert '\\subsubsection*{Details}' in result_str
-        
+        assert "\\subsection*{Content}" in result_str
+        assert "\\subsection*{Rationale}" in result_str
+        assert "\\subsubsection*{Details}" in result_str
+
         # Should NOT have numbered versions
-        assert '\\subsection{Content}' not in result_str
-        assert '\\subsection{Rationale}' not in result_str
-    
+        assert "\\subsection{Content}" not in result_str
+        assert "\\subsection{Rationale}" not in result_str
+
     def test_headings_mixed_with_other_content(self):
         """Headings mixed with code blocks, lists, etc."""
-        context = {'in_item_text': True}
-        
+        context = {"in_item_text": True}
+
         text_lines = [
-            '## Overview',
-            'This is a description.',
-            '',
-            '```python',
-            'code_example()',
-            '```',
-            '',
-            '## Implementation',
-            '- Point 1',
-            '- Point 2',
+            "## Overview",
+            "This is a description.",
+            "",
+            "```python",
+            "code_example()",
+            "```",
+            "",
+            "## Implementation",
+            "- Point 1",
+            "- Point 2",
         ]
-        
+
         result = list(_process_text_block(text_lines, context=context))
-        result_str = '\n'.join(result)
-        
+        result_str = "\n".join(result)
+
         # Headings should be unnumbered
-        assert '\\subsection*{Overview}' in result_str
-        assert '\\subsection*{Implementation}' in result_str
-        
+        assert "\\subsection*{Overview}" in result_str
+        assert "\\subsection*{Implementation}" in result_str
+
         # Code and other content should be preserved
-        assert '\\begin{lstlisting}' in result_str
-        assert 'code_example()' in result_str
-    
+        assert "\\begin{lstlisting}" in result_str
+        assert "code_example()" in result_str
+
     def test_heading_at_start_of_item_text(self):
         """Heading as first line of item text."""
-        context = {'in_item_text': True}
-        
+        context = {"in_item_text": True}
+
         text_lines = [
-            '## First Heading',
-            'Content follows.',
+            "## First Heading",
+            "Content follows.",
         ]
-        
+
         result = list(_process_text_block(text_lines, context=context))
-        result_str = '\n'.join(result)
-        
-        assert '\\subsection*{First Heading}' in result_str
-    
+        result_str = "\n".join(result)
+
+        assert "\\subsection*{First Heading}" in result_str
+
     def test_heading_at_end_of_item_text(self):
         """Heading as last line of item text."""
-        context = {'in_item_text': True}
-        
+        context = {"in_item_text": True}
+
         text_lines = [
-            'Content here.',
-            '## Last Heading',
+            "Content here.",
+            "## Last Heading",
         ]
-        
+
         result = list(_process_text_block(text_lines, context=context))
-        result_str = '\n'.join(result)
-        
-        assert '\\subsection*{Last Heading}' in result_str
-    
+        result_str = "\n".join(result)
+
+        assert "\\subsection*{Last Heading}" in result_str
+
     def test_nested_headings_proper_hierarchy(self):
         """Nested headings should maintain proper hierarchy."""
-        context = {'in_item_text': True}
-        
+        context = {"in_item_text": True}
+
         text_lines = [
-            '## Main Section',
-            'Content',
-            '### Subsection',
-            'More content',
-            '#### Detail',
-            'Even more',
+            "## Main Section",
+            "Content",
+            "### Subsection",
+            "More content",
+            "#### Detail",
+            "Even more",
         ]
-        
+
         result = list(_process_text_block(text_lines, context=context))
-        result_str = '\n'.join(result)
-        
+        result_str = "\n".join(result)
+
         # All should be unnumbered but maintain hierarchy
-        assert '\\subsection*{Main Section}' in result_str
-        assert '\\subsubsection*{Subsection}' in result_str
-        assert '\\paragraph*{Detail}' in result_str
+        assert "\\subsection*{Main Section}" in result_str
+        assert "\\subsubsection*{Subsection}" in result_str
+        assert "\\paragraph*{Detail}" in result_str
+
 
 # =============================================================================
 # END OF TESTS

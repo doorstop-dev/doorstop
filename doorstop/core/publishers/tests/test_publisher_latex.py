@@ -360,7 +360,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
         self.assertEqual(expected, result)
-    
+
     def test_image_as_first_content(self):
         """Verify that images work correctly when they are the first content (no text before)."""
         # Setup
@@ -412,7 +412,7 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
         self.assertEqual(expected, result)
-        
+
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_formatting_in_header_italics(self):
         """Verify that italic formatting works in headers."""
