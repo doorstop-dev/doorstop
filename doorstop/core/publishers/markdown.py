@@ -6,13 +6,13 @@ import os
 from re import sub
 
 from doorstop import common, settings
-from doorstop.core.publishers.base import is_link_attribute
-from doorstop.core.publishers.base import normalize_link_list
 from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
     format_level,
     get_document_attributes,
+    is_link_attribute,
+    normalize_link_list,
 )
 from doorstop.core.types import is_item, iter_items
 
