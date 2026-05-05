@@ -58,6 +58,44 @@ def _latex_convert(line, context=None):
         context_info = ""
 
     #############################
+    ## Phase 0: Protect existing LaTeX commands and escaped characters
+    #############################
+    LATEXCMDPH = "LATEXCOMMANDPH"
+    LATEXESCPH = "LATEXESCAPEDPH"
+    BACKTICKPH = "BACKTICKPH"
+    latex_commands = []
+    latex_escaped_chars = []
+
+    def save_latex_cmd(match):
+        """Save LaTeX commands for later restoration."""
+        latex_commands.append(match.group(0))
+        return f"{LATEXCMDPH}{len(latex_commands)-1}END"
+
+    def save_latex_escaped_char(match):
+        """Save escaped LaTeX special characters."""
+        latex_escaped_chars.append(match.group(0))
+        return f"{LATEXESCPH}{len(latex_escaped_chars)-1}END"
+
+    # FIRST: Protect escaped special characters: \$, \%, \&, \#, \_, \{, \}
+    # These are already valid LaTeX and must not be escaped again!
+    line = re.sub(
+        r"\\([\$%&#_{}])",  # Backslash followed by special char
+        save_latex_escaped_char,
+        line,
+    )
+
+    # THEN: Protect LaTeX commands with various delimiters
+    line = re.sub(
+        r"\\[a-zA-Z]+(?:\{[^{}]*\}|`[^`]*`|\|[^|]*\||![^!]*!)*", save_latex_cmd, line
+    )
+
+    # Protect LaTeX backtick command: \`{}
+    line = line.replace(r"\`{}", BACKTICKPH)
+
+    # Protect Markdown escaped backticks
+    line = line.replace(r"\`", BACKTICKPH)
+
+    #############################
     ## Phase 1: HTML and Markdown fixes
     #############################
     # Convert HTML tags to Markdown/LaTeX
@@ -69,17 +107,76 @@ def _latex_convert(line, context=None):
     #############################
     ## Phase 2: Code block detection
     #############################
-    if line.strip().startswith("```"):
-        lang_match = re.match(r"^```(\w+)?", line.strip())
-        if lang_match and lang_match.group(1):
-            lang = lang_match.group(1)
-            return f"<<<CODEBLOCK_START:{lang}>>>"
-        else:
-            return "<<<CODEBLOCK_START>>>"
+    # Process line-by-line for proper code detection
+    if "\n" in line:
+        # Multi-line text: process each line separately
+        lines_list = line.split("\n")
+        processed_lines = []
 
-    if re.match(r"^(    |\t)", line) and line.strip():
-        code_content = line.lstrip()
-        return f"<<<CODELINE:{code_content}>>>"
+        for single_line in lines_list:
+            # Fenced code blocks
+            if single_line.strip().startswith("```"):
+                lang_match = re.match(r"^```(\w+)?", single_line.strip())
+                if lang_match and lang_match.group(1):
+                    processed_lines.append(
+                        f"<<<CODEBLOCK_START:{lang_match.group(1)}>>>"
+                    )
+                else:
+                    processed_lines.append("<<<CODEBLOCK_START>>>")
+                continue
+
+            # Indented code: 4+ spaces/tab, but NOT list items
+            if single_line.strip():  # Has content
+                indent = len(single_line) - len(single_line.lstrip())
+
+                if indent >= 4 or single_line.startswith("\t"):
+                    stripped = single_line.lstrip()
+
+                    # Check if it's a list marker (MUST have space after marker!)
+                    is_list_item = re.match(
+                        r"^[*+\-]\s", stripped
+                    ) or re.match(  # *, +, - + space
+                        r"^\d+\.\s", stripped
+                    )  # digit(s) + . + space
+
+                    if not is_list_item:
+                        # It's indented code
+                        processed_lines.append(f"<<<CODELINE:{stripped}>>>")
+                        continue
+
+            # Not code - keep line as-is
+            processed_lines.append(single_line)
+
+        line = "\n".join(processed_lines)
+
+    else:
+        # Single line text (original logic)
+        if line.strip().startswith("```"):
+            lang_match = re.match(r"^```(\w+)?", line.strip())
+            if lang_match and lang_match.group(1):
+                lang = lang_match.group(1)
+                return f"<<<CODEBLOCK_START:{lang}>>>"
+            else:
+                return "<<<CODEBLOCK_START>>>"
+
+        # Indented code: 4+ spaces/tab, but NOT list items
+        if line.strip():  # Has content
+            indent = len(line) - len(line.lstrip())
+
+            if indent >= 4 or line.startswith("\t"):
+                stripped = line.lstrip()
+
+                # Check if it's a list marker (MUST have space after marker!)
+                is_list_item = re.match(
+                    r"^[*+\-]\s", stripped
+                ) or re.match(  # *, +, - + space
+                    r"^\d+\.\s", stripped
+                )  # digit(s) + . + space
+
+                if not is_list_item:
+                    # It's indented code
+                    return f"<<<CODELINE:{stripped}>>>"
+                # List items fall through to Phase 3+
 
     #############################
     ## Phase 3: Preserve inline code AND markdown links
@@ -315,6 +412,26 @@ def _latex_convert(line, context=None):
     ## Phase 13: Restore escaped underscores
     #############################
     line = line.replace(ESCAPED_UNDERSCORE_PH, r"\_")
+
+    #############################
+    ## Phase 13b: Restore escaped backticks
+    #############################
+    #############################
+    ## Phase 14: Restore LaTeX commands and escaped characters
+    #############################
+    # First: Restore LaTeX commands
+    LATEXCMDPH = "LATEXCOMMANDPH"
+    for i, cmd in enumerate(latex_commands):
+        line = line.replace(f"{LATEXCMDPH}{i}END", cmd)
+
+    # Then: Restore escaped special characters
+    LATEXESCPH = "LATEXESCAPEDPH"
+    for i, esc_char in enumerate(latex_escaped_chars):
+        line = line.replace(f"{LATEXESCPH}{i}END", esc_char)
+
+    # Finally: Restore backticks
+    BACKTICKPH = "BACKTICKPH"
+    line = line.replace(BACKTICKPH, r"\`{}")
 
     #############################
     ## Phase 14: Restore images (leave as markdown for _typeset_latex_image)

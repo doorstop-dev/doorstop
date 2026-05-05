@@ -719,6 +719,238 @@ class TestInlineCode:
         assert "\\texttt{\\$\\{VAR\\}}" in result or "\\texttt{\\${VAR}}" in result
 
 
+class TestNestedListCodeDetection:
+    """Tests for distinguishing nested lists from indented code."""
+
+    def test_list_items_not_treated_as_code(self):
+        """List items with various indentation levels should not be marked as code."""
+        test_cases = [
+            # (input_line, should_contain_codeline_marker)
+            ("* Level 1", False),  # 0 spaces - list item
+            ("  * Level 2", False),  # 2 spaces - nested list
+            ("    * Level 3", False),  # 4 spaces - nested list (NOT code!)
+            ("      * Level 4", False),  # 6 spaces - deeply nested list
+            ("        * Level 5", False),  # 8 spaces - very deeply nested
+            ("    + Alternative", False),  # 4 spaces with +
+            ("      - Another", False),  # 6 spaces with -
+            ("    1. Numbered", False),  # 4 spaces numbered list
+            ("      2. Nested num", False),  # 6 spaces numbered list
+        ]
+
+        for line, should_be_code in test_cases:
+            result = _latex_convert(line)
+            has_codeline = "<<<CODELINE:" in result
+
+            assert has_codeline == should_be_code, (
+                f"Failed for line: {repr(line)}\n"
+                f"Expected code marker: {should_be_code}\n"
+                f"Got code marker: {has_codeline}\n"
+                f"Result: {result}"
+            )
+
+    def test_indented_code_still_detected(self):
+        """Regular indented code (non-list) should still be detected."""
+        test_cases = [
+            "    plain text",  # 4 spaces - code
+            "    int x = 42;",  # 4 spaces - code
+            "\tindented with tab",  # Tab - code
+            "        deep indent",  # 8 spaces - code
+        ]
+
+        for line in test_cases:
+            result = _latex_convert(line)
+            assert "<<<CODELINE:" in result, (
+                f"Indented code not detected for: {repr(line)}\n" f"Result: {result}"
+            )
+
+    def test_deeply_nested_list_full_example(self):
+        """Full nested list example should not contain any CODELINE markers."""
+        text = "\n".join(
+            [
+                "This is an example on how to create a list:",
+                "* Item 1",
+                "* Item 2",
+                "* Nested list",
+                "  * Item 2.1",
+                "  * Item 2.2",
+                "  * Deeper nesting",
+                "    * Item 2.2.1",
+                "    * Item 2.2.2",
+                "    * Item 2.2.3",
+                "      + Empty",
+                "        + Nesting",
+                "          * Should work",
+                "            - too!",
+            ]
+        )
+
+        result = _latex_convert(text)
+
+        # Should NOT contain any CODELINE markers
+        assert "<<<CODELINE:" not in result, (
+            f"Nested list wrongly detected as code!\n" f"Result:\n{result}"
+        )
+
+        # Should contain list items
+        assert "Item 2.2.1" in result
+        assert "Item 2.2.2" in result
+        assert "Item 2.2.3" in result
+        assert "Should work" in result
+        assert "too!" in result
+
+    def test_mixed_list_and_code(self):
+        """Lists and code blocks should coexist correctly."""
+        text = "\n".join(
+            [
+                "* List item",
+                "  * Nested item",
+                "",
+                "    This is indented code",
+                "",
+                "* Back to list",
+                "    * Four-space nested list (NOT code!)",
+            ]
+        )
+
+        result = _latex_convert(text)
+
+        # The standalone indented line should be code
+        assert "<<<CODELINE:This is indented code>>>" in result
+
+        # But the list items should NOT be code
+        assert "<<<CODELINE:* Nested item>>>" not in result
+        assert "<<<CODELINE:* Four-space nested list" not in result
+
+    def test_numbered_list_deep_nesting(self):
+        """Numbered lists with deep nesting should not be treated as code."""
+        text = "\n".join(
+            [
+                "1. First",
+                "  1. Second level",
+                "    1. Third level",
+                "      1. Fourth level",
+                "        1. Fifth level",
+            ]
+        )
+
+        result = _latex_convert(text)
+
+        # Should NOT contain any CODELINE markers
+        assert "<<<CODELINE:" not in result, (
+            f"Numbered nested list wrongly detected as code!\n" f"Result:\n{result}"
+        )
+
+        # Should contain all levels
+        assert "First" in result
+        assert "Second level" in result
+        assert "Third level" in result
+        assert "Fourth level" in result
+        assert "Fifth level" in result
+
+    def test_edge_case_list_markers(self):
+        """Test all valid list markers with deep indentation."""
+        markers = ["*", "+", "-", "1.", "2.", "99."]
+
+        for marker in markers:
+            # Test with 6 spaces (should NOT be code)
+            line = f"      {marker} Deep item"
+            result = _latex_convert(line)
+
+            assert "<<<CODELINE:" not in result, (
+                f"List marker '{marker}' with 6 spaces wrongly treated as code!\n"
+                f"Line: {repr(line)}\n"
+                f"Result: {result}"
+            )
+
+    def test_list_item_with_inline_code(self):
+        """List items can contain inline code - should not confuse detector."""
+        from doorstop.core.publishers._latex_functions import _process_text_block
+
+        text_lines = [
+            "* Normal item",
+            "    * Nested with `inline code`",
+            "      * Deep nested with `more code`",
+        ]
+
+        result = "\n".join(_process_text_block(text_lines))
+
+        # List items themselves should NOT be CODELINE
+        assert "<<<CODELINE:* Nested" not in result
+        assert "<<<CODELINE:* Deep" not in result
+
+        # After full processing, should contain LaTeX inline code
+        assert r"\lstinline" in result or r"\texttt{" in result, (
+            f"No inline code formatting found!\n" f"Result:\n{result}"
+        )
+
+
+class TestListCodeEdgeCases:
+    """Edge cases for list vs code detection."""
+
+    def test_tab_vs_spaces_in_lists(self):
+        """Tabs work like 4 spaces for indentation."""
+        # Tab + list marker = nested list (NOT code)
+        tab_list = "\t* Item"
+        # Tab + plain text = code
+        tab_code = "\tplain text"
+
+        tab_list_result = _latex_convert(tab_list)
+        tab_code_result = _latex_convert(tab_code)
+
+        # List should NOT be code
+        assert "<<<CODELINE:" not in tab_list_result, (
+            f"Tab+list wrongly treated as code!\n" f"Result: {tab_list_result}"
+        )
+
+        # Plain text should BE code
+        assert "<<<CODELINE:" in tab_code_result, (
+            f"Tab+text not treated as code!\n" f"Result: {tab_code_result}"
+        )
+
+    def test_almost_list_item(self):
+        """Lines that look like lists but aren't (no space after marker)."""
+        test_cases = [
+            # Lines WITHOUT space after marker = code
+            ("    *nospace", True),
+            ("    -nospace", True),
+            ("    +nospace", True),
+            ("    1.nospace", True),
+            # Lines WITH space after marker = list
+            ("    * with space", False),
+            ("    - with space", False),
+            ("    + with space", False),
+            ("    1. with space", False),
+        ]
+
+        for line, should_be_code in test_cases:
+            result = _latex_convert(line)
+            has_codeline = "<<<CODELINE:" in result
+
+            assert has_codeline == should_be_code, (
+                f"Failed for: {repr(line)}\n"
+                f"Expected code: {should_be_code}, Got: {has_codeline}\n"
+                f"Result: {result}"
+            )
+
+    def test_empty_list_items(self):
+        """List items with content should not be treated as code."""
+        test_cases = [
+            ("* Item", False),  # Normal list
+            ("    * Nested", False),  # Indented list
+            ("      * Deep", False),  # Deep nested
+            ("    * ", False),  # Marker + space (empty content)
+        ]
+
+        for line, should_be_code in test_cases:
+            result = _latex_convert(line)
+            has_codeline = "<<<CODELINE:" in result
+
+            assert has_codeline == should_be_code, (
+                f"Failed for: {repr(line)}\n"
+                f"Expected code: {should_be_code}, Got: {has_codeline}"
+            )
+
+
 class TestCodeBlocks:
     """
     Test fenced code block conversion (Phase 2).
