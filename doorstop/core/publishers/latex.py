@@ -656,6 +656,7 @@ class LaTeXPublisher(BasePublisher):
             if hasattr(item, 'path'):
                 context['file'] = item.path
             context['line_num'] = 1
+            context['in_item_text'] = True
         
         # Get basic formatting with code blocks handled
         processed_lines = list(_format_simple_text_block(text_lines, context=context))
