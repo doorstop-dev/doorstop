@@ -12,22 +12,22 @@ from doorstop.common import DoorstopError
 from doorstop.core.publishers._latex_functions import (
     _add_comment,
     _check_for_new_table,
+    _convert_markdown_link_to_href,
+    _escape_latex_text,
     _fix_table_line,
     _format_simple_text_block,
     _has_complex_formatting,
     _latex_convert,
     _process_text_block,
     _typeset_latex_image,
-    _convert_markdown_link_to_href,
-    _escape_latex_text,
 )
 from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
     format_level,
     get_document_attributes,
-    normalize_link_list, 
-    is_link_attribute, 
+    is_link_attribute,
+    normalize_link_list,
 )
 from doorstop.core.template import check_latex_template_data, read_template_data
 from doorstop.core.types import is_item, iter_documents, iter_items
