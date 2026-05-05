@@ -698,6 +698,24 @@ class TestInlineCode:
         # Hash doesn't need escaping in texttt
         assert "\\texttt{test#value}" in result
 
+    def test_inline_code_with_dollar_sign(self):
+        """Dollar signs in inline code must be escaped to avoid math mode."""
+        result = _latex_convert("Use `$ cd /tmp/doorstop` to change directory")
+        assert "\\texttt{\\$ cd /tmp/doorstop}" in result
+        assert "$" not in result or "\\$" in result  # Either escaped or not present
+    
+    def test_inline_code_with_multiple_dollar_signs(self):
+        """Multiple dollar signs in inline code."""
+        result = _latex_convert("Price is `$100` and cost is `$50`")
+        assert "\\texttt{\\$100}" in result
+        assert "\\texttt{\\$50}" in result
+    
+    def test_inline_code_with_shell_variable(self):
+        """Shell variables with dollar signs."""
+        result = _latex_convert("Use `$HOME` or `${VAR}` in shell")
+        assert "\\texttt{\\$HOME}" in result
+        assert "\\texttt{\\$\\{VAR\\}}" in result or "\\texttt{\\${VAR}}" in result
+
 
 class TestCodeBlocks:
     """
@@ -756,6 +774,22 @@ class TestIndentedCode:
         result = _latex_convert("\tcode_here")
         assert result.startswith("<<<CODELINE:")
 
+    def test_indented_code_with_dollar_sign(self):
+        """Indented code with dollar signs (from TUT001.yml)."""
+        text_lines = [
+            "Enter a VCS working copy:",
+            "",
+            "    $ cd /tmp/doorstop",
+            "    $ doorstop create REQ ./reqs"
+        ]
+        result = list(_process_text_block(text_lines))
+        result_str = '\n'.join(result)
+        
+        # Should convert to \texttt{} with escaped dollar signs
+        assert "\\texttt{\\$ cd /tmp/doorstop}" in result_str
+        assert "\\texttt{\\$ doorstop create REQ ./reqs}" in result_str
+        # Should NOT have unescaped $ in texttt
+        assert "\\texttt{$" not in result_str or "\\texttt{\\$" in result_str
 
 # =============================================================================
 # 5. BLOCKQUOTES (Phase 0+)
@@ -1950,6 +1984,45 @@ class TestFullPipelineIntegration:
             or "\\href{https://example.com}{}" in result
         )
 
+    def test_tutorial_example_with_shell_commands(self):
+        """
+        Real-world example from TUT001.yml that caused compilation error.
+        
+        Tests that shell commands with $ are properly escaped in inline code.
+        """
+        text_lines = [
+            "**Creating a New Document**",
+            "",
+            "Enter a VCS working copy:",
+            "",
+            "    $ cd /tmp/doorstop",
+            "",
+            "Create a new document:",
+            "",
+            "    $ doorstop create REQ ./reqs",
+            "",
+            "Add items:",
+            "",
+            "    $ doorstop add REQ",
+        ]
+        
+        result = list(_process_text_block(text_lines))
+        result_str = '\n'.join(result)
+        
+        # Check bold formatting works
+        assert "\\textbf{Creating a New Document}" in result_str
+        
+        # Check dollar signs are escaped in code
+        assert "\\texttt{\\$ cd /tmp/doorstop}" in result_str
+        assert "\\texttt{\\$ doorstop create REQ ./reqs}" in result_str
+        assert "\\texttt{\\$ doorstop add REQ}" in result_str
+        
+        # Verify no unescaped $ in \texttt{}
+        # This regex checks for $ NOT preceded by \
+        import re
+        unescaped_dollar_in_texttt = re.search(r'\\texttt\{[^}]*(?<!\\)\$', result_str)
+        assert unescaped_dollar_in_texttt is None, \
+            "Found unescaped $ in \\texttt{}: " + str(unescaped_dollar_in_texttt)
 
 class TestHeadingNumbering:
     """

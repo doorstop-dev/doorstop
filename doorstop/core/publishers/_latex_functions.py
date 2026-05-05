@@ -297,6 +297,7 @@ def _latex_convert(line, context=None):
         code_escaped = code_escaped.replace("{", r"\{")
         code_escaped = code_escaped.replace("}", r"\}")
         code_escaped = code_escaped.replace("_", r"\_")
+        code_escaped = code_escaped.replace("$", r"\$")
         line = line.replace(f"<<<INLINECODE{i}>>>", r"\texttt{" + code_escaped + "}")
 
     #############################
@@ -622,7 +623,8 @@ def _process_text_block(text_lines, context=None):
             code_escaped = code_content.replace("\\", r"\textbackslash{}")
             code_escaped = code_escaped.replace("{", r"\{")
             code_escaped = code_escaped.replace("}", r"\}")
-            code_escaped = code_escaped.replace("_", r"\_")  # ← NEU HINZUGEFÜGT!
+            code_escaped = code_escaped.replace("_", r"\_")
+            code_escaped = code_escaped.replace("$", r"\$")
             yield f"\\texttt{{{code_escaped}}}"
             continue
 
