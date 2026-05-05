@@ -273,7 +273,23 @@ class BasePublisher(metaclass=ABCMeta):
         """Check if the list has ended."""
         if next_line == "" or next_line.startswith("<p>"):
             block.append(line)
+            
+            # Safety check to prevent infinite loop
+            max_iterations = 100
+            iterations = 0
+            
             while self.list["depth"][list_type] > 0:
+                iterations += 1
+                if iterations > max_iterations:
+                    from doorstop.common import DoorstopError
+                    raise DoorstopError(
+                        f"Inconsistent list indentation detected. "
+                        f"List type: {list_type}, "
+                        f"depth: {self.list['depth'][list_type]}, "
+                        f"indent: {self.list['indent'][list_type]}. "
+                        f"Cannot close list properly - possible nested list with changing indentation."
+                    )
+                
                 block.append(self.list["end"][list_type])
                 self.list["depth"][list_type] = (
                     self.list["depth"][list_type] - self.list["indent"][list_type]

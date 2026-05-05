@@ -28,20 +28,27 @@ def _add_comment(wrapper, text):
     return wrapper
 
 def _latex_convert(line, context=None):
-    """
+    r"""
     Convert markdown line to LaTeX format.
+    
     Processing order is CRITICAL:
-    0a. Preserve inline code segments
-    0b. Preserve URLs from markdown links
-    1. Structural escaping (backslash, braces)
-    2. Markdown formatting (bold, italic, strikethrough)
-    2b. Convert preserved links to \href{} - USE FINAL PLACEHOLDERS
-    3. Headings
-    4. Remaining special characters (SKIPS final placeholders)
-    5. Restore inline code
-    5b. Restore final hrefs
+    1. HTML to Markdown/LaTeX conversion
+    2. Code block detection
+    3. Preserve inline code segments
+    4. Preserve URLs from markdown links
+    5. Structural escaping (backslash, braces)
+    6. Markdown formatting (bold, italic, strikethrough)
+    7. Convert preserved links to \href{} - USE FINAL PLACEHOLDERS
+    8. Headings
+    9. Remaining special characters (SKIPS final placeholders)
+    10. Restore inline code
+    11. Restore final hrefs
+    12. Restore HTML labels
+    13. Restore escaped underscores
+    14. Restore images
     """
     original_line = line
+    
     if context:
         item_uid = context.get('item_uid', 'unknown')
         source_file = context.get('file', 'unknown')
@@ -51,7 +58,16 @@ def _latex_convert(line, context=None):
         context_info = ""
     
     #############################
-    ## Phase 0a: Code block detection
+    ## Phase 1: HTML and Markdown fixes
+    #############################
+    # Convert HTML tags to Markdown/LaTeX
+    line, html_labels = _convert_html_to_latex(line)
+    
+    # Fix bold headings: **# Heading** → # Heading
+    line = re.sub(r'^\*\*\s*(#{1,6})\s+(.*?)\s*\*\*\s*$', r'\1 \2', line)
+    
+    #############################
+    ## Phase 2: Code block detection
     #############################
     if line.strip().startswith("```"):
         lang_match = re.match(r"^```(\w+)?", line.strip())
@@ -66,24 +82,53 @@ def _latex_convert(line, context=None):
         return f"<<<CODELINE:{code_content}>>>"
     
     #############################
-    ## Phase 0b: Preserve inline code AND markdown links
+    ## Phase 3: Preserve inline code AND markdown links
     #############################
     # Inline code: `code`
     inline_code_pattern = r"`([^`]+)`"
     code_segments = []
+    
     def protect_inline_code(match):
         code_segments.append(match.group(1))
         return f"<<<INLINECODE{len(code_segments)-1}>>>"
+    
     line = re.sub(inline_code_pattern, protect_inline_code, line)
+    
+    # Protect escaped underscores in Markdown
+    # In Markdown, \_ means "literal underscore, not italic delimiter"
+    ESCAPED_UNDERSCORE_PH = "<<<ESCAPEDUNDERSCORE>>>"
+    line = line.replace(r"\_", ESCAPED_UNDERSCORE_PH)
+    
+    #############################
+    ## Phase 4: Preserve images and links
+    #############################
+    # Markdown images FIRST: ![alt](url) or ![alt](url "title")
+    image_segments = []
+    
+    def protect_markdown_image(match):
+        """Preserve entire image, will be processed by _typeset_latex_image later"""
+        alt_text = match.group(1)
+        image_url_and_title = match.group(2)
+        image_segments.append((alt_text, image_url_and_title))
+        return f"<<<MDIMAGE{len(image_segments)-1}>>>"
+    
+    # Match: ![alt](url) or ![alt](url "title")
+    line = re.sub(
+        r"!\[([^\]]*)\]\(([^\)]+)\)",
+        protect_markdown_image,
+        line
+    )
     
     # Markdown links: [text](url)
     link_segments = []
+    
     def protect_markdown_link(match):
         """Preserve entire link, process later"""
         link_text = match.group(1)
         link_url = match.group(2)
         link_segments.append((link_text, link_url))
         return f"<<<MDLINK{len(link_segments)-1}>>>"
+    
     line = re.sub(
         r"\[([^\]]+)\]\(([^\)]+)\)",
         protect_markdown_link,
@@ -91,28 +136,28 @@ def _latex_convert(line, context=None):
     )
     
     #############################
-    ## Phase 1: Structural escaping - USE PLACEHOLDERS!
+    ## Phase 5: Structural escaping - USE PLACEHOLDERS!
     #############################
     BACKSLASH_PH = "<<<BACKSLASH_TEMP>>>"
-    
     line = line.replace("\\", BACKSLASH_PH)
     line = line.replace("{", r"\{")
     line = line.replace("}", r"\}")
     line = line.replace(BACKSLASH_PH, r"\textbackslash{}")
     
     #############################
-    ## Phase 2: Markdown formatting
+    ## Phase 6: Markdown formatting
     #############################
     line = re.sub(r"\*\*(.*?)\*\*", r"\\textbf{\1}", line)
     line = re.sub(r"__(.*?)__", r"\\textbf{\1}", line)
     line = re.sub(r"(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)", r"\\textit{\1}", line)
-    line = re.sub(r"(?<!\\)_(?!_)(.*?)(?<!\\)_(?!_)", r"\\textit{\1}", line)
+    # Italic with _ - only at word boundaries, not in middle of words
+    line = re.sub(r"(?<!\w)_(?!_)([^\n]*?)(?<!\\)_(?!\w)", r"\\textit{\1}", line)
     line = re.sub(r"~~(.*?)~~", r"\\sout{\1}", line)
     
     #############################
-    ## Phase 2b: Process and store links (don't insert yet!)
+    ## Phase 7: Process and store links (don't insert yet!)
     #############################
-    # Store fully processed hrefs for insertion AFTER Phase 4
+    # Store fully processed hrefs for insertion AFTER Phase 9
     final_hrefs = {}
     
     for i, (link_text, link_url) in enumerate(link_segments):
@@ -120,7 +165,6 @@ def _latex_convert(line, context=None):
         # 1. Protect markdown markers
         # 2. Escape LaTeX special chars
         # 3. Apply markdown formatting
-        # 4. Escape remaining special chars (that Phase 4 would escape)
         
         # Step 1: Protect markdown markers
         link_text_temp = link_text
@@ -150,14 +194,14 @@ def _latex_convert(line, context=None):
         # Store the final href
         final_hrefs[i] = f"\\href{{{link_url_safe}}}{{{link_text_processed}}}"
         
-        # Replace with FINAL placeholder (will be inserted after Phase 4)
+        # Replace with FINAL placeholder (will be inserted after Phase 9)
         line = line.replace(
             f"<<<MDLINK{i}>>>",
             f"<<<FINALHREF{i}>>>"
         )
     
     #############################
-    ## Phase 3: Headings
+    ## Phase 8: Headings
     #############################
     if settings.PUBLISH_HEADING_LEVELS:
         star = ""
@@ -182,17 +226,15 @@ def _latex_convert(line, context=None):
     line = re.sub(r"^# (.*)$", r"\\section" + star + r"{\1}", line)
     
     #############################
-    ## Phase 4: Remaining special characters
-    ## IMPORTANT: Skip <<<FINALHREF>>> placeholders!
+    ## Phase 9: Remaining special characters
+    ## IMPORTANT: Skip <<<FINALHREF>>> and <<<HTMLLABEL>>> placeholders!
     #############################
-    # We need to protect FINALHREF placeholders from this phase
-    # Split line by FINALHREF placeholders, process parts, rejoin
-    
-    parts = re.split(r"(<<<FINALHREF\d+>>>)", line)
+    # Split line by placeholders, process parts, rejoin
+    parts = re.split(r"(<<<(?:FINALHREF|HTMLLABEL)\d+>>>)", line)
     processed_parts = []
     
     for part in parts:
-        if part.startswith("<<<FINALHREF") and part.endswith(">>>"):
+        if part.startswith("<<<") and part.endswith(">>>"):
             # Keep placeholder as-is
             processed_parts.append(part)
         else:
@@ -209,22 +251,44 @@ def _latex_convert(line, context=None):
     line = "".join(processed_parts)
     
     #############################
-    ## Phase 5: Restore inline code
+    ## Phase 10: Restore inline code
     #############################
     for i, code_content in enumerate(code_segments):
         code_escaped = code_content.replace("\\", r"\textbackslash{}")
         code_escaped = code_escaped.replace("{", r"\{")
         code_escaped = code_escaped.replace("}", r"\}")
+        code_escaped = code_escaped.replace("_", r"\_")
         line = line.replace(
             f"<<<INLINECODE{i}>>>",
             r"\texttt{" + code_escaped + "}"
         )
     
     #############################
-    ## Phase 5b: Restore final hrefs
+    ## Phase 11: Restore final hrefs
     #############################
     for i, href in final_hrefs.items():
         line = line.replace(f"<<<FINALHREF{i}>>>", href)
+    
+    #############################
+    ## Phase 12: Restore HTML labels (AFTER all escaping!)
+    #############################
+    for i, label_cmd in enumerate(html_labels):
+        line = line.replace(f"<<<HTMLLABEL{i}>>>", label_cmd)
+    
+    #############################
+    ## Phase 13: Restore escaped underscores
+    #############################
+    line = line.replace(ESCAPED_UNDERSCORE_PH, r"\_")
+    
+    #############################
+    ## Phase 14: Restore images (leave as markdown for _typeset_latex_image)
+    #############################
+    for i, (alt_text, url_and_title) in enumerate(image_segments):
+        # Restore as markdown for _typeset_latex_image to process
+        line = line.replace(
+            f"<<<MDIMAGE{i}>>>",
+            f"![{alt_text}]({url_and_title})"
+        )
     
     #############################
     ## Debug logging
@@ -261,6 +325,75 @@ def _latex_convert(line, context=None):
         )
     
     return line
+
+def _convert_html_to_latex(line):
+    r"""
+    Convert common HTML tags to LaTeX equivalents.
+    
+    Handles:
+    - <img> → ![alt](src) (Markdown image syntax)
+    - <figcaption> → *text* (italic)
+    - <cite> → *text* (italic)
+    - <figure> → removed (content preserved)
+    - <a name="..."> → \label{...} (via placeholder)
+    - Other tags → stripped
+    
+    Args:
+        line: Text line that may contain HTML
+        
+    Returns:
+        Tuple of (converted_line, label_list) where:
+        - converted_line contains <<<HTMLLABEL#>>> placeholders
+        - label_list contains the actual \label{} commands
+    """
+    label_segments = []
+    
+    # 1. Convert <a name="..."> to temporary placeholder (without < >)
+    def replace_anchor(match):
+        anchor_name = match.group(1)
+        label_name = re.sub(r'[^a-zA-Z0-9-]', '-', anchor_name)
+        label_cmd = f'\\label{{{label_name}}}'
+        label_segments.append(label_cmd)
+        # Use placeholder without < > to avoid HTML tag removal
+        return f'HTMLLABELPH{len(label_segments)-1}ENDPH'
+    
+    line = re.sub(
+        r'<a\s+name="([^"]+)"[^>]*>\s*</a>',
+        replace_anchor,
+        line,
+        flags=re.IGNORECASE
+    )
+    
+    # 2. Convert <img> to Markdown
+    def replace_img(match):
+        full_tag = match.group(0)
+        src = re.search(r'src="([^"]+)"', full_tag)
+        alt = re.search(r'alt="([^"]*)"', full_tag)
+        return f'![{alt.group(1) if alt else ""}]({src.group(1) if src else ""})'
+    
+    line = re.sub(r'<img[^>]+>', replace_img, line)
+    
+    # 3. Convert semantic tags to italic
+    line = re.sub(
+        r'<(?:figcaption|cite)>(.*?)</(?:figcaption|cite)>',
+        r'*\1*',
+        line,
+        flags=re.DOTALL | re.IGNORECASE
+    )
+    
+    # 4. Remove structural tags (keep content)
+    line = re.sub(r'</?figure[^>]*>', '', line, flags=re.IGNORECASE)
+    
+    # 5. Remove any remaining HTML tags
+    line = re.sub(r'<[^>]+>', '', line)
+    
+    # 6. Convert temporary placeholder to final format
+    line = re.sub(r'HTMLLABELPH(\d+)ENDPH', r'<<<HTMLLABEL\1>>>', line)
+    
+    # 7. Clean up whitespace
+    line = re.sub(r'\n\s*\n\s*\n+', '\n\n', line)
+    
+    return line, label_segments
 
 def _typeset_latex_image(image_match, line, block):
     """Typeset images."""
@@ -366,9 +499,13 @@ def _process_text_block(text_lines, context=None):
         LaTeX-formatted lines with proper code block environments
     """
     in_code_block = False
+    in_blockquote = False
     code_language = None
     
-    for line_num, line in enumerate(text_lines, start=1):
+    # Convert to list to allow look-ahead
+    lines_list = list(text_lines) if not isinstance(text_lines, list) else text_lines
+    
+    for line_num, line in enumerate(lines_list, start=1):
         # Update context with current line number
         if context:
             line_context = context.copy()
@@ -376,6 +513,44 @@ def _process_text_block(text_lines, context=None):
         else:
             line_context = {'line_num': line_num}
         
+        # Handle code block end FIRST (before conversion)
+        if in_code_block and line.strip() == "```":
+            yield "\\end{lstlisting}"
+            in_code_block = False
+            code_language = None
+            continue
+        
+        # Check if line is blockquote
+        is_blockquote = line.strip().startswith('>')
+        
+        # Handle blockquote transitions
+        if is_blockquote and not in_code_block:
+            if not in_blockquote:
+                # Start blockquote environment
+                yield ""
+                yield "\\begin{quote}"
+                in_blockquote = True
+            
+            # Remove > and optional space after it
+            content = line.strip()[1:].strip()
+            
+            if content:
+                # Convert the content (without the >)
+                converted = _latex_convert(content, context=line_context)
+                yield converted
+            else:
+                # Empty blockquote line (just >)
+                yield ""
+            continue
+        
+        # End blockquote if we're in one and this line doesn't start with >
+        if in_blockquote and not is_blockquote:
+            yield "\\end{quote}"
+            yield ""
+            in_blockquote = False
+            # Fall through to process this line normally
+        
+        # Now convert the line (normal flow)
         converted = _latex_convert(line, context=line_context)
         
         # Handle code block start
@@ -388,7 +563,6 @@ def _process_text_block(text_lines, context=None):
                 yield "\\end{lstlisting}"
             
             in_code_block = True
-            
             # Extract language if present
             lang_match = re.match(r"<<<CODEBLOCK_START:(\w+)>>>", converted)
             if lang_match:
@@ -397,14 +571,6 @@ def _process_text_block(text_lines, context=None):
             else:
                 code_language = None
                 yield "\\begin{lstlisting}"
-            
-            continue
-        
-        # Handle code block end
-        if in_code_block and line.strip() == "```":
-            yield "\\end{lstlisting}"
-            in_code_block = False
-            code_language = None
             continue
         
         # Handle code block content (don't convert!)
@@ -414,19 +580,62 @@ def _process_text_block(text_lines, context=None):
         
         # Handle indented code lines
         if converted.startswith("<<<CODELINE:"):
-            code_content = converted[len("<<<CODELINE:"):-2]
-            # Minimal escaping for \texttt{} context
-            # Only escape what actually breaks in \texttt{}:
+            # Extract content between <<<CODELINE: and >>>
+            code_content = converted[len("<<<CODELINE:"):]
+            if code_content.endswith(">>>"):
+                code_content = code_content[:-3]
+            # Escaping for \texttt{} context
             code_escaped = code_content.replace("\\", r"\textbackslash{}")
             code_escaped = code_escaped.replace("{", r"\{")
             code_escaped = code_escaped.replace("}", r"\}")
-            # Characters that work fine in \texttt{} without escaping:
-            # _ # $ % & ^ ~ all render correctly in typewriter font
+            code_escaped = code_escaped.replace("_", r"\_")  # ← NEU HINZUGEFÜGT!
             yield f"\\texttt{{{code_escaped}}}"
             continue
+        
+        # Regular line - check if next non-empty line is code block OR block element
+        next_line_is_code_block = False
+        next_line_is_block_element = False
+        for check_idx in range(line_num, len(lines_list)):
+            check_line = lines_list[check_idx]
+            if check_line.strip():  # Found next non-empty line
+                if check_line.strip().startswith("```"):
+                    next_line_is_code_block = True
+                    break
+                # Check if it's a block element (figure, quote, label, etc.)
+                check_converted = _latex_convert(check_line, context=line_context)
+                if (check_converted.strip().startswith('\\begin{') or
+                    check_converted.strip().startswith('\\label{') or
+                    '![' in check_line):
+                    next_line_is_block_element = True
+                    break
+                # If it's actual content, stop looking
+                if check_converted.strip():
+                    break
 
-        # Regular line
-        yield converted
+        # Add \\ before code blocks (but only for plain text lines)
+        # NEVER add \\ to:
+        # - Empty lines
+        # - LaTeX commands (start with \)
+        # - Lines with images
+        # - Lines with labels
+        # - Lines inside blockquotes! (NEW)
+        is_plain_text = (
+            converted.strip() and
+            not converted.strip().startswith('\\') and  # No LaTeX commands
+            '![' not in converted and                   # No markdown images
+            '\\label{' not in converted and             # No labels!
+            not in_blockquote                           # Not in blockquote! (NEW)
+        )
+
+        if next_line_is_code_block and is_plain_text:
+            yield converted + "\\\\"
+        else:
+            yield converted
+            
+    # Close unclosed blockquote
+    if in_blockquote:
+        yield "\\end{quote}"
+        in_blockquote = False
     
     # Close unclosed code block
     if in_code_block:
@@ -434,7 +643,6 @@ def _process_text_block(text_lines, context=None):
             f"Unclosed code block at end of text{_format_context(context)}"
         )
         yield "\\end{lstlisting}"
-
 
 def _format_context(context):
     """Format context dict into readable string."""
@@ -455,56 +663,83 @@ def _has_complex_formatting(text_lines):
     """
     Check if text contains complex formatting requiring special processing.
     
-    Complex formats include:
-    - Tables (markdown pipes with header separators)
-    - PlantUML diagrams
+    Complex formats (require legacy formatter):
+    - Tables (markdown pipes with header separators OR edge cases)
+    - PlantUML diagrams (with or without backticks)
     - Math environments ($$)
+    - Nested lists (multiple indentation levels)
     
     Simple formats (handled by _process_text_block):
     - Markdown formatting (bold, italic, strikethrough)
     - Headings
-    - Code blocks (fenced and indented)
+    - Code blocks (fenced with ```)  # ✅ HINZUGEFÜGT
     - Inline code
     - Images (basic)
-    - Lists
+    - Simple lists (single level)
+    
+    Note: When in doubt, use legacy formatter. It's battle-tested and handles
+    all edge cases correctly (EOF handling, warnings, proper escaping).
     
     Args:
         text_lines: List of text lines to check (or single string)
-        
+    
     Returns:
         bool: True if complex formatting detected, False otherwise
     """
     # Normalize input
     if isinstance(text_lines, str):
         text_lines = text_lines.splitlines()
-    
     if not text_lines:
         return False
     
-    # Join for pattern matching - MUSS HIER SEIN!
+    # Join for pattern matching
     text_joined = "\n".join(text_lines)
 
+    # #############################
+    # ## Check for code blocks
+    # #############################
+    # has_code_blocks = False
+    # if "```" in text_joined:
+    #     # Check if code block is at the start
+    #     for line in text_lines:
+    #         if line.strip():
+    #             if line.strip().startswith("```"):
+    #                 has_code_blocks = True
+    #                 log.debug("Code block at start - using legacy")
+    #             break  # Only check first non-empty line
+            
     #############################
     ## Check for tables
     #############################
     has_tables = False
     for i, line in enumerate(text_lines):
-        if "|" in line and line.count("|") >= 2:  # At least 2 pipes
-            # Look for table header separator in next line
+        if "|" in line and line.count("|") >= 2:
             if i + 1 < len(text_lines):
                 next_line = text_lines[i + 1]
-                # Match: |---|---| or | --- | --- | or :---: (alignment)
+                # Proper table separator (3+ dashes)
                 if re.search(r"\|?\s*:?-{3,}:?\s*\|", next_line):
                     has_tables = True
-                    log.debug(f"Table detected at line {i}: '{line[:50]}...'")
+                    log.debug(f"Table detected at line {i}")
                     break
-    
+                # Malformed table - multiple cells with short dashes
+                # Pattern: |-|-| (not |--|)
+                elif next_line.count("|") >= 3 and "-" in next_line and not re.search(r"-{3,}", next_line):
+                    has_tables = True
+                    log.debug(f"Malformed table (short dashes) at line {i}")
+                    break
+            # EOF table check
+            elif i == len(text_lines) - 1 and i > 0:
+                prev_has_pipes = any("|" in text_lines[j] for j in range(max(0, i-2), i))
+                if not prev_has_pipes:
+                    has_tables = True
+                    log.debug(f"Potential table start at EOF (line {i}) - using legacy")
+                    break
+                
     #############################
-    ## Check for PlantUML
+    ## Check for PlantUML (with or without backticks)
     #############################
-    # Match both legacy (`plantuml) and fenced (```plantuml) formats
     has_plantuml = bool(
-        re.search(r"^`+plantuml\s", text_joined, re.MULTILINE)  # ✅ One or more backticks
+        re.search(r"^`*plantuml\s", text_joined, re.MULTILINE)
     )
     if has_plantuml:
         log.debug("PlantUML diagram detected")
@@ -516,11 +751,28 @@ def _has_complex_formatting(text_lines):
     if has_math:
         log.debug("Math environment detected ($$)")
     
-    # Summary logging
-    if has_tables or has_plantuml or has_math:
+    #############################
+    ## Check for nested lists (multiple indentation levels)
+    #############################
+    has_nested_lists = False
+    list_pattern = r'^\s*([\*\+\-]|\d+\.)\s+'
+    list_indents = set()
+    
+    for line in text_lines:
+        if re.match(list_pattern, line):
+            indent = len(line) - len(line.lstrip())
+            list_indents.add(indent)
+    
+    if len(list_indents) > 1:
+        has_nested_lists = True
+        log.debug(f"Nested lists detected with indents: {sorted(list_indents)}")
+    
+    # Summary
+    if has_tables or has_plantuml or has_math or has_nested_lists:
         log.info(
             f"Complex formatting detected: "
-            f"tables={has_tables}, plantuml={has_plantuml}, math={has_math}"
+            f"tables={has_tables}, plantuml={has_plantuml}, "
+            f"math={has_math}, nested_lists={has_nested_lists}"
         )
         return True
     
@@ -548,7 +800,7 @@ def _format_simple_text_block(text_lines, context=None):
     yield from _process_text_block(text_lines, context=context)
 
 def _convert_markdown_link_to_href(markdown_link):
-    """
+    r"""
     Convert a markdown link [text](url) to LaTeX \\href{url}{text}.
     
     Handles:
@@ -633,7 +885,7 @@ def _convert_markdown_link_to_href(markdown_link):
 
 
 def _escape_latex_url(url):
-    """
+    r"""
     Escape a URL for use in LaTeX \\href{}.
     
     Only escapes characters that actually break LaTeX:
@@ -666,7 +918,7 @@ def _escape_latex_url(url):
 
 
 def _escape_latex_text(text):
-    """
+    r"""
     Escape LaTeX special characters in text.
     Used for link text, attribute values, table cells, etc.
     Does NOT process markdown formatting (bold, italic, etc.).

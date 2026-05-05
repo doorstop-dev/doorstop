@@ -294,11 +294,14 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         expected = (
             r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
             r"Test of custom attributes." + "\n"
-            r"\begin{longtable}{|l|l|}" + "\n"
-            r"Attribute & Value\\" + "\n"
+            r"\begin{longtable}[\tablealignment]{|l|p{\attrtablecolwidth}|}" + "\n"
             r"\hline" + "\n"
-            r"CUSTOM-ATTRIB & True" + "\n"
-            r"invented-by & jane@example.com" + "\n"
+            r"\tableheaderrow{Attribute} & \tableheaderrow{Value}\\" + "\n"
+            r"\hline" + "\n"
+            r"CUSTOM-ATTRIB & True\\" + "\n"
+            r"\hline" + "\n"
+            r"invented-by & jane@example.com\\" + "\n"
+            r"\hline" + "\n"
             r"\end{longtable}" + "\n\n"
         )
         # Act
@@ -357,7 +360,59 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(item, ".tex"))
         # Assert
         self.assertEqual(expected, result)
+    
+    def test_image_as_first_content(self):
+        """Verify that images work correctly when they are the first content (no text before)."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r'  ![Doorstop Logo](assets/logo-black-white.png "Doorstop Logo")'
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"\begin{figure}[h!]\center" + "\n"
+            r"\includegraphics[width=0.8\textwidth]{assets/logo-black-white.png}"
+            r"\label{fig:DoorstopLogo}\zlabel{fig:DoorstopLogo}"
+            r"\caption{Doorstop Logo}" + "\n"
+            r"\end{figure}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
 
+    def test_image_after_multiple_empty_lines(self):
+        """Verify that images work correctly when preceded by multiple empty lines."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Test of image after empty lines." + "\n\n\n\n"  # 3 empty lines
+            r'  ![Logo](assets/logo.png "Logo")'
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"Test of image after empty lines.\\" + "\n\n"
+            r"" + "\n"  # ✅ First empty line
+            r"" + "\n"  # ✅ Second empty line
+            r"\begin{figure}[h!]\center" + "\n"
+            r"\includegraphics[width=0.8\textwidth]{assets/logo.png}"
+            r"\label{fig:Logo}\zlabel{fig:Logo}"
+            r"\caption{Logo}" + "\n"
+            r"\end{figure}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+        
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_formatting_in_header_italics(self):
         """Verify that italic formatting works in headers."""
