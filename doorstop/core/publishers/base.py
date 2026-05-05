@@ -273,15 +273,14 @@ class BasePublisher(metaclass=ABCMeta):
         """Check if the list has ended."""
         if next_line == "" or next_line.startswith("<p>"):
             block.append(line)
-            
+
             # Safety check to prevent infinite loop
             max_iterations = 100
             iterations = 0
-            
+
             while self.list["depth"][list_type] > 0:
                 iterations += 1
                 if iterations > max_iterations:
-                    from doorstop.common import DoorstopError
                     raise DoorstopError(
                         f"Inconsistent list indentation detected. "
                         f"List type: {list_type}, "
@@ -289,7 +288,7 @@ class BasePublisher(metaclass=ABCMeta):
                         f"indent: {self.list['indent'][list_type]}. "
                         f"Cannot close list properly - possible nested list with changing indentation."
                     )
-                
+
                 block.append(self.list["end"][list_type])
                 self.list["depth"][list_type] = (
                     self.list["depth"][list_type] - self.list["indent"][list_type]
@@ -365,91 +364,71 @@ def get_document_attributes(obj, is_html=False, extensions=None):
 
     return doc_attributes
 
+
 def normalize_link_list(value):
     """
     Normalize a link list attribute to a list of markdown link strings.
-    
+
     Handles Doorstop's literal block format from YAML:
         spec_links_from:
         - |
           [Link Text](https://url)
-    
+
     This format creates strings with trailing newlines that need to be cleaned.
-    
+
     Args:
         value: Attribute value from Doorstop item (list, dict, string, or None)
-    
+
     Returns:
         List of clean markdown link strings (empty list if invalid/empty)
-    
-    Examples:
-        >>> normalize_link_list(['[Link](http://example.com)\\n'])
-        ['[Link](http://example.com)']
-        
-        >>> normalize_link_list('[Link](http://example.com)')
-        ['[Link](http://example.com)']
-        
-        >>> normalize_link_list([{'text': 'Link', 'url': 'http://example.com'}])
-        ['[Link](http://example.com)']
     """
-    if not value:
-        return []
-    
-    # Handle single string
-    if isinstance(value, str):
-        cleaned = value.strip()
-        if cleaned:
-            return [cleaned]
-        return []
-    
-    # Handle list (most common case from Doorstop YAML)
-    if isinstance(value, list):
-        result = []
-        for item in value:
-            if isinstance(item, str):
-                # Remove trailing newlines from YAML literal blocks (|)
-                cleaned = item.strip()
-                if cleaned:
-                    result.append(cleaned)
-            elif isinstance(item, dict):
-                # Handle structured format: {"text": "...", "url": "..."}
-                if 'text' in item and 'url' in item:
-                    result.append(f"[{item['text']}]({item['url']})")
-                elif 'title' in item and 'href' in item:
-                    result.append(f"[{item['title']}]({item['href']})")
-            else:
-                # Fallback: convert to string and clean
-                item_str = str(item).strip()
-                if item_str:
-                    result.append(item_str)
-        
-        return result
-    
-    # Handle single dict
-    if isinstance(value, dict):
-        if 'text' in value and 'url' in value:
-            return [f"[{value['text']}]({value['url']})"]
-        elif 'title' in value and 'href' in value:
-            return [f"[{value['title']}]({value['href']})"]
-    
-    # Unknown format - try to convert
-    converted = str(value).strip()
-    return [converted] if converted else []
+    result = []
+
+    if value:
+        if isinstance(value, str):
+            cleaned = value.strip()
+            result = [cleaned] if cleaned else []
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, str):
+                    cleaned = item.strip()
+                    if cleaned:
+                        result.append(cleaned)
+                elif isinstance(item, dict):
+                    if "text" in item and "url" in item:
+                        result.append(f"[{item['text']}]({item['url']})")
+                    elif "title" in item and "href" in item:
+                        result.append(f"[{item['title']}]({item['href']})")
+                else:
+                    item_str = str(item).strip()
+                    if item_str:
+                        result.append(item_str)
+        elif isinstance(value, dict):
+            if "text" in value and "url" in value:
+                result = [f"[{value['text']}]({value['url']})"]
+            elif "title" in value and "href" in value:
+                result = [f"[{value['title']}]({value['href']})"]
+        else:
+            converted = str(value).strip()
+            if converted:
+                result = [converted]
+
+    return result
 
 
 def is_link_attribute(attr_name):
     """
     Check if an attribute name represents a list of links.
-    
+
     These attributes should be processed with normalize_link_list()
     to handle Doorstop's YAML literal block format properly.
-    
+
     Args:
         attr_name: Attribute name (string)
-    
+
     Returns:
         True if attribute should be treated as link list
-    
+
     Examples:
         >>> is_link_attribute('spec_links_from')
         True
@@ -457,10 +436,10 @@ def is_link_attribute(attr_name):
         False
     """
     link_attrs = [
-        'spec_links_from',
-        'spec_links_to',
-        'external_links',
-        'references',
-        'see_also',
+        "spec_links_from",
+        "spec_links_to",
+        "external_links",
+        "references",
+        "see_also",
     ]
     return attr_name in link_attrs

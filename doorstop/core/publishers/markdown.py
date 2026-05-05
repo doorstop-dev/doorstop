@@ -6,13 +6,13 @@ import os
 from re import sub
 
 from doorstop import common, settings
+from doorstop.core.publishers.base import is_link_attribute
+from doorstop.core.publishers.base import normalize_link_list
 from doorstop.core.publishers.base import (
     BasePublisher,
     extract_prefix,
     format_level,
     get_document_attributes,
-    normalize_link_list,    # ← NEU
-    is_link_attribute,      # ← NEU
 )
 from doorstop.core.types import is_item, iter_items
 
@@ -311,13 +311,13 @@ class MarkdownPublisher(BasePublisher):
                     value = item.attribute(attr)
                     if not value:
                         continue
-                    
+
                     if not header_printed:
                         header_printed = True
                         yield ""
                         yield "| Attribute | Value |"
                         yield "| --------- | ----- |"
-                    
+
                     # ========== Handle link attributes specially ==========
                     if is_link_attribute(attr):
                         link_list = normalize_link_list(value)
@@ -327,9 +327,9 @@ class MarkdownPublisher(BasePublisher):
                                 value_str = link_list[0]
                             else:
                                 # Multiple links: join with <br> for HTML compatibility
-                                value_str = '<br>'.join(link_list)
+                                value_str = "<br>".join(link_list)
                             yield "| {} | {} |".format(attr, value_str)
-                    
+
                     # ========== Handle regular lists ==========
                     elif isinstance(value, list):
                         if len(value) > 0:
@@ -339,32 +339,35 @@ class MarkdownPublisher(BasePublisher):
                                 item_str = str(v).strip()
                                 if item_str:
                                     items.append(item_str)
-                            
+
                             if items:
                                 if len(items) == 1:
                                     value_str = items[0]
                                 else:
-                                    value_str = '<br>'.join(items)
+                                    value_str = "<br>".join(items)
                                 yield "| {} | {} |".format(attr, value_str)
-                    
+
                     # ========== Handle dictionaries ==========
                     elif isinstance(value, dict):
                         # Format as key: value pairs
                         dict_items = []
                         for k, v in value.items():
-                            dict_items.append('**{}**: {}'.format(str(k), str(v).strip()))
-                        
+                            dict_items.append(
+                                "**{}**: {}".format(str(k), str(v).strip())
+                            )
+
                         if dict_items:
-                            value_str = '<br>'.join(dict_items)
+                            value_str = "<br>".join(dict_items)
                             yield "| {} | {} |".format(attr, value_str)
-                    
+
                     # ========== Handle simple values ==========
                     else:
                         yield "| {} | {} |".format(attr, str(value))
-                
+
                 yield ""
 
             yield ""  # break between items
+
 
 def clean_link(uid):
     """Clean a UID for use in a link.

@@ -13,7 +13,6 @@ from plantuml_markdown import PlantUMLMarkdownExtension
 
 from doorstop import common, settings
 from doorstop.core.publishers.base import (
-    BasePublisher,
     extract_prefix,
     extract_uid,
     format_level,
