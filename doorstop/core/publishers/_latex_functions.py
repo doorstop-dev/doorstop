@@ -210,28 +210,60 @@ def _latex_convert(line, context=None):
     #############################
     ## Phase 8: Headings
     #############################
-    if settings.PUBLISH_HEADING_LEVELS:
+    # Determine if headings should be numbered
+    # 
+    # Logic:
+    #   1. If PUBLISH_HEADING_LEVELS=True (global setting): numbered (\section{})
+    #   2. If in_item_text=True (context): unnumbered (\section*{})
+    #   3. Otherwise: use PUBLISH_HEADING_LEVELS setting
+    #
+    # Rationale: 
+    #   - Document-level headings: controlled by PUBLISH_HEADING_LEVELS
+    #   - Item text headings: always unnumbered (avoids duplicate numbering)
+
+    # Check context for item text
+    in_item_text = context and context.get('in_item_text', False)
+
+    # Determine star suffix
+    if in_item_text:
+        # Inside item text: always unnumbered
+        star = "*"
+    elif settings.PUBLISH_HEADING_LEVELS:
+        # Global setting: numbered
         star = ""
     else:
+        # Global setting: unnumbered
         star = "*"
-    
+
+    # Handle heading levels (deepest first to avoid partial matches)
     if re.match(r"^#{6,} ", line):
         log.warning(
             f"Heading level too deep (>5){context_info}. "
             f"Line: '{original_line[:60]}...'"
         )
-    
+
+    # Level 6+ (too deep)
     line = re.sub(
         r"^#{6,} (.*)$",
-        r"\\subparagraph" + star + r"{\1 \\textbf{NOTE: This heading level is too deep for LaTeX.}}",
+        r"\\subparagraph*{\1 \\textbf{NOTE: This heading level is too deep for LaTeX.}}",
         line,
     )
+
+    # Level 5
     line = re.sub(r"^##### (.*)$", r"\\subparagraph" + star + r"{\1}", line)
+
+    # Level 4
     line = re.sub(r"^#### (.*)$", r"\\paragraph" + star + r"{\1}", line)
+
+    # Level 3
     line = re.sub(r"^### (.*)$", r"\\subsubsection" + star + r"{\1}", line)
+
+    # Level 2
     line = re.sub(r"^## (.*)$", r"\\subsection" + star + r"{\1}", line)
+
+    # Level 1
     line = re.sub(r"^# (.*)$", r"\\section" + star + r"{\1}", line)
-    
+
     #############################
     ## Phase 9: Remaining special characters
     ## IMPORTANT: Skip <<<FINALHREF>>> and <<<HTMLLABEL>>> placeholders!

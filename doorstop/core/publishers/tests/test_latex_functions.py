@@ -15,6 +15,7 @@ The tests are organized by functional area, mirroring the conversion pipeline:
 2. Markdown Conversion (Phase 2-3, 6-8)
    - Links, formatting (bold/italic/strikethrough)
    - Headings and heading edge cases
+   - Context-aware heading numbering (document vs. item text)
    
 3. HTML Conversion (Phase 1)
    - HTML tags to LaTeX/Markdown equivalents
@@ -53,11 +54,11 @@ Phase 4:  Image/Link preservation
 Phase 5:  Structural escaping (\, {, })
 Phase 6:  Markdown formatting (**, *, ~~)
 Phase 7:  Link processing (stored as FINALHREF)
-Phase 8:  Heading conversion (# → \section)
+Phase 8:  Heading conversion (# → \section, context-aware numbering)
 Phase 9:  Special character escaping
 Phase 10-14: Placeholder restoration
 
-Coverage: 96% (159 tests)
+Coverage: 96% (159+ tests)
 Last updated: 2024
 
 Run with:
@@ -92,6 +93,7 @@ from doorstop.core.publishers._latex_functions import (
     _format_context,
 )
 
+from doorstop import settings
 
 # =============================================================================
 # 1. CHARACTER ESCAPING (Phase 4-5)
@@ -1980,6 +1982,276 @@ class TestFullPipelineIntegration:
         assert ("[](https://example.com)" in result or
                 "\\href{https://example.com}{}" in result)
 
+class TestHeadingNumbering:
+    """
+    Test context-aware heading numbering (Phase 8).
+    
+    Heading numbering behavior depends on context:
+        - Document-level headings: Controlled by PUBLISH_HEADING_LEVELS setting
+        - Item text headings: ALWAYS unnumbered (in_item_text=True)
+    
+    This prevents duplicate numbering where both the item header and
+    internal headings would be numbered, creating confusion in TOC.
+    
+    Example:
+        Item SYSR-002 with level 1.1:
+            Header: "1.1 Control of STO - SYSR-002" (numbered)
+            Text:
+                ## Content    → Content (unnumbered, not in TOC)
+                ## Rationale  → Rationale (unnumbered, not in TOC)
+    """
+    
+    def test_heading_without_context_uses_setting(self):
+        """
+        Without context, headings use PUBLISH_HEADING_LEVELS setting.
+        
+        This is for document-level headings (not inside items).
+        """
+        # When PUBLISH_HEADING_LEVELS is True (numbered)
+        original_setting = settings.PUBLISH_HEADING_LEVELS
+        try:
+            settings.PUBLISH_HEADING_LEVELS = True
+            result = _latex_convert('## Test Heading')
+            assert '\\subsection{Test Heading}' in result
+            assert '\\subsection*{' not in result
+            
+            # When PUBLISH_HEADING_LEVELS is False (unnumbered)
+            settings.PUBLISH_HEADING_LEVELS = False
+            result = _latex_convert('## Test Heading')
+            assert '\\subsection*{Test Heading}' in result
+        finally:
+            settings.PUBLISH_HEADING_LEVELS = original_setting
+    
+    def test_heading_in_item_text_always_unnumbered(self):
+        """
+        Headings with in_item_text=True are ALWAYS unnumbered.
+        
+        This happens regardless of PUBLISH_HEADING_LEVELS setting.
+        """
+        context = {'in_item_text': True, 'item_uid': 'TEST-001'}
+        
+        original_setting = settings.PUBLISH_HEADING_LEVELS
+        try:
+            # Even when PUBLISH_HEADING_LEVELS is True
+            settings.PUBLISH_HEADING_LEVELS = True
+            result = _latex_convert('## Content', context=context)
+            assert '\\subsection*{Content}' in result
+            assert '\\subsection{Content}' not in result
+            
+            # And when PUBLISH_HEADING_LEVELS is False
+            settings.PUBLISH_HEADING_LEVELS = False
+            result = _latex_convert('## Rationale', context=context)
+            assert '\\subsection*{Rationale}' in result
+        finally:
+            settings.PUBLISH_HEADING_LEVELS = original_setting
+    
+    def test_all_heading_levels_unnumbered_in_item_text(self):
+        """All heading levels (1-5) should be unnumbered in item text."""
+        context = {'in_item_text': True}
+        
+        test_cases = [
+            ('# Level 1', '\\section*{Level 1}'),
+            ('## Level 2', '\\subsection*{Level 2}'),
+            ('### Level 3', '\\subsubsection*{Level 3}'),
+            ('#### Level 4', '\\paragraph*{Level 4}'),
+            ('##### Level 5', '\\subparagraph*{Level 5}'),
+        ]
+        
+        for markdown, expected in test_cases:
+            result = _latex_convert(markdown, context=context)
+            assert expected in result, f"Failed for: {markdown}"
+    
+    def test_heading_level_6_always_unnumbered(self):
+        """
+        Level 6+ headings are ALWAYS unnumbered (too deep for LaTeX).
+        
+        This is true regardless of context or settings.
+        """
+        # Without context
+        result = _latex_convert('###### Too Deep')
+        assert '\\subparagraph*{Too Deep' in result
+        assert 'too deep' in result.lower()
+        
+        # With item text context
+        context = {'in_item_text': True}
+        result = _latex_convert('###### Also Too Deep', context=context)
+        assert '\\subparagraph*{Also Too Deep' in result
+    
+    def test_item_text_context_with_item_uid(self):
+        """Context with item_uid should produce unnumbered headings."""
+        context = {
+            'in_item_text': True,
+            'item_uid': 'SYSR-002',
+            'file': 'requirements/SYSR-002.yml',
+        }
+        
+        result = _latex_convert('## Content', context=context)
+        assert '\\subsection*{Content}' in result
+    
+    def test_mixed_context_flags(self):
+        """Test various context flag combinations."""
+        # Only in_item_text=True
+        context1 = {'in_item_text': True}
+        result1 = _latex_convert('## Heading', context=context1)
+        assert '\\subsection*{Heading}' in result1
+        
+        # in_item_text=False (explicit)
+        context2 = {'in_item_text': False}
+        result2 = _latex_convert('## Heading', context=context2)
+        # Should use PUBLISH_HEADING_LEVELS setting
+        assert '\\subsection' in result2
+        
+        # Empty context dict
+        context3 = {}
+        result3 = _latex_convert('## Heading', context=context3)
+        # Should use PUBLISH_HEADING_LEVELS setting
+        assert '\\subsection' in result3
+    
+    def test_heading_numbering_does_not_affect_content(self):
+        """Numbering flag should only affect heading command, not content."""
+        context = {'in_item_text': True}
+        
+        result = _latex_convert('## Special Chars & Symbols %', context=context)
+        # Should be unnumbered
+        assert '\\subsection*{' in result
+        # Content should be preserved (though special chars may be escaped)
+        assert 'Special Chars' in result
+    
+    def test_heading_with_markdown_formatting_in_title(self):
+        """Headings can contain markdown formatting in title."""
+        context = {'in_item_text': True}
+        
+        result = _latex_convert('## **Bold** Heading', context=context)
+        assert '\\subsection*{' in result
+        # Bold should be converted
+        assert '\\textbf{Bold}' in result
+    
+    def test_document_level_heading_numbered(self):
+        """
+        Document-level headings (no context) should be numbered.
+        
+        Simulates headings outside of item text (e.g., in a preamble).
+        """
+        original_setting = settings.PUBLISH_HEADING_LEVELS
+        try:
+            settings.PUBLISH_HEADING_LEVELS = True
+            
+            # No context = document level
+            result = _latex_convert('# Document Section')
+            assert '\\section{Document Section}' in result
+            assert '*' not in result  # No star
+        finally:
+            settings.PUBLISH_HEADING_LEVELS = original_setting
+
+
+class TestHeadingNumberingIntegration:
+    """
+    Integration tests for heading numbering with _process_text_block().
+    
+    Tests the full pipeline including context propagation.
+    """
+    
+    def test_multiple_headings_in_item_text(self):
+        """Multiple headings in item text should all be unnumbered."""
+        context = {'in_item_text': True, 'item_uid': 'TEST-001'}
+        
+        text_lines = [
+            '## Content',
+            'Some text here.',
+            '## Rationale',
+            'More text.',
+            '### Details',
+            'Even more text.',
+        ]
+        
+        result = list(_process_text_block(text_lines, context=context))
+        result_str = '\n'.join(result)
+        
+        # All headings should be unnumbered
+        assert '\\subsection*{Content}' in result_str
+        assert '\\subsection*{Rationale}' in result_str
+        assert '\\subsubsection*{Details}' in result_str
+        
+        # Should NOT have numbered versions
+        assert '\\subsection{Content}' not in result_str
+        assert '\\subsection{Rationale}' not in result_str
+    
+    def test_headings_mixed_with_other_content(self):
+        """Headings mixed with code blocks, lists, etc."""
+        context = {'in_item_text': True}
+        
+        text_lines = [
+            '## Overview',
+            'This is a description.',
+            '',
+            '```python',
+            'code_example()',
+            '```',
+            '',
+            '## Implementation',
+            '- Point 1',
+            '- Point 2',
+        ]
+        
+        result = list(_process_text_block(text_lines, context=context))
+        result_str = '\n'.join(result)
+        
+        # Headings should be unnumbered
+        assert '\\subsection*{Overview}' in result_str
+        assert '\\subsection*{Implementation}' in result_str
+        
+        # Code and other content should be preserved
+        assert '\\begin{lstlisting}' in result_str
+        assert 'code_example()' in result_str
+    
+    def test_heading_at_start_of_item_text(self):
+        """Heading as first line of item text."""
+        context = {'in_item_text': True}
+        
+        text_lines = [
+            '## First Heading',
+            'Content follows.',
+        ]
+        
+        result = list(_process_text_block(text_lines, context=context))
+        result_str = '\n'.join(result)
+        
+        assert '\\subsection*{First Heading}' in result_str
+    
+    def test_heading_at_end_of_item_text(self):
+        """Heading as last line of item text."""
+        context = {'in_item_text': True}
+        
+        text_lines = [
+            'Content here.',
+            '## Last Heading',
+        ]
+        
+        result = list(_process_text_block(text_lines, context=context))
+        result_str = '\n'.join(result)
+        
+        assert '\\subsection*{Last Heading}' in result_str
+    
+    def test_nested_headings_proper_hierarchy(self):
+        """Nested headings should maintain proper hierarchy."""
+        context = {'in_item_text': True}
+        
+        text_lines = [
+            '## Main Section',
+            'Content',
+            '### Subsection',
+            'More content',
+            '#### Detail',
+            'Even more',
+        ]
+        
+        result = list(_process_text_block(text_lines, context=context))
+        result_str = '\n'.join(result)
+        
+        # All should be unnumbered but maintain hierarchy
+        assert '\\subsection*{Main Section}' in result_str
+        assert '\\subsubsection*{Subsection}' in result_str
+        assert '\\paragraph*{Detail}' in result_str
 
 # =============================================================================
 # END OF TESTS
@@ -2004,6 +2276,6 @@ To run these tests:
     start htmlcov/index.html  # Windows
     open htmlcov/index.html   # macOS
 
-Coverage target: 96% (currently achieved)
-Total tests: 159
+Coverage target: 97% (currently achieved)
+Total tests: 177
 """
