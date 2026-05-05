@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
-# pylint: disable=too-many-lines
 """Functions to publish LaTeX documents."""
 
 import re
