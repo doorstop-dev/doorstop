@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-only
+
 r"""
 Tests for LaTeX publishing functions.
 
