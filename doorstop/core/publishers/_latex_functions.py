@@ -414,10 +414,7 @@ def _latex_convert(line, context=None):
     line = line.replace(ESCAPED_UNDERSCORE_PH, r"\_")
 
     #############################
-    ## Phase 13b: Restore escaped backticks
-    #############################
-    #############################
-    ## Phase 14: Restore LaTeX commands and escaped characters
+    ## Phase 13b: Restore LaTeX commands and escaped characters
     #############################
     # First: Restore LaTeX commands
     LATEXCMDPH = "LATEXCOMMANDPH"
@@ -439,16 +436,6 @@ def _latex_convert(line, context=None):
     for i, (alt_text, url_and_title) in enumerate(image_segments):
         # Restore as markdown for _typeset_latex_image to process
         line = line.replace(f"<<<MDIMAGE{i}>>>", f"![{alt_text}]({url_and_title})")
-
-    #############################
-    ## Debug logging
-    #############################
-    if r"\textbackslash{}\textbackslash{}" in line:
-        log.warning(
-            f"Double backslash detected{context_info}. "
-            f"Original: '{original_line[:60]}...' "
-            f"Converted: '{line[:60]}...'"
-        )
 
     open_braces = line.count(r"\{") + line.count("{")
     close_braces = line.count(r"\}") + line.count("}")
@@ -846,19 +833,6 @@ def _has_complex_formatting(text_lines):
 
     # Join for pattern matching
     text_joined = "\n".join(text_lines)
-
-    # #############################
-    # ## Check for code blocks
-    # #############################
-    # has_code_blocks = False
-    # if "```" in text_joined:
-    #     # Check if code block is at the start
-    #     for line in text_lines:
-    #         if line.strip():
-    #             if line.strip().startswith("```"):
-    #                 has_code_blocks = True
-    #                 log.debug("Code block at start - using legacy")
-    #             break  # Only check first non-empty line
 
     #############################
     ## Check for tables
