@@ -159,11 +159,11 @@ The example generated markdown will look something like this:
 
 Steamboat Willie **shall** whistle while he is driving his boat.
 
-| Attribute | Value |
-| --------- | ----- |
-| commentary | The song should be a happy tune |
-| rationale | Whistling will help demonstrate that Steamboat Willie is having a good time and is care-free. |
-| invented-by | Donald |
+| Attribute   | Value                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| commentary  | The song should be a happy tune                                                               |
+| rationale   | Whistling will help demonstrate that Steamboat Willie is having a good time and is care-free. |
+| invented-by | Donald                                                                                        |
 ```
 
-More information about attributes can be found in the [item](item.md#extended-item-attributes) description and [document](document.md#extended-document-attributes) extended attributes sections.
+More information about attributes can be found in the [item](../reference/item.md#extended-item-attributes) description and [document](../reference/document.md#extended-document-attributes) extended attributes sections.
