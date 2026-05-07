@@ -91,9 +91,9 @@
     % Call PlantUML to produce a svg vector graphcis:
     \immediate\write18{plantuml -tsvg #1.txt}
     % Call Inkscape to convert the svg to a pdf (pdflatex cannot use svg):
-    \immediate\write18{inkscape #1.svg --export-pdf=#1.pdf}
+    \immediate\write18{inkscape #1.svg --export-filename=#1.pdf}
     % Include the pdf:
-	\begin{figure}[!h]
+    \begin{figure}[!h]
 		\includegraphics[width=#2]{#1.pdf}
         \caption{#3}
 		\label{fig:plant#4}\zlabel{fig:plant#4}
