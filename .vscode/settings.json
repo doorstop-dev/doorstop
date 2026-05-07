@@ -11,7 +11,7 @@
     "dist/": true,
     "htmlcov/": true,
     "prof/": true,
-    "site/": true,
+    // "site/": true,
   },
   "python.defaultInterpreterPath": ".venv/bin/python",
   "pylint.args": [

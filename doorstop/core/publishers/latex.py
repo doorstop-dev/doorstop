@@ -724,7 +724,9 @@ class LaTeXPublisher(BasePublisher):
                         "These are automatically added external references to make cross-references work between the PDFs.",
                     )
                     info_text_set = True
-                wrapper.append("\\zexternaldocument{{{n}}}".format(n=external_safe_name))
+                wrapper.append(
+                    "\\zexternaldocument{{{n}}}".format(n=external_safe_name)
+                )
                 wrapper.append("\\externaldocument{{{n}}}".format(n=external_safe_name))
         if info_text_set:
             wrapper = _add_comment(wrapper, "END external references.")
