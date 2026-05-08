@@ -137,7 +137,7 @@ docs: mkdocs uml ## Generate documentation and UML
 
 .PHONY: mkdocs
 mkdocs: install $(MKDOCS_INDEX)
-$(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/*.md
+$(MKDOCS_INDEX): docs/requirements.txt mkdocs.yml docs/**/*.md
 	@ mkdir -p docs/about
 	@ cd docs && ln -sf ../README.md index.md
 	@ cd docs/about && ln -sf ../../CHANGELOG.md changelog.md

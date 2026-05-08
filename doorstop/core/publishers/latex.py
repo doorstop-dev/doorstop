@@ -598,13 +598,15 @@ class LaTeXPublisher(BasePublisher):
         """Generate all wrapper scripts required for typesetting in LaTeX."""
         # Check for defined document attributes.
         doc_attributes = get_document_attributes(self.document)
+        # Sanitize the document name for use as filename (replace spaces with hyphens)
+        safe_name = doc_attributes["name"].replace(" ", "-")
         # Create the wrapper file.
         head, tail = os.path.split(self.documentPath)
         if tail != extract_prefix(self.document) + ".tex":
             log.warning(
                 "LaTeX export does not support custom file names. Change in .doorstop.yml instead."
             )
-        tail = doc_attributes["name"] + ".tex"
+        tail = safe_name + ".tex"
         self.documentPath = os.path.join(head, extract_prefix(self.document) + ".tex")
         wrapperPath = os.path.join(head, tail)
         # Load template data.
@@ -714,6 +716,8 @@ class LaTeXPublisher(BasePublisher):
             external_doc_attributes = get_document_attributes(external)
             # Don't add self.
             if external_doc_attributes["name"] != doc_attributes["name"]:
+                # Sanitize external document name for use as filename (replace spaces with hyphens)
+                external_safe_name = external_doc_attributes["name"].replace(" ", "-")
                 if not info_text_set:
                     wrapper = _add_comment(
                         wrapper,
@@ -721,15 +725,9 @@ class LaTeXPublisher(BasePublisher):
                     )
                     info_text_set = True
                 wrapper.append(
-                    "\\zexternaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
-                    )
+                    "\\zexternaldocument{{{n}}}".format(n=external_safe_name)
                 )
-                wrapper.append(
-                    "\\externaldocument{{{n}}}".format(
-                        n=external_doc_attributes["name"]
-                    )
-                )
+                wrapper.append("\\externaldocument{{{n}}}".format(n=external_safe_name))
         if info_text_set:
             wrapper = _add_comment(wrapper, "END external references.")
             wrapper.append("")
@@ -772,6 +770,4 @@ class LaTeXPublisher(BasePublisher):
         common.write_lines(wrapper, wrapperPath, end=settings.WRITE_LINESEPERATOR)
 
         # Add to compile.sh as return value.
-        return "pdflatex -halt-on-error -shell-escape {n}.tex".format(
-            n=doc_attributes["name"]
-        )
+        return 'pdflatex -halt-on-error -shell-escape "{n}.tex"'.format(n=safe_name)
