@@ -184,7 +184,7 @@ class LaTeXPublisher(BasePublisher):
                             yield "\\begin{longtable}{|l|l|}"
                             yield "Attribute & Value\\\\"
                             yield self.HLINE
-                        yield "{} & {}".format(attr, item.attribute(attr))
+                        yield "{} & {}\\\\".format(attr, item.attribute(attr))
                     if header_printed:
                         yield self.END_LONGTABLE
                     else:
