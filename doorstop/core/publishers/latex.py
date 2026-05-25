@@ -98,25 +98,23 @@ class LaTeXPublisher(BasePublisher):
             heading_level = "\\" + "sub" * (item.depth - 1) + "section{"
 
             if item.heading:
-                text_lines = item.text.splitlines()
-                if item.header:
-                    text_lines.insert(0, item.header)
+                title = item.title()
                 # Level and Text
                 if settings.PUBLISH_HEADING_LEVELS:
                     standard = "{h}{t}{he}".format(
                         h=heading_level,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
+                        t=_latex_convert(title) if title else "",
                         he="}",
                     )
                 else:
                     standard = "{h}{t}{he}".format(
                         h=heading,
-                        t=_latex_convert(text_lines[0]) if text_lines else "",
+                        t=_latex_convert(title) if title else "",
                         he="}",
                     )
                 attr_list = self.format_attr_list(item, True)
                 yield standard + attr_list
-                yield from self._format_latex_text(text_lines[1:])
+                yield from self._format_latex_text(item.text.splitlines())
             else:
                 uid = item.uid
                 if settings.ENABLE_HEADERS:
