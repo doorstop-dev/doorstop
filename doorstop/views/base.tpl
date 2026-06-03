@@ -13,11 +13,19 @@
   <link rel="stylesheet" href="{{baseurl}}{{tmpRef}}template/bootstrap.min.css" />
   <link rel="stylesheet" href="{{baseurl}}{{tmpRef}}template/general.css" />
   {{! '<link type="text/css" rel="stylesheet" href="%s" />'%(baseurl+tmpRef+'template/'+stylesheet) if stylesheet else "" }}
+  <!-- Load MathJax 3 from the template directory -->
   <script src="{{baseurl}}{{tmpRef}}template/tex-mml-chtml.js" id="MathJax-script" async></script>
-  <script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
-  });
+  <!-- MathJax 3 Configuration -->
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
   </script>
 </head>
 <body>
