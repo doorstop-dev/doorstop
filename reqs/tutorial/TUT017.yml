@@ -95,6 +95,8 @@ text: |
 
   $$k_{n+1} = n^2 + k_n^2 - k_{n-1}$$
 
+  Alternatively you can also use inline math like this: `$e=mc^2$` renders as $e=mc^2$.
+
   ### Code blocks
 
   Code blocks are either fenced by lines with three back-ticks \`\`\`. Optionally, you can add an
