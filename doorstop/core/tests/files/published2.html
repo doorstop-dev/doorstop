@@ -6,11 +6,19 @@
   <link rel="stylesheet" href="../template/bootstrap.min.css" />
   <link rel="stylesheet" href="../template/general.css" />
   <link type="text/css" rel="stylesheet" href="../template/doorstop.css" />
+  <!-- Load MathJax 3 from the template directory -->
   <script src="../template/tex-mml-chtml.js" id="MathJax-script" async></script>
-  <script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
-  });
+  <!-- MathJax 3 Configuration -->
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
   </script>
 </head>
 <body>
