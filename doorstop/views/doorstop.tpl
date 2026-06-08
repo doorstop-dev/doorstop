@@ -30,7 +30,7 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Contents
             </a>
-            <ul class="dropdown-menu dropdown-menu-scrollable">
+            <ul class="dropdown-menu" style="max-height: 70vh; overflow-y: auto;">
               % old_depth = 0
               % for item in toc:
                 % if item['depth'] > old_depth:
@@ -42,7 +42,13 @@
                     </ul>
                   % end
                 % end
-                <li><a class="dropdown-item" href="#{{item['uid']}}">{{item['text']}}</a></li>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#{{item['uid']}}"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="{{item['uid']}}">{{item['text']}}</a>
+                </li>
                 % old_depth = item['depth']
               % end
               % for _ in range(old_depth):

@@ -707,8 +707,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
         common.write_text(text, path)
+        self.assertEqual(expected, text)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_markdown_document_without_child_links(self):
@@ -719,8 +721,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
-        self.assertEqual(expected, text)
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
         common.write_text(text, path)
+        self.assertEqual(expected, text)
 
     @patch("plantuml_markdown.PlantUMLPreprocessor.run")
     @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
