@@ -108,7 +108,8 @@ I.e., only one of the documents in the tree should have a template folder."""
                 log.info(
                     "Copying %s to %s",
                     each.template,
-                    os.path.join(os.path.dirname(path), "template"),
+                    template,
+                    # os.path.join(os.path.dirname(path), "template"),
                 )
                 common.copy_dir_contents(each.template, template_dir)
         else:

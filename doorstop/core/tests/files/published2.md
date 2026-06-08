@@ -32,7 +32,7 @@ Hello, world!
 
 Hello, world!
 
-## 2.1 Plantuml _REQ002_ {#REQ002}
+## 2.1 Plantuml _(REQ002)_ {#REQ002}
 
 Hello, world!
 

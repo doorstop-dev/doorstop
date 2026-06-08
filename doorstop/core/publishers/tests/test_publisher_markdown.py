@@ -225,12 +225,12 @@ class TestTableOfContents(unittest.TestCase):
         """Verify the table of contents is generated with heading levels"""
         expected = """### Table of Contents
 
-        * 1.2.3 REQ001
-    * 1.4 REQ003
-    * 1.5 REQ006
-    * 1.6 REQ004
-    * 2.1 Plantuml
-    * 2.1 REQ2-001\n"""
+        * 1.2.3 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod (REQ001)
+    * 1.4 Unicode: -40° ±1% (REQ003)
+    * 1.5 Hello, world! (REQ006)
+    * 1.6 Hello, world! (REQ004)
+    * 2.1 Plantuml (REQ002)
+    * 2.1 Hello, world! (REQ2-001)\n"""
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
         self.assertEqual(expected, toc)
@@ -240,12 +240,13 @@ class TestTableOfContents(unittest.TestCase):
         """Verify the table of contents is generated without heading levels"""
         expected = """### Table of Contents
 
-        * REQ001
-    * REQ003
-    * REQ006
-    * REQ004
-    * Plantuml
-    * REQ2-001\n"""
+        * Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod (REQ001)
+    * Unicode: -40° ±1% (REQ003)
+    * Hello, world! (REQ006)
+    * Hello, world! (REQ004)
+    * Plantuml (REQ002)
+    * Hello, world! (REQ2-001)
+"""
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
         self.assertEqual(expected, toc)
@@ -254,12 +255,12 @@ class TestTableOfContents(unittest.TestCase):
         """Verify the table of contents is generated with an ID for the heading"""
         expected = """### Table of Contents
 
-        * [1.2.3 REQ001](#123-req001-req001)
-    * [1.4 REQ003](#14-req003-req003)
-    * [1.5 REQ006](#15-req006-req006)
-    * [1.6 REQ004](#16-req004-req004)
-    * [2.1 Plantuml](#21-plantuml-req002-req002)
-    * [2.1 REQ2-001](#21-req2-001-req2-001)\n"""
+        * [1.2.3 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod (REQ001)](#123-req001-req001)
+    * [1.4 Unicode: -40° ±1% (REQ003)](#14-req003-req003)
+    * [1.5 Hello, world! (REQ006)](#15-req006-req006)
+    * [1.6 Hello, world! (REQ004)](#16-req004-req004)
+    * [2.1 Plantuml (REQ002)](#21-plantuml-req002-req002)
+    * [2.1 Hello, world! (REQ2-001)](#21-req2-001-req2-001)\n"""
         self.maxDiff = None
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=True, obj=self.document)
