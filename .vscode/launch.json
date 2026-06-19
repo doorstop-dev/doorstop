@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Doorstop CLI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/doorstop/cli/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": "${command:pickArgs}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pickArgs",
+            "type": "promptString",
+            "description": "Command line arguments für doorstop:",
+            "default": "--help"
+        }
+    ]
+}
