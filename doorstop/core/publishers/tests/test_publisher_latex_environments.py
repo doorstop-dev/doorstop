@@ -542,8 +542,8 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
-    def test_missing_changing_list_indentation(self):
-        """Verify that a list throws an error if indentation is changed in the middle of the list."""
+    def test_flexible_list_indentation(self):
+        """Verify that lists with flexible indentation (4 and 8 spaces) work correctly."""
         # Setup
         generated_data = (
             r"text: |" + "\n"
@@ -555,6 +555,73 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
             "path/to/REQ-001.yml",
             _file=generated_data,
         )
-        # Act & Assert
-        with self.assertRaises(DoorstopError):
-            _ = getLines(publisher.publish_lines(item, ".tex"))
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"List without newline:" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
+            r"\item Item 1" + "\n"
+            r"\begin{enumerateDeep}" + "\n"
+            r"\item Item 1.1" + "\n"
+            r"\end{enumerateDeep}" + "\n"
+            r"\end{enumerateDeep}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
+    def test_flexible_indentation_complex(self):
+        """Verify that complex flexible indentation works correctly."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Complex list:" + "\n"
+            r"  - Item 1" + "\n"
+            r"   - One space nested" + "\n"
+            r"    - Two spaces nested" + "\n"
+            r"  - Item 2"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+
+        # Assert - verify structure is correct (flexible assertions)
+        self.assertIn(r"\begin{itemizeDeep}", result)
+        self.assertIn(r"\item Item 1", result)
+        self.assertIn(r"\item One space nested", result)
+        self.assertIn(r"\item Two spaces nested", result)
+        self.assertIn(r"\item Item 2", result)
+        self.assertIn(r"\end{itemizeDeep}", result)
+
+        # Count nesting levels - should have proper nesting
+        begin_count = result.count(r"\begin{itemizeDeep}")
+        end_count = result.count(r"\end{itemizeDeep}")
+        self.assertEqual(begin_count, end_count, "Begin and end tags should match")
+        self.assertGreaterEqual(begin_count, 2, "Should have at least 2 nesting levels")
+
+    def test_mixed_list_types(self):
+        """Verify that mixed ordered and unordered lists work."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  Mixed lists:" + "\n"
+            r"  - Unordered" + "\n"
+            r"    1. Ordered nested" + "\n"
+            r"       - Unordered nested" + "\n"
+            r"  - Back to unordered"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertIn(r"\begin{itemizeDeep}", result)
+        self.assertIn(r"\begin{enumerateDeep}", result)
+        self.assertIn(r"\end{enumerateDeep}", result)
+        self.assertIn(r"\end{itemizeDeep}", result)

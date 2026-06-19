@@ -83,6 +83,124 @@ class LaTeXPublisher(BasePublisher):
     def table_of_contents(self, linkify=None, obj=None):
         """No table of contents LaTeX."""
 
+    def process_lists(self, line, next_line):
+        """Process lists in the line. Intended for LaTeX publishers.
+
+        This method handles list processing specific to LaTeX output,
+        including nested lists with flexible indentation.
+
+        :param line: Current line to process
+        :param next_line: Next line (for lookahead)
+        :return: tuple of (no_paragraph, processed_block, line)
+        """
+        # Don't process custom attributes
+        if "CUSTOM-ATTRIB" in line:
+            return (False, "", line)
+
+        # Loop over both list types
+        matches = None  # IMPORTANT: Initialization!
+        detected_list_type = None
+        for temp_type in ["itemize", "enumerate"]:
+            temp_matches = self.list["regexp"][temp_type].findall(line)
+            if temp_matches:
+                matches = temp_matches
+                detected_list_type = temp_type
+                break
+
+        block = []
+        no_paragraph = False
+
+        if (
+            matches and detected_list_type is not None
+        ):  # matches and detected_list_type is always defined
+            indent = len(line) - len(line.lstrip())
+
+            # Initialize stack if not present
+            if "stack" not in self.list:
+                self.list["stack"] = {"itemize": [], "enumerate": []}
+
+            if not self.list["found"][detected_list_type]:
+                # Start first list
+                block.append(self.list["start"][detected_list_type])
+                self.list["found"][detected_list_type] = True
+                self.list["depth"][detected_list_type] = indent
+                self.list["stack"][detected_list_type] = [indent]
+
+            elif self.list["depth"][detected_list_type] < indent:
+                # Deeper nesting
+                block.append(self.list["start"][detected_list_type])
+                self.list["depth"][detected_list_type] = indent
+                self.list["stack"][detected_list_type].append(indent)
+
+            elif self.list["depth"][detected_list_type] > indent:
+                # Back to shallower level
+                while (
+                    len(self.list["stack"][detected_list_type]) > 0
+                    and self.list["stack"][detected_list_type][-1] > indent
+                ):
+                    block.append(self.list["end"][detected_list_type])
+                    self.list["stack"][detected_list_type].pop()
+
+                if len(self.list["stack"][detected_list_type]) > 0:
+                    self.list["depth"][detected_list_type] = self.list["stack"][
+                        detected_list_type
+                    ][-1]
+                else:
+                    self.list["depth"][detected_list_type] = 0
+
+        # Check both list types
+        for list_type in ["itemize", "enumerate"]:
+            if self.list["found"][list_type]:
+                no_paragraph = True
+                # Replace the list identifier
+                line = (
+                    self.list["sub"][list_type].sub(
+                        self.list["start_item"][list_type], line
+                    )
+                    + self.list["end_item"][list_type]
+                )
+                # Look ahead - need empty line to end itemize
+                block, line = self._check_for_list_end(
+                    line, next_line, block, list_type
+                )
+
+        if len(block) > 0:
+            return (no_paragraph, "\n".join(block), line)
+        else:
+            return (no_paragraph, "", line)
+
+    def _check_for_list_end(self, line, next_line, block, list_type):
+        """Check if the list has ended.
+
+        :param line: Current line (already converted to LaTeX)
+        :param next_line: Next line to check
+        :param block: List of output lines
+        :param list_type: "itemize" or "enumerate"
+        :return: tuple of (block, line)
+        """
+        if next_line == "" or next_line.startswith("<p>"):
+            block.append(line)
+
+            # Close all open levels using stack
+            num_levels = len(self.list["stack"][list_type])
+
+            # Close all except the last
+            for _ in range(num_levels - 1):
+                block.append(self.list["end"][list_type])
+
+            # Clear the stack
+            self.list["stack"][list_type] = []
+
+            # Return the last end tag as line
+            line = self.list["end"][list_type]
+
+            self.list["found"][list_type] = False
+            self.list["depth"][list_type] = 0
+
+            return (block, line)
+
+        return (block, line)
+
     def lines(self, obj, **kwargs):
         """Yield lines for a LaTeX report.
 
