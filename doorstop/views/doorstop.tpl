@@ -101,4 +101,60 @@
     </div>
   </main>
 </div>
+
+% # ============================================================================
+% # CSS Class Assignment  - to map item attributes to css classes
+% # ============================================================================
+
+% doc = locals().get('document')
+% if doc and hasattr(doc, 'items'):
+<script>
+(function() {
+  'use strict';
+  
+  // Helper function: Sanitize attribute values for CSS class names
+  function sanitizeForClass(value) {
+    if (!value) return '';
+    return String(value)
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')           // Whitespace → dash
+      .replace(/[^a-z0-9-_]/g, '-')   // Invalid chars → dash
+      .replace(/-+/g, '-')            // Multiple dashes → single dash
+      .replace(/^-|-$/g, '');         // Remove leading/trailing dashes
+  }
+  
+  const items = {
+% for item in doc.items:
+    "{{item.uid}}": {
+      normative: {{!'true' if item.get('normative', True) else 'false'}},
+% if item.get('verification-method'):
+      verificationMethod: "{{item.get('verification-method')}}",
+% end
+    },
+% end
+  };
+  
+  Object.entries(items).forEach(function(entry) {
+    var uid = entry[0];
+    var attrs = entry[1];
+    var el = document.getElementById(uid);
+    if (!el) return;
+    
+    // Normative
+    el.classList.add(attrs.normative ? 'normative' : 'non-normative');
+    
+    // Verification Method (sanitized)
+    if (attrs.verificationMethod) {
+      var sanitized = sanitizeForClass(attrs.verificationMethod);
+      if (sanitized) {
+        el.classList.add('verification-method-' + sanitized);
+      }
+    }
+  });
+})();
+</script>
+% end
+% # End of CSS class assignment
+% # ============================================================================
 <script src="{{baseurl}}{{tmpRef}}template/bootstrap.bundle.min.js"></script>

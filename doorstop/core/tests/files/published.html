@@ -189,6 +189,64 @@ Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$</p>
     </div>
   </main>
 </div>
+
+
+<script>
+(function() {
+  'use strict';
+  
+  // Helper function: Sanitize attribute values for CSS class names
+  function sanitizeForClass(value) {
+    if (!value) return '';
+    return String(value)
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')           // Whitespace → dash
+      .replace(/[^a-z0-9-_]/g, '-')   // Invalid chars → dash
+      .replace(/-+/g, '-')            // Multiple dashes → single dash
+      .replace(/^-|-$/g, '');         // Remove leading/trailing dashes
+  }
+  
+  const items = {
+    "REQ001": {
+      normative: true,
+    },
+    "REQ003": {
+      normative: true,
+    },
+    "REQ006": {
+      normative: true,
+    },
+    "REQ004": {
+      normative: true,
+    },
+    "REQ002": {
+      normative: true,
+    },
+    "REQ2-001": {
+      normative: true,
+    },
+  };
+  
+  Object.entries(items).forEach(function(entry) {
+    var uid = entry[0];
+    var attrs = entry[1];
+    var el = document.getElementById(uid);
+    if (!el) return;
+    
+    // Normative
+    el.classList.add(attrs.normative ? 'normative' : 'non-normative');
+    
+    // Verification Method (sanitized)
+    if (attrs.verificationMethod) {
+      var sanitized = sanitizeForClass(attrs.verificationMethod);
+      if (sanitized) {
+        el.classList.add('verification-method-' + sanitized);
+      }
+    }
+  });
+})();
+</script>
 <script src="../template/bootstrap.bundle.min.js"></script>
 </body>
 </html>

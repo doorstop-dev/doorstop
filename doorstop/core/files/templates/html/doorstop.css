@@ -15,3 +15,22 @@
 #img {
     width: 100%
 }
+
+/* ============================================
+   Attribute-based Item Styling
+   ============================================ */
+
+/* Normative Items */
+.normative {
+    border-left: 4px solid #0d6efd;
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Non-Normative Items */
+.non-normative {
+    border-left: 4px solid #6c757d;
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+}
