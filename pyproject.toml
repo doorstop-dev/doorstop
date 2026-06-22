@@ -1,7 +1,7 @@
 [tool.poetry]
 
 name = "doorstop"
-version = "3.1.dev+SiebMeyer"
+version = "3.1.dev0+siebmeyer"
 description = "Requirements management using version control."
 
 license = "LGPLv3"
