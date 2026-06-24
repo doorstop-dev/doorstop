@@ -10,6 +10,17 @@
             "justMyCode": true,
             "args": "${command:pickArgs}",
             "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+        },
+        {
+            "name": "SD4-CWD: Debug Doorstop CLI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/doorstop/cli/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": "${command:pickArgs}",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "cwd": "/gitlab/dev-sd4x-safety-module",
         }
     ],
     "inputs": [
