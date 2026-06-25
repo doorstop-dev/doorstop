@@ -90,7 +90,14 @@
                     data-bs-placement="left"
                     title="REQ2-001">2.1 Hello, world! (REQ2-001)</a>
                 </li>
-                </ul>
+                    </ul>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ007"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ007">3.0 My Heading</a>
+                </li>
                 </ul>
             </ul>
           </li>
@@ -186,67 +193,10 @@ Inline Style 2: (ax^2 + bx + c = 0)
 Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$</p>
 <p><em>Parent links:</em> <a href="REQ.html#REQ001">REQ001</a></p>
 <p><em>Child links:</em> <a href="TST.html#TST001">TST001</a></p>
+<h1 id="REQ007">3.0 My Heading</h1>
     </div>
   </main>
 </div>
-
-
-<script>
-(function() {
-  'use strict';
-  
-  // Helper function: Sanitize attribute values for CSS class names
-  function sanitizeForClass(value) {
-    if (!value) return '';
-    return String(value)
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')           // Whitespace → dash
-      .replace(/[^a-z0-9-_]/g, '-')   // Invalid chars → dash
-      .replace(/-+/g, '-')            // Multiple dashes → single dash
-      .replace(/^-|-$/g, '');         // Remove leading/trailing dashes
-  }
-  
-  const items = {
-    "REQ001": {
-      normative: true,
-    },
-    "REQ003": {
-      normative: true,
-    },
-    "REQ006": {
-      normative: true,
-    },
-    "REQ004": {
-      normative: true,
-    },
-    "REQ002": {
-      normative: true,
-    },
-    "REQ2-001": {
-      normative: true,
-    },
-  };
-  
-  Object.entries(items).forEach(function(entry) {
-    var uid = entry[0];
-    var attrs = entry[1];
-    var el = document.getElementById(uid);
-    if (!el) return;
-    
-    // Normative
-    el.classList.add(attrs.normative ? 'normative' : 'non-normative');
-    
-    // Verification Method (sanitized)
-    if (attrs.verificationMethod) {
-      var sanitized = sanitizeForClass(attrs.verificationMethod);
-      if (sanitized) {
-        el.classList.add('verification-method-' + sanitized);
-      }
-    }
-  });
-})();
-</script>
 <script src="../template/bootstrap.bundle.min.js"></script>
 </body>
 </html>
