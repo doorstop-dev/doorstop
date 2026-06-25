@@ -46,7 +46,8 @@ def reset_fixture_files():
             # Exclude golden master files from reset as they are
             # intentionally updated by tests using the golden master pattern
             yaml_files = [
-                f for f in yaml_files
+                f
+                for f in yaml_files
                 if os.path.abspath(os.path.join(test_dir, f)) not in GOLDEN_MASTER_FILES
             ]
 
@@ -63,6 +64,7 @@ def reset_fixture_files():
             )
     except Exception:
         pass
+
 
 @patch("doorstop.core.document.Document", MockDocumentSkip)
 class TestTreeStrings(unittest.TestCase):

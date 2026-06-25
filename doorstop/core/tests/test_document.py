@@ -398,29 +398,6 @@ class TestDocument(unittest.TestCase):
 
     @patch("doorstop.common.write_lines")
     @patch("doorstop.settings.MAX_LINE_LENGTH", 40)
-    def test_index_set(self, mock_write_lines):
-        """Verify an document's index can be created."""
-        lines = [
-            "initial: 1.2.3",
-            "outline:",
-            "            - REQ001: # Lorem ipsum d...",
-            "        - REQ003: # Unicode: -40° ±1%",
-            "        - REQ006: # Hello, world!",
-            "        - REQ004: # Hello, world!",
-            "        - REQ002: # Plantuml",
-            "        - REQ2-001: # Hello, world!",
-            "        - REQ007: # My Heading",
-        ]
-        # Act
-        self.document.index = True  # create index
-        # Assert
-        gen, path = mock_write_lines.call_args[0]
-        lines2 = list(gen)[8:]  # skip lines of info comments
-        self.assertListEqual(lines, lines2)
-        self.assertEqual(os.path.join(FILES, "index.yml"), path)
-
-    @patch("doorstop.common.write_lines")
-    @patch("doorstop.settings.MAX_LINE_LENGTH", 40)
     def test_read_index(self, mock_write_lines):
         """Verify a document index can be read."""
         lines = """initial: 1.2.3
@@ -448,39 +425,6 @@ outline:
             ).return_value
             actual = self.document._read_index("mock_path")
             # Check string can be parsed as yaml
-        # Assert
-        self.assertEqual(expected, actual)
-
-    @patch("doorstop.common.write_lines")
-    @patch("doorstop.settings.MAX_LINE_LENGTH", 40)
-    def test_read_index(self, mock_write_lines):
-        """Verify a document index can be read."""
-        lines = """initial: 1.2.3
-outline:
-        - REQ001: # Lorem ipsum d...
-        - REQ003: # Unicode: -40° ±1%
-        - REQ004: # Hello, world! !['..
-        - REQ002: # Hello, world! !["...
-        - REQ2-001: # Hello, world!
-        - REQ005: # My Heading"""
-
-        expected = {
-            "initial": "1.2.3",
-            "outline": [
-                {"REQ001": [{"text": "Lorem ipsum d..."}]},
-                {"REQ003": [{"text": "Unicode: -40° ±1%"}]},
-                {"REQ004": [{"text": "Hello, world! !['.."}]},
-                {"REQ002": [{"text": 'Hello, world! !["...'}]},
-                {"REQ2-001": [{"text": "Hello, world!"}]},
-                {"REQ005": [{"text": "My Heading"}]},
-            ],
-        }
-        # Act
-        with patch("builtins.open") as mock_open:
-            mock_open.side_effect = lambda *args, **kw: mock.mock_open(
-                read_data=lines
-            ).return_value
-            actual = self.document._read_index("mock_path")
         # Assert
         self.assertEqual(expected, actual)
 

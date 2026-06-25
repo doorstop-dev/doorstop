@@ -27,8 +27,8 @@ from doorstop.core.tests import (
     EMPTY,
     ENV,
     FILES,
-    GOLDEN_MASTER_FILES,
     FILES_MD,
+    GOLDEN_MASTER_FILES,
     REASON,
     ROOT,
     SYS,
@@ -80,8 +80,10 @@ def cleanup_test_yml_files():
 
                 # Exclude golden master files from reset
                 yaml_files = [
-                    f for f in yaml_files
-                    if os.path.abspath(os.path.join(repo_root, f)) not in GOLDEN_MASTER_FILES
+                    f
+                    for f in yaml_files
+                    if os.path.abspath(os.path.join(repo_root, f))
+                    not in GOLDEN_MASTER_FILES
                 ]
 
                 if not yaml_files:
@@ -107,6 +109,7 @@ def cleanup_test_yml_files():
     except Exception:
         # Ignore errors in cleanup to prevent test failures
         pass
+
 
 class TestItem(unittest.TestCase):
     """Integration tests for the Item class."""
@@ -612,7 +615,9 @@ class TestExporter(unittest.TestCase):
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
-        move_file(temp, path)
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
 
     def test_export_csv(self):
@@ -628,7 +633,9 @@ class TestExporter(unittest.TestCase):
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
-        move_file(temp, path)
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
 
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -645,8 +652,11 @@ class TestExporter(unittest.TestCase):
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
-        move_file(temp, path)
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
+
 
 class TestPublisher(unittest.TestCase):
     """Integration tests for the doorstop.core.publisher module."""
@@ -719,7 +729,6 @@ class TestPublisher(unittest.TestCase):
             common.log.error(f"Published content changed: {path}")
             common.write_text(text, path)
         self.assertEqual(expected, text)
-
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
