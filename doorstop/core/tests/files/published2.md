@@ -66,3 +66,5 @@ Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
 *Links: REQ001*
 
+# 3.0 My Heading {#REQ007}
+
