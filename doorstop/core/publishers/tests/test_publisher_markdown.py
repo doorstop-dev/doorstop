@@ -230,7 +230,8 @@ class TestTableOfContents(unittest.TestCase):
     * 1.5 Hello, world! (REQ006)
     * 1.6 Hello, world! (REQ004)
     * 2.1 Plantuml (REQ002)
-    * 2.1 Hello, world! (REQ2-001)\n"""
+    * 2.1 Hello, world! (REQ2-001)
+ * 3.0 My Heading\n"""
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
         self.assertEqual(expected, toc)
@@ -246,6 +247,7 @@ class TestTableOfContents(unittest.TestCase):
     * Hello, world! (REQ004)
     * Plantuml (REQ002)
     * Hello, world! (REQ2-001)
+ * My Heading
 """
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=None, obj=self.document)
@@ -260,7 +262,8 @@ class TestTableOfContents(unittest.TestCase):
     * [1.5 Hello, world! (REQ006)](#15-req006-req006)
     * [1.6 Hello, world! (REQ004)](#16-req004-req004)
     * [2.1 Plantuml (REQ002)](#21-plantuml-req002-req002)
-    * [2.1 Hello, world! (REQ2-001)](#21-req2-001-req2-001)\n"""
+    * [2.1 Hello, world! (REQ2-001)](#21-req2-001-req2-001)
+ * [3.0 My Heading](#30-my-heading-req007)\n"""
         self.maxDiff = None
         md_publisher = publisher.check(".md", self.document)
         toc = md_publisher.table_of_contents(linkify=True, obj=self.document)
