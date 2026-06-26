@@ -113,7 +113,8 @@ test-int: test-all
 test-all: install
 	TEST_INTEGRATION=true poetry run pytest $(PACKAGES) $(PYTEST_OPTIONS)
 ifndef DISABLE_COVERAGE
-	@ poetry run coveragespace update overall || echo "Coverage upload skipped: no remote origin configured"
+	@ echo
+	poetry run coveragespace update overall
 endif
 
 .PHONY: test-cover
