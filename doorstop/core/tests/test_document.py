@@ -407,14 +407,14 @@ class TestDocument(unittest.TestCase):
             "        - REQ003: # Unicode: -40° ±1%",
             "        - REQ006: # Hello, world!",
             "        - REQ004: # Hello, world!",
-            "        - REQ002: # Hello, world!",
+            "        - REQ002: # Plantuml",
             "        - REQ2-001: # Hello, world!",
         ]
         # Act
         self.document.index = True  # create index
         # Assert
         gen, path = mock_write_lines.call_args[0]
-        lines2 = list(gen)[8:]  # skip lines of info comments
+        lines2 = list(gen)[9:]  # skip lines of info comments
         self.assertListEqual(lines, lines2)
         self.assertEqual(os.path.join(FILES, "index.yml"), path)
 
@@ -896,6 +896,137 @@ outline:
         # Assert
         self.assertEqual([], mock_copytree.call_args_list)
 
+    def test_lines_index_writes_heading_marker(self):
+        """Verify heading items are marked with '# HEADING #' in the index."""
+
+        class IndexItem:
+            def __init__(self, uid, level, depth, header, text, heading):
+                self.uid = uid
+                self.level = Level(level)
+                self.depth = depth
+                self.header = header
+                self.text = text
+                self.heading = heading
+
+        items = [
+            IndexItem(
+                uid="REQ001",
+                level="1.0",
+                depth=0,
+                header="My Heading",
+                text="Fallback text",
+                heading=True,
+            ),
+            IndexItem(
+                uid="REQ002",
+                level="2",
+                depth=0,
+                header="Requirement Header",
+                text="Requirement text",
+                heading=False,
+            ),
+            IndexItem(
+                uid="REQ003",
+                level="3",
+                depth=0,
+                header="",
+                text="Requirement text",
+                heading=False,
+            ),
+        ]
+
+        lines = list(Document._lines_index(items))
+
+        self.assertIn("- REQ001: # HEADING # My Heading", lines)
+        self.assertIn("- REQ002: # Requirement Header", lines)
+        self.assertIn("- REQ003: # Requirement text", lines)
+
+    def test_read_index_converts_heading_marker(self):
+        """Verify '# HEADING #' comments are converted to heading entries."""
+        lines = """initial: 1.2.3
+outline:
+    - REQ001: # HEADING # My Heading"""
+
+        expected = {
+            "initial": "1.2.3",
+            "outline": [
+                {"REQ001": [{"header": "My Heading"}]},
+            ],
+        }
+
+        with patch("builtins.open", mock.mock_open(read_data=lines)):
+            actual = self.document._read_index("mock_path")
+
+        self.assertEqual(expected, actual)
+
+    def test_read_index_converts_heading_marker_with_whitespace(self):
+        """Verify heading markers tolerate additional whitespace."""
+        lines = """initial: 1.2.3
+outline:
+    - REQ001: #     heading      #     My Heading"""
+
+        expected = {
+            "initial": "1.2.3",
+            "outline": [
+                {"REQ001": [{"header": "My Heading"}]},
+            ],
+        }
+
+        with patch("builtins.open", mock.mock_open(read_data=lines)):
+            actual = self.document._read_index("mock_path")
+
+        self.assertEqual(expected, actual)
+
+    def test_read_index_preserves_empty_comment(self):
+        """Verify empty comments are not converted to text or heading entries."""
+        lines = """initial: 1.2.3
+outline:
+    - REQ001: #"""
+
+        expected = {
+            "initial": "1.2.3",
+            "outline": [
+                {"REQ001": None},
+            ],
+        }
+
+        with patch("builtins.open", mock.mock_open(read_data=lines)):
+            actual = self.document._read_index("mock_path")
+
+        self.assertEqual(expected, actual)
+
+
+class ReorderItem:
+    """Simple item fake for _reorder_section tests."""
+
+    def __init__(self, uid="REQ999", level=None):
+        self.uid = uid
+        self.level = level
+        self.text = ""
+        self.header = ""
+        self.normative = True
+
+
+class ReorderDocument:
+    """Simple document fake for _reorder_section tests."""
+
+    def __init__(self, existing=None):
+        self.existing = existing or {}
+        self.added = []
+
+    def find_item(self, uid):
+        if uid in self.existing:
+            return self.existing[uid]
+        raise DoorstopError(uid)
+
+    def add_item(self, level=None, reorder=False):  # pylint: disable=unused-argument
+        item = ReorderItem(
+            uid="REQ999",
+            level=level.copy() if level else None,
+        )
+        self.added.append(item)
+        return item
+
 
 @patch("doorstop.core.item.Item", MockItem)
 class TestDocumentReorder(unittest.TestCase):
@@ -1057,3 +1188,88 @@ class TestDocumentReorder(unittest.TestCase):
         actual = [item.level for item in items]
         self.assertListEqual(expected, actual)
         self.assertEqual(mock_item.method_calls, [call.delete()])
+
+    def test_reorder_section_creates_new_heading_without_children(self):
+        """Verify a new heading item can be created without child items."""
+        document = ReorderDocument()
+        ids = []
+
+        section = {
+            "NEW": [
+                {"header": "New Heading with a Header"},
+            ]
+        }
+
+        Document._reorder_section(section, Level("1"), document, ids)
+
+        self.assertEqual(1, len(document.added))
+
+        item = document.added[0]
+        self.assertTrue(item.level.heading)
+        self.assertEqual("1.0", str(item.level))
+        self.assertFalse(item.normative)
+        self.assertEqual("New Heading with a Header", item.header)
+        self.assertEqual("", item.text)
+
+    def test_reorder_section_creates_new_requirement_with_text(self):
+        """Verify a new non-heading item gets its text from the index comment."""
+        document = ReorderDocument()
+        ids = []
+
+        section = {
+            "NEW": [
+                {"text": "New requirement text"},
+            ]
+        }
+
+        Document._reorder_section(section, Level("1"), document, ids)
+
+        self.assertEqual(1, len(document.added))
+
+        item = document.added[0]
+        self.assertFalse(item.level.heading)
+
+    def test_reorder_section_existing_item_keeps_content(self):
+        """Verify existing items keep their content during manual reorder."""
+        item = ReorderItem(uid="REQ001", level=Level("1"))
+        item.header = "Existing Header"
+        item.text = "Existing Text"
+        item.normative = False
+
+        document = ReorderDocument(existing={"REQ001": item})
+        ids = []
+
+        section = {
+            "REQ001": [
+                {"heading": "Changed Header From Index"},
+            ]
+        }
+
+        Document._reorder_section(section, Level("2"), document, ids)
+
+    def test_reorder_section_sets_heading_when_children_exist(self):
+        """Verify an item with direct child elements is treated as a heading."""
+        document = ReorderDocument()
+        ids = []
+
+        section = {
+            "NEW": [
+                {"DOC-001": [{"text": "Child requirement"}]},
+            ]
+        }
+
+        Document._reorder_section(section, Level("1"), document, ids)
+
+        self.assertEqual(2, len(document.added))
+
+        parent = document.added[0]
+        child = document.added[1]
+
+        self.assertTrue(parent.level.heading)
+        self.assertEqual("1.0", str(parent.level))
+        self.assertFalse(parent.normative)
+
+        self.assertFalse(child.level.heading)
+        self.assertEqual("1.1", str(child.level))
+        self.assertTrue(child.normative)
+        self.assertEqual("Child requirement", child.text)
