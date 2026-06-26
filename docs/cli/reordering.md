@@ -6,8 +6,8 @@ creating headings and the subsequent items forming sub headings.
 A document can contain an arbitraty number of headings and sub headings.
 
 A normative heading item will display the item's uid as the heading text. A non normative heading
-displays the first line of the item text, with any subsequent text displayed in the body of the heading.
-
+displays the item's header as the heading text. If no header is set, the first line of the item text
+is used instead, with any subsequent text displayed in the body of the heading.
 
 # Automatic item reordering
 
@@ -26,6 +26,9 @@ Manual reordering creates an index.yml file in the document directory which desc
 of the document. The index.yml is edited, changing the indentation and order of the items to update the
 levels of each item.
 
+Existing heading items are marked in index.yml using `# HEADING #`. This preserves headings even if they
+do not have any child items.
+
 ```sh
 $ doorstop reorder --tool vi REQ
 building tree...
@@ -38,6 +41,8 @@ reordered document: REQ
 
 An item can be added by adding a new line to the index.yml containing an unknown UID, e.g. new.
 A comment following the new item ID can be used to set the item text.
+A new heading can be added by prefixing the comment with `heading #` (case insensitive); the remaining comment text is used
+as the heading header and the item is marked as non normative.
 If the line after a new item is further indented the item is treated as a heading and marked
 as non normative.
 
@@ -47,16 +52,17 @@ as non normative.
 # MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL
 # A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new:
 # THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS
+# USE '# heading #' or '# HEADING #' TO MARK A NEW ITEM AS HEADING; FOLLOWING TEXT BECOMES ITS HEADER"
 # CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION
 ###############################################################################
 
 initial: 1.0
 outline:
-    - REQ018: # Overview
+    - REQ018: # HEADING # Overview
         - REQ019: # Doorstop is a requirements management tool that leverage...
         - NEW: # The text of a new item
-    - NEW: # A new heading
-        - NEW: # The text of a new ite,
+    - NEW: # heading # A new heading
+        - NEW: # The text of a new item
 ```
 
 ## Deleting an item
