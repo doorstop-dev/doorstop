@@ -576,7 +576,7 @@ class TestImportFile(MockTestCase):
 
     def test_import_file_missing_prefix(self):
         """Verify 'doorstop import' returns an error with a missing prefix."""
-        path = os.path.join(FILES, "exported.xlsx")
+        path = os.path.join(FILES, "exported.csv")
         self.assertRaises(SystemExit, main, ["import", path])
 
     def test_import_file_extra_flags(self):
@@ -619,7 +619,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
     def test_import_tsv_to_document_existing(self):
         """Verify 'doorstop import' can import TSV to an existing document."""
@@ -630,7 +630,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
     def test_import_xlsx_to_document_existing(self):
         """Verify 'doorstop import' can import XLSX to an existing document."""
@@ -641,7 +641,7 @@ class TestImportFile(MockTestCase):
         self.assertIs(None, main(["import", path, "PREFIX"]))
         # Assert
         path = os.path.join(dirpath, "REQ001.yml")
-        self.assertTrue(os.path.isfile(path))
+        self.assertTrue(os.path.isfile(path), f"{path} is not a file")
 
 
 @unittest.skipUnless(os.getenv(ENV), REASON)
@@ -702,11 +702,17 @@ class TestExport(TempTestCase):
         self.assertRaises(SystemExit, main, ["export", "tut", path])
         self.assertFalse(os.path.isfile(path))
 
-    def test_export_tree_xlsx(self):
-        """Verify 'doorstop export' can create an XLSX directory."""
+    def test_export_tree_xlsx_dir(self):
+        """Verify 'doorstop export' can create an XLSX tree export."""
         path = os.path.join(self.temp, "all")
         self.assertIs(None, main(["export", "all", path, "--xlsx"]))
         self.assertTrue(os.path.isdir(path))
+
+    def test_export_tree_xlsx_file(self):
+        """Verify 'doorstop export' can create an XLSX tree export."""
+        path = os.path.join(self.temp, "all.xlsx")
+        self.assertIs(None, main(["export", "all", path, "--xlsx"]))
+        self.assertTrue(os.path.isfile(path))
 
     def test_export_tree_no_path(self):
         """Verify 'doorstop export' returns an error with no path."""

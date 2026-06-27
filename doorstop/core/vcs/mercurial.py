@@ -31,3 +31,8 @@ class WorkingCopy(BaseWorkingCopy):
         message = message or input("Commit message: ")
         self.call("hg", "commit", "--message", message)
         self.call("hg", "push")
+
+    def describe(self):
+        return "mercurial: " + self.call("hg", "log", "-r", ".", "-T",
+                  "{latesttag}{sub('^-0-.*', '', '-{latesttagdistance}-m{node|short}')}",
+                  return_stdout=True)

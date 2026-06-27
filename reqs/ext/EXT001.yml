@@ -7,7 +7,6 @@ normative: true
 ref: ''
 references:
 - path: reqs/ext/test.file
-  sha: 24d9b35c727e6c78676c2ad378a8c3c47cfb539f3583d3cd9e1eafee51d5679d
   type: file
 reviewed: n0xxAj0z-SqNcebKEu8p9HDE8jAs5I8Vz4kX-5ZieA4=
 text: |

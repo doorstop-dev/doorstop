@@ -476,7 +476,7 @@ class TestImporter(unittest.TestCase):
         _tree = _get_tree()
         document = _tree.create_document(_path, "REQ")
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -491,7 +491,7 @@ class TestImporter(unittest.TestCase):
         _tree = _get_tree()
         document = _tree.create_document(_path, "REQ")
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -506,7 +506,7 @@ class TestImporter(unittest.TestCase):
         _tree = _get_tree()
         document = _tree.create_document(_path, "REQ")
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
@@ -522,7 +522,7 @@ class TestImporter(unittest.TestCase):
         _tree = _get_tree()
         document = _tree.create_document(_path, "REQ")
         # Act
-        core.importer.import_file(path, document)
+        core.importer.import_file(path, document=document)
         # Assert
         expected = [item.data for item in self.document.items]
         actual = [item.data for item in document.items]
