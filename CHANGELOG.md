@@ -1,3 +1,7 @@
+# 3.2 (unreleased)
+
+- Fixed `doorstop publish` hanging when a Markdown list's first item is indented (for example a bullet or numbered list nested under a lead-in line). ([#747](https://github.com/doorstop-dev/doorstop/issues/747))
+
 # 3.1 (2026-01-31)
 
 - Dropped support for Python 3.9 and added support for Python 3.14.

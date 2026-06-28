@@ -42,6 +42,7 @@ class BasePublisher(metaclass=ABCMeta):
         self.list: Dict[str, Dict[str, Any]] = {}
         self.list["depth"] = {"itemize": 0, "enumerate": 0}
         self.list["indent"] = {"itemize": 0, "enumerate": 0}
+        self.list["base"] = {"itemize": 0, "enumerate": 0}
         self.list["found"] = {"itemize": False, "enumerate": False}
         # Create regexps.
         self.list["regexp"] = {
@@ -227,6 +228,16 @@ class BasePublisher(metaclass=ABCMeta):
         no_paragraph = False
         if matches:
             indent = len(line) - len(line.lstrip())
+            if not self.list["found"][list_type]:
+                # The first item establishes the base indentation of the list.
+                self.list["base"][list_type] = indent
+            # Work with indentation relative to the list's base level. Without
+            # this, a list whose first item is itself indented sets a non-zero
+            # depth while the per-level step stays zero, so the list-closing
+            # loops (which subtract the step from the depth) never terminate and
+            # `doorstop publish` hangs. Normalizing to the base level makes such
+            # lists behave exactly like lists starting at column zero. See #747.
+            indent = max(0, indent - self.list["base"][list_type])
             if not self.list["found"][list_type]:
                 block.append(self.list["start"][list_type])
                 self.list["found"][list_type] = True

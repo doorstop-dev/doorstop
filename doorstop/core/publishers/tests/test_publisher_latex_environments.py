@@ -545,11 +545,14 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
     def test_missing_changing_list_indentation(self):
         """Verify that a list throws an error if indentation is changed in the middle of the list."""
         # Setup
+        # The list nests by 2 spaces, then jumps by 5, which is an inconsistent
+        # indentation step and must raise an error.
         generated_data = (
             r"text: |" + "\n"
             r"  List without newline:" + "\n"
-            r"    1. Item 1" + "\n"
-            r"        1. Item 1.1"
+            r"  1. Item 1" + "\n"
+            r"    1. Item 1.1" + "\n"
+            r"         1. Item 1.1.1"
         )
         item = MockItemAndVCS(
             "path/to/REQ-001.yml",
@@ -558,3 +561,38 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         # Act & Assert
         with self.assertRaises(DoorstopError):
             _ = getLines(publisher.publish_lines(item, ".tex"))
+
+    def test_indented_list_does_not_hang(self):
+        """Verify that a list whose first item is indented is published, not hung.
+
+        Regression test for https://github.com/doorstop-dev/doorstop/issues/747:
+        a bullet/number list indented under a lead-in line used to make the
+        list-closing loop spin forever because the per-level indentation step was
+        never initialized.
+        """
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  The VCU SHALL:" + "\n"
+            r"  " + "\n"
+            r"    - Execute initialization" + "\n"
+            r"    - Enter Ready-to-Ride state" + "\n"
+            r"    - Assert Ready indication"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"The VCU SHALL:\\" + "\n\n"
+            r"\begin{itemizeDeep}" + "\n"
+            r"\item Execute initialization" + "\n"
+            r"\item Enter Ready-to-Ride state" + "\n"
+            r"\item Assert Ready indication" + "\n"
+            r"\end{itemizeDeep}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
