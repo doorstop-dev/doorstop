@@ -17,6 +17,19 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 
 TESTS_ROOT = os.path.dirname(__file__)
 FILES = os.path.join(os.path.dirname(__file__), "files")
+# Files that use the golden master pattern and are intentionally
+# updated by tests - these should not be reset after each test run
+GOLDEN_MASTER_FILES = {
+    os.path.join(FILES, "exported.yml"),
+    os.path.join(FILES, "exported.csv"),
+    os.path.join(FILES, "exported.tsv"),
+    os.path.join(FILES, "published.html"),
+    os.path.join(FILES, "published.md"),
+    os.path.join(FILES, "published.txt"),
+    os.path.join(FILES, "published2.html"),
+    os.path.join(FILES, "published2.md"),
+    os.path.join(FILES, "published2.txt"),
+}
 FILES_MD = os.path.join(os.path.dirname(__file__), "files_md")
 SYS = os.path.join(FILES, "parent")
 TST = os.path.join(FILES, "child")

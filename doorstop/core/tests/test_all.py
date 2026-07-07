@@ -28,6 +28,7 @@ from doorstop.core.tests import (
     ENV,
     FILES,
     FILES_MD,
+    GOLDEN_MASTER_FILES,
     REASON,
     ROOT,
     SYS,
@@ -76,6 +77,17 @@ def cleanup_test_yml_files():
 
             if result.returncode == 0 and result.stdout.strip():
                 yaml_files = result.stdout.strip().split("\n")
+
+                # Exclude golden master files from reset
+                yaml_files = [
+                    f
+                    for f in yaml_files
+                    if os.path.abspath(os.path.join(repo_root, f))
+                    not in GOLDEN_MASTER_FILES
+                ]
+
+                if not yaml_files:
+                    continue
 
                 # Reset only these YAML files
                 subprocess.run(
@@ -215,7 +227,7 @@ class TestDocument(unittest.TestCase):
         self.assertEqual("REQ", doc.prefix)
         self.assertEqual("yaml", doc.itemformat)
         self.assertEqual(2, doc.digits)
-        self.assertEqual(6, len(doc.items))
+        self.assertEqual(7, len(doc.items))
 
     def test_new(self):
         """Verify a new document can be created."""
@@ -238,7 +250,7 @@ class TestDocument(unittest.TestCase):
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(13, len(issues))
+        self.assertEqual(15, len(issues))
 
     @patch("doorstop.settings.REORDER", False)
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -394,7 +406,7 @@ class TestTree(unittest.TestCase):
         issues = self.tree.issues
         for issue in self.tree.issues:
             logging.info(repr(issue))
-        self.assertEqual(15, len(issues))
+        self.assertEqual(17, len(issues))
 
     @patch("doorstop.settings.REORDER", False)
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -600,8 +612,13 @@ class TestExporter(unittest.TestCase):
         # Assert
         self.assertIs(temp, path2)
         actual = read_yml(temp)
+        # Assert
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
-        move_file(temp, path)
 
     def test_export_csv(self):
         """Verify a document can be exported as a CSV file."""
@@ -613,8 +630,13 @@ class TestExporter(unittest.TestCase):
         # Assert
         self.assertIs(temp, path2)
         actual = read_csv(temp)
+        # Assert
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
-        move_file(temp, path)
 
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
     def test_export_tsv(self):
@@ -627,8 +649,13 @@ class TestExporter(unittest.TestCase):
         # Assert
         self.assertIs(temp, path2)
         actual = read_csv(temp, delimiter="\t")
+        # Assert
+        if actual != expected:
+            common.log.error(f"Published content changed: {path}")
+            move_file(temp, path)
+        else:
+            common.delete(temp)  # clean up in case the file didn't change
         self.assertEqual(expected, actual)
-        move_file(temp, path)
 
 
 class TestPublisher(unittest.TestCase):
@@ -684,8 +711,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
+            common.write_text(text, path)
         self.assertEqual(expected, text)
-        common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_text_document_without_child_links(self):
@@ -696,8 +725,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".txt")
         text = "".join(line + "\n" for line in lines)
         # Assert
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
+            common.write_text(text, path)
         self.assertEqual(expected, text)
-        common.write_text(text, path)
 
     def test_lines_markdown_document(self):
         """Verify Markdown can be published from a document."""
@@ -707,8 +738,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
+            common.write_text(text, path)
         self.assertEqual(expected, text)
-        common.write_text(text, path)
 
     @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
     def test_lines_markdown_document_without_child_links(self):
@@ -719,8 +752,10 @@ class TestPublisher(unittest.TestCase):
         lines = core.publisher.publish_lines(self.document, ".md")
         text = "".join(line + "\n" for line in lines)
         # Assert
+        if text != expected:
+            common.log.error(f"Published content changed: {path}")
+            common.write_text(text, path)
         self.assertEqual(expected, text)
-        common.write_text(text, path)
 
     @patch("plantuml_markdown.PlantUMLPreprocessor.run")
     @patch("plantuml_markdown.PlantUMLPreprocessor.__init__")
@@ -747,7 +782,7 @@ class TestPublisher(unittest.TestCase):
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
-        common.write_text(actual, path)
+            common.write_text(actual, path)
         self.assertEqual(expected, actual)
 
     @patch("plantuml_markdown.PlantUMLPreprocessor.run")
@@ -772,7 +807,7 @@ class TestPublisher(unittest.TestCase):
         # Assert
         if actual != expected:
             common.log.error(f"Published content changed: {path}")
-        common.write_text(actual, path)
+            common.write_text(actual, path)
         self.assertEqual(expected, actual)
 
 

@@ -113,3 +113,15 @@ REQ2-001:
     Inline Style 2: \(ax^2 + bx + c = 0\)
     Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
+REQ007:
+  active: true
+  derived: false
+  header: |
+    My Heading
+  level: 3.0
+  links: []
+  normative: false
+  ref: ''
+  reviewed: null
+  text: ''
+

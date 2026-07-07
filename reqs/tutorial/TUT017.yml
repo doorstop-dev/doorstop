@@ -95,6 +95,12 @@ text: |
 
   $$k_{n+1} = n^2 + k_n^2 - k_{n-1}$$
 
+  #### Inline Math
+
+  You can use inline math like this `$e= mc^2$` if you only use the HTML publishing and not the LaTeX publishing.  
+
+  For the moment being, there is a bug in the LaTeX export in handling inline math. It works well in HTML export, but the LaTeX compile is likely to fail. See [\#776](https://github.com/doorstop-dev/doorstop/issues/776).
+
   ### Code blocks
 
   Code blocks are either fenced by lines with three back-ticks \`\`\`. Optionally, you can add an

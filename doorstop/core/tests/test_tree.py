@@ -17,7 +17,7 @@ import pytest
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import EMPTY, FILES, SYS, MockDocumentSkip
+from doorstop.core.tests import EMPTY, FILES, GOLDEN_MASTER_FILES, SYS, MockDocumentSkip
 from doorstop.core.tree import Tree
 
 
@@ -30,7 +30,7 @@ def reset_fixture_files():
     try:
         test_dir = os.path.dirname(__file__)
 
-        # get all git-tracked YAML-files in files/
+        # Get all git-tracked YAML files in files/
         result = subprocess.run(
             ["git", "ls-files", "files/*.yml", "files/*.yaml"],
             capture_output=True,
@@ -43,7 +43,18 @@ def reset_fixture_files():
         if result.returncode == 0 and result.stdout.strip():
             yaml_files = result.stdout.strip().split("\n")
 
-            # reset those files
+            # Exclude golden master files from reset as they are
+            # intentionally updated by tests using the golden master pattern
+            yaml_files = [
+                f
+                for f in yaml_files
+                if os.path.abspath(os.path.join(test_dir, f)) not in GOLDEN_MASTER_FILES
+            ]
+
+            if not yaml_files:
+                return
+
+            # Reset those files
             subprocess.run(
                 ["git", "checkout", "--"] + yaml_files,
                 capture_output=True,
