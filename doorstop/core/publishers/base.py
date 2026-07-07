@@ -245,6 +245,15 @@ class BasePublisher(metaclass=ABCMeta):
                 self.list["depth"][list_type] = indent
             elif self.list["depth"][list_type] > indent:
                 while self.list["depth"][list_type] > indent:
+
+                    if self.list["indent"][list_type] <= 0:
+                        raise DoorstopError(
+                            f"Invalid list indentation: "
+                            f"depth={self.list['depth'][list_type]}, "
+                            f"indent_step={self.list['indent'][list_type]}, "
+                            f"target={indent}"
+                        )
+                    
                     block.append(self.list["end"][list_type])
                     self.list["depth"][list_type] = (
                         self.list["depth"][list_type] - self.list["indent"][list_type]
