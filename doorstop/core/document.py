@@ -613,36 +613,81 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         yield "# MANUALLY INDENT, DEDENT, & MOVE ITEMS TO THEIR DESIRED LEVEL"
         yield "# A NEW ITEM WILL BE ADDED FOR ANY UNKNOWN IDS, i.e. - new: "
         yield "# THE COMMENT WILL BE USED AS THE ITEM TEXT FOR NEW ITEMS"
+        yield "# USE '# heading #' or '# HEADING #' TO MARK A NEW ITEM AS HEADING; FOLLOWING TEXT BECOMES ITS HEADER"
         yield "# CHANGES WILL BE REFLECTED IN THE ITEM FILES AFTER CONFIRMATION"
         yield "#" * settings.MAX_LINE_LENGTH
         yield ""
         yield "initial: {}".format(items[0].level if items else 1.0)
         yield "outline:"
+
         for item in items:
             space = "    " * item.depth
-            lines = item.text.strip().splitlines()
-            comment = lines[0].replace("\\", "\\\\") if lines else ""
+
+            # Determine comment text: prefer header, fall back to text
+            header_lines = item.header.strip().splitlines() if item.header else []
+            text_lines = item.text.strip().splitlines() if item.text else []
+
+            if header_lines:
+                comment = header_lines[0].replace("\\", "\\\\")
+            elif text_lines:
+                comment = text_lines[0].replace("\\", "\\\\")
+            else:
+                comment = ""
+
+            # Prepend the heading marker for heading items
+            if item.heading:
+                comment = "HEADING # {}".format(comment) if comment else "HEADING #"
+
             line = space + "- {u}: # {c}".format(u=item.uid, c=comment)
+
             if len(line) > settings.MAX_LINE_LENGTH:
                 line = line[: settings.MAX_LINE_LENGTH - 3] + "..."
+
             yield line
 
     @staticmethod
     def _read_index(path):
-        """Load the index, converting comments to text entries for each item."""
+        """Load the index, converting comments to text or heading entries."""
         with open(path, "r", encoding="utf-8") as stream:
             text = stream.read()
+
         yaml_text = []
+
         for line in text.split("\n"):
-            m = re.search(r"(\s+)(- [\w\d-]+\s*): # (.+)$", line)
+            m = re.search(r"(\s*)(- [\w\d-]+\s*):\s*#\s*(.*)$", line)
             if m:
                 prefix = m.group(1)
                 uid = m.group(2)
-                item_text = m.group(3).replace('"', '\\"')
+                uid = m.group(2)
+                comment = m.group(3)
+
+                # Preserve old behavior:
+                # "- REQ001: #" without comment text is not converted into a
+                # text or heading entry. Whether it becomes a heading is decided
+                # later based on the presence of child elements.
+                if not comment.strip():
+                    yaml_text.append(line)
+                    continue
+
+                heading_match = re.match(r"heading\s*#\s*(.*)$", comment, re.IGNORECASE)
+
                 yaml_text.append("{p}{u}:".format(p=prefix, u=uid))
-                yaml_text.append('    {p}- text: "{t}"'.format(p=prefix, t=item_text))
+
+                if heading_match:
+                    # Heading marker: extract header text after "heading #"
+                    header_text = heading_match.group(1).strip().replace('"', '\\"')
+                    yaml_text.append(
+                        '    {p}- header: "{t}"'.format(p=prefix, t=header_text)
+                    )
+                else:
+                    # Normal item: text entry as before
+                    item_text = comment.replace('"', '\\"')
+                    yaml_text.append(
+                        '    {p}- text: "{t}"'.format(p=prefix, t=item_text)
+                    )
             else:
                 yaml_text.append(line)
+
         return common.load_yaml("\n".join(yaml_text), path)
 
     @staticmethod
@@ -666,8 +711,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         """Recursive function to reorder a section of an outline.
 
         :param section: recursive `list` of `dict` loaded from document index
-        :param level: current :class:`~doorstop.core.types.Level`
-        :param document: :class:`~doorstop.core.document.Document` to order
+        :param level: current :class`~doorstop.core.types.Level`
+        :param document: :class`~doorstop.core.document.Document` to order
 
         """
         if isinstance(section, dict):  # a section
@@ -677,31 +722,43 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 return
             subsection = section[uid]
 
-            # An item is a header if it has a subsection
             level.heading = False
             item_text = ""
+            item_header = ""
             if isinstance(subsection, str):
                 item_text = subsection
             elif isinstance(subsection, list):
-                if "text" in subsection[0]:
+                if "header" in subsection[0]:
+                    # Item is marked as heading in index, extract header text
+                    item_header = subsection[0]["header"]
+                    level.heading = True
+                    subsection = subsection[1:]  # remove heading entry from subsection
+                elif "text" in subsection[0]:
+                    # Extract text for new non-heading items
                     item_text = subsection[0]["text"]
-                    if len(subsection) > 1:
-                        level.heading = True
+                    subsection = subsection[1:]  # remove text entry from subsection
+                # Item is a heading if it has child elements
+                if len(subsection) > 0:
+                    level.heading = True
 
             try:
                 item = document.find_item(uid)
+                # Existing item: only update level, leave content untouched
                 item.level = level
                 log.info("Found ({}): {}".format(uid, level))
                 list_of_ids.append(uid)
             except DoorstopError:
+                # New item: set level and content
                 item = document.add_item(level=level, reorder=False)
                 list_of_ids.append(item.uid)
                 if level.heading:
                     item.normative = False
-                item.text = item_text
+                    item.header = item_header
+                else:
+                    item.text = item_text
                 log.info("Created ({}): {}".format(item.uid, level))
 
-            # Process the heading's subsection
+            # Process the subsection recursively
             if subsection:
                 Document._reorder_section(subsection, level >> 1, document, list_of_ids)
 
