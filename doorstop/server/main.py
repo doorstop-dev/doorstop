@@ -9,7 +9,7 @@ import logging
 import os
 import webbrowser
 from collections import defaultdict
-from typing import Dict
+from typing import Any, Dict
 
 import bottle
 from bottle import get, hook, post, request, response, template
@@ -23,7 +23,7 @@ from doorstop.server import utilities
 log = common.logger(__name__)
 
 app = utilities.StripPathMiddleware(bottle.app())
-config = {}
+config: Dict[str, Any] = {}
 tree: Tree = None  # type: ignore
 html_publisher: HtmlPublisher = None  # type: ignore
 numbers: Dict[str, int] = defaultdict(int)  # cache of next document numbers

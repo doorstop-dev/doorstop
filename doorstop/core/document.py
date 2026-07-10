@@ -6,7 +6,7 @@ import os
 import re
 from collections import OrderedDict
 from itertools import chain
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -778,16 +778,18 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param keep: item to keep over duplicates
 
         """
-        nlevel = plevel = None
+        nlevel: Optional[Level] = None
+        plevel: Optional[Level] = None
         for clevel, item in Document._items_by_level(items, keep=keep):
             log.debug("current level: {}".format(clevel))
             # Determine the next level
-            if not nlevel:
+            if nlevel is None:
                 # Use the specified or current starting level
                 nlevel = Level(start) if start else clevel
                 nlevel.heading = clevel.heading
                 log.debug("next level (start): {}".format(nlevel))
             else:
+                assert plevel is not None
                 # Adjust the next level to be the same depth
                 if len(clevel) > len(nlevel):
                     nlevel >>= len(clevel) - len(nlevel)
@@ -933,8 +935,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     @staticmethod
     def _get_issues_level(items):
         """Yield all the document's issues related to item level."""
-        prev = items[0] if items else None
-        for item in items[1:]:
+        for prev, item in zip(items, items[1:]):
             puid = prev.uid
             plev = prev.level
             nuid = item.uid

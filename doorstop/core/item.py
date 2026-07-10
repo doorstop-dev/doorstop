@@ -6,7 +6,7 @@ import functools
 import hashlib
 import linecache
 import os
-from typing import Any, List
+from typing import Any, List, Union
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -825,7 +825,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         :return: list of found items, list of all child documents
 
         """
-        child_items: List[Item] = []
+        child_items: List[Union[Item, "UnknownItem"]] = []
         child_documents: List[Any] = []  # `List[Document]`` creats an import cycle
         document = document or self.document
         tree = tree or self.tree
