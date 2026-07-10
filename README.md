@@ -3,8 +3,8 @@
 [![Windows Tests](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml/badge.svg)](https://github.com/doorstop-dev/doorstop/actions/workflows/test-windows.yml)
 <br>
 [![Coverage Status](https://img.shields.io/codecov/c/gh/doorstop-dev/doorstop)](https://codecov.io/gh/doorstop-dev/doorstop)
-[![Scrutinizer Code Quality](http://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=develop)
-[![PyPI Version](http://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
+[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/doorstop-dev/doorstop.svg)](https://scrutinizer-ci.com/g/doorstop-dev/doorstop/?branch=develop)
+[![PyPI Version](https://img.shields.io/pypi/v/Doorstop.svg)](https://pypi.org/project/Doorstop)
 <br>
 [![Gitter](https://badges.gitter.im/doorstop-dev/community.svg)](https://gitter.im/doorstop-dev/community)
 [![Google](https://img.shields.io/badge/forum-on_google-387eef)](https://groups.google.com/forum/#!forum/doorstop-dev)
@@ -12,7 +12,7 @@
 
 # Overview
 
-Doorstop is a [requirements management](http://alternativeto.net/software/doorstop/) tool that facilitates the storage of textual requirements alongside source code in version control.
+Doorstop is a [requirements management](https://alternativeto.net/software/doorstop/) tool that facilitates the storage of textual requirements alongside source code in version control.
 
 <img align="left" width="100" src="https://raw.githubusercontent.com/doorstop-dev/doorstop/develop/docs/images/logo-black-white.png"/>
 
@@ -25,7 +25,7 @@ Additional references:
 
 - Publication: [JSEA Paper](http://www.scirp.org/journal/PaperInformation.aspx?PaperID=44268#.UzYtfWRdXEZ)
 - Talks: [GRDevDay](https://speakerdeck.com/jacebrowning/doorstop-requirements-management-using-python-and-version-control), [BarCamp](https://speakerdeck.com/jacebrowning/strip-searched-a-rough-introduction-to-requirements-management)
-- Sample: [Generated HTML](http://doorstop-dev.github.io/doorstop/)
+- Sample: [Generated HTML](https://doorstop-dev.github.io/doorstop/)
 
 # Setup
 
@@ -42,7 +42,7 @@ Install Doorstop with pip:
 $ pip install doorstop
 ```
 
-or add it to your [Poetry](https://poetry.eustace.io/) project:
+or add it to your [Poetry](https://python-poetry.org/) project:
 
 ```sh
 $ poetry add doorstop

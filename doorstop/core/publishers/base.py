@@ -261,7 +261,7 @@ class BasePublisher(metaclass=ABCMeta):
                     + self.list["end_item"][list_type]
                 )
                 # Look ahead - need empty line to end itemize!
-                (block, line) = self._check_for_list_end(
+                block, line = self._check_for_list_end(
                     line, next_line, block, list_type
                 )
         if len(block) > 0:

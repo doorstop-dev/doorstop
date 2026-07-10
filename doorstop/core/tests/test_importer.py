@@ -90,7 +90,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(6, mock_add_item.call_count)
+        self.assertEqual(7, mock_add_item.call_count)
 
     @patch("doorstop.core.importer.add_item")
     def test_file_yml_duplicates(self, mock_add_item):
@@ -100,7 +100,7 @@ class TestModule(unittest.TestCase):
         # Act
         importer._file_yml(path, mock_document)
         # Assert
-        self.assertEqual(6, mock_add_item.call_count)
+        self.assertEqual(7, mock_add_item.call_count)
 
     def test_file_yml_bad_format(self):
         """Verify YAML file import can handle bad data."""
@@ -200,6 +200,19 @@ class TestModule(unittest.TestCase):
                 False,
                 "",
                 True,
+                "",
+            ],
+            [
+                "REQ007",
+                "3.0",
+                "",
+                "",
+                "",
+                "",
+                True,
+                False,
+                "My Heading",
+                False,
                 "",
             ],
         ]

@@ -314,7 +314,7 @@ class HtmlPublisher(MarkdownPublisher):
                 next_line = ""
             else:
                 next_line = body_to_check[i + 1]
-            (_, processed_block, processed_line) = self.process_lists(line, next_line)
+            _, processed_block, processed_line = self.process_lists(line, next_line)
             if processed_block != "":
                 block.append(processed_block)
             block.append(processed_line)
@@ -355,12 +355,20 @@ class HtmlPublisher(MarkdownPublisher):
         for item in iter_items(toc_doc):
             # Check if item has the attribute heading.
             if item.heading:
-                lines = item.text.splitlines()
-                heading = lines[0] if lines else ""
+                if item.header:
+                    heading = "{h}".format(h=item.header)
+                else:
+                    lines = item.text.splitlines()
+                    heading = lines[0] if lines else ""
+            # This is for non-heading items.
             elif item.header:
                 heading = "{h}".format(h=item.header)
             else:
-                heading = item.uid
+                lines = item.text.splitlines()
+                heading = lines[0] if lines else ""
+            # For normative items, the UID is of interest, so append it.
+            if item.normative:
+                heading = heading + " (" + str(item.uid) + ")"
             if settings.PUBLISH_HEADING_LEVELS:
                 level = format_level(item.level)
                 lbl = "{lev} {h}".format(lev=level, h=heading)

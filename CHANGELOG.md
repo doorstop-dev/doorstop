@@ -1,3 +1,9 @@
+# 3.2 (2026-07-09)
+
+- Fixed consistent line endings
+- Improved LaTeX rendering support
+- Fixed headings when reordering
+
 # 3.1 (2026-01-31)
 
 - Dropped support for Python 3.9 and added support for Python 3.14.

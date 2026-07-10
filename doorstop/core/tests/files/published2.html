@@ -6,11 +6,19 @@
   <link rel="stylesheet" href="../template/bootstrap.min.css" />
   <link rel="stylesheet" href="../template/general.css" />
   <link type="text/css" rel="stylesheet" href="../template/doorstop.css" />
+  <!-- Load MathJax 3 from the template directory -->
   <script src="../template/tex-mml-chtml.js" id="MathJax-script" async></script>
-  <script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
-  });
+  <!-- MathJax 3 Configuration -->
+  <script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
   </script>
 </head>
 <body>
@@ -18,7 +26,8 @@
   <header class="navbar navbar-expand-lg navbar-dark bd-navbar sticky-top text-bg-secondary">
   <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Document attributes">
     <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavDropdown">
@@ -27,16 +36,69 @@
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Contents
             </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#toc">Table of Contents</a></li>
-                <ul>
-                <li><a class="dropdown-item" href="#REQ001">1.2.3 REQ001</a></li>
+            <ul class="dropdown-menu" style="max-height: 70vh; overflow-y: auto;">
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#toc"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="toc">Table of Contents</a>
+                </li>
+                    <ul>
+                    <ul>
+                    <ul>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ001"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ001">1.2.3 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod (REQ001)</a>
+                </li>
+                    </ul>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ003"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ003">1.4 Unicode: -40° ±1% (REQ003)</a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ006"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ006">1.5 Hello, world! (REQ006)</a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ004"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ004">1.6 Hello, world! (REQ004)</a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ002"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ002">2.1 Plantuml (REQ002)</a>
+                </li>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ2-001"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ2-001">2.1 Hello, world! (REQ2-001)</a>
+                </li>
+                    </ul>
+                <li>
+                  <a class="dropdown-item text-truncate"
+                    href="#REQ007"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="REQ007">3.0 My Heading</a>
+                </li>
                 </ul>
-                <li><a class="dropdown-item" href="#REQ003">1.4 REQ003</a></li>
-                <li><a class="dropdown-item" href="#REQ006">1.5 REQ006</a></li>
-                <li><a class="dropdown-item" href="#REQ004">1.6 REQ004</a></li>
-                <li><a class="dropdown-item" href="#REQ002">2.1 Plantuml</a></li>
-                <li><a class="dropdown-item" href="#REQ2-001">2.1 REQ2-001</a></li>
             </ul>
           </li>
         </ul>
@@ -47,7 +109,8 @@
         <div class="col-2">
           <div class="bd-lead text-nowrap">
             <!-- Insert logotype. -->
-            <img src="../template/logo-black-white.png" alt="Doorstop" height="128" class="d-inline-block align-text-top">
+            <img src="../template/logo-black-white.png" alt="Doorstop" height="128"
+              class="d-inline-block align-text-top">
           </div>
         </div>
         <div class="col-6 align-self-center">
@@ -103,7 +166,7 @@ deserunt mollit anim id est laborum.</p>
 <p><em>Links: REQ001</em></p>
 <h2 id="REQ004">1.6 REQ004</h2>
 <p>Hello, world!</p>
-<h2 id="REQ002">2.1 Plantuml <small>REQ002</small></h2>
+<h2 id="REQ002">2.1 Plantuml <small>(REQ002)</small></h2>
 <p>Hello, world!</p>
 <p><code>plantuml format="svg_inline" alt="Use Cases of Doorstop" title="Use Cases of Doorstop"
 @startuml
@@ -128,6 +191,7 @@ System --&gt; (Integrity)
 Inline Style 2: (ax^2 + bx + c = 0)
 Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$</p>
 <p><em>Links: REQ001</em></p>
+<h1 id="REQ007">3.0 My Heading</h1>
     </div>
   </main>
 </div>

@@ -7,15 +7,63 @@
 import logging
 import operator
 import os
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import EMPTY, FILES, SYS, MockDocumentSkip
+from doorstop.core.tests import EMPTY, FILES, GOLDEN_MASTER_FILES, SYS, MockDocumentSkip
 from doorstop.core.tree import Tree
+
+
+@pytest.fixture(autouse=True, scope="class")
+def reset_fixture_files():
+    """Reset only Git-tracked YAML files after each test class."""
+    yield
+
+    # Cleanup: Reset only YAML files that are in Git
+    try:
+        test_dir = os.path.dirname(__file__)
+
+        # Get all git-tracked YAML files in files/
+        result = subprocess.run(
+            ["git", "ls-files", "files/*.yml", "files/*.yaml"],
+            capture_output=True,
+            text=True,
+            cwd=test_dir,
+            timeout=5,
+            check=False,
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            yaml_files = result.stdout.strip().split("\n")
+
+            # Exclude golden master files from reset as they are
+            # intentionally updated by tests using the golden master pattern
+            yaml_files = [
+                f
+                for f in yaml_files
+                if os.path.abspath(os.path.join(test_dir, f)) not in GOLDEN_MASTER_FILES
+            ]
+
+            if not yaml_files:
+                return
+
+            # Reset those files
+            subprocess.run(
+                ["git", "checkout", "--"] + yaml_files,
+                capture_output=True,
+                cwd=test_dir,
+                timeout=5,
+                check=False,
+            )
+    except Exception:
+        pass
 
 
 @patch("doorstop.core.document.Document", MockDocumentSkip)

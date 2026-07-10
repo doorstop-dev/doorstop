@@ -16,7 +16,7 @@ from doorstop.core import template
 from doorstop.core.builder import build
 from doorstop.core.publishers.tests.helpers import HTML_TEMPLATE_WALK, getWalk
 from doorstop.core.tests import ROOT, MockDataMixIn
-from doorstop.core.tests.helpers import build_expensive_tree, on_error_with_retry
+from doorstop.core.tests.helpers import build_expensive_tree
 
 
 class TestTemplate(MockDataMixIn, unittest.TestCase):
@@ -42,8 +42,11 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Remove test folder."""
-        rmtree(cls.testdir, onerror=on_error_with_retry)
+        """Cleanup test environment."""
+        try:
+            rmtree(cls.testdir, ignore_errors=True)
+        except OSError:
+            pass
 
     def test_standard_html_doc(self):
         """Verify that default html template is selected if no template is given and input is a document."""
@@ -79,9 +82,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         # file.txt should be in expected output!
         expected_walk = """{n}/
     assets/
-        file.txt{w}""".format(
-            n=self.hex, w=HTML_TEMPLATE_WALK
-        )
+        file.txt{w}""".format(n=self.hex, w=HTML_TEMPLATE_WALK)
 
         # Act
         asset_dir, selected_template = template.get_template(
@@ -129,9 +130,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         expected_walk = """{n}/
     template/
         custom_css.css
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         # Act
         asset_dir, selected_template = template.get_template(
             self.mock_tree, self.dirpath, ".html", "custom_css"

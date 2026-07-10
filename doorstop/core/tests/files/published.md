@@ -32,7 +32,7 @@ Hello, world!
 
 Hello, world!
 
-## 2.1 Plantuml _REQ002_ {#REQ002}
+## 2.1 Plantuml _(REQ002)_ {#REQ002}
 
 Hello, world!
 
@@ -69,4 +69,6 @@ Multiline: $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 *Parent links: REQ001*
 
 *Child links: TST001*
+
+# 3.0 My Heading {#REQ007}
 

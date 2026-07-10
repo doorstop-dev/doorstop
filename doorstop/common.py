@@ -3,7 +3,6 @@
 """Common exceptions, classes, and functions for Doorstop."""
 
 import argparse
-import codecs
 import csv
 import glob
 import io
@@ -121,8 +120,11 @@ def read_text(path):
     """
     log.trace("reading text from '{}'...".format(path))  # type: ignore
     try:
-        with codecs.open(path, "r", encoding="utf-8") as f:
-            return f.read()
+        # Use built-in open() instead of codecs.open() to support newline parameter
+        with open(path, "r", encoding="utf-8", newline="") as f:
+            text = f.read()
+            # Normalize line endings to \n for consistency
+            return text.replace("\r\n", "\n").replace("\r", "\n")
     except Exception as e:
         msg = "reading '{}' failed: {}".format(path, e)
         raise DoorstopError(msg)

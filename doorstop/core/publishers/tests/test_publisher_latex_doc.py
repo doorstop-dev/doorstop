@@ -55,9 +55,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
 
     @classmethod
     def tearDownClass(cls):
@@ -84,9 +82,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         # Act
         dirpath = self.dirpath + "/dummy.tex"
         path2 = publisher.publish(self.mock_tree.find_document("TUT"), dirpath, ".tex")
@@ -117,9 +113,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_DOC
@@ -142,9 +136,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_NO_DOC
@@ -167,9 +159,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_DOC
@@ -209,9 +199,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_EMPTY_DOC
@@ -234,9 +222,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_NO_REF
@@ -259,9 +245,7 @@ class TestPublisherFullDocument(MockDataMixIn, unittest.TestCase):
         doorstop.cls
         doorstop.yml
         logo-black-white.png
-""".format(
-            n=self.hex
-        )
+""".format(n=self.hex)
         dirpath = self.dirpath + "/dummy.tex"
         doc_with_attributes = MockDocument(dirpath)
         doc_with_attributes._file = YAML_LATEX_ONLY_REF
