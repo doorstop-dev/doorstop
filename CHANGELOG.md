@@ -1,6 +1,8 @@
-# 3.2 (unreleased)
+# 3.2 (2026-07-09)
 
-- TBD
+- Fixed consistent line endings
+- Improved LaTeX rendering support
+- Fixed headings when reordering
 
 # 3.1 (2026-01-31)
 
