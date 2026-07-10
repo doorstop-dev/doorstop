@@ -1,3 +1,7 @@
+# 3.2 (unreleased)
+
+- TBD
+
 # 3.1 (2026-01-31)
 
 - Dropped support for Python 3.9 and added support for Python 3.14.
