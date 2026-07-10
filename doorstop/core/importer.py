@@ -19,7 +19,7 @@ from doorstop.core.types import UID
 
 LIST_SEP_RE = re.compile(r"[\s;,]+")  # regex to split list strings into parts
 
-_documents = []  # cache of unplaced documents
+_documents: list[Document] = []  # cache of unplaced documents
 
 log = common.logger(__name__)
 
