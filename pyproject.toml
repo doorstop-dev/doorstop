@@ -78,7 +78,7 @@ pytest-cov = "*"
 pytest-expecter = "*"
 pytest-sugar = "*"
 webtest = "^3.0.7"
-diff-cover = "^8.0.3"
+diff-cover = ">=8.0.3,<11.0.0"
 
 # Reports
 coveragespace = "^6.1"
