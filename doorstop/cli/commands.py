@@ -563,6 +563,8 @@ def run_publish(args, cwd, error, catch=True):
     kwargs = {}
     if args.width:
         kwargs["width"] = args.width
+    if args.no_toc:
+        kwargs["toc"] = False
 
     if args.index:
         kwargs["index"] = True
