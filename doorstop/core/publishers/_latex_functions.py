@@ -47,7 +47,7 @@ def _latex_convert(line):
     # Replace *.
     line = re.sub("\\*(.*?)\\*", "\\\\textit{\\1}", line)
     # Replace _.
-    line = re.sub(r"_(?<!\\_)(.*?)_(?<!\\_)", "\\\\textit{\\1}", line)
+    line = re.sub(r"(?<!\w)_(\w.*?)_(?!\w)", r"\\textit{\1}", line)
     # Replace ~~.
     line = re.sub("~~(.*?)~~", "\\\\sout{\\1}", line)
     #############################
