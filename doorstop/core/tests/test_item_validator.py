@@ -11,7 +11,7 @@ from doorstop import core
 from doorstop.common import DoorstopError
 from doorstop.core.tests import MockItem, MockItemValidator, MockSimpleDocument
 from doorstop.core.tests.helpers import ListLogHandler
-from doorstop.core.types import Stamp
+from doorstop.core.types import Level, Stamp
 
 
 class TestItemValidator(unittest.TestCase):
@@ -197,6 +197,26 @@ class TestItemValidator(unittest.TestCase):
         self.item.tree = mock_tree
         self.item_validator.disable_get_issues_document()
         self.assertTrue(self.item_validator.validate(self.item))
+
+    def test_validate_heading_with_header(self):
+        """Verify a heading described only by its header is not warned about."""
+        self.item.level = Level("1.0")
+        self.item.normative = False
+        self.item.header = "Introduction"
+        self.item.text = ""
+        with ListLogHandler(core.validators.item_validator.log) as handler:
+            self.assertTrue(self.item_validator.validate(self.item))
+            self.assertNotIn("no text", handler.records)
+
+    def test_validate_heading_without_text_or_header(self):
+        """Verify a heading with neither text nor header is warned about."""
+        self.item.level = Level("1.0")
+        self.item.normative = False
+        self.item.header = ""
+        self.item.text = ""
+        with ListLogHandler(core.validators.item_validator.log) as handler:
+            self.assertTrue(self.item_validator.validate(self.item))
+            self.assertIn("no text nor header", handler.records)
 
     def test_validate_document(self):
         """Verify an item can be checked against a document."""
