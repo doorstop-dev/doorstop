@@ -252,6 +252,18 @@ class TestDocument(unittest.TestCase):
         self.assertNotIn("attributes:", self.document._file)
         self.assertNotIn("  reviewed:", self.document._file)
 
+    def test_save_extensions(self):
+        """Verify saving of the extensions configuration."""
+        self.document.extensions = {"item_validator": "validator.py"}
+        self.document.save()
+        self.assertIn("extensions:", self.document._file)
+        self.assertIn("  item_validator: validator.py", self.document._file)
+
+    def test_no_save_empty_extensions(self):
+        """Verify not saving of an empty extensions configuration."""
+        self.document.save()
+        self.assertNotIn("extensions:", self.document._file)
+
     def test_save_custom_defaults(self):
         """Verify saving of custom default attributes."""
         self.document._attribute_defaults = {"key": "value"}
