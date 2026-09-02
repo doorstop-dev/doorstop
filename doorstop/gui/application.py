@@ -5,6 +5,7 @@
 """Graphical interface for Doorstop."""
 
 import functools
+import hashlib
 import logging
 import sys
 from itertools import chain
@@ -17,10 +18,11 @@ from doorstop.gui import utilTkinter, widget
 
 try:
     import tkinter as tk
-    from tkinter import filedialog, ttk
+    from tkinter import filedialog, messagebox, ttk
 except ImportError as _exc:
     sys.stderr.write("WARNING: {}\n".format(_exc))
     tk = Mock()
+    messagebox = Mock()
     ttk = Mock()
 
 
@@ -55,6 +57,7 @@ class Application(ttk.Frame):
         self.tree = None
         self.document = None
         self.item = None
+        self.item_file_fingerprint = None
 
         # Create string variables
         self.stringvar_project = tk.StringVar(value=project or "")
@@ -521,11 +524,15 @@ class Application(ttk.Frame):
             uid = self.stringvar_item.get()
             if uid == "":
                 self.item = None
+                self.item_file_fingerprint = None
             else:
                 try:
                     self.item = self.tree.find_item(uid)
                 except DoorstopError:
                     pass
+                else:
+                    self.item.load(reload=True)
+                    self.item_file_fingerprint = self._item_file_fingerprint()
             log.info("displaying item {}...".format(self.item))
 
             if uid != "":
@@ -643,6 +650,17 @@ class Application(ttk.Frame):
             logging.warning("no item selected")
             return
 
+        if self._item_changed_on_disk():
+            messagebox.showwarning(
+                "Item changed on disk",
+                "This item was modified outside Doorstop GUI. "
+                "The external version will be reloaded and this edit will not be saved.",
+            )
+            self.item.load(reload=True)
+            self.item_file_fingerprint = self._item_file_fingerprint()
+            self.display_item()
+            return
+
         # Update the current item
         log.info("updating {}...".format(self.item))
         self.item.auto = False
@@ -658,9 +676,24 @@ class Application(ttk.Frame):
         if name:
             self.item.set(name, self.stringvar_extendedvalue.get())
         self.item.save()
+        self.item_file_fingerprint = self._item_file_fingerprint()
 
         # Re-select this item
         self.display_document()
+
+    def _item_file_fingerprint(self):
+        """Return a content fingerprint for the current item's file."""
+        if self.item is None:
+            return None
+        try:
+            with open(self.item.path, "rb") as stream:
+                return hashlib.sha256(stream.read()).digest()
+        except OSError:
+            return None
+
+    def _item_changed_on_disk(self):
+        """Return whether the selected item's file changed since it was displayed."""
+        return self.item_file_fingerprint != self._item_file_fingerprint()
 
     @_log
     def left(self):
