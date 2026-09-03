@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: LGPL-3.0-only
+# pylint: disable=protected-access
 
 """Unit tests for the Doorstop GUI application."""
 
