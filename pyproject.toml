@@ -61,7 +61,7 @@ verchew = "^3.4.2"
 
 # Formatters
 black = ">=24.3,<27.0"
-isort = ">=5.12,<9.0"
+isort = ">=5.12,<10.0"
 
 # Linters
 mypy = ">=1.1.1"
