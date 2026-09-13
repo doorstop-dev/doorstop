@@ -250,7 +250,7 @@ class TestDocument(unittest.TestCase):
         issues = self.document.issues
         for issue in self.document.issues:
             logging.info(repr(issue))
-        self.assertEqual(15, len(issues))
+        self.assertEqual(14, len(issues))
 
     @patch("doorstop.settings.REORDER", False)
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
@@ -406,7 +406,7 @@ class TestTree(unittest.TestCase):
         issues = self.tree.issues
         for issue in self.tree.issues:
             logging.info(repr(issue))
-        self.assertEqual(17, len(issues))
+        self.assertEqual(16, len(issues))
 
     @patch("doorstop.settings.REORDER", False)
     @patch("doorstop.settings.REVIEW_NEW_ITEMS", False)
