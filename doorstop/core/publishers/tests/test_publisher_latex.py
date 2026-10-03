@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
-from doorstop.core.publishers.tests.helpers import getLines
+from doorstop.core.publishers.tests.helpers import YAML_STRUCTURED_ATTRIBUTES, getLines
 from doorstop.core.publishers.tests.helpers_latex import YAML_LATEX_DOC
 from doorstop.core.tests import MockDataMixIn, MockDocument, MockItem, MockItemAndVCS
 
@@ -199,6 +199,25 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         result = getLines(publisher.publish_lines(self.item3, ".tex"))
         # Assert
         self.assertEqual(expected, result)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    def test_lines_latex_item_with_structured_publish_attribute(self):
+        """Verify structured publish entries can be rendered in LaTeX output."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file=(
+                "level: 1\n"
+                "text: Test\n"
+                "spec-refs-from:\n"
+                "  - url: https://example.com/spec\n"
+                "    section: Sec\n"
+            ),
+        )
+        item.document = MockDocument("path/to/.doorstop.yml", _file=YAML_STRUCTURED_ATTRIBUTES)
+
+        text = getLines(publisher.publish_lines(item, ".tex"))
+
+        self.assertIn("spec-refs-from & Sec", text)
 
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_reference_check_ref_false(self):

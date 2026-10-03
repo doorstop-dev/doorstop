@@ -12,8 +12,8 @@ from shutil import rmtree
 from unittest.mock import Mock, patch
 
 from doorstop.core import publisher
-from doorstop.core.publishers.tests.helpers import getLines
-from doorstop.core.tests import MockDataMixIn, MockItemAndVCS
+from doorstop.core.publishers.tests.helpers import YAML_STRUCTURED_ATTRIBUTES, getLines
+from doorstop.core.tests import MockDataMixIn, MockDocument, MockItemAndVCS
 from doorstop.core.tests.helpers import on_error_with_retry
 
 
@@ -107,6 +107,25 @@ class TestModule(MockDataMixIn, unittest.TestCase):
         text = "".join(line + "\n" for line in lines)
         # Assert
         self.assertIn("Child links: tst1", text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    def test_lines_text_item_with_structured_publish_attribute(self):
+        """Verify structured publish entries can be rendered in text output."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file=(
+                "level: 1\n"
+                "text: Test\n"
+                "spec-refs-from:\n"
+                "  - url: https://example.com/spec\n"
+                "    section: Sec\n"
+            ),
+        )
+        item.document = MockDocument("path/to/.doorstop.yml", _file=YAML_STRUCTURED_ATTRIBUTES)
+
+        text = getLines(publisher.publish_lines(item, ".txt"))
+
+        self.assertIn("spec-refs-from: Sec", text)
 
     def test_lines_text_item(self):
         """Verify text can be published from an item."""
