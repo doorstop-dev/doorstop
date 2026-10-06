@@ -121,7 +121,9 @@ class TestModule(MockDataMixIn, unittest.TestCase):
                 "    section: Sec\n"
             ),
         )
-        item.document = MockDocument("path/to/.doorstop.yml", _file=YAML_STRUCTURED_ATTRIBUTES)
+        item.document = MockDocument(
+            "path/to/.doorstop.yml", _file=YAML_STRUCTURED_ATTRIBUTES
+        )
 
         text = getLines(publisher.publish_lines(item, ".txt"))
 
