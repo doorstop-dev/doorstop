@@ -19,7 +19,7 @@ def application(environ, start_response):
 
         parameters = [
             '--project', project_path,
-            '--baseurl', baseurl
+            '--baseurl', baseurl,
             '--wsgi'
         ]
 

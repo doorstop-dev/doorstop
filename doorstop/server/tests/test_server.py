@@ -3,6 +3,7 @@
 """Unit tests for the doorstop.server.main module."""
 
 import importlib.util
+import os
 import sys
 import unittest
 from io import StringIO
@@ -11,6 +12,8 @@ from tempfile import mkdtemp
 from unittest.mock import MagicMock, Mock, patch
 
 from doorstop.server import main as server
+
+ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
 
 
 class BaseTestCase(unittest.TestCase):
@@ -279,3 +282,15 @@ class TestRoutesJSON(BaseTestCase):
         """Verify `/documents/PREFIX/numbers` works (JSON)."""
         data = server.post_numbers("prefix")
         self.assertEqual({"next": 123}, data)
+
+
+class TestExampleAdapter(unittest.TestCase):
+    """Unit tests for the example WSGI adapter in `bin/`."""
+
+    def test_compiles(self):
+        """Verify the example WSGI adapter is valid Python."""
+        path = os.path.join(ROOT, "bin", "example-adapter.wsgi")
+        if not os.path.isfile(path):
+            self.skipTest("the example adapter is only part of a source checkout")
+        with open(path, encoding="utf-8") as stream:
+            compile(stream.read(), path, "exec")
