@@ -286,6 +286,12 @@ class TestDocument(unittest.TestCase):
         self.assertEqual((1, 1), item_1_1.level)
         self.assertEqual((1, 2), item_1_2.level)
 
+    def test_add_item_with_separator_in_prefix(self):
+        """Verify items are numbered upwards when the prefix contains a separator."""
+        document = core.Document.new(None, EMPTY, FILES, prefix="REQ-REQ")
+        uids = [str(document.add_item().uid) for _ in range(3)]
+        self.assertEqual(["REQ-REQ001", "REQ-REQ002", "REQ-REQ003"], uids)
+
     def test_remove_item_with_reordering(self):
         """Verify an item can be removed from a document."""
         document = core.Document.new(None, EMPTY, FILES, prefix="TMP")

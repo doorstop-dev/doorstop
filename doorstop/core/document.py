@@ -442,7 +442,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
     def next_number(self):
         """Get the next item number for the document."""
         try:
-            number = max(item.uid.number for item in self) + 1
+            number = max(self._item_number(item) for item in self) + 1
         except ValueError:
             number = 1
         log.debug("next number (local): {}".format(number))
@@ -458,6 +458,20 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
                 number = remote_number
 
         return number
+
+    def _item_number(self, item):
+        """Get an item's number, using this document's prefix and separator.
+
+        ``UID.split_uid`` has to guess where the prefix ends, so for a prefix
+        that itself contains a separator character (e.g. ``REQ-REQ``) it parses
+        ``REQ-REQ001`` as the named item ``REQ001`` with number ``-1``. The
+        document knows its own prefix, so strip it before reading the number.
+        """
+        value = str(item.uid)
+        start = str(self.prefix) + self.sep
+        if value.lower().startswith(start.lower()) and value[len(start) :].isdigit():
+            return int(value[len(start) :])
+        return item.uid.number
 
     @property
     def skip(self):
