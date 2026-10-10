@@ -266,6 +266,9 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
             attributes["reviewed"] = self._extended_reviewed
         if attributes:
             data["attributes"] = attributes
+        # Save the extensions
+        if self.extensions:
+            data["extensions"] = self.extensions
         # Dump the data to YAML
         text = self._dump(data)
         # Save the YAML to file
