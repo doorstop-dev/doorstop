@@ -114,10 +114,15 @@ class TextPublisher(BasePublisher):
                 # Attributes
                 if item.document and item.document.publish:
                     yield ""
-                    for attr in item.document.publish:
-                        if not item.attribute(attr):
+                    for entry in item.document.publish:
+                        attr, fields = self.parse_publish_entry(entry)
+                        if not attr:
                             continue
-                        attr_line = "{}: {}".format(attr, item.attribute(attr))
+                        value = item.attribute(attr)
+                        if not value:
+                            continue
+                        rendered = self.render_publish_value(value, fields)
+                        attr_line = "{}: {}".format(attr, rendered)
                         yield from self._chunks(attr_line)
 
             yield ""  # break between items

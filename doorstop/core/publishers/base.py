@@ -177,6 +177,61 @@ class BasePublisher(metaclass=ABCMeta):
         """Return the lines generator for the class."""
         return self.lines
 
+    @staticmethod
+    def parse_publish_entry(entry):
+        """Return the attribute name and optional field selectors for a publish entry."""
+        if isinstance(entry, str):
+            return entry, None
+        if isinstance(entry, dict) and len(entry) == 1:
+            attr = next(iter(entry))
+            config = entry[attr]
+            if isinstance(config, dict):
+                return attr, config.get("fields")
+            return attr, None
+        return None, None
+
+    @staticmethod
+    def render_publish_value(value, fields=None, line_separator=", "):
+        """Render a custom publish attribute value for non-HTML tabular output."""
+        if (
+            fields
+            and isinstance(fields, list)
+            and isinstance(value, list)
+            and value
+            and isinstance(value[0], dict)
+        ):
+            rendered_values = []
+            for ref in value:
+                parts = []
+                for field_entry in fields:
+                    if isinstance(field_entry, dict):
+                        for url_key, label_spec in field_entry.items():
+                            if isinstance(label_spec, str):
+                                label = str(ref.get(label_spec, "")).strip()
+                            elif isinstance(label_spec, dict):
+                                label_fields = label_spec.get("label", [])
+                                separator = label_spec.get("separator", ": ")
+                                if isinstance(label_fields, str):
+                                    label_fields = [label_fields]
+                                label = separator.join(
+                                    str(ref.get(field, "")).strip()
+                                    for field in label_fields
+                                    if str(ref.get(field, "")).strip()
+                                )
+                            else:
+                                label = str(ref.get(url_key, "")).strip()
+                            if label:
+                                parts.append(label)
+                    elif isinstance(field_entry, str):
+                        part = str(ref.get(field_entry, "")).strip()
+                        if part:
+                            parts.append(part)
+                rendered_values.append(" ".join(parts))
+            return line_separator.join(value for value in rendered_values if value)
+        if isinstance(value, list):
+            return line_separator.join(str(item) for item in value)
+        return value
+
     def setPath(self, path):
         """Set the export path of the tree and/or document."""
         self.path = path
