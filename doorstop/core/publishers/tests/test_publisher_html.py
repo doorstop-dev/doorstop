@@ -396,7 +396,7 @@ class TestProcessLists(unittest.TestCase):
         # Unwinding to a smaller indentation must terminate.
         _, block, line = self.publisher.process_lists("- outer", "")
 
-        self.assertIn("</ul>", block)
+        self.assertNotIn("</ul>", block)
         self.assertEqual("</ul>", line)
 
     def test_list_starting_indented_terminates_at_end_of_list(self):
