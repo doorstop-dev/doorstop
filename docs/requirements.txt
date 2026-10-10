@@ -1,2 +1,3 @@
-mkdocs==1.5.3
-Pygments==2.17.2
+mkdocs==1.6.1
+mkdocs-get-deps==0.2.2
+Pygments==2.21.0
