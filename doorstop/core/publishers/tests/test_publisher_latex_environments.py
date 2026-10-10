@@ -542,14 +542,45 @@ class TestPublisherModuleEnvironments(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    def test_indented_list(self):
+        """Verify that a list whose first item is indented is published balanced (#747)."""
+        # Setup
+        generated_data = (
+            r"text: |" + "\n"
+            r"  The VCU SHALL:" + "\n"
+            r"    - Execute initialization" + "\n"
+            r"      - Run self test" + "\n"
+            r"    - Enter Ready-to-Ride state"
+        )
+        item = MockItemAndVCS(
+            "path/to/REQ-001.yml",
+            _file=generated_data,
+        )
+        expected = (
+            r"\section{REQ-001}\label{REQ-001}\zlabel{REQ-001}" + "\n\n"
+            r"The VCU SHALL:" + "\n"
+            r"\begin{itemizeDeep}" + "\n"
+            r"\item Execute initialization" + "\n"
+            r"\begin{itemizeDeep}" + "\n"
+            r"\item Run self test" + "\n"
+            r"\end{itemizeDeep}" + "\n"
+            r"\item Enter Ready-to-Ride state" + "\n"
+            r"\end{itemizeDeep}" + "\n\n"
+        )
+        # Act
+        result = getLines(publisher.publish_lines(item, ".tex"))
+        # Assert
+        self.assertEqual(expected, result)
+
     def test_missing_changing_list_indentation(self):
         """Verify that a list throws an error if indentation is changed in the middle of the list."""
         # Setup
         generated_data = (
             r"text: |" + "\n"
             r"  List without newline:" + "\n"
-            r"    1. Item 1" + "\n"
-            r"        1. Item 1.1"
+            r"  1. Item 1" + "\n"
+            r"    1. Item 1.1" + "\n"
+            r"         1. Item 1.1.1"
         )
         item = MockItemAndVCS(
             "path/to/REQ-001.yml",

@@ -42,6 +42,7 @@ class BasePublisher(metaclass=ABCMeta):
         self.list: Dict[str, Dict[str, Any]] = {}
         self.list["depth"] = {"itemize": 0, "enumerate": 0}
         self.list["indent"] = {"itemize": 0, "enumerate": 0}
+        self.list["base"] = {"itemize": 0, "enumerate": 0}
         self.list["found"] = {"itemize": False, "enumerate": False}
         # Create regexps.
         self.list["regexp"] = {
@@ -228,13 +229,16 @@ class BasePublisher(metaclass=ABCMeta):
         if matches:
             indent = len(line) - len(line.lstrip())
             if not self.list["found"][list_type]:
+                # The first item sets the list's base indentation.
+                self.list["base"][list_type] = indent
+            # Measure depth relative to the base so a list that starts indented
+            # behaves like one at column zero; otherwise the unwinding loops
+            # emit extra list ends (or never terminate). See #747.
+            indent = max(0, indent - self.list["base"][list_type])
+            if not self.list["found"][list_type]:
                 block.append(self.list["start"][list_type])
                 self.list["found"][list_type] = True
                 self.list["depth"][list_type] = indent
-                # A list that already starts indented defines its own step.
-                # Without this the step stays 0 and the loops that unwind the
-                # depth below never terminate.
-                self.list["indent"][list_type] = indent
             elif self.list["depth"][list_type] < indent:
                 block.append(self.list["start"][list_type])
                 if self.list["depth"][list_type] == 0:
