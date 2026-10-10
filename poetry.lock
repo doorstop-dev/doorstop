@@ -1094,20 +1094,21 @@ files = [
 
 [[package]]
 name = "plantuml-markdown"
-version = "3.9.3"
+version = "3.11.3"
 description = "A PlantUML plugin for Markdown"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "plantuml-markdown-3.9.3.tar.gz", hash = "sha256:5f7e34bfeee470069ba83e8e5cbde9156700d052788625ea14a029f3b244d3aa"},
-    {file = "plantuml_markdown-3.9.3-py3-none-any.whl", hash = "sha256:eda3782cd77b50509feeabe48d7b094c28e5e7263e83bd05eeea9c2d1f455d3a"},
+    {file = "plantuml_markdown-3.11.3-py3-none-any.whl", hash = "sha256:fa83f4ed94c70d5ec0a06d015058b4bdfcb923535e820af4e20fbe7c493d3cf2"},
+    {file = "plantuml_markdown-3.11.3.tar.gz", hash = "sha256:ffb78b5bf9ffc3b7b5bc04893972b673c8ee96f1407f3ea9bc48003bdfa85302"},
 ]
 
 [package.dependencies]
 Markdown = "*"
 requests = "*"
 six = "*"
+urllib3 = "*"
 
 [[package]]
 name = "platformdirs"
