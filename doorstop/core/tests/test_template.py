@@ -173,7 +173,9 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
 
         # Act
         with self.assertRaises(DoorstopError):
-            template.get_template(self.mock_tree, self.dirpath, ".html", "custom_css")
+            _, _ = template.get_template(
+                self.mock_tree, self.dirpath, ".html", "custom_css"
+            )
 
     def test_html_tree_with_multiple_template_no_flag(self):
         """Verify that template folders are ignored without a template name."""
