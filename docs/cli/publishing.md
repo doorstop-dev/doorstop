@@ -74,11 +74,15 @@ Supported formats:
 
 # Templates
 
-Each output format also has support for templates that can adjust the formatting of the output. Any folder named `template` that is placed alongside the `.doorstop.yml` configuration file will be copied during the publishing process into the output folder. _Note: If multiple documents contain the `template` _folder, they will **all** be copied, although no overwriting is performed._
+Each output format also has support for templates that can adjust the formatting of the output. A template is a folder named `template` placed alongside a document's `.doorstop.yml` configuration file. By default, both LaTeX and HTML publishing require a template. Doorstops uses the built-in template by default.
 
-A command line `--template` flag is provided to allow choosing the template by name. By default, both LaTeX and HTML publishing formats _require_ a template! Therefore, _doorstop_ provides standard templates for these formats that will be used automatically if no template name is given during publishing.
+A command line `--template` flag is provided to allow choosing a custom template by name, i.e., `--template sidebar`. The rules are:
 
-The flag is used by providing the name of the template, i.e., `--template sidebar`.
+- Without `--template`, the built-in template is used and any `template` folders in your documents are ignored.
+- With `--template`, the `template` folders are searched for one that provides the named template. Only that folder is copied to the `template` folder of the output.
+  - Documents do not need their own `template` folder to use a template: it is enough that one document in the tree provides it.
+  - A template folder must be self-contained (including the shared files of the built-in template, such as the stylesheets and scripts).
+  - Template names must be unique within a tree.
 
 ## HTML templates
 

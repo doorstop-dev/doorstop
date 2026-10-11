@@ -52,26 +52,34 @@ def get_template(obj, path, ext, template):
     template_dir = os.path.join(path, "template")
     output_dir = path
 
-    if is_tree(obj):
-        document_template = None
-        template_count = 0
-        for each in obj.documents:
-            if each.template:
-                document_template = each.template
-                template_count += 1
-        if template_count > 1:
+    # Find the template folder that provides the requested template: a
+    # document's own first, then the rest of its tree. Exactly one may match.
+    document_template = None
+    if template:
+        if is_tree(obj):
+            documents = obj.documents
+        else:
+            tree = getattr(obj, "tree", None)
+            siblings = tree.documents if tree else []
+            documents = [obj] + [each for each in siblings if each is not obj]
+        folders = [each.template for each in documents if each.template]
+        if not folders:
             raise common.DoorstopError(
-                """Multiple templates found in tree. Please specify a single template for the tree.
-I.e., only one of the documents in the tree should have a template folder."""
+                "Template flag set, but no 'template' folder was found."
             )
-    else:
-        document_template = obj.template
-
-    # Check for custom template and verify that it is available.
-    if template and not document_template:
-        raise common.DoorstopError(
-            "Template flag set, but no 'template' folder was found."
-        )
+        matches = [folder for folder in folders if _provides(folder, template)]
+        if not matches:
+            raise common.DoorstopError(
+                "Template '{}' not found in any 'template' folder.".format(template)
+            )
+        if len(matches) > 1:
+            raise common.DoorstopError(
+                "Template '{}' found in multiple 'template' folders: {}. "
+                "Template names must be unique within a tree.".format(
+                    template, ", ".join(matches)
+                )
+            )
+        document_template = matches[0]
 
     # Get the builtin templates.
     template_assets = os.path.join(os.path.dirname(__file__), "files", "templates")
@@ -103,22 +111,8 @@ I.e., only one of the documents in the tree should have a template folder."""
     # Copy template from document if it exists and template is given.
     if document_template and template:
         os.makedirs(template_dir)
-        if is_tree(obj):
-            for each in obj.documents:
-                log.info(
-                    "Copying %s to %s",
-                    each.template,
-                    template,
-                    # os.path.join(os.path.dirname(path), "template"),
-                )
-                common.copy_dir_contents(each.template, template_dir)
-        else:
-            log.info(
-                "Copying %s to %s",
-                document_template,
-                os.path.join(os.path.dirname(path), "template"),
-            )
-            common.copy_dir_contents(document_template, template_dir)
+        log.info("Copying %s to %s", document_template, template_dir)
+        common.copy_dir_contents(document_template, template_dir)
 
     # Only create template_dir if template actually exists.
     elif os.path.isdir(template_assets):
@@ -142,6 +136,16 @@ I.e., only one of the documents in the tree should have a template folder."""
         return assets_dir, builtin_template
 
     return assets_dir, template
+
+
+def _provides(folder, name):
+    """Check if a template folder has a file (or view) named `name.*`."""
+    return any(
+        os.path.splitext(each)[0] == name
+        for sub in (folder, os.path.join(folder, "views"))
+        if os.path.isdir(sub)
+        for each in os.listdir(sub)
+    )
 
 
 def read_template_data(assets_dir, template):

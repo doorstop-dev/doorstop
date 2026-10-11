@@ -143,27 +143,83 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
         self.assertEqual(expected_walk, walk)
 
     def test_html_tree_with_multiple_template(self):
-        """Verify that a document tree with multiple custom html template throws an error."""
+        """Verify that only the folder providing the requested template is copied."""
         # This test MUST use the expensive tree since it changes the document content
         # in the source tree otherwise!
         build_expensive_tree(self)
 
-        # Check that only custom template is published.
         os.makedirs(self.dirpath)
-        # Create a custom template folder.
-        doc_path = self.mock_tree.documents[0].path
-        os.mkdir(os.path.join(doc_path, "template"))
-        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
-        # Create another custom template folder.
-        doc_path = self.mock_tree.documents[1].path
-        os.mkdir(os.path.join(doc_path, "template"))
-        Path(os.path.join(doc_path, "template", "custom_css.css")).touch()
+        for doc, name in zip(self.mock_tree.documents[:2], ["one.css", "two.css"]):
+            os.mkdir(os.path.join(doc.path, "template"))
+            Path(os.path.join(doc.path, "template", name)).touch()
+
+        # Act
+        _, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", "two"
+        )
+        # Assert
+        self.assertEqual("two", selected_template)
+        self.assertEqual(
+            ["two.css"], os.listdir(os.path.join(self.dirpath, "template"))
+        )
+
+    def test_html_tree_with_duplicate_template_name(self):
+        """Verify that the same template name in several folders throws an error."""
+        build_expensive_tree(self)
+
+        for doc in self.mock_tree.documents[:2]:
+            os.mkdir(os.path.join(doc.path, "template"))
+            Path(os.path.join(doc.path, "template", "custom_css.css")).touch()
 
         # Act
         with self.assertRaises(DoorstopError):
-            _, _ = template.get_template(
-                self.mock_tree, self.dirpath, ".html", "custom_css"
-            )
+            template.get_template(self.mock_tree, self.dirpath, ".html", "custom_css")
+
+    def test_html_tree_with_multiple_template_no_flag(self):
+        """Verify that template folders are ignored without a template name."""
+        build_expensive_tree(self)
+
+        os.makedirs(self.dirpath)
+        for doc in self.mock_tree.documents[:2]:
+            os.mkdir(os.path.join(doc.path, "template"))
+
+        # Act
+        _, selected_template = template.get_template(
+            self.mock_tree, self.dirpath, ".html", None
+        )
+        # Assert
+        self.assertEqual("doorstop", selected_template)
+
+    def test_html_doc_with_template_from_other_document(self):
+        """Verify that a document can use a template folder of another document in its tree."""
+        build_expensive_tree(self)
+
+        os.makedirs(self.dirpath)
+        owner, doc = self.mock_tree.documents[0], self.mock_tree.documents[1]
+        os.mkdir(os.path.join(owner.path, "template"))
+        Path(os.path.join(owner.path, "template", "custom_css.css")).touch()
+
+        # Act
+        _, selected_template = template.get_template(
+            doc, self.dirpath, ".html", "custom_css"
+        )
+        # Assert
+        self.assertEqual("custom_css", selected_template)
+        self.assertEqual(
+            ["custom_css.css"], os.listdir(os.path.join(self.dirpath, "template"))
+        )
+
+    def test_unknown_template_name(self):
+        """Verify that a template name no folder provides fails."""
+        build_expensive_tree(self)
+
+        doc = self.mock_tree.documents[0]
+        os.mkdir(os.path.join(doc.path, "template"))
+        Path(os.path.join(doc.path, "template", "custom_css.css")).touch()
+
+        # Act
+        with self.assertRaises(DoorstopError):
+            template.get_template(self.mock_tree, self.dirpath, ".html", "missing")
 
     def test_html_doc_with_custom_template(self):
         """Verify that a custom html template is used correctly."""
@@ -195,6 +251,7 @@ class TestTemplate(MockDataMixIn, unittest.TestCase):
     def test_custom_template_without_folder(self):
         """Verify that a custom template that is missing a locally defined
         custom 'template' folder fails."""
+        build_expensive_tree(self)
         # Act
         with self.assertRaises(DoorstopError):
             _, _ = template.get_template(
