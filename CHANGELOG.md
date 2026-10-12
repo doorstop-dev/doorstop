@@ -1,3 +1,7 @@
+# Unreleased
+
+- Fixed publishing with templates: several documents may now have a `template` folder, only the folder providing the requested template is copied, and a single document can use a template from another document in its tree.
+
 # 3.2 (2026-07-09)
 
 - Fixed consistent line endings
