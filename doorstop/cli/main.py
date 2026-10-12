@@ -543,6 +543,11 @@ def _publish(subs, shared):
         help="Generate top level index (when producing markdown).",
         action="store_true",
     )
+    sub.add_argument(
+        "--no-toc",
+        action="store_true",
+        help="do not include a table-of-contents in the output",
+    )
 
 
 if __name__ == "__main__":
