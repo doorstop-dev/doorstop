@@ -304,7 +304,7 @@ def _itemize(header, data, document, mapping=None):
 
             # Import the item
             try:
-                item = add_item(
+                add_item(
                     document.prefix, uid, attrs=attrs, document=document, path=folder
                 )
             except DoorstopError as exc:
