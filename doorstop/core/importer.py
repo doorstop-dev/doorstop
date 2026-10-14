@@ -76,7 +76,9 @@ def create_document(prefix, path, parent=None, tree=None):
     return document
 
 
-def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
+def add_item(
+    prefix, uid, attrs=None, document=None, request_next_number=None, path=None
+):
     """Create a Doorstop document from existing document information.
 
     :param prefix: previously imported document's prefix
@@ -84,6 +86,7 @@ def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
     :param attrs: dictionary of Doorstop and custom attributes
     :param document: explicit document to add the item
     :param request_next_number: server method to get a document's next number
+    :param path: directory for the item (default: the document's directory)
 
     :return: imported Item
 
@@ -99,13 +102,28 @@ def add_item(prefix, uid, attrs=None, document=None, request_next_number=None):
 
     # Add an item using the specified UID
     log.info("importing item '{}'...".format(uid))
-    item = Item.new(tree, document, document.path, document.root, uid, auto=False)
+    item = Item.new(
+        tree, document, path or document.path, document.root, uid, auto=False
+    )
     for key, value in (attrs or {}).items():
         item.set(key, value)
     item.save()
 
     log.info("imported: {}".format(item))
     return item
+
+
+def _delete_existing(document, uid):
+    """Delete an existing item and return its directory (None if new)."""
+    try:
+        item = document.find_item(uid)
+    except DoorstopError:
+        log.debug("not yet an item: {}".format(uid))
+        return None
+    folder = os.path.dirname(item.path)
+    log.debug("deleting old item: {}".format(uid))
+    item.delete()
+    return folder
 
 
 def _file_yml(path, document, **_):
@@ -122,13 +140,8 @@ def _file_yml(path, document, **_):
     data = common.load_yaml(text, path)
     # Add items
     for uid, attrs in data.items():
-        try:
-            item = document.find_item(uid)
-        except DoorstopError:
-            pass  # no matching item
-        else:
-            item.delete()
-        add_item(document.prefix, uid, attrs=attrs, document=document)
+        folder = _delete_existing(document, uid)
+        add_item(document.prefix, uid, attrs=attrs, document=document, path=folder)
 
 
 def _file_csv(path, document, delimiter=",", mapping=None):
@@ -287,17 +300,13 @@ def _itemize(header, data, document, mapping=None):
         # Convert the row to an item
         if uid and uid != settings.PLACEHOLDER:
             # Delete the old item
-            try:
-                item = document.find_item(uid)
-            except DoorstopError:
-                log.debug("not yet an item: {}".format(uid))
-            else:
-                log.debug("deleting old item: {}".format(uid))
-                item.delete()
+            folder = _delete_existing(document, uid)
 
             # Import the item
             try:
-                item = add_item(document.prefix, uid, attrs=attrs, document=document)
+                add_item(
+                    document.prefix, uid, attrs=attrs, document=document, path=folder
+                )
             except DoorstopError as exc:
                 log.warning(exc)
 
