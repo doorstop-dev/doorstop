@@ -474,6 +474,26 @@ class TestImporter(unittest.TestCase):
         os.chdir(self.cwd)
         shutil.rmtree(self.temp, onerror=on_error_with_retry)
 
+    def test_import_keeps_nested_item_location(self):
+        """Verify re-importing an export leaves items in their subfolder."""
+        document = _get_tree().create_document(
+            os.path.join(self.temp, "nested"), "NEST"
+        )
+        for ext in (".yml", ".csv"):
+            item = document.add_item()
+            folder = os.path.join(document.path, "sub" + ext[1:])
+            os.makedirs(folder)
+            nested = os.path.join(folder, os.path.basename(item.path))
+            shutil.move(item.path, nested)
+            document.load(reload=True)
+            path = os.path.join(self.temp, "export" + ext)
+            core.exporter.export(document, path)
+            # Act
+            core.importer.import_file(path, document)
+            # Assert
+            self.assertTrue(os.path.isfile(nested))
+            self.assertFalse(os.path.exists(item.path))
+
     def test_import_yml(self):
         """Verify items can be imported from a YAML file."""
         path = os.path.join(self.temp, "exported.yml")

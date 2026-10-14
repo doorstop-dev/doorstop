@@ -97,6 +97,7 @@ class TestModule(unittest.TestCase):
         """Verify a YAML file can be imported (over existing items)."""
         path = os.path.join(FILES, "exported.yml")
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         # Act
         importer._file_yml(path, mock_document)
         # Assert
@@ -438,6 +439,7 @@ class TestModule(unittest.TestCase):
         header = ["uid", "text", "links", "ext1"]
         data = [["req1", "text1", "", "val1"], ["req2", "", "sys1,sys2", False]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.prefix = "PREFIX"
         # Act
         importer._itemize(header, data, mock_document)
@@ -456,6 +458,7 @@ class TestModule(unittest.TestCase):
         header = ["uid", "text", "links", "ext1", "active"]
         data = [["req2", "", "", False, ""]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.prefix = "PREFIX"
         # Act
         importer._itemize(header, data, mock_document)
@@ -472,6 +475,7 @@ class TestModule(unittest.TestCase):
         header = ["uid", "text", "links", "ext1", "active"]
         data = [["req2", "", "", False, False]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.prefix = "PREFIX"
         # Act
         importer._itemize(header, data, mock_document)
@@ -488,6 +492,7 @@ class TestModule(unittest.TestCase):
         header = ["myid", "text", "links", "ext1"]
         data = [["req1", "text1", "", "val1"], ["req2", "text2", "sys1,sys2", None]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mapping = {"MyID": "uid"}
         # Act
         importer._itemize(header, data, mock_document, mapping=mapping)
@@ -507,16 +512,43 @@ class TestModule(unittest.TestCase):
         self.assertEqual(2, mock_add_item.call_count)
 
     @patch("doorstop.core.importer.add_item")
+    def test_itemize_keeps_existing_location(self, mock_add_item):
+        """Verify a replaced item is re-created in its original directory."""
+        mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("a", "b", "req1.yml")
+        # Act
+        importer._itemize(["uid", "text"], [["req1", "text1"]], mock_document)
+        # Assert
+        mock_document.find_item.return_value.delete.assert_called_once_with()
+        self.assertEqual(os.path.join("a", "b"), mock_add_item.call_args[1]["path"])
+
+    @patch("doorstop.core.importer.add_item")
+    def test_file_yml_keeps_existing_location(self, mock_add_item):
+        """Verify a replaced YAML item is re-created in its original directory."""
+        path = os.path.join(FILES, "exported.yml")
+        mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("a", "req1.yml")
+        # Act
+        importer._file_yml(path, mock_document)
+        # Assert
+        self.assertEqual("a", mock_add_item.call_args[1]["path"])
+
+    @patch("doorstop.core.importer.add_item")
     def test_itemize_blank_column(self, mock_add_item):
         """Verify item data can include invalid values."""
         header = ["id", "text", None, "links", "ext1"]  # test 'id' is accepted
         data = [["req1", "text1", "blank", "", "val1"]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.prefix = "prefix"
         importer._itemize(header, data, mock_document)
         expected_attrs = {"links": [], "ext1": "val1", "text": "text1"}
         mock_add_item.assert_called_once_with(
-            mock_document.prefix, "req1", attrs=expected_attrs, document=mock_document
+            mock_document.prefix,
+            "req1",
+            attrs=expected_attrs,
+            document=mock_document,
+            path="sub",
         )
 
     @patch("doorstop.core.importer.add_item")
@@ -533,6 +565,7 @@ class TestModule(unittest.TestCase):
             ["...", "Another new item.", "", ""],  # placeholder UID
         ]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.prefix = "PREFIX"
         mock_document.next_number = 3
         mock_document.digits = 3
@@ -547,6 +580,7 @@ class TestModule(unittest.TestCase):
         header = ["uid", "text", "links", "ext1"]
         data = [["req1", "text1", "", "val1"], ["invalid"]]
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         importer._itemize(header, data, mock_document)
 
 
@@ -561,6 +595,7 @@ class TestModuleCreateDocument(unittest.TestCase):
         self.parent = "PARENT_PREFIX"
         # Ensure the tree is reloaded
         mock_document = Mock()
+        mock_document.find_item.return_value.path = os.path.join("sub", "x.yml")
         mock_document.root = self.root
         self.mock_tree = Tree(mock_document)
         _set_tree(self.mock_tree)
