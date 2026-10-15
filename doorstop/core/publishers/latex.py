@@ -177,15 +177,20 @@ class LaTeXPublisher(BasePublisher):
                 # Add custom publish attributes
                 if item.document and item.document.publish:
                     header_printed = False
-                    for attr in item.document.publish:
-                        if not item.attribute(attr):
+                    for entry in item.document.publish:
+                        attr, fields = self.parse_publish_entry(entry)
+                        if not attr:
+                            continue
+                        value = item.attribute(attr)
+                        if not value:
                             continue
                         if not header_printed:
                             header_printed = True
                             yield "\\begin{longtable}{|l|l|}"
                             yield "Attribute & Value\\\\"
                             yield self.HLINE
-                        yield "{} & {}".format(attr, item.attribute(attr))
+                        rendered = self.render_publish_value(value, fields)
+                        yield "{} & {}".format(attr, rendered)
                     if header_printed:
                         yield self.END_LONGTABLE
                     else:
