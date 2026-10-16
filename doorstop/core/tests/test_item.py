@@ -3,10 +3,10 @@
 
 """Unit tests for the doorstop.core.item module."""
 
+import itertools
 import os
 import shutil
 import tempfile
-import itertools
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
