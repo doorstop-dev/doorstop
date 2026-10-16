@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import itertools
 import unittest
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import doorstop.core.editor
 from doorstop import common, settings
