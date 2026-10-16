@@ -41,7 +41,7 @@ def edit_item(func):
     def wrapped(self, *args, **kwargs):
         item = func(self, *args, **kwargs) or self
         if settings.ADDREMOVE_FILES and item.tree:
-            item.tree.vcs.edit(item.path)
+            item.tree.vcs.mark_edited(item.path)
         return item
 
     return wrapped
@@ -288,7 +288,16 @@ class BaseFileObject(metaclass=abc.ABCMeta):
         """
         if not self._exists:
             raise DoorstopError("cannot save to deleted: {}".format(self))
-        common.write_text(text, path, end=settings.WRITE_LINESEPERATOR)
+        end = settings.WRITE_LINESEPERATOR
+        try:
+            with open(path, "rb") as stream:
+                unchanged = stream.read() == text.replace("\n", end).encode("utf-8")
+        except OSError:
+            unchanged = False
+        if unchanged:
+            log.trace("unchanged: {}".format(path))  # type: ignore
+            return
+        common.write_text(text, path, end=end)
 
     @staticmethod
     def _dump(data):

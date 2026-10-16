@@ -4,6 +4,7 @@
 
 """Representation of a hierarchy of documents."""
 
+import contextlib
 import sys
 from itertools import chain
 from typing import Dict, List, Optional, Union
@@ -29,6 +30,19 @@ BOX = {
 }
 
 log = common.logger(__name__)
+
+
+def _uid_key(uid):
+    """Return a hashable key that matches ``UID.__eq__``.
+
+    ``UID.__hash__`` is case-sensitive while ``UID.__eq__`` is not, so UIDs
+    themselves cannot be used as dictionary keys for link lookups.
+    """
+    try:
+        uid.check()
+    except DoorstopError:
+        return ("raw", uid.value.lower())
+    return ("uid", str(uid.prefix).lower(), uid.number, uid.name)
 
 
 class Tree(BaseValidatable):  # pylint: disable=R0902
@@ -103,6 +117,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._loaded = False
         self._item_cache: Dict[Union[str, UID], Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
+        self._child_index_active = False  # only while the tree is checked
+        self._child_index: Optional[Dict[tuple, List[tuple]]] = None
 
     def __repr__(self):
         return "<Tree {}>".format(self._draw_line())
@@ -482,15 +498,46 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         # Check for documents
         if not documents:
             yield DoorstopWarning("no documents")
-        # Check each document
-        for document in documents:
-            for issue in chain(
-                hook(document=document, tree=self),
-                document.get_issues(skip=skip, item_hook=item_hook),
-            ):
-                # Prepend the document's prefix to yielded exceptions
-                if isinstance(issue, Exception):
-                    yield type(issue)("{}: {}".format(document.prefix, issue))
+            return
+        # Stage saved files together and look up child links in an index
+        batch = (
+            self.vcs.batch_edits()
+            if settings.ADDREMOVE_FILES
+            else contextlib.nullcontext()
+        )
+        self._child_index_active = True
+        try:
+            with batch:
+                # Check each document
+                for document in documents:
+                    for issue in chain(
+                        hook(document=document, tree=self),
+                        document.get_issues(skip=skip, item_hook=item_hook),
+                    ):
+                        # Prepend the document's prefix to yielded exceptions
+                        if isinstance(issue, Exception):
+                            yield type(issue)("{}: {}".format(document.prefix, issue))
+        finally:
+            self._child_index_active = False
+            self._child_index = None
+
+    def _find_linking_items(self, uid):
+        """Get the items linking to an UID, from an index built once per check.
+
+        :param uid: UID of the parent item
+
+        :return: list of (document, item) in tree order, or None outside a check
+
+        """
+        if not self._child_index_active:
+            return None
+        if self._child_index is None:
+            self._child_index = {}
+            for document in self:
+                for item in document:
+                    for key in {_uid_key(link) for link in item.links}:
+                        self._child_index.setdefault(key, []).append((document, item))
+        return self._child_index.get(_uid_key(uid), [])
 
     def get_traceability(self):
         """Return sorted rows of traceability slices.

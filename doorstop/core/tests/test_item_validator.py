@@ -240,6 +240,7 @@ class TestItemValidator(unittest.TestCase):
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
+        mock_tree._find_linking_items.return_value = None  # no index
         mock_tree.find_item = lambda uid, **kwargs: Mock(uid="fake1")
 
         self.item.tree = mock_tree
@@ -278,6 +279,7 @@ class TestItemValidator(unittest.TestCase):
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter([self.item.document])
+        mock_tree._find_linking_items.return_value = None  # no index
         self.item.tree = mock_tree
 
         self.assertTrue(self.item_validator.validate(self.item))
@@ -306,6 +308,7 @@ class TestItemValidator(unittest.TestCase):
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
+        mock_tree._find_linking_items.return_value = None  # no index
         mock_tree.find_item = lambda uid, **kwargs: Mock(uid="fake1")
         self.item.tree = mock_tree
 
@@ -349,6 +352,7 @@ class TestItemValidator(unittest.TestCase):
 
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter([root_doc, child_doc_a, child_doc_b])
+        mock_tree._find_linking_items.return_value = None  # no index
         mock_tree.find_item = lambda uid, **kwargs: next(
             filter(lambda item: item.uid == uid, all_items), None
         )

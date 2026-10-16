@@ -2,6 +2,10 @@
 
 - Fixed importing over existing items: items stored in subfolders of a document now stay in their folder instead of being moved to the document root.
 - Fixed publishing with templates: several documents may now have a `template` folder, only the folder providing the requested template is copied, and a single document can use a template from another document in its tree.
+- Improved speed on large trees: files saved while validating or renumbering a document (`doorstop reorder`, `doorstop add --level`) are staged with a few batched `git add` calls instead of one per item, unchanged files are no longer rewritten, and child-link checks no longer scan every item. The export, import and publish modules (and `openpyxl`) are now loaded on first use, which speeds up every command; `doorstop.exporter`, `doorstop.importer` and `doorstop.publisher` remain available. A change plus validation on 500 items went from about 23 s to about 2 s on Windows. Saved and staged files are unchanged.
+- Improved speed on large trees: A change plus validation on 500 items went from about 23 s to about 2 s on Windows.
+  - files saved while validating or renumbering a document (`doorstop reorder`, `doorstop add --level`) are staged with a few batched `git add` calls instead of one per item, unchanged files are no longer rewritten
+  - child-link checks no longer scan every item.
 
 # 3.2 (2026-07-09)
 
