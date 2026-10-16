@@ -7,6 +7,7 @@
 import logging
 import operator
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -14,11 +15,23 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
 from doorstop.core.builder import build
 from doorstop.core.document import Document
-from doorstop.core.tests import EMPTY, FILES, GOLDEN_MASTER_FILES, SYS, MockDocumentSkip
-from doorstop.core.tree import Tree
+from doorstop.core.tests import (
+    EMPTY,
+    FILES,
+    GOLDEN_MASTER_FILES,
+    ROOT,
+    SYS,
+    TESTS_ROOT,
+    MockDocumentSkip,
+)
+from doorstop.core.tests.helpers import on_error_with_retry
+from doorstop.core.tree import Tree, _uid_key
+from doorstop.core.types import UID
+from doorstop.core.vcs.mockvcs import WorkingCopy as MockWorkingCopy
 
 
 @pytest.fixture(autouse=True, scope="class")
@@ -250,7 +263,7 @@ class TestTree(unittest.TestCase):
         document = Document(FILES)
         self.tree._place(document)  # pylint: disable=W0212
         document.tree = self.tree
-        self.tree._vcs = Mock()  # pylint: disable=W0212
+        self.tree._vcs = MagicMock()  # pylint: disable=W0212
 
     @patch("doorstop.core.vcs.find_root", Mock(return_value=EMPTY))
     def test_place_empty(self):
@@ -477,3 +490,176 @@ class TestTree(unittest.TestCase):
         self.assertEqual(0, len(self.tree))
         self.assertEqual(2, mock_delete.call_count)
         self.tree.delete()  # ensure a second delete is ignored
+
+
+def _fixture_tree(test):
+    """Build copies of the repository's own trees in a temp folder, with a mock VCS.
+
+    LLT001 links to its parent in lower case and LLT002 is inactive, so both
+    edge cases of the child-link check are covered.
+    """
+    temp = tempfile.mkdtemp()
+    test.addCleanup(shutil.rmtree, temp, onerror=on_error_with_retry)
+    shutil.copytree(os.path.join(ROOT, "reqs"), os.path.join(temp, "reqs"))
+    shutil.copytree(os.path.join(TESTS_ROOT, "docs"), os.path.join(temp, "llt"))
+    shutil.copytree(
+        os.path.join(ROOT, "doorstop", "cli", "tests", "docs"),
+        os.path.join(temp, "hlt"),
+    )
+    path = os.path.join(temp, "llt", "LLT001.yml")
+    common.write_text(common.read_text(path).replace("- REQ003:", "- req003:"), path)
+    path = os.path.join(temp, "llt", "LLT002.yml")
+    common.write_text(
+        common.read_text(path).replace("active: true", "active: false"), path
+    )
+    with patch("doorstop.settings.ADDREMOVE_FILES", False):
+        tree = build(cwd=temp, root=temp)
+    tree._vcs = MockWorkingCopy(temp)  # pylint: disable=W0212
+    return tree
+
+
+class TestValidateBatching(unittest.TestCase):
+    """Unit tests for batching VCS edits while a tree is checked."""
+
+    def setUp(self):
+        self.tree = _fixture_tree(self)
+
+    def _assert_stages_every_active_item_once(self):
+        expected = sorted(
+            item.path for document in self.tree for item in document if item.active
+        )
+        with patch.object(MockWorkingCopy, "edit") as mock_edit, patch.object(
+            MockWorkingCopy, "edit_many"
+        ) as mock_edit_many:
+            self.tree.validate()
+        mock_edit.assert_not_called()
+        staged = [path for args, _ in mock_edit_many.call_args_list for path in args[0]]
+        self.assertEqual(expected, sorted(staged))
+
+    @patch("doorstop.settings.REFORMAT", True)
+    @patch("doorstop.settings.ADDREMOVE_FILES", True)
+    def test_validate_stages_every_item_once(self):
+        """Verify a check stages every active item in batched calls."""
+        self._assert_stages_every_active_item_once()
+
+    @patch("doorstop.settings.REFORMAT", True)
+    @patch("doorstop.settings.ADDREMOVE_FILES", True)
+    def test_closed_check_flushes(self):
+        """Verify a check that is stopped early still stages what it saved."""
+        with patch.object(MockWorkingCopy, "edit_many") as mock_edit_many:
+            issues = self.tree.get_issues()
+            next(issues)
+            mock_edit_many.assert_not_called()
+            issues.close()
+        mock_edit_many.assert_called_once()
+
+    @patch("doorstop.settings.REFORMAT", True)
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    def test_no_batch_without_addremove(self):
+        """Verify nothing is staged when files are not added automatically."""
+        with patch.object(MockWorkingCopy, "batch_edits") as mock_batch, patch.object(
+            MockWorkingCopy, "edit"
+        ) as mock_edit:
+            self.tree.validate()
+        mock_batch.assert_not_called()
+        mock_edit.assert_not_called()
+
+    @patch("doorstop.settings.REORDER", True)
+    @patch("doorstop.settings.REFORMAT", True)
+    @patch("doorstop.settings.ADDREMOVE_FILES", True)
+    def test_validate_with_reorder_stages_every_item_once(self):
+        """Verify a check that renumbers documents still stages each item once.
+
+        The renumbering opens its own batch, which must join the check's batch.
+        """
+        self._assert_stages_every_active_item_once()
+
+
+class TestReorderBatching(unittest.TestCase):
+    """Unit tests for batching VCS edits while a document is renumbered."""
+
+    def setUp(self):
+        self.document = _fixture_tree(self).find_document("LLT")
+        self.expected = [item.path for item in self.document.items]
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", True)
+    def test_reorder_stages_in_one_call(self):
+        """Verify renumbering stages every item of the document in one call."""
+        with patch.object(MockWorkingCopy, "edit") as mock_edit, patch.object(
+            MockWorkingCopy, "edit_many"
+        ) as mock_edit_many:
+            self.document.reorder()
+        mock_edit.assert_not_called()
+        mock_edit_many.assert_called_once_with(self.expected)
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    def test_reorder_without_addremove(self):
+        """Verify renumbering stages nothing when files are not added automatically."""
+        with patch.object(MockWorkingCopy, "batch_edits") as mock_batch, patch.object(
+            MockWorkingCopy, "edit"
+        ) as mock_edit:
+            self.document.reorder()
+        mock_batch.assert_not_called()
+        mock_edit.assert_not_called()
+
+
+class TestChildLinkIndex(unittest.TestCase):
+    """Unit tests for finding child items through the link index."""
+
+    @staticmethod
+    def _children(tree, find_all):
+        """Return the child UIDs and documents of every item, as strings."""
+        result = {}
+        for document in tree:
+            for item in document:
+                items, documents = item.find_child_items_and_documents(
+                    document=document, tree=tree, find_all=find_all
+                )
+                result[str(item.uid)] = (
+                    [str(child.uid) for child in items],
+                    [str(child) for child in documents],
+                )
+        return result
+
+    def test_same_children(self):
+        """Verify the index finds the same children as the linear scan."""
+        tree = _fixture_tree(self)
+        tree._child_index_active = True  # pylint: disable=W0212
+        for find_all in (True, False):
+            with patch.object(Tree, "_find_linking_items", return_value=None):
+                linear = self._children(tree, find_all)
+            self.assertEqual(linear, self._children(tree, find_all))
+        # document order follows os.walk, which differs between file systems
+        for uid, child in (("REQ003", "LLT001"), ("REQ004", "LLT002")):
+            items, documents = linear[uid]
+            self.assertEqual(
+                ([child], ["EXT", "LLT", "TUT"]), (items, sorted(documents))
+            )
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    def test_same_issues(self):
+        """Verify a check reports the same issues with and without the index."""
+
+        def issues(tree):
+            return [str(i).replace(tree.root, "<root>") for i in tree.get_issues()]
+
+        indexed = issues(_fixture_tree(self))
+        with patch.object(Tree, "_find_linking_items", return_value=None):
+            linear = issues(_fixture_tree(self))
+        self.assertEqual(linear, indexed)
+
+
+class TestUidKey(unittest.TestCase):
+    """Unit tests for the link index key."""
+
+    def test_valid_uids_ignore_case_and_separator(self):
+        """Verify the key matches UID equality for valid UIDs."""
+        self.assertEqual(("uid", "req", 1, ""), _uid_key(UID("REQ001")))
+        self.assertEqual(_uid_key(UID("REQ001")), _uid_key(UID("req001")))
+        self.assertEqual(UID("REQ001"), UID("REQ-001"))
+        self.assertEqual(_uid_key(UID("REQ001")), _uid_key(UID("REQ-001")))
+
+    def test_invalid_uids_compare_by_value(self):
+        """Verify the key of an invalid UID is its lower-case value."""
+        self.assertEqual(("raw", "req"), _uid_key(UID("REQ")))
+        self.assertEqual(_uid_key(UID("REQ")), _uid_key(UID("req")))

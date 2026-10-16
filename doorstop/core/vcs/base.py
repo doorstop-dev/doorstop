@@ -2,11 +2,12 @@
 
 """Abstract interface to version control systems."""
 
+import contextlib
 import fnmatch
 import os
 import subprocess
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from doorstop import common, settings
 
@@ -23,6 +24,7 @@ class BaseWorkingCopy(metaclass=ABCMeta):
         self.path = path
         self._ignores_cache: Optional[List[str]] = None
         self._path_cache: Optional[List[Tuple[str, str, str]]] = None
+        self._pending_edits: Optional[Dict[str, None]] = None
 
     @staticmethod
     def relpath(path):
@@ -50,6 +52,46 @@ class BaseWorkingCopy(metaclass=ABCMeta):
     def edit(self, path):  # pragma: no cover (abstract method)
         """Mark a file as modified."""
         raise NotImplementedError
+
+    def edit_many(self, paths: Iterable[str]):
+        """Mark several files as modified.
+
+        :param paths: paths of the modified files
+
+        """
+        for path in paths:
+            self.edit(path)
+
+    def mark_edited(self, path: str):
+        """Mark a file as modified, now or when the current batch ends.
+
+        :param path: path of the modified file
+
+        """
+        if self._pending_edits is None:
+            self.edit(path)
+        else:
+            self._pending_edits[path] = None
+
+    @contextlib.contextmanager
+    def batch_edits(self):
+        """Collect the files marked as modified and pass them on together.
+
+        The files are passed to :meth:`edit_many` when the block ends, even
+        when it ends with an exception. A batch opened inside another one
+        joins it, so its files are passed on when the outer block ends.
+
+        """
+        if self._pending_edits is not None:
+            yield
+            return
+        self._pending_edits = {}
+        try:
+            yield
+        finally:
+            paths, self._pending_edits = list(self._pending_edits), None
+            if paths:
+                self.edit_many(paths)
 
     @abstractmethod
     def add(self, path):  # pragma: no cover (abstract method)

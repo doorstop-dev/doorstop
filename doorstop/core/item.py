@@ -833,21 +833,25 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             return child_items, child_documents
         # Find child objects
         log.debug("finding item {}'s child objects...".format(self))
+        linking = tree._find_linking_items(self.uid)  # pylint: disable=protected-access
         for document2 in tree:
             if document2.parent == document.prefix:
                 child_documents.append(document2)
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:
-                    for item2 in document2:
-                        if self.uid in item2.links:
-                            if not item2.active:
-                                item2 = UnknownItem(item2.uid)
-                                log.warning(item2.exception)
-                                child_items.append(item2)
-                            else:
-                                child_items.append(item2)
-                                if not find_all and item2.active:
-                                    break
+                    if linking is None:
+                        candidates = (i for i in document2 if self.uid in i.links)
+                    else:
+                        candidates = (i for d, i in linking if d is document2)
+                    for item2 in candidates:
+                        if not item2.active:
+                            item2 = UnknownItem(item2.uid)
+                            log.warning(item2.exception)
+                            child_items.append(item2)
+                        else:
+                            child_items.append(item2)
+                            if not find_all:
+                                break
         # Display found links
         if child_items:
             if find_all:

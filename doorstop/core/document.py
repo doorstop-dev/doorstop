@@ -2,6 +2,7 @@
 
 """Representation of a collection of items."""
 
+import contextlib
 import os
 import re
 from collections import OrderedDict
@@ -607,17 +608,24 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         :param keep: item or UID to keep over duplicates
 
         """
-        # Reorder manually
-        if manual and self.index:
-            log.info("reordering {} from index...".format(self))
-            self._reorder_from_index(self, self.index)
-            del self.index
-        # Reorder automatically
-        if automatic:
-            log.info("reordering {} automatically...".format(self))
-            items = _items or self.items
-            keep = self.find_item(keep) if keep else None
-            self._reorder_automatic(items, start=start, keep=keep)
+        # Every item gets its level assigned and is saved, so stage them together
+        batch = (
+            self.tree.vcs.batch_edits()
+            if settings.ADDREMOVE_FILES and self.tree
+            else contextlib.nullcontext()
+        )
+        with batch:
+            # Reorder manually
+            if manual and self.index:
+                log.info("reordering {} from index...".format(self))
+                self._reorder_from_index(self, self.index)
+                del self.index
+            # Reorder automatically
+            if automatic:
+                log.info("reordering {} automatically...".format(self))
+                items = _items or self.items
+                keep = self.find_item(keep) if keep else None
+                self._reorder_automatic(items, start=start, keep=keep)
 
     @staticmethod
     def _lines_index(items):

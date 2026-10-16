@@ -3,7 +3,10 @@
 
 """Unit tests for the doorstop.core.item module."""
 
+import itertools
 import os
+import shutil
+import tempfile
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
@@ -15,10 +18,12 @@ from doorstop.core.tests import (
     EMPTY,
     EXTERNAL,
     FILES,
+    FILES_MD,
     TESTS_ROOT,
     MockItem,
     MockSimpleDocument,
 )
+from doorstop.core.tests.helpers import on_error_with_retry
 from doorstop.core.types import Stamp, Text
 from doorstop.core.vcs.mockvcs import WorkingCopy
 
@@ -468,7 +473,7 @@ class TestItem(unittest.TestCase):
         self.item.edit(tool="mock_editor")
         # Assert
         self.item.tree.vcs.lock.assert_called_once_with(self.item.path)
-        self.item.tree.vcs.edit.assert_called_once_with(self.item.path)
+        self.item.tree.vcs.mark_edited.assert_called_once_with(self.item.path)
         mock_launch.assert_called_once_with(self.item.path, tool="mock_editor")
         mock_load.assert_called_once_with(True)
 
@@ -752,6 +757,7 @@ class TestItem(unittest.TestCase):
         mock_tree = Mock()
         mock_tree.__iter__ = mock_iter
         mock_tree.find_item = lambda uid: Mock(uid="fake1")
+        mock_tree._find_linking_items.return_value = None  # not checking
         self.item.tree = mock_tree
         self.item.document = mock_document_p
 
@@ -1146,3 +1152,50 @@ class TestOSLineSep(unittest.TestCase):
         text = common.read_text(ITEM)
         common.write_text(backup, ITEM)
         self.assertEqual(backup, text)
+
+
+class TestSaveSkipsIdentical(unittest.TestCase):
+    """Unit tests for skipping writes that would not change an item file."""
+
+    CASES = [(FILES, "REQ001.yml", "yaml"), (FILES_MD, "REQ001.md", "markdown")]
+
+    def setUp(self):
+        self.temp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp, onerror=on_error_with_retry)
+
+    def _item(self, folder, name, itemformat):
+        path = shutil.copy(os.path.join(folder, name), self.temp)
+        item = Item(None, path, tree=Mock(), itemformat=itemformat)
+        item.load()
+        return item
+
+    def test_unchanged_item_is_not_rewritten(self):
+        """Verify an unchanged item is skipped and a changed one is written."""
+        for (folder, name, itemformat), end in itertools.product(
+            self.CASES, ["\n", "\r\n"]
+        ):
+            with self.subTest(itemformat=itemformat, end=repr(end)), patch(
+                "doorstop.settings.WRITE_LINESEPERATOR", end
+            ), patch("doorstop.settings.ADDREMOVE_FILES", True):
+                item = self._item(folder, name, itemformat)
+                item.save()  # normalize the fixture
+                with patch("doorstop.common.write_text") as mock_write:
+                    item.save()
+                mock_write.assert_not_called()
+                item.text = "changed text"  # auto-saves
+                with open(item.path, "rb") as stream:
+                    data = stream.read()
+                self.assertIn(b"changed text", data)
+                # every newline is exactly `end`
+                normalized = data.replace(b"\r\n", b"\n").replace(b"\n", end.encode())
+                self.assertEqual(normalized, data)
+                self.assertEqual(3, item.tree.vcs.mark_edited.call_count)
+
+    def test_missing_file_is_written(self):
+        """Verify saving writes the file when it is missing on disk."""
+        item = self._item(FILES, "REQ001.yml", "yaml")
+        os.remove(item.path)
+        item.save()
+        self.assertTrue(os.path.isfile(item.path))
