@@ -117,7 +117,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._loaded = False
         self._item_cache: Dict[Union[str, UID], Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
-        self._child_index_active = False  # only while the tree is checked
+        self._child_index_depth = 0  # open `indexed_child_lookup` scopes
         self._child_index: Optional[Dict[tuple, List[tuple]]] = None
 
     def __repr__(self):
@@ -505,31 +505,43 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if settings.ADDREMOVE_FILES
             else contextlib.nullcontext()
         )
-        self._child_index_active = True
+        with self.indexed_child_lookup(), batch:
+            # Check each document
+            for document in documents:
+                for issue in chain(
+                    hook(document=document, tree=self),
+                    document.get_issues(skip=skip, item_hook=item_hook),
+                ):
+                    # Prepend the document's prefix to yielded exceptions
+                    if isinstance(issue, Exception):
+                        yield type(issue)("{}: {}".format(document.prefix, issue))
+
+    @contextlib.contextmanager
+    def indexed_child_lookup(self):
+        """Look up child links in an index during a batch of reads.
+
+        The index is a snapshot built on the first lookup and dropped when the
+        outermost scope ends. Scopes can be nested. Changes to links made inside
+        the scope are seen after it ends. Not thread-safe.
+
+        """
+        self._child_index_depth += 1
         try:
-            with batch:
-                # Check each document
-                for document in documents:
-                    for issue in chain(
-                        hook(document=document, tree=self),
-                        document.get_issues(skip=skip, item_hook=item_hook),
-                    ):
-                        # Prepend the document's prefix to yielded exceptions
-                        if isinstance(issue, Exception):
-                            yield type(issue)("{}: {}".format(document.prefix, issue))
+            yield
         finally:
-            self._child_index_active = False
-            self._child_index = None
+            self._child_index_depth -= 1
+            if not self._child_index_depth:
+                self._child_index = None
 
     def _find_linking_items(self, uid):
-        """Get the items linking to an UID, from an index built once per check.
+        """Get the items linking to an UID, from an index built once per scope.
 
         :param uid: UID of the parent item
 
-        :return: list of (document, item) in tree order, or None outside a check
+        :return: list of (document, item) in tree order, or None outside a scope
 
         """
-        if not self._child_index_active:
+        if not self._child_index_depth:
             return None
         if self._child_index is None:
             self._child_index = {}
@@ -539,8 +551,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                         self._child_index.setdefault(key, []).append((document, item))
         return self._child_index.get(_uid_key(uid), [])
 
-    def get_traceability(self):
+    def get_traceability(self, full=False):
         """Return sorted rows of traceability slices.
+
+        :param full: include links that skip or cross the document tree
 
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
 
@@ -560,16 +574,50 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         for index, document in enumerate(self.documents):
             mapping[document.prefix] = index
 
-        # Collect all rows
-        rows = set()
-        for index, document in enumerate(self.documents):
-            for item in document:
-                if item.active:
-                    for row in self._iter_rows(item, mapping):
-                        rows.add(row)
+        # Collect all rows, looking up child links in an index
+        with self.indexed_child_lookup():
+            if full:
+                return sorted(set(self._iter_full_rows(mapping)), key=by_uid)
+            rows = set()
+            for index, document in enumerate(self.documents):
+                for item in document:
+                    if item.active:
+                        for row in self._iter_rows(item, mapping):
+                            rows.add(row)
 
         # Sort rows
         return sorted(rows, key=by_uid)
+
+    def _iter_full_rows(self, mapping):
+        """Generate a row for every maximal path of links between items.
+
+        Items are vertices and links are edges. A path visits each document at
+        most once, so it fits one row, and it is maximal when no linked item can
+        be added at either end without revisiting a document.
+
+        :param mapping: `dict` of document prefix to slice index
+
+        """
+        vertices = [i for d in self for i in d if i.active and i.normative]
+
+        def extend(path, used):
+            items = [
+                i
+                for _, i in self._find_linking_items(path[-1].uid)
+                if i.active and i.normative and i.document.prefix not in used
+            ]
+            for item in items:
+                yield from extend(path + [item], used | {item.document.prefix})
+            # `UnknownItem` (missing or inactive) is not normative
+            parents = (i for i in path[0].parent_items if i.normative)
+            if not items and all(i.document.prefix in used for i in parents):
+                row = [None] * len(mapping)
+                for item in path:
+                    row[mapping[item.document.prefix]] = item
+                yield tuple(row)
+
+        for item in vertices:
+            yield from extend([item], {item.document.prefix})
 
     def _get_prefix_of_children(self, document):
         """Return the prefixes of the children of this document."""

@@ -365,7 +365,7 @@ class MarkdownPublisher(BasePublisher):
 
             # Child links
             if settings.PUBLISH_CHILD_LINKS:
-                items2 = item.find_child_items()
+                items2 = item.find_child_items(full=settings.PUBLISH_FULL_TRACEABILITY)
                 if items2:
                     yield ""  # break before links
                     label = "Child links:"

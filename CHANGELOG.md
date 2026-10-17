@@ -1,11 +1,13 @@
 # Unreleased
 
+- Added `doorstop publish --full-traceability`: the traceability matrix and the child links also show links that skip a level, cross to another branch or point down the document tree. Without the option, the output is unchanged.
 - Fixed importing over existing items: items stored in subfolders of a document now stay in their folder instead of being moved to the document root.
 - Fixed publishing with templates: several documents may now have a `template` folder, only the folder providing the requested template is copied, and a single document can use a template from another document in its tree.
 - Improved speed on large trees: files saved while validating or renumbering a document (`doorstop reorder`, `doorstop add --level`) are staged with a few batched `git add` calls instead of one per item, unchanged files are no longer rewritten, and child-link checks no longer scan every item. The export, import and publish modules (and `openpyxl`) are now loaded on first use, which speeds up every command; `doorstop.exporter`, `doorstop.importer` and `doorstop.publisher` remain available. A change plus validation on 500 items went from about 23 s to about 2 s on Windows. Saved and staged files are unchanged.
-- Improved speed on large trees: A change plus validation on 500 items went from about 23 s to about 2 s on Windows.
+- Improved speed on large trees: a change plus validation on 500 items went from about 23 s to about 2 s on Windows, per-document validation (`Document.get_issues()`) of 6,000 items is about 20x faster, and publishing 500 items is about 2x faster.
   - files saved while validating or renumbering a document (`doorstop reorder`, `doorstop add --level`) are staged with a few batched `git add` calls instead of one per item, unchanged files are no longer rewritten
-  - child-link checks no longer scan every item.
+  - child links are looked up in an index instead of scanning the tree for every item, in whole-tree and per-document validation, in publishing and in the traceability matrix
+  - scripts can use the same index for their own batches with the new `Tree.indexed_child_lookup()`
 
 # 3.2 (2026-07-09)
 
