@@ -5,7 +5,6 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
