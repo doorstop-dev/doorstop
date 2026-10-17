@@ -654,11 +654,29 @@ class TestChildLinkIndex(unittest.TestCase):
 def _cross_linked_tree(test):
     """Build a tree whose links skip, cross, reverse and loop around the document tree.
 
-    REQ has the child documents SW and HW, and TST is below SW. Links:
-    SW001 -> REQ001 and TST001 -> SW001 follow the tree, TST002 -> REQ001 skips
-    SW, SW002 -> HW001 crosses branches, REQ002 -> SW001 goes back up into REQ,
-    HW001 -> SW002 closes a cycle, REQ003 -> REQ001 stays in one document and
-    SW003 links to an unknown item.
+    Documents:
+
+        REQ
+         +-- SW
+         |    +-- TST
+         +-- HW
+
+    Items and links (A ---> B means A links to B):
+
+        REQ    || REQ003 ---> REQ001    REQ002
+               ||             ^   ^       |
+               ||             |   |       |
+        SW, HW ||             | SW001 <---+   SW002 <--> HW001   SW003 ---> HW009
+               ||             |     ^
+               ||             |     |
+        TST    ||         TST002  TST001
+
+    - SW001 -> REQ001, TST001 -> SW001: follow the tree
+    - TST002 -> REQ001: skips SW
+    - REQ002 -> SW001: goes back up into REQ
+    - SW002 <-> HW001: crosses branches and closes a cycle
+    - REQ003 -> REQ001: stays in one document
+    - SW003 -> HW009: links to an unknown item
     """
     temp = tempfile.mkdtemp()
     test.addCleanup(shutil.rmtree, temp, onerror=on_error_with_retry)
