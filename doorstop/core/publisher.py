@@ -2,6 +2,7 @@
 
 """Functions to publish documents and items."""
 
+import contextlib
 import os
 
 from doorstop import common, settings
@@ -10,6 +11,7 @@ from doorstop.core.publishers.html import HtmlPublisher
 from doorstop.core.publishers.latex import LaTeXPublisher
 from doorstop.core.publishers.markdown import MarkdownPublisher
 from doorstop.core.publishers.text import TextPublisher
+from doorstop.core.tree import Tree
 from doorstop.core.types import is_tree, iter_documents
 
 log = common.logger(__name__)
@@ -118,7 +120,14 @@ def publish_lines(obj, ext=".txt", publisher=None, **kwargs):
         publisher = check(ext, obj=obj)
     gen = publisher.get_line_generator()
     log.debug("yielding {} as lines of {}...".format(obj, ext))
-    yield from gen(obj, **kwargs)
+    # Look up child links in the tree's index while publishing every item
+    tree = getattr(obj, "tree", None)
+    with (
+        tree.indexed_child_lookup()
+        if isinstance(tree, Tree)
+        else contextlib.nullcontext()
+    ):
+        yield from gen(obj, **kwargs)
 
 
 def check(ext, obj=None):

@@ -626,11 +626,11 @@ class TestChildLinkIndex(unittest.TestCase):
     def test_same_children(self):
         """Verify the index finds the same children as the linear scan."""
         tree = _fixture_tree(self)
-        tree._child_index_active = True  # pylint: disable=W0212
         for find_all in (True, False):
             with patch.object(Tree, "_find_linking_items", return_value=None):
                 linear = self._children(tree, find_all)
-            self.assertEqual(linear, self._children(tree, find_all))
+            with tree.indexed_child_lookup():
+                self.assertEqual(linear, self._children(tree, find_all))
         # document order follows os.walk, which differs between file systems
         for uid, child in (("REQ003", "LLT001"), ("REQ004", "LLT002")):
             items, documents = linear[uid]
@@ -706,6 +706,16 @@ def _cross_linked_tree(test):
         for child, parent in links.items():
             tree.find_item(child).link(parent)
     return tree
+
+
+FULL_REQ_MARKDOWN = (
+    "# 1.0 REQ001 {#REQ001}\n\n"
+    "*Child links: SW001, TST002, REQ003*\n\n"
+    "## 1.1 REQ002 {#REQ002}\n\n"
+    "*Parent links: SW001*\n\n"
+    "## 1.2 REQ003 {#REQ003}\n\n"
+    "*Parent links: REQ001*\n"
+)
 
 
 def _uids(rows):
@@ -790,15 +800,28 @@ class TestFullTraceability(unittest.TestCase):
     def test_publish_full_child_links(self):
         """Verify published documents list child links from every document."""
         lines = publisher.publish_lines(self.tree.find_document("REQ"), ".md")
-        expected = (
-            "# 1.0 REQ001 {#REQ001}\n\n"
-            "*Child links: SW001, TST002, REQ003*\n\n"
-            "## 1.1 REQ002 {#REQ002}\n\n"
-            "*Parent links: SW001*\n\n"
-            "## 1.2 REQ003 {#REQ003}\n\n"
-            "*Parent links: REQ001*\n"
-        )
-        self.assertEqual(expected, "\n".join(lines))
+        self.assertEqual(FULL_REQ_MARKDOWN, "\n".join(lines))
+
+    @patch("doorstop.settings.PUBLISH_FULL_TRACEABILITY", True)
+    def test_publish_uses_index(self):
+        """Verify publishing a document looks up child links in the index."""
+        calls = _spy_child_index(self)
+        lines = publisher.publish_lines(self.tree.find_document("REQ"), ".md")
+        self.assertEqual(FULL_REQ_MARKDOWN, "\n".join(lines))
+        self.assertTrue(calls)
+        self.assertNotIn(None, [result for result, _ in calls])
+
+    def test_matrix_uses_index(self):
+        """Verify both matrices look up child links in the index."""
+        calls = _spy_child_index(self)
+        self.tree.get_traceability(full=True)
+        self.assertTrue(calls)
+        del calls[:]
+        with patch("doorstop.settings.ADDREMOVE_FILES", False):
+            self.tree.find_item("HW001").unlink("SW002")  # no parent cycle
+        self.tree.get_traceability()
+        self.assertTrue(calls)
+        self.assertNotIn(None, [result for result, _ in calls])
 
 
 class TestFullTraceabilityRepository(unittest.TestCase):
@@ -810,6 +833,88 @@ class TestFullTraceabilityRepository(unittest.TestCase):
         rows = tree.get_traceability()
         self.assertEqual(rows, tree.get_traceability(full=True))
         self.assertGreater(len(rows), 30)
+
+
+def _spy_child_index(test):
+    """Record (result, index) of every child-link index lookup until the test ends."""
+    calls = []
+    original = Tree._find_linking_items  # pylint: disable=W0212
+
+    def spy(self, uid):
+        result = original(self, uid)
+        calls.append((result, self._child_index))  # pylint: disable=W0212
+        return result
+
+    patcher = patch.object(Tree, "_find_linking_items", spy)
+    patcher.start()
+    test.addCleanup(patcher.stop)
+    return calls
+
+
+class TestIndexedChildLookup(unittest.TestCase):
+    """Unit tests for the scope that turns on the child-link index."""
+
+    # pylint: disable=protected-access
+
+    def setUp(self):
+        self.tree = _cross_linked_tree(self)
+        self.uid = UID("REQ001")
+
+    def test_off_outside_scope(self):
+        """Verify lookups outside a scope do not use an index."""
+        self.assertIsNone(self.tree._find_linking_items(self.uid))
+        self.assertIsNone(self.tree._child_index)
+
+    def test_nested_scopes_share_one_index(self):
+        """Verify an inner scope keeps the index and only the outermost drops it."""
+        with self.tree.indexed_child_lookup():
+            with self.tree.indexed_child_lookup():
+                self.tree._find_linking_items(self.uid)
+                index = self.tree._child_index
+            self.assertIsNotNone(index)
+            self.tree._find_linking_items(self.uid)
+            self.assertIs(index, self.tree._child_index)
+        self.assertIsNone(self.tree._child_index)
+        self.assertIsNone(self.tree._find_linking_items(self.uid))
+
+    def test_error_drops_index(self):
+        """Verify the index is dropped when a scope ends with an error."""
+        with self.assertRaises(ValueError):
+            with self.tree.indexed_child_lookup():
+                self.tree._find_linking_items(self.uid)
+                raise ValueError
+        self.assertIsNone(self.tree._child_index)
+        self.assertIsNone(self.tree._find_linking_items(self.uid))
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    @patch("doorstop.settings.REFORMAT", True)
+    def test_validation_builds_index_once(self):
+        """Verify a check with reformatting builds the index only once."""
+        tree = _fixture_tree(self, edge_cases=False)
+        calls = _spy_child_index(self)
+        tree.validate()
+        self.assertGreater(len(calls), 30)
+        builds = {id(index) for _, index in calls if index is not None}
+        self.assertEqual(1, len(builds))
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    def test_document_issues_use_index(self):
+        """Verify checking each document uses the index and finds the same issues."""
+
+        def issues(tree):
+            return [
+                str(issue).replace(tree.root, "<root>")
+                for document in tree
+                for issue in document.get_issues()
+            ]
+
+        with patch.object(Tree, "_find_linking_items", return_value=None):
+            linear = issues(_fixture_tree(self))
+        tree = _fixture_tree(self)
+        calls = _spy_child_index(self)
+        self.assertEqual(linear, issues(tree))
+        self.assertGreater(len(calls), 30)
+        self.assertNotIn(None, [result for result, _ in calls])
 
 
 class TestUidKey(unittest.TestCase):
