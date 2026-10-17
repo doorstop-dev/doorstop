@@ -166,7 +166,9 @@ class LaTeXPublisher(BasePublisher):
 
                 # Child links
                 if settings.PUBLISH_CHILD_LINKS:
-                    items2 = item.find_child_items()
+                    items2 = item.find_child_items(
+                        full=settings.PUBLISH_FULL_TRACEABILITY
+                    )
                     if items2:
                         yield ""  # break before links
                         label = "Child links:"
@@ -532,7 +534,9 @@ class LaTeXPublisher(BasePublisher):
     def create_matrix(self, directory):
         """Create a traceability table for LaTeX."""
         # Setup.
-        table = self.object.get_traceability().__iter__()
+        table = self.object.get_traceability(
+            full=settings.PUBLISH_FULL_TRACEABILITY
+        ).__iter__()
         traceability = []
         file = os.path.join(directory, "traceability.tex")
         count = 0

@@ -17,6 +17,7 @@ import pytest
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import (
@@ -492,11 +493,11 @@ class TestTree(unittest.TestCase):
         self.tree.delete()  # ensure a second delete is ignored
 
 
-def _fixture_tree(test):
+def _fixture_tree(test, edge_cases=True):
     """Build copies of the repository's own trees in a temp folder, with a mock VCS.
 
-    LLT001 links to its parent in lower case and LLT002 is inactive, so both
-    edge cases of the child-link check are covered.
+    With `edge_cases`, LLT001 links to its parent in lower case and LLT002 is
+    inactive, so both edge cases of the child-link check are covered.
     """
     temp = tempfile.mkdtemp()
     test.addCleanup(shutil.rmtree, temp, onerror=on_error_with_retry)
@@ -506,12 +507,13 @@ def _fixture_tree(test):
         os.path.join(ROOT, "doorstop", "cli", "tests", "docs"),
         os.path.join(temp, "hlt"),
     )
-    path = os.path.join(temp, "llt", "LLT001.yml")
-    common.write_text(common.read_text(path).replace("- REQ003:", "- req003:"), path)
-    path = os.path.join(temp, "llt", "LLT002.yml")
-    common.write_text(
-        common.read_text(path).replace("active: true", "active: false"), path
-    )
+    if edge_cases:
+        path = os.path.join(temp, "llt", "LLT001.yml")
+        text = common.read_text(path).replace("- REQ003:", "- req003:")
+        common.write_text(text, path)
+        path = os.path.join(temp, "llt", "LLT002.yml")
+        text = common.read_text(path).replace("active: true", "active: false")
+        common.write_text(text, path)
     with patch("doorstop.settings.ADDREMOVE_FILES", False):
         tree = build(cwd=temp, root=temp)
     tree._vcs = MockWorkingCopy(temp)  # pylint: disable=W0212
@@ -647,6 +649,167 @@ class TestChildLinkIndex(unittest.TestCase):
         with patch.object(Tree, "_find_linking_items", return_value=None):
             linear = issues(_fixture_tree(self))
         self.assertEqual(linear, indexed)
+
+
+def _cross_linked_tree(test):
+    """Build a tree whose links skip, cross, reverse and loop around the document tree.
+
+    Documents:
+
+        REQ
+         +-- SW
+         |    +-- TST
+         +-- HW
+
+    Items and links (A ---> B means A links to B):
+
+        REQ    || REQ003 ---> REQ001    REQ002
+               ||             ^   ^       |
+               ||             |   |       |
+        SW, HW ||             | SW001 <---+   SW002 <--> HW001   SW003 ---> HW009
+               ||             |     ^
+               ||             |     |
+        TST    ||         TST002  TST001
+
+    - SW001 -> REQ001, TST001 -> SW001: follow the tree
+    - TST002 -> REQ001: skips SW
+    - REQ002 -> SW001: goes back up into REQ
+    - SW002 <-> HW001: crosses branches and closes a cycle
+    - REQ003 -> REQ001: stays in one document
+    - SW003 -> HW009: links to an unknown item
+    """
+    temp = tempfile.mkdtemp()
+    test.addCleanup(shutil.rmtree, temp, onerror=on_error_with_retry)
+    links = {
+        "SW001": "REQ001",
+        "TST001": "SW001",
+        "TST002": "REQ001",
+        "SW002": "HW001",
+        "REQ002": "SW001",
+        "HW001": "SW002",
+        "REQ003": "REQ001",
+        "SW003": "HW009",
+    }
+    with patch("doorstop.settings.ADDREMOVE_FILES", False):
+        tree = build(cwd=temp, root=temp)
+        tree._vcs = MockWorkingCopy(temp)  # pylint: disable=W0212
+        for prefix, parent, count in (
+            ("REQ", None, 3),
+            ("SW", "REQ", 3),
+            ("HW", "REQ", 1),
+            ("TST", "SW", 2),
+        ):
+            path = os.path.join(temp, prefix.lower())
+            document = tree.create_document(path, prefix, parent=parent)
+            for _ in range(count):
+                document.add_item()
+        for child, parent in links.items():
+            tree.find_item(child).link(parent)
+    return tree
+
+
+def _uids(rows):
+    """Return traceability rows as UID strings, with "" for empty cells."""
+    return [[str(item.uid) if item else "" for item in row] for row in rows]
+
+
+class TestFullTraceability(unittest.TestCase):
+    """Unit tests for the full traceability matrix and child links."""
+
+    def setUp(self):
+        self.tree = _cross_linked_tree(self)
+
+    def test_full_rows(self):
+        """Verify every maximal path that visits each document once is a row."""
+        rows = [
+            ["REQ001", "SW001", "TST001", ""],
+            ["REQ001", "", "TST002", ""],
+            ["REQ002", "SW001", "", ""],
+            ["REQ003", "", "", ""],
+            ["", "SW002", "", "HW001"],
+            ["", "SW003", "", ""],
+        ]
+        prefixes = [str(document.prefix) for document in self.tree.documents]
+        self.assertEqual(["REQ", "SW", "TST", "HW"], prefixes)
+        self.assertEqual(rows, _uids(self.tree.get_traceability(full=True)))
+
+    def test_standard_rows_unchanged(self):
+        """Verify the standard rows still only follow the document tree."""
+        with patch("doorstop.settings.ADDREMOVE_FILES", False):
+            # standard rows recurse forever on a cycle of parent links
+            self.tree.find_item("HW001").unlink("SW002")
+        rows = [
+            ["REQ001", "SW001", "TST001", ""],
+            ["", "", "", "HW001"],
+        ]
+        self.assertEqual(rows, _uids(self.tree.get_traceability()))
+
+    def test_full_child_links(self):
+        """Verify full child links come from every document, sorted by level."""
+        children = {
+            "REQ001": ["SW001", "TST002", "REQ003"],
+            "REQ002": [],
+            "REQ003": [],
+            "SW001": ["TST001", "REQ002"],
+            "SW002": ["HW001"],
+            "SW003": [],
+            "TST001": [],
+            "TST002": [],
+            "HW001": ["SW002"],
+        }
+        found = {
+            str(item.uid): [str(uid) for uid in item.find_child_links(full=True)]
+            for document in self.tree
+            for item in document
+        }
+        self.assertEqual(children, found)
+        # the child documents do not change
+        item = self.tree.find_item("REQ001")
+        _, documents = item.find_child_items_and_documents(full=True)
+        self.assertEqual(["SW", "HW"], [str(d.prefix) for d in documents])
+
+    @patch("doorstop.settings.PUBLISH_FULL_TRACEABILITY", True)
+    def test_publish_full_matrix(self):
+        """Verify the published matrix holds the full rows."""
+        temp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp, onerror=on_error_with_retry)
+        publisher.publish(self.tree, temp, ".html")
+        text = common.read_text(os.path.join(temp, "traceability.csv"))
+        expected = (
+            "REQ,SW,TST,HW\n"
+            "REQ001,SW001,TST001,\n"
+            "REQ001,,TST002,\n"
+            "REQ002,SW001,,\n"
+            "REQ003,,,\n"
+            ",SW002,,HW001\n"
+            ",SW003,,\n"
+        )
+        self.assertEqual(expected, text)
+
+    @patch("doorstop.settings.PUBLISH_FULL_TRACEABILITY", True)
+    def test_publish_full_child_links(self):
+        """Verify published documents list child links from every document."""
+        lines = publisher.publish_lines(self.tree.find_document("REQ"), ".md")
+        expected = (
+            "# 1.0 REQ001 {#REQ001}\n\n"
+            "*Child links: SW001, TST002, REQ003*\n\n"
+            "## 1.1 REQ002 {#REQ002}\n\n"
+            "*Parent links: SW001*\n\n"
+            "## 1.2 REQ003 {#REQ003}\n\n"
+            "*Parent links: REQ001*\n"
+        )
+        self.assertEqual(expected, "\n".join(lines))
+
+
+class TestFullTraceabilityRepository(unittest.TestCase):
+    """Unit tests for the full traceability matrix on the repository's trees."""
+
+    def test_full_equals_standard(self):
+        """Verify full rows equal standard rows when all links follow the tree."""
+        tree = _fixture_tree(self, edge_cases=False)
+        rows = tree.get_traceability()
+        self.assertEqual(rows, tree.get_traceability(full=True))
+        self.assertGreater(len(rows), 30)
 
 
 class TestUidKey(unittest.TestCase):
