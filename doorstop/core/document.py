@@ -611,7 +611,8 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Every item gets its level assigned and is saved, so stage them together
         batch = (
             self.tree.vcs.batch_edits()
-            if settings.ADDREMOVE_FILES and self.tree else nullcontext()
+            if settings.ADDREMOVE_FILES and self.tree
+            else nullcontext()
         )
         with batch:
             # Reorder manually
@@ -945,7 +946,6 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         # Check each item, looking up child links in the tree's index
         with self.tree.indexed_child_lookup() if self.tree else nullcontext():
             for item in items:
-                # Check item
                 for issue in chain(
                     hook(item=item, document=self, tree=self.tree),
                     item_validator.get_issues(item, skip=skip),
