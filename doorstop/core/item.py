@@ -777,29 +777,31 @@ class Item(BaseFileObject):  # pylint: disable=R0902
             references.append(reference)
         return references
 
-    def find_child_links(self, find_all=True):
+    def find_child_links(self, find_all=True, full=False):
         """Get a list of item UIDs that link to this item (reverse links).
 
         :param find_all: find all items (not just the first) before returning
+        :param full: find items in every document, not only in child documents
 
         :return: list of found item UIDs
 
         """
-        items, _ = self.find_child_items_and_documents(find_all=find_all)
+        items, _ = self.find_child_items_and_documents(find_all=find_all, full=full)
         identifiers = [item.uid for item in items]
         return identifiers
 
     child_links = property(find_child_links)
 
-    def find_child_items(self, find_all=True):
+    def find_child_items(self, find_all=True, full=False):
         """Get a list of items that link to this item.
 
         :param find_all: find all items (not just the first) before returning
+        :param full: find items in every document, not only in child documents
 
         :return: list of found items
 
         """
-        items, _ = self.find_child_items_and_documents(find_all=find_all)
+        items, _ = self.find_child_items_and_documents(find_all=find_all, full=full)
         return items
 
     child_items = property(find_child_items)
@@ -815,12 +817,15 @@ class Item(BaseFileObject):  # pylint: disable=R0902
 
     child_documents = property(find_child_documents)
 
-    def find_child_items_and_documents(self, document=None, tree=None, find_all=True):
+    def find_child_items_and_documents(
+        self, document=None, tree=None, find_all=True, full=False
+    ):
         """Get lists of child items and child documents.
 
         :param document: document containing the current item
         :param tree: tree containing the current item
         :param find_all: find all items (not just the first) before returning
+        :param full: find items in every document, not only in child documents
 
         :return: list of found items, list of all child documents
 
@@ -837,6 +842,7 @@ class Item(BaseFileObject):  # pylint: disable=R0902
         for document2 in tree:
             if document2.parent == document.prefix:
                 child_documents.append(document2)
+            if document2.parent == document.prefix or full:
                 # Search for child items unless we only need to find one
                 if not child_items or find_all:
                     if linking is None:

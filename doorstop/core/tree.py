@@ -539,8 +539,10 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
                         self._child_index.setdefault(key, []).append((document, item))
         return self._child_index.get(_uid_key(uid), [])
 
-    def get_traceability(self):
+    def get_traceability(self, full=False):
         """Return sorted rows of traceability slices.
+
+        :param full: include links that skip or cross the document tree
 
         :return: list of list of :class:`~doorstop.core.item.Item` or `None`
 
@@ -561,6 +563,8 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             mapping[document.prefix] = index
 
         # Collect all rows
+        if full:
+            return sorted(set(self._iter_full_rows(mapping)), key=by_uid)
         rows = set()
         for index, document in enumerate(self.documents):
             for item in document:
@@ -570,6 +574,41 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
 
         # Sort rows
         return sorted(rows, key=by_uid)
+
+    def _iter_full_rows(self, mapping):
+        """Generate a row for every maximal path of links between items.
+
+        Items are vertices and links are edges. A path visits each document at
+        most once, so it fits one row, and it is maximal when no linked item can
+        be added at either end without revisiting a document.
+
+        :param mapping: `dict` of document prefix to slice index
+
+        """
+        vertices = [i for d in self for i in d if i.active and i.normative]
+        children: Dict[tuple, List[Item]] = {}
+        for item in vertices:
+            for key in {_uid_key(link) for link in item.links}:
+                children.setdefault(key, []).append(item)
+
+        def extend(path, used):
+            items = [
+                i
+                for i in children.get(_uid_key(path[-1].uid), [])
+                if i.document.prefix not in used
+            ]
+            for item in items:
+                yield from extend(path + [item], used | {item.document.prefix})
+            # `UnknownItem` (missing or inactive) is not normative
+            parents = (i for i in path[0].parent_items if i.normative)
+            if not items and all(i.document.prefix in used for i in parents):
+                row = [None] * len(mapping)
+                for item in path:
+                    row[mapping[item.document.prefix]] = item
+                yield tuple(row)
+
+        for item in vertices:
+            yield from extend([item], {item.document.prefix})
 
     def _get_prefix_of_children(self, document):
         """Return the prefixes of the children of this document."""

@@ -187,8 +187,8 @@ class MockDataMixIn:  # pylint: disable=R0903
     _mock_item2.uid = "tst1"
     _mock_item2.document.prefix = "tst"
     # pylint: disable=undefined-variable
-    item2.find_child_links = lambda: [MockDataMixIn._mock_item2.uid]  # type: ignore
-    item2.find_child_items = lambda: [MockDataMixIn._mock_item2]  # type: ignore
+    item2.find_child_links = lambda **_: [MockDataMixIn._mock_item2.uid]  # type: ignore
+    item2.find_child_items = lambda **_: [MockDataMixIn._mock_item2]  # type: ignore
 
     document = MagicMock(spec=["items"])
     document.items = [

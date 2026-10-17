@@ -68,6 +68,13 @@ class TestConfigureSettings(SettingsTestCase):
         # TODO: Enable this when future warnings are added
         # self.assertIn("foobar", str(warnings[-1].message))
 
+    def test_configure_full_traceability(self):
+        """Verify the full traceability flag sets the publish setting."""
+        utilities.configure_settings(Mock(full_traceability=True))
+        self.assertTrue(settings.PUBLISH_FULL_TRACEABILITY)
+        utilities.configure_settings(Mock(full_traceability=False))
+        self.assertFalse(settings.PUBLISH_FULL_TRACEABILITY)
+
 
 class TestLiteralEval(unittest.TestCase):
     """Unit tests for the `literal_eval` function."""

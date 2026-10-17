@@ -105,7 +105,9 @@ class TextPublisher(BasePublisher):
                     slinks = label + ", ".join(str(l) for l in item.links)
                     yield from self._chunks(slinks)
                 if settings.PUBLISH_CHILD_LINKS:
-                    links = item.find_child_links()
+                    links = item.find_child_links(
+                        full=settings.PUBLISH_FULL_TRACEABILITY
+                    )
                     if links:
                         yield ""  # break before links
                         slinks = "Child links: " + ", ".join(str(l) for l in links)
