@@ -1,6 +1,7 @@
 # Unreleased
 
 - Fixed structured `attributes.publish` entries crashing plain text and LaTeX publishing: `TextPublisher` and `LaTeXPublisher` now parse mapping entries like `MarkdownPublisher` instead of passing the raw dict to `Item.attribute()`.
+- Added `doorstop publish --full-traceability`: the traceability matrix and the child links also show links that skip a level, cross to another branch or point down the document tree. Without the option, the output is unchanged.
 - Fixed importing over existing items: items stored in subfolders of a document now stay in their folder instead of being moved to the document root.
 - Fixed publishing with templates: several documents may now have a `template` folder, only the folder providing the requested template is copied, and a single document can use a template from another document in its tree.
 - Improved speed on large trees: reworked O(n^2) child search by usage of index. Becomes significant at ~500 items.

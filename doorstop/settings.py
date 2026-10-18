@@ -47,6 +47,7 @@ STAMP_NEW_LINKS = True  # automatically stamp links upon creation
 
 # Publishing settings
 PUBLISH_CHILD_LINKS = True  # include child links when publishing
+PUBLISH_FULL_TRACEABILITY = False  # include links that skip or cross the document tree
 PUBLISH_BODY_LEVELS = True  # include levels on non-header items
 PUBLISH_HEADING_LEVELS = True  # include levels on header items
 ENABLE_HEADERS = True  # use headers if defined

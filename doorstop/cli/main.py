@@ -533,6 +533,11 @@ def _publish(subs, shared):
         help="do not include child links on items",
     )
     sub.add_argument(
+        "--full-traceability",
+        action="store_true",
+        help="include links that skip or cross the document tree",
+    )
+    sub.add_argument(
         "--no-levels",
         choices=["all", "body"],
         help="do not include levels on heading and non-heading or non-heading items",
