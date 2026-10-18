@@ -2,8 +2,8 @@
 
 """Functions to publish documents and items."""
 
-import contextlib
 import os
+from contextlib import nullcontext
 
 from doorstop import common, settings
 from doorstop.common import DoorstopError
@@ -122,11 +122,7 @@ def publish_lines(obj, ext=".txt", publisher=None, **kwargs):
     log.debug("yielding {} as lines of {}...".format(obj, ext))
     # Look up child links in the tree's index while publishing every item
     tree = getattr(obj, "tree", None)
-    with (
-        tree.indexed_child_lookup()
-        if isinstance(tree, Tree)
-        else contextlib.nullcontext()
-    ):
+    with tree.indexed_child_lookup() if isinstance(tree, Tree) else nullcontext():
         yield from gen(obj, **kwargs)
 
 
