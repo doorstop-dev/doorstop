@@ -1,0 +1,11 @@
+active: true
+derived: false
+header: |
+  Boot time
+level: 1.1
+links: []
+normative: true
+ref: ''
+reviewed: null
+text: |
+  The system **shall** complete startup within 5 seconds of power-on.

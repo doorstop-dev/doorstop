@@ -1,0 +1,12 @@
+# This marker tells `doorstop` not to descend into the `skills/doorstop/assets/`
+# subtree when building its document tree. The example requirements tree under
+# `example_reqs/` is a teaching fixture — it is a real Doorstop tree, but it is
+# not part of the Doorstop project's own requirements. Without this marker, a
+# plain `doorstop` run at the Doorstop repo root would try to merge
+# `example_reqs/` into the project tree and fail with "multiple root documents".
+#
+# Users copying `example_reqs/` into their own repo should copy the contents of
+# that directory only (e.g. `cp -r example_reqs/. /path/to/new/repo`); this
+# marker stays behind, so the copied tree is discovered normally.
+#
+# See `doorstop/core/builder.py` for the scan-prune logic.

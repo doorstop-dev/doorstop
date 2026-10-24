@@ -1,0 +1,13 @@
+active: true
+derived: false
+header: |
+  Boot-time smoke test
+level: 1.0
+links:
+- REQ002: null
+normative: true
+ref: ''
+reviewed: null
+text: |
+  Power-cycle the unit and measure elapsed time from power-on to the
+  "ready" signal. The measured value must be ≤ 5 seconds.
