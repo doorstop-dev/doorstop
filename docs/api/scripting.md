@@ -108,3 +108,17 @@ def item_validator(item):
 
 Although it is not required, it is recommended to yield a Doorstop type such as,
 `DoorstopInfo`, `DoorstopError`, or `DoorstopWarning`.
+
+## Batches of reads
+
+Finding reverse (child) links is expensive, the tree gets scaned. When a script asks for many items' child links, wrap it in `tree.indexed_child_lookup()`: the tree is scanned once and every lookup inside reads an index.
+
+```python
+with tree.indexed_child_lookup(): #open scope
+    for document in tree:
+        issues = list(document.get_issues()) # use the index
+```
+
+- The index is a snapshot taken at the first lookup. Links changed inside the scope (`link`, `unlink`, deleting items, `load(reload=True)`, files edited on disk) are seen after the scope ends. To see them sooner, end the scope and open a new one.
+- Validation hooks run inside such a scope, so they should not rely on child links after changing links in the same run.
+- Not thread-safe: use one tree per thread.

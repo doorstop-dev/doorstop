@@ -17,6 +17,7 @@ import pytest
 
 from doorstop import common
 from doorstop.common import DoorstopError, DoorstopInfo, DoorstopWarning
+from doorstop.core import publisher
 from doorstop.core.builder import build
 from doorstop.core.document import Document
 from doorstop.core.tests import (
@@ -624,11 +625,11 @@ class TestChildLinkIndex(unittest.TestCase):
     def test_same_children(self):
         """Verify the index finds the same children as the linear scan."""
         tree = _fixture_tree(self)
-        tree._child_index_active = True  # pylint: disable=W0212
         for find_all in (True, False):
             with patch.object(Tree, "_find_linking_items", return_value=None):
                 linear = self._children(tree, find_all)
-            self.assertEqual(linear, self._children(tree, find_all))
+            with tree.indexed_child_lookup():
+                self.assertEqual(linear, self._children(tree, find_all))
         # document order follows os.walk, which differs between file systems
         for uid, child in (("REQ003", "LLT001"), ("REQ004", "LLT002")):
             items, documents = linear[uid]
@@ -647,6 +648,54 @@ class TestChildLinkIndex(unittest.TestCase):
         with patch.object(Tree, "_find_linking_items", return_value=None):
             linear = issues(_fixture_tree(self))
         self.assertEqual(linear, indexed)
+
+
+class TestIndexedChildLookup(unittest.TestCase):
+    """Unit tests for the scope that turns on the child-link index."""
+
+    # pylint: disable=protected-access
+
+    def test_nested_scopes_drop_index_on_exit(self):
+        """Verify nested scopes share one index, dropped when the outermost ends."""
+        tree = _fixture_tree(self)
+        uid = UID("REQ003")
+        with self.assertRaises(ValueError), tree.indexed_child_lookup():
+            with tree.indexed_child_lookup():
+                tree._find_linking_items(uid)
+                index = tree._child_index
+            tree._find_linking_items(uid)
+            self.assertTrue(index)
+            self.assertIs(index, tree._child_index)
+            raise ValueError
+        self.assertIsNone(tree._child_index)
+        self.assertIsNone(tree._find_linking_items(uid))
+
+    @patch("doorstop.settings.ADDREMOVE_FILES", False)
+    @patch("doorstop.settings.REFORMAT", True)
+    def test_batch_reads_use_one_index(self):
+        """Verify each batch read looks up all child links in one index."""
+        tree = _fixture_tree(self)
+        document = tree.find_document("REQ")
+        indexes = []
+        original = Tree._find_linking_items
+
+        def spy(self, uid):
+            result = original(self, uid)
+            indexes.append(self._child_index)
+            return result
+
+        for name, read in (
+            ("validate", tree.validate),
+            ("document", lambda: list(document.get_issues())),
+            ("publish", lambda: list(publisher.publish_lines(document, ".md"))),
+            ("matrix", tree.get_traceability),
+        ):
+            with self.subTest(name), patch.object(Tree, "_find_linking_items", spy):
+                indexes.clear()
+                read()
+                self.assertTrue(indexes)
+                self.assertNotIn(None, indexes)
+                self.assertEqual(1, len({id(index) for index in indexes}))
 
 
 class TestUidKey(unittest.TestCase):

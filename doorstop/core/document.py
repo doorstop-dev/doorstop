@@ -2,10 +2,10 @@
 
 """Representation of a collection of items."""
 
-import contextlib
 import os
 import re
 from collections import OrderedDict
+from contextlib import nullcontext
 from itertools import chain
 from typing import Any, Dict, List, Optional
 
@@ -612,7 +612,7 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
         batch = (
             self.tree.vcs.batch_edits()
             if settings.ADDREMOVE_FILES and self.tree
-            else contextlib.nullcontext()
+            else nullcontext()
         )
         with batch:
             # Reorder manually
@@ -943,17 +943,17 @@ class Document(BaseValidatable, BaseFileObject):  # pylint: disable=R0902
 
         item_validator = ItemValidator()
 
-        # Check each item
-        for item in items:
-            # Check item
-            for issue in chain(
-                hook(item=item, document=self, tree=self.tree),
-                item_validator.get_issues(item, skip=skip),
-                extension_validator(item=item),
-            ):
-                # Prepend the item's UID to yielded exceptions
-                if isinstance(issue, Exception):
-                    yield type(issue)("{}: {}".format(item.uid, issue))
+        # Check each item, looking up child links in the tree's index
+        with self.tree.indexed_child_lookup() if self.tree else nullcontext():
+            for item in items:
+                for issue in chain(
+                    hook(item=item, document=self, tree=self.tree),
+                    item_validator.get_issues(item, skip=skip),
+                    extension_validator(item=item),
+                ):
+                    # Prepend the item's UID to yielded exceptions
+                    if isinstance(issue, Exception):
+                        yield type(issue)("{}: {}".format(item.uid, issue))
 
     @staticmethod
     def _get_issues_level(items):

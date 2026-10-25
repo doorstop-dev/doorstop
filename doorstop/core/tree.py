@@ -117,7 +117,7 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         self._loaded = False
         self._item_cache: Dict[Union[str, UID], Item] = {}
         self._document_cache: Dict[str, Optional[Document]] = {}
-        self._child_index_active = False  # only while the tree is checked
+        self._child_index_depth = 0  # open `indexed_child_lookup` scopes
         self._child_index: Optional[Dict[tuple, List[tuple]]] = None
 
     def __repr__(self):
@@ -505,31 +505,43 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
             if settings.ADDREMOVE_FILES
             else contextlib.nullcontext()
         )
-        self._child_index_active = True
+        with self.indexed_child_lookup(), batch:
+            # Check each document
+            for document in documents:
+                for issue in chain(
+                    hook(document=document, tree=self),
+                    document.get_issues(skip=skip, item_hook=item_hook),
+                ):
+                    # Prepend the document's prefix to yielded exceptions
+                    if isinstance(issue, Exception):
+                        yield type(issue)("{}: {}".format(document.prefix, issue))
+
+    @contextlib.contextmanager
+    def indexed_child_lookup(self):
+        """Look up child links in an index during a batch of reads.
+
+        The index is a snapshot built on the first lookup and dropped when the
+        outermost scope ends. Scopes can be nested. Changes to links made inside
+        the scope are seen after it ends. Not thread-safe.
+
+        """
+        self._child_index_depth += 1
         try:
-            with batch:
-                # Check each document
-                for document in documents:
-                    for issue in chain(
-                        hook(document=document, tree=self),
-                        document.get_issues(skip=skip, item_hook=item_hook),
-                    ):
-                        # Prepend the document's prefix to yielded exceptions
-                        if isinstance(issue, Exception):
-                            yield type(issue)("{}: {}".format(document.prefix, issue))
+            yield
         finally:
-            self._child_index_active = False
-            self._child_index = None
+            self._child_index_depth -= 1
+            if not self._child_index_depth:
+                self._child_index = None
 
     def _find_linking_items(self, uid):
-        """Get the items linking to an UID, from an index built once per check.
+        """Get the items linking to an UID, from an index built once per scope.
 
         :param uid: UID of the parent item
 
-        :return: list of (document, item) in tree order, or None outside a check
+        :return: list of (document, item) in tree order, or None outside a scope
 
         """
-        if not self._child_index_active:
+        if not self._child_index_depth:
             return None
         if self._child_index is None:
             self._child_index = {}
@@ -560,13 +572,14 @@ class Tree(BaseValidatable):  # pylint: disable=R0902
         for index, document in enumerate(self.documents):
             mapping[document.prefix] = index
 
-        # Collect all rows
-        rows = set()
-        for index, document in enumerate(self.documents):
-            for item in document:
-                if item.active:
-                    for row in self._iter_rows(item, mapping):
-                        rows.add(row)
+        # Collect all rows, looking up child links in an index
+        with self.indexed_child_lookup():
+            rows = set()
+            for index, document in enumerate(self.documents):
+                for item in document:
+                    if item.active:
+                        for row in self._iter_rows(item, mapping):
+                            rows.add(row)
 
         # Sort rows
         return sorted(rows, key=by_uid)
