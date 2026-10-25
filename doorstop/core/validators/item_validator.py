@@ -71,7 +71,11 @@ class ItemValidator:
             item.auto = False
 
         # Check text
-        if not item.text:
+        if item.level.heading:
+            # A heading is described by its header, its text, or both.
+            if not item.text and not item.header:
+                yield DoorstopWarning("no text nor header")
+        elif not item.text:
             yield DoorstopWarning("no text")
 
         # Check external refs and references
