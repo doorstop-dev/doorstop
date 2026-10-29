@@ -200,6 +200,57 @@ class TestPublisherModule(MockDataMixIn, unittest.TestCase):
         # Assert
         self.assertEqual(expected, result)
 
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_latex_publish_attributes_string_entry(self):
+        """Verify plain string publish entries still render attributes."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = ["invented-by"]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".tex")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by & someone", text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_latex_publish_attributes_structured_entry(self):
+        """Verify structured publish entries do not crash LaTeX publishing (gh-841)."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = [{"invented-by": {"fields": ["url"]}}]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".tex")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by & someone", text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_latex_publish_attributes_invalid_entry_skipped(self):
+        """Verify invalid publish entries are skipped without crashing."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = [42, "invented-by"]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".tex")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by & someone", text)
+
     @patch("doorstop.settings.CHECK_REF", False)
     def test_external_reference_check_ref_false(self):
         """Verify that external references are published correctly with settings.CHECK_REF set to False."""

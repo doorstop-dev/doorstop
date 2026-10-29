@@ -117,6 +117,57 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             text = "".join(line + "\n" for line in lines)
         self.assertIn("Reference: path/to/mock/file (line 42)", text)
 
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_text_item_publish_attributes_string_entry(self):
+        """Verify plain string publish entries still render attributes."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = ["invented-by"]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".txt")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by: someone", text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_text_item_publish_attributes_structured_entry(self):
+        """Verify structured publish entries do not crash text publishing (gh-841)."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = [{"invented-by": {"fields": ["url"]}}]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".txt")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by: someone", text)
+
+    @patch("doorstop.settings.PUBLISH_CHILD_LINKS", False)
+    @patch("doorstop.settings.CHECK_REF", False)
+    def test_lines_text_item_publish_attributes_invalid_entry_skipped(self):
+        """Verify invalid publish entries are skipped without crashing."""
+        item = MockItemAndVCS(
+            "path/to/REQ001.yml",
+            _file="links: []\ntext: 'Some text'\nlevel: 1.1\nnormative: false",
+        )
+        item._data["invented-by"] = "someone"
+        document = Mock()
+        document.publish = [42, "invented-by"]
+        item.document = document
+
+        lines = publisher.publish_lines(item, ".txt")
+        text = "".join(line + "\n" for line in lines)
+        self.assertIn("invented-by: someone", text)
+
     @patch("doorstop.settings.ENABLE_HEADERS", True)
     def test_setting_enable_headers_true(self):
         """Verify that the settings.ENABLE_HEADERS changes the output appropriately when True."""
