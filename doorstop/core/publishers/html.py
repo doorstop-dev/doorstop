@@ -218,7 +218,9 @@ class HtmlPublisher(MarkdownPublisher):
     def _matrix_content(self):
         """Yield rows of content for the traceability matrix in csv format."""
         yield tuple(map(extract_prefix, self.object.documents))
-        for row in self.object.get_traceability():
+        for row in self.object.get_traceability(
+            full=settings.PUBLISH_FULL_TRACEABILITY
+        ):
             yield tuple(map(extract_uid, row))
 
     def lines_matrix(self):
@@ -234,7 +236,9 @@ class HtmlPublisher(MarkdownPublisher):
         yield "</thead>"
         # data
         yield "<tbody>"
-        for index, row in enumerate(self.object.get_traceability()):
+        for index, row in enumerate(
+            self.object.get_traceability(full=settings.PUBLISH_FULL_TRACEABILITY)
+        ):
             if index % 2:
                 yield '<tr class="alt">'
             else:

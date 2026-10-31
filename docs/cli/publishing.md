@@ -22,6 +22,28 @@ The collection of documents can be published as a webpage:
 $ doorstop publish all ./dist/
 ```
 
+## Traceability
+
+By default, the traceability matrix shows only traces that directly follow the document tree. You could call it a “closed layer” tree. 
+
+Use `--full-traceability` to include almost every link: 
+- Links that skip a level (TST → REQ), 
+- cross to a sibling branch (SW → HW),
+- or even point from a higher document to a lower one,
+- Links between items of the same document are NOT shown.
+
+- **Traceability-Matrix**: each row is a chain of linked items with at most one item per document, extended in both directions until no further linked item fits.
+- **Child links**: each item lists every item that is one link apart, from any document.
+
+You could call it a "open layer” tree. 
+
+```sh
+$ doorstop publish all ./dist/ --full-traceability
+```
+
+If all links follow the document tree, the output is the same with and without the option.
+
+
 # LaTeX
 
 Individual documents or the collection of all documents can be published as a LaTeX-format file that then can be typeset by running ```pdflatex``` on the exported files. To ensure easy compilation of a complete collection with cross-references and generated plantUML diagrams, a ```compile.sh```-file is automatically created in the export folder.
