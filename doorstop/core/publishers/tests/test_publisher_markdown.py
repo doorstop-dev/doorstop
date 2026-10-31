@@ -331,7 +331,7 @@ class TestTableOfContents(unittest.TestCase):
             (None, None, None, mock_item_unknown, None),
             (None, None, None, None, None),
         ]
-        mock_tree.get_traceability = lambda: mock_trace
+        mock_tree.get_traceability = lambda **_: mock_trace
         md_publisher = publisher.check(".md")
         # Act
         md_publisher.create_index(FILES, index="index2.md", tree=mock_tree)

@@ -5,7 +5,6 @@
 # pylint: disable=unused-argument,protected-access
 
 import os
-import stat
 import unittest
 from secrets import token_hex
 from shutil import rmtree
@@ -186,7 +185,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             (None, None, None, mock_item_unknown, None),
             (None, None, None, None, None),
         ]
-        mock_tree.get_traceability = lambda: mock_trace
+        mock_tree.get_traceability = lambda **_: mock_trace
         html_publisher = publisher.check(".html")
         # Act
         html_publisher.create_index(FILES, index="index2.html", tree=mock_tree)
@@ -216,7 +215,7 @@ class TestModule(MockDataMixIn, unittest.TestCase):
             (None, None, None, mock_item_unknown, None),
             (None, None, None, None, None),
         ]
-        mock_tree.get_traceability = lambda: mock_trace
+        mock_tree.get_traceability = lambda **_: mock_trace
         html_publisher = publisher.check(".html", obj=mock_tree)
         # Create the self.dirpath first.
         os.makedirs(self.dirpath, exist_ok=True)
