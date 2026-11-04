@@ -292,7 +292,11 @@ def _itemize(header, data, document, mapping=None):
                 attrs[key] = value
 
         # Get the next UID if the row is a new item
-        if attrs.get("text") and uid in (None, "", settings.PLACEHOLDER):
+        if (attrs.get("text") or attrs.get("header")) and uid in (
+            None,
+            "",
+            settings.PLACEHOLDER,
+        ):
             uid = UID(
                 document.prefix, document.sep, document.next_number, document.digits
             )

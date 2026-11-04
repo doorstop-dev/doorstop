@@ -453,6 +453,25 @@ class TestModule(unittest.TestCase):
         self.assertIs(mock_document, kwargs["document"])
 
     @patch("doorstop.core.importer.add_item")
+    def test_itemize_new_item_with_only_a_header(self, mock_add_item):
+        """Verify a row without a UID is imported when it only has a header."""
+        header = ["uid", "level", "text", "header"]
+        data = [[None, "1.0", "", "Heading"], [None, "", "", ""]]
+        mock_document = Mock()
+        mock_document.prefix = "REQ"
+        mock_document.sep = ""
+        mock_document.next_number = 1
+        mock_document.digits = 3
+        mock_document.find_item = Mock(side_effect=DoorstopError)
+        # Act
+        importer._itemize(header, data, mock_document)
+        # Assert
+        mock_add_item.assert_called_once()
+        args, kwargs = mock_add_item.call_args
+        self.assertEqual("REQ001", str(args[1]))
+        self.assertEqual("Heading", kwargs["attrs"]["header"])
+
+    @patch("doorstop.core.importer.add_item")
     def test_itemize_implicit_active(self, mock_add_item):
         """Verify item data can be converted to items (implicit active)."""
         header = ["uid", "text", "links", "ext1", "active"]

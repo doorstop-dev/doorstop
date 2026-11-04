@@ -1,5 +1,6 @@
 # Unreleased
 
+- Fixed importing new items: a row without a UID that has a `header` but no `text` is now imported instead of being silently skipped.
 - Fixed structured `attributes.publish` entries crashing plain text and LaTeX publishing: `TextPublisher` and `LaTeXPublisher` now parse mapping entries like `MarkdownPublisher` instead of passing the raw dict to `Item.attribute()`.
 - Added `doorstop publish --full-traceability`: the traceability matrix and the child links also show links that skip a level, cross to another branch or point down the document tree. Without the option, the output is unchanged.
 - Fixed importing over existing items: items stored in subfolders of a document now stay in their folder instead of being moved to the document root.
