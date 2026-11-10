@@ -190,6 +190,12 @@ class TestAsk(unittest.TestCase):
             response = utilities.ask("?")
         self.assertTrue(response)
 
+    def test_ask_eof(self):
+        """Verify EOF (closed stdin) declines instead of crashing."""
+        with patch("builtins.input", Mock(side_effect=EOFError)):
+            response = utilities.ask("?")
+        self.assertFalse(response)
+
 
 class TestShow(unittest.TestCase):
     """Unit tests for the `show` function."""
