@@ -238,6 +238,10 @@ def ask(question, default=None):
         except KeyboardInterrupt as exc:
             print()
             raise exc from None  # pylint: disable=raising-bad-type
+        except EOFError:
+            # stdin is closed or exhausted (e.g. piped input): decline
+            print()
+            return False
         try:
             return valid[choice]
         except KeyError:
